@@ -1,0 +1,61 @@
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.artifactId}" plugins-version="2">
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
+        <vendor name="${project.organization.name}" url="${project.organization.url}" />
+        <param name="configure.url">/secure/admin/ConfigureBitbucketRepositories.jspa</param>
+    </plugin-info>
+
+    <component-import key="pluginSettingsFactory">
+        <interface>com.atlassian.sal.api.pluginsettings.PluginSettingsFactory</interface>
+    </component-import>
+
+    <issue-tabpanel key="bitbucket-commits-tabpanel" name="BitBucket Changesets Tab Panel"
+        class="com.atlassian.jira.plugins.bitbucket.issuetabpanels.BitBucketTabPanel">
+
+        <description>Show Bitbucket changesets related to an issue in an issue tab panel.</description>
+        <label>Bitbucket Changesets</label>
+        <resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>
+    </issue-tabpanel>
+
+
+    <!-- The webwork1 plugin element is how you add new actions to JIRA -->
+    <webwork1 key="repositoryConfiguration" name="Repository Configuration" class="java.lang.Object">
+      <!-- Note that HTML in the description element is ignored -->
+      <description>
+      </description>
+
+      <actions>
+
+            <action name="com.atlassian.jira.plugins.bitbucket.webwork.ConfigureBitbucketRepositories" alias="ConfigureBitbucketRepositories" roles-required="admin">
+                    <view name="error">/templates/com/atlassian/jira/plugins/bitbucket/webwork/error.vm</view>
+                    <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm</view>
+                    <view name="redirect">/templates/com/atlassian/jira/plugins/bitbucket/webwork/redirect.vm</view>
+            </action>
+
+            <action name="com.atlassian.jira.plugins.bitbucket.webwork.ViewProjectRepository" alias="ViewProjectRepository" roles-required="admin">
+                  <view name="viewrepository">/templates/com/atlassian/jira/plugins/bitbucket/webwork/viewrepository.vm</view>
+            </action>
+
+            <action name="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit" alias="BitbucketPostCommit">
+                  <view name="postcommit">/templates/com/atlassian/jira/plugins/bitbucket/webwork/postcommit.vm</view>
+            </action>
+
+      </actions>
+    </webwork1>
+
+
+    <resource type="download" name="images/" location="images/"/>
+
+    <web-resource name="Resources" key="resources">
+            <resource name="javascripts/atlassian.js" type="download" location="javascripts/atlassian.js"/>
+            <resource name="javascripts/datejs/date.js" type="download" location="javascripts/datejs/date.js"/>
+            <resource name="javascripts/ajs.date.js" type="download" location="javascripts/ajs.date.js"/>
+            <resource name="javascripts/github.js" type="download" location="javascripts/github.js"/>
+
+            <context>atl.general</context>
+            <context>atl.admin</context>
+    </web-resource>
+
+
+</atlassian-plugin>
