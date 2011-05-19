@@ -78,9 +78,9 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
 
         ArrayList<String> commitArray = new ArrayList<String>();
 
-        String issueCommitActions = "No GitHub Commits Found";
+        String issueCommitActions = "No Bitbucket changesets Found";
 
-        ArrayList<Object> githubActions = new ArrayList<Object>();
+        ArrayList<Object> bitbucketActions = new ArrayList<Object>();
 
         // First Time Repository URL is saved
         if ((ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueCommitArray" + issueId) != null){
@@ -94,7 +94,7 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
 
                     issueCommitActions = this.formatCommitDetails(commitDetails);
                     GenericMessageAction action = new GenericMessageAction(issueCommitActions);
-                    githubActions.add(action);
+                    bitbucketActions.add(action);
 
                     System.out.println("Commit Entry: " + "bitbucketIssueCommitArray" + i );
 
@@ -102,7 +102,7 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
 
         }
 
-        return EasyList.build(githubActions);
+        return EasyList.build(bitbucketActions);
 
 
     }
@@ -191,8 +191,7 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
     }
 
     private String fileCommitURL(String filename, String commitHash){
-        // https://github.com/mbuckbee/projecttest/blob/118f75ca466da85525b79bf9d8836aae64b5f949/file1
-        String fileCommitURL = "https://github.com/" + repoLogin + "/" + repoName + "/blob/" + commitHash + "/" + filename;
+        String fileCommitURL = "https://bitbucket.org/" + repoLogin + "/" + repoName + "/src/" + commitHash + "/" + filename;
         return fileCommitURL;
 
     }

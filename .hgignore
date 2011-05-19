@@ -1,2 +1,4 @@
 syntax: regexp
 ^target/
+^.idea/
+^\S.iml
