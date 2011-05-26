@@ -81,22 +81,19 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
                         System.out.println("No BB Username or Password Given");
                     }else{
                         System.out.println("ConfigureRepositories() - Adding Private Repository Credentials");
-                        System.out.println("ConfigureRepositories() UN: " + bbUserName + " PA: " + bbPassword);
+                        //System.out.println("ConfigureRepositories() UN: " + bbUserName + " PA: " + bbPassword);
 
                         // Store Username and Password for later Basic Auth
                         pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketUserName" + url, bbUserName);
                         pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketPassword" + url, bbPassword);
-
 
                         String bbTest = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketUserName" + url);
 
                         System.out.println("TEST SAVE/RETURN" + bbTest);
 
                         postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length-1];
-                        System.out.println(postCommitURL);
-                        nextAction = ""; // Stops Credentials form from displaying
-
                         addRepositoryURL();
+                        nextAction = "ForceSync";
                     }
 
                 }else{
@@ -105,11 +102,10 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
                     postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length-1];
                     System.out.println(postCommitURL);
                     addRepositoryURL();
+                    nextAction = "ForceSync";
                 }
 
 
-
-                System.out.println(postCommitURL);
 
             }
 
@@ -121,22 +117,19 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
                 deleteRepositoryURL();
             }
 
+            if (nextAction.equals("CurrentSyncStatus")){
+
+                currentSyncPage = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("currentsync" + url + projectKey);
+
+                nonJIRACommitTotal = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("NonJIRACommitTotal" + url);
+                JIRACommitTotal = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("JIRACommitTotal" + url);
+
+                return "syncstatus";
+            }
+
             if (nextAction.equals("SyncRepository")){
-                System.out.println("Staring Repository Sync");
-
-                BitbucketCommits repositoryCommits = new BitbucketCommits(pluginSettingsFactory);
-                repositoryCommits.repositoryURL = url;
-                repositoryCommits.projectKey = projectKey;
-
-                // Reset Commit count
-                pluginSettingsFactory.createSettingsForKey(projectKey).put("NonJIRACommitTotal" + url, null);
-                pluginSettingsFactory.createSettingsForKey(projectKey).put("JIRACommitTotal" + url, null);
-
-
-                // Starts actual search of commits via BitBucket API, "0" designates the 'start' parameter
-
-                messages = repositoryCommits.syncCommits(0);
-
+                SyncRepository();
+                return "syncmessage";
             }
         }
 
@@ -164,6 +157,23 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
             urlArray.add(url);
             pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketRepositoryURLArray", urlArray);
         }
+
+    }
+
+
+    private void SyncRepository(){
+        System.out.println("Starting Repository Sync");
+
+        BitbucketCommits repositoryCommits = new BitbucketCommits(pluginSettingsFactory);
+        repositoryCommits.repositoryURL = url;
+        repositoryCommits.projectKey = projectKey;
+
+        // Reset Commit count
+        pluginSettingsFactory.createSettingsForKey(projectKey).put("NonJIRACommitTotal" + url, "0");
+        pluginSettingsFactory.createSettingsForKey(projectKey).put("JIRACommitTotal" + url, "0");
+
+        // Starts actual search of commits via Bitbucket API, "0" designates the 'start' parameter
+        repositoryCommits.syncCommits(0);
 
     }
 
@@ -259,5 +269,17 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
     // Redirect URL
     private String redirectURL = "";
     public String getRedirectURL(){return this.redirectURL;}
+
+    // Current page of commits that is being processed
+    private String currentSyncPage = "";
+    public String getCurrentSyncPage(){return this.currentSyncPage;}
+
+
+    private String nonJIRACommitTotal = "";
+    public String getNonJIRACommitTotal(){return this.nonJIRACommitTotal;}
+
+    // Current page of commits that is being processed
+    private String JIRACommitTotal = "";
+    public String getJIRACommitTotal(){return this.JIRACommitTotal;}
 
 }

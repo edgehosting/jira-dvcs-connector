@@ -29,6 +29,8 @@
             <action name="com.atlassian.jira.plugins.bitbucket.webwork.ConfigureBitbucketRepositories" alias="ConfigureBitbucketRepositories" roles-required="admin">
                     <view name="error">/templates/com/atlassian/jira/plugins/bitbucket/webwork/error.vm</view>
                     <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm</view>
+                    <view name="syncstatus">/templates/com/atlassian/jira/plugins/bitbucket/webwork/syncstatus.vm</view>
+                    <view name="syncmessage">/templates/com/atlassian/jira/plugins/bitbucket/webwork/syncmessage.vm</view>
                     <view name="redirect">/templates/com/atlassian/jira/plugins/bitbucket/webwork/redirect.vm</view>
             </action>
 
@@ -75,7 +77,7 @@
             <resource name="javascripts/datejs/date.js" type="download" location="javascripts/datejs/date.js"/>
             <resource name="javascripts/ajs.date.js" type="download" location="javascripts/ajs.date.js"/>
 
-            <resource name="javascripts/bitbucket.js" type="download" location="javascripts/github.js"/>
+            <resource name="javascripts/bitbucket.js" type="download" location="javascripts/bitbucket.js"/>
 
             <context>atl.general</context>
             <context>atl.admin</context>

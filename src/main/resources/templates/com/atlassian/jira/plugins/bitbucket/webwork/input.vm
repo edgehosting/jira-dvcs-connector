@@ -10,7 +10,24 @@
 
     <script type="text/javascript">
 
+        // Function is located in velocity template not the global bitbucket.js include as
+        // we need to dynamically insert URLs
+        function forceSync(url, projectKey){
+            AJS.$('#gh_messages').css('display','block');
+            AJS.$('#connector_sync_message').html("");
+            AJS.$('#connector_sync_status').html("");
 
+            AJS.$('#connector_sync_message').load('$action.getBaseURL()/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&url=' + url + '&projectKey=' + projectKey);
+
+            console.log('url ' +  '/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&url=' + url + '&projectKey=' + projectKey);
+
+            window.setInterval(function(){
+                AJS.$('#connector_sync_status').load('$action.getBaseURL()/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&url=' + url + '&projectKey=' + projectKey);
+            }, 1000);
+        }
+
+        var url = '$action.getURL()';
+        var projectKey = '$action.getProjectKey()';
 
     </script>
 
@@ -188,22 +205,22 @@
 
             </table>
 
+            #if ($action.nextAction == 'ForceSync')
+                <div id='gh_messages' style="display: none;">
+                    <h2>Sync Summary</h2>
+                    <div id='connector_sync_status'></div>
+                    <div id='connector_sync_message'></div>
+                </div>
+            #end
+
 			<div class="gh_instructions">
-                #if ($action.getMessages() != "")
-                    <div id="gh_messages">
-                           <h2>Sync Summary</h2>
-                            $action.getMessages()
-                    </div>
+                <p>Add additional Bitbucket repositories to the projects to link their commits with JIRA Issue IDs.</p>
+
+                #if ($action.getMode() == 'single')
+                    Please Enter the Bitbucket Repository URL (including branch) you would like linked.</p>
+                #else
+                    Please Enter the JIRA Project and Bitbucket Repository URL (including branch) you would like linked.</p>
                 #end
-
-                
-                    <p>Add additional Bitbucket repositories to the projects to link their commits with JIRA Issue IDs.</p>
-
-                    #if ($action.getMode() == 'single')
-                        Please Enter the Bitbucket Repository URL (including branch) you would like linked.</p>
-                    #else
-                        Please Enter the JIRA Project and Bitbucket Repository URL (including branch) you would like linked.</p>
-                    #end
 
                 #if ($action.getValidations() != "")
                     <div style="margin: 10px; border: 2px solid red; width: 400px; background: #ddd; padding: 15px;">

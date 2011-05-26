@@ -1,0 +1,12 @@
+<div style="text-align: center">
+
+    #if ($action.getCurrentSyncPage() == 'complete')
+        <strong>Sync Processing Complete</strong>
+        <div>$action.getJIRACommitTotal() Commits with JIRA Project Key $action.getProjectKey()  found</div>
+    #else
+         Currently Processing Changesets up through $action.getCurrentSyncPage()<p/>
+        <img src='$action.getBaseURL()/download/resources/com.atlassian.jira.plugins.bitbucket.Bitbucket/images/loading_barber_pole_horz.gif'>
+    #end
+
+</div>
+
