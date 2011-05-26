@@ -199,6 +199,10 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
         return (ArrayList<String>)pluginSettingsFactory.createSettingsForKey(pKey).get("bitbucketRepositoryURLArray");
     }
 
+    public String getProjectName(){
+        return cm.getProjectManager().getProjectObjByKey(projectKey).getName();
+    }
+
     // Mode setting to 'single' indicates that this is administration of a single JIRA project
     // Bulk setting indicates multiple projects
     private String mode = "";
