@@ -52,15 +52,24 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
             url = url.substring(0, url.length() - 1);
         }
 
+        // Set all URLs to HTTPS
+        if (url.startsWith("http:")){
+            url = url.replaceFirst("http:","https:");
+        }
+
+        // Swap overview with 'default' (likely to be pasted in)
         if (url.endsWith("/overview")){
             url = url.substring(0, url.length() - 9);
             url = url + "/default";
         }
 
-        // Set all URLs to HTTPS
-        if (url.startsWith("http:")){
-            url = url.replaceFirst("http:","https:");
+        // Add default branch of 'default' to URL if missing
+        String[] urlArray = url.split("/");
+
+        if(urlArray.length == 5){
+            url += "/default";
         }
+
 
         if (validations.equals("")){
             if (nextAction.equals("AddRepository")){
@@ -83,7 +92,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
                         System.out.println("TEST SAVE/RETURN" + bbTest);
 
-                        String[] urlArray = url.split("/");
                         postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length-1];
                         System.out.println(postCommitURL);
                         nextAction = ""; // Stops Credentials form from displaying
@@ -93,7 +101,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
                 }else{
                     System.out.println("PUBLIC Add Repository");
-                    String[] urlArray = url.split("/");
+
                     postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length-1];
                     System.out.println(postCommitURL);
                     addRepositoryURL();
@@ -103,6 +111,10 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
                 System.out.println(postCommitURL);
 
+            }
+
+            if (nextAction.equals("ShowPostCommitURL")){
+                  postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length-1];
             }
 
             if (nextAction.equals("DeleteRepository")){
