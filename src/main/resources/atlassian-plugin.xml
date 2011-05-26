@@ -44,6 +44,11 @@
       </actions>
     </webwork1>
 
+    <project-operation key="com.atlassian.jira.plugins.projectlink" name="Bitbucket Project Link"
+                       class="com.atlassian.jira.plugins.bitbucket.links.ProjectSettings">
+       <resource type="velocity" name="view" location="/templates/com/atlassian/jira/plugins/projectlinks/view.vm"/>
+       <order>100</order>
+    </project-operation>
 
 
     <web-section key="bitbucket" name="Bitbucket Admin" location="system.admin" weight="105">
