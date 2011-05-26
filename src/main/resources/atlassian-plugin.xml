@@ -3,7 +3,6 @@
         <description>${project.description}</description>
         <version>${project.version}</version>
         <vendor name="${project.organization.name}" url="${project.organization.url}" />
-        <param name="configure.url">/secure/admin/ConfigureBitbucketRepositories.jspa</param>
     </plugin-info>
 
     <component-import key="pluginSettingsFactory">
@@ -52,14 +51,14 @@
 
 
     <web-section key="bitbucket" name="Bitbucket Admin" location="system.admin" weight="105">
-        <description key="section.github.admin.desc">Authentication and Repository setup for the Bitbucket Connector</description>
+        <description key="section.bitbucket.admin.desc">Authentication and Repository setup for the Bitbucket Connector</description>
         <label>Bitbucket</label>
         <name>Bitbucket Name Section</name>
     </web-section>
 
     <web-item key="bitbucket_bulk_repo" name="Bitbucket Bulk Repository" section="system.admin/bitbucket" weight="10">
         <description>Bulk Configure Bitbucket Repositories </description>
-        <label>Bulk Configure Repositories</label>
+        <label>Bitbucket</label>
 
         <name>Bitbucket Name Item</name>
 
