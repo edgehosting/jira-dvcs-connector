@@ -199,10 +199,11 @@
                 
                     <p>Add additional Bitbucket repositories to the projects to link their commits with JIRA Issue IDs.</p>
 
-                    <p>Please Enter the JIRA Project and Bitbucket Repository URL (including branch) you would like linked.</p>
-
-                    <p><span style="color: #555">Example Repository URL: <strong>https://bitbucket.org/atlassianguy/superproject/default</strong></span></p>
-
+                    #if ($action.getMode() == 'single')
+                        Please Enter the Bitbucket Repository URL (including branch) you would like linked.</p>
+                    #else
+                        Please Enter the JIRA Project and Bitbucket Repository URL (including branch) you would like linked.</p>
+                    #end
 
                 #if ($action.getValidations() != "")
                     <div style="margin: 10px; border: 2px solid red; width: 400px; background: #ddd; padding: 15px;">
