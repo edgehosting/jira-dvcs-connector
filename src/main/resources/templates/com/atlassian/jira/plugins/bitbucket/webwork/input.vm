@@ -1,6 +1,12 @@
 <html>
   <head>
-    <title>Bitbucket Repositories</title>
+    <title>
+        #if ($action.getMode() == 'single')
+            Bitbucket Repositories
+        #else
+            Bulk Configure Bitbucket Repositories
+        #end
+    </title>
 
     <script type="text/javascript">
 
@@ -135,7 +141,13 @@
 
   <body>
 
- 		<h3>Bitbucket Repositories</h3>
+ 		<h3>
+            #if ($action.getMode() == 'single')
+                Bitbucket Repositories
+            #else
+                Bulk Configure Bitbucket Repositories
+            #end
+ 		</h3>
 
 
             <h4 class="gh_config_h4">Existing Linked Repositories</h4>
@@ -162,10 +174,13 @@
                         <tr>
                             <td><a href="$repository" target="_new">$repository</a></td>
                             <td>$project.key</td>
-                            <td width="120px">
-                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$repository&projectKey=$project.key&nextAction=SyncRepository">Force Sync</a> |
-                                <a href="#" onclick="confirmation('$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$repository&projectKey=$project.key')">Delete</a>
+
+                            <td width="260px">
+                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$repository&projectKey=$project.key&nextAction=ForceSync&mode=$action.getMode()">Force Sync</a> |
+                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$repository&projectKey=$project.key&nextAction=ShowPostCommitURL&mode=$action.getMode()">Post Commit</a> |
+                                <a href="#" onclick="confirmation('$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$repository&projectKey=$project.key&mode=$action.getMode()')">Delete</a>
                             </td>
+
                         </tr>
                     #end
                 #end
@@ -204,6 +219,7 @@
                               <input type="hidden" name="url" value="$action.getURL()">
                               <input type="hidden" name="projectKey" value="$action.getProjectKey()">
                               <input type="hidden" name="repoVisibility" value="private">
+                              <input type="hidden" name="mode" value="$action.getMode()">
                               <table width="300px">
 
                                   <tr>
@@ -259,13 +275,17 @@
                         <tr>
                           <td valign='top'>
 
+                                #if ($action.getMode() == 'single')
+                                    <input type='hidden' name='projectKey' value='$action.getProjectKey()'>
+                                    <input type='hidden' name='mode' value='single'>
+                                #else
 
                                       <select name="projectKey">
                                         #foreach ($project in $action.getProjects())
                                           <option value="${project.key}"#if ($action.getProjectKey() == $project.key) selected #end>${project.name}</option>
                                         #end
                                       </select>
-
+                                #end
                           </td>
 
                           <td valign='top'>
