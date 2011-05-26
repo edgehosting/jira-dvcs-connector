@@ -17,7 +17,6 @@
     <name>Bitbucket</name>
     <description>Bitbucket Plugin for JIRA, linking JIRA issues to Bitbucket changesets.</description>
     <packaging>atlassian-plugin</packaging>
- 
     <dependencies>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
@@ -83,8 +82,8 @@
     </build>
  
     <properties>
-        <jira.version>4.3.1</jira.version>
-        <jira.data.version>4.3.1</jira.data.version>
+        <jira.version>4.2</jira.version>
+        <jira.data.version>4.2</jira.data.version>
     </properties>
  
 </project>
