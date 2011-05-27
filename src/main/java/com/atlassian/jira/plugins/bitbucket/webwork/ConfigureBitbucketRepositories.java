@@ -132,6 +132,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
             }
 
             if (nextAction.equals("SyncRepository")){
+                currentSyncPage = (String)pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + url + projectKey, "0");
                 SyncRepository();
                 return "syncmessage";
             }
@@ -278,6 +279,11 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
     private String currentSyncPage = "";
     public String getCurrentSyncPage(){return this.currentSyncPage;}
 
+    private Integer uptoSyncValue = 0;
+    public String getUpToSyncValue(){
+        uptoSyncValue = Integer.parseInt(currentSyncPage) + 50;
+        return uptoSyncValue.toString();
+    }
 
     private String nonJIRACommitTotal = "";
     public String getNonJIRACommitTotal(){return this.nonJIRACommitTotal;}
