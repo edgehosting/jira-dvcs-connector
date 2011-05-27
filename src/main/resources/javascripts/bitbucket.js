@@ -13,7 +13,6 @@ function confirmation(delete_url) {
 }
 
 function toggleMoreFiles(target_div){
-        console.log("toggled" + target_div);
         AJS.$('#' + target_div).toggle();
         AJS.$('#see_more_' + target_div).toggle();
         AJS.$('#hide_more_' + target_div).toggle();
