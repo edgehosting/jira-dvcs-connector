@@ -48,7 +48,7 @@
             background-repeat: no-repeat;
             background-position: right center;
             padding-right: 20px;
-            font-size: 8pt;
+            font-size: 10pt;
         }
 
         .gh_config_h4{
@@ -70,7 +70,7 @@
         }
 
         #gh_post_receive_textbox{
-            font-size: 6pt;
+            font-size: 10pt;
             padding: 4px;
         }
 
@@ -93,36 +93,20 @@
             font-weight: normal;
             color: #656565;
             border-bottom: 1px solid #cccccc;
-            font-size: 8pt;
+            font-size: 10pt;
         }
 
         .gh_table td{
             border-bottom: 1px solid #cccccc;
-            font-size: 8pt;
+            font-size: 10pt;
         }
 
         .gh_table_td_pname{
             border-bottom: none !important;
         }
 
-        .gh_instructions{
-            margin-left: 18px;
-			margin-top: 12px;
-            font-size: 8pt;
-            color: #656565;
-        }
-
         #gh_example_link{
             font-size: 6pt;
-        }
-
-        #repoEntry select{
-            font-size: 8pt;
-        }
-
-        #repoEntry input{
-            font-size: 6pt;
-            padding: 4px;
         }
 
         #gh_submit{
@@ -144,11 +128,11 @@
             background-image: url('$action.getBaseURL()/download/resources/com.atlassian.jira.plugins.bitbucket.Bitbucket/images/blue_info_icon.jpg');
             background-repeat: no-repeat;
             background-position: 10px 10px;
-            font-size: 8pt;
+            font-size: 10pt;
         }
 
         #gh_messages h2{
-            font-size: 8pt;
+            font-size: 10pt;
             color: #333;
         }
 
@@ -218,7 +202,7 @@
                 </div>
             #end
 
-			<div class="gh_instructions">
+			<div>
                 <p>Add additional Bitbucket repositories to the projects to link their commits with JIRA Issue IDs.</p>
 
                 #if ($action.getMode() == 'single')
