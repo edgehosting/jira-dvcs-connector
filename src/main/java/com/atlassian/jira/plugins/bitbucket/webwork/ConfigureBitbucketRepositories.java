@@ -40,6 +40,10 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
                     validations = "URL must be for a valid Bitbucket.org repository.";
                 }
             }
+        }else{
+            if (nextAction.equals("AddRepository") || nextAction.equals("DeleteReposiory")){
+                    validations = "URL must be for a valid Bitbucket.org repository.";
+            }
         }
 
     }
