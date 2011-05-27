@@ -10,6 +10,10 @@
 
     <script type="text/javascript">
 
+        var url = '$action.getURL()';
+        var projectKey = '$action.getProjectKey()';
+        var syncComplete = false;
+
         // Function is located in velocity template not the global bitbucket.js include as
         // we need to dynamically insert URLs
         function forceSync(url, projectKey){
@@ -22,12 +26,13 @@
             console.log('url ' +  '/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&url=' + url + '&projectKey=' + projectKey);
 
             window.setInterval(function(){
-                AJS.$('#connector_sync_status').load('$action.getBaseURL()/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&url=' + url + '&projectKey=' + projectKey);
+                if(syncComplete == false){
+                    AJS.$('#connector_sync_status').load('$action.getBaseURL()/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&url=' + url + '&projectKey=' + projectKey);
+                }
             }, 1000);
         }
 
-        var url = '$action.getURL()';
-        var projectKey = '$action.getProjectKey()';
+
 
     </script>
 

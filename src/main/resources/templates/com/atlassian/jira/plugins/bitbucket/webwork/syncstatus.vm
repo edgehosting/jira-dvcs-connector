@@ -1,6 +1,7 @@
 <div style="text-align: center">
 
     #if ($action.getCurrentSyncPage() == 'complete')
+        <script type="text/javascript">syncComplete = true;</script>
         <strong>Sync Processing Complete</strong>
         <div>$action.getJIRACommitTotal() Commits with JIRA Project Key $action.getProjectKey()  found</div>
     #else
