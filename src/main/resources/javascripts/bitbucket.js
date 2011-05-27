@@ -1,7 +1,6 @@
 
 window.onload = function(){
-    if(AJS.$('#gh_messages')){
-        console.log("begin force sync");
+    if(AJS.$('#gh_messages').size() > 0){
         forceSync(url, projectKey);
     }
 }
@@ -13,37 +12,21 @@ function confirmation(delete_url) {
     }
 }
 
+function toggleMoreFiles(target_div){
+        console.log("toggled" + target_div);
+        AJS.$('#' + target_div).toggle();
+        AJS.$('#see_more_' + target_div).toggle();
+        AJS.$('#hide_more_' + target_div).toggle();
+}
+
+
 AJS.$(document).ready(function(){
-    console.log("GitHub.js");
 
-    AJS.$(".see_more").bind('click',function(index){
-        var target_div = AJS.$(this).attr('target_div');
-
-        AJS.$('#' + target_div).toggle();
-        AJS.$('#see_more_' + target_div).toggle();
-        AJS.$('#hide_more_' + target_div).toggle();
-
-    });
-
-    AJS.$(".hide_more").bind('click',function(index){
-        var target_div = AJS.$(this).attr('target_div');
-
-        AJS.$('#' + target_div).toggle();
-        AJS.$('#see_more_' + target_div).toggle();
-        AJS.$('#hide_more_' + target_div).toggle();
-
-    });
 
     AJS.$(".commit_date").each(function(index){
         console.log(AJS.$(this).text());
-
-
         console.log(AJS.Date.getFineRelativeDate(AJS.$(this).text()));
-
-
     });
 
-
-    console.log("end GitHub.js");
 
 });
