@@ -13,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -145,16 +146,22 @@ public class BitbucketCommits {
         return result;
     }
 
-    private String extractProjectKey(String message){
-        Pattern projectKeyPattern = Pattern.compile("(" + this.projectKey + "-\\d*)");
+    private ArrayList extractProjectKey(String message){
+        Pattern projectKeyPattern = Pattern.compile("(" + this.projectKey + "-\\d*)", Pattern.CASE_INSENSITIVE);
         Matcher match = projectKeyPattern.matcher(message);
-        Boolean boolFound = match.find();
 
-        if(boolFound){
-            return match.group(0);
-        }else{
-            return "";
+        boolean matchFound = match.find();
+
+        ArrayList<String> matches = new ArrayList<String>();
+
+        if (matchFound) {
+            // Get all groups for this match
+            for (int i=0; i<=match.groupCount(); i++) {
+                matches.add(match.group(i));
+            }
         }
+
+        return matches;
     }
 
     private Integer incrementCommitCount(String commitType){
@@ -203,13 +210,22 @@ public class BitbucketCommits {
                     if (message.indexOf(this.projectKey) > -1){
                         if (!extractProjectKey(message).equals("")){
 
-                            String issueId = extractProjectKey(message);
-                            addCommitID(issueId, commit_id, getBranchFromURL());
-                            incrementCommitCount("JIRACommitTotal");
+                            ArrayList extractedIssues = extractProjectKey(message);
 
-                            JIRACommits++;
+                            // Remove duplicate IssueIDs
+                            HashSet h = new HashSet(extractedIssues);
+                            extractedIssues.clear();
+                            extractedIssues.addAll(h);
 
-                            messages += "<div class='jira_issue'>" + issueId + " " + commit_id + "</div>";
+                            for (int j=0; j < extractedIssues.size(); ++j){
+                                String issueId = (String)extractedIssues.get(j).toString().toUpperCase();
+                                addCommitID(issueId, commit_id, getBranchFromURL());
+                                incrementCommitCount("JIRACommitTotal");
+
+                                JIRACommits++;
+                            }
+
+                            messages += "<div class='jira_issue'>" + " " + commit_id + "</div>";
 
                         }
 
