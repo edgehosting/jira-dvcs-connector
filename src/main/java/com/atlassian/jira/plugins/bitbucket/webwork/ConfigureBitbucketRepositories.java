@@ -178,7 +178,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
         pluginSettingsFactory.createSettingsForKey(projectKey).put("JIRACommitTotal" + url, "0");
 
         // Starts actual search of commits via Bitbucket API, "0" designates the 'start' parameter
-        repositoryCommits.syncCommits(0);
+        messages = repositoryCommits.syncCommits(0);
 
     }
 
@@ -199,6 +199,15 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
         pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketRepositoryURLArray", urlArray);
 
+    }
+
+
+    // Used to provide URLs on the repository management screen that go to actual pages
+    // as the service does not support repo urls with branches
+    public String getRepositoryURLWithoutBranch(String repoURL){
+
+        Integer lastSlash = repoURL.lastIndexOf("/");
+        return repoURL.substring(0,lastSlash);
     }
 
     // JIRA Project Listing

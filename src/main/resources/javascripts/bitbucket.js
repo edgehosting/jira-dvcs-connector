@@ -22,10 +22,7 @@ function toggleMoreFiles(target_div){
 AJS.$(document).ready(function(){
 
 
-    AJS.$(".commit_date").each(function(index){
-        console.log(AJS.$(this).text());
-        console.log(AJS.Date.getFineRelativeDate(AJS.$(this).text()));
-    });
+
 
 
 });
