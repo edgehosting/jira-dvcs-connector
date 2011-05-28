@@ -161,11 +161,35 @@
             <table class="gh_table" cellspacing="0" cellpadding="4">
 
 
+            #if ($action.getMode() == 'single')
+                        <tr>
+                            <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$action.getProjectName()</div></td>
+                        </tr>
+
+                        <tr>
+                            <th>Repository URL</th>
+                            <th>Key</th>
+                            <th>Operations</th>
+                        </tr>
+
+                    #foreach ($repository in $action.getProjectRepositories($action.getProjectKey()))
+                        <tr>
+                            <td><a href="$action.getRepositoryURLWithoutBranch($repository)" target="_new">$repository</a></td>
+                            <td>$action.getProjectKey()</td>
+                            <td width="260px">
+                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$repository&projectKey=$action.getProjectKey()&nextAction=ForceSync&mode=$action.getMode()">Force Sync</a> |
+                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$repository&projectKey=$action.getProjectKey()&nextAction=ShowPostCommitURL&mode=$action.getMode()">Post Commit</a> |
+                                <a href="#" onclick="confirmation('$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$repository&projectKey=$action.getProjectKey()&mode=$action.getMode()')">Delete</a>
+                            </td>
+                        </tr>
+                    #end
+
+            #else
                 #foreach ($project in $action.getProjects())
                     #if ($action.getProjectRepositories($project.key))
 
                         <tr>
-                            <th colspan="3" style="text-transform: uppercase;">${project.name}</th>
+                            <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">${project.name}</div></td>
                         </tr>
 
                         <tr>
@@ -178,19 +202,18 @@
 
                     #foreach ($repository in $action.getProjectRepositories($project.key))
                         <tr>
-                            <td><a href="$repository" target="_new">$repository</a></td>
+                            <td><a href="$action.getRepositoryURLWithoutBranch($repository)" target="_new">$repository</a></td>
                             <td>$project.key</td>
-
                             <td width="260px">
                                 <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$repository&projectKey=$project.key&nextAction=ForceSync&mode=$action.getMode()">Force Sync</a> |
                                 <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$repository&projectKey=$project.key&nextAction=ShowPostCommitURL&mode=$action.getMode()">Post Commit</a> |
                                 <a href="#" onclick="confirmation('$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$repository&projectKey=$project.key&mode=$action.getMode()')">Delete</a>
                             </td>
-
                         </tr>
                     #end
                 #end
 
+            #end
 
             </table>
 
