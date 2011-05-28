@@ -17,12 +17,16 @@ import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class BitbucketCommits {
 
     public String repositoryURL;
     public String projectKey;
 
     final PluginSettingsFactory pluginSettingsFactory;
+    final Logger logger = LoggerFactory.getLogger(BitbucketCommits.class);
 
     public BitbucketCommits(PluginSettingsFactory pluginSettingsFactory){
         this.pluginSettingsFactory = pluginSettingsFactory;
@@ -175,8 +179,6 @@ public class BitbucketCommits {
             commitCount = Integer.parseInt(stringCount) + 1;
         }
 
-        commitCount = commitCount + 1;
-
         pluginSettingsFactory.createSettingsForKey(projectKey).put(commitType + repositoryURL, Integer.toString(commitCount));
 
         return commitCount;
@@ -224,15 +226,11 @@ public class BitbucketCommits {
 
                                 JIRACommits++;
                             }
-
-                            messages += "<div class='jira_issue'>" + " " + commit_id + "</div>";
-
                         }
 
                     }else{
                         incrementCommitCount("NonJIRACommitTotal");
                         nonJIRACommits++;
-                        messages += "<div class='no_issue'>No Issue: " + commit_id + "</div>" ;
                     }
 
                 }
@@ -240,59 +238,151 @@ public class BitbucketCommits {
                 return messages += this.syncCommits(startNumber + 50);
 
             }catch (JSONException e){
-                e.printStackTrace();
-                return "exception";
+                //e.printStackTrace();
+                return "Bitbucket repository can't be found or incorrect credentials.";
             }
-
-        }else{
-
-            // ToDo: Fix summary header
-            String messageHeader = "<h2>Sync Summary</h2>";
-            messageHeader += "<strong>Non JIRA Commits Found: </strong>" + nonJIRACommits.toString() + "<br/>";
-            messageHeader += "<strong>JIRA Commits Found: </strong>" + JIRACommits.toString() + "<br/><p/>";
 
         }
 
-        return "";
+        return messages;
 
     }
 
 
-    // Manages the entry of multiple BitBucket commit id hash ids associated with an issue
-    // urls look like - https://api.bitbucket.org/1.0/repositories/ellislab/codeigniter/changesets/87d1266bcede?branch=master
+    private String getRepositoryURLFromCommitURL(String commitURL){
+
+        // Commit URL example
+        // https://github.com/api/v2/json/commits/show/mojombo/grit/5071bf9fbfb81778c456d62e111440fdc776f76c?branch=master
+
+        String[] arrayCommitURL = commitURL.split("/");
+        String[] arrayBranch = commitURL.split("=");
+
+        String branch = "";
+
+        if(arrayBranch.length == 1){
+            branch = "master";
+        }else{
+            branch = arrayBranch[1];
+        }
+
+        String repoBranchURL = "https://github.com/" + arrayCommitURL[8] + "/" + arrayCommitURL[9] + "/" + branch;
+        logger.debug("GitHubCommits.getRepositoryURLFromCommitURL() - RepoBranchURL: " + repoBranchURL);
+        return repoBranchURL;
+    }
+
+    // Manages the entry of multiple Github commit id hash ids associated with an issue
+    // urls look like - https://github.com/api/v2/json/commits/show/mojombo/grit/5071bf9fbfb81778c456d62e111440fdc776f76c?branch=master
     private void addCommitID(String issueId, String commitId, String branch){
         ArrayList<String> commitArray = new ArrayList<String>();
 
         // First Time Repository URL is saved
-        if ((ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueCommitArray" + issueId) != null){
-            commitArray = (ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueCommitArray" + issueId);
+        if ((ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("githubIssueCommitArray" + issueId) != null){
+            commitArray = (ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("githubIssueCommitArray" + issueId);
         }
 
         Boolean boolExists = false;
 
         for (int i=0; i < commitArray.size(); i++){
             if ((inferCommitDetailsURL() + commitId + "?branch=" + branch).equals(commitArray.get(i))){
-                System.out.println("Found commit id" + commitArray.get(i));
+                //logger.debug("Found commit id" + commitArray.get(i));
                 boolExists = true;
             }
         }
 
         if (!boolExists){
-            System.out.println("addCommitID: Adding CommitID " + inferCommitDetailsURL() + commitId );
+            //logger.debug("addCommitID: Adding CommitID " + inferCommitDetailsURL() + commitId );
             commitArray.add(inferCommitDetailsURL() + commitId + "?branch=" + branch);
-            pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketIssueCommitArray" + issueId, commitArray);
-        }else{
-            System.out.println("addCommitID: commit id already present");
+            addIssueId(issueId);
+            pluginSettingsFactory.createSettingsForKey(projectKey).put("githubIssueCommitArray" + issueId, commitArray);
         }
-
-        System.out.println("arrayKey: " + "bitbucketIssueCommitArray" + issueId);
-        //System.out.println("addCommitID: " + issueId + " - " + commitId);
 
     }
 
-    // Removes all of the associated commits from an issue
-    private void deleteCommitId(String issueId){
-        pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketIssueCommitArray" + issueId, null);
+
+    // Removes a specific commit_id (URL) from the saved array
+    private void removeCommitID(String issueId, String URLCommitID){
+        ArrayList<String> commitArray = new ArrayList<String>();
+
+        // First Time Repository URL is saved
+        if ((ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("githubIssueCommitArray" + issueId) != null){
+            commitArray = (ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("githubIssueCommitArray" + issueId);
+        }
+
+        Boolean boolExists = false;
+        ArrayList<String> newCommitArray = new ArrayList<String>();
+        for (int i=0; i < commitArray.size(); i++){
+
+            //logger.debug("GitHubCommits().removeCommitID - URLCommitID: " + URLCommitID);
+            //logger.debug("GitHubCommits().removeCommitID - commitArray: " + commitArray.get(i));
+
+            if (!URLCommitID.equals(commitArray.get(i))){
+                newCommitArray.add(commitArray.get(i));
+            }
+        }
+
+        pluginSettingsFactory.createSettingsForKey(projectKey).put("githubIssueCommitArray" + issueId, newCommitArray);
+
+    }
+
+
+
+    // Manages the recording of items ids for a JIRA project + Repository Pair so that we know
+    // which issues within a project have commits associated with them
+    private void addIssueId(String issueId){
+        ArrayList<String> idsArray = new ArrayList<String>();
+
+        // First Time Repository URL is saved
+        if ((ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("githubIssueIDs" + repositoryURL) != null){
+            idsArray = (ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("githubIssueIDs" + repositoryURL);
+        }
+
+        Boolean boolExists = false;
+
+        for (int i=0; i < idsArray.size(); i++){
+            if ((issueId).equals(idsArray.get(i))){
+                logger.debug("GitHubCommits.addIssueId() Found existing issue id - " + idsArray.get(i));
+                boolExists = true;
+            }
+        }
+
+        if (!boolExists){
+            logger.debug("GitHubCommits.addIssueId() - " + issueId);
+            idsArray.add(issueId);
+            pluginSettingsFactory.createSettingsForKey(projectKey).put("githubIssueIDs" + repositoryURL, idsArray);
+        }
+
+    }
+
+    // Removes all record of issues associated with this project and repository URL
+    public void removeRepositoryIssueIDs(){
+
+        ArrayList<String> idsArray = new ArrayList<String>();
+        if ((ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("githubIssueIDs" + repositoryURL) != null){
+            idsArray = (ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("githubIssueIDs" + repositoryURL);
+        }
+
+        // Array of JIRA Issue IDS like ['PONE-4','PONE-10']
+        for (int i=0; i < idsArray.size(); i++){
+            //logger.debug("GitHubCommits.removeRepositoryIssueIDs() - " + idsArray.get(i));
+
+            ArrayList<String> commitIDsArray = new ArrayList<String>();
+            if ((ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("githubIssueCommitArray" + idsArray.get(i)) != null){
+                commitIDsArray = (ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("githubIssueCommitArray" + idsArray.get(i));
+
+                // Array of Commit URL IDs like ['http://github.com/...']
+                for (int j=0; j < commitIDsArray.size(); j++){
+                    //logger.debug("GitHubCommits.removeRepositoryIssueIDs() - Commit ID: " + commitIDsArray.get(j));
+                    //logger.debug("GitHubCommits.removeRepositoryIssueIDs() - " + getRepositoryURLFromCommitURL(commitIDsArray.get(j)));
+
+                    if (repositoryURL.equals(getRepositoryURLFromCommitURL(commitIDsArray.get(j)))){
+                        //logger.debug("match");
+                        removeCommitID(idsArray.get(i), commitIDsArray.get(j));
+                    }
+                }
+            }
+
+        }
+
     }
 
 }
