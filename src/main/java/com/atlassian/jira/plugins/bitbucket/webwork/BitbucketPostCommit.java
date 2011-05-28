@@ -4,6 +4,9 @@ import com.atlassian.jira.util.json.*;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Created by IntelliJ IDEA.
  * User: michaelbuckbee
@@ -14,6 +17,7 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 public class BitbucketPostCommit extends JiraWebActionSupport {
 
     final PluginSettingsFactory pluginSettingsFactory;
+    final Logger logger = LoggerFactory.getLogger(BitbucketPostCommit.class);
 
     public BitbucketPostCommit(PluginSettingsFactory pluginSettingsFactory){
         this.pluginSettingsFactory = pluginSettingsFactory;
@@ -34,9 +38,9 @@ public class BitbucketPostCommit extends JiraWebActionSupport {
     protected String doExecute() throws Exception {
 
         if (validations.equals("")){
-            System.out.println("Starting PostCommitUpdate");
+            logger.debug("Starting PostCommitUpdate");
 
-            System.out.println("BB Payload - " + payload);
+            logger.debug("BB Payload - " + payload);
 
             JSONObject jsonPayload = new JSONObject(payload);
             JSONObject jsonRepository = jsonPayload.getJSONObject("repository");
@@ -59,7 +63,7 @@ public class BitbucketPostCommit extends JiraWebActionSupport {
 
             // absolute_url element returned from JSON payload has a trailing slash
             String url = "https://bitbucket.org" + jsonRepository.getString("absolute_url") + branch;
-            System.out.println("Post Commit repository URL - " + url);
+            logger.debug("Post Commit repository URL - " + url);
             BitbucketCommits repositoryCommits = new BitbucketCommits(pluginSettingsFactory);
             repositoryCommits.repositoryURL = url;
             repositoryCommits.projectKey = projectKey;

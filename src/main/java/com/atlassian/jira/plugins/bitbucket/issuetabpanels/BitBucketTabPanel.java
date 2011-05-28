@@ -21,12 +21,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.config.properties.PropertiesManager;
 
 public class BitBucketTabPanel extends AbstractIssueTabPanel {
 
     final PluginSettingsFactory pluginSettingsFactory;
+    final Logger logger = LoggerFactory.getLogger(BitBucketTabPanel.class);
 
     public String repositoryURL;
     public String repoLogin;
@@ -59,7 +63,7 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
         }
 
         String repoBranchURL = "https://bitbucket.org/" + arrayCommitURL[5] + "/" + arrayCommitURL[6] + "/" + branch;
-        System.out.println("RepoBranchURL: " + repoBranchURL);
+        logger.debug("RepoBranchURL: " + repoBranchURL);
 
         this.repositoryURL = repoBranchURL;
         this.repoLogin = arrayCommitURL[5];
@@ -87,7 +91,7 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
             commitArray = (ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueCommitArray" + issueId);
 
             for (int i=0; i < commitArray.size(); i++){
-                    System.out.println("Found commit id " + commitArray.get(i));
+                    logger.debug("Found commit id " + commitArray.get(i));
 
                     bitbucketCommits.repositoryURL = getRepositoryURLFromCommitURL(commitArray.get(i));
                     String commitDetails = bitbucketCommits.getCommitDetails(commitArray.get(i));
@@ -96,7 +100,7 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
                     GenericMessageAction action = new GenericMessageAction(issueCommitActions);
                     bitbucketActions.add(action);
 
-                    System.out.println("Commit Entry: " + "bitbucketIssueCommitArray" + i );
+                    logger.debug("Commit Entry: " + "bitbucketIssueCommitArray" + i );
 
             }
 
@@ -143,13 +147,13 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
         if (!diff.trim().equals("")){
             // the +3 and -1 remove the leading and trailing spaces
 
-            //System.out.println("Diff STring: " + diff);
+            //logger.debug("Diff STring: " + diff);
 
             Integer first = diff.indexOf("@@") + 3;
             Integer second = diff.indexOf("@@", first) -1;
 
-            //System.out.println("first: " + first.toString());
-            //System.out.println("second: " + second.toString());
+            //logger.debug("first: " + first.toString());
+            //logger.debug("second: " + second.toString());
 
             String[] modLine = diff.substring(first,second).replace("+","").replace("-","").split(" ");
 
@@ -223,7 +227,7 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
                 JSONObject bitbucketUser = new JSONObject(getUserDetails(login));
                 JSONObject user = bitbucketUser.getJSONObject("user");
 
-                //System.out.println(user.toString());
+                //logger.debug(user.toString());
 
                 String userName = user.getString("username");
                 //String gravatarUrl = "https://secure.gravatar.com/avatar/6c07990e60f0d8e9c8e2c374a30b4639?d=identicon&s=60";
@@ -275,7 +279,7 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
                             }
 
                             htmlFile = "<li><span style='color:" + color + "; font-size: 8pt;'>" + fileActionName + "</span> <a href='" + fileCommitURL(fileName, commit_hash) + "' target='_new'>" + fileName + "</a></li>";
-                            //System.out.println(htmlFile);
+                            //logger.debug(htmlFile);
                             mapFiles.put(fileName, htmlFile);
 
                     }
@@ -426,7 +430,7 @@ String htmlCommitEntry = "" +
             e.printStackTrace();
         }
 
-        //System.out.println(result);
+        //logger.debug(result);
 
         return result;
 

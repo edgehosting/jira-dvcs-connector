@@ -6,10 +6,14 @@ import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 import java.util.Enumeration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class ViewProjectRepository extends JiraWebActionSupport{
 
     final PluginSettingsFactory pluginSettingsFactory;
+    final Logger logger = LoggerFactory.getLogger(ViewProjectRepository.class);
 
     public ViewProjectRepository(PluginSettingsFactory pluginSettingsFactory){
         this.pluginSettingsFactory = pluginSettingsFactory;

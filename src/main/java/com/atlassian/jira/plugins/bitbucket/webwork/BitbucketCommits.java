@@ -51,7 +51,7 @@ public class BitbucketCommits {
     }
 
     private String getCommitsList(Integer startNumber){
-        System.out.println("BitbucketCommits.getCommitsList()");
+        logger.debug("BitbucketCommits.getCommitsList()");
         URL url;
         HttpURLConnection conn;
 
@@ -61,18 +61,18 @@ public class BitbucketCommits {
 
         try {
 
-            System.out.println("Commits URL - " + this.inferCommitsURL() + "?start=" + startNumber.toString() + "&limit=50");
+            logger.debug("Commits URL - " + this.inferCommitsURL() + "?start=" + startNumber.toString() + "&limit=50");
             url = new URL(this.inferCommitsURL() + "?start=" + startNumber.toString() + "&limit=50");
-            System.out.println("URL: " + url);
+            logger.debug("URL: " + url);
             conn = (HttpURLConnection) url.openConnection();
 
             String bbUserName = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketUserName" + repositoryURL);
             String bbPassword = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketPassword" + repositoryURL);
 
             if (bbUserName != "" && bbPassword != ""){
-                System.out.println("Using Basic Auth");
-                //System.out.println("URL: " + repositoryURL);
-                System.out.println("UN: " + bbUserName + " PA: " + bbPassword);
+                logger.debug("Using Basic Auth");
+                //logger.debug("URL: " + repositoryURL);
+                logger.debug("UN: " + bbUserName + " PA: " + bbPassword);
 
                 BASE64Encoder enc = new sun.misc.BASE64Encoder();
                 String userpassword = bbUserName + ":" + bbPassword;
@@ -93,12 +93,12 @@ public class BitbucketCommits {
 
         }catch (MalformedURLException e){
             //e.printStackTrace();
-            System.out.println("Malformed exception");
+            logger.debug("Malformed exception");
             pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + repositoryURL + projectKey, "complete");
 
         } catch (Exception e) {
-            //System.out.println("End of Commits found (500) or Unauthorized (401)");
-            System.out.println("End of Commits or Unauthorized");
+            //logger.debug("End of Commits found (500) or Unauthorized (401)");
+            logger.debug("End of Commits or Unauthorized");
             pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + repositoryURL + projectKey, "complete");
 
         }
@@ -123,9 +123,9 @@ public class BitbucketCommits {
             String bbPassword = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketPassword" + repositoryURL);
 
             if (bbUserName != "" && bbPassword != ""){
-                System.out.println("BitbucketCommits().getCommitsList() - Using Basic Auth");
-                System.out.println("URL: " + repositoryURL);
-                System.out.println("UN: " + bbUserName + " PA: " + bbPassword);
+                logger.debug("BitbucketCommits().getCommitsList() - Using Basic Auth");
+                logger.debug("URL: " + repositoryURL);
+                logger.debug("UN: " + bbUserName + " PA: " + bbPassword);
 
                 BASE64Encoder enc = new sun.misc.BASE64Encoder();
                 String userpassword = bbUserName + ":" + bbPassword;
@@ -190,7 +190,7 @@ public class BitbucketCommits {
         Date date = new Date();
         pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketLastSyncTime" + repositoryURL, date.toString());
 
-        System.out.println("BitbucketCommits.syncCommits()");
+        logger.debug("BitbucketCommits.syncCommits()");
         String commitsAsJSON = getCommitsList(startNumber);
 
         String messages = "";
@@ -234,7 +234,7 @@ public class BitbucketCommits {
                     }
 
                 }
-                System.out.println("count" + startNumber.toString());
+                logger.debug("count" + startNumber.toString());
                 return messages += this.syncCommits(startNumber + 50);
 
             }catch (JSONException e){

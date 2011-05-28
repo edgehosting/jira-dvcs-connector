@@ -11,17 +11,21 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
     final PluginSettingsFactory pluginSettingsFactory;
+    final Logger logger = LoggerFactory.getLogger(ConfigureBitbucketRepositories.class);
 
     public ConfigureBitbucketRepositories(PluginSettingsFactory pluginSettingsFactory){
         this.pluginSettingsFactory = pluginSettingsFactory;
     }
 
     protected void doValidation() {
-        //System.out.println("ConfigureRepositories - doValidation()");
+        //logger.debug("ConfigureRepositories - doValidation()");
         for (Enumeration e =  request.getParameterNames(); e.hasMoreElements() ;) {
             String n = (String)e.nextElement();
             String[] vals = request.getParameterValues(n);
@@ -30,7 +34,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
         // BitBucket URL Validation
         if (!url.equals("")){
-            System.out.println("URL for Evaluation: " + url + " - NA: " + nextAction);
+            logger.debug("URL for Evaluation: " + url + " - NA: " + nextAction);
             if (nextAction.equals("AddRepository") || nextAction.equals("DeleteReposiory")){
                 // Valid URL and URL starts with bitbucket.org domain
                 Pattern p = Pattern.compile("^(https|http)://bitbucket.org/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
@@ -49,7 +53,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
     }
 
     protected String doExecute() throws Exception {
-        System.out.println("NextAction: " + nextAction);
+        logger.debug("NextAction: " + nextAction);
 
         // Remove trailing slashes from URL
         if (url.endsWith("/")){
@@ -79,13 +83,13 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
             if (nextAction.equals("AddRepository")){
 
                 if (repoVisibility.equals("private")){
-                    System.out.println("Private Add Repository");
+                    logger.debug("Private Add Repository");
 
                     if(bbUserName == "" || bbPassword == ""){
-                        System.out.println("No BB Username or Password Given");
+                        logger.debug("No BB Username or Password Given");
                     }else{
-                        System.out.println("ConfigureRepositories() - Adding Private Repository Credentials");
-                        //System.out.println("ConfigureRepositories() UN: " + bbUserName + " PA: " + bbPassword);
+                        logger.debug("ConfigureRepositories() - Adding Private Repository Credentials");
+                        //logger.debug("ConfigureRepositories() UN: " + bbUserName + " PA: " + bbPassword);
 
                         // Store Username and Password for later Basic Auth
                         pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketUserName" + url, bbUserName);
@@ -93,7 +97,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
                         String bbTest = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketUserName" + url);
 
-                        System.out.println("TEST SAVE/RETURN" + bbTest);
+                        logger.debug("TEST SAVE/RETURN" + bbTest);
 
                         postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length-1];
                         addRepositoryURL();
@@ -101,10 +105,10 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
                     }
 
                 }else{
-                    System.out.println("PUBLIC Add Repository");
+                    logger.debug("PUBLIC Add Repository");
 
                     postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length-1];
-                    System.out.println(postCommitURL);
+                    logger.debug(postCommitURL);
                     addRepositoryURL();
                     nextAction = "ForceSync";
                 }
@@ -167,7 +171,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
 
     private void SyncRepository(){
-        System.out.println("Starting Repository Sync");
+        logger.debug("Starting Repository Sync");
 
         BitbucketCommits repositoryCommits = new BitbucketCommits(pluginSettingsFactory);
         repositoryCommits.repositoryURL = url;
