@@ -37,6 +37,8 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
     public String repoName;
     public String branch;
 
+    private String baseurl = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
+
     public BitBucketTabPanel(PluginSettingsFactory pluginSettingsFactory){
         this.pluginSettingsFactory = pluginSettingsFactory;
     }
