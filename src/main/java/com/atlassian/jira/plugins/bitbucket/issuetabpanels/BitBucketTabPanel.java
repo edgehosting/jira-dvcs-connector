@@ -12,6 +12,8 @@ import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.opensymphony.user.User;
 
+import com.atlassian.jira.web.action.JiraWebActionSupport;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -214,6 +216,8 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
     private String formatCommitDetails(String jsonDetails){
             try{
 
+                JiraWebActionSupport jwas = new JiraWebActionSupport();
+
                 String baseURL = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
 
 
@@ -253,7 +257,7 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
 
                     for (int i=0; i < arrayParents.length(); i++){
                         String parentHashID = arrayParents.getString(i);
-                        htmlParentHashes = "<tr><td style='color: #757575'>Parent:</td><td><a href='" + "https://bitbucket.org/" + login + "/" + projectName + "/changeset/" + parentHashID +"' target='_new'>" + parentHashID + "</a></td></tr>";
+                        htmlParentHashes = "<tr><td style='color: #757575'>Parent:</td><td><a href='" + "https://bitbucket.org/" + jwas.htmlEncode(login) + "/" + jwas.htmlEncode(projectName) + "/changeset/" + parentHashID +"' target='_new'>" + parentHashID + "</a></td></tr>";
 
                     }
 
@@ -289,7 +293,7 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
                                 fileActionName = "MODIFIED";
                             }
 
-                            htmlFile = "<li><span style='color:" + color + "; font-size: 8pt;'>" + fileActionName + "</span> <a href='" + fileCommitURL(fileName, commit_hash) + "' target='_new'>" + fileName + "</a></li>";
+                            htmlFile = "<li><span style='color:" + color + "; font-size: 8pt;'>" + jwas.htmlEncode(fileActionName) + "</span> <a href='" + fileCommitURL(jwas.htmlEncode(fileName), commit_hash) + "' target='_new'>" + fileName + "</a></li>";
                             //logger.debug(htmlFile);
                             mapFiles.put(fileName, htmlFile);
 
@@ -385,12 +389,12 @@ String htmlCommitEntry = "" +
 
 
                 htmlCommitEntry = htmlCommitEntry.replace("#gravatar_url", gravatarUrl);
-                htmlCommitEntry = htmlCommitEntry.replace("#user_url", "https://bitbucket.org/" + login);
-                htmlCommitEntry = htmlCommitEntry.replace("#login", login);
+                htmlCommitEntry = htmlCommitEntry.replace("#user_url", "https://bitbucket.org/" + jwas.htmlEncode(login));
+                htmlCommitEntry = htmlCommitEntry.replace("#login", jwas.htmlEncode(login));
 
-                htmlCommitEntry = htmlCommitEntry.replace("#user_name", authorName);
+                htmlCommitEntry = htmlCommitEntry.replace("#user_name", jwas.htmlEncode(authorName));
 
-                htmlCommitEntry = htmlCommitEntry.replace("#commit_message", commitMessage);
+                htmlCommitEntry = htmlCommitEntry.replace("#commit_message", jwas.htmlEncode(commitMessage));
 
                 htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_time", committedDateString);
 
