@@ -145,6 +145,11 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
         return INPUT;
     }
 
+    private void resetCommitTotals(){
+        pluginSettingsFactory.createSettingsForKey(projectKey).put("NonJIRACommitTotal" + url, "0");
+        pluginSettingsFactory.createSettingsForKey(projectKey).put("JIRACommitTotal" + url, "0");
+    }
+
     // Manages the entry of multiple repository URLs in a single pluginSetting Key
     private void addRepositoryURL(){
         ArrayList<String> urlArray = new ArrayList<String>();
@@ -164,6 +169,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
         if (!boolExists){
             urlArray.add(url);
+            resetCommitTotals();
             pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketRepositoryURLArray", urlArray);
         }
 
@@ -178,8 +184,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
         repositoryCommits.projectKey = projectKey;
 
         // Reset Commit count
-        pluginSettingsFactory.createSettingsForKey(projectKey).put("NonJIRACommitTotal" + url, "0");
-        pluginSettingsFactory.createSettingsForKey(projectKey).put("JIRACommitTotal" + url, "0");
+        resetCommitTotals();
 
         // Starts actual search of commits via Bitbucket API, "0" designates the 'start' parameter
         messages = repositoryCommits.syncCommits(0);
