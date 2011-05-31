@@ -88,6 +88,8 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
 
         ArrayList<Object> bitbucketActions = new ArrayList<Object>();
 
+        logger.debug("BitbucketTabPanel().getActions()");
+
         // First Time Repository URL is saved
         if ((ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueCommitArray" + issueId) != null){
             commitArray = (ArrayList<String>)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueCommitArray" + issueId);
@@ -106,6 +108,13 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
 
             }
 
+        }
+
+
+        if (bitbucketActions.equals(null)){
+            logger.debug("No issues found.");
+            GenericMessageAction blankAction = new GenericMessageAction("");
+            bitbucketActions.add(blankAction);
         }
 
         return EasyList.build(bitbucketActions);
@@ -402,7 +411,7 @@ String htmlCommitEntry = "" +
 
              // Catches invalid or removed BitBucket IDs
             }catch (JSONException e){
-                e.printStackTrace();
+                //e.printStackTrace();
                 return "";
             }
 
