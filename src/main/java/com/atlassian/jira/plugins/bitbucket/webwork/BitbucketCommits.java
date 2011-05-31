@@ -35,6 +35,7 @@ public class BitbucketCommits {
     // Generates a URL for pulling commit messages based upon the base Repository URL
     // https://bitbucket.org/ellislab/codething/master
     private String inferCommitsURL(){
+        logger.debug("BitBucketCommits.inferCommitsURL() - " + repositoryURL);
         String[] path = repositoryURL.split("/");
         return "https://api.bitbucket.org/1.0/repositories/" + path[3] + "/" + path[4] + "/changesets";
     }
@@ -69,9 +70,7 @@ public class BitbucketCommits {
             String bbUserName = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketUserName" + repositoryURL);
             String bbPassword = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketPassword" + repositoryURL);
 
-            if (bbUserName != "" && bbPassword != ""){
-                if(!bbUserName.equals(null) && !bbPassword.equals(null)){
-
+            if(bbUserName != null && bbPassword != null){
                     logger.debug("Using Basic Auth");
                     //logger.debug("URL: " + repositoryURL);
                     logger.debug("UN: " + bbUserName + " PA: " + bbPassword);
@@ -80,7 +79,7 @@ public class BitbucketCommits {
                     String userpassword = bbUserName + ":" + bbPassword;
                     String encodedAuthorization = enc.encode(userpassword.getBytes() );
                     conn.setRequestProperty("Authorization", "Basic "+ encodedAuthorization);
-                }
+
             }
 
             conn.setInstanceFollowRedirects(true);
@@ -104,6 +103,8 @@ public class BitbucketCommits {
             pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + repositoryURL + projectKey, "complete");
 
         } catch (Exception e) {
+            //e.printStackTrace();
+
             //logger.debug("End of Commits found (500) or Unauthorized (401)");
             logger.debug("End of Commits or Unauthorized");
 
