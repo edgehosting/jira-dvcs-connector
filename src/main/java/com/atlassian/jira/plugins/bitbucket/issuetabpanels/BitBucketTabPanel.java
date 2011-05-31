@@ -14,6 +14,9 @@ import com.opensymphony.user.User;
 
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 
+import com.atlassian.jira.security.PermissionManager;
+import com.atlassian.jira.security.Permissions;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -39,10 +42,13 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
     public String repoName;
     public String branch;
 
+    private final PermissionManager permissionManager;
+
     private String baseurl = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
 
-    public BitBucketTabPanel(PluginSettingsFactory pluginSettingsFactory){
+    public BitBucketTabPanel(PluginSettingsFactory pluginSettingsFactory, PermissionManager permissionManager){
         this.pluginSettingsFactory = pluginSettingsFactory;
+        this.permissionManager = permissionManager;
     }
 
     protected void populateVelocityParams(Map params)
@@ -125,7 +131,11 @@ public class BitBucketTabPanel extends AbstractIssueTabPanel {
     }
 
     public boolean showPanel(Issue issue, User user) {
-        return true;  //To change body of implemented methods use File | Settings | File Templates.
+
+        return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user);
+
+
+        //return true;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     private Date parseISO8601(String input) throws ParseException{
