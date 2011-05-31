@@ -10,8 +10,8 @@
 
     <script type="text/javascript">
 
-        var url = '$action.getURL()';
-        var projectKey = '$action.getProjectKey()';
+        var url = '$textutils.htmlEncode($action.getURL())';
+        var projectKey = '$textutils.htmlEncode($action.getProjectKey())';
         var syncComplete = false;
 
         // Function is located in velocity template not the global bitbucket.js include as
@@ -21,13 +21,11 @@
             AJS.$('#connector_sync_message').html("");
             AJS.$('#connector_sync_status').html("");
 
-            AJS.$('#connector_sync_message').load('$action.getBaseURL()/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&url=' + url + '&projectKey=' + projectKey);
-
-            console.log('url ' +  '/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&url=' + url + '&projectKey=' + projectKey);
+            AJS.$('#connector_sync_message').load('$action.getBaseURL()/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&url=' + $textutils.htmlEncode(url) + '&projectKey=' + projectKey);
 
             window.setInterval(function(){
                 if(syncComplete == false){
-                    AJS.$('#connector_sync_status').load('$action.getBaseURL()/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&url=' + url + '&projectKey=' + projectKey);
+                    AJS.$('#connector_sync_status').load('$action.getBaseURL()/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&url=' + $textutils.htmlEncode(url) + '&projectKey=' + projectKey);
                 }
             }, 1000);
         }
@@ -149,7 +147,7 @@
 
  		<h3>
             #if ($action.getMode() == 'single')
-                Existing Repositories Linked to $action.getProjectName()
+                Existing Repositories Linked to $textutils.htmlEncode($action.getProjectName())
             #else
                 Bulk Configure Bitbucket Repositories
             #end
@@ -163,7 +161,7 @@
 
             #if ($action.getMode() == 'single')
                         <tr>
-                            <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$action.getProjectName()</div></td>
+                            <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$textutils.htmlEncode($action.getProjectName())</div></td>
                         </tr>
 
                         <tr>
@@ -174,12 +172,12 @@
 
                     #foreach ($repository in $action.getProjectRepositories($action.getProjectKey()))
                         <tr>
-                            <td><a href="$action.getRepositoryURLWithoutBranch($repository)" target="_new">$repository</a></td>
+                            <td><a href="$action.getRepositoryURLWithoutBranch($repository)" target="_new">$textutils.htmlEncode($repository)</a></td>
                             <td>$action.getProjectKey()</td>
                             <td width="260px">
-                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$repository&projectKey=$action.getProjectKey()&nextAction=ForceSync&mode=$action.getMode()">Force Sync</a> |
-                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$repository&projectKey=$action.getProjectKey()&nextAction=ShowPostCommitURL&mode=$action.getMode()">Post Commit</a> |
-                                <a href="#" onclick="confirmation('$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$repository&projectKey=$action.getProjectKey()&mode=$action.getMode()')">Delete</a>
+                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository)&projectKey=$action.getProjectKey()&nextAction=ForceSync&mode=$textutils.htmlEncode($action.getMode())">Force Sync</a> |
+                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository)&projectKey=$action.getProjectKey()&nextAction=ShowPostCommitURL&mode=$textutils.htmlEncode($action.getMode())">Post Commit</a> |
+                                <a href="#" onclick="confirmation('$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$textutils.htmlEncode($repository)&projectKey=$action.getProjectKey()&mode=$textutils.htmlEncode($action.getMode())')">Delete</a>
                             </td>
                         </tr>
                     #end
@@ -189,7 +187,7 @@
                     #if ($action.getProjectRepositories($project.key))
 
                         <tr>
-                            <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">${project.name}</div></td>
+                            <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$textutils.htmlEncode(${project.name})</div></td>
                         </tr>
 
                         <tr>
@@ -202,12 +200,12 @@
 
                     #foreach ($repository in $action.getProjectRepositories($project.key))
                         <tr>
-                            <td><a href="$action.getRepositoryURLWithoutBranch($repository)" target="_new">$repository</a></td>
+                            <td><a href="$action.getRepositoryURLWithoutBranch($repository)" target="_new">$textutils.htmlEncode($repository)</a></td>
                             <td>$project.key</td>
                             <td width="260px">
-                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$repository&projectKey=$project.key&nextAction=ForceSync&mode=$action.getMode()">Force Sync</a> |
-                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$repository&projectKey=$project.key&nextAction=ShowPostCommitURL&mode=$action.getMode()">Post Commit</a> |
-                                <a href="#" onclick="confirmation('$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$repository&projectKey=$project.key&mode=$action.getMode()')">Delete</a>
+                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository)&projectKey=$project.key&nextAction=ForceSync&mode=$textutils.htmlEncode($action.getMode())">Force Sync</a> |
+                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository)&projectKey=$project.key&nextAction=ShowPostCommitURL&mode=$textutils.htmlEncode($action.getMode())">Post Commit</a> |
+                                <a href="#" onclick="confirmation('$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$repository&projectKey=$project.key&mode=$textutils.htmlEncode($action.getMode())')">Delete</a>
                             </td>
                         </tr>
                     #end
@@ -246,10 +244,10 @@
 
                         <form id="privateCredentialsEntry" method="post" action="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa">
                               <input type="hidden" name="nextAction" value="AddRepository">
-                              <input type="hidden" name="url" value="$action.getURL()">
+                              <input type="hidden" name="url" value="$textutils.htmlEncode($action.getURL())">
                               <input type="hidden" name="projectKey" value="$action.getProjectKey()">
                               <input type="hidden" name="repoVisibility" value="private">
-                              <input type="hidden" name="mode" value="$action.getMode()">
+                              <input type="hidden" name="mode" value="$textutils.htmlEncode($action.getMode())">
                               <table width="300px">
 
                                   <tr>
@@ -312,7 +310,7 @@
 
                                       <select name="projectKey">
                                         #foreach ($project in $action.getProjects())
-                                          <option value="${project.key}"#if ($action.getProjectKey() == $project.key) selected #end>${project.name}</option>
+                                          <option value="${project.key}"#if ($action.getProjectKey() == $project.key) selected #end>$textutils.htmlEncode(${project.name})</option>
                                         #end
                                       </select>
                                 #end
@@ -329,7 +327,7 @@
                              <input type="text"
                              id="url"
                              name="url"
-                             value="$action.getURL()"
+                             value="$textutils.htmlEncode($action.getURL())"
                              size="60"
                              /><br/>
 							<span id="gh_example_link"><strong>Example:</strong> https://bitbucket.org/atlassianguy/my-repository/default</span>
