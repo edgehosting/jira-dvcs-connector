@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
+import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.config.properties.PropertiesManager;
 import com.atlassian.jira.project.Project;
@@ -52,8 +53,14 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
     }
 
+    public String doDefault(){
+        logger.debug("ConfigureBitBucketRepositories.doDefault()");
+        return "input";
+    }
+
+    @RequiresXsrfCheck
     protected String doExecute() throws Exception {
-        logger.debug("NextAction: " + nextAction);
+        logger.debug("ConfigureBitBucketRepositories.doExecute()");
 
         // Remove trailing slashes from URL
         if (url.endsWith("/")){
@@ -177,7 +184,8 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
 
     private void SyncRepository(){
-        logger.debug("Starting Repository Sync");
+        logger.debug("ConfigureBitbucketRepositories.SyncRepository() - url: " + url + " projectKey:" + projectKey);
+
 
         BitbucketCommits repositoryCommits = new BitbucketCommits(pluginSettingsFactory);
         repositoryCommits.repositoryURL = url;

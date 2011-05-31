@@ -21,11 +21,11 @@
             AJS.$('#connector_sync_message').html("");
             AJS.$('#connector_sync_status').html("");
 
-            AJS.$('#connector_sync_message').load('$action.getBaseURL()/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&url=' + $textutils.htmlEncode(url) + '&projectKey=' + projectKey);
+            AJS.$('#connector_sync_message').load('$action.getBaseURL()/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&url=' + url + '&projectKey=' + projectKey + '&atl_token=$atl_token');
 
             window.setInterval(function(){
                 if(syncComplete == false){
-                    AJS.$('#connector_sync_status').load('$action.getBaseURL()/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&url=' + $textutils.htmlEncode(url) + '&projectKey=' + projectKey);
+                    AJS.$('#connector_sync_status').load('$action.getBaseURL()/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&url=' + url + '&projectKey=' + projectKey + '&atl_token=$atl_token');
                 }
             }, 1000);
         }
@@ -175,9 +175,9 @@
                             <td><a href="$action.getRepositoryURLWithoutBranch($repository)" target="_new">$textutils.htmlEncode($repository)</a></td>
                             <td>$action.getProjectKey()</td>
                             <td width="260px">
-                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository)&projectKey=$action.getProjectKey()&nextAction=ForceSync&mode=$textutils.htmlEncode($action.getMode())">Force Sync</a> |
-                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository)&projectKey=$action.getProjectKey()&nextAction=ShowPostCommitURL&mode=$textutils.htmlEncode($action.getMode())">Post Commit</a> |
-                                <a href="#" onclick="confirmation('$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$textutils.htmlEncode($repository)&projectKey=$action.getProjectKey()&mode=$textutils.htmlEncode($action.getMode())')">Delete</a>
+                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository)&projectKey=$action.getProjectKey()&nextAction=ForceSync&mode=$textutils.htmlEncode($action.getMode())&atl_token=$atl_token">Force Sync</a> |
+                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository)&projectKey=$action.getProjectKey()&nextAction=ShowPostCommitURL&mode=$textutils.htmlEncode($action.getMode())&atl_token=$atl_token">Post Commit</a> |
+                                <a href="#" onclick="confirmation('$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$textutils.htmlEncode($repository)&projectKey=$action.getProjectKey()&mode=$textutils.htmlEncode($action.getMode())&atl_token=$atl_token')">Delete</a>
                             </td>
                         </tr>
                     #end
@@ -203,12 +203,13 @@
                             <td><a href="$action.getRepositoryURLWithoutBranch($repository)" target="_new">$textutils.htmlEncode($repository)</a></td>
                             <td>$project.key</td>
                             <td width="260px">
-                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository)&projectKey=$project.key&nextAction=ForceSync&mode=$textutils.htmlEncode($action.getMode())">Force Sync</a> |
-                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository)&projectKey=$project.key&nextAction=ShowPostCommitURL&mode=$textutils.htmlEncode($action.getMode())">Post Commit</a> |
-                                <a href="#" onclick="confirmation('$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$repository&projectKey=$project.key&mode=$textutils.htmlEncode($action.getMode())')">Delete</a>
+                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository)&projectKey=$project.key&nextAction=ForceSync&mode=$textutils.htmlEncode($action.getMode())&atl_token=$atl_token">Force Sync</a> |
+                                <a href="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository)&projectKey=$project.key&nextAction=ShowPostCommitURL&mode=$textutils.htmlEncode($action.getMode())&atl_token=$atl_token">Post Commit</a> |
+                                <a href="#" onclick="confirmation('$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$repository&projectKey=$project.key&mode=$textutils.htmlEncode($action.getMode())&atl_token=$atl_token')">Delete</a>
                             </td>
                         </tr>
                     #end
+
                 #end
 
             #end
@@ -248,6 +249,7 @@
                               <input type="hidden" name="projectKey" value="$action.getProjectKey()">
                               <input type="hidden" name="repoVisibility" value="private">
                               <input type="hidden" name="mode" value="$textutils.htmlEncode($action.getMode())">
+                              <input type="hidden" name="atl_token" value="$atl_token">
                               <table width="300px">
 
                                   <tr>
@@ -298,6 +300,7 @@
 
                  <form id="repoEntry" method="post" action="$action.getBaseURL()/secure/admin/ConfigureBitbucketRepositories.jspa">
                       <input type="hidden" name="nextAction" value="AddRepository">
+                      <input type="hidden" name="atl_token" value="$atl_token">
                       <table width="500px">
 
                         <tr>

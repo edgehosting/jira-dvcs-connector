@@ -64,7 +64,7 @@
 
         <name>Bitbucket Name Item</name>
 
-        <link>/secure/admin/ConfigureBitbucketRepositories.jspa</link>
+        <link>/secure/admin/ConfigureBitbucketRepositories!default.jspa</link>
         <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
 
     </web-item>
@@ -72,10 +72,11 @@
     <resource type="download" name="images/" location="images/"/>
 
     <web-resource name="Resources" key="resources">
-
+           <!--
             <resource name="javascripts/atlassian.js" type="download" location="javascripts/atlassian.js"/>
             <resource name="javascripts/datejs/date.js" type="download" location="javascripts/datejs/date.js"/>
             <resource name="javascripts/ajs.date.js" type="download" location="javascripts/ajs.date.js"/>
+           -->
 
             <resource name="javascripts/bitbucket.js" type="download" location="javascripts/bitbucket.js"/>
 
