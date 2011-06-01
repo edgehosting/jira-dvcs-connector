@@ -155,9 +155,9 @@ public class BitbucketCommits {
             }
             rd.close();
         }catch (MalformedURLException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         return result;
