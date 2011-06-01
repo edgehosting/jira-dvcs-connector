@@ -153,6 +153,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
     }
 
     private void resetCommitTotals(){
+        pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + url + projectKey, "0");
         pluginSettingsFactory.createSettingsForKey(projectKey).put("NonJIRACommitTotal" + url, "0");
         pluginSettingsFactory.createSettingsForKey(projectKey).put("JIRACommitTotal" + url, "0");
     }
