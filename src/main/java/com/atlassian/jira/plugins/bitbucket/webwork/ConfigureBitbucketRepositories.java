@@ -319,7 +319,13 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
     private Integer uptoSyncValue = 0;
     public String getUpToSyncValue(){
-        uptoSyncValue = Integer.parseInt(currentSyncPage) + 50;
+        // Exception can occur if read of currentSyncPage value occurs while being written
+        // by the updater
+        try{
+            uptoSyncValue = Integer.parseInt(currentSyncPage) + 50;
+        }catch (Exception e){
+            uptoSyncValue = 0;
+        }
         return uptoSyncValue.toString();
     }
 
