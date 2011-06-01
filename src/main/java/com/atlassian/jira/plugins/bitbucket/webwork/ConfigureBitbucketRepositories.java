@@ -58,7 +58,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
         return "input";
     }
 
-    //@RequiresXsrfCheck
+    @RequiresXsrfCheck
     protected String doExecute() throws Exception {
         logger.debug("ConfigureBitBucketRepositories.doExecute()");
 
