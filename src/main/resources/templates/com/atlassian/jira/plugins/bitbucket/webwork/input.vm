@@ -333,13 +333,17 @@
                              value="$textutils.htmlEncode($action.getURL())"
                              size="60"
                              /><br/>
-							<span id="gh_example_link"><strong>Example:</strong> https://bitbucket.org/atlassianguy/my-repository/default</span>
-
                           </td>
 
                             <td class="" valign='top'>
                                 <input type="submit" name="Submit" id="Submit" value="Add Repository"/>
                             </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="2"></td>
+                            <td colspan="2"><strong>Example:</strong> https://bitbucket.org/atlassianguy/my-repository/default</td>
+
                         </tr>
 
 
