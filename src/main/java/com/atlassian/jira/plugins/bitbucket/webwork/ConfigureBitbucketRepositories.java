@@ -58,7 +58,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
         return "input";
     }
 
-    @RequiresXsrfCheck
+    //@RequiresXsrfCheck
     protected String doExecute() throws Exception {
         logger.debug("ConfigureBitBucketRepositories.doExecute()");
 
@@ -216,6 +216,13 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
         for (int i=0; i < urlArray.size(); i++){
             if (url.equals(urlArray.get(i))){
                 urlArray.remove(i);
+
+                BitbucketCommits repositoryCommits = new BitbucketCommits(pluginSettingsFactory);
+                repositoryCommits.repositoryURL = url;
+                repositoryCommits.projectKey = projectKey;
+
+                repositoryCommits.removeRepositoryIssueIDs();
+
             }
         }
 

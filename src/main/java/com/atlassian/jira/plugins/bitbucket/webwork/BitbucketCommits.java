@@ -74,7 +74,7 @@ public class BitbucketCommits {
             if(bbUserName != null && bbPassword != null){
                     logger.debug("BitbucketCommits.getCommitsList() - Using Basic Auth");
                     //logger.debug("URL: " + repositoryURL);
-                    logger.debug("UN: " + bbUserName + " PA: " + bbPassword);
+
 
                     BASE64Encoder enc = new sun.misc.BASE64Encoder();
                     String userpassword = bbUserName + ":" + bbPassword;
@@ -96,7 +96,7 @@ public class BitbucketCommits {
 
         }catch (MalformedURLException e){
             logger.debug("BitbucketCommits.getCommitsList() - Malformed exception");
-            e.printStackTrace();
+            //e.printStackTrace();
             if(startNumber.equals(0)){
                 result = "Bitbucket Repository can't be found or incorrect credentials.";
             }
@@ -106,7 +106,7 @@ public class BitbucketCommits {
 
         } catch (Exception e) {
             logger.debug("BitbucketCommits.getCommitsList() - End of Commits or Unauthorized");
-            e.printStackTrace();
+            //e.printStackTrace();
 
             if(startNumber.equals(0)){
                 result = "Bitbucket Repository can't be found or incorrect credentials.";
@@ -269,12 +269,12 @@ public class BitbucketCommits {
         String branch = "";
 
         if(arrayBranch.length == 1){
-            branch = "master";
+            branch = "default";
         }else{
             branch = arrayBranch[1];
         }
 
-        String repoBranchURL = "https://bitbucket.org/" + arrayCommitURL[8] + "/" + arrayCommitURL[9] + "/" + branch;
+        String repoBranchURL = "https://bitbucket.org/" + arrayCommitURL[5] + "/" + arrayCommitURL[6] + "/" + branch;
         logger.debug("bitbucketCommits.getRepositoryURLFromCommitURL() - RepoBranchURL: " + repoBranchURL);
         return repoBranchURL;
     }
@@ -380,8 +380,8 @@ public class BitbucketCommits {
 
                 // Array of Commit URL IDs like ['http://bitbucket.org/...']
                 for (int j=0; j < commitIDsArray.size(); j++){
-                    //logger.debug("BitbucketCommits.removeRepositoryIssueIDs() - Commit ID: " + commitIDsArray.get(j));
-                    //logger.debug("BitbucketCommits.removeRepositoryIssueIDs() - " + getRepositoryURLFromCommitURL(commitIDsArray.get(j)));
+                    logger.debug("BitbucketCommits.removeRepositoryIssueIDs() - Commit ID: " + commitIDsArray.get(j));
+                    logger.debug("BitbucketCommits.removeRepositoryIssueIDs() - " + getRepositoryURLFromCommitURL(commitIDsArray.get(j)));
 
                     if (repositoryURL.equals(getRepositoryURLFromCommitURL(commitIDsArray.get(j)))){
                         //logger.debug("match");
