@@ -450,9 +450,9 @@ String htmlCommitEntry = "" +
             }
             rd.close();
         }catch (MalformedURLException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         //logger.debug(result);
