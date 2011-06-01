@@ -83,8 +83,8 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
         if(urlArray.length == 5){
             url += "/default";
+            urlArray = url.split("/");
         }
-
 
         if (validations.equals("")){
             if (nextAction.equals("AddRepository")){
@@ -134,10 +134,15 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
             if (nextAction.equals("CurrentSyncStatus")){
 
-                currentSyncPage = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("currentsync" + url + projectKey);
+                try{
+                    currentSyncPage = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("currentsync" + url + projectKey);
+                    nonJIRACommitTotal = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("NonJIRACommitTotal" + url);
+                    JIRACommitTotal = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("JIRACommitTotal" + url);
+                }catch (Exception e){
+                    logger.debug("ConfigureBitbucketRepositories.doExecute().CurrentSyncStatus - Exception reading plugin values.");
+                }
 
-                nonJIRACommitTotal = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("NonJIRACommitTotal" + url);
-                JIRACommitTotal = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("JIRACommitTotal" + url);
+                System.out.println("ConfigureBitbucketRepositories.doExecute().CurrentSyncStatus - currentSyncPage " + currentSyncPage);
 
                 return "syncstatus";
             }
@@ -185,8 +190,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
 
     private void SyncRepository(){
-        logger.debug("ConfigureBitbucketRepositories.SyncRepository() - url: " + url + " projectKey:" + projectKey);
-
+        System.out.println("ConfigureBitbucketRepositories.SyncRepository() - url: " + url + " projectKey:" + projectKey);
 
         BitbucketCommits repositoryCommits = new BitbucketCommits(pluginSettingsFactory);
         repositoryCommits.repositoryURL = url;
