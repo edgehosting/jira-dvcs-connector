@@ -62,16 +62,17 @@ public class BitbucketCommits {
 
         try {
 
-            logger.debug("Commits URL - " + this.inferCommitsURL() + "?start=" + startNumber.toString() + "&limit=50");
             url = new URL(this.inferCommitsURL() + "?start=" + startNumber.toString() + "&limit=50");
             logger.debug("URL: " + url);
+            logger.debug("BitbucketCommits.getCommitsList() - Commits URL - " + url);
+
             conn = (HttpURLConnection) url.openConnection();
 
             String bbUserName = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketUserName" + repositoryURL);
             String bbPassword = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketPassword" + repositoryURL);
 
             if(bbUserName != null && bbPassword != null){
-                    logger.debug("Using Basic Auth");
+                    logger.debug("BitbucketCommits.getCommitsList() - Using Basic Auth");
                     //logger.debug("URL: " + repositoryURL);
                     logger.debug("UN: " + bbUserName + " PA: " + bbPassword);
 
@@ -94,19 +95,18 @@ public class BitbucketCommits {
             pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + repositoryURL + projectKey, startNumber.toString());
 
         }catch (MalformedURLException e){
-            //e.printStackTrace();
+            logger.debug("BitbucketCommits.getCommitsList() - Malformed exception");
+            e.printStackTrace();
             if(startNumber.equals(0)){
                 result = "Bitbucket Repository can't be found or incorrect credentials.";
             }
 
-            logger.debug("Malformed exception");
+
             pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + repositoryURL + projectKey, "complete");
 
         } catch (Exception e) {
-            //e.printStackTrace();
-
-            //logger.debug("End of Commits found (500) or Unauthorized (401)");
-            logger.debug("End of Commits or Unauthorized");
+            logger.debug("BitbucketCommits.getCommitsList() - End of Commits or Unauthorized");
+            e.printStackTrace();
 
             if(startNumber.equals(0)){
                 result = "Bitbucket Repository can't be found or incorrect credentials.";
@@ -208,9 +208,6 @@ public class BitbucketCommits {
 
         String messages = "";
 
-        Integer nonJIRACommits = 0;
-        Integer JIRACommits = 0;
-
         if (commitsAsJSON != ""){
 
             try{
@@ -236,14 +233,11 @@ public class BitbucketCommits {
                                 String issueId = (String)extractedIssues.get(j).toString().toUpperCase();
                                 addCommitID(issueId, commit_id, getBranchFromURL());
                                 incrementCommitCount("JIRACommitTotal");
-
-                                JIRACommits++;
                             }
                         }
 
                     }else{
                         incrementCommitCount("NonJIRACommitTotal");
-                        nonJIRACommits++;
                     }
 
                 }
@@ -251,7 +245,9 @@ public class BitbucketCommits {
                 return messages += this.syncCommits(startNumber + 50);
 
             }catch (JSONException e){
-                //e.printStackTrace();
+                logger.debug("BitbucketCommits.syncCommits() - Exception");
+                e.printStackTrace();
+                pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + repositoryURL + projectKey, "complete");
                 return "Bitbucket repository can't be found or incorrect credentials.";
             }
 

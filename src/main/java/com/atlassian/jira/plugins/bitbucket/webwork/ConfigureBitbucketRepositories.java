@@ -142,7 +142,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
                     logger.debug("ConfigureBitbucketRepositories.doExecute().CurrentSyncStatus - Exception reading plugin values.");
                 }
 
-                System.out.println("ConfigureBitbucketRepositories.doExecute().CurrentSyncStatus - currentSyncPage " + currentSyncPage);
+                logger.debug("ConfigureBitbucketRepositories.doExecute().CurrentSyncStatus - currentSyncPage " + currentSyncPage);
 
                 return "syncstatus";
             }
@@ -190,7 +190,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
 
 
     private void SyncRepository(){
-        System.out.println("ConfigureBitbucketRepositories.SyncRepository() - url: " + url + " projectKey:" + projectKey);
+        logger.debug("ConfigureBitbucketRepositories.SyncRepository() - url: " + url + " projectKey:" + projectKey);
 
         BitbucketCommits repositoryCommits = new BitbucketCommits(pluginSettingsFactory);
         repositoryCommits.repositoryURL = url;
