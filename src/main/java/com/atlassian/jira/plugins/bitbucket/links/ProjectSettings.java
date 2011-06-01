@@ -17,7 +17,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation{
 
        String baseURL = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
 
-       return "<strong>Bitbucket Connector: </strong> (<a href='" + baseURL + "/secure/admin/ConfigureBitbucketRepositories.jspa!default?projectKey=" + project.getKey() + "&mode=single'>Manage Repositories</a>)";
+       return "<strong>Bitbucket Connector: </strong> (<a href='" + baseURL + "/secure/admin/ConfigureBitbucketRepositories!default.jspa?projectKey=" + project.getKey() + "&mode=single'>Manage Repositories</a>)";
 
    }
 
