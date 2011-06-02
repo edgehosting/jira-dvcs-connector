@@ -1,8 +1,15 @@
 
+
 window.onload = function(){
     if(AJS.$('#gh_messages').size() > 0){
         forceSync(url, projectKey);
     }
+
+    // Displays proper styling on JIRA Studio for Left hand navigation selection
+    if(document.location.href.indexOf('ConfigureBitbucketRepositories') > -1){
+        AJS.$('#menu_item_bitbucket_bulk_repo').parent().addClass('studio-admin-menu-section-selected');
+    }
+
 }
 
 function confirmation(delete_url) {
