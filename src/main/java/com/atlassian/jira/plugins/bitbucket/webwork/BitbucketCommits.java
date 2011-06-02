@@ -167,11 +167,9 @@ public class BitbucketCommits {
         Pattern projectKeyPattern = Pattern.compile("(" + this.projectKey + "-\\d*)", Pattern.CASE_INSENSITIVE);
         Matcher match = projectKeyPattern.matcher(message);
 
-        boolean matchFound = match.find();
-
         ArrayList<String> matches = new ArrayList<String>();
 
-        if (matchFound) {
+        while(match.find()) {
             // Get all groups for this match
             for (int i=0; i<=match.groupCount(); i++) {
                 matches.add(match.group(i));
