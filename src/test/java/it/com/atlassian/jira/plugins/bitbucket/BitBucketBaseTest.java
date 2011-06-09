@@ -9,7 +9,7 @@ import org.junit.Before;
 /**
  * Base class for BitBucket integration tests. Initializes the JiraTestedProduct and logs admin in.
  */
-public class BitBucketBaseTest
+public abstract class BitBucketBaseTest
 {
     protected JiraTestedProduct jira;
     protected BitBucketConfigureRepositoriesPage configureRepos;
