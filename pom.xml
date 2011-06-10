@@ -5,16 +5,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
  
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.atlassian.jira.plugins.bitbucket</groupId>
-    <artifactId>Bitbucket</artifactId>
-    <version>0.0.1</version>
- 
+    <groupId>com.atlassian.jira.plugins</groupId>
+    <artifactId>jira-bitbucket-connector-plugin</artifactId>
+    <version>0.2-SNAPSHOT</version>
+
     <organization>
         <name>Atlassian</name>
         <url>http://www.atlassian.com/</url>
     </organization>
  
-    <name>Bitbucket</name>
+    <name>Bitbucket Connector</name>
     <description>Bitbucket Plugin for JIRA, linking JIRA issues to Bitbucket changesets.</description>
     <packaging>atlassian-plugin</packaging>
     <dependencies>
@@ -65,7 +65,6 @@
             <artifactId>commons-lang</artifactId>
             <version>2.5</version>
         </dependency>
- 
     </dependencies>
  
     <build>
@@ -101,5 +100,18 @@
         <jira.version>4.2</jira.version>
         <jira.data.version>4.2</jira.data.version>
     </properties>
- 
+
+    <distributionManagement>
+        <repository>
+            <id>atlassian-m2-repository</id>
+            <name>Atlassian Public Repository</name>
+            <url>https://maven.atlassian.com/public</url>
+        </repository>
+        <snapshotRepository>
+            <id>atlassian-m2-snapshot-repository</id>
+            <name>Atlassian Public Snapshot Repository</name>
+            <url>https://maven.atlassian.com/public-snapshot</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 </project>
