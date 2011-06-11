@@ -6,6 +6,7 @@ import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import sun.misc.BASE64Encoder;
 
+import java.beans.Encoder;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -75,6 +76,9 @@ public class BitbucketCommits {
                     logger.debug("BitbucketCommits.getCommitsList() - Using Basic Auth");
                     //logger.debug("URL: " + repositoryURL);
 
+                    Encryptor encryptor = new Encryptor(this.pluginSettingsFactory);
+                    byte[] ciphertext = encryptor.hexStringToByteArray(bbPassword);
+                    bbPassword = encryptor.decrypt(ciphertext, projectKey, repositoryURL);
 
                     BASE64Encoder enc = new sun.misc.BASE64Encoder();
                     String userpassword = bbUserName + ":" + bbPassword;

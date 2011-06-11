@@ -7,6 +7,7 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -98,13 +99,14 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
                         logger.debug("ConfigureRepositories() - Adding Private Repository Credentials");
                         //logger.debug("ConfigureRepositories() UN: " + bbUserName + " PA: " + bbPassword);
 
+                        Encryptor encryptor = new Encryptor(this.pluginSettingsFactory);
+
+                        byte[] encrypted = encryptor.encrypt(bbPassword, projectKey, url);
+                        String cipherText = encryptor.toHex(encrypted);
+
                         // Store Username and Password for later Basic Auth
                         pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketUserName" + url, bbUserName);
-                        pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketPassword" + url, bbPassword);
-
-                        String bbTest = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketUserName" + url);
-
-                        logger.debug("TEST SAVE/RETURN" + bbTest);
+                        pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketPassword" + url, cipherText);
 
                         postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length-1];
                         addRepositoryURL();
@@ -255,6 +257,8 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
     public String getProjectName(){
         return cm.getProjectManager().getProjectObjByKey(projectKey).getName();
     }
+
+
 
     // Mode setting to 'single' indicates that this is administration of a single JIRA project
     // Bulk setting indicates multiple projects
