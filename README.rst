@@ -1,13 +1,13 @@
-.. image:: http://blog.bitbucket.org/wp-content/uploads/2011/06/Bitbucket-JIRA-integration1.png
-    :align: center
+Overview
+========
 
 With the Bitbucket and JIRA plugin you can create unlimited private repositories with full-featured issue and project management support. And it takes less than 30 seconds to configure. Bring your code to the next level with Bitbucket and JIRA.
 
-.. image:: http://blog.bitbucket.org/wp-content/uploads/2011/06/Bitbucket-JIRA-tab1.png
-    :align: center
-
 * `30 second overview video`_
 * `Install the JIRA Bitbucket plugin`_
+
+.. image:: http://blog.bitbucket.org/wp-content/uploads/2011/06/Bitbucket-JIRA-tab1.png
+    :align: center
 
 Features
 ========
