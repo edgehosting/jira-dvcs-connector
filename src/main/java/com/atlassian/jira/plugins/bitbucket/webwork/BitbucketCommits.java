@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -69,23 +70,8 @@ public class BitbucketCommits {
 
             conn = (HttpURLConnection) url.openConnection();
 
-            String bbUserName = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketUserName" + repositoryURL);
-            String bbPassword = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketPassword" + repositoryURL);
-
-            if(bbUserName != null && bbPassword != null){
-                    logger.debug("BitbucketCommits.getCommitsList() - Using Basic Auth");
-                    //logger.debug("URL: " + repositoryURL);
-
-                    Encryptor encryptor = new Encryptor(this.pluginSettingsFactory);
-                    byte[] ciphertext = encryptor.hexStringToByteArray(bbPassword);
-                    bbPassword = encryptor.decrypt(ciphertext, projectKey, repositoryURL);
-
-                    BASE64Encoder enc = new sun.misc.BASE64Encoder();
-                    String userpassword = bbUserName + ":" + bbPassword;
-                    String encodedAuthorization = enc.encode(userpassword.getBytes() );
-                    conn.setRequestProperty("Authorization", "Basic "+ encodedAuthorization);
-
-            }
+            logger.debug("BitbucketCommits.getCommitsList()");
+            addAuthorizationTokenToConnection(conn);
 
             conn.setInstanceFollowRedirects(true);
             conn.setRequestMethod("GET");
@@ -136,20 +122,8 @@ public class BitbucketCommits {
             url = new URL(commit_id_url);
             conn = (HttpURLConnection) url.openConnection();
 
-            String bbUserName = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketUserName" + repositoryURL);
-            String bbPassword = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketPassword" + repositoryURL);
-
-            if (bbUserName != "" && bbPassword != ""){
-                logger.debug("BitbucketCommits().getCommitsList() - Using Basic Auth");
-                logger.debug("URL: " + repositoryURL);
-                logger.debug("UN: " + bbUserName + " PA: " + bbPassword);
-
-                BASE64Encoder enc = new sun.misc.BASE64Encoder();
-                String userpassword = bbUserName + ":" + bbPassword;
-
-                String encodedAuthorization = enc.encode(userpassword.getBytes() );
-                conn.setRequestProperty("Authorization", "Basic "+ encodedAuthorization);
-            }
+            logger.debug("BitbucketCommits().getCommitsList()");
+            addAuthorizationTokenToConnection(conn);
 
             conn.setInstanceFollowRedirects(true);
             conn.setRequestMethod("GET");
@@ -165,6 +139,28 @@ public class BitbucketCommits {
         }
 
         return result;
+    }
+
+    private void addAuthorizationTokenToConnection(URLConnection connection)
+    {
+            String bbUserName = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketUserName" + repositoryURL);
+            String bbPassword = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketPassword" + repositoryURL);
+
+            if (bbUserName != "" && bbPassword != ""){
+                logger.debug("BitbucketCommits() - Using Basic Auth");
+                logger.debug("URL: " + repositoryURL);
+                logger.debug("Userame: " + bbUserName);
+
+                Encryptor encryptor = new Encryptor(this.pluginSettingsFactory);
+                byte[] ciphertext = encryptor.hexStringToByteArray(bbPassword);
+                bbPassword = encryptor.decrypt(ciphertext, projectKey, repositoryURL);
+
+                BASE64Encoder enc = new sun.misc.BASE64Encoder();
+                String userpassword = bbUserName + ":" + bbPassword;
+                String encodedAuthorization = enc.encode(userpassword.getBytes() );
+                
+                connection.setRequestProperty("Authorization", "Basic "+ encodedAuthorization);
+            }
     }
 
     private ArrayList extractProjectKey(String message){
