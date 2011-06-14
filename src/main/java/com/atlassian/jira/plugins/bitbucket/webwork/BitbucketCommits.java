@@ -122,7 +122,7 @@ public class BitbucketCommits {
             url = new URL(commit_id_url);
             conn = (HttpURLConnection) url.openConnection();
 
-            logger.debug("BitbucketCommits().getCommitsList()");
+            logger.debug("BitbucketCommits().getCommitDetails()");
             addAuthorizationTokenToConnection(conn);
 
             conn.setInstanceFollowRedirects(true);
@@ -149,7 +149,7 @@ public class BitbucketCommits {
             if (bbUserName != "" && bbPassword != ""){
                 logger.debug("BitbucketCommits() - Using Basic Auth");
                 logger.debug("URL: " + repositoryURL);
-                logger.debug("Userame: " + bbUserName);
+                logger.debug("Username: " + bbUserName);
 
                 Encryptor encryptor = new Encryptor(this.pluginSettingsFactory);
                 byte[] ciphertext = encryptor.hexStringToByteArray(bbPassword);
