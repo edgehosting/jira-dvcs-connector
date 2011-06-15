@@ -377,7 +377,7 @@ String htmlCommitEntry = "" +
                                 htmlHiddenDiv +
 
                             "<div style='margin-top: 10px'>" +
-                                "<img src='" + baseURL +"/download/resources/com.atlassian.jira.plugins.bitbucket.Bitbucket/images/document.jpg' align='center'> <span class='commit_date' style='color: #757575; font-size: 9pt;'>#formatted_commit_date</span>" +
+                                "<img src='" + baseURL +"/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/document.jpg' align='center'> <span class='commit_date' style='color: #757575; font-size: 9pt;'>#formatted_commit_date</span>" +
                             "</div>" +
 
                         "</td>" +

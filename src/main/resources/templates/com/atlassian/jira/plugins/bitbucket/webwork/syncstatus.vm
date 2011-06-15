@@ -7,7 +7,7 @@
     #else
 
          Currently Processing Changesets $action.getCurrentSyncPage() to $action.getUpToSyncValue()<p/>
-        <img src='$action.getBaseURL()/download/resources/com.atlassian.jira.plugins.bitbucket.Bitbucket/images/loading_barber_pole_horz.gif'>
+        <img src='$action.getBaseURL()/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/loading_barber_pole_horz.gif'>
     #end
 
 </div>

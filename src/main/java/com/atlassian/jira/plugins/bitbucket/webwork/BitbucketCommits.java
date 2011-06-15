@@ -4,6 +4,7 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import org.apache.commons.lang.StringUtils;
 import sun.misc.BASE64Encoder;
 
 import java.beans.Encoder;
@@ -146,7 +147,7 @@ public class BitbucketCommits {
             String bbUserName = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketUserName" + repositoryURL);
             String bbPassword = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketPassword" + repositoryURL);
 
-            if (bbUserName != "" && bbPassword != ""){
+            if (StringUtils.isNotEmpty(bbUserName) && StringUtils.isNotEmpty(bbPassword)){
                 logger.debug("BitbucketCommits() - Using Basic Auth");
                 logger.debug("URL: " + repositoryURL);
                 logger.debug("Username: " + bbUserName);
