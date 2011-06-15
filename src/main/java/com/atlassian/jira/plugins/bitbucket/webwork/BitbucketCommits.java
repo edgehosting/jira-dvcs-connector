@@ -70,7 +70,7 @@ public class BitbucketCommits {
 
             conn = (HttpURLConnection) url.openConnection();
 
-            logger.debug("BitbucketCommits.getCommitsList()");
+
             addAuthorizationTokenToConnection(conn);
 
             conn.setInstanceFollowRedirects(true);
@@ -201,7 +201,7 @@ public class BitbucketCommits {
         Date date = new Date();
         pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketLastSyncTime" + repositoryURL, date.toString());
 
-        logger.debug("BitbucketCommits.syncCommits()");
+        logger.debug("BitbucketCommits.syncCommits() - startNumber: " + startNumber.toString());
         String commitsAsJSON = getCommitsList(startNumber);
 
         String messages = "";
@@ -244,7 +244,7 @@ public class BitbucketCommits {
 
             }catch (JSONException e){
                 logger.debug("BitbucketCommits.syncCommits() - Exception");
-                e.printStackTrace();
+                //e.printStackTrace();
                 pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + repositoryURL + projectKey, "complete");
                 return "Bitbucket repository can't be found or incorrect credentials.";
             }
@@ -254,6 +254,50 @@ public class BitbucketCommits {
         return messages;
 
     }
+
+    public String postReceiveHook(String payload){
+
+        Date date = new Date();
+        pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketLastSyncTime" + repositoryURL, date.toString());
+
+        logger.debug("BitbuckbetCommits.postReceiveHook()");
+        String messages = "";
+
+        try{
+            JSONObject jsonCommits = new JSONObject(payload);
+            JSONArray commits = jsonCommits.getJSONArray("commits");
+
+            for (int i = 0; i < commits.length(); ++i) {
+                String message = commits.getJSONObject(i).getString("message").toLowerCase();
+                String commit_id = commits.getJSONObject(i).getString("node");
+
+                // Detect presence of JIRA Issue Key
+                if (message.indexOf(this.projectKey.toLowerCase()) > -1){
+
+                        ArrayList extractedIssues = extractProjectKey(message);
+
+                        for (int j=0; j < extractedIssues.size(); ++j){
+                            String issueId = (String)extractedIssues.get(j).toString().toUpperCase();
+                            addCommitID(issueId, commit_id, getBranchFromURL());
+                            incrementCommitCount("JIRACommitTotal");
+                        }
+
+                }else{
+                    incrementCommitCount("NonJIRACommitTotal");
+                }
+            }
+
+
+        }catch (JSONException e){
+            //e.printStackTrace();
+            return "exception";
+        }
+
+        return messages;
+
+
+    }
+
 
 
     private String getRepositoryURLFromCommitURL(String commitURL){

@@ -33,45 +33,36 @@ public class BitbucketPostCommit extends JiraWebActionSupport {
             validations += "Missing Required 'projectKey' parameter. <br/>";
         }
 
+        if (payload.equals("")){
+            validations += "Missing Required 'payload' parameter. <br/>";
+        }
+
     }
 
     protected String doExecute() throws Exception {
 
         if (validations.equals("")){
-            logger.debug("Starting PostCommitUpdate");
+            try{
+                System.out.println("Starting PostCommitUpdate");
 
-            logger.debug("BB Payload - " + payload);
+                System.out.println("BB Payload - " + payload);
 
-            JSONObject jsonPayload = new JSONObject(payload);
-            JSONObject jsonRepository = jsonPayload.getJSONObject("repository");
+                JSONObject jsonPayload = new JSONObject(payload);
+                JSONObject jsonRepository = jsonPayload.getJSONObject("repository");
 
-            JSONArray jsonCommits = jsonPayload.getJSONArray("commits");
 
-            Integer intRevision = 0;
+                // absolute_url element returned from JSON payload has a trailing slash
+                String url = "https://bitbucket.org" + jsonRepository.getString("absolute_url") + branch;
+                System.out.println("Post Commit repository URL - " + url);
 
-            for (int i = 0; i < jsonCommits.length(); ++i) {
-                JSONObject commit = (JSONObject)jsonCommits.get(i);
-                Integer commitRevision = Integer.parseInt(commit.getString("revision"));
+                BitbucketCommits repositoryCommits = new BitbucketCommits(pluginSettingsFactory);
+                repositoryCommits.repositoryURL = url;
+                repositoryCommits.projectKey = projectKey;
 
-                if(intRevision.equals(0)){
-                    intRevision = commitRevision;
-                }else if(commitRevision < intRevision){
-                    intRevision = commitRevision;
-                }
-
+                validations = repositoryCommits.postReceiveHook(payload);
+            }catch (Exception e){
+                //e.printStackTrace();
             }
-
-            // absolute_url element returned from JSON payload has a trailing slash
-            String url = "https://bitbucket.org" + jsonRepository.getString("absolute_url") + branch;
-            logger.debug("Post Commit repository URL - " + url);
-            BitbucketCommits repositoryCommits = new BitbucketCommits(pluginSettingsFactory);
-            repositoryCommits.repositoryURL = url;
-            repositoryCommits.projectKey = projectKey;
-
-            // 'revision' parameter will tell the api where to start searching for new commits
-            validations = repositoryCommits.syncCommits(intRevision);
-
-
         }
 
         return "postcommit";
