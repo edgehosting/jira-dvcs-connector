@@ -85,7 +85,8 @@
                         <http.jira.port>2990</http.jira.port>
                         <context.jira.path>jira</context.jira.path>
                     </systemPropertyVariables>
-                    <productVersion>4.3.4</productVersion>
+                    <productVersion>${jira.version}</productVersion>
+                    <testResourcesVersion>${jira.data.version}</testResourcesVersion>
                     <productDataPath>${basedir}/src/test/resources/generated-test-resources.zip</productDataPath>
                     <log4jProperties>src/aps/log4j.properties</log4jProperties>
                 </configuration>
@@ -101,8 +102,8 @@
     </build>
  
     <properties>
-        <jira.version>4.2</jira.version>
-        <jira.data.version>4.2</jira.data.version>
+        <jira.version>4.3.4</jira.version>
+        <jira.data.version>4.3.4</jira.data.version>
     </properties>
 
     <distributionManagement>
