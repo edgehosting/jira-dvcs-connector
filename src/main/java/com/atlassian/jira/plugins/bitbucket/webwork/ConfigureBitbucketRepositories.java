@@ -122,8 +122,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
                     nextAction = "ForceSync";
                 }
 
-
-
             }
 
             if (nextAction.equals("ShowPostCommitURL")){
@@ -140,6 +138,11 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
                     currentSyncPage = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("currentsync" + url + projectKey);
                     nonJIRACommitTotal = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("NonJIRACommitTotal" + url);
                     JIRACommitTotal = (String)pluginSettingsFactory.createSettingsForKey(projectKey).get("JIRACommitTotal" + url);
+
+                    currentSyncPage = currentSyncPage==null?"":currentSyncPage;
+                    nonJIRACommitTotal = nonJIRACommitTotal==null?"":nonJIRACommitTotal;
+                    JIRACommitTotal = JIRACommitTotal==null?"":JIRACommitTotal;
+
                 }catch (Exception e){
                     logger.debug("ConfigureBitbucketRepositories.doExecute().CurrentSyncStatus - Exception reading plugin values.");
                 }
@@ -150,7 +153,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
             }
 
             if (nextAction.equals("SyncRepository")){
-                currentSyncPage = (String)pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + url + projectKey, "0");
+                currentSyncPage = (String)pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + url + projectKey, "tip");
                 SyncRepository();
                 return "syncmessage";
             }
@@ -160,7 +163,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
     }
 
     private void resetCommitTotals(){
-        pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + url + projectKey, "0");
+        pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + url + projectKey, "tip");
         pluginSettingsFactory.createSettingsForKey(projectKey).put("NonJIRACommitTotal" + url, "0");
         pluginSettingsFactory.createSettingsForKey(projectKey).put("JIRACommitTotal" + url, "0");
     }
@@ -202,7 +205,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
         resetCommitTotals();
 
         // Starts actual search of commits via Bitbucket API, "0" designates the 'start' parameter
-        messages = repositoryCommits.syncCommits(0);
+        messages = repositoryCommits.syncAllCommits();
 
     }
 
@@ -322,15 +325,15 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport {
     public String getCurrentSyncPage(){return this.currentSyncPage;}
 
     private Integer uptoSyncValue = 0;
-    public String getUpToSyncValue(){
+    public Integer getUpToSyncValue(){
         // Exception can occur if read of currentSyncPage value occurs while being written
         // by the updater
         try{
-            uptoSyncValue = Integer.parseInt(currentSyncPage) + 50;
-        }catch (Exception e){
-            uptoSyncValue = 0;
+            uptoSyncValue = Math.max(0,Integer.parseInt(currentSyncPage) - 15);
+        }catch (NumberFormatException e){
+            uptoSyncValue = null;
         }
-        return uptoSyncValue.toString();
+        return uptoSyncValue;
     }
 
     private String nonJIRACommitTotal = "";

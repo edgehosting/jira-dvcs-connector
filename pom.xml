@@ -89,6 +89,13 @@
                     <testResourcesVersion>${jira.data.version}</testResourcesVersion>
                     <productDataPath>${basedir}/src/test/resources/generated-test-resources.zip</productDataPath>
                     <log4jProperties>src/aps/log4j.properties</log4jProperties>
+                    <libArtifacts>
+                        <libArtifact>
+                            <groupId>com.atlassian.jira.plugins</groupId>
+                            <artifactId>atlassian-jira-rpc-plugin</artifactId>
+                            <version>${jira.version}</version>
+                        </libArtifact>
+                    </libArtifacts>
                 </configuration>
             </plugin>
             <plugin>

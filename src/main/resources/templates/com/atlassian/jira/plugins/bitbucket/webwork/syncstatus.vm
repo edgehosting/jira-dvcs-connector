@@ -5,8 +5,7 @@
         <strong>Sync Processing Complete</strong>
         <div>$action.getJIRACommitTotal() Commits with JIRA Project Key $action.getProjectKey()  found</div>
     #else
-
-         Currently Processing Changesets $action.getCurrentSyncPage() to $action.getUpToSyncValue()<p/>
+        Currently Processing Changesets from <strong>$action.getCurrentSyncPage()</strong> #if($action.getUpToSyncValue())to <strong>$action.getUpToSyncValue()</strong>#end<p/>
         <img src='$action.getBaseURL()/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/loading_barber_pole_horz.gif'>
     #end
 
