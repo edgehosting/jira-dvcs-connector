@@ -27,67 +27,74 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 
-public class Encryptor {
-
+public class Encryptor
+{
     final Logger logger = LoggerFactory.getLogger(Encryptor.class);
 
-    final PluginSettingsFactory pluginSettingsFactory;
     private ComponentManager cm = ComponentManager.getInstance();
 
-    public Encryptor(PluginSettingsFactory pluginSettingsFactory){
-        this.pluginSettingsFactory = pluginSettingsFactory;
+    public Encryptor()
+    {
     }
 
-  public byte[] encrypt(String inputPlaintext, String projectKey, String repoURL){
+    public byte[] encrypt(String inputPlaintext, String projectKey, String repoURL)
+    {
+        try
+        {
+            String projectID = cm.getProjectManager().getProjectObjByKey(projectKey).getId().toString();
 
-    try{
+            // Get the Key
+            byte[] key = (projectID + repoURL).getBytes("UTF-8");
+            MessageDigest sha = MessageDigest.getInstance("SHA-1");
+            key = sha.digest(key);
+            key = Arrays.copyOf(key, 16); // use only first 128 bit
 
-        String projectID = cm.getProjectManager().getProjectObjByKey(projectKey).getId().toString();
+            // Generate the secret key specs.
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
 
-        // Get the Key
-        byte[] key = (projectID + repoURL).getBytes("UTF-8");
-        MessageDigest sha = MessageDigest.getInstance("SHA-1");
-        key = sha.digest(key);
-        key = Arrays.copyOf(key, 16); // use only first 128 bit
+            // Instantiate the cipher
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
 
-        // Generate the secret key specs.
-        SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
+            byte[] encrypted = cipher.doFinal((inputPlaintext).getBytes());
+            logger.debug("encrypted string: " + encrypted.toString());
 
-        // Instantiate the cipher
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+            return encrypted;
 
-        byte[] encrypted = cipher.doFinal((inputPlaintext).getBytes());
-        logger.debug("encrypted string: " + encrypted.toString());
+        }
+        catch (Exception e)
+        {
+            logger.debug("Encryptor.encrypt");
+            e.printStackTrace();
+        }
 
-        return encrypted;
-
-    }catch (Exception e){
-        logger.debug("Encryptor.encrypt");
-        e.printStackTrace();
+        return "".getBytes();
     }
 
-    return "".getBytes();
-
-  }
-
-    public static String toHex(byte[] bytes) {
+    public static String toHex(byte[] bytes)
+    {
         BigInteger bi = new BigInteger(1, bytes);
         return String.format("%0" + (bytes.length << 1) + "X", bi);
     }
 
-    public static byte[] hexStringToByteArray(String s) {
+    public static byte[] hexStringToByteArray(String s)
+    {
         int len = s.length();
         byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
+        for (int i = 0; i < len; i += 2)
+        {
             data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                                 + Character.digit(s.charAt(i+1), 16));
+                    + Character.digit(s.charAt(i + 1), 16));
         }
         return data;
     }
 
-    public String decrypt(byte[] encrypted, String projectKey, String repoURL){
-        try{
+    public String decrypt(String password, String projectKey, String repoURL)
+    {
+        try
+        {
+            byte[] ciphertext = Encryptor.hexStringToByteArray(password);
+
             String projectID = cm.getProjectManager().getProjectObjByKey(projectKey).getId().toString();
 
             // Get the Key
@@ -103,20 +110,21 @@ public class Encryptor {
             Cipher cipher = Cipher.getInstance("AES");
 
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
-            byte[] original = cipher.doFinal(encrypted);
+            byte[] original = cipher.doFinal(ciphertext);
             String originalString = new String(original);
             //logger.debug("Original string: " + originalString + "\nOriginal string (Hex): " + original.toString());
 
             logger.debug("Decrypted: " + original);
             return originalString;
 
-        }catch (Exception e){
+        }
+        catch (Exception e)
+        {
             logger.debug("Encryptor.decrypt");
             e.printStackTrace();
         }
 
         return "";
-
 
 
     }
