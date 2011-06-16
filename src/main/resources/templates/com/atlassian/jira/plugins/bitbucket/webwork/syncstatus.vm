@@ -1,11 +1,17 @@
+#* @vtlvariable name="action" type="com.atlassian.jira.plugins.bitbucket.webwork.ConfigureBitbucketRepositories" *#
+
 <div style="text-align: center">
 
-    #if ($action.getCurrentSyncPage() == 'complete')
+    #if ($action.getSyncProgress().isCompleted())
         <script type="text/javascript">syncComplete = true;</script>
         <strong>Sync Processing Complete</strong>
         <div>$action.getJIRACommitTotal() Commits with JIRA Project Key $action.getProjectKey()  found</div>
+    #elseif($action.getSyncProgress().isTip())
+        <p>Currently Processing Changesets from <strong>tip</strong><p>
+        <img src='$action.getBaseURL()/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/loading_barber_pole_horz.gif'>
     #else
-        Currently Processing Changesets from <strong>$action.getCurrentSyncPage()</strong> #if($action.getUpToSyncValue())to <strong>$action.getUpToSyncValue()</strong>#end<p/>
+        <p>Currently Processing Changesets from <strong>$action.getSyncProgress().getRevision()</strong>
+            to <strong>$action.getSyncProgress().getRevision()</strong></p>
         <img src='$action.getBaseURL()/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/loading_barber_pole_horz.gif'>
     #end
 

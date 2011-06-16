@@ -109,7 +109,7 @@
     </build>
  
     <properties>
-        <jira.version>4.3.4</jira.version>
+        <jira.version>4.3.3</jira.version>
         <jira.data.version>4.3.4</jira.data.version>
     </properties>
 

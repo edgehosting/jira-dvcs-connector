@@ -37,8 +37,16 @@ public class Encryptor
     {
     }
 
-    public byte[] encrypt(String inputPlaintext, String projectKey, String repoURL)
+    /**
+     * Encrypt the input into a hex encoded string;
+     * @param input the input to encrypt
+     * @param projectKey the project key
+     * @param repoURL the repository url
+     * @return the encrypted string
+     */
+    public String encrypt(String input, String projectKey, String repoURL)
     {
+        byte[] encrypted;
         try
         {
             String projectID = cm.getProjectManager().getProjectObjByKey(projectKey).getId().toString();
@@ -56,25 +64,16 @@ public class Encryptor
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
 
-            byte[] encrypted = cipher.doFinal((inputPlaintext).getBytes());
-            logger.debug("encrypted string: " + encrypted.toString());
-
-            return encrypted;
-
+            encrypted = cipher.doFinal((input).getBytes());
         }
         catch (Exception e)
         {
-            logger.debug("Encryptor.encrypt");
-            e.printStackTrace();
+            logger.debug("error encrypting",e);
+            encrypted = new byte[0];
         }
 
-        return "".getBytes();
-    }
-
-    public static String toHex(byte[] bytes)
-    {
-        BigInteger bi = new BigInteger(1, bytes);
-        return String.format("%0" + (bytes.length << 1) + "X", bi);
+        BigInteger bi = new BigInteger(1, encrypted);
+        return String.format("%0" + (encrypted.length << 1) + "X", bi);
     }
 
     public static byte[] hexStringToByteArray(String s)
@@ -94,7 +93,6 @@ public class Encryptor
         try
         {
             byte[] ciphertext = Encryptor.hexStringToByteArray(password);
-
             String projectID = cm.getProjectManager().getProjectObjByKey(projectKey).getId().toString();
 
             // Get the Key
