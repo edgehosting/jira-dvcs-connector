@@ -1,56 +1,53 @@
 package com.atlassian.jira.plugins.bitbucket.property;
 
+import com.atlassian.jira.plugins.bitbucket.webwork.BitbucketCommits;
+
 /**
  * Describes the current progress through a repository sync. This object will indicate either:
  * <ol>
- *  <li>The sync is progress at a particular revision or is at the tip</li>
- *  <li>The sync has completed</li>
+ * <li>The sync processing a page starting at the <strong>tip</strong> or between the
+ * {@link #getStartRevision() start} and {@link #getEndRevision() end} revisions.</li>
+ * <li>The sync has completed</li>
+ * <li>The progress of the sync is unknown</li>
  * </ol>
- *
  */
 public class BitbucketSyncProgress
 {
     public static BitbucketSyncProgress completed()
     {
-        return new BitbucketSyncProgress(true);
+        return new BitbucketSyncProgress(false, true, false, 0);
     }
 
     public static BitbucketSyncProgress progress(int revision)
     {
-        return new BitbucketSyncProgress(revision);
+        return new BitbucketSyncProgress(false, false, false, revision);
     }
 
     public static BitbucketSyncProgress tip()
     {
-        return new BitbucketSyncProgress();
+        return new BitbucketSyncProgress(false, false, true, 0);
     }
 
+    public static BitbucketSyncProgress unknown()
+    {
+        return new BitbucketSyncProgress(true, false, false, 0);
+    }
+
+    private final boolean unknown;
     private final boolean completed;
     private final boolean tip;
-    private final int revision;
+    private final int startRevision;
 
-    private BitbucketSyncProgress()
+    public BitbucketSyncProgress(boolean unknown, boolean completed, boolean tip, int startRevision)
     {
-        this.completed = false;
-        this.tip = true;
-        this.revision = -1;
-    }
-
-    private BitbucketSyncProgress(boolean completed)
-    {
+        this.unknown = unknown;
         this.completed = completed;
-        this.tip = false;
-        this.revision = 0;
+        this.tip = tip;
+        this.startRevision = startRevision;
     }
 
-    private BitbucketSyncProgress(int revision)
+    public boolean isCompleted()
     {
-        this.tip = false;
-        this.completed = false;
-        this.revision = revision;
-    }
-
-    public boolean isCompleted() {
         return completed;
     }
 
@@ -59,8 +56,19 @@ public class BitbucketSyncProgress
         return tip;
     }
 
-    public int getRevision()
+    public boolean isUnknown()
     {
-        return revision;
+        return unknown;
     }
+
+    public int getStartRevision()
+    {
+        return startRevision;
+    }
+
+    public int getEndRevision()
+    {
+        return Math.max(0, startRevision - BitbucketCommits.PAGE_SIZE);
+    }
+
 }

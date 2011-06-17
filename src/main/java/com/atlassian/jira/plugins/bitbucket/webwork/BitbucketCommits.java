@@ -23,7 +23,7 @@ public class BitbucketCommits
 {
     public static final String COUNT_JIRA = "JIRACommitTotal";
     public static final String COUNT_NON_JIRA = "NonJIRACommitTotal";
-    public static final int PAGE_SIZE = 50;
+    public static final int PAGE_SIZE = 25;
 
     public String repositoryURL;
     public String projectKey;
@@ -40,7 +40,6 @@ public class BitbucketCommits
     // https://bitbucket.org/ellislab/codething/master
     private String inferCommitsURL()
     {
-        logger.debug("BitBucketCommits.inferCommitsURL() - " + repositoryURL);
         String[] path = repositoryURL.split("/");
         return "https://api.bitbucket.org/1.0/repositories/" + path[3] + "/" + path[4] + "/changesets";
     }
@@ -60,7 +59,7 @@ public class BitbucketCommits
 
     private String getCommitsList(Integer startNumber)
     {
-        logger.debug("BitbucketCommits.getCommitsList(" + startNumber + ")");
+        logger.debug("get commit list from [ {} ]", startNumber == null ? "tip" : startNumber);
         URL url;
         HttpURLConnection conn;
 
@@ -75,8 +74,7 @@ public class BitbucketCommits
             else
                 url = new URL(this.inferCommitsURL() + "?start=" + startNumber + "&limit=" + PAGE_SIZE);
 
-            logger.debug("URL: " + url);
-            logger.debug("BitbucketCommits.getCommitsList() - Commits URL - " + url);
+            logger.debug("download commit list from [ {} ]", url);
 
             conn = (HttpURLConnection) url.openConnection();
 
@@ -98,20 +96,11 @@ public class BitbucketCommits
                 bitbucketProjectSettings.setSyncProgress(projectKey, repositoryURL, startNumber);
 
         }
-        catch (MalformedURLException e)
-        {
-            logger.error("BitbucketCommits.getCommitsList() - Malformed exception", e);
-            if (startNumber != null && startNumber == 0)
-                result = "Bitbucket Repository can't be found or incorrect credentials.";
-
-            bitbucketProjectSettings.completeSyncProgress(projectKey, repositoryURL);
-        }
         catch (Exception e)
         {
-            logger.error("BitbucketCommits.getCommitsList() - End of Commits or Unauthorized", e);
+            logger.error("could not download commits list", e);
             if (startNumber != null && startNumber == 0)
                 result = "Bitbucket Repository can't be found or incorrect credentials.";
-
             bitbucketProjectSettings.completeSyncProgress(projectKey, repositoryURL);
         }
 
@@ -133,7 +122,7 @@ public class BitbucketCommits
             url = new URL(commit_id_url);
             conn = (HttpURLConnection) url.openConnection();
 
-            logger.debug("BitbucketCommits().getCommitDetails()");
+            logger.debug("load commit [ {} ]", commit_id_url);
             addAuthorizationTokenToConnection(conn);
 
             conn.setInstanceFollowRedirects(true);
@@ -160,10 +149,6 @@ public class BitbucketCommits
 
         if (StringUtils.isNotEmpty(bbUserName) && StringUtils.isNotEmpty(bbPassword))
         {
-            logger.debug("BitbucketCommits() - Using Basic Auth");
-            logger.debug("URL: " + repositoryURL);
-            logger.debug("Username: " + bbUserName);
-
             Encryptor encryptor = new Encryptor();
             bbPassword = encryptor.decrypt(bbPassword, projectKey, repositoryURL);
 
@@ -212,7 +197,8 @@ public class BitbucketCommits
         if (startNumber != null && startNumber <= 0)
             return "";
 
-        logger.debug("BitbucketCommits.syncCommits() - startNumber: " + (startNumber == null ? "tip" : startNumber));
+        logger.debug("sync [ {} ] for [ {} ] from [ {} ] ",
+                new Object[]{repositoryURL, projectKey, startNumber == null ? "tip" : startNumber});
         String commitsAsJSON = getCommitsList(startNumber);
         String messages = "";
 
@@ -254,8 +240,7 @@ public class BitbucketCommits
             }
             catch (JSONException e)
             {
-                logger.error("BitbucketCommits.syncCommits() - Exception", e);
-                //e.printStackTrace();
+                logger.error("could not parse json response from bitbucket", e);
                 return "Bitbucket repository can't be found or incorrect credentials.";
             }
         }
@@ -266,7 +251,6 @@ public class BitbucketCommits
 
     public String postReceiveHook(String payload)
     {
-        logger.debug("BitbuckbetCommits.postReceiveHook()");
         String messages = "";
 
         try
@@ -301,8 +285,7 @@ public class BitbucketCommits
         }
         catch (JSONException e)
         {
-            //e.printStackTrace();
-            return "exception";
+            logger.error("could not parse json payload from bitbucket post commit hook", e);
         }
 
         return messages;
@@ -311,27 +294,10 @@ public class BitbucketCommits
 
     private String getRepositoryURLFromCommitURL(String commitURL)
     {
-
-        // Changeset URL example
-        // https://api.bitbucket.org/1.0/repositories/jespern/django-piston/changesets/fa57572a9acf?branch=master
-
         String[] arrayCommitURL = commitURL.split("/");
         String[] arrayBranch = commitURL.split("=");
-
-        String branch = "";
-
-        if (arrayBranch.length == 1)
-        {
-            branch = "default";
-        }
-        else
-        {
-            branch = arrayBranch[1];
-        }
-
-        String repoBranchURL = "https://bitbucket.org/" + arrayCommitURL[5] + "/" + arrayCommitURL[6] + "/" + branch;
-        logger.debug("bitbucketCommits.getRepositoryURLFromCommitURL() - RepoBranchURL: " + repoBranchURL);
-        return repoBranchURL;
+        String branch = (arrayBranch.length == 1) ? "default" : arrayBranch[1];
+        return "https://bitbucket.org/" + arrayCommitURL[5] + "/" + arrayCommitURL[6] + "/" + branch;
     }
 
     // Manages the entry of multiple Bitbucket commit id hash ids associated with an issue
@@ -343,7 +309,7 @@ public class BitbucketCommits
         String commitUrl = inferCommitDetailsURL() + commitId + "?branch=" + branch;
         if (!commits.contains(commitUrl))
         {
-            logger.debug("addCommitID: Adding CommitID " + inferCommitDetailsURL() + commitId);
+            logger.debug("add commit [ {} ] to issue [ {} ]", commitUrl, issueId);
             commits.add(commitUrl);
             addIssueId(issueId);
             bitbucketProjectSettings.setCommits(projectKey, repositoryURL, issueId, commits);
@@ -353,7 +319,7 @@ public class BitbucketCommits
     // Removes a specific commit_id (URL) from the saved array
     private void removeCommitID(String issueId, String commitUrl)
     {
-        logger.debug("remove commit [ " + commitUrl + " ] from [ " + issueId + " ]");
+        logger.debug("remove commit [ {} ] from [ {} ]", commitUrl, issueId);
         List<String> commits = bitbucketProjectSettings.getCommits(projectKey, repositoryURL, issueId);
         if (!commits.remove(commitUrl))
             bitbucketProjectSettings.setCommits(projectKey, repositoryURL, issueId, commits);
@@ -366,7 +332,7 @@ public class BitbucketCommits
         List<String> ids = bitbucketProjectSettings.getIssueIds(projectKey, repositoryURL);
         if (!ids.contains(issueId))
         {
-            logger.debug("Bitbucket.addIssueId() - " + issueId);
+            logger.debug("add issue [ {} ]", issueId);
             ids.add(issueId);
             bitbucketProjectSettings.setIssueIds(projectKey, repositoryURL, ids);
         }
@@ -383,9 +349,9 @@ public class BitbucketCommits
             // Array of Commit URL IDs like ['http://bitbucket.org/...']
             for (String commit : commits)
             {
-                logger.debug("BitbucketCommits.removeRepositoryIssueIDs() - Commit ID: " + commit);
-                logger.debug("BitbucketCommits.removeRepositoryIssueIDs() - " + getRepositoryURLFromCommitURL(commit));
-                if (repositoryURL.equals(getRepositoryURLFromCommitURL(commit)))
+                String commitUrl = getRepositoryURLFromCommitURL(commit);
+                logger.debug("remove commit [ {} ] from issue [ {} ]", commitUrl, id);
+                if (repositoryURL.equals(commitUrl))
                     removeCommitID(id, commit);
             }
         }

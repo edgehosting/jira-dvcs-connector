@@ -7,6 +7,7 @@ import com.atlassian.jira.plugins.bitbucket.property.BitbucketSyncProgress;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
     protected void doValidation()
     {
-        //logger.debug("ConfigureRepositories - doValidation()");
         for (Enumeration e = request.getParameterNames(); e.hasMoreElements(); )
         {
             String n = (String) e.nextElement();
@@ -57,7 +57,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         // BitBucket URL Validation
         if (!url.equals(""))
         {
-            logger.debug("URL for Evaluation: " + url + " - NA: " + nextAction);
             if (nextAction.equals("AddRepository") || nextAction.equals("DeleteReposiory"))
             {
                 // Valid URL and URL starts with bitbucket.org domain
@@ -82,7 +81,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
     public String doDefault()
     {
-        logger.debug("ConfigureBitBucketRepositories.doDefault()");
         return "input";
     }
 
@@ -126,17 +124,8 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
                 if (repoVisibility.equals("private"))
                 {
-                    logger.debug("Private Add Repository");
-
-                    if (bbUserName == "" || bbPassword == "")
+                    if (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword))
                     {
-                        logger.debug("No BB Username or Password Given");
-                    }
-                    else
-                    {
-                        logger.debug("ConfigureRepositories() - Adding Private Repository Credentials");
-                        //logger.debug("ConfigureRepositories() UN: " + bbUserName + " PA: " + bbPassword);
-
                         Encryptor encryptor = new Encryptor();
                         String cipherText = encryptor.encrypt(bbPassword, projectKey, url);
 
@@ -148,12 +137,9 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
                         addRepositoryURL();
                         nextAction = "ForceSync";
                     }
-
                 }
                 else
                 {
-                    logger.debug("PUBLIC Add Repository");
-
                     postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length - 1];
                     logger.debug(postCommitURL);
                     addRepositoryURL();
@@ -174,17 +160,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("CurrentSyncStatus"))
             {
-//                try
-//                {
-//                    syncProgress = bitbucketProjectSettings.getSyncProgress(projectKey, url);
-//                    JIRACommitTotal = bitbucketProjectSettings.getCount(projectKey, url, BitbucketCommits.COUNT_JIRA);
-//                    nonJIRACommitTotal = bitbucketProjectSettings.getCount(projectKey, url, BitbucketCommits.COUNT_NON_JIRA);
-//                }
-//                catch (Exception e)
-//                {
-//                    logger.debug("ConfigureBitbucketRepositories.doExecute().CurrentSyncStatus - Exception reading plugin values.");
-//                }
-
                 return "syncstatus";
             }
 
@@ -208,6 +183,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     // Manages the entry of multiple repository URLs in a single pluginSetting Key
     private void addRepositoryURL()
     {
+        logger.debug("add repository [ {} ] to [ {} ]", url, projectKey);
         List<String> repositories = bitbucketProjectSettings.getRepositories(projectKey);
         if (!repositories.contains(url))
         {
@@ -220,7 +196,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
     private void syncRepository()
     {
-        logger.debug("sync [ " + url + " ] for project [ " + projectKey + " ]");
+        logger.debug("sync [ {} ] for project [ {} ]", url, projectKey);
 
         BitbucketCommits repositoryCommits = new BitbucketCommits(bitbucketProjectSettings);
         repositoryCommits.repositoryURL = url;
@@ -375,12 +351,12 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
     public int getNonJIRACommitTotal()
     {
-        return this.bitbucketProjectSettings.getCount(projectKey, url, BitbucketCommits.COUNT_JIRA);
+        return this.bitbucketProjectSettings.getCount(projectKey, url, BitbucketCommits.COUNT_NON_JIRA);
     }
 
     public int getJIRACommitTotal()
     {
-        return this.bitbucketProjectSettings.getCount(projectKey, url, BitbucketCommits.COUNT_NON_JIRA);
+        return this.bitbucketProjectSettings.getCount(projectKey, url, BitbucketCommits.COUNT_JIRA);
     }
 
     public BitbucketSyncProgress getSyncProgress()

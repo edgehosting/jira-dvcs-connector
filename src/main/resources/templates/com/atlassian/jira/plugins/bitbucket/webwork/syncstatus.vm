@@ -2,18 +2,24 @@
 
 <div style="text-align: center">
 
-    #if ($action.getSyncProgress().isCompleted())
+    #if ($action.getSyncProgress().isUnknown())
+        <p>Currently Processing Changesets</p>
+    #elseif ($action.getSyncProgress().isCompleted())
         <script type="text/javascript">syncComplete = true;</script>
         <strong>Sync Processing Complete</strong>
-        <div>$action.getJIRACommitTotal() Commits with JIRA Project Key $action.getProjectKey()  found</div>
     #elseif($action.getSyncProgress().isTip())
-        <p>Currently Processing Changesets from <strong>tip</strong><p>
-        <img src='$action.getBaseURL()/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/loading_barber_pole_horz.gif'>
+        <p>Currently Processing Changesets from <strong>tip</strong></p>
     #else
-        <p>Currently Processing Changesets from <strong>$action.getSyncProgress().getRevision()</strong>
-            to <strong>$action.getSyncProgress().getRevision()</strong></p>
+        <p>Currently Processing Changesets from <strong>$action.getSyncProgress().getStartRevision()</strong>
+            to <strong>$action.getSyncProgress().getEndRevision()</strong></p>
+    #end
+
+    <p>$action.getJIRACommitTotal() Commits with JIRA Project Key $action.getProjectKey()  found</p>
+
+    #if (!$action.getSyncProgress().isCompleted())
         <img src='$action.getBaseURL()/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/loading_barber_pole_horz.gif'>
     #end
+
 
 </div>
 
