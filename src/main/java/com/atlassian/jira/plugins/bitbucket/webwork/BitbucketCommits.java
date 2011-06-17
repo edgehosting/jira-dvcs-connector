@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
+import com.atlassian.jira.plugins.bitbucket.property.BitbucketProjectSettings;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,32 +15,31 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class BitbucketCommits
 {
+    public static final String COUNT_JIRA = "JIRACommitTotal";
+    public static final String COUNT_NON_JIRA = "NonJIRACommitTotal";
+    public static final int PAGE_SIZE = 25;
 
     public String repositoryURL;
     public String projectKey;
 
-    final PluginSettingsFactory pluginSettingsFactory;
-    final Logger logger = LoggerFactory.getLogger(BitbucketCommits.class);
+    private final Logger logger = LoggerFactory.getLogger(BitbucketCommits.class);
+    private final BitbucketProjectSettings bitbucketProjectSettings;
 
-    public BitbucketCommits(PluginSettingsFactory pluginSettingsFactory)
+    public BitbucketCommits(BitbucketProjectSettings bitbucketProjectSettings)
     {
-        this.pluginSettingsFactory = pluginSettingsFactory;
+        this.bitbucketProjectSettings = bitbucketProjectSettings;
     }
 
     // Generates a URL for pulling commit messages based upon the base Repository URL
     // https://bitbucket.org/ellislab/codething/master
     private String inferCommitsURL()
     {
-        logger.debug("BitBucketCommits.inferCommitsURL() - " + repositoryURL);
         String[] path = repositoryURL.split("/");
         return "https://api.bitbucket.org/1.0/repositories/" + path[3] + "/" + path[4] + "/changesets";
     }
@@ -60,7 +59,7 @@ public class BitbucketCommits
 
     private String getCommitsList(Integer startNumber)
     {
-        logger.debug("BitbucketCommits.getCommitsList(" + startNumber + ")");
+        logger.debug("get commit list from [ {} ]", startNumber == null ? "tip" : startNumber);
         URL url;
         HttpURLConnection conn;
 
@@ -70,14 +69,12 @@ public class BitbucketCommits
 
         try
         {
-
             if (startNumber == null)
-                url = new URL(this.inferCommitsURL());
+                url = new URL(this.inferCommitsURL() + "?limit=" + PAGE_SIZE);
             else
-                url = new URL(this.inferCommitsURL() + "?start=" + startNumber);
+                url = new URL(this.inferCommitsURL() + "?start=" + startNumber + "&limit=" + PAGE_SIZE);
 
-            logger.debug("URL: " + url);
-            logger.debug("BitbucketCommits.getCommitsList() - Commits URL - " + url);
+            logger.debug("download commit list from [ {} ]", url);
 
             conn = (HttpURLConnection) url.openConnection();
 
@@ -93,22 +90,18 @@ public class BitbucketCommits
             rd.close();
 
             // Sets current page status for UI feedback
-            pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + repositoryURL + projectKey, startNumber == null ? "tip" : startNumber.toString());
+            if (startNumber == null)
+                bitbucketProjectSettings.startSyncProgress(projectKey, repositoryURL);
+            else
+                bitbucketProjectSettings.setSyncProgress(projectKey, repositoryURL, startNumber);
 
-        }
-        catch (MalformedURLException e)
-        {
-            logger.error("BitbucketCommits.getCommitsList() - Malformed exception", e);
-            if (startNumber != null && startNumber == 0)
-                result = "Bitbucket Repository can't be found or incorrect credentials.";
-            pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + repositoryURL + projectKey, "complete");
         }
         catch (Exception e)
         {
-            logger.error("BitbucketCommits.getCommitsList() - End of Commits or Unauthorized", e);
+            logger.error("could not download commits list", e);
             if (startNumber != null && startNumber == 0)
                 result = "Bitbucket Repository can't be found or incorrect credentials.";
-            pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + repositoryURL + projectKey, "complete");
+            bitbucketProjectSettings.completeSyncProgress(projectKey, repositoryURL);
         }
 
         return result;
@@ -129,7 +122,7 @@ public class BitbucketCommits
             url = new URL(commit_id_url);
             conn = (HttpURLConnection) url.openConnection();
 
-            logger.debug("BitbucketCommits().getCommitDetails()");
+            logger.debug("load commit [ {} ]", commit_id_url);
             addAuthorizationTokenToConnection(conn);
 
             conn.setInstanceFollowRedirects(true);
@@ -143,7 +136,7 @@ public class BitbucketCommits
         }
         catch (Exception e)
         {
-            logger.error("error loading commit details",e);
+            logger.error("error loading commit details", e);
         }
 
         return result;
@@ -151,18 +144,13 @@ public class BitbucketCommits
 
     private void addAuthorizationTokenToConnection(URLConnection connection)
     {
-        String bbUserName = (String) pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketUserName" + repositoryURL);
-        String bbPassword = (String) pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketPassword" + repositoryURL);
+        String bbUserName = bitbucketProjectSettings.getUsername(projectKey, repositoryURL);
+        String bbPassword = bitbucketProjectSettings.getPassword(projectKey, repositoryURL);
 
         if (StringUtils.isNotEmpty(bbUserName) && StringUtils.isNotEmpty(bbPassword))
         {
-            logger.debug("BitbucketCommits() - Using Basic Auth");
-            logger.debug("URL: " + repositoryURL);
-            logger.debug("Username: " + bbUserName);
-
-            Encryptor encryptor = new Encryptor(this.pluginSettingsFactory);
-            byte[] ciphertext = Encryptor.hexStringToByteArray(bbPassword);
-            bbPassword = encryptor.decrypt(ciphertext, projectKey, repositoryURL);
+            Encryptor encryptor = new Encryptor();
+            bbPassword = encryptor.decrypt(bbPassword, projectKey, repositoryURL);
 
             BASE64Encoder enc = new sun.misc.BASE64Encoder();
             String userpassword = bbUserName + ":" + bbPassword;
@@ -191,27 +179,6 @@ public class BitbucketCommits
         return matches;
     }
 
-    private Integer incrementCommitCount(String commitType)
-    {
-
-        int commitCount;
-
-        if (pluginSettingsFactory.createSettingsForKey(projectKey).get(commitType + repositoryURL) == null)
-        {
-            commitCount = 0;
-        }
-        else
-        {
-            String stringCount = (String) pluginSettingsFactory.createSettingsForKey(projectKey).get(commitType + repositoryURL);
-            commitCount = Integer.parseInt(stringCount) + 1;
-        }
-
-        pluginSettingsFactory.createSettingsForKey(projectKey).put(commitType + repositoryURL, Integer.toString(commitCount));
-
-        return commitCount;
-
-    }
-
     public String syncAllCommits()
     {
         try
@@ -220,7 +187,7 @@ public class BitbucketCommits
         }
         finally
         {
-            pluginSettingsFactory.createSettingsForKey(projectKey).put("currentsync" + repositoryURL + projectKey, "complete");
+            bitbucketProjectSettings.completeSyncProgress(projectKey, repositoryURL);
         }
     }
 
@@ -230,12 +197,9 @@ public class BitbucketCommits
         if (startNumber != null && startNumber <= 0)
             return "";
 
-        Date date = new Date();
-        pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketLastSyncTime" + repositoryURL, date.toString());
-
-        logger.debug("BitbucketCommits.syncCommits() - startNumber: " + (startNumber == null ? "tip" : startNumber));
+        logger.debug("sync [ {} ] for [ {} ] from [ {} ] ",
+                new Object[]{repositoryURL, projectKey, startNumber == null ? "tip" : startNumber});
         String commitsAsJSON = getCommitsList(startNumber);
-
         String messages = "";
 
         if (commitsAsJSON != "")
@@ -262,22 +226,21 @@ public class BitbucketCommits
                         {
                             String issueId = extractedIssue.toString().toUpperCase();
                             addCommitID(issueId, commit_id, getBranchFromURL());
-                            incrementCommitCount("JIRACommitTotal");
+                            bitbucketProjectSettings.incrementCommitCount(projectKey, repositoryURL, COUNT_JIRA);
                         }
                     }
                     else
                     {
-                        incrementCommitCount("NonJIRACommitTotal");
+                        bitbucketProjectSettings.incrementCommitCount(projectKey, repositoryURL, COUNT_NON_JIRA);
                     }
 
                 }
-                return messages += this.syncCommits(lowestRevision-1);
+                return messages += this.syncCommits(lowestRevision - 1);
 
             }
             catch (JSONException e)
             {
-                logger.error("BitbucketCommits.syncCommits() - Exception", e);
-                //e.printStackTrace();
+                logger.error("could not parse json response from bitbucket", e);
                 return "Bitbucket repository can't be found or incorrect credentials.";
             }
         }
@@ -288,11 +251,6 @@ public class BitbucketCommits
 
     public String postReceiveHook(String payload)
     {
-
-        Date date = new Date();
-        pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketLastSyncTime" + repositoryURL, date.toString());
-
-        logger.debug("BitbuckbetCommits.postReceiveHook()");
         String messages = "";
 
         try
@@ -313,13 +271,13 @@ public class BitbucketCommits
                     {
                         String issueId = extractedIssue.toString().toUpperCase();
                         addCommitID(issueId, commit_id, getBranchFromURL());
-                        incrementCommitCount("JIRACommitTotal");
+                        bitbucketProjectSettings.incrementCommitCount(projectKey, repositoryURL, COUNT_JIRA);
                     }
 
                 }
                 else
                 {
-                    incrementCommitCount("NonJIRACommitTotal");
+                    bitbucketProjectSettings.incrementCommitCount(projectKey, repositoryURL, COUNT_NON_JIRA);
                 }
             }
 
@@ -327,161 +285,74 @@ public class BitbucketCommits
         }
         catch (JSONException e)
         {
-            //e.printStackTrace();
-            return "exception";
+            logger.error("could not parse json payload from bitbucket post commit hook", e);
         }
 
         return messages;
-
-
     }
 
 
     private String getRepositoryURLFromCommitURL(String commitURL)
     {
-
-        // Changeset URL example
-        // https://api.bitbucket.org/1.0/repositories/jespern/django-piston/changesets/fa57572a9acf?branch=master
-
         String[] arrayCommitURL = commitURL.split("/");
         String[] arrayBranch = commitURL.split("=");
-
-        String branch = "";
-
-        if (arrayBranch.length == 1)
-        {
-            branch = "default";
-        }
-        else
-        {
-            branch = arrayBranch[1];
-        }
-
-        String repoBranchURL = "https://bitbucket.org/" + arrayCommitURL[5] + "/" + arrayCommitURL[6] + "/" + branch;
-        logger.debug("bitbucketCommits.getRepositoryURLFromCommitURL() - RepoBranchURL: " + repoBranchURL);
-        return repoBranchURL;
+        String branch = (arrayBranch.length == 1) ? "default" : arrayBranch[1];
+        return "https://bitbucket.org/" + arrayCommitURL[5] + "/" + arrayCommitURL[6] + "/" + branch;
     }
 
     // Manages the entry of multiple Bitbucket commit id hash ids associated with an issue
     // urls look like - https://api.bitbucket.org/1.0/repositories/jespern/django-piston/changesets/fa57572a9acf?branch=master
     private void addCommitID(String issueId, String commitId, String branch)
     {
-        ArrayList<String> commitArray = new ArrayList<String>();
+        List<String> commits = bitbucketProjectSettings.getCommits(projectKey, repositoryURL, issueId);
 
-        // First Time Repository URL is saved
-        if (pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueCommitArray" + issueId) != null)
+        String commitUrl = inferCommitDetailsURL() + commitId + "?branch=" + branch;
+        if (!commits.contains(commitUrl))
         {
-            commitArray = (ArrayList<String>) pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueCommitArray" + issueId);
-        }
-
-        Boolean boolExists = false;
-
-        for (int i = 0; i < commitArray.size(); i++)
-        {
-            if ((inferCommitDetailsURL() + commitId + "?branch=" + branch).equals(commitArray.get(i)))
-            {
-                logger.debug("Found commit id" + commitArray.get(i));
-                boolExists = true;
-            }
-        }
-
-        if (!boolExists)
-        {
-            logger.debug("addCommitID: Adding CommitID " + inferCommitDetailsURL() + commitId);
-            commitArray.add(inferCommitDetailsURL() + commitId + "?branch=" + branch);
+            logger.debug("add commit [ {} ] to issue [ {} ]", commitUrl, issueId);
+            commits.add(commitUrl);
             addIssueId(issueId);
-            pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketIssueCommitArray" + issueId, commitArray);
+            bitbucketProjectSettings.setCommits(projectKey, repositoryURL, issueId, commits);
         }
-
     }
-
 
     // Removes a specific commit_id (URL) from the saved array
-    private void removeCommitID(String issueId, String URLCommitID)
+    private void removeCommitID(String issueId, String commitUrl)
     {
-        ArrayList<String> commitArray = new ArrayList<String>();
-
-        // First Time Repository URL is saved
-        if (pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueCommitArray" + issueId) != null)
-        {
-            commitArray = (ArrayList<String>) pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueCommitArray" + issueId);
-        }
-
-        Boolean boolExists = false;
-        ArrayList<String> newCommitArray = new ArrayList<String>();
-        for (int i = 0; i < commitArray.size(); i++)
-        {
-            if (!URLCommitID.equals(commitArray.get(i)))
-                newCommitArray.add(commitArray.get(i));
-        }
-
-        pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketIssueCommitArray" + issueId, newCommitArray);
-
+        logger.debug("remove commit [ {} ] from [ {} ]", commitUrl, issueId);
+        List<String> commits = bitbucketProjectSettings.getCommits(projectKey, repositoryURL, issueId);
+        if (!commits.remove(commitUrl))
+            bitbucketProjectSettings.setCommits(projectKey, repositoryURL, issueId, commits);
     }
-
 
     // Manages the recording of items ids for a JIRA project + Repository Pair so that we know
     // which issues within a project have commits associated with them
     private void addIssueId(String issueId)
     {
-        ArrayList<String> idsArray = new ArrayList<String>();
-
-        // First Time Repository URL is saved
-        if (pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueIDs" + repositoryURL) != null)
+        List<String> ids = bitbucketProjectSettings.getIssueIds(projectKey, repositoryURL);
+        if (!ids.contains(issueId))
         {
-            idsArray = (ArrayList<String>) pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueIDs" + repositoryURL);
+            logger.debug("add issue [ {} ]", issueId);
+            ids.add(issueId);
+            bitbucketProjectSettings.setIssueIds(projectKey, repositoryURL, ids);
         }
-
-        Boolean boolExists = false;
-
-        for (int i = 0; i < idsArray.size(); i++)
-        {
-            if ((issueId).equals(idsArray.get(i)))
-            {
-                logger.debug("Bitbucket.addIssueId() Found existing issue id - " + idsArray.get(i));
-                boolExists = true;
-            }
-        }
-
-        if (!boolExists)
-        {
-            logger.debug("Bitbucket.addIssueId() - " + issueId);
-            idsArray.add(issueId);
-            pluginSettingsFactory.createSettingsForKey(projectKey).put("bitbucketIssueIDs" + repositoryURL, idsArray);
-        }
-
     }
 
     // Removes all record of issues associated with this project and repository URL
     public void removeRepositoryIssueIDs()
     {
-
-        ArrayList<String> idsArray = new ArrayList<String>();
-        if (pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueIDs" + repositoryURL) != null)
-        {
-            idsArray = (ArrayList<String>) pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueIDs" + repositoryURL);
-        }
-
+        List<String> ids = bitbucketProjectSettings.getIssueIds(projectKey, repositoryURL);
         // Array of JIRA Issue IDS like ['PONE-4','PONE-10']
-        for (int i = 0; i < idsArray.size(); i++)
+        for (String id : ids)
         {
-            ArrayList<String> commitIDsArray = new ArrayList<String>();
-            if (pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueCommitArray" + idsArray.get(i)) != null)
+            List<String> commits = bitbucketProjectSettings.getCommits(projectKey, repositoryURL, id);
+            // Array of Commit URL IDs like ['http://bitbucket.org/...']
+            for (String commit : commits)
             {
-                commitIDsArray = (ArrayList<String>) pluginSettingsFactory.createSettingsForKey(projectKey).get("bitbucketIssueCommitArray" + idsArray.get(i));
-
-                // Array of Commit URL IDs like ['http://bitbucket.org/...']
-                for (int j = 0; j < commitIDsArray.size(); j++)
-                {
-                    logger.debug("BitbucketCommits.removeRepositoryIssueIDs() - Commit ID: " + commitIDsArray.get(j));
-                    logger.debug("BitbucketCommits.removeRepositoryIssueIDs() - " + getRepositoryURLFromCommitURL(commitIDsArray.get(j)));
-
-                    if (repositoryURL.equals(getRepositoryURLFromCommitURL(commitIDsArray.get(j))))
-                    {
-                        //logger.debug("match");
-                        removeCommitID(idsArray.get(i), commitIDsArray.get(j));
-                    }
-                }
+                String commitUrl = getRepositoryURLFromCommitURL(commit);
+                logger.debug("remove commit [ {} ] from issue [ {} ]", commitUrl, id);
+                if (repositoryURL.equals(commitUrl))
+                    removeCommitID(id, commit);
             }
         }
     }

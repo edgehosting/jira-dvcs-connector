@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
+import com.atlassian.jira.plugins.bitbucket.property.BitbucketProjectSettings;
 import com.atlassian.jira.util.json.*;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -8,41 +9,46 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Created by IntelliJ IDEA.
- * User: michaelbuckbee
- * Date: 4/14/11
- * Time: 4:39 AM
- * To change this template use File | Settings | File Templates.
+ * Webwork action used to recieve the callback hook from bitbucket
  */
-public class BitbucketPostCommit extends JiraWebActionSupport {
+public class BitbucketPostCommit extends JiraWebActionSupport
+{
 
-    final PluginSettingsFactory pluginSettingsFactory;
-    final Logger logger = LoggerFactory.getLogger(BitbucketPostCommit.class);
+    private final Logger logger = LoggerFactory.getLogger(BitbucketPostCommit.class);
+    private final BitbucketProjectSettings bitbucketProjectSettings;
 
-    public BitbucketPostCommit(PluginSettingsFactory pluginSettingsFactory){
-        this.pluginSettingsFactory = pluginSettingsFactory;
+    public BitbucketPostCommit(BitbucketProjectSettings bitbucketProjectSettings)
+    {
+        this.bitbucketProjectSettings = bitbucketProjectSettings;
     }
 
-    protected void doValidation() {
+    protected void doValidation()
+    {
 
-        if (branch.equals("")){
+        if (branch.equals(""))
+        {
             validations += "Missing Required 'branch' parameter. <br/>";
         }
 
-        if (projectKey.equals("")){
+        if (projectKey.equals(""))
+        {
             validations += "Missing Required 'projectKey' parameter. <br/>";
         }
 
-        if (payload.equals("")){
+        if (payload.equals(""))
+        {
             validations += "Missing Required 'payload' parameter. <br/>";
         }
 
     }
 
-    protected String doExecute() throws Exception {
+    protected String doExecute() throws Exception
+    {
 
-        if (validations.equals("")){
-            try{
+        if (validations.equals(""))
+        {
+            try
+            {
                 System.out.println("Starting PostCommitUpdate");
 
                 System.out.println("BB Payload - " + payload);
@@ -55,12 +61,14 @@ public class BitbucketPostCommit extends JiraWebActionSupport {
                 String url = "https://bitbucket.org" + jsonRepository.getString("absolute_url") + branch;
                 System.out.println("Post Commit repository URL - " + url);
 
-                BitbucketCommits repositoryCommits = new BitbucketCommits(pluginSettingsFactory);
+                BitbucketCommits repositoryCommits = new BitbucketCommits(bitbucketProjectSettings);
                 repositoryCommits.repositoryURL = url;
                 repositoryCommits.projectKey = projectKey;
 
                 validations = repositoryCommits.postReceiveHook(payload);
-            }catch (Exception e){
+            }
+            catch (Exception e)
+            {
                 //e.printStackTrace();
             }
         }
@@ -70,27 +78,63 @@ public class BitbucketPostCommit extends JiraWebActionSupport {
 
     // Validation Error Messages
     private String validations = "";
-    public String getValidations(){return this.validations;}
+
+    public String getValidations()
+    {
+        return this.validations;
+    }
 
     // Project Key
     private String projectKey = "";
-    public void setProjectKey(String value){this.projectKey = value;}
-    public String getProjectKey(){return projectKey;}
+
+    public void setProjectKey(String value)
+    {
+        this.projectKey = value;
+    }
+
+    public String getProjectKey()
+    {
+        return projectKey;
+    }
 
     // BitBucket Repository URL
     private String branch = "";
-    public void setBranch(String value){this.branch = value;}
-    public String getBranch(){return branch;}
+
+    public void setBranch(String value)
+    {
+        this.branch = value;
+    }
+
+    public String getBranch()
+    {
+        return branch;
+    }
 
     // Revision Number
     private String revision = "";
-    public void setRevision(String value){this.revision = value;}
-    public String getRevision(){return revision;}
+
+    public void setRevision(String value)
+    {
+        this.revision = value;
+    }
+
+    public String getRevision()
+    {
+        return revision;
+    }
 
     // BitBucket JSON Payload
     private String payload = "";
-    public void setPayload(String value){this.payload = value;}
-    public String getPayload(){return payload;}
+
+    public void setPayload(String value)
+    {
+        this.payload = value;
+    }
+
+    public String getPayload()
+    {
+        return payload;
+    }
 
 
 }
