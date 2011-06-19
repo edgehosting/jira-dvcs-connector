@@ -15,6 +15,10 @@
         <interface>com.atlassian.sal.api.pluginsettings.PluginSettingsFactory</interface>
     </component-import>
 
+    <component-import key="requestFactory">
+        <interface>com.atlassian.sal.api.net.RequestFactory</interface>
+    </component-import>
+
     <issue-tabpanel key="bitbucket-commits-tabpanel" name="BitBucket Changesets Tab Panel"
                     class="com.atlassian.jira.plugins.bitbucket.issuetabpanels.BitBucketTabPanel">
 

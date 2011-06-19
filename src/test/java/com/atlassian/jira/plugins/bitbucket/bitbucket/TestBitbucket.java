@@ -1,78 +1,112 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
+import com.atlassian.sal.api.net.Request;
+import com.atlassian.sal.api.net.RequestFactory;
+import org.json.JSONObject;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import java.util.List;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link Bitbucket}
  */
 public class TestBitbucket
 {
-    @Test
-    public void getAnonymousGetPublicRepository()
+    @Mock
+    RequestFactory requestFactory;
+    @Mock
+    Request request;
+    private JSONObject repositoryJSON;
+    private JSONObject changesetJSON;
+
+    @Before
+    public void setup() throws Exception
     {
-        BitbucketRepository repo = new Bitbucket().getRepository("atlassian", "jira-bitbucket-connector");
-        assertEquals(repo.getWebsite(), "https://plugins.atlassian.com/plugin/details/311676");
-        assertEquals(repo.getOwner(), "atlassian");
-        assertEquals(repo.getSlug(), "jira-bitbucket-connector");
-        assertEquals(repo.getName(), "jira-bitbucket-connector");
+        MockitoAnnotations.initMocks(this);
+
+        repositoryJSON = new JSONObject();
+        repositoryJSON.put("website", "");
+        repositoryJSON.put("name", "");
+        repositoryJSON.put("followers_count", "0");
+        repositoryJSON.put("owner", "");
+        repositoryJSON.put("logo", "");
+        repositoryJSON.put("resource_uri", "");
+        repositoryJSON.put("slug", "");
+        repositoryJSON.put("description", "");
+
+        changesetJSON = new JSONObject();
+        changesetJSON.put("node", "");
+        changesetJSON.put("raw_author", "");
+        changesetJSON.put("author", "");
+        changesetJSON.put("timestamp", "");
+        changesetJSON.put("raw_node", "");
+        changesetJSON.put("branch", "");
+        changesetJSON.put("message", "");
+        changesetJSON.put("revision", "0");
     }
 
     @Test
-    public void getAnonymousGetPublicRepositoryChangeset()
+    public void getAnonymousGetRepository() throws Exception
     {
-        BitbucketChangeset changeset = new Bitbucket().
-                getRepository("atlassian", "jira-bitbucket-connector").
-                changeset("fe73ad602dd5");
-        assertEquals(changeset.getAuthor(), "mbuckbee");
-        assertEquals(changeset.getBranch(), "default");
+        when(requestFactory.createRequest(
+                Request.MethodType.GET,
+                "https://api.bitbucket.org/1.0/repositories/owner/slug"))
+                .thenReturn(request);
+        when(request.execute()).thenReturn(repositoryJSON.toString());
+        new Bitbucket(requestFactory).getRepository("owner", "slug");
+        verify(request, never()).addBasicAuthentication(any(String.class),any(String.class));
     }
 
     @Test
-    public void getAnonymousGetPublicRepositoryChangesetsList()
+    public void getAnonymousGetChangeset() throws Exception
     {
-        List<BitbucketChangeset> changesets = new Bitbucket().
-                getRepository("atlassian", "jira-bitbucket-connector").
-                changesets(25);
-        assertEquals(25, changesets.size());
-        BitbucketChangeset changeset = changesets.get(3);
-        assertEquals("mbuckbee", changeset.getAuthor());
-        assertEquals("default", changeset.getBranch());
-        assertEquals("d703ac340a95706a86d6c107482eccd7a62c8723", changeset.getRawNode());
+        when(requestFactory.createRequest(
+                Request.MethodType.GET,
+                "https://api.bitbucket.org/1.0/repositories/owner/slug"))
+                .thenReturn(request);
+        when(requestFactory.createRequest(
+                Request.MethodType.GET,
+                "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets/1234"))
+                .thenReturn(request);
+        when(request.execute())
+                .thenReturn(repositoryJSON.toString())
+                .thenReturn(changesetJSON.toString());
+        new Bitbucket(requestFactory).getRepository("owner", "slug").changeset("1234");
+        verify(request, never()).addBasicAuthentication(any(String.class),any(String.class));
     }
 
     @Test
-    public void getAnonymousGetPublicRepositoryChangesetsListPaging()
+    public void getAuthenticatedGetChangeset() throws Exception
     {
-        // test a range of sizes to make sure the internal paging doesn't effect the results
-        assertEquals(BitbucketRepository.PAGE_SIZE-1, new Bitbucket().
-                getRepository("atlassian", "jira-bitbucket-connector").
-                changesets(BitbucketRepository.PAGE_SIZE-1).size());
-        assertEquals(BitbucketRepository.PAGE_SIZE, new Bitbucket().
-                getRepository("atlassian", "jira-bitbucket-connector").
-                changesets(BitbucketRepository.PAGE_SIZE).size());
-        assertEquals(BitbucketRepository.PAGE_SIZE+1, new Bitbucket().
-                getRepository("atlassian", "jira-bitbucket-connector").
-                changesets(BitbucketRepository.PAGE_SIZE+1).size());
+        when(requestFactory.createRequest(
+                Request.MethodType.GET,
+                "https://api.bitbucket.org/1.0/repositories/owner/slug"))
+                .thenReturn(request);
+        when(requestFactory.createRequest(
+                Request.MethodType.GET,
+                "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets/1234"))
+                .thenReturn(request);
+        when(request.execute())
+                .thenReturn(repositoryJSON.toString())
+                .thenReturn(changesetJSON.toString());
+        new Bitbucket(requestFactory, "user", "pass").getRepository("owner", "slug").changeset("1234");
+        verify(request, times(2)).addBasicAuthentication("user", "pass");
     }
 
     @Test
-    public void getAnonymousGetMissingPublicRepositoryChangesets()
+    public void getAuthenticatedGetPublicRepositoryUrl() throws Exception
     {
-        try
-        {
-            new Bitbucket().
-                    getRepository("atlassian", "jira-bitbucket-connector").
-                    changeset("invalid");
-            fail("BitbucketResourceNotFoundException expected but not thrown");
-        }
-        catch (BitbucketResourceNotFoundException e)
-        {
-            // expected
-        }
+        when(requestFactory.createRequest(
+                Request.MethodType.GET,
+                "https://api.bitbucket.org/1.0/repositories/owner/slug"))
+                .thenReturn(request);
+        when(request.execute()).thenReturn(repositoryJSON.toString());
+        new Bitbucket(requestFactory,"user","pass").getRepository("owner", "slug");
+        verify(request).addBasicAuthentication("user", "pass");
     }
 }

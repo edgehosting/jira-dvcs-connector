@@ -32,7 +32,7 @@ public class BitbucketRepository
         }
         catch (JSONException e)
         {
-            throw new BitbucketException("invalid json object");
+            throw new BitbucketException("invalid json object", e);
         }
     }
 

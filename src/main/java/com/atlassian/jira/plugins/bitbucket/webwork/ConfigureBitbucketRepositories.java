@@ -7,6 +7,7 @@ import com.atlassian.jira.plugins.bitbucket.property.BitbucketSyncProgress;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.atlassian.sal.api.net.RequestFactory;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 {
     private final Logger logger = LoggerFactory.getLogger(ConfigureBitbucketRepositories.class);
     private final BitbucketProjectSettings bitbucketProjectSettings;
+    private final RequestFactory<?> requestFactory;
 
     // JIRA Project Listing
     private ComponentManager cm = ComponentManager.getInstance();
@@ -40,9 +42,11 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String baseURL = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
     private String redirectURL = "";
 
-    public ConfigureBitbucketRepositories(BitbucketProjectSettings bitbucketProjectSettings)
+    public ConfigureBitbucketRepositories(BitbucketProjectSettings bitbucketProjectSettings,
+                                          RequestFactory<?> requestFactory)
     {
         this.bitbucketProjectSettings = bitbucketProjectSettings;
+        this.requestFactory = requestFactory;
     }
 
     protected void doValidation()
@@ -87,7 +91,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        logger.debug("configure repository [ " + nextAction + " ]");
+        logger.debug("configure repository [ " + nextAction + " ] [ " + requestFactory + " ]");
 
         // Remove trailing slashes from URL
         if (url.endsWith("/"))

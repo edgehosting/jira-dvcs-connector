@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.bitbucket.bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.resource.RemoteResource;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.resource.RootRemoteResource;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.resource.SubRemoteResource;
+import com.atlassian.sal.api.net.RequestFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -15,22 +16,15 @@ public class Bitbucket
     private static final String BASE_URL = "https://api.bitbucket.org/1.0/repositories/";
 
     private final RemoteResource remoteResource;
-    private final String username;
-    private final String password;
 
-    public Bitbucket(String username, String password)
+    public Bitbucket(final RequestFactory<?> requestFactory, String username, String password)
     {
-        this.username = username;
-        this.password = password;
-        remoteResource = new RootRemoteResource(BASE_URL);
-        // TODO add basic auth information
+        remoteResource = new RootRemoteResource(requestFactory, username, password, BASE_URL);
     }
 
-    public Bitbucket()
+    public Bitbucket(final RequestFactory<?> requestFactory)
     {
-        this.username = null;
-        this.password = null;
-        remoteResource = new RootRemoteResource(BASE_URL);
+        remoteResource = new RootRemoteResource(requestFactory, BASE_URL);
     }
 
     /**
