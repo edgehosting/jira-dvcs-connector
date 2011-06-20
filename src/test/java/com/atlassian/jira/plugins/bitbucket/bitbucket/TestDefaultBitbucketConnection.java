@@ -32,6 +32,14 @@ public class TestDefaultBitbucketConnection
     }
 
     @Test
+    public void getUser() throws Exception
+    {
+        new DefaultBitbucketConnection(requestFactory).getUser("fred");
+        verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/users/fred");
+        verify(request,never()).addBasicAuthentication("user", "pass");
+    }
+
+    @Test
     public void getAnonymousGetChangeset() throws Exception
     {
         new DefaultBitbucketConnection(requestFactory).getChangeset(BitbucketAuthentication.ANONYMOUS, "owner", "slug", "1");

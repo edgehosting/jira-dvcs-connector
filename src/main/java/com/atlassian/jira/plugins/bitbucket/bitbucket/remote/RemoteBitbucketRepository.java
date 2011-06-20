@@ -1,18 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket.remote;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepository;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.connection.BitbucketConnection;
-import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * Describes a repository on bitbucket

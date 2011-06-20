@@ -8,6 +8,13 @@ import java.util.List;
 public interface Bitbucket
 {
     /**
+     * Retrieves information about a bitbucket user
+     * @param username the user to load
+     * @return the bitbucket user details
+     */
+    public BitbucketUser getUser(String username);
+
+    /**
      * Retrieves information about a repository
      *
      * @param auth  the authentication rules for this request

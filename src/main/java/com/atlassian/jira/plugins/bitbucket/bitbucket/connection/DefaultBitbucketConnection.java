@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class DefaultBitbucketConnection implements BitbucketConnection
 {
-    private static final String BASE_URL = "https://api.bitbucket.org/1.0/repositories/";
+    private static final String BASE_URL = "https://api.bitbucket.org/1.0/";
     private final RequestFactory<?> requestFactory;
 
     public DefaultBitbucketConnection(RequestFactory<?> requestFactory)
@@ -26,12 +26,12 @@ public class DefaultBitbucketConnection implements BitbucketConnection
 
     public String getRepository(BitbucketAuthentication auth, String owner, String slug)
     {
-        return get(auth, encode(owner) + "/" + encode(slug), null);
+        return get(auth, "repositories/" + encode(owner) + "/" + encode(slug), null);
     }
 
     public String getChangeset(BitbucketAuthentication auth, String owner, String slug, String id)
     {
-        return get(auth, encode(owner) + "/" + encode(slug) + "/changesets/" + encode(id), null);
+        return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets/" + encode(id), null);
     }
 
     public String getChangesets(BitbucketAuthentication auth, String owner, String slug, String start, int limit)
@@ -39,7 +39,12 @@ public class DefaultBitbucketConnection implements BitbucketConnection
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("limit", String.valueOf(limit));
         params.put("start", encode(start));
-        return get(auth, encode(owner) + "/" + encode(slug) + "/changesets", params);
+        return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets", params);
+    }
+
+    public String getUser(String username)
+    {
+        return get(BitbucketAuthentication.ANONYMOUS, "users/" + encode(username), null);
     }
 
     private String encode(String s)
@@ -73,7 +78,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
                 request.addRequestParameters(queryParams);
             }
 
-            if(auth!=null)
+            if (auth != null)
                 auth.addAuthentication(request);
 
             return request.execute();
