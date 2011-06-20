@@ -11,6 +11,18 @@
         <interface>com.atlassian.jira.plugins.bitbucket.property.BitbucketProjectSettings</interface>
     </component>
 
+    <component key="bitbucketConnection" name="Bitbucket Remote Connection"
+            class="com.atlassian.jira.plugins.bitbucket.bitbucket.connection.DefaultBitbucketConnection">
+        <description>A component used to talk to the remote bitbucket service</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.bitbucket.connection.BitbucketConnection</interface>
+    </component>
+
+    <component key="remoteBitbucket" name="Remote Bitbucket Service"
+            class="com.atlassian.jira.plugins.bitbucket.bitbucket.remote.RemoteBitbucket">
+        <description>A service for using the remove bitbucket connection</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket</interface>
+    </component>
+
     <component-import key="pluginSettingsFactory">
         <interface>com.atlassian.sal.api.pluginsettings.PluginSettingsFactory</interface>
     </component-import>

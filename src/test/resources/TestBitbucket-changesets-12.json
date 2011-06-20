@@ -1,0 +1,3343 @@
+{
+    "count": 88, 
+    "start": 12, 
+    "limit": 15, 
+    "changesets": [
+        {
+            "node": "fe73ad602dd5", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/tt-RU.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/time.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ka-GE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-HN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/af-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/lv-LV.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/it-IT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-EG.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-AE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-LU.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/da-DK.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-LU.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-IE.js.svn-base"
+                }, 
+                {
+                    "type": "added", 
+                    "file": ".hg_archival.txt"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-MC.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-SA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ko-KR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/quz-BO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/kok-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-KW.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-PH.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-SG.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/az-Cyrl-AZ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-AU.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fa-IR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-029.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/se-NO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-SY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-MA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketCommits.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-EG.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-UY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-GB.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-DZ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ru-RU.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/atlassian-plugin.xml"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ms-BN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-DZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hy-AM.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-SV.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/nb-NO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-YE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-029.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/.livereload"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/id-ID.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/cy-GB.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/syr-SY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hu-HU.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/Main.iml"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/kn-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-ZA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-NZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-MA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-ZW.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": ".hgignore"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-TT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/bg-BG.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/et-EE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/parser.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-LU.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ca-ES.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/be-BY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/all-wcprops"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "pom.xml"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/uz-Latn-UZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-CH.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-BZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-QA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/sugarpak.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-PE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-KW.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-JM.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/ViewProjectRepository.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-DE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-QA.js"
+                }, 
+                {
+                    "type": "added", 
+                    "file": "src/main/resources/templates/com/atlassian/jira/plugins/bitbucket/webwork/syncstatus.vm"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-ZW.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-IQ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ur-PK.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/all-wcprops"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-AE.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-FR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-PH.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ta-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-NI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/quz-EC.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/ConfigureBitbucketRepositories.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sv-FI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/he-IL.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-CR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-EC.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/bg-BG.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-BH.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/da-DK.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/bitbucket.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/az-Latn-AZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-BH.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/is-IS.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-VE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sr-Latn-BA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mn-MN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/extras.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-CL.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/nl-BE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/se-SE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.DS_Store"
+                }, 
+                {
+                    "type": "added", 
+                    "file": "src/main/resources/images/loading_barber_pole_horz.gif"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hr-HR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-CA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/date.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sl-SI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/el-GR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-US.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/az-Latn-AZ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/lt-LT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/gl-ES.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-ES.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/entries"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/pl-PL.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-CH.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-AT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-TN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/links/ProjectSettings.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/af-ZA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/nn-NO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-OM.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/aps/log4j.properties"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ky-KG.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/images/pencil_icon.jpg"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sms-FI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-LI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-SY.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sw-KE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/az-Cyrl-AZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/smj-SE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-JM.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-MO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/images/down_gray_arrow.jpg"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/README.TXT.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/core.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hi-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/date.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/dv-MV.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/tn-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-TT.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ja-JP.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-PR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/pt-BR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sma-NO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-JO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/el-GR.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sma-SE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-SA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-OM.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-MX.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-DO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/extras.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-DE.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/gu-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ro-RO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/entries"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/atlassian.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-PY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/tr-TR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sr-Latn-CS.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/cs-CZ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sa-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/uk-UA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sr-Cyrl-CS.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-CH.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/pa-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/dv-MV.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/kk-KZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-AU.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/core.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/pt-PT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-IQ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/be-BY.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-LY.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-LY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ca-ES.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-CO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mi-NZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ns-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fi-FI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-CA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/se-FI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/eu-ES.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mk-MK.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/format"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-IE.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-NZ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-BE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/th-TH.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zu-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fo-FO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-AT.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-GB.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ms-MY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/bs-Latn-BA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/it-CH.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/format"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/smn-FI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hr-BA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sr-Cyrl-BA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/xh-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-TW.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sv-SE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/quz-PE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-CA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/images/document.jpg"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/nl-NL.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sq-AL.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketPostCommit.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/smj-NO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-US.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/cs-CZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/images/blue_info_icon.jpg"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-LI.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/vi-VN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-GT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-LB.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-PA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-HK.js.svn-base"
+                }, 
+                {
+                    "type": "added", 
+                    "file": "src/main/resources/templates/com/atlassian/jira/plugins/bitbucket/webwork/syncmessage.vm"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-JO.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/bs-Latn-BA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-YE.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-TN.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-BO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-BZ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mt-MT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/cy-GB.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mr-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/ajs.date.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/README.TXT"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/issuetabpanels/BitBucketTabPanel.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/te-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-AR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sk-SK.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-LB.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-CN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/uz-Cyrl-UZ.js.svn-base"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-06-09 20:31:18", 
+            "raw_node": "fe73ad602dd549b042c2455dbefbf40078d07a21", 
+            "parents": [], 
+            "branch": "default", 
+            "message": "Moving from private repository", 
+            "revision": 0, 
+            "size": 1849697
+        }, 
+        {
+            "node": "543293b7308a", 
+            "files": [
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/tt-RU.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/time.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ka-GE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-HN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/af-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/lv-LV.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/it-IT.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-EG.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-AE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-LU.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/da-DK.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-LU.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-IE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-MC.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-SA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ko-KR.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/quz-BO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/kok-IN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-KW.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-PH.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/.DS_Store"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-SG.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/az-Cyrl-AZ.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-AU.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fa-IR.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-029.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/se-NO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-SY.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-MA.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketCommits.java"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-EG.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-UY.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-GB.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-DZ.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ru-RU.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/atlassian-plugin.xml"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ms-BN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-DZ.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hy-AM.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-SV.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/nb-NO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-YE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-029.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/.livereload"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/id-ID.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/cy-GB.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/syr-SY.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hu-HU.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/Main.iml"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-ZA.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/.DS_Store"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-NZ.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-MA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-ZW.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/java/.DS_Store"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-CL.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-TT.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/bg-BG.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/et-EE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/parser.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-LU.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ca-ES.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/be-BY.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/all-wcprops"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "pom.xml"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/uz-Latn-UZ.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-CH.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-BZ.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-QA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/sugarpak.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-PE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-KW.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-JM.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/ViewProjectRepository.java"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-DE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-QA.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/kn-IN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-ZW.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-IQ.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ur-PK.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/all-wcprops"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-AE.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-FR.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-PH.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ta-IN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-NI.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/quz-EC.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/ConfigureBitbucketRepositories.java"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sv-FI.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/he-IL.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-CR.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-EC.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/bg-BG.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-BH.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/da-DK.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/bitbucket.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/az-Latn-AZ.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-BH.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/is-IS.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-VE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/java/com/.DS_Store"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sr-Latn-BA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mn-MN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/extras.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/.DS_Store"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/nl-BE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/se-SE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/.DS_Store"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/images/loading_barber_pole_horz.gif"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hr-HR.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-CA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/date.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sl-SI.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/el-GR.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-US.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/az-Latn-AZ.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/lt-LT.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/gl-ES.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-ES.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/entries"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/pl-PL.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-CH.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-AT.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-TN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/links/ProjectSettings.java"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/af-ZA.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/java/com/atlassian/.DS_Store"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/nn-NO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-OM.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/aps/log4j.properties"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ky-KG.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sms-FI.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-LI.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-SY.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sw-KE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/az-Cyrl-AZ.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/smj-SE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-JM.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-MO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/images/down_gray_arrow.jpg"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/README.TXT.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/core.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hi-IN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/date.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/dv-MV.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/tn-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-TT.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ja-JP.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-PR.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/pt-BR.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sma-NO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-JO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/el-GR.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sma-SE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/images/pencil_icon.jpg"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-OM.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-MX.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-DO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/extras.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-DE.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/gu-IN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ro-RO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/entries"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/atlassian.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-PY.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/tr-TR.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sr-Latn-CS.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/cs-CZ.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sa-IN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/uk-UA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sr-Cyrl-CS.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-CH.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/pa-IN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/dv-MV.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/kk-KZ.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-AU.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/core.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/pt-PT.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-IQ.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/be-BY.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-LY.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-LY.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ca-ES.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-CO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mi-NZ.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ns-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fi-FI.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-CA.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/se-FI.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/eu-ES.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mk-MK.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/format"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-IE.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-NZ.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-BE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/th-TH.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zu-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fo-FO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-AT.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-GB.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ms-MY.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/bs-Latn-BA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/it-CH.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/format"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/smn-FI.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hr-BA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sr-Cyrl-BA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/.DS_Store"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/xh-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-TW.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sv-SE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/quz-PE.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-CA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/images/document.jpg"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/nl-NL.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sq-AL.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketPostCommit.java"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/.DS_Store"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/smj-NO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-US.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/cs-CZ.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/.DS_Store"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/images/blue_info_icon.jpg"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-LI.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/vi-VN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-GT.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-LB.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-PA.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-HK.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-SA.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-JO.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/bs-Latn-BA.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-YE.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-TN.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-BO.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/java/com/atlassian/jira/.DS_Store"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-BZ.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mt-MT.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/cy-GB.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mr-IN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/ajs.date.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/README.TXT"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/issuetabpanels/BitBucketTabPanel.java"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/te-IN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-AR.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sk-SK.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-LB.js"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-CN.js.svn-base"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/uz-Cyrl-UZ.js.svn-base"
+                }
+            ], 
+            "raw_author": "farmas", 
+            "author": "farmas", 
+            "timestamp": "2011-06-10 00:41:49", 
+            "raw_node": "543293b7308a5e7ec2ce3a6c6c28587e742af007", 
+            "parents": [
+                "fe73ad602dd5"
+            ], 
+            "branch": "default", 
+            "message": "Delete copy of sources to bring clone repository", 
+            "revision": 1, 
+            "size": 0
+        }, 
+        {
+            "node": "1d6c9edbd968", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/tt-RU.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/time.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ka-GE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-HN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/af-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "added", 
+                    "file": "src/main/resources/javascripts/github.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/lv-LV.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/it-IT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-EG.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-AE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-LU.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/da-DK.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-LU.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-IE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-MC.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-SA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ko-KR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/quz-BO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/kok-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-KW.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-PH.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-SG.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/az-Cyrl-AZ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-AU.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fa-IR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-029.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/se-NO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-SY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-MA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketCommits.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-EG.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-UY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-GB.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-DZ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ru-RU.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/atlassian-plugin.xml"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ms-BN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/images/gh_oauth_app.jpg"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-DZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hy-AM.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-SV.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/nb-NO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-YE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-029.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/.livereload"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/id-ID.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/cy-GB.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/syr-SY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hu-HU.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/Main.iml"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-ZA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/images/github_oauth.jpg"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-NZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-MA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-ZW.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-CL.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-TT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/bg-BG.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/et-EE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/parser.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-LU.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ca-ES.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/be-BY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/all-wcprops"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "pom.xml"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/uz-Latn-UZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-CH.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-BZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-QA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/sugarpak.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-PE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-KW.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-JM.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/ViewProjectRepository.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-DE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-QA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/kn-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-ZW.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-IQ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ur-PK.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/all-wcprops"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-AE.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-FR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-PH.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ta-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-NI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/quz-EC.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/ConfigureBitbucketRepositories.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sv-FI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/he-IL.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-CR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-EC.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/bg-BG.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-BH.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/da-DK.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/az-Latn-AZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-BH.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/is-IS.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-VE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sr-Latn-BA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mn-MN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/extras.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/nl-BE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/se-SE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hr-HR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-CA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/date.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sl-SI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/el-GR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-US.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/az-Latn-AZ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/lt-LT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/gl-ES.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-ES.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/entries"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/pl-PL.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-CH.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-AT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-TN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/af-ZA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/nn-NO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-OM.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/aps/log4j.properties"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ky-KG.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sms-FI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/de-LI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-SY.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sw-KE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/az-Cyrl-AZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/smj-SE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-JM.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-MO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/images/down_gray_arrow.jpg"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/README.TXT.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/core.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hi-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/text-base/date.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/dv-MV.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/tn-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-TT.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ja-JP.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-PR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/pt-BR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sma-NO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-JO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/el-GR.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sma-SE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/images/pencil_icon.jpg"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-OM.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-MX.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-DO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/extras.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-DE.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/gu-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ro-RO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/entries"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/atlassian.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-PY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/tr-TR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sr-Latn-CS.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/cs-CZ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sa-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/uk-UA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sr-Cyrl-CS.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-CH.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/pa-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/dv-MV.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/kk-KZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-AU.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/core.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/pt-PT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-IQ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/be-BY.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-LY.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-LY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ca-ES.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-CO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mi-NZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ns-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fi-FI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-CA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/se-FI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/eu-ES.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mk-MK.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/.svn/format"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-IE.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-NZ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-BE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/th-TH.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zu-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fo-FO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/es-AR.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-AT.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-GB.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ms-MY.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/bs-Latn-BA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/it-CH.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/format"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/smn-FI.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/hr-BA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sr-Cyrl-BA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/xh-ZA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-TW.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sv-SE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/quz-PE.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/fr-CA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/images/document.jpg"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/nl-NL.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sq-AL.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketPostCommit.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/smj-NO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/en-US.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/cs-CZ.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/images/blue_info_icon.jpg"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/de-LI.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/vi-VN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-GT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/ar-LB.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-PA.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-HK.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-SA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-JO.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/bs-Latn-BA.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-YE.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-TN.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-BO.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/en-BZ.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mt-MT.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/cy-GB.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/mr-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/ajs.date.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/README.TXT"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/issuetabpanels/BitBucketTabPanel.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/te-IN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/es-AR.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/sk-SK.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/ar-LB.js"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/zh-CN.js.svn-base"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/datejs/globalization/.svn/text-base/uz-Cyrl-UZ.js.svn-base"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-18 06:39:04", 
+            "raw_node": "1d6c9edbd96878f9e96ac6cd7e98c55e9db6b167", 
+            "parents": [], 
+            "branch": "default", 
+            "message": "Inital commit after export from GitHub", 
+            "revision": 2, 
+            "size": 1891517
+        }, 
+        {
+            "node": "7d9e455d9ab5", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": ".hgignore"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-18 09:08:20", 
+            "raw_node": "7d9e455d9ab591cbb285bb6bd9961e0249fcbae5", 
+            "parents": [
+                "1d6c9edbd968"
+            ], 
+            "branch": "default", 
+            "message": "Adding ignore file", 
+            "revision": 3, 
+            "size": 23
+        }, 
+        {
+            "node": "d703ac340a95", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": ".hgignore"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/Main.iml"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/test/Test.iml"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/issuetabpanels/BitBucketTabPanel.java"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-19 21:45:03", 
+            "raw_node": "d703ac340a95706a86d6c107482eccd7a62c8723", 
+            "parents": [
+                "7d9e455d9ab5"
+            ], 
+            "branch": "default", 
+            "message": "Fixing bad link to files on changesets tab", 
+            "revision": 4, 
+            "size": 102
+        }, 
+        {
+            "node": "50285df79d19", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "pom.xml"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/.DS_Store"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/atlassian-plugin.xml"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-26 10:14:31", 
+            "raw_node": "50285df79d19a61d5bc97ebd5686d7655c16a48f", 
+            "parents": [
+                "d703ac340a95"
+            ], 
+            "branch": "default", 
+            "message": "BBC-21 Fixing name", 
+            "revision": 5, 
+            "size": 8
+        }, 
+        {
+            "node": "42b619751555", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/atlassian-plugin.xml"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-26 10:15:42", 
+            "raw_node": "42b619751555fdc9a7c3571250ffcf6a6b7ad4e7", 
+            "parents": [
+                "50285df79d19"
+            ], 
+            "branch": "default", 
+            "message": "BBC-22 Change tab panel text to just 'Bitbucket'", 
+            "revision": 6, 
+            "size": 11
+        }, 
+        {
+            "node": "2b971d2c6ed3", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/javascripts/bitbucket.js"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-26 10:31:14", 
+            "raw_node": "2b971d2c6ed340c23b754e86f393f971cd32b101", 
+            "parents": [
+                "42b619751555"
+            ], 
+            "branch": "default", 
+            "message": "Adding bitbucket.js resource", 
+            "revision": 7, 
+            "size": 813
+        }, 
+        {
+            "node": "52d011a89cad", 
+            "files": [
+                {
+                    "type": "removed", 
+                    "file": "src/main/resources/javascripts/github.js"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-26 10:31:40", 
+            "raw_node": "52d011a89cad0d063934da7696bc839b4597c656", 
+            "parents": [
+                "2b971d2c6ed3"
+            ], 
+            "branch": "default", 
+            "message": "Removing github.js file from project", 
+            "revision": 8, 
+            "size": 0
+        }, 
+        {
+            "node": "692c07346879", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/atlassian-plugin.xml"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-26 10:36:14", 
+            "raw_node": "692c07346879f3f720f067411d5aa7b3e1db226c", 
+            "parents": [
+                "52d011a89cad"
+            ], 
+            "branch": "default", 
+            "message": "BBC-23 Adding Bitbucket Admin Issue Menu Link tab", 
+            "revision": 9, 
+            "size": 805
+        }, 
+        {
+            "node": "222482edb27b", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/links/ProjectSettings.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/atlassian-plugin.xml"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-26 10:40:56", 
+            "raw_node": "222482edb27b99519f8a7fa60b201d596d0a3cde", 
+            "parents": [
+                "692c07346879"
+            ], 
+            "branch": "default", 
+            "message": "BBC-16 Add per project admin links", 
+            "revision": 10, 
+            "size": 1195
+        }, 
+        {
+            "node": "367fb20f9864", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-26 10:48:00", 
+            "raw_node": "367fb20f986491e1e77866780bc4aeca3d205f2c", 
+            "parents": [
+                "222482edb27b"
+            ], 
+            "branch": "default", 
+            "message": "BBC-17 Dropdown values stay fixed on error", 
+            "revision": 11, 
+            "size": 347
+        }, 
+        {
+            "node": "e39284a71197", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/ConfigureBitbucketRepositories.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-26 10:53:34", 
+            "raw_node": "e39284a71197c5091a9f72319c0f530906323aa0", 
+            "parents": [
+                "367fb20f9864"
+            ], 
+            "branch": "default", 
+            "message": "Adding single/bulk mode actions", 
+            "revision": 12, 
+            "size": 1261
+        }, 
+        {
+            "node": "d04e9fc015fa", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-26 10:54:41", 
+            "raw_node": "d04e9fc015fa439a36d79e3ff47438262aad4241", 
+            "parents": [
+                "e39284a71197"
+            ], 
+            "branch": "default", 
+            "message": "Fixing header to include project name on single mode", 
+            "revision": 13, 
+            "size": 34
+        }, 
+        {
+            "node": "db93081b37e7", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/ConfigureBitbucketRepositories.java"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-26 11:03:52", 
+            "raw_node": "db93081b37e74e90b5822b66c8ff6cae4cb30a00", 
+            "parents": [
+                "d04e9fc015fa"
+            ], 
+            "branch": "default", 
+            "message": "BBC-12 Adding link for post commit URL to be found", 
+            "revision": 14, 
+            "size": 335
+        }
+    ]
+}

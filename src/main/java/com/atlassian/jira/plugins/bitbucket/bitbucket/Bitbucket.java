@@ -1,50 +1,41 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.resource.RemoteResource;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.resource.RootRemoteResource;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.resource.SubRemoteResource;
-import com.atlassian.sal.api.net.RequestFactory;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.util.List;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
  */
-public class Bitbucket
+public interface Bitbucket
 {
-    private static final String BASE_URL = "https://api.bitbucket.org/1.0/repositories/";
-
-    private final RemoteResource remoteResource;
-
-    public Bitbucket(final RequestFactory<?> requestFactory, String username, String password)
-    {
-        remoteResource = new RootRemoteResource(requestFactory, username, password, BASE_URL);
-    }
-
-    public Bitbucket(final RequestFactory<?> requestFactory)
-    {
-        remoteResource = new RootRemoteResource(requestFactory, BASE_URL);
-    }
-
     /**
      * Retrieves information about a repository
      *
+     * @param auth  the authentication rules for this request
      * @param owner the owner of the project
      * @param slug  the slug of the project
      * @return the project
      */
-    public BitbucketRepository getRepository(String owner, String slug)
-    {
-        try
-        {
-            String uri = URLEncoder.encode(owner, "UTF-8") + "/" + URLEncoder.encode(slug, "UTF-8");
-            return BitbucketRepository.parse(new SubRemoteResource(remoteResource,uri), remoteResource.get(uri));
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            throw new BitbucketException("required encoding not found", e);
-        }
-    }
+    public BitbucketRepository getRepository(BitbucketAuthentication auth, String owner, String slug);
+
+    /**
+     * Retrieves information about a changeset by changeset id
+     *
+     * @param auth  the authentication rules for this request
+     * @param owner the owner of the project
+     * @param slug  the slug of the project
+     * @param id    the changeset id
+     * @return the project
+     */
+    public BitbucketChangeset getChangeset(BitbucketAuthentication auth, String owner, String slug, String id);
+
+    /**
+     * Retrieves all changesets for the specified repository
+     *
+     * @param auth  the authentication rules for this request
+     * @param owner the owner of the project
+     * @param slug  the slug of the project
+     * @return the project
+     */
+    public List<BitbucketChangeset> getChangesets(BitbucketAuthentication auth, String owner, String slug);
 
 }

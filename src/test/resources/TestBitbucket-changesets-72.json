@@ -1,0 +1,380 @@
+{
+    "count": 88, 
+    "start": 72, 
+    "limit": 15, 
+    "changesets": [
+        {
+            "node": "d383c5acfd40", 
+            "files": [
+                {
+                    "type": "added", 
+                    "file": "src/test/java/com/atlassian/jira/plugins/bitbucket/pageobjects/page/JiraViewIssuePage.java"
+                }, 
+                {
+                    "type": "added", 
+                    "file": "src/test/java/it/com/atlassian/jira/plugins/bitbucket/PublicRepositoriesTest.java"
+                }, 
+                {
+                    "type": "added", 
+                    "file": "src/test/java/com/atlassian/jira/plugins/bitbucket/pageobjects/component/BitBucketIssuePanel.java"
+                }, 
+                {
+                    "type": "added", 
+                    "file": "src/test/java/com/atlassian/jira/plugins/bitbucket/pageobjects/component/BitBucketRepository.java"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/test/xml/TEST_XML_RESOURCES_README"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/test/resources/TEST_RESOURCES_README"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/test/java/it/MyPluginTest.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "pom.xml"
+                }, 
+                {
+                    "type": "added", 
+                    "file": "src/test/java/com/atlassian/jira/plugins/bitbucket/pageobjects/page/BitBucketConfigureRepositoriesPage.java"
+                }, 
+                {
+                    "type": "added", 
+                    "file": "src/test/java/it/com/atlassian/jira/plugins/bitbucket/BitBucketBaseTest.java"
+                }, 
+                {
+                    "type": "added", 
+                    "file": "src/test/resources/generated-test-resources.zip"
+                }, 
+                {
+                    "type": "added", 
+                    "file": "src/test/java/com/atlassian/jira/plugins/bitbucket/pageobjects/component/BitBucketCommitEntry.java"
+                }, 
+                {
+                    "type": "removed", 
+                    "file": "src/test/java/com/tsc/jira/plugins/MyPluginTest.java"
+                }
+            ], 
+            "raw_author": "Federico Silva Armas", 
+            "author": "Federico Silva Armas", 
+            "timestamp": "2011-06-10 01:14:43", 
+            "raw_node": "d383c5acfd408bd6f0dfa6c0bd9ac5b77abf8ea3", 
+            "parents": [
+                "316fb50951c4", 
+                "e62ad4bdd158"
+            ], 
+            "branch": "default", 
+            "message": "Merge integration tests.", 
+            "revision": 58, 
+            "size": 90499
+        }, 
+        {
+            "node": "9c3307848c8e", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": ".hgignore"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "pom.xml"
+                }
+            ], 
+            "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
+            "author": "mjensen", 
+            "timestamp": "2011-06-10 06:18:53", 
+            "raw_node": "9c3307848c8e239f316d5fe305e5206869e80a49", 
+            "parents": [
+                "d383c5acfd40"
+            ], 
+            "branch": "default", 
+            "message": "BBC-48: set correct artifact and group id, added distribution information", 
+            "revision": 59, 
+            "size": 628
+        }, 
+        {
+            "node": "298775affaa0", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "pom.xml"
+                }
+            ], 
+            "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
+            "author": "mjensen", 
+            "timestamp": "2011-06-10 06:34:37", 
+            "raw_node": "298775affaa0acf1906f8bacfa427fcb83a945d5", 
+            "parents": [
+                "9c3307848c8e"
+            ], 
+            "branch": "default", 
+            "message": "BBC-48: set correct scm information", 
+            "revision": 60, 
+            "size": 312
+        }, 
+        {
+            "node": "e940d891fd10", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "pom.xml"
+                }
+            ], 
+            "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
+            "author": "mjensen", 
+            "timestamp": "2011-06-10 06:38:08", 
+            "raw_node": "e940d891fd10ab03efabca47496d079fadca662f", 
+            "parents": [
+                "298775affaa0"
+            ], 
+            "branch": "default", 
+            "message": "[maven-release-plugin] prepare release jira-bitbucket-connector-plugin-0.2", 
+            "revision": 61, 
+            "size": 27
+        }, 
+        {
+            "node": "169a76e8cf44", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": ".hgtags"
+                }
+            ], 
+            "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
+            "author": "mjensen", 
+            "timestamp": "2011-06-10 06:38:18", 
+            "raw_node": "169a76e8cf4451b490fadd16124868a2493cf7d2", 
+            "parents": [
+                "e940d891fd10"
+            ], 
+            "branch": "default", 
+            "message": "[maven-release-plugin]  copy for tag jira-bitbucket-connector-plugin-0.2", 
+            "revision": 62, 
+            "size": 77
+        }, 
+        {
+            "node": "89c438012ef4", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "pom.xml"
+                }
+            ], 
+            "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
+            "author": "mjensen", 
+            "timestamp": "2011-06-10 06:38:26", 
+            "raw_node": "89c438012ef45eb0c6cc375dbdebdd388bd38782", 
+            "parents": [
+                "169a76e8cf44"
+            ], 
+            "branch": "default", 
+            "message": "[maven-release-plugin] prepare for next development iteration", 
+            "revision": 63, 
+            "size": 9
+        }, 
+        {
+            "node": "060988ef0eab", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketCommits.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/ConfigureBitbucketRepositories.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/Encryptor.java"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-06-11 03:59:29", 
+            "raw_node": "060988ef0eab12a1a317d3445fc87cf3fee3a44f", 
+            "parents": [
+                "89c438012ef4"
+            ], 
+            "branch": "default", 
+            "message": "BBC-49 Adding symmetric encryption to BBC private repo", 
+            "revision": 64, 
+            "size": 4261
+        }, 
+        {
+            "node": "6fe52159a0b1", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketCommits.java"
+                }
+            ], 
+            "raw_author": "farmas <farmas@atlassian.com>", 
+            "author": "farmas", 
+            "timestamp": "2011-06-14 06:39:19", 
+            "raw_node": "6fe52159a0b105d012a1bc598d5d14006b3b70b6", 
+            "parents": [
+                "060988ef0eab"
+            ], 
+            "branch": "default", 
+            "message": "BBC-45 Fixed missing decryption of password when retrieving commit details", 
+            "revision": 65, 
+            "size": 495
+        }, 
+        {
+            "node": "4db681323340", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketCommits.java"
+                }
+            ], 
+            "raw_author": "farmas <farmas@atlassian.com>", 
+            "author": "farmas", 
+            "timestamp": "2011-06-14 06:53:00", 
+            "raw_node": "4db681323340dcf837a0c4b5b415663cb4aec495", 
+            "parents": [
+                "6fe52159a0b1"
+            ], 
+            "branch": "default", 
+            "message": "BBC-45 Minor fixes to log messages", 
+            "revision": 66, 
+            "size": 3
+        }, 
+        {
+            "node": "692d31f96376", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketCommits.java"
+                }
+            ], 
+            "raw_author": "farmas <farmas@atlassian.com>", 
+            "author": "farmas", 
+            "timestamp": "2011-06-14 08:17:06", 
+            "raw_node": "692d31f9637641893e31f547234db64c5e0f5330", 
+            "parents": [
+                "4db681323340"
+            ], 
+            "branch": "default", 
+            "message": "BBC-45 Fixed a regression introduced by my previous change (caught by integration test)", 
+            "revision": 67, 
+            "size": 80
+        }, 
+        {
+            "node": "5dc9378aa8e2", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/templates/com/atlassian/jira/plugins/bitbucket/webwork/syncstatus.vm"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/issuetabpanels/BitBucketTabPanel.java"
+                }
+            ], 
+            "raw_author": "farmas <farmas@atlassian.com>", 
+            "author": "farmas", 
+            "timestamp": "2011-06-14 09:14:04", 
+            "raw_node": "5dc9378aa8e20d8e46ca35ca77513aa9ba214de5", 
+            "parents": [
+                "692d31f96376"
+            ], 
+            "branch": "default", 
+            "message": "BBC-50 Fix resource urls for artifactId change", 
+            "revision": 68, 
+            "size": 60
+        }, 
+        {
+            "node": "a81126ca9f6c", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "pom.xml"
+                }
+            ], 
+            "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
+            "author": "mjensen", 
+            "timestamp": "2011-06-15 02:16:43", 
+            "raw_node": "a81126ca9f6c66d8694fd49473aa4d395a83d593", 
+            "parents": [
+                "5dc9378aa8e2"
+            ], 
+            "branch": "default", 
+            "message": "[maven-release-plugin] prepare release jira-bitbucket-connector-plugin-0.3", 
+            "revision": 69, 
+            "size": 9
+        }, 
+        {
+            "node": "6a0aadd56bcf", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": ".hgtags"
+                }
+            ], 
+            "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
+            "author": "mjensen", 
+            "timestamp": "2011-06-15 02:16:56", 
+            "raw_node": "6a0aadd56bcfe087874a133cc49d438350858e15", 
+            "parents": [
+                "a81126ca9f6c"
+            ], 
+            "branch": "default", 
+            "message": "[maven-release-plugin]  copy for tag jira-bitbucket-connector-plugin-0.3", 
+            "revision": 70, 
+            "size": 77
+        }, 
+        {
+            "node": "94e172dbfc23", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "pom.xml"
+                }
+            ], 
+            "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
+            "author": "mjensen", 
+            "timestamp": "2011-06-15 02:17:11", 
+            "raw_node": "94e172dbfc23a502db901c2b1714089b15e4384f", 
+            "parents": [
+                "6a0aadd56bcf"
+            ], 
+            "branch": "default", 
+            "message": "[maven-release-plugin] prepare for next development iteration", 
+            "revision": 71, 
+            "size": 9
+        }, 
+        {
+            "node": "fc92e54ea14e", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketCommits.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketPostCommit.java"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-06-15 23:55:06", 
+            "raw_node": "fc92e54ea14eed7c08ff5f7d0ab128dded7db9c6", 
+            "parents": [
+                "4db681323340"
+            ], 
+            "branch": "default", 
+            "message": "BBC-52 Fixing bad repository id sync start position. BBC now pulls and syncs the individual commits that are passed in via the service.", 
+            "revision": 72, 
+            "size": 1863
+        }
+    ]
+}
