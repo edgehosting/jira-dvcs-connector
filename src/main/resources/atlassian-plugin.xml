@@ -23,6 +23,10 @@
         <interface>com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket</interface>
     </component>
 
+    <ao key="ao-module" name="Active Objects Module">
+        <entity>com.atlassian.jira.plugins.bitbucket.ao.Repository</entity>
+    </ao>
+
     <component-import key="ao" name="Active Objects" interface="com.atlassian.activeobjects.external.ActiveObjects">
         <description>Component to access Active Objects functionality from the plugin</description>
     </component-import>

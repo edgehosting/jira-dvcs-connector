@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
- 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
- 
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-bitbucket-connector-plugin</artifactId>
@@ -17,7 +18,7 @@
         <developerConnection>scm:hg:ssh://hg@bitbucket.org/atlassian/jira-bitbucket-connector</developerConnection>
         <url>https://bitbucket.org/atlassian/jira-bitbucket-connector</url>
     </scm>
- 
+
     <name>Bitbucket Connector</name>
     <description>Bitbucket Plugin for JIRA, linking JIRA issues to Bitbucket changesets.</description>
     <packaging>atlassian-plugin</packaging>
@@ -59,18 +60,24 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-           <groupId>com.atlassian.selenium</groupId>
-           <artifactId>atlassian-webdriver-jira</artifactId>
-           <version>2.0</version>
-           <scope>test</scope>
+            <groupId>com.atlassian.selenium</groupId>
+            <artifactId>atlassian-webdriver-jira</artifactId>
+            <version>2.0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.5</version>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-plugin</artifactId>
+            <version>${ao.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
- 
+
     <build>
         <plugins>
             <plugin>
@@ -96,6 +103,18 @@
                             <version>${jira.version}</version>
                         </libArtifact>
                     </libArtifacts>
+                    <pluginArtifacts>
+                        <pluginArtifact>
+                            <groupId>com.atlassian.activeobjects</groupId>
+                            <artifactId>activeobjects-plugin</artifactId>
+                            <version>${ao.version}</version>
+                        </pluginArtifact>
+                        <pluginArtifact>
+                            <groupId>com.atlassian.activeobjects</groupId>
+                            <artifactId>activeobjects-jira43-spi</artifactId>
+                            <version>${ao.version}</version>
+                        </pluginArtifact>
+                    </pluginArtifacts>
                 </configuration>
             </plugin>
             <plugin>
@@ -107,10 +126,11 @@
             </plugin>
         </plugins>
     </build>
- 
+
     <properties>
-        <jira.version>4.3.3</jira.version>
-        <jira.data.version>4.3.3</jira.data.version>
+        <jira.version>4.3.4</jira.version>
+        <jira.data.version>4.3.4</jira.data.version>
+        <ao.version>0.14.1</ao.version>
     </properties>
 
     <distributionManagement>
