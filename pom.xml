@@ -70,12 +70,6 @@
             <artifactId>commons-lang</artifactId>
             <version>2.5</version>
         </dependency>
-        <dependency>
-            <groupId>com.atlassian.activeobjects</groupId>
-            <artifactId>activeobjects-plugin</artifactId>
-            <version>${ao.version}</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -103,18 +97,6 @@
                             <version>${jira.version}</version>
                         </libArtifact>
                     </libArtifacts>
-                    <pluginArtifacts>
-                        <pluginArtifact>
-                            <groupId>com.atlassian.activeobjects</groupId>
-                            <artifactId>activeobjects-plugin</artifactId>
-                            <version>${ao.version}</version>
-                        </pluginArtifact>
-                        <pluginArtifact>
-                            <groupId>com.atlassian.activeobjects</groupId>
-                            <artifactId>activeobjects-jira43-spi</artifactId>
-                            <version>${ao.version}</version>
-                        </pluginArtifact>
-                    </pluginArtifacts>
                 </configuration>
             </plugin>
             <plugin>
@@ -130,7 +112,6 @@
     <properties>
         <jira.version>4.3.4</jira.version>
         <jira.data.version>4.3.4</jira.data.version>
-        <ao.version>0.14.1</ao.version>
     </properties>
 
     <distributionManagement>
