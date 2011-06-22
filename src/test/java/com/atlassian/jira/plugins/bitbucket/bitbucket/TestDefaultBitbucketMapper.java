@@ -2,10 +2,17 @@ package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.activeobjects.BitbucketRepositoryProjectMapping;
+import net.java.ao.DBParam;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Map;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -51,7 +58,14 @@ public class TestDefaultBitbucketMapper
         new DefaultBitbucketMapper(activeObjects, bitbucket).addRepository("JST", repository, null, null);
         verify(repository, times(1)).getOwner();
         verify(repository, times(1)).getSlug();
-        verify(activeObjects, times(1)).create()
-
+//        verify(activeObjects, times(1)).create(eq(BitbucketRepositoryProjectMapping.class), argThat(new ArgumentMatcher<Map<String, Object>>()
+//        {
+//            public boolean matches(Object o)
+//            {
+//                Map<String, Object> map = (Map<String, Object>) o;
+//                return map.containsKey("owner") && map.containsKey("slug");
+//                // TODO
+//            }
+//        }));
     }
 }
