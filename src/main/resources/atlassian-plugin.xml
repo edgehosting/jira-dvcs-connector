@@ -26,7 +26,7 @@
     </component>
 
     <component key="remoteBitbucket" name="Remote Bitbucket Service"
-               class="com.atlassian.jira.plugins.bitbucket.bitbucket.remote.RemoteBitbucket">
+               class="com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucket">
         <description>A service for using the remove bitbucket connection</description>
         <interface>com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket</interface>
     </component>

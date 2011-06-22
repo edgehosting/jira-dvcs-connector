@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.bitbucket.remote;
+package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.connection.BitbucketConnection;
@@ -14,13 +14,13 @@ import java.util.List;
 /**
  * Starting point for remote API calls to the bitbucket remote API
  */
-public class RemoteBitbucket implements Bitbucket
+public class DefaultBitbucket implements Bitbucket
 {
     public static final int PAGE_SIZE = 15;
 
     private final BitbucketConnection bitbucketConnection;
 
-    public RemoteBitbucket(BitbucketConnection bitbucketConnection)
+    public DefaultBitbucket(BitbucketConnection bitbucketConnection)
     {
         this.bitbucketConnection = bitbucketConnection;
     }
@@ -29,7 +29,7 @@ public class RemoteBitbucket implements Bitbucket
     {
         try
         {
-            return RemoteBitbucketUser.parse(new JSONObject(bitbucketConnection.getUser(username)));
+            return DefaultBitbucketUser.parse(new JSONObject(bitbucketConnection.getUser(username)));
         }
         catch (JSONException e)
         {
@@ -41,7 +41,7 @@ public class RemoteBitbucket implements Bitbucket
     {
         try
         {
-            return RemoteBitbucketRepository.parse(new JSONObject(bitbucketConnection.getRepository(auth, owner, slug)));
+            return BitbucketRepositoryFactory.parse(new JSONObject(bitbucketConnection.getRepository(auth, owner, slug)));
         }
         catch (JSONException e)
         {
@@ -53,7 +53,7 @@ public class RemoteBitbucket implements Bitbucket
     {
         try
         {
-            return RemoteBitbucketChangeset.parse(new JSONObject(bitbucketConnection.getChangeset(auth, owner, slug, id)));
+            return DefaultBitbucketChangeset.parse(new JSONObject(bitbucketConnection.getChangeset(auth, owner, slug, id)));
         }
         catch (JSONException e)
         {
@@ -69,7 +69,7 @@ public class RemoteBitbucket implements Bitbucket
         do
         {
             String start = currentRevision > 0 ? String.valueOf(currentRevision) : "tip";
-            int limit = currentRevision > 0 ? Math.min(RemoteBitbucket.PAGE_SIZE, currentRevision) : RemoteBitbucket.PAGE_SIZE;
+            int limit = currentRevision > 0 ? Math.min(DefaultBitbucket.PAGE_SIZE, currentRevision) : DefaultBitbucket.PAGE_SIZE;
 
             try
             {
@@ -78,14 +78,14 @@ public class RemoteBitbucket implements Bitbucket
 
                 JSONArray list = page.getJSONArray("changesets");
                 for (int i = 0; i < list.length(); i++)
-                    changesets.add(RemoteBitbucketChangeset.parse(list.getJSONObject(i)));
+                    changesets.add(DefaultBitbucketChangeset.parse(list.getJSONObject(i)));
             }
             catch (JSONException e)
             {
                 throw new BitbucketException("could not parse json object", e);
             }
 
-            currentRevision = currentRevision - RemoteBitbucket.PAGE_SIZE;
+            currentRevision = currentRevision - DefaultBitbucket.PAGE_SIZE;
         } while (currentRevision > 0);
 
         Collections.sort(changesets, new Comparator<BitbucketChangeset>()

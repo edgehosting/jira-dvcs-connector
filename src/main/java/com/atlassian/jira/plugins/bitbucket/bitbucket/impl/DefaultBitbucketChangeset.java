@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.bitbucket.remote;
+package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
@@ -8,13 +8,13 @@ import com.atlassian.jira.util.json.JSONObject;
 /**
  * Details on a changeset found in Bitbucket.
  */
-public class RemoteBitbucketChangeset implements BitbucketChangeset
+public class DefaultBitbucketChangeset implements BitbucketChangeset
 {
-    public static RemoteBitbucketChangeset parse(JSONObject json)
+    public static DefaultBitbucketChangeset parse(JSONObject json)
     {
         try
         {
-            return new RemoteBitbucketChangeset(
+            return new DefaultBitbucketChangeset(
                     json.getString("node"),
                     json.getString("raw_author"),
                     json.getString("author"),
@@ -41,8 +41,8 @@ public class RemoteBitbucketChangeset implements BitbucketChangeset
     private final int revision;
     // TODO: file list
 
-    public RemoteBitbucketChangeset(String node, String rawAuthor, String author, String timestamp,
-                                    String rawNode, String branch, String message, int revision)
+    public DefaultBitbucketChangeset(String node, String rawAuthor, String author, String timestamp,
+                                     String rawNode, String branch, String message, int revision)
     {
         this.node = node;
         this.rawAuthor = rawAuthor;

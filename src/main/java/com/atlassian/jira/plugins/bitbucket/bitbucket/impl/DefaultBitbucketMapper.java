@@ -1,12 +1,15 @@
-package com.atlassian.jira.plugins.bitbucket.bitbucket;
+package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.activeobjects.BitbucketRepositoryProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.remote.LazyLoadedRemoteBitbucketRepository;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A simple bitbucket mapper that uses ActiveObjects to store the mapping details
@@ -35,7 +38,7 @@ public class DefaultBitbucketMapper implements BitbucketMapper
                     BitbucketAuthentication auth = BitbucketAuthentication.ANONYMOUS;
                     if (StringUtils.isNotBlank(mapping.getUsername()) && StringUtils.isNotBlank(mapping.getPassword()))
                         BitbucketAuthentication.basic(mapping.getUsername(), mapping.getPassword());
-                    repositories.add(new LazyLoadedRemoteBitbucketRepository(bitbucket, auth, mapping.getRepositoryOwner(), mapping.getRepositorySlug()));
+                    repositories.add(BitbucketRepositoryFactory.lazy(bitbucket, auth, mapping.getRepositoryOwner(), mapping.getRepositorySlug()));
                 }
                 return repositories;
             }

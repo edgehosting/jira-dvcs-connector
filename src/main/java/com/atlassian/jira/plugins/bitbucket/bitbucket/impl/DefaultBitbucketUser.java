@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.bitbucket.remote;
+package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketUser;
@@ -8,14 +8,14 @@ import com.atlassian.jira.util.json.JSONObject;
 /**
  * Describes a user from bitbucket
  */
-public class RemoteBitbucketUser implements BitbucketUser
+public class DefaultBitbucketUser implements BitbucketUser
 {
 
-    public static RemoteBitbucketUser parse(JSONObject json)
+    public static DefaultBitbucketUser parse(JSONObject json)
     {
         try
         {
-            return new RemoteBitbucketUser(
+            return new DefaultBitbucketUser(
                     json.getString("username"),
                     json.getString("first_name"),
                     json.getString("last_name"),
@@ -36,7 +36,7 @@ public class RemoteBitbucketUser implements BitbucketUser
     private final String avatar;
     private final String resourceUri;
 
-    public RemoteBitbucketUser(String username, String firstName, String lastName, String avatar, String resourceUri)
+    public DefaultBitbucketUser(String username, String firstName, String lastName, String avatar, String resourceUri)
     {
         this.username = username;
         this.firstName = firstName;

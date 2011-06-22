@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.bitbucket.remote;
+package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
@@ -9,13 +9,13 @@ import com.atlassian.util.concurrent.LazyReference;
  * A lazy loaded remote bitbucket repository.  Will only load the remote repository if the
  * details that aren't stored locally are required.
  */
-public class LazyLoadedRemoteBitbucketRepository implements BitbucketRepository
+public class LazyLoadedBitbucketRepository implements BitbucketRepository
 {
     private final LazyReference<BitbucketRepository> lazyReference;
     private final String owner;
     private final String slug;
 
-    public LazyLoadedRemoteBitbucketRepository(
+    public LazyLoadedBitbucketRepository(
             final Bitbucket bitbucket, final BitbucketAuthentication auth,
             final String owner, final String slug)
     {
