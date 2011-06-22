@@ -63,7 +63,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
     {
         try
         {
-            Request<?> request = requestFactory.createRequest(Request.MethodType.GET, BASE_URL + uri);
+            Request<?,?> request = requestFactory.createRequest(Request.MethodType.GET, BASE_URL + uri);
 
             if (params != null && !params.isEmpty())
             {

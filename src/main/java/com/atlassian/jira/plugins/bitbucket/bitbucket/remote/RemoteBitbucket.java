@@ -41,7 +41,7 @@ public class RemoteBitbucket implements Bitbucket
     {
         try
         {
-            return RemoteBitbucketRepository.parse(bitbucketConnection, new JSONObject(bitbucketConnection.getRepository(auth, owner, slug)));
+            return RemoteBitbucketRepository.parse(new JSONObject(bitbucketConnection.getRepository(auth, owner, slug)));
         }
         catch (JSONException e)
         {

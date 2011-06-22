@@ -10,7 +10,7 @@ public abstract class BitbucketAuthentication
 {
     public static final BitbucketAuthentication ANONYMOUS = new BitbucketAuthentication()
     {
-        public void addAuthentication(Request<?> request)
+        public void addAuthentication(Request<?,?> request)
         {
             // do nothing
         }
@@ -20,7 +20,7 @@ public abstract class BitbucketAuthentication
     {
         return new BitbucketAuthentication()
         {
-            public void addAuthentication(Request<?> request)
+            public void addAuthentication(Request<?,?> request)
             {
                 // add basic authentication
                 if (!StringUtils.isBlank(username) && !StringUtils.isBlank(password))
@@ -29,5 +29,5 @@ public abstract class BitbucketAuthentication
         };
     }
 
-    public abstract void addAuthentication(Request<?> request);
+    public abstract void addAuthentication(Request<?,?> request);
 }

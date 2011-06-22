@@ -11,13 +11,11 @@ import com.atlassian.jira.util.json.JSONObject;
  */
 public class RemoteBitbucketRepository implements BitbucketRepository
 {
-
-    public static RemoteBitbucketRepository parse(BitbucketConnection connection, JSONObject json)
+    public static RemoteBitbucketRepository parse(JSONObject json)
     {
         try
         {
             return new RemoteBitbucketRepository(
-                    connection,
                     json.getString("website"),
                     json.getString("name"),
                     json.getInt("followers_count"),
@@ -34,7 +32,6 @@ public class RemoteBitbucketRepository implements BitbucketRepository
         }
     }
 
-    private final BitbucketConnection bitbucketConnection;
     private final String website;
     private final String name;
     private final int followers;
@@ -44,13 +41,9 @@ public class RemoteBitbucketRepository implements BitbucketRepository
     private final String slug;
     private final String description;
 
-
-
-    public RemoteBitbucketRepository(BitbucketConnection bitbucketConnection,
-                                     String website, String name, int followers, String owner,
+    public RemoteBitbucketRepository(String website, String name, int followers, String owner,
                                      String logo, String resourceUri, String slug, String description)
     {
-        this.bitbucketConnection = bitbucketConnection;
         this.website = website;
         this.name = name;
         this.followers = followers;
