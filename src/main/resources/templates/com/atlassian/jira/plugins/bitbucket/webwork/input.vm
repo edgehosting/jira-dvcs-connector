@@ -225,12 +225,12 @@
             #end
 
 			<div>
-                <p>Add additional Bitbucket repositories to the projects to link their commits with JIRA Issue IDs.</p>
+                <p>Add additional Bitbucket repositories to the projects to link their commits with JIRA issue keys.</p>
 
                 #if ($action.getMode() == 'single')
-                    Please Enter the Bitbucket Repository URL (including branch) you would like linked.</p>
+                    Enter the Bitbucket repository URL with the branch included.</p>
                 #else
-                    Please Enter the JIRA Project and Bitbucket Repository URL (including branch) you would like linked.</p>
+                    Enter the JIRA project and Bitbucket repository URL with the branch included.</p>
                 #end
 
                 #if ($action.getValidations() != "")
@@ -289,7 +289,7 @@
                     <div>
                            <h3 id="gh_post_receive_header">Add a Post-Commit Hook</h3>
 
-                            <p>Please add the URL below to your Bitbucket Repository's Services Integration </p>
+                            <p>Please add the URL below as a post-commit service to the Bitbucket repository.</p>
 
                             <p>
 								<input id="gh_post_receive_textbox" type"text" size="90" value="$action.getBaseURL()/$action.getPostCommitURL()">
