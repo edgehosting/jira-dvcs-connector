@@ -59,6 +59,11 @@ public class DefaultBitbucketRepository implements BitbucketRepository
         return resourceUri;
     }
 
+    public String getRepositoryUrl()
+    {
+        return "https://bitbucket.org/"+owner+"/"+slug;
+    }
+
     public String getSlug()
     {
         return slug;

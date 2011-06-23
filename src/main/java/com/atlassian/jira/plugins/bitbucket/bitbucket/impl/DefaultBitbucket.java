@@ -53,7 +53,7 @@ public class DefaultBitbucket implements Bitbucket
     {
         try
         {
-            return DefaultBitbucketChangeset.parse(new JSONObject(bitbucketConnection.getChangeset(auth, owner, slug, id)));
+            return BitbucketChangesetFactory.parse(owner, slug, new JSONObject(bitbucketConnection.getChangeset(auth, owner, slug, id)));
         }
         catch (JSONException e)
         {
@@ -78,7 +78,7 @@ public class DefaultBitbucket implements Bitbucket
 
                 JSONArray list = page.getJSONArray("changesets");
                 for (int i = 0; i < list.length(); i++)
-                    changesets.add(DefaultBitbucketChangeset.parse(list.getJSONObject(i)));
+                    changesets.add(BitbucketChangesetFactory.parse(owner, slug, list.getJSONObject(i)));
             }
             catch (JSONException e)
             {

@@ -10,27 +10,8 @@ import com.atlassian.jira.util.json.JSONObject;
  */
 public class DefaultBitbucketChangeset implements BitbucketChangeset
 {
-    public static DefaultBitbucketChangeset parse(JSONObject json)
-    {
-        try
-        {
-            return new DefaultBitbucketChangeset(
-                    json.getString("node"),
-                    json.getString("raw_author"),
-                    json.getString("author"),
-                    json.getString("timestamp"),
-                    json.getString("raw_node"),
-                    json.getString("branch"),
-                    json.getString("message"),
-                    json.getInt("revision")
-            );
-        }
-        catch (JSONException e)
-        {
-            throw new BitbucketException("invalid json object",e);
-        }
-    }
-
+    private final String repositoryOwner;
+    private final String repositorySlug;
     private final String node;
     private final String rawAuthor;
     private final String author;
@@ -41,9 +22,12 @@ public class DefaultBitbucketChangeset implements BitbucketChangeset
     private final int revision;
     // TODO: file list
 
-    public DefaultBitbucketChangeset(String node, String rawAuthor, String author, String timestamp,
+    public DefaultBitbucketChangeset(String repositoryOwner, String repositorySlug,
+                                     String node, String rawAuthor, String author, String timestamp,
                                      String rawNode, String branch, String message, int revision)
     {
+        this.repositoryOwner = repositoryOwner;
+        this.repositorySlug = repositorySlug;
         this.node = node;
         this.rawAuthor = rawAuthor;
         this.author = author;
@@ -92,5 +76,15 @@ public class DefaultBitbucketChangeset implements BitbucketChangeset
     public int getRevision()
     {
         return revision;
+    }
+
+    public String getRepositoryOwner()
+    {
+        return repositoryOwner;
+    }
+
+    public String getRepositorySlug()
+    {
+        return repositorySlug;
     }
 }

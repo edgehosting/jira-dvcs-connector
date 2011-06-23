@@ -65,6 +65,11 @@ public class LazyLoadedBitbucketRepository implements BitbucketRepository
         return getBitbucketRepository().getResourceUri();
     }
 
+    public String getRepositoryUrl()
+    {
+        return "https://bitbucket.org/" + owner + "/" + slug;
+    }
+
     public String getLogo()
     {
         return getBitbucketRepository().getLogo();

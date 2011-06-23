@@ -24,6 +24,8 @@ public interface BitbucketRepository
 
     public String getResourceUri();
 
+    public String getRepositoryUrl();
+
     public String getSlug();
 
     public String getDescription();

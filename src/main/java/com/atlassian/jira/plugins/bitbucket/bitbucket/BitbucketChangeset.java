@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
-
 /**
  * Details on a changeset found in Bitbucket.
  */
@@ -23,4 +20,9 @@ public interface BitbucketChangeset
     public String getMessage();
 
     public int getRevision();
+
+    public String getRepositoryOwner();
+
+    public String getRepositorySlug();
+
 }
