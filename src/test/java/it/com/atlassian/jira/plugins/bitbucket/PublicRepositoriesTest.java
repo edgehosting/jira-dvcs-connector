@@ -13,9 +13,10 @@ import static it.com.atlassian.jira.plugins.bitbucket.CommitMessageMatcher.withM
 public class PublicRepositoriesTest extends BitBucketBaseTest
 {
     private static final String TEST_REPO_URL = "https://bitbucket.org/farmas/testrepo-qa";
+    private static final String TEST_PRIVATE_REPO_URL = "https://bitbucket.org/farmas/privatetestrepo-qa-tst";
 
     @Test
-    public void addingRepoAppearsOnList()
+    public void addRepoAppearsOnList()
     {
         configureRepos.deleteAllRepositories();
 
@@ -25,11 +26,39 @@ public class PublicRepositoriesTest extends BitBucketBaseTest
     }
 
     @Test
-    public void addingRepoCommitsAppearOnIssues()
+    public void addRepoCommitsAppearOnIssues()
     {
         ensureRepositoryPresent("QA", TEST_REPO_URL);
 
         assertThat(getCommitsForIssue("QA-2"), hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
         assertThat(getCommitsForIssue("QA-3"), hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+    }
+
+    @Test
+    public void addRepoThatDoesNotExist()
+    {
+        configureRepos.deleteAllRepositories();
+
+        configureRepos.addPublicRepoToProject("QA", "https://bitbucket.org/farmas/repo-does-not-exist");
+
+        String syncStatusMessage = configureRepos.getSyncStatusMessage();
+        assertThat(syncStatusMessage, containsString("0 Commits with JIRA Project Key QA found"));
+        
+        // BBC-60
+        // assertThat(syncStatusMessage, containsString("Bitbucket repository can't be found or incorrect credentials."));
+    }
+
+    @Test
+    public void addPrivateRepoAsPublic()
+    {
+        configureRepos.deleteAllRepositories();
+
+        configureRepos.addPublicRepoToProject("QA", TEST_PRIVATE_REPO_URL);
+
+        String syncStatusMessage = configureRepos.getSyncStatusMessage();
+        assertThat(syncStatusMessage, containsString("0 Commits with JIRA Project Key QA found"));
+
+        // BBC-60
+        // assertThat(syncStatusMessage, containsString("Bitbucket repository can't be found or incorrect credentials."));
     }
 }
