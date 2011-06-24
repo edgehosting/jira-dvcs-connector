@@ -1,4 +1,4 @@
-package it.com.atlassian.jira.plugins.bitbucket;
+package com.atlassian.jira.plugins.bitbucket.pageobjects;
 
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
 import org.hamcrest.Description;
