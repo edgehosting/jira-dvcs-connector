@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.bitbucket.webwork;
 
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.config.properties.PropertiesManager;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketMapper;
 import com.atlassian.jira.plugins.bitbucket.property.BitbucketProjectSettings;
 import com.atlassian.jira.plugins.bitbucket.property.BitbucketSyncProgress;
 import com.atlassian.jira.project.Project;
@@ -42,11 +44,14 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String baseURL = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
     private String redirectURL = "";
 
+    private final BitbucketMapper bitbucketMapper;
+
     public ConfigureBitbucketRepositories(BitbucketProjectSettings bitbucketProjectSettings,
-                                          RequestFactory<?> requestFactory)
+                                          RequestFactory<?> requestFactory, BitbucketMapper bitbucketMapper)
     {
         this.bitbucketProjectSettings = bitbucketProjectSettings;
         this.requestFactory = requestFactory;
+        this.bitbucketMapper = bitbucketMapper;
     }
 
     protected void doValidation()
@@ -85,6 +90,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
     public String doDefault()
     {
+        bitbucketMapper.getRepositories("JST");
         return "input";
     }
 

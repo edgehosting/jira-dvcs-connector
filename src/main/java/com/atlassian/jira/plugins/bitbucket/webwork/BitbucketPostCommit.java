@@ -13,9 +13,19 @@ import org.slf4j.LoggerFactory;
  */
 public class BitbucketPostCommit extends JiraWebActionSupport
 {
-
     private final Logger logger = LoggerFactory.getLogger(BitbucketPostCommit.class);
     private final BitbucketProjectSettings bitbucketProjectSettings;
+
+    // Validation Error Messages
+    private String validations = "";
+    // Project Key
+    private String projectKey = "";
+    // BitBucket Repository URL
+    private String branch = "";
+    // Revision Number
+    private String revision = "";
+    // BitBucket JSON Payload
+    private String payload = "";
 
     public BitbucketPostCommit(BitbucketProjectSettings bitbucketProjectSettings)
     {
@@ -76,16 +86,10 @@ public class BitbucketPostCommit extends JiraWebActionSupport
         return "postcommit";
     }
 
-    // Validation Error Messages
-    private String validations = "";
-
     public String getValidations()
     {
         return this.validations;
     }
-
-    // Project Key
-    private String projectKey = "";
 
     public void setProjectKey(String value)
     {
@@ -97,9 +101,6 @@ public class BitbucketPostCommit extends JiraWebActionSupport
         return projectKey;
     }
 
-    // BitBucket Repository URL
-    private String branch = "";
-
     public void setBranch(String value)
     {
         this.branch = value;
@@ -109,9 +110,6 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     {
         return branch;
     }
-
-    // Revision Number
-    private String revision = "";
 
     public void setRevision(String value)
     {
@@ -123,9 +121,6 @@ public class BitbucketPostCommit extends JiraWebActionSupport
         return revision;
     }
 
-    // BitBucket JSON Payload
-    private String payload = "";
-
     public void setPayload(String value)
     {
         this.payload = value;
@@ -135,6 +130,5 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     {
         return payload;
     }
-
 
 }

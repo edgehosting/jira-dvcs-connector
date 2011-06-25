@@ -20,6 +20,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+/**
+ * @deprecated
+ */
+@Deprecated
 public class BitbucketCommits
 {
     public static final String COUNT_JIRA = "JIRACommitTotal";

@@ -15,7 +15,7 @@ import static org.mockito.Mockito.*;
 /**
  * Unit tests for {@link Bitbucket}
  */
-public class TestRemoteBitbucket
+public class TestDefaultBitbucket
 {
     @Mock
     BitbucketConnection bitbucketConnection;

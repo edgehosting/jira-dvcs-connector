@@ -5,13 +5,28 @@
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
     </plugin-info>
 
-    <ao key="ao-module" name="Active Objects Module">
-        <entity>com.atlassian.jira.plugins.bitbucket.bitbucket.activeobjects.BitbucketRepositoryProjectMapping</entity>
-    </ao>
-
     <component-import key="ao" name="Active Objects" interface="com.atlassian.activeobjects.external.ActiveObjects">
         <description>Component to access Active Objects functionality from the plugin</description>
     </component-import>
+
+    <ao key="ao-module" name="Active Objects Module">
+        <entity>com.atlassian.jira.plugins.bitbucket.bitbucket.activeobjects.ProjectMapping</entity>
+        <entity>com.atlassian.jira.plugins.bitbucket.bitbucket.activeobjects.IssueMapping</entity>
+        <upgradeTask>com.atlassian.jira.plugins.bitbucket.property.PropertyMigrator</upgradeTask>
+    </ao>
+
+    <component key="mapper" name="Bitbucket Mapper"
+               class="com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucketMapper">
+        <description>A Service for migrating from the property set storage to ActiveObjects</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketMapper</interface>
+    </component>
+
+    <!--
+    <component key="migrator" name="Property Migration"
+               class="com.atlassian.jira.plugins.bitbucket.property.PropertyMigrator">
+        <description>A Service for migrating from the property set storage to ActiveObjects</description>
+    </component>
+    -->
 
     <component key="encryptor" name="Encryption Service"
                class="com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultEncryptor">

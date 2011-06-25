@@ -17,7 +17,7 @@ public abstract class BitbucketAuthentication
         }
     };
 
-    public static final BitbucketAuthentication basic(final String username, final String password)
+    public static BitbucketAuthentication basic(final String username, final String password)
     {
         return new BasicAuthentication(username, password);
     }

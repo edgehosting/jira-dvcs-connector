@@ -85,7 +85,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
         }
         catch (ResponseException e)
         {
-            throw new BitbucketException("could not parse bitbucket response", e);
+            throw new BitbucketException("could not parse bitbucket response [ "+uri+" ]", e);
         }
     }
 

@@ -136,7 +136,7 @@
     <properties>
         <jira.version>4.3.4</jira.version>
         <jira.data.version>4.3.4</jira.data.version>
-        <ao.version>0.14.1</ao.version>
+        <ao.version>0.14.2</ao.version>
     </properties>
 
     <distributionManagement>

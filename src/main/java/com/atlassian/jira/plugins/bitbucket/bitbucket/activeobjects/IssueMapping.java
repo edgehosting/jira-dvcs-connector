@@ -5,7 +5,7 @@ import net.java.ao.Entity;
 /**
  * Active objects storage for the mapping between a bitbucket repository and a jira project.
  */
-public interface BitbucketChangesetIssueMapping extends Entity
+public interface IssueMapping extends Entity
 {
     String getRepositoryOwner();
     String getRepositorySlug();
