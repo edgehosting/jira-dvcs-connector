@@ -5,33 +5,37 @@
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
     </plugin-info>
 
+    <component-import key="templateRendererFactory"
+                      interface="com.atlassian.templaterenderer.velocity.one.six.VelocityTemplateRendererFactory">
+        <description>Template Renderer Factory</description>
+    </component-import>
+
     <component-import key="ao" name="Active Objects" interface="com.atlassian.activeobjects.external.ActiveObjects">
         <description>Component to access Active Objects functionality from the plugin</description>
     </component-import>
 
     <ao key="ao-module" name="Active Objects Module">
-        <entity>com.atlassian.jira.plugins.bitbucket.bitbucket.activeobjects.ProjectMapping</entity>
-        <entity>com.atlassian.jira.plugins.bitbucket.bitbucket.activeobjects.IssueMapping</entity>
+        <entity>com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.ProjectMapping</entity>
+        <entity>com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.IssueMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.property.PropertyMigrator</upgradeTask>
     </ao>
 
     <component key="mapper" name="Bitbucket Mapper"
-               class="com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucketMapper">
+               class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultBitbucketMapper">
         <description>A Service for migrating from the property set storage to ActiveObjects</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketMapper</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper</interface>
     </component>
 
-    <!--
-    <component key="migrator" name="Property Migration"
-               class="com.atlassian.jira.plugins.bitbucket.property.PropertyMigrator">
+    <component key="synchronizer" name="Bitbucket Synchronization Service"
+               class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultSynchronizer">
         <description>A Service for migrating from the property set storage to ActiveObjects</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer</interface>
     </component>
-    -->
 
     <component key="encryptor" name="Encryption Service"
-               class="com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultEncryptor">
+               class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultEncryptor">
         <description>A service for encrypting and decrypting passwords</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.bitbucket.Encryptor</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.mapper.Encryptor</interface>
     </component>
 
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
@@ -41,9 +45,9 @@
     </component>
 
     <component key="bitbucketConnection" name="Bitbucket Remote Connection"
-               class="com.atlassian.jira.plugins.bitbucket.bitbucket.connection.DefaultBitbucketConnection">
+               class="com.atlassian.jira.plugins.bitbucket.connection.impl.DefaultBitbucketConnection">
         <description>A component used to talk to the remote bitbucket service</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.bitbucket.connection.BitbucketConnection</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection</interface>
     </component>
 
     <component key="remoteBitbucket" name="Remote Bitbucket Service"
@@ -61,7 +65,7 @@
     </component-import>
 
     <issue-tabpanel key="bitbucket-commits-tabpanel" name="BitBucket Changesets Tab Panel"
-                    class="com.atlassian.jira.plugins.bitbucket.issuetabpanels.BitBucketTabPanel">
+                    class="com.atlassian.jira.plugins.bitbucket.issuetabpanels.BitbucketTabPanel">
 
         <description>Show Bitbucket changesets related to an issue in an issue tab panel.</description>
         <label>Bitbucket</label>

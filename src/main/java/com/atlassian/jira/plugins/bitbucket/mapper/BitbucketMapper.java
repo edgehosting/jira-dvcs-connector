@@ -1,4 +1,8 @@
-package com.atlassian.jira.plugins.bitbucket.bitbucket;
+package com.atlassian.jira.plugins.bitbucket.mapper;
+
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepository;
 
 import java.util.List;
 
@@ -26,9 +30,10 @@ public interface BitbucketMapper
     /**
      * Remove the mapping of the bibucket repository from the specified jira project
      * @param projectKey the jira project
-     * @param repository the bitbucket repository
+     * @param owner the owner of the repository to remove
+     * @param slug the slug of the repository to remove
      */
-    void removeRepository(String projectKey, BitbucketRepository repository);
+    void removeRepository(String projectKey, String owner, String slug);
 
     /**
      * Return a list of all commits mapped to the given issue from the given repository
@@ -51,5 +56,13 @@ public interface BitbucketMapper
      */
     void removeChangeset(String issueId, BitbucketChangeset bitbucketChangeset);
 
+    /**
+     * Load the repository authentication details stored for the mapped repository
+     * @param projectKey the project key this repository is mapped to
+     * @param owner the owner of the bitbucket repository
+     * @param slug the slug of the bitbucket repository
+     * @return the authentication details
+     */
+    BitbucketAuthentication getAuthentication(String projectKey, String owner, String slug);
 
 }

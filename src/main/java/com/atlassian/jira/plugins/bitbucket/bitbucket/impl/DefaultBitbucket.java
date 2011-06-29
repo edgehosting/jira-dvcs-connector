@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.connection.BitbucketConnection;
+import com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -68,12 +68,17 @@ public class DefaultBitbucket implements Bitbucket
         int currentRevision = -1;
         do
         {
-            String start = currentRevision > 0 ? String.valueOf(currentRevision) : "tip";
             int limit = currentRevision > 0 ? Math.min(DefaultBitbucket.PAGE_SIZE, currentRevision) : DefaultBitbucket.PAGE_SIZE;
 
             try
             {
-                JSONObject page = new JSONObject(bitbucketConnection.getChangesets(auth, owner, slug, start, limit));
+                JSONObject page;
+                if (currentRevision > 0)
+                    page = new JSONObject(bitbucketConnection.getChangesets(auth, owner, slug, currentRevision, limit));
+                else
+                    page = new JSONObject(bitbucketConnection.getChangesets(auth, owner, slug, limit));
+
+
                 currentRevision = currentRevision < 0 ? (page.getInt("count") - 1) : currentRevision;
 
                 JSONArray list = page.getJSONArray("changesets");

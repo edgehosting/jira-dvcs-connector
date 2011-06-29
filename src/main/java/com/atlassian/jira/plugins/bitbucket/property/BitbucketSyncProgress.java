@@ -1,12 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.property;
 
-import com.atlassian.jira.plugins.bitbucket.webwork.BitbucketCommits;
-
 /**
  * Describes the current progress through a repository sync. This object will indicate either:
  * <ol>
- * <li>The sync processing a page starting at the <strong>tip</strong> or between the
- * {@link #getStartRevision() start} and {@link #getEndRevision() end} revisions.</li>
+ * <li>The sync is processing and has progressed to the {@link #getRevision()} revision.</li>
  * <li>The sync has completed</li>
  * <li>The progress of the sync is unknown</li>
  * </ol>
@@ -36,14 +33,14 @@ public class BitbucketSyncProgress
     private final boolean unknown;
     private final boolean completed;
     private final boolean tip;
-    private final int startRevision;
+    private final int revision;
 
-    public BitbucketSyncProgress(boolean unknown, boolean completed, boolean tip, int startRevision)
+    public BitbucketSyncProgress(boolean unknown, boolean completed, boolean tip, int revision)
     {
         this.unknown = unknown;
         this.completed = completed;
         this.tip = tip;
-        this.startRevision = startRevision;
+        this.revision = revision;
     }
 
     public boolean isCompleted()
@@ -61,14 +58,9 @@ public class BitbucketSyncProgress
         return unknown;
     }
 
-    public int getStartRevision()
+    public int getRevision()
     {
-        return startRevision;
-    }
-
-    public int getEndRevision()
-    {
-        return Math.max(0, startRevision - BitbucketCommits.PAGE_SIZE);
+        return revision;
     }
 
 }

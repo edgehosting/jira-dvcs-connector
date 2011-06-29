@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.bitbucket;
+package com.atlassian.jira.plugins.bitbucket.mapper;
 
 /**
  * An encryption service for storing passwords

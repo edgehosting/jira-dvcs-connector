@@ -1,9 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
+
+import java.util.List;
 
 /**
  * Details on a changeset found in Bitbucket.
@@ -20,11 +23,14 @@ public class DefaultBitbucketChangeset implements BitbucketChangeset
     private final String branch;
     private final String message;
     private final int revision;
+    private final List<String> parents;
+    private final List<BitbucketChangesetFile> files;
     // TODO: file list
 
     public DefaultBitbucketChangeset(String repositoryOwner, String repositorySlug,
                                      String node, String rawAuthor, String author, String timestamp,
-                                     String rawNode, String branch, String message, int revision)
+                                     String rawNode, String branch, String message, int revision,
+                                     List<String> parents, List<BitbucketChangesetFile> files)
     {
         this.repositoryOwner = repositoryOwner;
         this.repositorySlug = repositorySlug;
@@ -36,6 +42,8 @@ public class DefaultBitbucketChangeset implements BitbucketChangeset
         this.branch = branch;
         this.message = message;
         this.revision = revision;
+        this.parents = parents;
+        this.files = files;
     }
 
     public String getNode()
@@ -71,6 +79,16 @@ public class DefaultBitbucketChangeset implements BitbucketChangeset
     public String getMessage()
     {
         return message;
+    }
+
+    public List<String> getParents()
+    {
+        return parents;
+    }
+
+    public List<BitbucketChangesetFile> getFiles()
+    {
+        return files;
     }
 
     public int getRevision()

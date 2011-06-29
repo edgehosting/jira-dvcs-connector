@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.bitbucket.activeobjects;
+package com.atlassian.jira.plugins.bitbucket.mapper.activeobjects;
 
 import net.java.ao.Entity;
 

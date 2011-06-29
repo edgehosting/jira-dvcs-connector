@@ -1,6 +1,6 @@
-package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
+package com.atlassian.jira.plugins.bitbucket.mapper.impl;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
 import com.atlassian.jira.project.ProjectManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

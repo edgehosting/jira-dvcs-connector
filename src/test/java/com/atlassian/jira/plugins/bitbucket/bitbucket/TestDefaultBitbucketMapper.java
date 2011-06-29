@@ -1,10 +1,11 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.activeobjects.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.activeobjects.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.BasicAuthentication;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucketMapper;
+import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultBitbucketMapper;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
@@ -156,7 +157,7 @@ public class TestDefaultBitbucketMapper
                 "project_key = ? and repository_owner = ? and repository_slug = ?",
                 "JST", "owner", "slug")).thenReturn(new IssueMapping[]{issueMapping}
         );
-        new DefaultBitbucketMapper(activeObjects, bitbucket, encryptor).removeRepository("JST", repository);
+        new DefaultBitbucketMapper(activeObjects, bitbucket, encryptor).removeRepository("JST", "owner", "slug");
         verify(activeObjects, times(1)).delete(projectMapping);
         verify(activeObjects, times(1)).delete(issueMapping);
     }

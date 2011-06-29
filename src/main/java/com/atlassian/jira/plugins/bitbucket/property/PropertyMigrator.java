@@ -4,12 +4,13 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.activeobjects.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.activeobjects.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucketMapper;
+import com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultBitbucketMapper;
+import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
-import com.atlassian.sal.api.transaction.TransactionCallback;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +71,8 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
                     String slug = path[2];
                     BitbucketRepository bitbucketRepository = BitbucketRepositoryFactory.load(bitbucket, auth, owner, slug);
 
-                    logger.debug("owner [ " + owner + " ] slug [ " + slug + " ]");
+                    logger.debug("create repository - owner [ {} ] slug [ {} ]", owner, slug);
+                    mapper.addRepository(projectKey, bitbucketRepository, username, password);
 
                     List<String> issueIds = settings.getIssueIds(projectKey, repository);
                     for (String issueId : issueIds)
@@ -83,9 +85,9 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
                             URL changesetURL = new URL(commit);
                             String changesetPath = changesetURL.getPath();
                             String node = changesetPath.substring(changesetPath.lastIndexOf("/") + 1);
-                            logger.debug("add changeset [ " + issueId + " ] [ " + node + " ]");
+                            logger.debug("add changeset [ {} ] to [ {} ]", node, issueId);
 
-                            mapper.addChangeset(issueId, BitbucketChangesetFactory.load(bitbucket, auth, owner, slug, node));
+                            mapper.addChangeset(issueId, bitbucket.getChangeset(auth, owner, slug, node));
                         }
                     }
 

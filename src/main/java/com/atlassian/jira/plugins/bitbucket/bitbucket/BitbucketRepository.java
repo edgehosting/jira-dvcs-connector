@@ -1,12 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.connection.BitbucketConnection;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
-
-import java.util.*;
-
 /**
  * Describes a repository on bitbucket
  */

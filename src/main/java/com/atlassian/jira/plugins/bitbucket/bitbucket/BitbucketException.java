@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 /**
- * Indicates an unhandled exception condition within the bitbucket client.
+ * Indicates an unhandled exceptional condition within the bitbucket client
  */
 public class BitbucketException extends RuntimeException
 {

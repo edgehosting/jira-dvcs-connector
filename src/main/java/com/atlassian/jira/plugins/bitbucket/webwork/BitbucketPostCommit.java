@@ -1,10 +1,8 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
-import com.atlassian.jira.plugins.bitbucket.property.BitbucketProjectSettings;
-import com.atlassian.jira.util.json.*;
+import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
+import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +12,7 @@ import org.slf4j.LoggerFactory;
 public class BitbucketPostCommit extends JiraWebActionSupport
 {
     private final Logger logger = LoggerFactory.getLogger(BitbucketPostCommit.class);
-    private final BitbucketProjectSettings bitbucketProjectSettings;
+    private final Synchronizer synchronizer;
 
     // Validation Error Messages
     private String validations = "";
@@ -27,9 +25,9 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     // BitBucket JSON Payload
     private String payload = "";
 
-    public BitbucketPostCommit(BitbucketProjectSettings bitbucketProjectSettings)
+    public BitbucketPostCommit(Synchronizer synchronizer)
     {
-        this.bitbucketProjectSettings = bitbucketProjectSettings;
+        this.synchronizer = synchronizer;
     }
 
     protected void doValidation()
@@ -57,30 +55,17 @@ public class BitbucketPostCommit extends JiraWebActionSupport
 
         if (validations.equals(""))
         {
-            try
-            {
-                System.out.println("Starting PostCommitUpdate");
+            System.out.println("Starting PostCommitUpdate");
+            System.out.println("BB Payload - " + payload);
 
-                System.out.println("BB Payload - " + payload);
+            JSONObject jsonPayload = new JSONObject(payload);
+            JSONObject jsonRepository = jsonPayload.getJSONObject("repository");
 
-                JSONObject jsonPayload = new JSONObject(payload);
-                JSONObject jsonRepository = jsonPayload.getJSONObject("repository");
+            // absolute_url element returned from JSON payload has a trailing slash
+            String url = "https://bitbucket.org" + jsonRepository.getString("absolute_url") + branch;
+            System.out.println("Post Commit repository URL - " + url);
 
-
-                // absolute_url element returned from JSON payload has a trailing slash
-                String url = "https://bitbucket.org" + jsonRepository.getString("absolute_url") + branch;
-                System.out.println("Post Commit repository URL - " + url);
-
-                BitbucketCommits repositoryCommits = new BitbucketCommits(bitbucketProjectSettings);
-                repositoryCommits.repositoryURL = url;
-                repositoryCommits.projectKey = projectKey;
-
-                validations = repositoryCommits.postReceiveHook(payload);
-            }
-            catch (Exception e)
-            {
-                //e.printStackTrace();
-            }
+            synchronizer.postReceiveHook(payload);
         }
 
         return "postcommit";

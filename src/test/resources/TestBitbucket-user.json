@@ -1,0 +1,31 @@
+{
+    "repositories": [
+        {
+            "website": null, 
+            "name": "jira-bitbucket-connector", 
+            "followers_count": 1, 
+            "owner": "mjensen", 
+            "logo": null, 
+            "resource_uri": "/api/1.0/repositories/mjensen/jira-bitbucket-connector", 
+            "slug": "jira-bitbucket-connector", 
+            "description": "making some refactors"
+        }, 
+        {
+            "website": "", 
+            "name": "confluence-dirty-plugin", 
+            "followers_count": 1, 
+            "owner": "mjensen", 
+            "logo": null, 
+            "resource_uri": "/api/1.0/repositories/mjensen/confluence-dirty-plugin", 
+            "slug": "confluence-dirty-plugin", 
+            "description": "Confluence Dirty Plugin\r\nAn extension that monitors a confluence page and notifies you if its changed since you loaded it."
+        }
+    ], 
+    "user": {
+        "username": "mjensen", 
+        "first_name": "", 
+        "last_name": "", 
+        "avatar": "https://secure.gravatar.com/avatar/e0fe5875ffbe955718f93b8a364454fe?d=identicon&s=32", 
+        "resource_uri": "/1.0/users/mjensen"
+    }
+}

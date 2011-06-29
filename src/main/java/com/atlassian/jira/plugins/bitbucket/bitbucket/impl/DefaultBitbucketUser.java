@@ -16,11 +16,11 @@ public class DefaultBitbucketUser implements BitbucketUser
         try
         {
             return new DefaultBitbucketUser(
-                    json.getString("username"),
-                    json.getString("first_name"),
-                    json.getString("last_name"),
-                    json.getString("avatar"),
-                    json.getString("resource_uri")
+                    json.getJSONObject("user").getString("username"),
+                    json.getJSONObject("user").getString("first_name"),
+                    json.getJSONObject("user").getString("last_name"),
+                    json.getJSONObject("user").getString("avatar"),
+                    json.getJSONObject("user").getString("resource_uri")
             );
         }
         catch (JSONException e)

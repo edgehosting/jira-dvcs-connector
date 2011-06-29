@@ -9,20 +9,18 @@ import com.opensymphony.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ProjectSettings extends AbstractPluggableProjectOperation{
+public class ProjectSettings extends AbstractPluggableProjectOperation
+{
+    final Logger logger = LoggerFactory.getLogger(ProjectSettings.class);
 
-   final Logger logger = LoggerFactory.getLogger(ProjectSettings.class);
+    public String getHtml(final Project project, final User user)
+    {
+        String baseURL = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
+        return "<strong>Bitbucket Connector: </strong> (<a href='" + baseURL + "/secure/admin/ConfigureBitbucketRepositories!default.jspa?projectKey=" + project.getKey() + "&mode=single'>Manage Repositories</a>)";
+    }
 
-   public String getHtml(final Project project, final User user){
-
-       String baseURL = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
-
-       return "<strong>Bitbucket Connector: </strong> (<a href='" + baseURL + "/secure/admin/ConfigureBitbucketRepositories!default.jspa?projectKey=" + project.getKey() + "&mode=single'>Manage Repositories</a>)";
-
-   }
-
-   public boolean showOperation(final Project project, final User user)
-   {
-       return true;
-   }
+    public boolean showOperation(final Project project, final User user)
+    {
+        return true;
+    }
 }
