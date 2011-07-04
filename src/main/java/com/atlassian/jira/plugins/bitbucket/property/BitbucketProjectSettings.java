@@ -7,8 +7,6 @@ import java.util.List;
  */
 public interface BitbucketProjectSettings
 {
-    BitbucketSyncProgress getSyncProgress(String projectKey, String repositoryUrl);
-
     void startSyncProgress(String projectKey, String repositoryUrl);
     void setSyncProgress(String projectKey, String repositoryUrl, int revision);
     void completeSyncProgress(String projectKey, String repositoryUrl);

@@ -20,19 +20,15 @@ public class PublicRepositoriesTest extends BitBucketBaseTest
     public void addPublicRepo_VerifyAppearsInList()
     {
         configureRepos.deleteAllRepositories();
-
         configureRepos.addPublicRepoToProject("QA", TEST_REPO_URL);
-
         assertEquals(1, configureRepos.getRepositories().size());
     }
 
     @Test
     public void addPublicRepo_VerifyCommitsOnIssues()
     {
-        if(configureRepos.isRepositoryPresent("QA", TEST_REPO_URL + "/default") == false)
-        {
+        if(!configureRepos.isRepositoryPresent("QA", TEST_REPO_URL + "/default"))
             configureRepos.addPublicRepoToProject("QA", TEST_REPO_URL);
-        }
 
         List<BitBucketCommitEntry> commitList = jira.visit(JiraViewIssuePage.class, "QA-1")
                                                           .openBitBucketPanel()

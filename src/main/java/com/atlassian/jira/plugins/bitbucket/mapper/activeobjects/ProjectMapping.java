@@ -7,14 +7,12 @@ import net.java.ao.Entity;
  */
 public interface ProjectMapping extends Entity
 {
-    String getRepositoryOwner();
-    String getRepositorySlug();
+    String getRepositoryUri();
     String getProjectKey();
     String getUsername();
     String getPassword();
 
-    void setRepositoryOwner(String owner);
-    void setRepositorySlug(String slug);
+    void setRepositoryUri(String owner);
     void setProjectKey(String projectKey);
     void setUsername(String username);
     void setPassword(String password);

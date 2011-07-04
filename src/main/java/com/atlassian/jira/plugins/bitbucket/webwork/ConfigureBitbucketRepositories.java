@@ -2,12 +2,15 @@ package com.atlassian.jira.plugins.bitbucket.webwork;
 
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.config.properties.PropertiesManager;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepositoryFactory;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.sun.org.apache.bcel.internal.util.Repository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,14 +139,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
                     if (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword))
                     {
                         postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length - 1];
-
-                        BitbucketAuthentication auth = BitbucketAuthentication.ANONYMOUS;
-                        if (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword))
-                            auth = BitbucketAuthentication.basic(bbUserName, bbPassword);
-
-                        bitbucketMapper.addRepository(projectKey,
-                                BitbucketRepositoryFactory.load(bitbucket, auth, url),
-                                bbUserName, bbPassword);
+                        bitbucketMapper.addRepository(projectKey, RepositoryUri.parse(url), bbUserName, bbPassword);
                         nextAction = "ForceSync";
                     }
                 }
@@ -151,9 +147,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
                 {
                     postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length - 1];
                     logger.debug(postCommitURL);
-                    bitbucketMapper.addRepository(projectKey,
-                            BitbucketRepositoryFactory.load(bitbucket, BitbucketAuthentication.ANONYMOUS, url),
-                            bbUserName, bbPassword);
+                    bitbucketMapper.addRepository(projectKey, RepositoryUri.parse(url), bbUserName, bbPassword);
                     nextAction = "ForceSync";
                 }
 
@@ -166,9 +160,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("DeleteRepository"))
             {
-                String owner = BitbucketRepositoryFactory.getOwner(url);
-                String slug = BitbucketRepositoryFactory.getSlug(url);
-                bitbucketMapper.removeRepository(projectKey, owner, slug);
+                bitbucketMapper.removeRepository(projectKey, RepositoryUri.parse(url));
             }
 
             if (nextAction.equals("CurrentSyncStatus"))
@@ -189,9 +181,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private void syncRepository() throws MalformedURLException
     {
         logger.debug("sync [ {} ] for project [ {} ]", url, projectKey);
-        String owner = BitbucketRepositoryFactory.getOwner(url);
-        String slug = BitbucketRepositoryFactory.getSlug(url);
-        synchronizer.synchronize(projectKey, owner, slug);
+        synchronizer.synchronize(projectKey, RepositoryUri.parse(url));
     }
 
     public List getProjects()
@@ -200,7 +190,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     }
 
     // Stored Repository + JIRA Projects
-    public List<BitbucketRepository> getProjectRepositories(String projectKey)
+    public List<RepositoryUri> getProjectRepositories(String projectKey)
     {
         return bitbucketMapper.getRepositories(projectKey);
     }

@@ -3,6 +3,8 @@ package com.atlassian.jira.plugins.bitbucket.mapper;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepository;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
+import com.sun.org.apache.bcel.internal.util.Repository;
 
 import java.util.List;
 
@@ -12,28 +14,27 @@ import java.util.List;
 public interface BitbucketMapper
 {
     /**
-     * Return a list of all repositories mapped to the given jira project.
+     * Return a list of all repository uris for the given project
      * @param projectKey the jira project
      * @return a list of repositories
      */
-    List<BitbucketRepository> getRepositories(String projectKey);
+    List<RepositoryUri> getRepositories(String projectKey);
 
     /**
      * Map a repository to the specified jira project
      * @param projectKey the jira project
-     * @param repository the bitbucket repository
+     * @param repositoryUri the uri of the repository to map to
      * @param username the username to use to connect to this bitbucket repository
      * @param password the password to use to connect to this bitbucket repository
      */
-    void addRepository(String projectKey, BitbucketRepository repository, String username, String password);
+    void addRepository(String projectKey, RepositoryUri repositoryUri, String username, String password);
 
     /**
      * Remove the mapping of the bibucket repository from the specified jira project
      * @param projectKey the jira project
-     * @param owner the owner of the repository to remove
-     * @param slug the slug of the repository to remove
+     * @param repositoryUri the uri of the repository to remove
      */
-    void removeRepository(String projectKey, String owner, String slug);
+    void removeRepository(String projectKey, RepositoryUri repositoryUri);
 
     /**
      * Return a list of all commits mapped to the given issue from the given repository
@@ -56,13 +57,5 @@ public interface BitbucketMapper
      */
     void removeChangeset(String issueId, BitbucketChangeset bitbucketChangeset);
 
-    /**
-     * Load the repository authentication details stored for the mapped repository
-     * @param projectKey the project key this repository is mapped to
-     * @param owner the owner of the bitbucket repository
-     * @param slug the slug of the bitbucket repository
-     * @return the authentication details
-     */
-    BitbucketAuthentication getAuthentication(String projectKey, String owner, String slug);
-
+    BitbucketAuthentication getAuthentication(String projectKey, RepositoryUri repositoryUri);
 }

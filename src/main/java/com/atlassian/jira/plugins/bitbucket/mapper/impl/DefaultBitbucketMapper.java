@@ -2,11 +2,13 @@ package com.atlassian.jira.plugins.bitbucket.mapper.impl;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
+import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketRepositoryMapping;
 import com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
 import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.sun.org.apache.bcel.internal.util.Repository;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
@@ -30,35 +32,32 @@ public class DefaultBitbucketMapper implements BitbucketMapper
         this.encryptor = encryptor;
     }
 
-    public List<BitbucketRepository> getRepositories(final String projectKey)
+    public List<RepositoryUri> getRepositories(final String projectKey)
     {
-        return activeObjects.executeInTransaction(new TransactionCallback<List<BitbucketRepository>>()
+        return activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryUri>>()
         {
-            public List<BitbucketRepository> doInTransaction()
+            public List<RepositoryUri> doInTransaction()
             {
                 ProjectMapping[] mappings = activeObjects.find(
                         ProjectMapping.class, "project_key = ?", projectKey);
-                List<BitbucketRepository> repositories = new ArrayList<BitbucketRepository>();
+                List<RepositoryUri> result = new ArrayList<RepositoryUri>();
                 for (ProjectMapping mapping : mappings)
-                {
-                    BitbucketAuthentication auth = getAuthentication(mapping);
-                    repositories.add(BitbucketRepositoryFactory.load(bitbucket, auth, mapping.getRepositoryOwner(), mapping.getRepositorySlug()));
-                }
-                return repositories;
+                    result.add(RepositoryUri.parse(mapping.getRepositoryUri()));
+                return result;
             }
         });
     }
 
-    public void addRepository(String projectKey, BitbucketRepository repository, String username, String password)
+    public void addRepository(String projectKey, RepositoryUri repositoryUri, String username, String password)
     {
+        // TODO don't create duplicate mapping
         final Map<String, Object> map = new HashMap<String, Object>();
-        map.put("repository_owner", repository.getOwner());
-        map.put("repository_slug", repository.getSlug());
+        map.put("repository_uri", repositoryUri.getRepositoryUri());
         map.put("project_key", projectKey);
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
         {
             map.put("username", username);
-            map.put("password", encryptor.encrypt(password, projectKey, repository.getRepositoryUrl()));
+            map.put("password", encryptor.encrypt(password, projectKey, repositoryUri.getRepositoryUrl()));
         }
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
         {
@@ -70,21 +69,19 @@ public class DefaultBitbucketMapper implements BitbucketMapper
         });
     }
 
-    public void removeRepository(final String projectKey, final String owner, final String slug)
+    public void removeRepository(final String projectKey, final RepositoryUri repositoryUri)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
         {
             public Object doInTransaction()
             {
-                ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class,
-                        "project_key = ? and repository_owner = ? and repository_slug = ?",
-                        projectKey, owner, slug);
-                activeObjects.delete(projectMappings);
+                activeObjects.delete(activeObjects.find(ProjectMapping.class,
+                        "project_key = ? and repository_uri = ?",
+                        projectKey, repositoryUri.getRepositoryUri()));
 
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
-                        "project_key = ? and repository_owner = ? and repository_slug = ?",
-                        projectKey, owner, slug);
-                activeObjects.delete(mappings);
+                activeObjects.delete(activeObjects.find(IssueMapping.class,
+                        "project_key = ? and repository_uri = ?",
+                        projectKey, repositoryUri.getRepositoryUri()));
                 return null;
             }
         });
@@ -98,15 +95,13 @@ public class DefaultBitbucketMapper implements BitbucketMapper
             {
                 String projectKey = getProjectKey(issueId);
 
-                IssueMapping[] mappings = activeObjects.find(
-                        IssueMapping.class, "issue_id = ?", issueId);
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "issue_id = ?", issueId);
                 List<BitbucketChangeset> changesets = new ArrayList<BitbucketChangeset>();
                 for (IssueMapping mapping : mappings)
                 {
-                    String owner = mapping.getRepositoryOwner();
-                    String slug = mapping.getRepositorySlug();
-                    BitbucketAuthentication auth = getAuthentication(projectKey, owner, slug);
-                    changesets.add(bitbucket.getChangeset(auth, owner, slug, mapping.getNode()));
+                    RepositoryUri repositoryUri = RepositoryUri.parse(mapping.getRepositoryUri());
+                    BitbucketAuthentication auth = getAuthentication(getProjectMapping(projectKey, repositoryUri));
+                    changesets.add(bitbucket.getChangeset(auth, repositoryUri.getOwner(), repositoryUri.getSlug(), mapping.getNode()));
                 }
                 return changesets;
             }
@@ -146,16 +141,21 @@ public class DefaultBitbucketMapper implements BitbucketMapper
         });
     }
 
-    public BitbucketAuthentication getAuthentication(String projectKey, String owner, String slug)
+    public BitbucketAuthentication getAuthentication(String projectKey, RepositoryUri repositoryUri)
+    {
+        return getAuthentication(getProjectMapping(projectKey, repositoryUri));
+    }
+
+    private ProjectMapping getProjectMapping(String projectKey, RepositoryUri repositoryUri)
     {
         ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class,
-                "project_key = ? and repository_owner = ? and repository_slug = ?",
-                projectKey, owner, slug);
+                "project_key = ? and repository_uri = ?",
+                projectKey, repositoryUri.getRepositoryUri());
         if (projectMappings == null || projectMappings.length != 1)
             throw new BitbucketException("invalid mapping for project [ " + projectKey + " ] to " +
-                    "repository [ " + owner + "/" + slug + " ] was [ " +
+                    "repository [ " + repositoryUri.getRepositoryUri() + " ] was [ " +
                     (projectMappings == null ? "null" : String.valueOf(projectMappings.length)) + " ]");
-        return getAuthentication(projectMappings[0]);
+        return projectMappings[0];
     }
 
     private String getProjectKey(String issueId)

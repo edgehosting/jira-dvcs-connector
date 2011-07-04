@@ -54,28 +54,6 @@ public class DefaultBitbucketProjectSettings implements BitbucketProjectSettings
             removeValue(projectKey, key);
     }
 
-    public BitbucketSyncProgress getSyncProgress(String projectKey, String repositoryUrl)
-    {
-        String progress = null;
-        try
-        {
-            progress = getStringProperty(projectKey, "currentsync" + repositoryUrl + projectKey);
-
-            if (PROGRESS_COMPLETED.equals(progress))
-                return BitbucketSyncProgress.completed();
-
-            if (PROGRESS_TIP.equals(progress))
-                return BitbucketSyncProgress.tip();
-
-            return BitbucketSyncProgress.progress(Integer.parseInt(progress));
-        }
-        catch (PropertyImplementationException e)
-        {
-            // this could indicate a race condition if the property is currently being updated
-            return BitbucketSyncProgress.unknown();
-        }
-    }
-
     public void startSyncProgress(String projectKey, String repositoryUrl)
     {
         logger.debug("starting sync for [ {} ] at [ {} ]", projectKey, repositoryUrl);

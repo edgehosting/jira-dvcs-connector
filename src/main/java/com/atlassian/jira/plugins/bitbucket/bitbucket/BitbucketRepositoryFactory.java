@@ -17,10 +17,11 @@ public class BitbucketRepositoryFactory
     /**
      * Load the remote repository details based on the authentication method, the repository owner and repository
      * slug
+     *
      * @param bitbucket the remote bitbucket service
-     * @param auth the authentication method
-     * @param owner the owner of the repository
-     * @param slug the slug of the repository
+     * @param auth      the authentication method
+     * @param owner     the owner of the repository
+     * @param slug      the slug of the repository
      * @return the parsed {@link BitbucketRepository}
      */
     public static BitbucketRepository load(Bitbucket bitbucket, BitbucketAuthentication auth, String owner, String slug)
@@ -30,9 +31,10 @@ public class BitbucketRepositoryFactory
 
     /**
      * Load the remote repository details based on the authentication method and remote url
+     *
      * @param bitbucket the remote bitbucket service
-     * @param auth the authentication method
-     * @param url the url of the repository
+     * @param auth      the authentication method
+     * @param url       the url of the repository
      * @return the parsed {@link BitbucketRepository}
      * @throws MalformedURLException if the url is not correctly formed
      */
@@ -43,6 +45,7 @@ public class BitbucketRepositoryFactory
 
     /**
      * Extract the repository owner from the repository URL
+     *
      * @param url the repository URL
      * @return the owner of the repository
      * @throws MalformedURLException if the URL is not correctly formed
@@ -54,6 +57,7 @@ public class BitbucketRepositoryFactory
 
     /**
      * Extract the repository slug from the repository URL
+     *
      * @param url the repository URL
      * @return the slug of the repository
      * @throws MalformedURLException if the URL is not correctly formed
@@ -64,7 +68,21 @@ public class BitbucketRepositoryFactory
     }
 
     /**
+     * Extract the repository branch from the repository URL
+     *
+     * @param url the repository URL
+     * @return the branch of the repository
+     * @throws MalformedURLException if the URL is not correctly formed
+     */
+    public static String getBranch(String url) throws MalformedURLException
+    {
+        String[] split = new URL(url).getPath().split("/");
+        return split.length > 3 ? split[3] : "default";
+    }
+
+    /**
      * Parse the json object as a {@link BitbucketRepository}
+     *
      * @param json the json object describing the {@link BitbucketRepository}
      * @return the parsed {@link BitbucketRepository}
      */

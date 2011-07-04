@@ -7,15 +7,19 @@ import net.java.ao.Entity;
  */
 public interface IssueMapping extends Entity
 {
-    String getRepositoryOwner();
-    String getRepositorySlug();
+    String getRepositoryUri();
+
     String getProjectKey();
+
     String getNode();
+
     String getIssueId();
 
-    void setRepositoryOwner(String owner);
-    void setRepositorySlug(String slug);
+    void setRepositoryUri(String owner);
+
     void setProjectKey(String projectKey);
+
     void setNode(String node);
+
     void setIssueId(String issueId);
 }

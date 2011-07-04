@@ -25,7 +25,6 @@ public class DefaultBitbucketChangeset implements BitbucketChangeset
     private final int revision;
     private final List<String> parents;
     private final List<BitbucketChangesetFile> files;
-    // TODO: file list
 
     public DefaultBitbucketChangeset(String repositoryOwner, String repositorySlug,
                                      String node, String rawAuthor, String author, String timestamp,
