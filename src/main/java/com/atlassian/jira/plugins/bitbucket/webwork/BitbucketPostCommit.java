@@ -21,7 +21,6 @@ public class BitbucketPostCommit extends JiraWebActionSupport
 {
     private final Logger logger = LoggerFactory.getLogger(BitbucketPostCommit.class);
     private final Synchronizer synchronizer;
-    private final BitbucketMapper bitbucketMapper;
 
     // Validation Error Messages
     private String validations = "";
@@ -34,10 +33,9 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     // BitBucket JSON Payload
     private String payload = "";
 
-    public BitbucketPostCommit(Synchronizer synchronizer, BitbucketMapper bitbucketMapper)
+    public BitbucketPostCommit(Synchronizer synchronizer)
     {
         this.synchronizer = synchronizer;
-        this.bitbucketMapper = bitbucketMapper;
     }
 
     protected void doValidation()
@@ -64,19 +62,20 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     {
         if (validations.equals(""))
         {
+            logger.debug("recieved callback post for project [ {} ] on branch [ {} ]", projectKey, branch);
+
             List<BitbucketChangeset> changesets = new ArrayList<BitbucketChangeset>();
             JSONObject jsonPayload = new JSONObject(payload);
 
-            String owner = jsonPayload.getString("owner");
-            String slug = jsonPayload.getString("slug");
+            String owner = jsonPayload.getJSONObject("repository").getString("owner");
+            String slug = jsonPayload.getJSONObject("repository").getString("slug");
 
             JSONArray commits = jsonPayload.getJSONArray("commits");
 
             for (int i = 0; i < commits.length(); ++i)
                 changesets.add(BitbucketChangesetFactory.parse(owner, slug, commits.getJSONObject(i)));
 
-            synchronizer.synchronize(projectKey,
-                    RepositoryUri.parse(owner+"/"+slug+"/"+branch), changesets);
+            synchronizer.synchronize(projectKey, RepositoryUri.parse(owner+"/"+slug+"/"+branch), changesets);
         }
 
         return "postcommit";

@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.BitbucketChangesetIterator;
-import com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucket;
+import com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection;
 import com.google.common.collect.Iterables;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
