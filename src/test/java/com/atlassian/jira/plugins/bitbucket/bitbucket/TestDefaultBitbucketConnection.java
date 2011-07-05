@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
+import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.BitbucketChangesetIterator;
 import com.atlassian.jira.plugins.bitbucket.connection.impl.DefaultBitbucketConnection;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucket;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
 import org.junit.Before;
@@ -57,7 +57,7 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAnonymousGetChangesets() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getChangesets(BitbucketAuthentication.ANONYMOUS, "owner", "slug", DefaultBitbucket.PAGE_SIZE);
+        new DefaultBitbucketConnection(requestFactory).getChangesets(BitbucketAuthentication.ANONYMOUS, "owner", "slug", BitbucketChangesetIterator.PAGE_SIZE);
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets?limit=15&start=tip");
         verify(request, never()).addBasicAuthentication("user", "pass");
     }
@@ -81,7 +81,7 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAuthenticatedGetChangesets() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getChangesets(BitbucketAuthentication.basic("user", "pass"), "owner", "slug", DefaultBitbucket.PAGE_SIZE);
+        new DefaultBitbucketConnection(requestFactory).getChangesets(BitbucketAuthentication.basic("user", "pass"), "owner", "slug", BitbucketChangesetIterator.PAGE_SIZE);
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets?limit=15&start=tip");
         verify(request).addBasicAuthentication("user", "pass");
     }

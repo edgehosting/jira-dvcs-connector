@@ -23,8 +23,8 @@
     ], 
     "user": {
         "username": "mjensen", 
-        "first_name": "", 
-        "last_name": "", 
+        "first_name": "Matthew",
+        "last_name": "Jensen",
         "avatar": "https://secure.gravatar.com/avatar/e0fe5875ffbe955718f93b8a364454fe?d=identicon&s=32", 
         "resource_uri": "/1.0/users/mjensen"
     }

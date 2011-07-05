@@ -43,6 +43,6 @@ public interface Bitbucket
      * @param slug  the slug of the project
      * @return the project
      */
-    public List<BitbucketChangeset> getChangesets(BitbucketAuthentication auth, String owner, String slug);
+    public Iterable<BitbucketChangeset> getChangesets(BitbucketAuthentication auth, String owner, String slug);
 
 }

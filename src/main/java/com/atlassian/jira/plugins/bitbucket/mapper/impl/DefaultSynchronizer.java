@@ -56,7 +56,7 @@ public class DefaultSynchronizer implements Synchronizer
         logger.debug("synchronize [ {} ] with [ {} ]", projectKey, repositoryUri.getRepositoryUri());
 
         BitbucketAuthentication auth = bitbucketMapper.getAuthentication(projectKey, repositoryUri);
-        List<BitbucketChangeset> changesets = bitbucket.getChangesets(auth, repositoryUri.getOwner(), repositoryUri.getSlug());
+        Iterable<BitbucketChangeset> changesets = bitbucket.getChangesets(auth, repositoryUri.getOwner(), repositoryUri.getSlug());
         for (BitbucketChangeset changeset : changesets)
         {
             String message = changeset.getMessage();
