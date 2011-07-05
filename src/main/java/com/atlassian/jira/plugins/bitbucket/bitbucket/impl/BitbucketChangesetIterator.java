@@ -12,6 +12,7 @@ import com.atlassian.jira.util.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * An iterator that will load pages of changesets from the remote repository in pages transparently.
@@ -36,7 +37,7 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketChangeset>
 
     public boolean hasNext()
     {
-        if(currentRevision!=null && currentRevision==0)
+        if (currentRevision != null && currentRevision == 0)
             return false;
 
         boolean hasNext = getCurrentPage().hasNext();
@@ -50,7 +51,23 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketChangeset>
 
     public BitbucketChangeset next()
     {
-        return getCurrentPage().next();
+        try
+        {
+            return getCurrentPage().next();
+        }
+        catch (NoSuchElementException e)
+        {
+            // try and load another page if we aren't back to the first revision
+            if (currentRevision > 0)
+            {
+                currentPage = null;
+                return getCurrentPage().next();
+            }
+            else
+            {
+                throw e;
+            }
+        }
     }
 
     public void remove()
