@@ -15,9 +15,8 @@
     </component-import>
 
     <ao key="ao-module" name="Active Objects Module">
-        <entity>com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.ProjectMapping</entity>
-        <entity>com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.IssueMapping</entity>
-        <entity>com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.SyncProgress</entity>
+        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping</entity>
+        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.property.PropertyMigrator</upgradeTask>
     </ao>
 

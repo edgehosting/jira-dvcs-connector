@@ -28,10 +28,11 @@ public interface Synchronizer
 
     /**
      * Get the progress of any sync being executed for the matching project and repository details
+     *
      * @param projectKey the jira project key
      * @param repositoryUri the uri of the repository
      * @return the progress of the synchronization
      */
-    public SynchronizationProgress getProgress(String projectKey, RepositoryUri repositoryUri);
+    public Iterable<Progress> getProgress(String projectKey, RepositoryUri repositoryUri);
 
 }

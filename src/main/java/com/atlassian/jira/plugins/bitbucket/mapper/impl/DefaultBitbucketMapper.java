@@ -1,14 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.mapper.impl;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
-import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketRepositoryMapping;
-import com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
 import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.sun.org.apache.bcel.internal.util.Repository;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
@@ -108,18 +106,22 @@ public class DefaultBitbucketMapper implements BitbucketMapper
         });
     }
 
-    public void addChangeset(String issueId, BitbucketChangeset changeset)
+    public void addChangeset(final String issueId, final BitbucketChangeset changeset)
     {
-        final Map<String, Object> map = new HashMap<String, Object>();
-        map.put("node", changeset.getNode());
-        map.put("project_key", getProjectKey(issueId));
-        map.put("issue_id", issueId);
-        map.put("repository_owner", changeset.getRepositoryOwner());
-        map.put("repository_slug", changeset.getRepositorySlug());
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
         {
             public Object doInTransaction()
             {
+                final Map<String, Object> map = new HashMap<String, Object>();
+                map.put("node", changeset.getNode());
+                map.put("project_key", getProjectKey(issueId));
+                map.put("issue_id", issueId);
+                map.put("repository_uri", new RepositoryUri(changeset.getRepositoryOwner(), changeset.getRepositorySlug()).toString());
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
+                        "issue_id = ? and node = ?",
+                        issueId, changeset.getNode());
+                if (mappings != null && mappings.length > 0)
+                    activeObjects.delete(mappings);
                 activeObjects.create(IssueMapping.class, map);
                 return null;
             }

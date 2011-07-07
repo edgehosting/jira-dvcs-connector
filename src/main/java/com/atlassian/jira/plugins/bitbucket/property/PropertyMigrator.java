@@ -3,15 +3,14 @@ package com.atlassian.jira.plugins.bitbucket.property;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
-import com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultBitbucketMapper;
 import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
-import com.sun.org.apache.bcel.internal.util.Repository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +67,7 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
 
                     RepositoryUri repositoryUri = RepositoryUri.parse(repository);
                     logger.debug("migrate repository [ {} ]", repositoryUri);
-                    mapper.addRepository(projectKey, repositoryUri,  username, password);
+                    mapper.addRepository(projectKey, repositoryUri, username, password);
 
                     List<String> issueIds = settings.getIssueIds(projectKey, repository);
                     for (String issueId : issueIds)
@@ -81,10 +80,11 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
                             URL changesetURL = new URL(commit);
                             String changesetPath = changesetURL.getPath();
                             String node = changesetPath.substring(changesetPath.lastIndexOf("/") + 1);
-                            logger.debug("add changeset [ {} ] to [ {} ]", node, issueId);
+                            logger.debug("add changeset [ {} ] to [ {} ]", changesetPath, issueId);
 
-                            mapper.addChangeset(issueId, bitbucket.getChangeset(auth,
-                                    repositoryUri.getOwner(), repositoryUri.getSlug(), node));
+                            mapper.addChangeset(issueId, BitbucketChangesetFactory.load(
+                                    bitbucket, auth, repositoryUri.getOwner(), repositoryUri.getSlug(), node
+                            ));
                         }
                     }
 

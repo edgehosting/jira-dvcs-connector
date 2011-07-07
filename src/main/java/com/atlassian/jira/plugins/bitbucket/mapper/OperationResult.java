@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.bitbucket.mapper;
 
 /**
  */
-public class SynchronizationProgress
+public enum OperationResult
 {
+    YES, NO, MAYBE
 }

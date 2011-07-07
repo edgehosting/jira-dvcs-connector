@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
-import com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.mapper.activeobjects.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultBitbucketMapper;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import org.apache.commons.lang.StringUtils;
@@ -56,6 +56,7 @@ public class TestDefaultBitbucketMapper
         when(repository.getRepositoryUrl()).thenReturn("https://bitbucket.org/owner/slug");
         when(changeset.getRepositoryOwner()).thenReturn("owner");
         when(changeset.getRepositorySlug()).thenReturn("slug");
+        when(changeset.getBranch()).thenReturn("default");
         when(changeset.getNode()).thenReturn("1");
         //noinspection unchecked
         when(activeObjects.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(
@@ -228,8 +229,7 @@ public class TestDefaultBitbucketMapper
                     {
                         //noinspection unchecked
                         Map<String, Object> map = (Map<String, Object>) o;
-                        return map.get("repository_owner").equals("owner") &&
-                                map.get("repository_slug").equals("slug") &&
+                        return map.get("repository_uri").equals("owner/slug") &&
                                 map.get("project_key").equals("JST") &&
                                 map.get("node").equals("1") &&
                                 map.get("issue_id").equals("JST-1");

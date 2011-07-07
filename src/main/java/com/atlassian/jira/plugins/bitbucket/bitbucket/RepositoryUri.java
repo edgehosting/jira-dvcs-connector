@@ -36,6 +36,13 @@ public class RepositoryUri
         this.branch = branch;
     }
 
+    public RepositoryUri(String owner, String slug)
+    {
+        this.owner = owner;
+        this.slug = slug;
+        this.branch = null;
+    }
+
     public String getOwner()
     {
         return owner;
@@ -53,7 +60,7 @@ public class RepositoryUri
 
     public String getRepositoryUri()
     {
-        return owner + "/" + slug + "/" + branch;
+        return owner + "/" + slug + ((branch!=null)?("/" + branch):"");
     }
 
     public String getRepositoryUrl()

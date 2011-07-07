@@ -6,16 +6,19 @@ import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepositoryFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
+import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.google.common.collect.Iterables;
 import com.sun.org.apache.bcel.internal.util.Repository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -47,6 +50,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private final BitbucketMapper bitbucketMapper;
     private final Bitbucket bitbucket;
     private final Synchronizer synchronizer;
+    private List<Progress> progress;
 
     public ConfigureBitbucketRepositories(BitbucketMapper bitbucketMapper,
                                           Bitbucket bitbucket, Synchronizer synchronizer)
@@ -165,6 +169,8 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("CurrentSyncStatus"))
             {
+                progress = new ArrayList<Progress>();
+                Iterables.addAll(progress,synchronizer.getProgress(projectKey, RepositoryUri.parse(url)));
                 return "syncstatus";
             }
 
@@ -300,4 +306,8 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         return this.redirectURL;
     }
 
+    public List<Progress> getProgress()
+    {
+        return progress;
+    }
 }
