@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.mapper.*;
+import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -33,7 +34,7 @@ public class DefaultSynchronizer implements Synchronizer
                 {
                     public Progress apply(final SynchronizationKey from)
                     {
-                        return new Progress(from, executorService.submit(new Callable<OperationResult>()
+                        return new Progress(templateRenderer, from, executorService.submit(new Callable<OperationResult>()
                         {
 
                             public OperationResult call() throws Exception
@@ -52,10 +53,12 @@ public class DefaultSynchronizer implements Synchronizer
                 });
 
         private final ExecutorService executorService;
+        private final TemplateRenderer templateRenderer;
 
-        public Coordinator(ExecutorService executorService)
+        public Coordinator(ExecutorService executorService, TemplateRenderer templateRenderer)
         {
             this.executorService = executorService;
+            this.templateRenderer = templateRenderer;
         }
     }
 
@@ -77,6 +80,8 @@ public class DefaultSynchronizer implements Synchronizer
                     bitbucket.getChangesets(auth, key.getRepositoryUri().getOwner(), key.getRepositoryUri().getSlug()) :
                     key.getChangesets();
 
+            int jiraCount = 0;
+
             for (BitbucketChangeset changeset : changesets)
             {
                 String message = changeset.getMessage();
@@ -86,9 +91,10 @@ public class DefaultSynchronizer implements Synchronizer
                     Set<String> extractedIssues = extractProjectKey(key.getProjectKey(), message);
                     for (String extractedIssue : extractedIssues)
                     {
+                        jiraCount ++;
                         String issueId = extractedIssue.toUpperCase();
                         bitbucketMapper.addChangeset(issueId, changeset);
-                        coordinator.operations.get(key).setProgress(new Progress.InProgress(changeset.getRevision()));
+                        coordinator.operations.get(key).inProgress(changeset.getRevision(), jiraCount);
                     }
                 }
             }
@@ -102,13 +108,12 @@ public class DefaultSynchronizer implements Synchronizer
     private final BitbucketMapper bitbucketMapper;
     private final Coordinator coordinator;
 
-    public DefaultSynchronizer(Bitbucket bitbucket, BitbucketMapper bitbucketMapper, ExecutorService executorService)
+    public DefaultSynchronizer(Bitbucket bitbucket, BitbucketMapper bitbucketMapper,
+                               ExecutorService executorService, TemplateRenderer templateRenderer)
     {
         this.bitbucket = bitbucket;
         this.bitbucketMapper = bitbucketMapper;
-
-        // TODO:inject executor
-        this.coordinator = new Coordinator(executorService);
+        this.coordinator = new Coordinator(executorService, templateRenderer);
     }
 
     private Set<String> extractProjectKey(String projectKey, String message)

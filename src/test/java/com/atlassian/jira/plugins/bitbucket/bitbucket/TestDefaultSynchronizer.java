@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
 import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultSynchronizer;
+import com.atlassian.templaterenderer.TemplateRenderer;
 import com.atlassian.util.concurrent.ThreadFactories;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +25,8 @@ public class TestDefaultSynchronizer
     private BitbucketMapper bitbucketMapper;
     @Mock
     private BitbucketChangeset changeset;
+    @Mock
+    private TemplateRenderer templateRenderer;
 
     @Before
     public void setup()
@@ -40,7 +43,8 @@ public class TestDefaultSynchronizer
         when(bitbucket.getChangesets(BitbucketAuthentication.ANONYMOUS, "owner", "slug")).thenReturn(Arrays.asList(changeset));
         when(changeset.getMessage()).thenReturn("PRJ-1 Message");
 
-        new DefaultSynchronizer(bitbucket, bitbucketMapper, Executors.newSingleThreadExecutor()).synchronize(projectKey, repositoryUri);
+        new DefaultSynchronizer(bitbucket, bitbucketMapper,
+                Executors.newSingleThreadExecutor(), templateRenderer).synchronize(projectKey, repositoryUri);
         verify(bitbucketMapper, times(1)).addChangeset("PRJ-1", changeset);
     }
 }

@@ -8,8 +8,7 @@
         <strong>Sync Processing Complete</strong>
     #else
         #foreach($progress in $action.getProgress())
-            <p>Synchronizing <strong>$progress.getKey().getProjectKey()</strong> at revision
-                <strong>$progress.getProgress()</strong></p>
+            $progress.getProgress().render()
         #end
     #end
 

@@ -5,8 +5,8 @@
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
     </plugin-info>
 
-    <component-import key="templateRendererFactory"
-                      interface="com.atlassian.templaterenderer.velocity.one.six.VelocityTemplateRendererFactory">
+    <component-import key="templateRenderer"
+                      interface="com.atlassian.templaterenderer.TemplateRenderer">
         <description>Template Renderer Factory</description>
     </component-import>
 
@@ -19,6 +19,12 @@
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.property.PropertyMigrator</upgradeTask>
     </ao>
+
+    <component key="executorService" name="Executor Service Factory Component"
+            class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultExecutorServiceFactoryBean">
+        <description>ExecutorService factory bean for creating executor services</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.mapper.ExecutorServiceFactoryBean</interface>
+    </component>
 
     <component key="mapper" name="Bitbucket Mapper"
                class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultBitbucketMapper">
