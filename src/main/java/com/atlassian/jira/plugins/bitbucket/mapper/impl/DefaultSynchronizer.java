@@ -5,8 +5,6 @@ import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.mapper.*;
-import com.atlassian.util.concurrent.Nullable;
-import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -17,7 +15,9 @@ import org.slf4j.LoggerFactory;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -102,13 +102,13 @@ public class DefaultSynchronizer implements Synchronizer
     private final BitbucketMapper bitbucketMapper;
     private final Coordinator coordinator;
 
-    public DefaultSynchronizer(Bitbucket bitbucket, BitbucketMapper bitbucketMapper)
+    public DefaultSynchronizer(Bitbucket bitbucket, BitbucketMapper bitbucketMapper, ExecutorService executorService)
     {
         this.bitbucket = bitbucket;
         this.bitbucketMapper = bitbucketMapper;
 
         // TODO:inject executor
-        this.coordinator = new Coordinator(Executors.newFixedThreadPool(2, ThreadFactories.namedThreadFactory("BitbucketSynchronizer")));
+        this.coordinator = new Coordinator(executorService);
     }
 
     private Set<String> extractProjectKey(String projectKey, String message)
@@ -130,14 +130,12 @@ public class DefaultSynchronizer implements Synchronizer
 
     public void synchronize(String projectKey, RepositoryUri repositoryUri)
     {
-        SynchronizationKey key = new SynchronizationKey(projectKey, repositoryUri);
-        coordinator.operations.get(key);
+        coordinator.operations.get(new SynchronizationKey(projectKey, repositoryUri));
     }
 
     public void synchronize(String projectKey, RepositoryUri repositoryUri, List<BitbucketChangeset> changesets)
     {
-        SynchronizationKey key = new SynchronizationKey(projectKey, repositoryUri, changesets);
-        coordinator.operations.get(key);
+        coordinator.operations.get(new SynchronizationKey(projectKey, repositoryUri, changesets));
     }
 
     public Iterable<Progress> getProgress()
