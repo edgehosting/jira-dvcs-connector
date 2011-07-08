@@ -1,13 +1,11 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.JiraViewIssuePage;
 import org.junit.Test;
 
-import java.util.List;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * Test to verify behaviour when syncing public bitbucket repos.
@@ -15,29 +13,50 @@ import static junit.framework.Assert.assertTrue;
 public class PublicRepositoriesTest extends BitBucketBaseTest
 {
     private static final String TEST_REPO_URL = "https://bitbucket.org/farmas/testrepo-qa";
+    private static final String TEST_PRIVATE_REPO_URL = "https://bitbucket.org/farmas/privatetestrepo-qa-tst";
 
     @Test
-    public void addPublicRepo_VerifyAppearsInList()
+    public void addRepoAppearsOnList()
     {
         configureRepos.deleteAllRepositories();
         configureRepos.addPublicRepoToProject("QA", TEST_REPO_URL);
-        assertEquals(1, configureRepos.getRepositories().size());
+        assertThat(configureRepos.getRepositories().size(), equalTo(1));
     }
 
     @Test
-    public void addPublicRepo_VerifyCommitsOnIssues()
+    public void addRepoCommitsAppearOnIssues()
     {
-        if(!configureRepos.isRepositoryPresent("QA", TEST_REPO_URL + "/default"))
-            configureRepos.addPublicRepoToProject("QA", TEST_REPO_URL);
+        ensureRepositoryPresent("QA", TEST_REPO_URL);
 
-        List<BitBucketCommitEntry> commitList = jira.visit(JiraViewIssuePage.class, "QA-1")
-                                                          .openBitBucketPanel()
-                                                          .waitForMessages();
+        assertThat(getCommitsForIssue("QA-2"), hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+        assertThat(getCommitsForIssue("QA-3"), hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+    }
 
-        assertTrue("Expected at least 1 commit entry", commitList.size() > 1);
+    @Test
+    public void addRepoThatDoesNotExist()
+    {
+        configureRepos.deleteAllRepositories();
 
-        //verify message of first commit
-        assertEquals("BB modified 10 files to QA-1 from TestRepo-QA", commitList.get(commitList.size()-1).getCommitMessage());
+        configureRepos.addPublicRepoToProject("QA", "https://bitbucket.org/farmas/repo-does-not-exist");
 
+        String syncStatusMessage = configureRepos.getSyncStatusMessage();
+        assertThat(syncStatusMessage, containsString("0 Commits with JIRA Project Key QA found"));
+        
+        // BBC-60
+        // assertThat(syncStatusMessage, containsString("Bitbucket repository can't be found or incorrect credentials."));
+    }
+
+    @Test
+    public void addPrivateRepoAsPublic()
+    {
+        configureRepos.deleteAllRepositories();
+
+        configureRepos.addPublicRepoToProject("QA", TEST_PRIVATE_REPO_URL);
+
+        String syncStatusMessage = configureRepos.getSyncStatusMessage();
+        assertThat(syncStatusMessage, containsString("0 Commits with JIRA Project Key QA found"));
+
+        // BBC-60
+        // assertThat(syncStatusMessage, containsString("Bitbucket repository can't be found or incorrect credentials."));
     }
 }

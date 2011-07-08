@@ -128,4 +128,13 @@ public class BitBucketConfigureRepositoriesPage implements Page
 
         return commitFound;
     }
+
+    /**
+     * The current sync status message
+     * @return Sync status message
+     */
+    public String getSyncStatusMessage()
+    {
+        return syncStatusDiv.getText();
+    }
 }
