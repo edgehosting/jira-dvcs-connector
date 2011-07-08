@@ -4,6 +4,8 @@ import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
 import com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -12,6 +14,7 @@ import java.util.*;
  */
 public class DefaultBitbucket implements Bitbucket
 {
+    private final Logger logger = LoggerFactory.getLogger(DefaultBitbucket.class);
     private final BitbucketConnection bitbucketConnection;
 
     public DefaultBitbucket(BitbucketConnection bitbucketConnection)
@@ -25,9 +28,15 @@ public class DefaultBitbucket implements Bitbucket
         {
             return DefaultBitbucketUser.parse(new JSONObject(bitbucketConnection.getUser(username)));
         }
+        catch (BitbucketException e)
+        {
+            logger.debug("could not load user [ "+username+" ]");
+            return DefaultBitbucketUser.UNKNOWN_USER;
+        }
         catch (JSONException e)
         {
-            throw new BitbucketException("could not parse json object", e);
+            logger.debug("could not load user [ "+username+" ]");
+            return DefaultBitbucketUser.UNKNOWN_USER;
         }
     }
 
