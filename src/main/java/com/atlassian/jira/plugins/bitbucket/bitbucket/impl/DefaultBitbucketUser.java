@@ -10,10 +10,6 @@ import com.atlassian.jira.util.json.JSONObject;
  */
 public class DefaultBitbucketUser implements BitbucketUser
 {
-    public static BitbucketUser UNKNOWN_USER = new DefaultBitbucketUser(
-            "unknown", "", "", "https://secure.gravatar.com/avatar/unknown?d=mm", ""
-    );
-
     public static DefaultBitbucketUser parse(JSONObject json)
     {
         try

@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.fail;
 import static org.mockito.Mockito.*;
 
@@ -102,6 +103,18 @@ public class TestDefaultBitbucket
         assertEquals("Matthew", user.getFirstName());
         assertEquals("Jensen", user.getLastName());
         assertEquals("/1.0/users/mjensen", user.getResourceUri());
+    }
+
+    /**
+     * BBC-64
+     */
+    @Test
+    public void testGetUnknownUser()
+    {
+        when(bitbucketConnection.getUser("unknown")).thenThrow(new BitbucketException());
+        BitbucketUser user = new DefaultBitbucket(bitbucketConnection).getUser("unknown");
+        assertNotNull(user);
+        assertEquals(BitbucketUser.UNKNOWN_USER,user);
     }
 
 }

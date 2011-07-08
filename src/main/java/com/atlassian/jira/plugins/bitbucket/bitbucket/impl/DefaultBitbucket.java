@@ -31,12 +31,12 @@ public class DefaultBitbucket implements Bitbucket
         catch (BitbucketException e)
         {
             logger.debug("could not load user [ "+username+" ]");
-            return DefaultBitbucketUser.UNKNOWN_USER;
+            return BitbucketUser.UNKNOWN_USER;
         }
         catch (JSONException e)
         {
             logger.debug("could not load user [ "+username+" ]");
-            return DefaultBitbucketUser.UNKNOWN_USER;
+            return BitbucketUser.UNKNOWN_USER;
         }
     }
 
