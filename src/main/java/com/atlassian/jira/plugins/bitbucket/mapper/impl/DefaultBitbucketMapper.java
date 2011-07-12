@@ -9,10 +9,7 @@ import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A simple bitbucket mapper that uses ActiveObjects to store the mapping details
@@ -101,6 +98,16 @@ public class DefaultBitbucketMapper implements BitbucketMapper
                     BitbucketAuthentication auth = getAuthentication(getProjectMapping(projectKey, repositoryUri));
                     changesets.add(bitbucket.getChangeset(auth, repositoryUri.getOwner(), repositoryUri.getSlug(), mapping.getNode()));
                 }
+
+                // BBC-57
+                Collections.sort(changesets, new Comparator<BitbucketChangeset>()
+                {
+                    public int compare(BitbucketChangeset a, BitbucketChangeset b)
+                    {
+                        return a.getRevision() - b.getRevision();
+                    }
+                });
+
                 return changesets;
             }
         });
