@@ -39,7 +39,7 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
         List<IssueAction> bitbucketActions = new ArrayList<IssueAction>();
         for (BitbucketChangeset changeset : bitbucketMapper.getChangesets(issueId))
         {
-            logger.debug("found changeset [ " + changeset.getNode() + " ]");
+            logger.debug("found changeset [ {} ] on issue [ {} ]",changeset.getNode(), issueId);
             bitbucketActions.add(new GenericMessageAction(formatCommitDetails(changeset)));
         }
 

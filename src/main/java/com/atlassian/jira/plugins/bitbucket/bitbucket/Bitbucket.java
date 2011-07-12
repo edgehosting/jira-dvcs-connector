@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import java.util.List;
-
 /**
  * Starting point for remote API calls to the bitbucket remote API
  */
