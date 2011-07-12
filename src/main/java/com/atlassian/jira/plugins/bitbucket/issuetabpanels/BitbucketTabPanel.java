@@ -54,7 +54,8 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
 
     public boolean showPanel(Issue issue, User user)
     {
-        return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user);
+        return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user) &&
+                !bitbucketMapper.getRepositories(issue.getProjectObject().getKey()).isEmpty();
     }
 
     private String formatCommitDetails(BitbucketChangeset changeset)
