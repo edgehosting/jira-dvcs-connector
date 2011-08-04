@@ -17,7 +17,7 @@
     <p>$action.getJIRACommitTotal() Commits with JIRA Project Key $action.getProjectKey()  found</p>
 
     #if (!$action.getSyncProgress().isCompleted())
-        <img src='$action.getBaseURL()/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/loading_barber_pole_horz.gif'>
+        <img src='${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/loading_barber_pole_horz.gif'>
     #end
 
 

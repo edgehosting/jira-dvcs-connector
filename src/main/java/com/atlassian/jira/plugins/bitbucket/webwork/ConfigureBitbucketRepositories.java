@@ -39,7 +39,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String nextAction = "";
     private String validations = "";
     private String messages = "";
-    private String baseURL = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
     private String redirectURL = "";
 
     public ConfigureBitbucketRepositories(BitbucketProjectSettings bitbucketProjectSettings,
@@ -341,11 +340,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     public String getMessages()
     {
         return this.messages;
-    }
-
-    public String getBaseURL()
-    {
-        return this.baseURL;
     }
 
     public String getRedirectURL()
