@@ -34,7 +34,7 @@ public class DefaultBitbucketMapper implements BitbucketMapper
             public List<RepositoryUri> doInTransaction()
             {
                 ProjectMapping[] mappings = activeObjects.find(
-                        ProjectMapping.class, "project_key = ?", projectKey);
+                        ProjectMapping.class, "PROJECT_KEY = ?", projectKey);
                 List<RepositoryUri> result = new ArrayList<RepositoryUri>();
                 for (ProjectMapping mapping : mappings)
                     result.add(RepositoryUri.parse(mapping.getRepositoryUri()));
@@ -47,12 +47,12 @@ public class DefaultBitbucketMapper implements BitbucketMapper
     {
         // TODO don't create duplicate mapping
         final Map<String, Object> map = new HashMap<String, Object>();
-        map.put("repository_uri", repositoryUri.getRepositoryUri());
-        map.put("project_key", projectKey);
+        map.put("REPOSITORY_URI", repositoryUri.getRepositoryUri());
+        map.put("PROJECT_KEY", projectKey);
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
         {
-            map.put("username", username);
-            map.put("password", encryptor.encrypt(password, projectKey, repositoryUri.getRepositoryUrl()));
+            map.put("USERNAME", username);
+            map.put("PASSWORD", encryptor.encrypt(password, projectKey, repositoryUri.getRepositoryUrl()));
         }
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
         {
@@ -71,11 +71,11 @@ public class DefaultBitbucketMapper implements BitbucketMapper
             public Object doInTransaction()
             {
                 activeObjects.delete(activeObjects.find(ProjectMapping.class,
-                        "project_key = ? and repository_uri = ?",
+                        "PROJECT_KEY = ? and REPOSITORY_URI = ?",
                         projectKey, repositoryUri.getRepositoryUri()));
 
                 activeObjects.delete(activeObjects.find(IssueMapping.class,
-                        "project_key = ? and repository_uri = ?",
+                        "PROJECT_KEY = ? and REPOSITORY_URI = ?",
                         projectKey, repositoryUri.getRepositoryUri()));
                 return null;
             }
@@ -90,7 +90,7 @@ public class DefaultBitbucketMapper implements BitbucketMapper
             {
                 String projectKey = getProjectKey(issueId);
 
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "issue_id = ?", issueId);
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", issueId);
                 List<BitbucketChangeset> changesets = new ArrayList<BitbucketChangeset>();
                 for (IssueMapping mapping : mappings)
                 {
@@ -120,12 +120,12 @@ public class DefaultBitbucketMapper implements BitbucketMapper
             public Object doInTransaction()
             {
                 final Map<String, Object> map = new HashMap<String, Object>();
-                map.put("node", changeset.getNode());
-                map.put("project_key", getProjectKey(issueId));
-                map.put("issue_id", issueId);
-                map.put("repository_uri", new RepositoryUri(changeset.getRepositoryOwner(), changeset.getRepositorySlug()).toString());
+                map.put("NODE", changeset.getNode());
+                map.put("PROJECT_KEY", getProjectKey(issueId));
+                map.put("ISSUE_ID", issueId);
+                map.put("REPOSITORY_URI", new RepositoryUri(changeset.getRepositoryOwner(), changeset.getRepositorySlug()).toString());
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
-                        "issue_id = ? and node = ?",
+                        "ISSUE_ID = ? and NODE = ?",
                         issueId, changeset.getNode());
                 if (mappings != null && mappings.length > 0)
                     activeObjects.delete(mappings);
@@ -142,7 +142,7 @@ public class DefaultBitbucketMapper implements BitbucketMapper
             public Object doInTransaction()
             {
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
-                        "issue_id = ? and node = ?",
+                        "ISSUE_ID = ? and NODE = ?",
                         issueId, changeset.getNode());
                 activeObjects.delete(mappings);
                 return null;
@@ -158,7 +158,7 @@ public class DefaultBitbucketMapper implements BitbucketMapper
     private ProjectMapping getProjectMapping(String projectKey, RepositoryUri repositoryUri)
     {
         ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class,
-                "project_key = ? and repository_uri = ?",
+                "PROJECT_KEY = ? and REPOSITORY_URI = ?",
                 projectKey, repositoryUri.getRepositoryUri());
         if (projectMappings == null || projectMappings.length != 1)
             throw new BitbucketException("invalid mapping for project [ " + projectKey + " ] to " +
