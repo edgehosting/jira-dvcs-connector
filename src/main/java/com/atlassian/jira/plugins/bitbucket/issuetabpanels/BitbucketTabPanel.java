@@ -20,7 +20,7 @@ import java.util.*;
 
 public class BitbucketTabPanel extends AbstractIssueTabPanel
 {
-
+    private static final GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction("");
     private final Bitbucket bitbucket;
     private final BitbucketMapper bitbucketMapper;
     private final PermissionManager permissionManager;
@@ -37,17 +37,21 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
     {
         String issueId = issue.getKey();
         List<IssueAction> bitbucketActions = new ArrayList<IssueAction>();
-        for (BitbucketChangeset changeset : bitbucketMapper.getChangesets(issueId))
+        try
         {
-            logger.debug("found changeset [ {} ] on issue [ {} ]",changeset.getNode(), issueId);
-            bitbucketActions.add(new GenericMessageAction(formatCommitDetails(changeset)));
+            for (BitbucketChangeset changeset : bitbucketMapper.getChangesets(issueId))
+            {
+                logger.debug("found changeset [ {} ] on issue [ {} ]", changeset.getNode(), issueId);
+                bitbucketActions.add(new GenericMessageAction(formatCommitDetails(changeset)));
+            }
+        }
+        catch (BitbucketException e)
+        {
+            logger.debug("Could not retrieve changeset for [ " + issueId + " ]: " + e, e);
         }
 
         if (bitbucketActions.isEmpty())
-        {
-            GenericMessageAction blankAction = new GenericMessageAction("");
-            bitbucketActions.add(blankAction);
-        }
+            bitbucketActions.add(DEFAULT_MESSAGE);
 
         return bitbucketActions;
     }
