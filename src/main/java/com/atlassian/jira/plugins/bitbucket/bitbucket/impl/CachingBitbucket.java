@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
 import com.google.common.base.Function;
+import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
 
 import java.util.Map;
@@ -124,21 +125,54 @@ public class CachingBitbucket implements Bitbucket
 
     public BitbucketUser getUser(String username)
     {
-        return userMap.get(username);
+        try
+        {
+            return userMap.get(username);
+        }
+        catch (ComputationException e)
+        {
+            throw unrollException(e);
+        }
     }
 
     public BitbucketRepository getRepository(BitbucketAuthentication auth, String owner, String slug)
     {
-        return repositoryMap.get(new RepositoryKey(auth, owner, slug));
+        try
+        {
+            return repositoryMap.get(new RepositoryKey(auth, owner, slug));
+        }
+        catch (ComputationException e)
+        {
+            throw unrollException(e);
+        }
     }
 
     public BitbucketChangeset getChangeset(BitbucketAuthentication auth, String owner, String slug, String id)
     {
-        return changesetMap.get(new ChangesetKey(auth, owner, slug, id));
+        try
+        {
+            return changesetMap.get(new ChangesetKey(auth, owner, slug, id));
+        }
+        catch (ComputationException e)
+        {
+            throw unrollException(e);
+        }
     }
 
     public Iterable<BitbucketChangeset> getChangesets(BitbucketAuthentication auth, String owner, String slug)
     {
-        return delegate.getChangesets(auth, owner, slug);
+        try
+        {
+            return delegate.getChangesets(auth, owner, slug);
+        }
+        catch (ComputationException e)
+        {
+            throw unrollException(e);
+        }
+    }
+
+    private BitbucketException unrollException(ComputationException e)
+    {
+        return e.getCause() instanceof BitbucketException ? (BitbucketException) e.getCause() : new BitbucketException(e.getCause());
     }
 }
