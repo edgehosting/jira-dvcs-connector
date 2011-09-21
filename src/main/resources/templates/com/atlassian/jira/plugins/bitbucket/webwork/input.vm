@@ -158,60 +158,32 @@
 
             <table class="gh_table" cellspacing="0" cellpadding="4">
 
+            #macro ( repositoryLineItem $projectName $projectKey )
+                #set($encodedProjectName = $textutils.htmlEncode($projectName))
+                <tr> <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$projectName</div></td> </tr>
+                <tr> <th>Repository URL</th> <th>Key</th> <th>Operations</th> </tr>
+                #foreach ($repository in $action.getProjectRepositories($projectKey))
+                    #set($repositoryUrl = $repository.getRepositoryUrl())
+                    #set($encodedRepositoryUrl = $textutils.htmlEncode($repositoryUrl))
+                    #set($encodedMode = $textutils.htmlEncode($action.getMode()))
+                    <tr>
+                        <td><a href="$repositoryUrl" target="_new">$encodedRepositoryUrl</a></td>
+                        <td>$projectKey</td>
+                        <td width="260px">
+                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$encodedRepositoryUrl&projectKey=$projectKey&nextAction=ForceSync&mode=$encodedMode&atl_token=$atl_token">Force Sync</a> |
+                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$encodedRepositoryUrl&projectKey=$projectKey&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
+                            <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$encodedRepositoryUrl&projectKey=$projectKey&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
+                        </td>
+                    </tr>
+                #end
+            #end
 
             #if ($action.getMode() == 'single')
-                        <tr>
-                            <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$textutils.htmlEncode($action.getProjectName())</div></td>
-                        </tr>
-
-                        <tr>
-                            <th>Repository URL</th>
-                            <th>Key</th>
-                            <th>Operations</th>
-                        </tr>
-
-                    #foreach ($repository in $action.getProjectRepositories($action.getProjectKey()))
-                        <tr>
-                            <td><a href="$repository.getRepositoryUrl()" target="_new">$textutils.htmlEncode($repository.getRepositoryUrl())</a></td>
-                            <td>$action.getProjectKey()</td>
-                            <td width="260px">
-                                <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository.getRepositoryUrl())&projectKey=$action.getProjectKey()&nextAction=ForceSync&mode=$textutils.htmlEncode($action.getMode())&atl_token=$atl_token">Force Sync</a> |
-                                <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository.getRepositoryUrl())&projectKey=$action.getProjectKey()&nextAction=ShowPostCommitURL&mode=$textutils.htmlEncode($action.getMode())&atl_token=$atl_token">Post Commit</a> |
-                                <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$textutils.htmlEncode($repository)&projectKey=$action.getProjectKey()&mode=$textutils.htmlEncode($action.getMode())&atl_token=$atl_token')">Delete</a>
-                            </td>
-                        </tr>
-                    #end
-
+                #repositoryLineItem($action.getProjectName() $action.getProjectKey())
             #else
                 #foreach ($project in $action.getProjects())
-                    #if ($action.getProjectRepositories($project.key))
-
-                        <tr>
-                            <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$textutils.htmlEncode(${project.name})</div></td>
-                        </tr>
-
-                        <tr>
-                            <th>Repository URL</th>
-                            <th>Key</th>
-                            <th>Operations</th>
-                        </tr>
-
-                    #end
-
-                    #foreach ($repository in $action.getProjectRepositories($project.key))
-                        <tr>
-                            <td><a href="$repository.getRepositoryUrl()" target="_new">$textutils.htmlEncode($repository.getRepositoryUrl())</a></td>
-                            <td>$project.key</td>
-                            <td width="260px">
-                                <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository.getRepositoryUrl())&projectKey=$project.key&nextAction=ForceSync&mode=$textutils.htmlEncode($action.getMode())&atl_token=$atl_token">Force Sync</a> |
-                                <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$textutils.htmlEncode($repository.getRepositoryUrl())&projectKey=$project.key&nextAction=ShowPostCommitURL&mode=$textutils.htmlEncode($action.getMode())&atl_token=$atl_token">Post Commit</a> |
-                                <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$textutils.htmlEncode($repository.getRepositoryUrl())&projectKey=$project.key&mode=$textutils.htmlEncode($action.getMode())&atl_token=$atl_token')">Delete</a>
-                            </td>
-                        </tr>
-                    #end
-
+                    #repositoryLineItem($project.name $project.key)
                 #end
-
             #end
 
             </table>
