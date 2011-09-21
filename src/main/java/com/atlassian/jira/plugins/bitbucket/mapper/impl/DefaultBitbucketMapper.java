@@ -8,6 +8,8 @@ import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
 import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -16,6 +18,8 @@ import java.util.*;
  */
 public class DefaultBitbucketMapper implements BitbucketMapper
 {
+    private final Logger logger = LoggerFactory.getLogger(DefaultBitbucketMapper.class);
+
     private final ActiveObjects activeObjects;
     private final Bitbucket bitbucket;
     private final Encryptor encryptor;
@@ -70,13 +74,21 @@ public class DefaultBitbucketMapper implements BitbucketMapper
         {
             public Object doInTransaction()
             {
-                activeObjects.delete(activeObjects.find(ProjectMapping.class,
+                final ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class,
                         "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                        projectKey, repositoryUri.getRepositoryUri()));
+                        projectKey, repositoryUri.getRepositoryUri());
 
-                activeObjects.delete(activeObjects.find(IssueMapping.class,
+                final IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class,
                         "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                        projectKey, repositoryUri.getRepositoryUri()));
+                        projectKey, repositoryUri.getRepositoryUri());
+
+                logger.debug("deleting [ {} ] project mappings [ {} ] [ {} ]",
+                        new String[]{String.valueOf(projectMappings.length), projectKey, repositoryUri.getRepositoryUri()});
+                logger.debug("deleting [ {} ] issue mappings [ {} ] [ {} ]",
+                        new String[]{String.valueOf(issueMappings.length), projectKey, repositoryUri.getRepositoryUri()});
+
+                activeObjects.delete(projectMappings);
+                activeObjects.delete(issueMappings);
                 return null;
             }
         });
@@ -119,17 +131,32 @@ public class DefaultBitbucketMapper implements BitbucketMapper
         {
             public Object doInTransaction()
             {
-                final Map<String, Object> map = new HashMap<String, Object>();
-                map.put("NODE", changeset.getNode());
-                map.put("PROJECT_KEY", getProjectKey(issueId));
-                map.put("ISSUE_ID", issueId);
-                map.put("REPOSITORY_URI", new RepositoryUri(changeset.getRepositoryOwner(), changeset.getRepositorySlug()).toString());
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
-                        "ISSUE_ID = ? and NODE = ?",
-                        issueId, changeset.getNode());
-                if (mappings != null && mappings.length > 0)
-                    activeObjects.delete(mappings);
-                activeObjects.create(IssueMapping.class, map);
+                final String repositoryOwner = changeset.getRepositoryOwner();
+                final String repositorySlug = changeset.getRepositorySlug();
+                final String repositoryBranch = changeset.getBranch();
+
+                final RepositoryUri repositoryUri = new RepositoryUri(repositoryOwner, repositorySlug, repositoryBranch);
+                final String projectKey = getProjectKey(issueId);
+                try
+                {
+                    getProjectMapping(projectKey, repositoryUri);
+                    final Map<String, Object> map = new HashMap<String, Object>();
+                    map.put("NODE", changeset.getNode());
+                    map.put("PROJECT_KEY", projectKey);
+                    map.put("ISSUE_ID", issueId);
+                    map.put("REPOSITORY_URI", repositoryUri.getRepositoryUri());
+                    IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
+                            "ISSUE_ID = ? and NODE = ?",
+                            issueId, changeset.getNode());
+                    logger.debug("create issue mapping [ {} ] [ {} ]", new String[]{projectKey, repositoryUri.getRepositoryUri()});
+                    if (mappings != null && mappings.length > 0)
+                        activeObjects.delete(mappings);
+                    activeObjects.create(IssueMapping.class, map);
+                }
+                catch (BitbucketException e)
+                {
+                    // the mapping does not include the branch which this changeset was found so it is ignored
+                }
                 return null;
             }
         });

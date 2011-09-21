@@ -7,10 +7,12 @@ import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultBitbucketMapper;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import net.java.ao.DBParam;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -219,8 +221,12 @@ public class TestDefaultBitbucketMapper
     }
 
     @Test
-    public void testAddChangeset()
+    public void testAddChangesetToSameBranch()
     {
+        when(activeObjects.find(ProjectMapping.class,
+            "PROJECT_KEY = ? and REPOSITORY_URI = ?",
+            "JST", "owner/slug/default")).thenReturn(new ProjectMapping[]{projectMapping});
+
         new DefaultBitbucketMapper(activeObjects, bitbucket, encryptor).addChangeset("JST-1", changeset);
         verify(activeObjects, times(1)).create(eq(IssueMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
@@ -229,11 +235,23 @@ public class TestDefaultBitbucketMapper
                     {
                         //noinspection unchecked
                         Map<String, Object> map = (Map<String, Object>) o;
-                        return map.get("REPOSITORY_URI").equals("owner/slug") &&
+                        return map.get("REPOSITORY_URI").equals("owner/slug/default") &&
                                 map.get("PROJECT_KEY").equals("JST") &&
                                 map.get("NODE").equals("1") &&
                                 map.get("ISSUE_ID").equals("JST-1");
                     }
                 }));
+    }
+
+    @Test
+    public void testAddChangesetToDifferentBranchIsIgnored()
+    {
+        when(activeObjects.find(ProjectMapping.class,
+            "PROJECT_KEY = ? and REPOSITORY_URI = ?",
+            "JST", "owner/slug/notdefault")).thenReturn(new ProjectMapping[]{projectMapping});
+
+        new DefaultBitbucketMapper(activeObjects, bitbucket, encryptor).addChangeset("JST-1", changeset);
+        verify(activeObjects, never()).create(any(Class.class), (Map<String, Object>) any());
+        verify(activeObjects, never()).create(any(Class.class), (DBParam[]) any());
     }
 }
