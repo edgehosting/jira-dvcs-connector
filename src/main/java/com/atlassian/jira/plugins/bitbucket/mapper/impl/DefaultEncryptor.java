@@ -99,19 +99,15 @@ public class DefaultEncryptor implements Encryptor
             String originalString = new String(original);
             //logger.debug("Original string: " + originalString + "\nOriginal string (Hex): " + original.toString());
 
-            logger.debug("Decrypted: " + original);
+            logger.debug("decrypted password [ " + original+" ]");
             return originalString;
 
         }
         catch (Exception e)
         {
-            logger.debug("Encryptor.decrypt");
-            e.printStackTrace();
+            logger.debug("error encrypting",e);
         }
-
         return "";
-
-
     }
 
 }

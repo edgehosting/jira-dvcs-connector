@@ -79,6 +79,15 @@ public class TestDefaultBitbucketMapper
                     }
                 }
         );
+        when(encryptor.decrypt(anyString(), anyString(), anyString())).thenAnswer(
+                new Answer<String>()
+                {
+                    public String answer(InvocationOnMock invocationOnMock) throws Throwable
+                    {
+                        return StringUtils.reverse(String.valueOf(invocationOnMock.getArguments()[0]));
+                    }
+                }
+        );
     }
 
     @Test
@@ -200,7 +209,7 @@ public class TestDefaultBitbucketMapper
         when(activeObjects.find(IssueMapping.class,
                 "ISSUE_ID = ?", "JST-1")).thenReturn(new IssueMapping[]{issueMapping});
         when(projectMapping.getUsername()).thenReturn("user");
-        when(projectMapping.getPassword()).thenReturn("pass");
+        when(projectMapping.getPassword()).thenReturn("ssap");
         when(issueMapping.getNode()).thenReturn("1");
         when(issueMapping.getRepositoryUri()).thenReturn("owner/slug/default");
         new DefaultBitbucketMapper(activeObjects, bitbucket, encryptor).getChangesets("JST-1");

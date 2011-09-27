@@ -203,8 +203,11 @@ public class DefaultBitbucketMapper implements BitbucketMapper
     private BitbucketAuthentication getAuthentication(ProjectMapping mapping)
     {
         BitbucketAuthentication auth = BitbucketAuthentication.ANONYMOUS;
+
         if (StringUtils.isNotBlank(mapping.getUsername()) && StringUtils.isNotBlank(mapping.getPassword()))
-            auth = BitbucketAuthentication.basic(mapping.getUsername(), mapping.getPassword());
+            auth = BitbucketAuthentication.basic(mapping.getUsername(),
+                    encryptor.decrypt(mapping.getPassword(), mapping.getProjectKey(),
+                            RepositoryUri.parse(mapping.getRepositoryUri()).getRepositoryUrl()));
         return auth;
     }
 
