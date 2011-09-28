@@ -1,11 +1,14 @@
 package com.atlassian.jira.plugins.bitbucket.property;
 
+import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
+
 import java.util.List;
 
 /**
  * Access to the settings for this plugins state
+ * @deprecated Use the {@link BitbucketMapper} - this implementation will not work
  */
-public interface BitbucketProjectSettings
+interface BitbucketProjectSettings
 {
     void startSyncProgress(String projectKey, String repositoryUrl);
     void setSyncProgress(String projectKey, String repositoryUrl, int revision);

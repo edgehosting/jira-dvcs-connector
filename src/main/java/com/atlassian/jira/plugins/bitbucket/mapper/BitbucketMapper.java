@@ -2,10 +2,7 @@ package com.atlassian.jira.plugins.bitbucket.mapper;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepository;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
-import com.sun.org.apache.bcel.internal.util.Repository;
-
 import java.util.List;
 
 /**
