@@ -69,7 +69,7 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
         String authorName = changeset.getRawAuthor();
         String login = changeset.getAuthor();
 
-        String commitURL = "http://bitbucket.org/" + changeset.getRepositoryOwner() + "/" + changeset.getRepositoryOwner() + "/changeset/" + changeset.getNode();
+        String commitURL = changeset.getCommitURL();
 
         BitbucketUser bitbucketUser = bitbucket.getUser(changeset.getAuthor());
 

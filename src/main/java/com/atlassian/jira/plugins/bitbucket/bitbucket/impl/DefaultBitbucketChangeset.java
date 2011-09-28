@@ -2,10 +2,8 @@ package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 /**
@@ -13,6 +11,7 @@ import java.util.List;
  */
 public class DefaultBitbucketChangeset implements BitbucketChangeset
 {
+    static final String COMMIT_URL_PATTERN = "https://bitbucket.org/{0}/{1}/changeset/{2}";
     private final String repositoryOwner;
     private final String repositorySlug;
     private final String node;
@@ -103,6 +102,11 @@ public class DefaultBitbucketChangeset implements BitbucketChangeset
     public String getRepositorySlug()
     {
         return repositorySlug;
+    }
+
+    public String getCommitURL()
+    {
+        return MessageFormat.format(COMMIT_URL_PATTERN, repositoryOwner, repositorySlug, node);
     }
 
     @Override

@@ -31,4 +31,5 @@ public interface BitbucketChangeset
 
     public String getRepositorySlug();
 
+    public String getCommitURL();
 }

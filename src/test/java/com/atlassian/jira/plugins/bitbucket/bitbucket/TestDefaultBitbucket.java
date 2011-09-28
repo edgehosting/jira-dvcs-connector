@@ -7,6 +7,7 @@ import com.google.common.collect.Iterables;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -15,9 +16,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.fail;
+import static junit.framework.Assert.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -103,6 +102,29 @@ public class TestDefaultBitbucket
         assertEquals("Matthew", user.getFirstName());
         assertEquals("Jensen", user.getLastName());
         assertEquals("/1.0/users/mjensen", user.getResourceUri());
+    }
+
+    @Test
+    public void testGetChangeset() throws Exception
+    {
+        when(bitbucketConnection.getChangeset(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "471b0c972ba6")).
+                thenReturn(resource("TestBitbucket-changeset.json"));
+        BitbucketChangeset changeset = new DefaultBitbucket(bitbucketConnection).
+                getChangeset(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "471b0c972ba6");
+        assertEquals("471b0c972ba6", changeset.getNode());
+        assertEquals("https://bitbucket.org/atlassian/jira-bitbucket-connector/changeset/471b0c972ba6", changeset.getCommitURL());
+    }
+
+    @Test
+    public void testGetCachedChangeset() throws Exception
+    {
+        final DefaultBitbucket bitbucket = new DefaultBitbucket(bitbucketConnection);
+        final BitbucketChangeset changeset = BitbucketChangesetFactory.load(bitbucket,
+                BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "471b0c972ba6");
+
+        assertEquals("471b0c972ba6", changeset.getNode());
+        assertEquals("https://bitbucket.org/atlassian/jira-bitbucket-connector/changeset/471b0c972ba6", changeset.getCommitURL());
+        verify(bitbucketConnection,never()).getChangeset(Matchers.<BitbucketAuthentication>anyObject(), anyString(), anyString(), anyString());
     }
 
     /**

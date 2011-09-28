@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
 import com.atlassian.util.concurrent.LazyReference;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 /**
@@ -98,5 +99,10 @@ public class LazyLoadedBitbucketChangeset implements BitbucketChangeset
     public String getRepositorySlug()
     {
         return slug;
+    }
+
+    public String getCommitURL()
+    {
+        return MessageFormat.format(DefaultBitbucketChangeset.COMMIT_URL_PATTERN, owner, slug, nodeId);
     }
 }
