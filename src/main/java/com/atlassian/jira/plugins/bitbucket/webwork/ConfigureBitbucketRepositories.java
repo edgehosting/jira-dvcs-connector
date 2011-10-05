@@ -1,9 +1,18 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.ComponentManager;
-import com.atlassian.jira.config.properties.PropertiesManager;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepositoryFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
 import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
@@ -12,16 +21,6 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.google.common.collect.Iterables;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Webwork action used to configure the bitbucket repositories
@@ -115,22 +114,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
             url = url.replaceFirst("http:", "https:");
         }
 
-        // Swap overview with 'default' (likely to be pasted in)
-        if (url.endsWith("/overview"))
-        {
-            url = url.substring(0, url.length() - 9);
-            url = url + "/default";
-        }
-
-        // Add default branch of 'default' to URL if missing
-        String[] urlArray = url.split("/");
-
-        if (urlArray.length == 5)
-        {
-            url += "/default";
-            urlArray = url.split("/");
-        }
-
         if (validations.equals(""))
         {
             if (nextAction.equals("AddRepository"))
@@ -140,14 +123,14 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
                 {
                     if (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword))
                     {
-                        postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length - 1];
+                        postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey;
                         bitbucketMapper.addRepository(projectKey, RepositoryUri.parse(url), bbUserName, bbPassword);
                         nextAction = "ForceSync";
                     }
                 }
                 else
                 {
-                    postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length - 1];
+                    postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey;
                     logger.debug(postCommitURL);
                     bitbucketMapper.addRepository(projectKey, RepositoryUri.parse(url), bbUserName, bbPassword);
                     nextAction = "ForceSync";
@@ -157,12 +140,13 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("ShowPostCommitURL"))
             {
-                postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&branch=" + urlArray[urlArray.length - 1];
+                postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey;
             }
 
             if (nextAction.equals("DeleteRepository"))
             {
                 bitbucketMapper.removeRepository(projectKey, RepositoryUri.parse(url));
+                // Should we also delete IssueMappings?
             }
 
             if (nextAction.equals("CurrentSyncStatus"))

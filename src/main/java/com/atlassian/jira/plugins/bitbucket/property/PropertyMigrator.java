@@ -1,23 +1,27 @@
 package com.atlassian.jira.plugins.bitbucket.property;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
 import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultBitbucketMapper;
-import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
 
 /**
  */

@@ -1,18 +1,18 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Webwork action used to recieve the callback hook from bitbucket
@@ -26,8 +26,6 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     private String validations = "";
     // Project Key
     private String projectKey = "";
-    // BitBucket Repository URL
-    private String branch = "";
     // Revision Number
     private String revision = "";
     // BitBucket JSON Payload
@@ -40,11 +38,6 @@ public class BitbucketPostCommit extends JiraWebActionSupport
 
     protected void doValidation()
     {
-
-        if (branch.equals(""))
-        {
-            validations += "Missing Required 'branch' parameter. <br/>";
-        }
 
         if (projectKey.equals(""))
         {
@@ -62,7 +55,7 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     {
         if (validations.equals(""))
         {
-            logger.debug("recieved callback post for project [ {} ] on branch [ {} ]", projectKey, branch);
+            logger.debug("recieved callback post for project [ {} ]", projectKey);
 
             List<BitbucketChangeset> changesets = new ArrayList<BitbucketChangeset>();
             JSONObject jsonPayload = new JSONObject(payload);
@@ -75,7 +68,7 @@ public class BitbucketPostCommit extends JiraWebActionSupport
             for (int i = 0; i < commits.length(); ++i)
                 changesets.add(BitbucketChangesetFactory.parse(owner, slug, commits.getJSONObject(i)));
 
-            synchronizer.synchronize(projectKey, RepositoryUri.parse(owner+"/"+slug+"/"+branch), changesets);
+            synchronizer.synchronize(projectKey, RepositoryUri.parse(owner+"/"+slug), changesets);
         }
 
         return "postcommit";
@@ -94,16 +87,6 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     public String getProjectKey()
     {
         return projectKey;
-    }
-
-    public void setBranch(String value)
-    {
-        this.branch = value;
-    }
-
-    public String getBranch()
-    {
-        return branch;
     }
 
     public void setRevision(String value)

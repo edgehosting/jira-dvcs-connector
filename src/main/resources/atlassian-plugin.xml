@@ -18,6 +18,7 @@
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping</entity>
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.property.PropertyMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.bitbucket.property.UrlMigrator</upgradeTask>
     </ao>
 
     <component key="executorService" name="Executor Service Factory Component"

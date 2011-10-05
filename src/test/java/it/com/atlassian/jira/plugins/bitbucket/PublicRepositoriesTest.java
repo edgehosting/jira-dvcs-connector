@@ -28,7 +28,7 @@ public class PublicRepositoriesTest extends BitBucketBaseTest
     {
         ensureRepositoryPresent("QA", TEST_REPO_URL);
 
-        assertThat(getCommitsForIssue("QA-2"), hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+	    assertThat(getCommitsForIssue("QA-2"), hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
         assertThat(getCommitsForIssue("QA-3"), hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
     }
 

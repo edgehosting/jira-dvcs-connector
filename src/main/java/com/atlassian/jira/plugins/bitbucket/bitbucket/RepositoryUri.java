@@ -22,25 +22,16 @@ public class RepositoryUri
         }
 
         String[] split = uri.split("/");
-        return new RepositoryUri(split[0], split[1], split.length > 2 ? split[2] : "default");
+        return new RepositoryUri(split[0], split[1]);
     }
 
     private final String owner;
     private final String slug;
-    private final String branch;
-
-    public RepositoryUri(String owner, String slug, String branch)
-    {
-        this.owner = owner;
-        this.slug = slug;
-        this.branch = branch;
-    }
 
     public RepositoryUri(String owner, String slug)
     {
         this.owner = owner;
         this.slug = slug;
-        this.branch = null;
     }
 
     public String getOwner()
@@ -53,14 +44,9 @@ public class RepositoryUri
         return slug;
     }
 
-    public String getBranch()
-    {
-        return branch;
-    }
-
     public String getRepositoryUri()
     {
-        return owner + "/" + slug + ((branch!=null)?("/" + branch):"");
+        return owner + "/" + slug;
     }
 
     public String getRepositoryUrl()
@@ -74,8 +60,7 @@ public class RepositoryUri
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RepositoryUri that = (RepositoryUri) o;
-        return !(branch != null ? !branch.equals(that.branch) : that.branch != null)
-                && !(owner != null ? !owner.equals(that.owner) : that.owner != null)
+        return  !(owner != null ? !owner.equals(that.owner) : that.owner != null)
                 && !(slug != null ? !slug.equals(that.slug) : that.slug != null);
     }
 
@@ -84,7 +69,6 @@ public class RepositoryUri
     {
         int result = owner != null ? owner.hashCode() : 0;
         result = 31 * result + (slug != null ? slug.hashCode() : 0);
-        result = 31 * result + (branch != null ? branch.hashCode() : 0);
         return result;
     }
 

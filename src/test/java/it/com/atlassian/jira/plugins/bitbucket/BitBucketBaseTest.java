@@ -1,19 +1,15 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Before;
+
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.pageobjects.TestedProductFactory;
-import com.atlassian.pageobjects.page.HomePage;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
-import org.junit.After;
-import org.junit.Before;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * Base class for BitBucket integration tests. Initializes the JiraTestedProduct and logs admin in.
@@ -39,7 +35,7 @@ public abstract class BitBucketBaseTest
 
     protected void ensureRepositoryPresent(String projectKey, String repoUrl)
     {
-        if(configureRepos.isRepositoryPresent(projectKey, repoUrl + "/default") == false)
+        if(configureRepos.isRepositoryPresent(projectKey, repoUrl) == false)
         {
             configureRepos.addPublicRepoToProject(projectKey, repoUrl);
         }
