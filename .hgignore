@@ -4,3 +4,6 @@ syntax: regexp
 jira-bitbucket-connector-plugin.iml
 jira-bitbucket-connector-plugin.ipr
 jira-bitbucket-connector-plugin.iws
+.project
+.classpath
+.settings
