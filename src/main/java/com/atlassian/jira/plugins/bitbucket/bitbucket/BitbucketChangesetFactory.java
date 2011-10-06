@@ -42,7 +42,7 @@ public class BitbucketChangesetFactory
     {
         try
         {
-            return new DefaultBitbucketChangeset(
+			return new DefaultBitbucketChangeset(
                     owner, slug,
                     json.getString("node"),
                     json.getString("raw_author"),
@@ -51,7 +51,7 @@ public class BitbucketChangesetFactory
                     json.getString("raw_node"),
                     json.getString("branch"),
                     json.getString("message"),
-                    json.getInt("revision"),
+                    json.getString("revision"),
                     stringList(json.getJSONArray("parents")),
                     fileList(json.getJSONArray("files"))
             );

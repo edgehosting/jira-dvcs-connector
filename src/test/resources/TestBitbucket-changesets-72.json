@@ -4,6 +4,26 @@
     "limit": 15, 
     "changesets": [
         {
+            "node": "e62ad4bdd158", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "pom.xml"
+                }
+            ], 
+            "raw_author": "farmas", 
+            "author": "farmas", 
+            "timestamp": "2011-06-09 07:41:00", 
+            "raw_node": "e62ad4bdd1582bc20baa48cfca0ac0eeb15c1eaa", 
+            "parents": [
+                "b889ef506a85"
+            ], 
+            "branch": "default", 
+            "message": "Removed executions section to prevent tests from running twice with each build", 
+            "revision": 57, 
+            "size": 303
+        },
+        {
             "node": "d383c5acfd40", 
             "files": [
                 {

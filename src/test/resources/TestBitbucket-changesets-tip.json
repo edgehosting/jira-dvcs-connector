@@ -4,6 +4,30 @@
     "limit": 15, 
     "changesets": [
         {
+            "node": "fc92e54ea14e", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketCommits.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketPostCommit.java"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-06-15 23:55:06", 
+            "raw_node": "fc92e54ea14eed7c08ff5f7d0ab128dded7db9c6", 
+            "parents": [
+                "4db681323340"
+            ], 
+            "branch": "default", 
+            "message": "BBC-52 Fixing bad repository id sync start position. BBC now pulls and syncs the individual commits that are passed in via the service.", 
+            "revision": 72, 
+            "size": 1863
+        },
+        {
             "node": "8b80509fdcca", 
             "files": [
                 {

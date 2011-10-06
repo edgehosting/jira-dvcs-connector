@@ -110,16 +110,6 @@ public class DefaultBitbucketMapper implements BitbucketMapper
                     BitbucketAuthentication auth = getAuthentication(getProjectMapping(projectKey, repositoryUri));
                     changesets.add(bitbucket.getChangeset(auth, repositoryUri.getOwner(), repositoryUri.getSlug(), mapping.getNode()));
                 }
-
-                // BBC-57
-                Collections.sort(changesets, new Comparator<BitbucketChangeset>()
-                {
-                    public int compare(BitbucketChangeset a, BitbucketChangeset b)
-                    {
-                        return a.getRevision() - b.getRevision();
-                    }
-                });
-
                 return changesets;
             }
         });

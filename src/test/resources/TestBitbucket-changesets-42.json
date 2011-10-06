@@ -4,6 +4,26 @@
     "limit": 15, 
     "changesets": [
         {
+            "node": "551cb8f8ad63", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-27 10:09:29", 
+            "raw_node": "551cb8f8ad637b6b496943489e3977d34ef335d3", 
+            "parents": [
+                "663fc2ef3e6d"
+            ], 
+            "branch": "default", 
+            "message": "Updating sizes and AUI", 
+            "revision": 27, 
+            "size": 320
+        },
+        {
             "node": "f67777be37ac", 
             "files": [
                 {

@@ -21,13 +21,13 @@ public class DefaultBitbucketChangeset implements BitbucketChangeset
     private final String rawNode;
     private final String branch;
     private final String message;
-    private final int revision;
+    private final String revision;
     private final List<String> parents;
     private final List<BitbucketChangesetFile> files;
 
     public DefaultBitbucketChangeset(String repositoryOwner, String repositorySlug,
                                      String node, String rawAuthor, String author, String timestamp,
-                                     String rawNode, String branch, String message, int revision,
+                                     String rawNode, String branch, String message, String revision,
                                      List<String> parents, List<BitbucketChangesetFile> files)
     {
         this.repositoryOwner = repositoryOwner;
@@ -89,7 +89,7 @@ public class DefaultBitbucketChangeset implements BitbucketChangeset
         return files;
     }
 
-    public int getRevision()
+    public String getRevision()
     {
         return revision;
     }
@@ -145,7 +145,7 @@ public class DefaultBitbucketChangeset implements BitbucketChangeset
         result = 31 * result + rawNode.hashCode();
         result = 31 * result + branch.hashCode();
         result = 31 * result + message.hashCode();
-        result = 31 * result + revision;
+        result = 31 * result + revision.hashCode();
         result = 31 * result + parents.hashCode();
         result = 31 * result + files.hashCode();
         return result;

@@ -28,18 +28,18 @@ public class Progress
 
     class InProgress implements State
     {
-        final int revision;
+        final String currentNode;
         final int jiraCount;
 
-        public InProgress(int revision, int jiraCount)
+        public InProgress(String currentNode, int jiraCount)
         {
-            this.revision = revision;
+            this.currentNode = currentNode;
             this.jiraCount = jiraCount;
         }
 
-        public int getRevision()
+        public String getCurrentNode()
         {
-            return revision;
+            return currentNode;
         }
 
         public int getJiraCount()
@@ -50,7 +50,7 @@ public class Progress
         public String render()
         {
             Map<String, Object> map = createMap();
-            map.put("revision", revision);
+            map.put("revision", currentNode);
             map.put("jiraCount", jiraCount);
             return renderTemplate("progress-inprogress.vm", map);
         }
@@ -70,7 +70,7 @@ public class Progress
         this.progress.set(new Starting());
     }
 
-    public void inProgress(int revision, int jiraCount)
+    public void inProgress(String revision, int jiraCount)
     {
         this.progress.set(new InProgress(revision, jiraCount));
     }

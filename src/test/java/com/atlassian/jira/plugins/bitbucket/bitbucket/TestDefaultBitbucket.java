@@ -72,24 +72,24 @@ public class TestDefaultBitbucket
     private void verifyBitbucketConnection()
     {
         verify(bitbucketConnection, never()).getRepository(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector");
-        verify(bitbucketConnection, times(1)).getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", BitbucketChangesetIterator.PAGE_SIZE);
-        verify(bitbucketConnection, times(1)).getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", 72, BitbucketChangesetIterator.PAGE_SIZE);
-        verify(bitbucketConnection, times(1)).getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", 57, BitbucketChangesetIterator.PAGE_SIZE);
-        verify(bitbucketConnection, times(1)).getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", 42, BitbucketChangesetIterator.PAGE_SIZE);
-        verify(bitbucketConnection, times(1)).getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", 27, BitbucketChangesetIterator.PAGE_SIZE);
-        verify(bitbucketConnection, times(1)).getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", 12, 12);
+        verify(bitbucketConnection, times(1)).getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", null, BitbucketChangesetIterator.PAGE_SIZE + 1);
+        verify(bitbucketConnection, times(1)).getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "fc92e54ea14e", BitbucketChangesetIterator.PAGE_SIZE + 1);
+        verify(bitbucketConnection, times(1)).getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "e62ad4bdd158", BitbucketChangesetIterator.PAGE_SIZE + 1);
+        verify(bitbucketConnection, times(1)).getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "bbf518979ab2", BitbucketChangesetIterator.PAGE_SIZE + 1);
+        verify(bitbucketConnection, times(1)).getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "551cb8f8ad63", BitbucketChangesetIterator.PAGE_SIZE + 1);
+        verify(bitbucketConnection, times(1)).getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "e39284a71197", BitbucketChangesetIterator.PAGE_SIZE + 1);
         verifyNoMoreInteractions(bitbucketConnection);
     }
 
     private void setupBitbucketConnection() throws IOException
     {
         when(bitbucketConnection.getRepository(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector")).thenReturn(resource("TestBitbucket-repository.json"));
-        when(bitbucketConnection.getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", BitbucketChangesetIterator.PAGE_SIZE)).thenReturn(resource("TestBitbucket-changesets-tip.json"));
-        when(bitbucketConnection.getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", 72, BitbucketChangesetIterator.PAGE_SIZE)).thenReturn(resource("TestBitbucket-changesets-72.json"));
-        when(bitbucketConnection.getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", 57, BitbucketChangesetIterator.PAGE_SIZE)).thenReturn(resource("TestBitbucket-changesets-57.json"));
-        when(bitbucketConnection.getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", 42, BitbucketChangesetIterator.PAGE_SIZE)).thenReturn(resource("TestBitbucket-changesets-42.json"));
-        when(bitbucketConnection.getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", 27, BitbucketChangesetIterator.PAGE_SIZE)).thenReturn(resource("TestBitbucket-changesets-27.json"));
-        when(bitbucketConnection.getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", 12, 12)).thenReturn(resource("TestBitbucket-changesets-12.json"));
+        when(bitbucketConnection.getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", null, BitbucketChangesetIterator.PAGE_SIZE + 1)).thenReturn(resource("TestBitbucket-changesets-tip.json"));
+        when(bitbucketConnection.getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "fc92e54ea14e", BitbucketChangesetIterator.PAGE_SIZE + 1)).thenReturn(resource("TestBitbucket-changesets-72.json"));
+        when(bitbucketConnection.getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "e62ad4bdd158", BitbucketChangesetIterator.PAGE_SIZE + 1)).thenReturn(resource("TestBitbucket-changesets-57.json"));
+        when(bitbucketConnection.getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "bbf518979ab2", BitbucketChangesetIterator.PAGE_SIZE + 1)).thenReturn(resource("TestBitbucket-changesets-42.json"));
+        when(bitbucketConnection.getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "551cb8f8ad63", BitbucketChangesetIterator.PAGE_SIZE + 1)).thenReturn(resource("TestBitbucket-changesets-27.json"));
+        when(bitbucketConnection.getChangesets(BitbucketAuthentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "e39284a71197", BitbucketChangesetIterator.PAGE_SIZE + 1)).thenReturn(resource("TestBitbucket-changesets-12.json"));
     }
 
     @Test

@@ -86,7 +86,7 @@ public class LazyLoadedBitbucketChangeset implements BitbucketChangeset
         return getBitbucketChangeset().getFiles();
     }
 
-    public int getRevision()
+    public String getRevision()
     {
         return getBitbucketChangeset().getRevision();
     }
