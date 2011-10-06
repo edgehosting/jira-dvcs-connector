@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -286,5 +288,15 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     public List<Progress> getProgress()
     {
         return progress;
+    }
+    public String encodeUrl(String url)
+    {
+    	try
+		{
+			return URLEncoder.encode(url, "UTF-8");
+		} catch (UnsupportedEncodingException e)
+		{
+			return null;
+		}
     }
 }

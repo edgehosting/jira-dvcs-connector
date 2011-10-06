@@ -160,19 +160,19 @@
 
             #macro ( repositoryLineItem $projectName $projectKey )
                 #set($encodedProjectName = $textutils.htmlEncode($projectName))
-                <tr> <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$projectName</div></td> </tr>
+                <tr> <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$encodedProjectName</div></td> </tr>
                 <tr> <th>Repository URL</th> <th>Key</th> <th>Operations</th> </tr>
                 #foreach ($repository in $action.getProjectRepositories($projectKey))
                     #set($repositoryUrl = $repository.getRepositoryUrl())
-                    #set($encodedRepositoryUrl = $textutils.htmlEncode($repositoryUrl))
+                    #set($urlEncodedRepositoryUrl = $action.encodeUrl($repositoryUrl))
                     #set($encodedMode = $textutils.htmlEncode($action.getMode()))
                     <tr>
-                        <td><a href="$repositoryUrl" target="_new">$encodedRepositoryUrl</a></td>
+                        <td><a href="$textutils.htmlEncode($repositoryUrl)" target="_new">$textutils.htmlEncode($repositoryUrl)</a></td>
                         <td>$projectKey</td>
                         <td width="260px">
-                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$encodedRepositoryUrl&projectKey=$projectKey&nextAction=ForceSync&mode=$encodedMode&atl_token=$atl_token">Force Sync</a> |
-                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$encodedRepositoryUrl&projectKey=$projectKey&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
-                            <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$encodedRepositoryUrl&projectKey=$projectKey&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
+                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$urlEncodedRepositoryUrl&projectKey=$projectKey&nextAction=ForceSync&mode=$encodedMode&atl_token=$atl_token">Force Sync</a> |
+                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$urlEncodedRepositoryUrl&projectKey=$projectKey&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
+                            <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$urlEncodedRepositoryUrl&projectKey=$projectKey&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
                         </td>
                     </tr>
                 #end
