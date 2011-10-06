@@ -97,13 +97,11 @@ public class BitBucketConfigureRepositoriesPage implements Page
      */
     public BitBucketConfigureRepositoriesPage deleteAllRepositories()
     {
-        // Note: need to delete from the back so that indexes of rows stay the same
-        List<BitBucketRepository> repos = getRepositories();
-
-        for(int i = repos.size() - 1; i >= 0; i--)
-        {
-            repos.get(i).delete();
-        }
+        List<BitBucketRepository> repos;
+		while (!(repos = getRepositories()).isEmpty())
+		{
+			repos.get(0).delete();
+		}
 
         return this;
     }

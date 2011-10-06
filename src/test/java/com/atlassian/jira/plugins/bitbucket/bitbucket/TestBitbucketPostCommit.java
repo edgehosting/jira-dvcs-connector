@@ -40,12 +40,11 @@ public class TestBitbucketPostCommit
     public void testPostCommit() throws Exception
     {
         BitbucketPostCommit bitbucketPostCommit = new BitbucketPostCommit(synchronizer);
-        bitbucketPostCommit.setBranch("default");
         bitbucketPostCommit.setProjectKey("PRJ");
         bitbucketPostCommit.setPayload(resource("TestBitbucketPostCommit-payload.json"));
         bitbucketPostCommit.execute();
 
-        verify(synchronizer, times(1)).synchronize(eq("PRJ"), eq(RepositoryUri.parse("mjensen/test/default")),
+        verify(synchronizer, times(1)).synchronize(eq("PRJ"), eq(RepositoryUri.parse("mjensen/test")),
                 argThat(new ArgumentMatcher<List<BitbucketChangeset>>()
                 {
                     public boolean matches(Object o)

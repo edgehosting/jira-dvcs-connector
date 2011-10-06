@@ -68,19 +68,6 @@ public class BitbucketRepositoryFactory
     }
 
     /**
-     * Extract the repository branch from the repository URL
-     *
-     * @param url the repository URL
-     * @return the branch of the repository
-     * @throws MalformedURLException if the URL is not correctly formed
-     */
-    public static String getBranch(String url) throws MalformedURLException
-    {
-        String[] split = new URL(url).getPath().split("/");
-        return split.length > 3 ? split[3] : "default";
-    }
-
-    /**
      * Parse the json object as a {@link BitbucketRepository}
      *
      * @param json the json object describing the {@link BitbucketRepository}

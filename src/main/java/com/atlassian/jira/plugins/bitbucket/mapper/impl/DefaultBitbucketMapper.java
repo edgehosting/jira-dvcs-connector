@@ -133,9 +133,8 @@ public class DefaultBitbucketMapper implements BitbucketMapper
             {
                 final String repositoryOwner = changeset.getRepositoryOwner();
                 final String repositorySlug = changeset.getRepositorySlug();
-                final String repositoryBranch = changeset.getBranch();
 
-                final RepositoryUri repositoryUri = new RepositoryUri(repositoryOwner, repositorySlug, repositoryBranch);
+                final RepositoryUri repositoryUri = new RepositoryUri(repositoryOwner, repositorySlug);
                 final String projectKey = getProjectKey(issueId);
                 try
                 {
