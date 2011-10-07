@@ -4,7 +4,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,7 +46,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String redirectURL = "";
 
     private final BitbucketMapper bitbucketMapper;
-    private final Bitbucket bitbucket;
     private final Synchronizer synchronizer;
     private List<Progress> progress;
 
@@ -55,18 +53,17 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
                                           Bitbucket bitbucket, Synchronizer synchronizer)
     {
         this.bitbucketMapper = bitbucketMapper;
-        this.bitbucket = bitbucket;
         this.synchronizer = synchronizer;
     }
 
     protected void doValidation()
     {
-        for (Enumeration e = request.getParameterNames(); e.hasMoreElements(); )
-        {
-            String n = (String) e.nextElement();
-            String[] vals = request.getParameterValues(n);
-            //validations = validations + "name " + n + ": " + vals[0];
-        }
+//        for (Enumeration e = request.getParameterNames(); e.hasMoreElements(); )
+//        {
+//            String n = (String) e.nextElement();
+//            String[] vals = request.getParameterValues(n);
+//            //validations = validations + "name " + n + ": " + vals[0];
+//        }
 
         // BitBucket URL Validation
         if (!url.equals(""))
@@ -121,23 +118,12 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
             if (nextAction.equals("AddRepository"))
             {
 
-                if (repoVisibility.equals("private"))
-                {
-                    if (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword))
-                    {
-                        postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey;
-                        bitbucketMapper.addRepository(projectKey, RepositoryUri.parse(url), bbUserName, bbPassword);
-                        nextAction = "ForceSync";
-                    }
-                }
-                else
+                if (!repoVisibility.equals("private") || (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword)))
                 {
                     postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey;
-                    logger.debug(postCommitURL);
                     bitbucketMapper.addRepository(projectKey, RepositoryUri.parse(url), bbUserName, bbPassword);
                     nextAction = "ForceSync";
                 }
-
             }
 
             if (nextAction.equals("ShowPostCommitURL"))
@@ -174,7 +160,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         synchronizer.synchronize(projectKey, RepositoryUri.parse(url));
     }
 
-    public List getProjects()
+    public List<Project> getProjects()
     {
         return projects;
     }
