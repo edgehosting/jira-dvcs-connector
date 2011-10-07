@@ -117,7 +117,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         {
             if (nextAction.equals("AddRepository"))
             {
-
                 if (!repoVisibility.equals("private") || (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword)))
                 {
                     postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey;
