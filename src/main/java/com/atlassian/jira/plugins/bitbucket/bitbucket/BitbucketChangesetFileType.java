@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+
 /**
- * Describes the type of file action within a {@link BitbucketChangeset changeset}.
+ * Describes the type of file action within a {@link Changeset changeset}.
  */
 public enum BitbucketChangesetFileType
 {

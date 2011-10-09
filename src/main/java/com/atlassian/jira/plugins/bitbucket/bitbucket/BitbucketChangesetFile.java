@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+
 /**
- * Details about a file that has changed in a {@link BitbucketChangeset}.
+ * Details about a file that has changed in a {@link Changeset}.
  */
 public interface BitbucketChangesetFile
 {

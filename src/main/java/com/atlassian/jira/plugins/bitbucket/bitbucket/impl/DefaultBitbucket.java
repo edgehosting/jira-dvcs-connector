@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -40,7 +41,7 @@ public class DefaultBitbucket implements Bitbucket
         }
     }
 
-    public BitbucketRepository getRepository(BitbucketAuthentication auth, String owner, String slug)
+    public BitbucketRepository getRepository(Authentication auth, String owner, String slug)
     {
         try
         {
@@ -52,7 +53,7 @@ public class DefaultBitbucket implements Bitbucket
         }
     }
 
-    public BitbucketChangeset getChangeset(BitbucketAuthentication auth, String owner, String slug, String id)
+    public Changeset getChangeset(Authentication auth, String owner, String slug, String id)
     {
         try
         {
@@ -64,15 +65,15 @@ public class DefaultBitbucket implements Bitbucket
         }
     }
 
-    public Iterable<BitbucketChangeset> getChangesets(final BitbucketAuthentication auth, final String owner, final String slug)
+    public Iterable<Changeset> getChangesets(final Authentication auth, final String owner, final String slug)
     {
-        return new Iterable<BitbucketChangeset>()
+        return new Iterable<Changeset>()
         {
-            public Iterator<BitbucketChangeset> iterator()
+            public Iterator<Changeset> iterator()
             {
                 return new BitbucketChangesetIterator(bitbucketConnection, auth, owner, slug);
             }
         };
     }
-
+    
 }

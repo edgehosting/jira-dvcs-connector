@@ -8,24 +8,17 @@ package com.atlassian.jira.plugins.bitbucket.webwork;
  * To change this template use File | Settings | File Templates.
  */
 
-import com.atlassian.jira.ComponentManager;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigInteger;
-import java.security.AlgorithmParameters;
 import java.security.MessageDigest;
-import java.security.Security;
-import java.security.spec.KeySpec;
 import java.util.Arrays;
 
 import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.crypto.spec.IvParameterSpec;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.ComponentManager;
 
 public class Encryptor
 {

@@ -6,9 +6,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONObject;
@@ -57,7 +57,7 @@ public class BitbucketPostCommit extends JiraWebActionSupport
         {
             logger.debug("recieved callback post for project [ {} ]", projectKey);
 
-            List<BitbucketChangeset> changesets = new ArrayList<BitbucketChangeset>();
+            List<Changeset> changesets = new ArrayList<Changeset>();
             JSONObject jsonPayload = new JSONObject(payload);
 
             String owner = jsonPayload.getJSONObject("repository").getString("owner");

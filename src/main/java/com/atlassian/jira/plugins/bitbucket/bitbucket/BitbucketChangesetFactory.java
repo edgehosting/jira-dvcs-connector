@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.LazyLoadedBitbucketChangeset;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Factory for {@link BitbucketChangeset} implementations
+ * Factory for {@link Changeset} implementations
  */
 public class BitbucketChangesetFactory
 {
@@ -25,7 +26,7 @@ public class BitbucketChangesetFactory
      * @param node      the changeset node id
      * @return the parsed {@link BitbucketRepository}
      */
-    public static BitbucketChangeset load(Bitbucket bitbucket, BitbucketAuthentication auth, String owner, String slug, String node)
+    public static Changeset load(Bitbucket bitbucket, Authentication auth, String owner, String slug, String node)
     {
         return new LazyLoadedBitbucketChangeset(bitbucket, auth, owner, slug, node);
     }
@@ -36,9 +37,9 @@ public class BitbucketChangesetFactory
      * @param owner the owner of the repository this changeset belongs to
      * @param slug  the slug of the repository this changeset belons to
      * @param json  the json object describing the change
-     * @return the parsed {@link BitbucketChangeset}
+     * @return the parsed {@link Changeset}
      */
-    public static BitbucketChangeset parse(String owner, String slug, JSONObject json)
+    public static Changeset parse(String owner, String slug, JSONObject json)
     {
         try
         {

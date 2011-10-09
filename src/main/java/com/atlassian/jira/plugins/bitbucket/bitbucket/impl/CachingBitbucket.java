@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
@@ -17,12 +18,12 @@ public class CachingBitbucket implements Bitbucket
 
     private class ChangesetKey
     {
-        final BitbucketAuthentication auth;
+        final Authentication auth;
         final String owner;
         final String slug;
         final String id;
 
-        public ChangesetKey(BitbucketAuthentication auth, String owner, String slug, String id)
+        public ChangesetKey(Authentication auth, String owner, String slug, String id)
         {
             this.auth = auth;
             this.owner = owner;
@@ -54,11 +55,11 @@ public class CachingBitbucket implements Bitbucket
 
     private class RepositoryKey
     {
-        final BitbucketAuthentication auth;
+        final Authentication auth;
         final String owner;
         final String slug;
 
-        public RepositoryKey(BitbucketAuthentication auth, String owner, String slug)
+        public RepositoryKey(Authentication auth, String owner, String slug)
         {
             this.auth = auth;
             this.owner = owner;
@@ -96,12 +97,12 @@ public class CachingBitbucket implements Bitbucket
                         }
                     });
 
-    private final Map<ChangesetKey, BitbucketChangeset> changesetMap = new MapMaker()
+    private final Map<ChangesetKey, Changeset> changesetMap = new MapMaker()
             .expiration(30, TimeUnit.MINUTES)
             .makeComputingMap(
-                    new Function<ChangesetKey, BitbucketChangeset>()
+                    new Function<ChangesetKey, Changeset>()
                     {
-                        public BitbucketChangeset apply(ChangesetKey key)
+                        public Changeset apply(ChangesetKey key)
                         {
                             return delegate.getChangeset(key.auth, key.owner, key.slug, key.id);
                         }
@@ -135,7 +136,7 @@ public class CachingBitbucket implements Bitbucket
         }
     }
 
-    public BitbucketRepository getRepository(BitbucketAuthentication auth, String owner, String slug)
+    public BitbucketRepository getRepository(Authentication auth, String owner, String slug)
     {
         try
         {
@@ -147,7 +148,7 @@ public class CachingBitbucket implements Bitbucket
         }
     }
 
-    public BitbucketChangeset getChangeset(BitbucketAuthentication auth, String owner, String slug, String id)
+    public Changeset getChangeset(Authentication auth, String owner, String slug, String id)
     {
         try
         {
@@ -159,7 +160,7 @@ public class CachingBitbucket implements Bitbucket
         }
     }
 
-    public Iterable<BitbucketChangeset> getChangesets(BitbucketAuthentication auth, String owner, String slug)
+    public Iterable<Changeset> getChangesets(Authentication auth, String owner, String slug)
     {
         try
         {

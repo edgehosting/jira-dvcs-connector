@@ -5,17 +5,16 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.ComponentManager;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
+import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
 import com.atlassian.jira.project.Project;
@@ -45,55 +44,26 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String messages = "";
     private String redirectURL = "";
 
-    private final BitbucketMapper bitbucketMapper;
     private final Synchronizer synchronizer;
     private List<Progress> progress;
 
-    public ConfigureBitbucketRepositories(BitbucketMapper bitbucketMapper,
-                                          Bitbucket bitbucket, Synchronizer synchronizer)
+	private final RepositoryManager globalRepositoryManager;
+
+    public ConfigureBitbucketRepositories(Synchronizer synchronizer, 
+    		@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
     {
-        this.bitbucketMapper = bitbucketMapper;
         this.synchronizer = synchronizer;
+		this.globalRepositoryManager = globalRepositoryManager;
     }
 
     protected void doValidation()
     {
-//        for (Enumeration e = request.getParameterNames(); e.hasMoreElements(); )
-//        {
-//            String n = (String) e.nextElement();
-//            String[] vals = request.getParameterValues(n);
-//            //validations = validations + "name " + n + ": " + vals[0];
-//        }
 
-        // BitBucket URL Validation
-        if (!url.equals(""))
+        if (!globalRepositoryManager.canHandleUrl(url))
         {
-            if (nextAction.equals("AddRepository") || nextAction.equals("DeleteReposiory"))
-            {
-                // Valid URL and URL starts with bitbucket.org domain
-                Pattern p = Pattern.compile("^(https|http)://bitbucket.org/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
-                Matcher m = p.matcher(url);
-                if (!m.matches())
-                {
-                    addErrorMessage("URL must be for a valid Bitbucket.org repository.");
-                    validations = "URL must be for a valid Bitbucket.org repository.";
-                }
-            }
+            addErrorMessage("URL must be for a valid repository.");
+            validations = "URL must be for a valid repository.";
         }
-        else
-        {
-            if (nextAction.equals("AddRepository") || nextAction.equals("DeleteReposiory"))
-            {
-                validations = "URL must be for a valid Bitbucket.org repository.";
-            }
-        }
-
-    }
-
-    public String doDefault()
-    {
-        bitbucketMapper.getRepositories("JST");
-        return "input";
     }
 
     @RequiresXsrfCheck
@@ -101,26 +71,14 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     {
         logger.debug("configure repository [ " + nextAction + " ]");
 
-        // Remove trailing slashes from URL
-        if (url.endsWith("/"))
-        {
-            url = url.substring(0, url.length() - 1);
-        }
-
-        // Set all URLs to HTTPS
-        if (url.startsWith("http:"))
-        {
-            url = url.replaceFirst("http:", "https:");
-        }
-
         if (validations.equals(""))
         {
             if (nextAction.equals("AddRepository"))
             {
                 if (!repoVisibility.equals("private") || (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword)))
                 {
+                	globalRepositoryManager.addRepository(projectKey, url, bbPassword, bbPassword);
                     postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey;
-                    bitbucketMapper.addRepository(projectKey, RepositoryUri.parse(url), bbUserName, bbPassword);
                     nextAction = "ForceSync";
                 }
             }
@@ -132,8 +90,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("DeleteRepository"))
             {
-                bitbucketMapper.removeRepository(projectKey, RepositoryUri.parse(url));
-                // Should we also delete IssueMappings?
+            	globalRepositoryManager.removeRepository(projectKey, url);
             }
 
             if (nextAction.equals("CurrentSyncStatus"))
@@ -165,9 +122,9 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     }
 
     // Stored Repository + JIRA Projects
-    public List<RepositoryUri> getProjectRepositories(String projectKey)
+    public List<SourceControlRepository> getProjectRepositories(String projectKey)
     {
-        return bitbucketMapper.getRepositories(projectKey);
+        return globalRepositoryManager.getRepositories(projectKey);
     }
 
     public String getProjectName()
@@ -274,7 +231,8 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     {
         return progress;
     }
-    public String encodeUrl(String url)
+    
+    public static String encodeUrl(String url)
     {
     	try
 		{

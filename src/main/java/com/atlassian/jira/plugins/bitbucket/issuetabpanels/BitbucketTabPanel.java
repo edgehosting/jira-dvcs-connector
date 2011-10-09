@@ -1,36 +1,48 @@
 package com.atlassian.jira.plugins.bitbucket.issuetabpanels;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.config.properties.PropertiesManager;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
-import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketUser;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.opensymphony.user.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.*;
 
 public class BitbucketTabPanel extends AbstractIssueTabPanel
 {
     private static final GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction("");
     private final Bitbucket bitbucket;
-    private final BitbucketMapper bitbucketMapper;
     private final PermissionManager permissionManager;
     private final Logger logger = LoggerFactory.getLogger(BitbucketTabPanel.class);
+	private RepositoryManager globalRepositoryManager;
 
-    public BitbucketTabPanel(PermissionManager permissionManager, BitbucketMapper bitbucketMapper, Bitbucket bitbucket)
+    public BitbucketTabPanel(PermissionManager permissionManager, Bitbucket bitbucket, 
+    		@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
     {
         this.permissionManager = permissionManager;
-        this.bitbucketMapper = bitbucketMapper;
         this.bitbucket = bitbucket;
+        this.globalRepositoryManager = globalRepositoryManager;
     }
 
     public List<IssueAction> getActions(Issue issue, User user)
@@ -39,7 +51,7 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
         List<IssueAction> bitbucketActions = new ArrayList<IssueAction>();
         try
         {
-            for (BitbucketChangeset changeset : bitbucketMapper.getChangesets(issueId))
+            for (Changeset changeset : globalRepositoryManager.getChangesets(issueId))
             {
                 logger.debug("found changeset [ {} ] on issue [ {} ]", changeset.getNode(), issueId);
                 bitbucketActions.add(new GenericMessageAction(formatCommitDetails(changeset)));
@@ -59,10 +71,10 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
     public boolean showPanel(Issue issue, User user)
     {
         return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user) &&
-                !bitbucketMapper.getRepositories(issue.getProjectObject().getKey()).isEmpty();
+                !globalRepositoryManager.getRepositories(issue.getProjectObject().getKey()).isEmpty();
     }
 
-    private String formatCommitDetails(BitbucketChangeset changeset)
+    private String formatCommitDetails(Changeset changeset)
     {
         String baseURL = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
 

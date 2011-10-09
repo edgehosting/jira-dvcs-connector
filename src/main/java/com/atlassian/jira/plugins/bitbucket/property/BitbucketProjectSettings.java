@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.property;
 
-import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
+import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
 
 import java.util.List;
 
 /**
  * Access to the settings for this plugins state
- * @deprecated Use the {@link BitbucketMapper} - this implementation will not work
+ * @deprecated Use the {@link RepositoryPersister} - this implementation will not work
  */
 interface BitbucketProjectSettings
 {

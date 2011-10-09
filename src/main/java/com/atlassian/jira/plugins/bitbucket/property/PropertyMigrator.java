@@ -14,12 +14,12 @@ import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
+import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
-import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultBitbucketMapper;
+import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultRepositoryPersister;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 
@@ -50,7 +50,7 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
         //noinspection unchecked
         activeObjects.migrate(IssueMapping.class, ProjectMapping.class);
 
-        BitbucketMapper mapper = new DefaultBitbucketMapper(activeObjects, bitbucket, encryptor);
+        RepositoryPersister mapper = new DefaultRepositoryPersister(activeObjects, encryptor);
 
         List<Project> projects = projectManager.getProjectObjects();
         for (Project project : projects)
@@ -65,9 +65,9 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
 
                     String username = settings.getUsername(projectKey, repository);
                     String password = settings.getPassword(projectKey, repository);
-                    BitbucketAuthentication auth = BitbucketAuthentication.ANONYMOUS;
+                    Authentication auth = Authentication.ANONYMOUS;
                     if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
-                        auth = BitbucketAuthentication.basic(username, password);
+                        auth = Authentication.basic(username, password);
 
                     RepositoryUri repositoryUri = RepositoryUri.parse(repository);
                     logger.debug("migrate repository [ {} ]", repositoryUri);

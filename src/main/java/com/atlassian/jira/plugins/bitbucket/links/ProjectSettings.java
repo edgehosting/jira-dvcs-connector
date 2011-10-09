@@ -1,23 +1,24 @@
 package com.atlassian.jira.plugins.bitbucket.links;
 
-import com.atlassian.jira.config.properties.PropertiesManager;
-import com.atlassian.jira.plugin.projectoperation.AbstractPluggableProjectOperation;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
-import com.atlassian.jira.project.Project;
-import com.opensymphony.user.User;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.atlassian.jira.config.properties.PropertiesManager;
+import com.atlassian.jira.plugin.projectoperation.AbstractPluggableProjectOperation;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
+import com.atlassian.jira.project.Project;
+import com.opensymphony.user.User;
+
 public class ProjectSettings extends AbstractPluggableProjectOperation
 {
     private static final Pattern BITBUCKET_NAME_PATTERN = Pattern.compile(".*bitbucket.org/([^/]+/[^/]+)(/default)?");
-    private final BitbucketMapper bitbucketMapper;
+    private final RepositoryPersister repositoryPersister;
 
-    public ProjectSettings(BitbucketMapper bitbucketMapper)
+    public ProjectSettings(RepositoryPersister repositoryPersister)
     {
-        this.bitbucketMapper = bitbucketMapper;
+        this.repositoryPersister = repositoryPersister;
     }
 
     public String getHtml(final Project project, final User user)
@@ -25,7 +26,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
 
         String baseURL = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
 
-        List<RepositoryUri> repositories = bitbucketMapper.getRepositories(project.getKey());
+        List<ProjectMapping> repositories = repositoryPersister.getRepositories(project.getKey());
         StringBuilder result = new StringBuilder();
         result.append("<span class=\"project-config-list-label\">");
         if (repositories.size() > 1)
@@ -45,7 +46,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
                 result.append("None");
                 break;
             case 1:
-                result.append(getRepositoryName(repositories.get(0).getRepositoryUrl()));
+                result.append(getRepositoryName(repositories.get(0).getRepositoryUri()));
                 break;
             default:
                 result.append(repositories.size()).append(" repositories");

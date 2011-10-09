@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.mapper;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 
 import java.util.List;
 
@@ -12,9 +12,9 @@ public class SynchronizationKey
 {
     private final String projectKey;
     private final RepositoryUri repositoryUri;
-    private final List<BitbucketChangeset> changesets;
+    private final List<Changeset> changesets;
 
-    public SynchronizationKey(String projectKey, RepositoryUri repositoryUri, List<BitbucketChangeset> changesets)
+    public SynchronizationKey(String projectKey, RepositoryUri repositoryUri, List<Changeset> changesets)
     {
         this.projectKey = projectKey;
         this.repositoryUri = repositoryUri;
@@ -59,7 +59,7 @@ public class SynchronizationKey
         return result;
     }
 
-    public List<BitbucketChangeset> getChangesets()
+    public List<Changeset> getChangesets()
     {
         return changesets;
     }

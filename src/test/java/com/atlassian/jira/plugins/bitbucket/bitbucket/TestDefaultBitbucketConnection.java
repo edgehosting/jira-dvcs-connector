@@ -41,7 +41,7 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAnonymousGetChangeset() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getChangeset(BitbucketAuthentication.ANONYMOUS, "owner", "slug", "1");
+        new DefaultBitbucketConnection(requestFactory).getChangeset(Authentication.ANONYMOUS, "owner", "slug", "1");
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets/1");
         verify(request, never()).addBasicAuthentication("user", "pass");
     }
@@ -49,7 +49,7 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAnonymousGetRepository() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getRepository(BitbucketAuthentication.ANONYMOUS, "owner", "slug");
+        new DefaultBitbucketConnection(requestFactory).getRepository(Authentication.ANONYMOUS, "owner", "slug");
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug");
         verify(request, never()).addBasicAuthentication("user", "pass");
     }
@@ -57,7 +57,7 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAnonymousGetChangesets() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getChangesets(BitbucketAuthentication.ANONYMOUS, "owner", "slug", null, BitbucketChangesetIterator.PAGE_SIZE);
+        new DefaultBitbucketConnection(requestFactory).getChangesets(Authentication.ANONYMOUS, "owner", "slug", null, BitbucketChangesetIterator.PAGE_SIZE);
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets?limit=15");
         verify(request, never()).addBasicAuthentication("user", "pass");
     }
@@ -65,7 +65,7 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAuthenticatedGetChangeset() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getChangeset(BitbucketAuthentication.basic("user", "pass"), "owner", "slug", "1");
+        new DefaultBitbucketConnection(requestFactory).getChangeset(Authentication.basic("user", "pass"), "owner", "slug", "1");
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets/1");
         verify(request).addBasicAuthentication("user", "pass");
     }
@@ -73,7 +73,7 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAuthenticatedGetRepository() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getRepository(BitbucketAuthentication.basic("user", "pass"), "owner", "slug");
+        new DefaultBitbucketConnection(requestFactory).getRepository(Authentication.basic("user", "pass"), "owner", "slug");
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug");
         verify(request).addBasicAuthentication("user", "pass");
     }
@@ -81,7 +81,7 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAuthenticatedGetChangesets() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getChangesets(BitbucketAuthentication.basic("user", "pass"), "owner", "slug", null, BitbucketChangesetIterator.PAGE_SIZE);
+        new DefaultBitbucketConnection(requestFactory).getChangesets(Authentication.basic("user", "pass"), "owner", "slug", null, BitbucketChangesetIterator.PAGE_SIZE);
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets?limit=15");
         verify(request).addBasicAuthentication("user", "pass");
     }

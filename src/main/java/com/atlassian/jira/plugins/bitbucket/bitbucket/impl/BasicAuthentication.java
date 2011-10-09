@@ -1,13 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
 import com.atlassian.sal.api.net.Request;
 import org.apache.commons.lang.StringUtils;
 
 /**
  * Basic authentication
  */
-public class BasicAuthentication extends BitbucketAuthentication
+public class BasicAuthentication extends Authentication
 {
     private final String username;
     private final String password;

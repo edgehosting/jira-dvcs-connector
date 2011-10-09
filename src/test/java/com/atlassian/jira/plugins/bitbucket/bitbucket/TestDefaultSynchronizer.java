@@ -1,18 +1,23 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
-import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultSynchronizer;
-import com.atlassian.templaterenderer.TemplateRenderer;
-import com.atlassian.util.concurrent.ThreadFactories;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.concurrent.Executors;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 import org.mockito.MockitoAnnotations.Mock;
 
-import java.util.Arrays;
-import java.util.concurrent.Executors;
-
-import static org.mockito.Mockito.*;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultSynchronizer;
+import com.atlassian.templaterenderer.TemplateRenderer;
 
 /**
  * Unit tests for {@link DefaultSynchronizer}
@@ -22,12 +27,16 @@ public class TestDefaultSynchronizer
     @Mock
     private Bitbucket bitbucket;
     @Mock
-    private BitbucketMapper bitbucketMapper;
+    private RepositoryPersister bitbucketMapper;
     @Mock
-    private BitbucketChangeset changeset;
+    private Changeset changeset;
     @Mock
     private TemplateRenderer templateRenderer;
-
+    @Mock
+    private AuthenticationFactory authenticationFactory;
+    @Mock
+	private RepositoryManager repositoryManager; 
+    
     @Before
     public void setup()
     {
@@ -39,12 +48,13 @@ public class TestDefaultSynchronizer
     {
         String projectKey = "PRJ";
         RepositoryUri repositoryUri = RepositoryUri.parse("owner/slug");
-        when(bitbucketMapper.getAuthentication(projectKey,repositoryUri)).thenReturn(BitbucketAuthentication.ANONYMOUS);
-        when(bitbucket.getChangesets(BitbucketAuthentication.ANONYMOUS, "owner", "slug")).thenReturn(Arrays.asList(changeset));
+		SourceControlRepository repository = repositoryManager.getRepository(projectKey,repositoryUri.getRepositoryUrl());
+        when(authenticationFactory.getAuthentication(repository)).thenReturn(Authentication.ANONYMOUS);
+        when(bitbucket.getChangesets(Authentication.ANONYMOUS, "owner", "slug")).thenReturn(Arrays.asList(changeset));
         when(changeset.getMessage()).thenReturn("PRJ-1 Message");
 
         new DefaultSynchronizer(bitbucket, bitbucketMapper,
-                Executors.newSingleThreadExecutor(), templateRenderer).synchronize(projectKey, repositoryUri);
+                Executors.newSingleThreadExecutor(), templateRenderer, authenticationFactory, repositoryManager).synchronize(projectKey, repositoryUri);
         verify(bitbucketMapper, times(1)).addChangeset("PRJ-1", changeset);
     }
 }

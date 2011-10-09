@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit;
 import org.apache.commons.io.IOUtils;
@@ -45,13 +46,13 @@ public class TestBitbucketPostCommit
         bitbucketPostCommit.execute();
 
         verify(synchronizer, times(1)).synchronize(eq("PRJ"), eq(RepositoryUri.parse("mjensen/test")),
-                argThat(new ArgumentMatcher<List<BitbucketChangeset>>()
+                argThat(new ArgumentMatcher<List<Changeset>>()
                 {
                     public boolean matches(Object o)
                     {
                         //noinspection unchecked
-                        List<BitbucketChangeset> list = (List<BitbucketChangeset>) o;
-                        BitbucketChangeset changeset = list.get(0);
+                        List<Changeset> list = (List<Changeset>) o;
+                        Changeset changeset = list.get(0);
                         return list.size()==1 && changeset.getNode().equals("f2851c9f1db8");
                     }
                 }));

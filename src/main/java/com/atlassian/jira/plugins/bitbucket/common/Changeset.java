@@ -1,11 +1,13 @@
-package com.atlassian.jira.plugins.bitbucket.bitbucket;
+package com.atlassian.jira.plugins.bitbucket.common;
 
 import java.util.List;
 
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
+
 /**
- * Details on a changeset found in Bitbucket.
+ * Details on a changeset
  */
-public interface BitbucketChangeset
+public interface Changeset
 {
     public String getNode();
 

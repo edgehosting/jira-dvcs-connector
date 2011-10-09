@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.connection;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
 
 /**
  * Interface to the bitbucket service
@@ -14,7 +14,7 @@ public interface BitbucketConnection
      * @param slug the slug of the repository
      * @return the json payload describing the repository
      */
-    String getRepository(BitbucketAuthentication auth, String owner, String slug);
+    String getRepository(Authentication auth, String owner, String slug);
 
     /**
      * Load a single changeset
@@ -24,7 +24,7 @@ public interface BitbucketConnection
      * @param id the node id of the changeset to load
      * @return the json payload describing the changeset
      */
-    String getChangeset(BitbucketAuthentication auth, String owner, String slug, String id);
+    String getChangeset(Authentication auth, String owner, String slug, String id);
 
     /**
      * Load a page of changesets for the given repository from the given revision
@@ -35,7 +35,7 @@ public interface BitbucketConnection
      * @param limit the maximum number of revisions to include in the result
      * @return the json payload describing the changesets
      */
-    String getChangesets(BitbucketAuthentication auth, String owner, String slug, String startNode, int limit);
+    String getChangesets(Authentication auth, String owner, String slug, String startNode, int limit);
 
     /**
      * Load a single user

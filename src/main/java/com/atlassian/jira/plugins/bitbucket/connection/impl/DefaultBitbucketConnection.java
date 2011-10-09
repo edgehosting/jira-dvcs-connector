@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.connection.impl;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
 import com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection;
 import com.atlassian.sal.api.net.Request;
@@ -29,19 +29,19 @@ public class DefaultBitbucketConnection implements BitbucketConnection
         this.requestFactory = requestFactory;
     }
 
-    public String getRepository(BitbucketAuthentication auth, String owner, String slug)
+    public String getRepository(Authentication auth, String owner, String slug)
     {
         logger.debug("parse repository [ {} ] [ {} ]", owner, slug);
         return get(auth, "repositories/" + encode(owner) + "/" + encode(slug), null);
     }
 
-    public String getChangeset(BitbucketAuthentication auth, String owner, String slug, String id)
+    public String getChangeset(Authentication auth, String owner, String slug, String id)
     {
         logger.debug("parse changeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, id});
         return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets/" + encode(id), null);
     }
 
-    public String getChangesets(BitbucketAuthentication auth, String owner, String slug, String startNode, int limit)
+    public String getChangesets(Authentication auth, String owner, String slug, String startNode, int limit)
     {
         logger.debug("parse changesets [ {} ] [ {} ] [ {} ] [ {} ]",
                 new String[]{owner, slug, startNode, String.valueOf(limit)});
@@ -57,7 +57,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
     public String getUser(String username)
     {
         logger.debug("parse user [ {} ]", username);
-        return get(BitbucketAuthentication.ANONYMOUS, "users/" + encode(username), null);
+        return get(Authentication.ANONYMOUS, "users/" + encode(username), null);
     }
 
     private String encode(String s)
@@ -72,7 +72,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
         }
     }
 
-    private String get(BitbucketAuthentication auth, String uri, Map<String, Object> params)
+    private String get(Authentication auth, String uri, Map<String, Object> params)
     {
         try
         {

@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Details on a changeset found in Bitbucket.
  */
-public class DefaultBitbucketChangeset implements BitbucketChangeset
+public class DefaultBitbucketChangeset implements Changeset
 {
     static final String COMMIT_URL_PATTERN = "https://bitbucket.org/{0}/{1}/changeset/{2}";
     private final String repositoryOwner;

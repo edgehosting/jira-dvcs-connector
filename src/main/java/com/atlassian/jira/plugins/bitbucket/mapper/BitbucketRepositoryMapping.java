@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.mapper;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepository;
 import org.apache.commons.lang.StringUtils;
 
@@ -50,11 +50,11 @@ public class BitbucketRepositoryMapping
         return branch;
     }
 
-    public BitbucketAuthentication getBitbucketAuthentication()
+    public Authentication getBitbucketAuthentication()
     {
-        BitbucketAuthentication auth = BitbucketAuthentication.ANONYMOUS;
+        Authentication auth = Authentication.ANONYMOUS;
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
-            auth = BitbucketAuthentication.basic(username, password);
+            auth = Authentication.basic(username, password);
         return auth;
     }
 }

@@ -1,18 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.mapper.impl;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.mapper.*;
-import com.atlassian.templaterenderer.TemplateRenderer;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.MapMaker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +8,28 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.AuthenticationFactory;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.mapper.OperationResult;
+import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
+import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.mapper.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
+import com.atlassian.templaterenderer.TemplateRenderer;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.MapMaker;
 
 /**
  * Synchronization services
@@ -75,14 +84,15 @@ public class DefaultSynchronizer implements Synchronizer
         {
             logger.debug("synchronize [ {} ] with [ {} ]", key.getProjectKey(), key.getRepositoryUri());
 
-            BitbucketAuthentication auth = bitbucketMapper.getAuthentication(key.getProjectKey(), key.getRepositoryUri());
-            Iterable<BitbucketChangeset> changesets = key.getChangesets() == null ?
+            SourceControlRepository repository = globalRepositoryManager.getRepository(key.getProjectKey(), key.getRepositoryUri().getRepositoryUrl());
+            Authentication auth = authenticationFactory.getAuthentication(repository);
+            Iterable<Changeset> changesets = key.getChangesets() == null ?
                     bitbucket.getChangesets(auth, key.getRepositoryUri().getOwner(), key.getRepositoryUri().getSlug()) :
                     key.getChangesets();
 
             int jiraCount = 0;
 
-            for (BitbucketChangeset changeset : changesets)
+            for (Changeset changeset : changesets)
             {
                 String message = changeset.getMessage();
 
@@ -93,7 +103,7 @@ public class DefaultSynchronizer implements Synchronizer
                     {
                         jiraCount ++;
                         String issueId = extractedIssue.toUpperCase();
-                        bitbucketMapper.addChangeset(issueId, changeset);
+                        repositoryPersister.addChangeset(issueId, changeset);
                         coordinator.operations.get(key).inProgress(changeset.getRevision(), jiraCount);
                     }
                 }
@@ -105,18 +115,24 @@ public class DefaultSynchronizer implements Synchronizer
 
     private final Logger logger = LoggerFactory.getLogger(DefaultSynchronizer.class);
     private final Bitbucket bitbucket;
-    private final BitbucketMapper bitbucketMapper;
+    private final RepositoryPersister repositoryPersister;
     private final Coordinator coordinator;
+	private AuthenticationFactory authenticationFactory;
+	private final RepositoryManager globalRepositoryManager;
 
-    public DefaultSynchronizer(Bitbucket bitbucket, BitbucketMapper bitbucketMapper,
-                               ExecutorService executorService, TemplateRenderer templateRenderer)
+    public DefaultSynchronizer(Bitbucket bitbucket, RepositoryPersister repositoryPersister,
+                               ExecutorService executorService, TemplateRenderer templateRenderer, 
+                               AuthenticationFactory authenticationFactory, 
+                               @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
     {
         this.bitbucket = bitbucket;
-        this.bitbucketMapper = bitbucketMapper;
+        this.repositoryPersister = repositoryPersister;
+		this.authenticationFactory = authenticationFactory;
+		this.globalRepositoryManager = globalRepositoryManager;
         this.coordinator = new Coordinator(executorService, templateRenderer);
     }
 
-    private Set<String> extractProjectKey(String projectKey, String message)
+    private static Set<String> extractProjectKey(String projectKey, String message)
     {
         Pattern projectKeyPattern = Pattern.compile("(" + projectKey + "-\\d*)", Pattern.CASE_INSENSITIVE);
         Matcher match = projectKeyPattern.matcher(message);
@@ -138,7 +154,7 @@ public class DefaultSynchronizer implements Synchronizer
         coordinator.operations.get(new SynchronizationKey(projectKey, repositoryUri));
     }
 
-    public void synchronize(String projectKey, RepositoryUri repositoryUri, List<BitbucketChangeset> changesets)
+    public void synchronize(String projectKey, RepositoryUri repositoryUri, List<Changeset> changesets)
     {
         coordinator.operations.get(new SynchronizationKey(projectKey, repositoryUri, changesets));
     }

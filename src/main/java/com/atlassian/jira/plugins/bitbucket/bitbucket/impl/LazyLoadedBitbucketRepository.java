@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepository;
 import com.atlassian.util.concurrent.LazyReference;
 
@@ -16,7 +16,7 @@ public class LazyLoadedBitbucketRepository implements BitbucketRepository
     private final String slug;
 
     public LazyLoadedBitbucketRepository(
-            final Bitbucket bitbucket, final BitbucketAuthentication auth,
+            final Bitbucket bitbucket, final Authentication auth,
             final String owner, final String slug)
     {
         this.lazyReference = new LazyReference<BitbucketRepository>()

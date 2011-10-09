@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.mapper;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public interface Synchronizer
      * @param repositoryUri the uri of the repository to synchronize
      * @param changesets the changesets to synchronize
      */
-    public void synchronize(String projectKey, RepositoryUri repositoryUri, List<BitbucketChangeset> changesets);
+    public void synchronize(String projectKey, RepositoryUri repositoryUri, List<Changeset> changesets);
 
     /**
      * Get the progress of any sync being executed for the matching project and repository details

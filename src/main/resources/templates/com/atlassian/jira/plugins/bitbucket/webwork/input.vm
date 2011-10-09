@@ -163,7 +163,7 @@
                 <tr> <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$encodedProjectName</div></td> </tr>
                 <tr> <th>Repository URL</th> <th>Key</th> <th>Operations</th> </tr>
                 #foreach ($repository in $action.getProjectRepositories($projectKey))
-                    #set($repositoryUrl = $repository.getRepositoryUrl())
+                    #set($repositoryUrl = $repository.getUrl())
                     #set($urlEncodedRepositoryUrl = $action.encodeUrl($repositoryUrl))
                     #set($encodedMode = $textutils.htmlEncode($action.getMode()))
                     <tr>

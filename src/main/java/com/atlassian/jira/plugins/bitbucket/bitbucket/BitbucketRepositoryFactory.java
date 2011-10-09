@@ -24,7 +24,7 @@ public class BitbucketRepositoryFactory
      * @param slug      the slug of the repository
      * @return the parsed {@link BitbucketRepository}
      */
-    public static BitbucketRepository load(Bitbucket bitbucket, BitbucketAuthentication auth, String owner, String slug)
+    public static BitbucketRepository load(Bitbucket bitbucket, Authentication auth, String owner, String slug)
     {
         return new LazyLoadedBitbucketRepository(bitbucket, auth, owner, slug);
     }
@@ -38,7 +38,7 @@ public class BitbucketRepositoryFactory
      * @return the parsed {@link BitbucketRepository}
      * @throws MalformedURLException if the url is not correctly formed
      */
-    public static BitbucketRepository load(Bitbucket bitbucket, BitbucketAuthentication auth, String url) throws MalformedURLException
+    public static BitbucketRepository load(Bitbucket bitbucket, Authentication auth, String url) throws MalformedURLException
     {
         return load(bitbucket, auth, getOwner(url), getSlug(url));
     }

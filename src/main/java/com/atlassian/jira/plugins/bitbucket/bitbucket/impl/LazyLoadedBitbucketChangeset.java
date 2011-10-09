@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketAuthentication;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangeset;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.util.concurrent.LazyReference;
 
 import java.text.MessageFormat;
@@ -13,20 +13,20 @@ import java.util.List;
  * A lazy loaded remote bitbucket changeset.  Will only load the changeset details if the
  * details that aren't stored locally are required.
  */
-public class LazyLoadedBitbucketChangeset implements BitbucketChangeset
+public class LazyLoadedBitbucketChangeset implements Changeset
 {
 
-    private final LazyReference<BitbucketChangeset> lazyReference;
+    private final LazyReference<Changeset> lazyReference;
     private final String owner;
     private final String slug;
     private final String nodeId;
 
-    public LazyLoadedBitbucketChangeset(final Bitbucket bitbucket, final BitbucketAuthentication auth,
+    public LazyLoadedBitbucketChangeset(final Bitbucket bitbucket, final Authentication auth,
                                         final String owner, final String slug, final String nodeId)
     {
-        this.lazyReference = new LazyReference<BitbucketChangeset>()
+        this.lazyReference = new LazyReference<Changeset>()
         {
-            protected BitbucketChangeset create() throws Exception
+            protected Changeset create() throws Exception
             {
                 return bitbucket.getChangeset(auth, owner, slug, nodeId);
             }
@@ -36,7 +36,7 @@ public class LazyLoadedBitbucketChangeset implements BitbucketChangeset
         this.nodeId = nodeId;
     }
 
-    private BitbucketChangeset getBitbucketChangeset()
+    private Changeset getBitbucketChangeset()
     {
         return lazyReference.get();
     }

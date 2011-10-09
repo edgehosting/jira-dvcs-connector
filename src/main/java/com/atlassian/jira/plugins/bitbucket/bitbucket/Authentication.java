@@ -2,17 +2,16 @@ package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.BasicAuthentication;
 import com.atlassian.sal.api.net.Request;
-import org.apache.commons.lang.StringUtils;
 
 /**
- * Authentication method for bitbucket
+ * Authentication method for accessing repository
  */
-public abstract class BitbucketAuthentication
+public abstract class Authentication
 {
     /**
-     * Access bitbucket with no authentication details set.
+     * Access with no authentication details set.
      */
-    public static final BitbucketAuthentication ANONYMOUS = new BitbucketAuthentication()
+    public static final Authentication ANONYMOUS = new Authentication()
     {
         public void addAuthentication(Request<?,?> request)
         {
@@ -21,13 +20,13 @@ public abstract class BitbucketAuthentication
     };
 
     /**
-     * Access bitbucket with basic authentication.
+     * Access with basic authentication.
      *
      * @param username the username to authenticate as
      * @param password the password to authenticate with
      * @return a basic authentication method
      */
-    public static BitbucketAuthentication basic(final String username, final String password)
+    public static Authentication basic(final String username, final String password)
     {
         return new BasicAuthentication(username, password);
     }
