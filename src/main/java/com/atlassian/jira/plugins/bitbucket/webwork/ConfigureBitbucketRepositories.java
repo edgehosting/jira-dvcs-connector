@@ -12,11 +12,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.ComponentManager;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;

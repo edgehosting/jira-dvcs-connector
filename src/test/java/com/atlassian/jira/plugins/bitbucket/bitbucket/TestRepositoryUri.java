@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import org.junit.Test;
 
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
+
 import static org.junit.Assert.assertEquals;
 
 /**

@@ -4,21 +4,23 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.config.properties.PropertiesManager;
 import com.atlassian.jira.plugin.projectoperation.AbstractPluggableProjectOperation;
-import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.project.Project;
 import com.opensymphony.user.User;
 
 public class ProjectSettings extends AbstractPluggableProjectOperation
 {
     private static final Pattern BITBUCKET_NAME_PATTERN = Pattern.compile(".*bitbucket.org/([^/]+/[^/]+)(/default)?");
-	private final RepositoryManager repositoryManager;
+	private final RepositoryManager globalRepositoryManager;
 
-    public ProjectSettings(RepositoryManager repositoryManager)
+    public ProjectSettings(@Qualifier("globalRepositoryManager") RepositoryManager repositoryManager)
     {
-        this.repositoryManager = repositoryManager;
+        this.globalRepositoryManager = repositoryManager;
     }
 
     public String getHtml(final Project project, final User user)
@@ -26,7 +28,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
 
         String baseURL = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
 
-        List<SourceControlRepository> repositories = repositoryManager.getRepositories(project.getKey());
+        List<SourceControlRepository> repositories = globalRepositoryManager.getRepositories(project.getKey());
         StringBuilder result = new StringBuilder();
         result.append("<span class=\"project-config-list-label\">");
         if (repositories.size() > 1)

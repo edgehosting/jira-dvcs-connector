@@ -7,11 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.action.JiraWebActionSupport;

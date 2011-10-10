@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.mapper;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 
 import java.util.List;
 

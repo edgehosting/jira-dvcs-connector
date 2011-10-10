@@ -13,15 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.mapper.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
 import com.atlassian.jira.plugins.bitbucket.mapper.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -82,8 +82,7 @@ public class DefaultSynchronizer implements Synchronizer
             logger.debug("synchronize [ {} ] with [ {} ]", key.getProjectKey(), key.getRepositoryUri());
 
             SourceControlRepository repository = globalRepositoryManager.getRepository(key.getProjectKey(), key.getRepositoryUri().getRepositoryUrl());
-            Iterable<Changeset> changesets = key.getChangesets() == null ?
-                    bitbucket.getChangesets(repository) :
+            Iterable<Changeset> changesets = key.getChangesets() == null ? bitbucket.getChangesets(repository) :
                     key.getChangesets();
 
             int jiraCount = 0;
@@ -110,11 +109,11 @@ public class DefaultSynchronizer implements Synchronizer
     }
 
     private final Logger logger = LoggerFactory.getLogger(DefaultSynchronizer.class);
-    private final Bitbucket bitbucket;
+    private final BitbucketCommunicator bitbucket;
     private final Coordinator coordinator;
 	private final RepositoryManager globalRepositoryManager;
 
-    public DefaultSynchronizer(Bitbucket bitbucket, 
+    public DefaultSynchronizer(BitbucketCommunicator bitbucket, 
                                ExecutorService executorService, TemplateRenderer templateRenderer, 
                                @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
     {

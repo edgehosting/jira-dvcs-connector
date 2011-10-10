@@ -18,13 +18,12 @@ import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketUser;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
@@ -33,16 +32,13 @@ import com.opensymphony.user.User;
 public class BitbucketTabPanel extends AbstractIssueTabPanel
 {
     private static final GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction("");
-    private final Bitbucket bitbucket;
     private final PermissionManager permissionManager;
     private final Logger logger = LoggerFactory.getLogger(BitbucketTabPanel.class);
 	private RepositoryManager globalRepositoryManager;
 
-    public BitbucketTabPanel(PermissionManager permissionManager, Bitbucket bitbucket, 
-    		@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
+    public BitbucketTabPanel(PermissionManager permissionManager, @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
     {
         this.permissionManager = permissionManager;
-        this.bitbucket = bitbucket;
         this.globalRepositoryManager = globalRepositoryManager;
     }
 
@@ -83,10 +79,10 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
         String login = changeset.getAuthor();
 
         String commitURL = changeset.getCommitURL();
+        
+        SourceControlUser user = globalRepositoryManager.getUser(changeset.getRepositoryUrl(), changeset.getAuthor());
 
-        BitbucketUser bitbucketUser = bitbucket.getUser(changeset.getAuthor());
-
-        String gravatarUrl = bitbucketUser.getAvatar();
+        String gravatarUrl = user.getAvatar();
         gravatarUrl = gravatarUrl.replace("s=32", "s=60");
 
         String htmlParentHashes = "";

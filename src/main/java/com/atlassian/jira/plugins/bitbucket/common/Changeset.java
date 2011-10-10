@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.bitbucket.common;
 
 import java.util.List;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFile;
 
 /**
  * Details on a changeset

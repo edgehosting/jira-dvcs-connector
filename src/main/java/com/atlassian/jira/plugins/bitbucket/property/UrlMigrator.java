@@ -7,8 +7,8 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 
 public class UrlMigrator implements ActiveObjectsUpgradeTask
 {

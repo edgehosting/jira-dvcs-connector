@@ -13,16 +13,15 @@ import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.api.Authentication;
+import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.common.bitbucket.BitbucketRepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
-import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultRepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 
@@ -34,12 +33,12 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
 
     private final ProjectManager projectManager;
     private final BitbucketProjectSettings settings;
-    private final Bitbucket bitbucket;
+    private final BitbucketCommunicator bitbucket;
 
 	private final Encryptor encryptor;
 
     public PropertyMigrator(ProjectManager projectManager, BitbucketProjectSettings settings,
-                            Bitbucket bitbucket, Encryptor encryptor)
+                            BitbucketCommunicator bitbucket, Encryptor encryptor)
     {
         this.projectManager = projectManager;
         this.settings = settings;
@@ -55,7 +54,7 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
         activeObjects.migrate(IssueMapping.class, ProjectMapping.class);
 
         // why DI doesn't work for this?
-    	RepositoryPersister repositoryPersister = new DefaultRepositoryPersister(activeObjects, encryptor);
+    	RepositoryPersister repositoryPersister = new DefaultRepositoryPersister(activeObjects);
     	
         List<Project> projects = projectManager.getProjectObjects();
         for (Project project : projects)
@@ -77,7 +76,10 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
                     RepositoryUri uri = RepositoryUri.parse(repository);
                     logger.debug("migrate repository [ {} ]", uri);
                     ProjectMapping pm = repositoryPersister.addRepository(projectKey, uri, username, password);
-                    SourceControlRepository repo = BitbucketRepositoryManager.TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
+
+                    String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUri());
+                    DefaultSourceControlRepository repo = new DefaultSourceControlRepository(pm.getID(), RepositoryUri.parse(pm.getRepositoryUri()).getRepositoryUrl(),
+							pm.getProjectKey(), pm.getUsername(), decryptedPassword);
 
                     List<String> issueIds = settings.getIssueIds(projectKey, repository);
                     for (String issueId : issueIds)

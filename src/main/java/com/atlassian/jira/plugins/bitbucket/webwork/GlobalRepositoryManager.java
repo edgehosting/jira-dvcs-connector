@@ -3,9 +3,10 @@ package com.atlassian.jira.plugins.bitbucket.webwork;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 
 /**
  * Aggregated Repository Manager that handles all Repository Managers based on the repository url
@@ -81,8 +82,12 @@ public class GlobalRepositoryManager implements RepositoryManager
 
 	public void addChangeset(String issueId, Changeset changeset)
 	{
-		RepositoryManager repositoryManager = getManagerForUrl(changeset.getRepositoryUrl());
-		repositoryManager.addChangeset(issueId, changeset);
+		getManagerForUrl(changeset.getRepositoryUrl()).addChangeset(issueId, changeset);
+	}
+
+	public SourceControlUser getUser(String repositoryUrl, String username)
+	{
+		return getManagerForUrl(repositoryUrl).getUser(repositoryUrl, username);
 	}
 
 

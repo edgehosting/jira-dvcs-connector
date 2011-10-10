@@ -11,9 +11,11 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.BitbucketChangesetIterator;
-import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.connection.impl.DefaultBitbucketConnection;
+import com.atlassian.jira.plugins.bitbucket.api.Authentication;
+import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketChangesetIterator;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucketConnection;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
 

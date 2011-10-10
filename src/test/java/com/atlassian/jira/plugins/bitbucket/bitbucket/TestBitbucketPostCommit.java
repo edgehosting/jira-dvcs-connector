@@ -1,8 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;

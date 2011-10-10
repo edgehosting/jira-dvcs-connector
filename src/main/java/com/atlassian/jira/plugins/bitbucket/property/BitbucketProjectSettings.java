@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.property;
 
-import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 
 import java.util.List;
 

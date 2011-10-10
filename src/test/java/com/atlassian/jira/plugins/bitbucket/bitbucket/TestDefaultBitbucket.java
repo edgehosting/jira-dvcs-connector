@@ -22,15 +22,19 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.BitbucketChangesetIterator;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucket;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketChangesetIterator;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucket;
 import com.google.common.collect.Iterables;
 
 /**
- * Unit tests for {@link Bitbucket}
+ * Unit tests for {@link BitbucketCommunicator}
  */
 public class TestDefaultBitbucket
 {
@@ -110,7 +114,7 @@ public class TestDefaultBitbucket
     public void testGetUser() throws Exception
     {
         when(bitbucketConnection.getUser("mjensen")).thenReturn(resource("TestBitbucket-user.json"));
-        BitbucketUser user = new DefaultBitbucket(bitbucketConnection).getUser("mjensen");
+        SourceControlUser user = new DefaultBitbucket(bitbucketConnection).getUser("mjensen");
         assertEquals("https://secure.gravatar.com/avatar/e0fe5875ffbe955718f93b8a364454fe?d=identicon&s=32", user.getAvatar());
         assertEquals("mjensen", user.getUsername());
         assertEquals("Matthew", user.getFirstName());
@@ -148,9 +152,9 @@ public class TestDefaultBitbucket
     public void testGetUnknownUser()
     {
         when(bitbucketConnection.getUser("unknown")).thenThrow(new BitbucketException());
-        BitbucketUser user = new DefaultBitbucket(bitbucketConnection).getUser("unknown");
+        SourceControlUser user = new DefaultBitbucket(bitbucketConnection).getUser("unknown");
         assertNotNull(user);
-        assertEquals(BitbucketUser.UNKNOWN_USER,user);
+        assertEquals(SourceControlUser.UNKNOWN_USER,user);
     }
 
 }

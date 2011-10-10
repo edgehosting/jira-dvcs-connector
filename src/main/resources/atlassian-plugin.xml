@@ -28,9 +28,9 @@
     </component>
 
     <component key="repositoryPersister" name="Repository Persister"
-               class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultRepositoryPersister">
+               class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister">
         <description>A Service for storing data in ActiveObjects</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister</interface>
     </component>
 
     <component key="synchronizer" name="Bitbucket Synchronization Service"
@@ -40,15 +40,15 @@
     </component>
 
     <component key="encryptor" name="Encryption Service"
-               class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultEncryptor">
+               class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultEncryptor">
         <description>A service for encrypting and decrypting passwords</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.mapper.Encryptor</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.api.Encryptor</interface>
     </component>
 
     <component key="authenticationFactory" name="Authentication Factory"
-               class="com.atlassian.jira.plugins.bitbucket.bitbucket.DefaultAuthenticationFactory">
+               class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultAuthenticationFactory">
         <description>Creating authenticators</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.bitbucket.AuthenticationFactory</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory</interface>
     </component>
 
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
@@ -58,28 +58,28 @@
     </component>
 
     <component key="bitbucketConnection" name="Bitbucket Remote Connection"
-               class="com.atlassian.jira.plugins.bitbucket.connection.impl.DefaultBitbucketConnection">
+               class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucketConnection">
         <description>A component used to talk to the remote bitbucket service</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection</interface>
     </component>
     
     
     <component key="bitbucketRepositoryManager" name="bitbucketRepositoryManager"
-               class="com.atlassian.jira.plugins.bitbucket.common.bitbucket.BitbucketRepositoryManager">
+               class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager">
         <description>bitbucketRepositoryManager</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.common.RepositoryManager</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager</interface>
     </component>
     
     <component key="globalRepositoryManager" name="globalRepositoryManager"
                class="com.atlassian.jira.plugins.bitbucket.webwork.GlobalRepositoryManager">
         <description>globalRepositoryManager</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.common.RepositoryManager</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager</interface>
     </component>
     
 <!--    <component key="remoteBitbucket" name="Remote Bitbucket Service"
-               class="com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucket">
+               class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucket">
         <description>A service for using the remove bitbucket connection</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator</interface>
     </component>-->
 
     <component-import key="pluginSettingsFactory">

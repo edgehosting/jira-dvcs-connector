@@ -12,10 +12,12 @@ import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 import org.mockito.MockitoAnnotations.Mock;
 
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultSynchronizer;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.templaterenderer.TemplateRenderer;
 
 /**
@@ -24,7 +26,7 @@ import com.atlassian.templaterenderer.TemplateRenderer;
 public class TestDefaultSynchronizer
 {
 	@Mock
-	private Bitbucket bitbucket;
+	private BitbucketCommunicator bitbucket;
 	@Mock
 	private Changeset changeset;
 	@Mock
