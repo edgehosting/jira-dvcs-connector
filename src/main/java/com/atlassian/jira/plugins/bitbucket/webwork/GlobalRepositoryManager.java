@@ -98,5 +98,11 @@ public class GlobalRepositoryManager implements RepositoryManager
 		throw new IllegalArgumentException("No repository manager found for given url ["+url+"]");
 	}
 
+	public void addChangeset(String issueId, Changeset changeset)
+	{
+		RepositoryManager repositoryManager = getManagerForUrl(changeset.getRepositoryUrl());
+		repositoryManager.addChangeset(issueId, changeset);
+	}
+
 
 }

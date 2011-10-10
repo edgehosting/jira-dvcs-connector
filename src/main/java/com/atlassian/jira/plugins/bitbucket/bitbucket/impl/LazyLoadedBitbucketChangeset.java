@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.util.concurrent.LazyReference;
 
@@ -17,22 +18,20 @@ public class LazyLoadedBitbucketChangeset implements Changeset
 {
 
     private final LazyReference<Changeset> lazyReference;
-    private final String owner;
-    private final String slug;
     private final String nodeId;
+	private final String repositoryUrl;
 
-    public LazyLoadedBitbucketChangeset(final Bitbucket bitbucket, final Authentication auth,
-                                        final String owner, final String slug, final String nodeId)
+    public LazyLoadedBitbucketChangeset(final Bitbucket bitbucket, final String repositoryUrl, 
+    		 final Authentication auth, final String nodeId)
     {
-        this.lazyReference = new LazyReference<Changeset>()
+        this.repositoryUrl = repositoryUrl;
+		this.lazyReference = new LazyReference<Changeset>()
         {
             protected Changeset create() throws Exception
             {
-                return bitbucket.getChangeset(auth, owner, slug, nodeId);
+                return bitbucket.getChangeset(repositoryUrl, auth, nodeId);
             }
         };
-        this.owner = owner;
-        this.slug = slug;
         this.nodeId = nodeId;
     }
 
@@ -90,19 +89,15 @@ public class LazyLoadedBitbucketChangeset implements Changeset
     {
         return getBitbucketChangeset().getRevision();
     }
-
-    public String getRepositoryOwner()
-    {
-        return owner;
-    }
-
-    public String getRepositorySlug()
-    {
-        return slug;
-    }
+    
+	public String getRepositoryUrl()
+	{
+		return repositoryUrl;
+	}
 
     public String getCommitURL()
     {
-        return MessageFormat.format(DefaultBitbucketChangeset.COMMIT_URL_PATTERN, owner, slug, nodeId);
+    	RepositoryUri uri = RepositoryUri.parse(repositoryUrl);
+        return MessageFormat.format(DefaultBitbucketChangeset.COMMIT_URL_PATTERN, uri.getOwner(), uri.getSlug(), nodeId);
     }
 }

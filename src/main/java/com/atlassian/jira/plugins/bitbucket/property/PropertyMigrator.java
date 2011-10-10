@@ -13,12 +13,13 @@ import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultRepositoryPersister;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
@@ -32,7 +33,8 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
     private final ProjectManager projectManager;
     private final BitbucketProjectSettings settings;
     private final Bitbucket bitbucket;
-    private final Encryptor encryptor;
+
+	private final Encryptor encryptor;
 
     public PropertyMigrator(ProjectManager projectManager, BitbucketProjectSettings settings,
                             Bitbucket bitbucket, Encryptor encryptor)
@@ -40,7 +42,7 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
         this.projectManager = projectManager;
         this.settings = settings;
         this.bitbucket = bitbucket;
-        this.encryptor = encryptor;
+		this.encryptor = encryptor;
     }
 
     public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
@@ -50,8 +52,9 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
         //noinspection unchecked
         activeObjects.migrate(IssueMapping.class, ProjectMapping.class);
 
-        RepositoryPersister mapper = new DefaultRepositoryPersister(activeObjects, encryptor);
-
+        // why DI doesn't work for this?
+    	RepositoryPersister repositoryPersister = new DefaultRepositoryPersister(activeObjects, encryptor);
+    	
         List<Project> projects = projectManager.getProjectObjects();
         for (Project project : projects)
         {
@@ -69,9 +72,9 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
                     if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
                         auth = Authentication.basic(username, password);
 
-                    RepositoryUri repositoryUri = RepositoryUri.parse(repository);
-                    logger.debug("migrate repository [ {} ]", repositoryUri);
-                    mapper.addRepository(projectKey, repositoryUri, username, password);
+                    RepositoryUri uri = RepositoryUri.parse(repository);
+                    logger.debug("migrate repository [ {} ]", uri);
+                    repositoryPersister.addRepository(projectKey, uri, username, password);
 
                     List<String> issueIds = settings.getIssueIds(projectKey, repository);
                     for (String issueId : issueIds)
@@ -86,12 +89,11 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
                             String node = changesetPath.substring(changesetPath.lastIndexOf("/") + 1);
                             logger.debug("add changeset [ {} ] to [ {} ]", changesetPath, issueId);
 
-                            mapper.addChangeset(issueId, BitbucketChangesetFactory.load(
-                                    bitbucket, auth, repositoryUri.getOwner(), repositoryUri.getSlug(), node
-                            ));
+							Changeset changeset = BitbucketChangesetFactory.load(bitbucket, uri.getRepositoryUrl(),
+									auth, node);
+							repositoryPersister.addChangeset(issueId, changeset);
                         }
                     }
-
                 }
                 catch (MalformedURLException e)
                 {

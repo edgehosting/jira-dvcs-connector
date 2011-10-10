@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit;
 import org.apache.commons.io.IOUtils;
@@ -25,6 +26,8 @@ public class TestBitbucketPostCommit
 {
     @Mock
     Synchronizer synchronizer;
+    @Mock
+	private RepositoryManager repositoryManager;
 
     @Before
     public void setup() throws Exception
@@ -40,7 +43,7 @@ public class TestBitbucketPostCommit
     @Test
     public void testPostCommit() throws Exception
     {
-        BitbucketPostCommit bitbucketPostCommit = new BitbucketPostCommit(synchronizer);
+        BitbucketPostCommit bitbucketPostCommit = new BitbucketPostCommit(repositoryManager, synchronizer);
         bitbucketPostCommit.setProjectKey("PRJ");
         bitbucketPostCommit.setPayload(resource("TestBitbucketPostCommit-payload.json"));
         bitbucketPostCommit.execute();

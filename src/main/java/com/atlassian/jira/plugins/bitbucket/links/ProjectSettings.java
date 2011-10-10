@@ -6,19 +6,19 @@ import java.util.regex.Pattern;
 
 import com.atlassian.jira.config.properties.PropertiesManager;
 import com.atlassian.jira.plugin.projectoperation.AbstractPluggableProjectOperation;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
 import com.atlassian.jira.project.Project;
 import com.opensymphony.user.User;
 
 public class ProjectSettings extends AbstractPluggableProjectOperation
 {
     private static final Pattern BITBUCKET_NAME_PATTERN = Pattern.compile(".*bitbucket.org/([^/]+/[^/]+)(/default)?");
-    private final RepositoryPersister repositoryPersister;
+	private final RepositoryManager repositoryManager;
 
-    public ProjectSettings(RepositoryPersister repositoryPersister)
+    public ProjectSettings(RepositoryManager repositoryManager)
     {
-        this.repositoryPersister = repositoryPersister;
+        this.repositoryManager = repositoryManager;
     }
 
     public String getHtml(final Project project, final User user)
@@ -26,7 +26,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
 
         String baseURL = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
 
-        List<ProjectMapping> repositories = repositoryPersister.getRepositories(project.getKey());
+        List<SourceControlRepository> repositories = repositoryManager.getRepositories(project.getKey());
         StringBuilder result = new StringBuilder();
         result.append("<span class=\"project-config-list-label\">");
         if (repositories.size() > 1)
@@ -46,7 +46,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
                 result.append("None");
                 break;
             case 1:
-                result.append(getRepositoryName(repositories.get(0).getRepositoryUri()));
+                result.append(getRepositoryName(repositories.get(0).getUrl()));
                 break;
             default:
                 result.append(repositories.size()).append(" repositories");

@@ -111,7 +111,7 @@ public class TestDefaultBitbucket
         when(bitbucketConnection.getChangeset(Authentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "471b0c972ba6")).
                 thenReturn(resource("TestBitbucket-changeset.json"));
         Changeset changeset = new DefaultBitbucket(bitbucketConnection).
-                getChangeset(Authentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "471b0c972ba6");
+                getChangeset("https://bitbucket.org/atlassian/jira-bitbucket-connector", Authentication.ANONYMOUS, "471b0c972ba6");
         assertEquals("471b0c972ba6", changeset.getNode());
         assertEquals("https://bitbucket.org/atlassian/jira-bitbucket-connector/changeset/471b0c972ba6", changeset.getCommitURL());
     }
@@ -120,8 +120,8 @@ public class TestDefaultBitbucket
     public void testGetCachedChangeset() throws Exception
     {
         final DefaultBitbucket bitbucket = new DefaultBitbucket(bitbucketConnection);
-        final Changeset changeset = BitbucketChangesetFactory.load(bitbucket,
-                Authentication.ANONYMOUS, "atlassian", "jira-bitbucket-connector", "471b0c972ba6");
+        final Changeset changeset = BitbucketChangesetFactory.load(bitbucket, "https://bitbucket.org/atlassian/jira-bitbucket-connector",
+                Authentication.ANONYMOUS, "471b0c972ba6");
 
         assertEquals("471b0c972ba6", changeset.getNode());
         assertEquals("https://bitbucket.org/atlassian/jira-bitbucket-connector/changeset/471b0c972ba6", changeset.getCommitURL());

@@ -22,7 +22,6 @@ import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.mapper.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
-import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.mapper.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
 import com.atlassian.templaterenderer.TemplateRenderer;
@@ -103,7 +102,7 @@ public class DefaultSynchronizer implements Synchronizer
                     {
                         jiraCount ++;
                         String issueId = extractedIssue.toUpperCase();
-                        repositoryPersister.addChangeset(issueId, changeset);
+                        globalRepositoryManager.addChangeset(issueId, changeset);
                         coordinator.operations.get(key).inProgress(changeset.getRevision(), jiraCount);
                     }
                 }
@@ -115,18 +114,16 @@ public class DefaultSynchronizer implements Synchronizer
 
     private final Logger logger = LoggerFactory.getLogger(DefaultSynchronizer.class);
     private final Bitbucket bitbucket;
-    private final RepositoryPersister repositoryPersister;
     private final Coordinator coordinator;
 	private AuthenticationFactory authenticationFactory;
 	private final RepositoryManager globalRepositoryManager;
 
-    public DefaultSynchronizer(Bitbucket bitbucket, RepositoryPersister repositoryPersister,
+    public DefaultSynchronizer(Bitbucket bitbucket, 
                                ExecutorService executorService, TemplateRenderer templateRenderer, 
                                AuthenticationFactory authenticationFactory, 
                                @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
     {
         this.bitbucket = bitbucket;
-        this.repositoryPersister = repositoryPersister;
 		this.authenticationFactory = authenticationFactory;
 		this.globalRepositoryManager = globalRepositoryManager;
         this.coordinator = new Coordinator(executorService, templateRenderer);

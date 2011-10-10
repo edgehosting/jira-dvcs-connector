@@ -39,11 +39,11 @@ public class BitbucketRepositoryManager implements RepositoryManager
 			{
 				public Changeset apply(IssueMapping from)
 				{
-					RepositoryUri repositoryUri = RepositoryUri.parse(from.getRepositoryUri());
-					ProjectMapping repository = repositoryPersister.getRepository(from.getProjectKey(), repositoryUri);
-                    SourceControlRepository sourceControlRepository = TO_SOURCE_CONTROL_REPOSITORY.apply(repository);
-					Authentication auth = authenticationFactory.getAuthentication(sourceControlRepository);
-					return bitbucket.getChangeset(auth, repositoryUri.getOwner(), repositoryUri.getSlug(), from.getNode());
+					RepositoryUri uri = RepositoryUri.parse(from.getRepositoryUri());
+					ProjectMapping pm = repositoryPersister.getRepository(from.getProjectKey(), uri);
+                    SourceControlRepository repository = TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
+					Authentication auth = authenticationFactory.getAuthentication(repository);
+					return bitbucket.getChangeset(uri.getRepositoryUrl(), auth, from.getNode());
 				}
 			};
 
@@ -105,6 +105,11 @@ public class BitbucketRepositoryManager implements RepositoryManager
 	{
 		repositoryPersister.removeRepository(projectKey, RepositoryUri.parse(url));
         // Should we also delete IssueMappings?
+	}
+
+	public void addChangeset(String issueId, Changeset changeset)
+	{
+		repositoryPersister.addChangeset(issueId, changeset);
 	}
 
 

@@ -19,15 +19,13 @@ public class CachingBitbucket implements Bitbucket
     private class ChangesetKey
     {
         final Authentication auth;
-        final String owner;
-        final String slug;
         final String id;
+		private final String repositoryUrl;
 
-        public ChangesetKey(Authentication auth, String owner, String slug, String id)
+        public ChangesetKey(String repositoryUrl, Authentication auth, String id)
         {
-            this.auth = auth;
-            this.owner = owner;
-            this.slug = slug;
+            this.repositoryUrl = repositoryUrl;
+			this.auth = auth;
             this.id = id;
         }
 
@@ -38,16 +36,14 @@ public class CachingBitbucket implements Bitbucket
             ChangesetKey that = (ChangesetKey) o;
             if (!auth.equals(that.auth)) return false;
             if (!id.equals(that.id)) return false;
-            if (!owner.equals(that.owner)) return false;
-            if (!slug.equals(that.slug)) return false;
+            if (!repositoryUrl.equals(that.repositoryUrl)) return false;
             return true;
         }
 
         public int hashCode()
         {
             int result = auth.hashCode();
-            result = 31 * result + owner.hashCode();
-            result = 31 * result + slug.hashCode();
+            result = 31 * result + repositoryUrl.hashCode();
             result = 31 * result + id.hashCode();
             return result;
         }
@@ -70,7 +66,7 @@ public class CachingBitbucket implements Bitbucket
         {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            ChangesetKey that = (ChangesetKey) o;
+            RepositoryKey that = (RepositoryKey) o;
             if (!auth.equals(that.auth)) return false;
             if (!owner.equals(that.owner)) return false;
             if (!slug.equals(that.slug)) return false;
@@ -104,7 +100,7 @@ public class CachingBitbucket implements Bitbucket
                     {
                         public Changeset apply(ChangesetKey key)
                         {
-                            return delegate.getChangeset(key.auth, key.owner, key.slug, key.id);
+                            return delegate.getChangeset(key.repositoryUrl, key.auth, key.id);
                         }
                     });
 
@@ -148,11 +144,11 @@ public class CachingBitbucket implements Bitbucket
         }
     }
 
-    public Changeset getChangeset(Authentication auth, String owner, String slug, String id)
+    public Changeset getChangeset(String repositoryUrl, Authentication auth, String id)
     {
         try
         {
-            return changesetMap.get(new ChangesetKey(auth, owner, slug, id));
+            return changesetMap.get(new ChangesetKey(repositoryUrl, auth, id));
         }
         catch (ComputationException e)
         {

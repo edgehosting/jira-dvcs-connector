@@ -5,10 +5,12 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONObject;
@@ -30,10 +32,13 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     private String revision = "";
     // BitBucket JSON Payload
     private String payload = "";
+	private final RepositoryManager globalRepositoryManager;
 
-    public BitbucketPostCommit(Synchronizer synchronizer)
+    public BitbucketPostCommit(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, 
+    		Synchronizer synchronizer)
     {
-        this.synchronizer = synchronizer;
+        this.globalRepositoryManager = globalRepositoryManager;
+		this.synchronizer = synchronizer;
     }
 
     protected void doValidation()
@@ -56,19 +61,20 @@ public class BitbucketPostCommit extends JiraWebActionSupport
         if (validations.equals(""))
         {
             logger.debug("recieved callback post for project [ {} ]", projectKey);
-
+            
             List<Changeset> changesets = new ArrayList<Changeset>();
             JSONObject jsonPayload = new JSONObject(payload);
 
             String owner = jsonPayload.getJSONObject("repository").getString("owner");
             String slug = jsonPayload.getJSONObject("repository").getString("slug");
+            RepositoryUri repositoryUri = RepositoryUri.parse(owner+"/"+slug);
 
             JSONArray commits = jsonPayload.getJSONArray("commits");
 
             for (int i = 0; i < commits.length(); ++i)
-                changesets.add(BitbucketChangesetFactory.parse(owner, slug, commits.getJSONObject(i)));
+                changesets.add(BitbucketChangesetFactory.parse(repositoryUri.getRepositoryUrl(), commits.getJSONObject(i)));
 
-            synchronizer.synchronize(projectKey, RepositoryUri.parse(owner+"/"+slug), changesets);
+			synchronizer.synchronize(projectKey, repositoryUri, changesets);
         }
 
         return "postcommit";

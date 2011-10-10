@@ -22,6 +22,7 @@ import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketUser;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
 import com.atlassian.jira.security.PermissionManager;
@@ -89,12 +90,13 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
         gravatarUrl = gravatarUrl.replace("s=32", "s=60");
 
         String htmlParentHashes = "";
+        RepositoryUri uri = RepositoryUri.parse(changeset.getRepositoryUrl());
         if (!changeset.getParents().isEmpty())
         {
             for (String node : changeset.getParents())
             {
                 htmlParentHashes = "<tr><td style='color: #757575'>Parent:</td><td><a href='https://bitbucket.org/" +
-                        urlEncode(changeset.getRepositoryOwner()) + "/" + urlEncode(changeset.getRepositorySlug()) +
+                        urlEncode(uri.getOwner()) + "/" + urlEncode(uri.getSlug()) +
                         "/changeset/" + node + "' target='_new'>" + node + "</a></td></tr>";
             }
         }
@@ -108,8 +110,8 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
                 String fileName = file.getFile();
                 String color = file.getType().getColor();
                 String fileActionName = file.getType().toString();
-                String fileCommitURL = "https://bitbucket.org/" + changeset.getRepositoryOwner() + "/" +
-                        changeset.getRepositorySlug() + "/src/" + changeset.getNode() + "/" + urlEncode(file.getFile());
+                String fileCommitURL = "https://bitbucket.org/" + uri.getOwner() + "/" +
+                		uri.getSlug() + "/src/" + changeset.getNode() + "/" + urlEncode(file.getFile());
                 htmlFile = "<li><span style='color:" + color + "; font-size: 8pt;'>" +
                         htmlEncode(fileActionName) + "</span> <a href='" +
                         fileCommitURL + "' target='_new'>" + fileName + "</a></li>";

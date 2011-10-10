@@ -1,10 +1,11 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-
 import java.text.MessageFormat;
 import java.util.List;
+
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 
 /**
  * Details on a changeset found in Bitbucket.
@@ -12,8 +13,6 @@ import java.util.List;
 public class DefaultBitbucketChangeset implements Changeset
 {
     static final String COMMIT_URL_PATTERN = "https://bitbucket.org/{0}/{1}/changeset/{2}";
-    private final String repositoryOwner;
-    private final String repositorySlug;
     private final String node;
     private final String rawAuthor;
     private final String author;
@@ -25,13 +24,14 @@ public class DefaultBitbucketChangeset implements Changeset
     private final List<String> parents;
     private final List<BitbucketChangesetFile> files;
 
-    public DefaultBitbucketChangeset(String repositoryOwner, String repositorySlug,
+	private final String repositoryUrl;
+
+    public DefaultBitbucketChangeset(String repositoryUrl, 
                                      String node, String rawAuthor, String author, String timestamp,
                                      String rawNode, String branch, String message, String revision,
                                      List<String> parents, List<BitbucketChangesetFile> files)
     {
-        this.repositoryOwner = repositoryOwner;
-        this.repositorySlug = repositorySlug;
+		this.repositoryUrl = repositoryUrl;
         this.node = node;
         this.rawAuthor = rawAuthor;
         this.author = author;
@@ -44,7 +44,12 @@ public class DefaultBitbucketChangeset implements Changeset
         this.files = files;
     }
 
-    public String getNode()
+    public String getRepositoryUrl()
+    {
+    	return repositoryUrl;
+    }
+
+	public String getNode()
     {
         return node;
     }
@@ -94,19 +99,10 @@ public class DefaultBitbucketChangeset implements Changeset
         return revision;
     }
 
-    public String getRepositoryOwner()
-    {
-        return repositoryOwner;
-    }
-
-    public String getRepositorySlug()
-    {
-        return repositorySlug;
-    }
-
     public String getCommitURL()
     {
-        return MessageFormat.format(COMMIT_URL_PATTERN, repositoryOwner, repositorySlug, node);
+    	RepositoryUri uri = RepositoryUri.parse(repositoryUrl);
+        return MessageFormat.format(COMMIT_URL_PATTERN, uri.getOwner(), uri.getSlug(), node);
     }
 
     @Override
@@ -126,8 +122,7 @@ public class DefaultBitbucketChangeset implements Changeset
         if (!parents.equals(that.parents)) return false;
         if (!rawAuthor.equals(that.rawAuthor)) return false;
         if (!rawNode.equals(that.rawNode)) return false;
-        if (!repositoryOwner.equals(that.repositoryOwner)) return false;
-        if (!repositorySlug.equals(that.repositorySlug)) return false;
+        if (!repositoryUrl.equals(that.repositoryUrl)) return false;
         if (!timestamp.equals(that.timestamp)) return false;
 
         return true;
@@ -136,8 +131,7 @@ public class DefaultBitbucketChangeset implements Changeset
     @Override
     public int hashCode()
     {
-        int result = repositoryOwner.hashCode();
-        result = 31 * result + repositorySlug.hashCode();
+        int result = repositoryUrl.hashCode();
         result = 31 * result + node.hashCode();
         result = 31 * result + rawAuthor.hashCode();
         result = 31 * result + author.hashCode();
@@ -150,4 +144,5 @@ public class DefaultBitbucketChangeset implements Changeset
         result = 31 * result + files.hashCode();
         return result;
     }
+
 }

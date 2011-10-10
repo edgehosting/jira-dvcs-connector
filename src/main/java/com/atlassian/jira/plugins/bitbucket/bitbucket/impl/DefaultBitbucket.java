@@ -1,14 +1,22 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
+import java.util.Iterator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepository;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepositoryFactory;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketUser;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
@@ -53,11 +61,12 @@ public class DefaultBitbucket implements Bitbucket
         }
     }
 
-    public Changeset getChangeset(Authentication auth, String owner, String slug, String id)
+    public Changeset getChangeset(String repositoryId, Authentication auth, String id)
     {
         try
         {
-            return BitbucketChangesetFactory.parse(owner, slug, new JSONObject(bitbucketConnection.getChangeset(auth, owner, slug, id)));
+        	RepositoryUri uri = RepositoryUri.parse(repositoryId);
+            return BitbucketChangesetFactory.parse(uri.getRepositoryUrl(), new JSONObject(bitbucketConnection.getChangeset(auth, uri.getOwner(), uri.getSlug(), id)));
         }
         catch (JSONException e)
         {

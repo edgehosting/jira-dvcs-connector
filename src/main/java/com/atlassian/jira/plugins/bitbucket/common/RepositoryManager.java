@@ -21,4 +21,6 @@ public interface RepositoryManager
 
 	public void removeRepository(String projectKey, String url);
 
+	public void addChangeset(String issueId, Changeset changeset);
+
 }

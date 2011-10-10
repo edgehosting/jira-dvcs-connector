@@ -27,7 +27,7 @@ public class TestDefaultSynchronizer
     @Mock
     private Bitbucket bitbucket;
     @Mock
-    private RepositoryPersister bitbucketMapper;
+    private RepositoryPersister repositoryPersister;
     @Mock
     private Changeset changeset;
     @Mock
@@ -35,7 +35,7 @@ public class TestDefaultSynchronizer
     @Mock
     private AuthenticationFactory authenticationFactory;
     @Mock
-	private RepositoryManager repositoryManager; 
+    private RepositoryManager repositoryManager; 
     
     @Before
     public void setup()
@@ -53,8 +53,7 @@ public class TestDefaultSynchronizer
         when(bitbucket.getChangesets(Authentication.ANONYMOUS, "owner", "slug")).thenReturn(Arrays.asList(changeset));
         when(changeset.getMessage()).thenReturn("PRJ-1 Message");
 
-        new DefaultSynchronizer(bitbucket, bitbucketMapper,
-                Executors.newSingleThreadExecutor(), templateRenderer, authenticationFactory, repositoryManager).synchronize(projectKey, repositoryUri);
-        verify(bitbucketMapper, times(1)).addChangeset("PRJ-1", changeset);
+        new DefaultSynchronizer(bitbucket, Executors.newSingleThreadExecutor(), templateRenderer, authenticationFactory, repositoryManager).synchronize(projectKey, repositoryUri);
+        verify(repositoryManager, times(1)).addChangeset("PRJ-1", changeset);
     }
 }

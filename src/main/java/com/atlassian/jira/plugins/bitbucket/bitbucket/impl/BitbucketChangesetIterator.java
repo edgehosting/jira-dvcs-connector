@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection;
 import com.atlassian.jira.util.json.JSONArray;
@@ -25,15 +26,13 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
     private Changeset followingChangset = null; // next changeset after current page
     private final Authentication auth;
     private final BitbucketConnection bitbucketConnection;
-    private final String owner;
-    private final String slug;
+	private RepositoryUri uri;
 
     public BitbucketChangesetIterator(BitbucketConnection bitbucketConnection, Authentication auth, String owner, String slug)
     {
         this.bitbucketConnection = bitbucketConnection;
         this.auth = auth;
-        this.owner = owner;
-        this.slug = slug;
+        this.uri = new RepositoryUri(owner,slug);
     }
 
     public boolean hasNext()
@@ -80,19 +79,18 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
         try
         {
         	// read PAGE_SIZE + 1 changesets. Last changeset will be used as starting node for next page
-			String response = bitbucketConnection.getChangesets(auth, owner, slug, startNode, PAGE_SIZE + 1);
+			String response = bitbucketConnection.getChangesets(auth, uri.getOwner(), uri.getSlug(), startNode, PAGE_SIZE + 1);
 
 			JSONArray list = new JSONObject(response).getJSONArray("changesets");
-
 			followingChangset = null;
             if (list.length()>PAGE_SIZE)
             {
-            	followingChangset = BitbucketChangesetFactory.parse(owner, slug, list.getJSONObject(0));
+            	followingChangset = BitbucketChangesetFactory.parse(uri.getRepositoryUrl(), list.getJSONObject(0));
             }
             int startIndex = followingChangset==null?0:1;
             for (int i = startIndex; i < Math.min(list.length(), PAGE_SIZE+1); i++)
             {
-            	changesets.add(BitbucketChangesetFactory.parse(owner, slug, list.getJSONObject(i)));
+            	changesets.add(BitbucketChangesetFactory.parse(uri.getRepositoryUrl(), list.getJSONObject(i)));
             }
             // get the changesets in the correct order
             Collections.reverse(changesets);

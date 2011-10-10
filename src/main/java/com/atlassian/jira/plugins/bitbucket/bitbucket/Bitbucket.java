@@ -33,7 +33,7 @@ public interface Bitbucket
      * @param id    the changeset id
      * @return the project
      */
-    public Changeset getChangeset(Authentication auth, String owner, String slug, String id);
+    public Changeset getChangeset(String repositoryUrl, Authentication auth, String id);
 
     /**
      * Retrieves all changesets for the specified repository

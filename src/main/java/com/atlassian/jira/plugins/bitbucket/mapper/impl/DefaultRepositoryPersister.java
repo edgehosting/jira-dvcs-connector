@@ -114,14 +114,10 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         {
             public Object doInTransaction()
             {
-                final String repositoryOwner = changeset.getRepositoryOwner();
-                final String repositorySlug = changeset.getRepositorySlug();
-
-                final RepositoryUri repositoryUri = new RepositoryUri(repositoryOwner, repositorySlug);
+                final RepositoryUri repositoryUri = RepositoryUri.parse(changeset.getRepositoryUrl());
                 final String projectKey = getProjectKey(issueId);
                 try
                 {
-                    getRepository(projectKey, repositoryUri);
                     final Map<String, Object> map = new HashMap<String, Object>();
                     map.put("NODE", changeset.getNode());
                     map.put("PROJECT_KEY", projectKey);

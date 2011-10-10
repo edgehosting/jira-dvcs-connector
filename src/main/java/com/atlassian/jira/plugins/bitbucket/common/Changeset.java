@@ -9,6 +9,9 @@ import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFile;
  */
 public interface Changeset
 {
+	
+	public String getRepositoryUrl();
+	
     public String getNode();
 
     public String getRawAuthor();
@@ -28,10 +31,6 @@ public interface Changeset
     public List<BitbucketChangesetFile> getFiles();
 
     public String getRevision();
-
-    public String getRepositoryOwner();
-
-    public String getRepositorySlug();
 
     public String getCommitURL();
 }

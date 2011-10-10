@@ -13,8 +13,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
-import net.java.ao.DBParam;
-
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,8 +62,7 @@ public class TestDefaultBitbucketMapper
         when(repository.getOwner()).thenReturn("owner");
         when(repository.getSlug()).thenReturn("slug");
         when(repository.getRepositoryUrl()).thenReturn("https://bitbucket.org/owner/slug");
-        when(changeset.getRepositoryOwner()).thenReturn("owner");
-        when(changeset.getRepositorySlug()).thenReturn("slug");
+        when(changeset.getRepositoryUrl()).thenReturn("https://bitbucket.org/owner/slug");
         when(changeset.getBranch()).thenReturn("default");
         when(changeset.getNode()).thenReturn("1");
         //noinspection unchecked
@@ -258,17 +255,5 @@ public class TestDefaultBitbucketMapper
                                 map.get("ISSUE_ID").equals("JST-1");
                     }
                 }));
-    }
-
-    @Test
-    public void testAddChangesetToDifferentBranchIsIgnored()
-    {
-        when(activeObjects.find(ProjectMapping.class,
-            "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-            "JST", "owner/slug/notdefault")).thenReturn(new ProjectMapping[]{projectMapping});
-
-        new DefaultRepositoryPersister(activeObjects, encryptor).addChangeset("JST-1", changeset);
-        verify(activeObjects, never()).create(any(Class.class), (Map<String, Object>) any());
-        verify(activeObjects, never()).create(any(Class.class), (DBParam[]) any());
     }
 }
