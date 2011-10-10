@@ -113,6 +113,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private void syncRepository() throws MalformedURLException
     {
         logger.debug("sync [ {} ] for project [ {} ]", url, projectKey);
+//        globalRepositoryManager.getSynchronisationOperation();
         synchronizer.synchronize(projectKey, RepositoryUri.parse(url));
     }
 
