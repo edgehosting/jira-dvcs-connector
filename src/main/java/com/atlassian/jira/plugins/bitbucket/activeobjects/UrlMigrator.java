@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.property;
+package com.atlassian.jira.plugins.bitbucket.activeobjects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

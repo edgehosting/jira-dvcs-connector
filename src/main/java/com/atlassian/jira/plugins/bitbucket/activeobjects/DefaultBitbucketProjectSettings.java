@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.property;
+package com.atlassian.jira.plugins.bitbucket.activeobjects;
 
 import java.util.ArrayList;
 import java.util.Date;

@@ -1,10 +1,9 @@
-package com.atlassian.jira.plugins.bitbucket.property;
+package com.atlassian.jira.plugins.bitbucket.activeobjects;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +12,6 @@ import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister;
@@ -69,9 +67,6 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
 
                     String username = settings.getUsername(projectKey, repository);
                     String password = settings.getPassword(projectKey, repository);
-                    Authentication auth = Authentication.ANONYMOUS;
-                    if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
-                        auth = Authentication.basic(username, password);
 
                     RepositoryUri uri = RepositoryUri.parse(repository);
                     logger.debug("migrate repository [ {} ]", uri);
