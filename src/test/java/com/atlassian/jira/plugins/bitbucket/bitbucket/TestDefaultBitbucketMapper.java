@@ -1,12 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -96,13 +94,6 @@ public class TestDefaultBitbucketMapper
     }
 
     @Test
-    public void testGetRepositoryIsLazy()
-    {
-        new DefaultRepositoryPersister(activeObjects, encryptor).getRepositories("JST");
-        verify(bitbucket, never()).getRepository(any(Authentication.class), anyString(), anyString());
-    }
-
-    @Test
     public void testAddAnonymousRepositoryCreatesValidMap()
     {
         new DefaultRepositoryPersister(activeObjects, encryptor).
@@ -110,7 +101,8 @@ public class TestDefaultBitbucketMapper
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
-                    public boolean matches(Object o)
+                    @Override
+					public boolean matches(Object o)
                     {
                         //noinspection unchecked
                         Map<String, Object> map = (Map<String, Object>) o;
@@ -129,7 +121,8 @@ public class TestDefaultBitbucketMapper
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
-                    public boolean matches(Object o)
+                    @Override
+					public boolean matches(Object o)
                     {
                         //noinspection unchecked
                         Map<String, Object> map = (Map<String, Object>) o;
@@ -149,7 +142,8 @@ public class TestDefaultBitbucketMapper
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
-                    public boolean matches(Object o)
+                    @Override
+					public boolean matches(Object o)
                     {
                         //noinspection unchecked
                         Map<String, Object> map = (Map<String, Object>) o;
@@ -245,7 +239,8 @@ public class TestDefaultBitbucketMapper
         verify(activeObjects, times(1)).create(eq(IssueMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
-                    public boolean matches(Object o)
+                    @Override
+					public boolean matches(Object o)
                     {
                         //noinspection unchecked
                         Map<String, Object> map = (Map<String, Object>) o;

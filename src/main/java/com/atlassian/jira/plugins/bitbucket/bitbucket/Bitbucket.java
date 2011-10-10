@@ -15,16 +15,6 @@ public interface Bitbucket
     public BitbucketUser getUser(String username);
 
     /**
-     * Retrieves information about a repository
-     *
-     * @param auth  the authentication rules for this request
-     * @param owner the owner of the project
-     * @param slug  the slug of the project
-     * @return the project
-     */
-    public BitbucketRepository getRepository(Authentication auth, String owner, String slug);
-
-    /**
      * Retrieves information about a changeset by changeset id
      *
      * @param auth  the authentication rules for this request

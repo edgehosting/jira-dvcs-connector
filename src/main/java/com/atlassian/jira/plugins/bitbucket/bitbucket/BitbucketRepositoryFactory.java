@@ -1,47 +1,17 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucketRepository;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.LazyLoadedBitbucketRepository;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
-
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucketRepository;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 
 /**
  * Factory for {@link BitbucketRepository} implementations
  */
 public class BitbucketRepositoryFactory
 {
-
-    /**
-     * Load the remote repository details based on the authentication method, the repository owner and repository
-     * slug
-     *
-     * @param bitbucket the remote bitbucket service
-     * @param auth      the authentication method
-     * @param owner     the owner of the repository
-     * @param slug      the slug of the repository
-     * @return the parsed {@link BitbucketRepository}
-     */
-    public static BitbucketRepository load(Bitbucket bitbucket, Authentication auth, String owner, String slug)
-    {
-        return new LazyLoadedBitbucketRepository(bitbucket, auth, owner, slug);
-    }
-
-    /**
-     * Load the remote repository details based on the authentication method and remote url
-     *
-     * @param bitbucket the remote bitbucket service
-     * @param auth      the authentication method
-     * @param url       the url of the repository
-     * @return the parsed {@link BitbucketRepository}
-     * @throws MalformedURLException if the url is not correctly formed
-     */
-    public static BitbucketRepository load(Bitbucket bitbucket, Authentication auth, String url) throws MalformedURLException
-    {
-        return load(bitbucket, auth, getOwner(url), getSlug(url));
-    }
 
     /**
      * Extract the repository owner from the repository URL

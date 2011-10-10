@@ -9,8 +9,6 @@ import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepository;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketRepositoryFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketUser;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
@@ -46,18 +44,6 @@ public class DefaultBitbucket implements Bitbucket
         {
             logger.debug("could not load user [ "+username+" ]");
             return BitbucketUser.UNKNOWN_USER;
-        }
-    }
-
-    public BitbucketRepository getRepository(Authentication auth, String owner, String slug)
-    {
-        try
-        {
-            return BitbucketRepositoryFactory.parse(new JSONObject(bitbucketConnection.getRepository(auth, owner, slug)));
-        }
-        catch (JSONException e)
-        {
-            throw new BitbucketException("could not parse json object", e);
         }
     }
 

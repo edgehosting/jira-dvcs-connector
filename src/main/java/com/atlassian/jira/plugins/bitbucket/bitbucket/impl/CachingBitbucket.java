@@ -1,13 +1,16 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.*;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketUser;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
-
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A {@link Bitbucket} implementation that caches results for quicker subsequent lookup times
@@ -29,7 +32,8 @@ public class CachingBitbucket implements Bitbucket
             this.id = id;
         }
 
-        public boolean equals(Object o)
+        @Override
+		public boolean equals(Object o)
         {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -40,7 +44,8 @@ public class CachingBitbucket implements Bitbucket
             return true;
         }
 
-        public int hashCode()
+        @Override
+		public int hashCode()
         {
             int result = auth.hashCode();
             result = 31 * result + repositoryUrl.hashCode();
@@ -62,7 +67,8 @@ public class CachingBitbucket implements Bitbucket
             this.slug = slug;
         }
 
-        public boolean equals(Object o)
+        @Override
+		public boolean equals(Object o)
         {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -73,7 +79,8 @@ public class CachingBitbucket implements Bitbucket
             return true;
         }
 
-        public int hashCode()
+        @Override
+		public int hashCode()
         {
             int result = auth.hashCode();
             result = 31 * result + owner.hashCode();
@@ -104,16 +111,6 @@ public class CachingBitbucket implements Bitbucket
                         }
                     });
 
-    private final Map<RepositoryKey, BitbucketRepository> repositoryMap = new MapMaker()
-            .expiration(1, TimeUnit.HOURS)
-            .makeComputingMap(
-                    new Function<RepositoryKey, BitbucketRepository>()
-                    {
-                        public BitbucketRepository apply(RepositoryKey key)
-                        {
-                            return delegate.getRepository(key.auth, key.owner, key.slug);
-                        }
-                    });
 
     public CachingBitbucket(Bitbucket delegate)
     {
@@ -125,18 +122,6 @@ public class CachingBitbucket implements Bitbucket
         try
         {
             return userMap.get(username);
-        }
-        catch (ComputationException e)
-        {
-            throw unrollException(e);
-        }
-    }
-
-    public BitbucketRepository getRepository(Authentication auth, String owner, String slug)
-    {
-        try
-        {
-            return repositoryMap.get(new RepositoryKey(auth, owner, slug));
         }
         catch (ComputationException e)
         {
