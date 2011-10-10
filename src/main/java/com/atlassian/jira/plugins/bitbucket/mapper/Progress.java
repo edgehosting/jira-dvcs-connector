@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.bitbucket.mapper;
 
 
+import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.atlassian.util.concurrent.BlockingReference;

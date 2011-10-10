@@ -1,47 +1,33 @@
-package com.atlassian.jira.plugins.bitbucket.mapper.impl;
+package com.atlassian.jira.plugins.bitbucket.spi;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.mapper.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
-import com.atlassian.jira.plugins.bitbucket.mapper.SynchronizationKey;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.google.common.base.Function;
 
-public class BitbucketSynchronisation implements Callable<OperationResult>
+public abstract class AbstractSynchronisationOperation implements SynchronisationOperation
 {
-    private final Logger logger = LoggerFactory.getLogger(DefaultSynchronizer.class);
-
-    private final SynchronizationKey key;
-	private RepositoryManager repositoryManager;
-	private BitbucketCommunicator bitbucketCommunicator;
+	protected final SynchronizationKey key;
+    protected final RepositoryManager repositoryManager;
 	private final Function<SynchronizationKey, Progress> progressProvider;
-
-    public BitbucketSynchronisation(SynchronizationKey key, RepositoryManager repositoryManager,
-			BitbucketCommunicator bitbucketCommunicator, Function<SynchronizationKey, Progress> progressProvider)
+    
+    public AbstractSynchronisationOperation(SynchronizationKey key, RepositoryManager repositoryManager,
+			Function<SynchronizationKey, Progress> progressProvider)
 	{
-		this.key = key;
+    	this.key = key;
 		this.repositoryManager = repositoryManager;
-		this.bitbucketCommunicator = bitbucketCommunicator;
 		this.progressProvider = progressProvider;
 	}
 
-    public OperationResult call() throws Exception
+	public OperationResult synchronise() throws Exception
     {
-        logger.debug("synchronize [ {} ] with [ {} ]", key.getProjectKey(), key.getRepositoryUri());
-
-        SourceControlRepository repository = repositoryManager.getRepository(key.getProjectKey(), key.getRepositoryUri().getRepositoryUrl());
-        Iterable<Changeset> changesets = key.getChangesets() == null ? bitbucketCommunicator.getChangesets(repository) : key.getChangesets();
+        Iterable<Changeset> changesets = getChangsetsIterator();
 
         int jiraCount = 0;
 
@@ -64,7 +50,7 @@ public class BitbucketSynchronisation implements Callable<OperationResult>
 
         return OperationResult.YES;
     }
-    
+
     private static Set<String> extractProjectKey(String projectKey, String message)
     {
         Pattern projectKeyPattern = Pattern.compile("(" + projectKey + "-\\d*)", Pattern.CASE_INSENSITIVE);
@@ -81,5 +67,6 @@ public class BitbucketSynchronisation implements Callable<OperationResult>
 
         return matches;
     }
-
+    
+    public abstract Iterable<Changeset> getChangsetsIterator();
 }

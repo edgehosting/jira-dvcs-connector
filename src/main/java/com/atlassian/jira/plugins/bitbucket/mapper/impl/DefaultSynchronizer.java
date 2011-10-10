@@ -7,12 +7,13 @@ import java.util.concurrent.ExecutorService;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.mapper.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
-import com.atlassian.jira.plugins.bitbucket.mapper.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
@@ -38,9 +39,9 @@ public class DefaultSynchronizer implements Synchronizer
 					{
 						try
 						{
-							Callable<OperationResult> synchronisationOperation = globalRepositoryManager
+							SynchronisationOperation synchronisationOperation = globalRepositoryManager
 									.getSynchronisationOperation(from, progressProvider);
-							return synchronisationOperation.call();
+							return synchronisationOperation.synchronise();
 						} finally
 						{
 							operations.remove(from);

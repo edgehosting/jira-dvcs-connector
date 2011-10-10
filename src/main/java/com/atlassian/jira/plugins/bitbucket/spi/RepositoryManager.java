@@ -1,14 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.mapper.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
-import com.atlassian.jira.plugins.bitbucket.mapper.SynchronizationKey;
 import com.google.common.base.Function;
 
 public interface RepositoryManager
@@ -34,6 +32,6 @@ public interface RepositoryManager
 
 	public SourceControlUser getUser(String repositoryUrl, String username);
 
-	public Callable<OperationResult> getSynchronisationOperation(SynchronizationKey key, Function<SynchronizationKey, Progress> progressProvider);
+	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, Function<SynchronizationKey, Progress> progressProvider);
 
 }

@@ -14,14 +14,14 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
-import com.atlassian.jira.plugins.bitbucket.mapper.SynchronizationKey;
-import com.atlassian.jira.plugins.bitbucket.mapper.impl.BitbucketSynchronisation;
 import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketSynchronisation;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
 

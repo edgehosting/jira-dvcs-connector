@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,13 +10,12 @@ import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.mapper.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
-import com.atlassian.jira.plugins.bitbucket.mapper.SynchronizationKey;
-import com.atlassian.jira.plugins.bitbucket.mapper.impl.BitbucketSynchronisation;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.google.common.base.Function;
@@ -124,7 +122,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
 		return bitbucket.getUser(username);
 	}
 
-	public Callable<OperationResult> getSynchronisationOperation(SynchronizationKey key, Function<SynchronizationKey, Progress> progressProvider)
+	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, Function<SynchronizationKey, Progress> progressProvider)
 	{
 		return new BitbucketSynchronisation(key, this, bitbucket, progressProvider);
 	}
