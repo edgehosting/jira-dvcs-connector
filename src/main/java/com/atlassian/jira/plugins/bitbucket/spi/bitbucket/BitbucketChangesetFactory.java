@@ -3,8 +3,8 @@ package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.LazyLoadedBitbucketChangeset;
 import com.atlassian.jira.util.json.JSONArray;

@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.mapper;
+package com.atlassian.jira.plugins.bitbucket;
 
 /**
  * Indicates an exceptional case during the synchronization

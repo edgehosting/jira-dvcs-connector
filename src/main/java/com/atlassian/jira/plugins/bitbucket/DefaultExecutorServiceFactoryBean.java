@@ -1,6 +1,5 @@
-package com.atlassian.jira.plugins.bitbucket.mapper.impl;
+package com.atlassian.jira.plugins.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.mapper.ExecutorServiceFactoryBean;
 import com.atlassian.util.concurrent.ThreadFactories;
 
 import java.util.concurrent.ExecutorService;

@@ -22,9 +22,9 @@
     </ao>
 
     <component key="executorService" name="Executor Service Factory Component"
-            class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultExecutorServiceFactoryBean">
+            class="com.atlassian.jira.plugins.bitbucket.DefaultExecutorServiceFactoryBean">
         <description>ExecutorService factory bean for creating executor services</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.mapper.ExecutorServiceFactoryBean</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.ExecutorServiceFactoryBean</interface>
     </component>
 
     <component key="repositoryPersister" name="Repository Persister"
@@ -34,9 +34,9 @@
     </component>
 
     <component key="synchronizer" name="Bitbucket Synchronization Service"
-               class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultSynchronizer">
+               class="com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer">
         <description>A Service for migrating from the property set storage to ActiveObjects</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.Synchronizer</interface>
     </component>
 
     <component key="encryptor" name="Encryption Service"
@@ -71,7 +71,7 @@
     </component>
     
     <component key="globalRepositoryManager" name="globalRepositoryManager"
-               class="com.atlassian.jira.plugins.bitbucket.webwork.GlobalRepositoryManager">
+               class="com.atlassian.jira.plugins.bitbucket.GlobalRepositoryManager">
         <description>globalRepositoryManager</description>
         <interface>com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager</interface>
     </component>
@@ -91,7 +91,7 @@
     </component-import>
 
     <issue-tabpanel key="bitbucket-commits-tabpanel" name="BitBucket Changesets Tab Panel"
-                    class="com.atlassian.jira.plugins.bitbucket.issuetabpanels.BitbucketTabPanel">
+                    class="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketTabPanel">
 
         <description>Show Bitbucket changesets related to an issue in an issue tab panel.</description>
         <label>Bitbucket</label>
@@ -128,7 +128,7 @@
     </webwork1>
 
     <project-operation key="com.atlassian.jira.plugins.projectlink" name="Bitbucket Project Link"
-                       class="com.atlassian.jira.plugins.bitbucket.links.ProjectSettings">
+                       class="com.atlassian.jira.plugins.bitbucket.webwork.ProjectSettings">
         <resource type="velocity" name="view" location="/templates/com/atlassian/jira/plugins/projectlinks/view.vm"/>
         <order>100</order>
     </project-operation>

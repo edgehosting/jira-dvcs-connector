@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.mapper.impl;
+package com.atlassian.jira.plugins.bitbucket;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -7,11 +7,9 @@ import java.util.concurrent.ExecutorService;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import com.atlassian.jira.plugins.bitbucket.common.Changeset;
-import com.atlassian.jira.plugins.bitbucket.mapper.Progress;
-import com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;

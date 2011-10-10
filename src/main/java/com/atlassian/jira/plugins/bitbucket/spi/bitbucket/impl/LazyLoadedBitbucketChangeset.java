@@ -3,8 +3,8 @@ package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 import java.text.MessageFormat;
 import java.util.List;
 
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;

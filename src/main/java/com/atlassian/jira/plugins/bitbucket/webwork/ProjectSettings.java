@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.links;
+package com.atlassian.jira.plugins.bitbucket.webwork;
 
 import java.util.List;
 import java.util.regex.Matcher;

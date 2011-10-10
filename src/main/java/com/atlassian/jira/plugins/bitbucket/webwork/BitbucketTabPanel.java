@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.issuetabpanels;
+package com.atlassian.jira.plugins.bitbucket.webwork;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -18,8 +18,8 @@ import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;

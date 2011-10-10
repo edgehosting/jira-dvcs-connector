@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 
 /**
  * Describes the type of file action within a {@link Changeset changeset}.
