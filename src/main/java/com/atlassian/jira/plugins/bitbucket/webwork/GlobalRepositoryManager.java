@@ -60,25 +60,6 @@ public class GlobalRepositoryManager implements RepositoryManager
 			allChangesets.addAll(repositoryManager.getChangesets(issueKey));
 		}		
     	return allChangesets;
-//
-//		RepositoryPersister repositoryPersister = null;
-//		repositoryPersister.getChangesets(issueKey);
-//
-//		
-//		return new Iterable<Changeset>()
-//		{
-//			public Iterator<Changeset> iterator()
-//			{
-//				ArrayList<Iterator<Changeset>> list = Lists.newArrayList();
-//				for (RepositoryManager repositoryManager : repositoryManagers)
-//				{
-//					Iterator<Changeset> iterator = repositoryManager.getChangeSets(issueKey).iterator();
-//					list.add(iterator);
-//				}
-//				Iterator<Changeset>[] array = list.toArray(new Iterator[0]);
-//				return new AggregatedIterator<Changeset>(array);
-//			}
-//		};
 	}
 
 	public void removeRepository(String projectKey, String url)
