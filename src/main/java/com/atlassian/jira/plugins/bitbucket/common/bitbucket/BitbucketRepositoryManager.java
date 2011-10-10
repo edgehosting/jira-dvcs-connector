@@ -6,8 +6,6 @@ import java.util.regex.Pattern;
 
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
@@ -24,7 +22,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
 	private final Bitbucket bitbucket;
 	
 	/* Maps ProjectMapping to SourceControlRepository */
-	private static final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = 
+	public static final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = 
 			new Function<ProjectMapping, SourceControlRepository>()
 			{
 				public SourceControlRepository apply(ProjectMapping pm)
@@ -42,18 +40,14 @@ public class BitbucketRepositoryManager implements RepositoryManager
 					RepositoryUri uri = RepositoryUri.parse(from.getRepositoryUri());
 					ProjectMapping pm = repositoryPersister.getRepository(from.getProjectKey(), uri);
                     SourceControlRepository repository = TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
-					Authentication auth = authenticationFactory.getAuthentication(repository);
-					return bitbucket.getChangeset(uri.getRepositoryUrl(), auth, from.getNode());
+					return bitbucket.getChangeset(repository, from.getNode());
 				}
 			};
 
-	private AuthenticationFactory authenticationFactory;
-
-	public BitbucketRepositoryManager(RepositoryPersister repositoryPersister, Bitbucket bitbucket, AuthenticationFactory authenticationFactory)
+	public BitbucketRepositoryManager(RepositoryPersister repositoryPersister, Bitbucket bitbucket)
 	{
 		this.repositoryPersister = repositoryPersister;
 		this.bitbucket = bitbucket;
-		this.authenticationFactory = authenticationFactory;
 	}
 
 	public boolean canHandleUrl(String url)

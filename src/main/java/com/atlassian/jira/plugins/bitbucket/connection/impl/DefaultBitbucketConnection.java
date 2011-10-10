@@ -1,19 +1,23 @@
 package com.atlassian.jira.plugins.bitbucket.connection.impl;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
-import com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection;
-import com.atlassian.sal.api.net.Request;
-import com.atlassian.sal.api.net.RequestFactory;
-import com.atlassian.sal.api.net.ResponseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.AuthenticationFactory;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection;
+import com.atlassian.sal.api.net.Request;
+import com.atlassian.sal.api.net.RequestFactory;
+import com.atlassian.sal.api.net.ResponseException;
 
 /**
  * The default implementation uses an injected {@link com.atlassian.sal.api.net.RequestFactory}.
@@ -23,27 +27,44 @@ public class DefaultBitbucketConnection implements BitbucketConnection
     private static final String BASE_URL = "https://api.bitbucket.org/1.0/";
     private final RequestFactory<?> requestFactory;
     private final Logger logger = LoggerFactory.getLogger(DefaultBitbucketConnection.class);
+	private final AuthenticationFactory authenticationFactory;
 
-    public DefaultBitbucketConnection(RequestFactory<?> requestFactory)
+    public DefaultBitbucketConnection(RequestFactory<?> requestFactory, AuthenticationFactory authenticationFactory)
     {
         this.requestFactory = requestFactory;
+		this.authenticationFactory = authenticationFactory;
     }
 
-    public String getRepository(Authentication auth, String owner, String slug)
+    public String getRepository(SourceControlRepository repository)
     {
-        logger.debug("parse repository [ {} ] [ {} ]", owner, slug);
+    	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
+    	String owner = uri.getOwner();
+    	String slug = uri.getSlug();
+    	Authentication auth = authenticationFactory.getAuthentication(repository);
+
+    	logger.debug("parse repository [ {} ] [ {} ]", uri.getOwner(), uri.getSlug());
         return get(auth, "repositories/" + encode(owner) + "/" + encode(slug), null);
     }
 
-    public String getChangeset(Authentication auth, String owner, String slug, String id)
+    public String getChangeset(SourceControlRepository repository, String id)
     {
-        logger.debug("parse changeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, id});
+    	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
+    	String owner = uri.getOwner();
+    	String slug = uri.getSlug();
+    	Authentication auth = authenticationFactory.getAuthentication(repository);
+
+    	logger.debug("parse changeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, id});
         return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets/" + encode(id), null);
     }
 
-    public String getChangesets(Authentication auth, String owner, String slug, String startNode, int limit)
+    public String getChangesets(SourceControlRepository repository, String startNode, int limit)
     {
-        logger.debug("parse changesets [ {} ] [ {} ] [ {} ] [ {} ]",
+    	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
+        String owner = uri.getOwner();
+		String slug = uri.getSlug();
+		Authentication auth = authenticationFactory.getAuthentication(repository);
+		
+		logger.debug("parse changesets [ {} ] [ {} ] [ {} ] [ {} ]",
                 new String[]{owner, slug, startNode, String.valueOf(limit)});
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("limit", String.valueOf(limit));
@@ -51,7 +72,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
         {
         	params.put("start", startNode);
         }
-        return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets", params);
+		return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets", params);
     }
 
     public String getUser(String username)

@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
@@ -23,7 +24,7 @@ public interface Bitbucket
      * @param id    the changeset id
      * @return the project
      */
-    public Changeset getChangeset(String repositoryUrl, Authentication auth, String id);
+    public Changeset getChangeset(SourceControlRepository repository, String id);
 
     /**
      * Retrieves all changesets for the specified repository
@@ -33,6 +34,6 @@ public interface Bitbucket
      * @param slug  the slug of the project
      * @return the project
      */
-    public Iterable<Changeset> getChangesets(Authentication auth, String owner, String slug);
+    public Iterable<Changeset> getChangesets(SourceControlRepository repository);
 
 }

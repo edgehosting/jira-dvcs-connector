@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
 

@@ -13,8 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
@@ -84,9 +82,8 @@ public class DefaultSynchronizer implements Synchronizer
             logger.debug("synchronize [ {} ] with [ {} ]", key.getProjectKey(), key.getRepositoryUri());
 
             SourceControlRepository repository = globalRepositoryManager.getRepository(key.getProjectKey(), key.getRepositoryUri().getRepositoryUrl());
-            Authentication auth = authenticationFactory.getAuthentication(repository);
             Iterable<Changeset> changesets = key.getChangesets() == null ?
-                    bitbucket.getChangesets(auth, key.getRepositoryUri().getOwner(), key.getRepositoryUri().getSlug()) :
+                    bitbucket.getChangesets(repository) :
                     key.getChangesets();
 
             int jiraCount = 0;
@@ -115,16 +112,13 @@ public class DefaultSynchronizer implements Synchronizer
     private final Logger logger = LoggerFactory.getLogger(DefaultSynchronizer.class);
     private final Bitbucket bitbucket;
     private final Coordinator coordinator;
-	private AuthenticationFactory authenticationFactory;
 	private final RepositoryManager globalRepositoryManager;
 
     public DefaultSynchronizer(Bitbucket bitbucket, 
                                ExecutorService executorService, TemplateRenderer templateRenderer, 
-                               AuthenticationFactory authenticationFactory, 
                                @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
     {
         this.bitbucket = bitbucket;
-		this.authenticationFactory = authenticationFactory;
 		this.globalRepositoryManager = globalRepositoryManager;
         this.coordinator = new Coordinator(executorService, templateRenderer);
     }

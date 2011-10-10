@@ -18,6 +18,8 @@ import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.common.bitbucket.BitbucketRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.mapper.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultRepositoryPersister;
@@ -74,7 +76,8 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
 
                     RepositoryUri uri = RepositoryUri.parse(repository);
                     logger.debug("migrate repository [ {} ]", uri);
-                    repositoryPersister.addRepository(projectKey, uri, username, password);
+                    ProjectMapping pm = repositoryPersister.addRepository(projectKey, uri, username, password);
+                    SourceControlRepository repo = BitbucketRepositoryManager.TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 
                     List<String> issueIds = settings.getIssueIds(projectKey, repository);
                     for (String issueId : issueIds)
@@ -89,8 +92,7 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
                             String node = changesetPath.substring(changesetPath.lastIndexOf("/") + 1);
                             logger.debug("add changeset [ {} ] to [ {} ]", changesetPath, issueId);
 
-							Changeset changeset = BitbucketChangesetFactory.load(bitbucket, uri.getRepositoryUrl(),
-									auth, node);
+							Changeset changeset = BitbucketChangesetFactory.load(bitbucket, repo, node);
 							repositoryPersister.addChangeset(issueId, changeset);
                         }
                     }

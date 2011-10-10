@@ -1,17 +1,21 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.BitbucketChangesetIterator;
-import com.atlassian.jira.plugins.bitbucket.connection.impl.DefaultBitbucketConnection;
-import com.atlassian.sal.api.net.Request;
-import com.atlassian.sal.api.net.RequestFactory;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.BitbucketChangesetIterator;
+import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.connection.impl.DefaultBitbucketConnection;
+import com.atlassian.sal.api.net.Request;
+import com.atlassian.sal.api.net.RequestFactory;
 
 /**
  * Unit tests for {@link DefaultBitbucketConnection}.
@@ -22,7 +26,11 @@ public class TestDefaultBitbucketConnection
     RequestFactory requestFactory;
     @Mock
     Request request;
-
+    @Mock 
+    AuthenticationFactory authenticationFactory;
+    @Mock
+    SourceControlRepository repository;
+    
     @Before
     public void setup() throws Exception
     {
@@ -33,7 +41,7 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getUser() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getUser("fred");
+        new DefaultBitbucketConnection(requestFactory, authenticationFactory).getUser("fred");
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/users/fred");
         verify(request, never()).addBasicAuthentication("user", "pass");
     }
@@ -41,7 +49,11 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAnonymousGetChangeset() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getChangeset(Authentication.ANONYMOUS, "owner", "slug", "1");
+    	when(repository.getUrl()).thenReturn("https://bitbucket.org/owner/slug");
+    	when(repository.getUsername()).thenReturn("");
+    	when(repository.getPassword()).thenReturn("");
+
+        new DefaultBitbucketConnection(requestFactory, authenticationFactory).getChangeset(repository, "1");
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets/1");
         verify(request, never()).addBasicAuthentication("user", "pass");
     }
@@ -49,7 +61,11 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAnonymousGetRepository() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getRepository(Authentication.ANONYMOUS, "owner", "slug");
+    	when(repository.getUrl()).thenReturn("https://bitbucket.org/owner/slug");
+    	when(repository.getUsername()).thenReturn("");
+    	when(repository.getPassword()).thenReturn("");
+
+    	new DefaultBitbucketConnection(requestFactory, authenticationFactory).getRepository(repository);
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug");
         verify(request, never()).addBasicAuthentication("user", "pass");
     }
@@ -57,7 +73,11 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAnonymousGetChangesets() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getChangesets(Authentication.ANONYMOUS, "owner", "slug", null, BitbucketChangesetIterator.PAGE_SIZE);
+    	when(repository.getUrl()).thenReturn("https://bitbucket.org/owner/slug");
+    	when(repository.getUsername()).thenReturn("");
+    	when(repository.getPassword()).thenReturn("");
+    	
+    	new DefaultBitbucketConnection(requestFactory, authenticationFactory).getChangesets(repository, null, BitbucketChangesetIterator.PAGE_SIZE);
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets?limit=15");
         verify(request, never()).addBasicAuthentication("user", "pass");
     }
@@ -65,7 +85,12 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAuthenticatedGetChangeset() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getChangeset(Authentication.basic("user", "pass"), "owner", "slug", "1");
+    	when(repository.getUrl()).thenReturn("https://bitbucket.org/owner/slug");
+    	when(repository.getUsername()).thenReturn("user");
+    	when(repository.getPassword()).thenReturn("pass");
+    	when(authenticationFactory.getAuthentication(repository)).thenReturn(Authentication.basic("user", "pass"));
+    	
+    	new DefaultBitbucketConnection(requestFactory, authenticationFactory).getChangeset(repository, "1");
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets/1");
         verify(request).addBasicAuthentication("user", "pass");
     }
@@ -73,7 +98,12 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAuthenticatedGetRepository() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getRepository(Authentication.basic("user", "pass"), "owner", "slug");
+    	when(repository.getUrl()).thenReturn("https://bitbucket.org/owner/slug");
+    	when(repository.getUsername()).thenReturn("user");
+    	when(repository.getPassword()).thenReturn("pass");
+    	when(authenticationFactory.getAuthentication(repository)).thenReturn(Authentication.basic("user", "pass"));
+    	
+        new DefaultBitbucketConnection(requestFactory, authenticationFactory).getRepository(repository);
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug");
         verify(request).addBasicAuthentication("user", "pass");
     }
@@ -81,7 +111,12 @@ public class TestDefaultBitbucketConnection
     @Test
     public void getAuthenticatedGetChangesets() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory).getChangesets(Authentication.basic("user", "pass"), "owner", "slug", null, BitbucketChangesetIterator.PAGE_SIZE);
+    	when(repository.getUrl()).thenReturn("https://bitbucket.org/owner/slug");
+    	when(repository.getUsername()).thenReturn("user");
+    	when(repository.getPassword()).thenReturn("pass");
+    	when(authenticationFactory.getAuthentication(repository)).thenReturn(Authentication.basic("user", "pass"));
+    	
+        new DefaultBitbucketConnection(requestFactory, authenticationFactory).getChangesets(repository, null, BitbucketChangesetIterator.PAGE_SIZE);
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets?limit=15");
         verify(request).addBasicAuthentication("user", "pass");
     }

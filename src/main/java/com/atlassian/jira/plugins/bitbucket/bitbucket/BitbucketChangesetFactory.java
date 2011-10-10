@@ -6,6 +6,7 @@ import java.util.List;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.impl.LazyLoadedBitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -24,11 +25,12 @@ public class BitbucketChangesetFactory
      * @param owner     the owner of the repository
      * @param slug      the slug of the repository
      * @param node      the changeset node id
+     * @param repository 
      * @return the parsed {@link BitbucketRepository}
      */
-    public static Changeset load(Bitbucket bitbucket, String repositoryId, Authentication auth, String node)
+    public static Changeset load(Bitbucket bitbucket, SourceControlRepository repository, String node)
     {
-        return new LazyLoadedBitbucketChangeset(bitbucket, repositoryId, auth, node);
+        return new LazyLoadedBitbucketChangeset(bitbucket, repository, node);
     }
 
     /**

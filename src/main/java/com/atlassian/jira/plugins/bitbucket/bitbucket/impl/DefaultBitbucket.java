@@ -5,13 +5,12 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketUser;
-import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -47,12 +46,11 @@ public class DefaultBitbucket implements Bitbucket
         }
     }
 
-    public Changeset getChangeset(String repositoryId, Authentication auth, String id)
+    public Changeset getChangeset(SourceControlRepository repository, String id)
     {
         try
         {
-        	RepositoryUri uri = RepositoryUri.parse(repositoryId);
-            return BitbucketChangesetFactory.parse(uri.getRepositoryUrl(), new JSONObject(bitbucketConnection.getChangeset(auth, uri.getOwner(), uri.getSlug(), id)));
+			return BitbucketChangesetFactory.parse(repository.getUrl(), new JSONObject(bitbucketConnection.getChangeset(repository, id)));
         }
         catch (JSONException e)
         {
@@ -60,13 +58,13 @@ public class DefaultBitbucket implements Bitbucket
         }
     }
 
-    public Iterable<Changeset> getChangesets(final Authentication auth, final String owner, final String slug)
+    public Iterable<Changeset> getChangesets(final SourceControlRepository repository)
     {
         return new Iterable<Changeset>()
         {
             public Iterator<Changeset> iterator()
             {
-                return new BitbucketChangesetIterator(bitbucketConnection, auth, owner, slug);
+                return new BitbucketChangesetIterator(bitbucketConnection, repository);
             }
         };
     }

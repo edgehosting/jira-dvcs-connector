@@ -15,7 +15,6 @@ import org.mockito.MockitoAnnotations.Mock;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
 import com.atlassian.jira.plugins.bitbucket.common.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.mapper.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultSynchronizer;
 import com.atlassian.templaterenderer.TemplateRenderer;
 
@@ -24,36 +23,38 @@ import com.atlassian.templaterenderer.TemplateRenderer;
  */
 public class TestDefaultSynchronizer
 {
-    @Mock
-    private Bitbucket bitbucket;
-    @Mock
-    private RepositoryPersister repositoryPersister;
-    @Mock
-    private Changeset changeset;
-    @Mock
-    private TemplateRenderer templateRenderer;
-    @Mock
-    private AuthenticationFactory authenticationFactory;
-    @Mock
-    private RepositoryManager repositoryManager; 
-    
-    @Before
-    public void setup()
-    {
-        MockitoAnnotations.initMocks(this);
-    }
+	@Mock
+	private Bitbucket bitbucket;
+	@Mock
+	private Changeset changeset;
+	@Mock
+	private TemplateRenderer templateRenderer;
+	@Mock
+	private RepositoryManager repositoryManager;
+	@Mock
+	private SourceControlRepository repository;
 
-    @Test
-    public void testSynchronizeAddsSingleMapping()
-    {
-        String projectKey = "PRJ";
-        RepositoryUri repositoryUri = RepositoryUri.parse("owner/slug");
-		SourceControlRepository repository = repositoryManager.getRepository(projectKey,repositoryUri.getRepositoryUrl());
-        when(authenticationFactory.getAuthentication(repository)).thenReturn(Authentication.ANONYMOUS);
-        when(bitbucket.getChangesets(Authentication.ANONYMOUS, "owner", "slug")).thenReturn(Arrays.asList(changeset));
-        when(changeset.getMessage()).thenReturn("PRJ-1 Message");
+	@Before
+	public void setup()
+	{
+		MockitoAnnotations.initMocks(this);
+	}
 
-        new DefaultSynchronizer(bitbucket, Executors.newSingleThreadExecutor(), templateRenderer, authenticationFactory, repositoryManager).synchronize(projectKey, repositoryUri);
-        verify(repositoryManager, times(1)).addChangeset("PRJ-1", changeset);
-    }
+	@Test
+	public void testSynchronizeAddsSingleMapping()
+	{
+		String projectKey = "PRJ";
+
+		when(repository.getUrl()).thenReturn("https://bitbucket.org/owner/slug");
+		when(repositoryManager.getRepository(projectKey, repository.getUrl())).thenReturn(repository);
+		when(bitbucket.getChangesets(repository)).thenReturn(Arrays.asList(changeset));
+		when(changeset.getMessage()).thenReturn("PRJ-1 Message");
+
+		RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
+		new DefaultSynchronizer(bitbucket, Executors.newSingleThreadExecutor(), templateRenderer, repositoryManager)
+				.synchronize(projectKey, uri);
+		verify(repositoryManager, times(1)).addChangeset("PRJ-1", changeset);
+
+	}
+
 }

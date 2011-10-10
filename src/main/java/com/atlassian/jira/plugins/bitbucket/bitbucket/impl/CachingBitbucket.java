@@ -3,11 +3,11 @@ package com.atlassian.jira.plugins.bitbucket.bitbucket.impl;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.atlassian.jira.plugins.bitbucket.bitbucket.Authentication;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketException;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.BitbucketUser;
 import com.atlassian.jira.plugins.bitbucket.common.Changeset;
+import com.atlassian.jira.plugins.bitbucket.common.SourceControlRepository;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
@@ -21,14 +21,12 @@ public class CachingBitbucket implements Bitbucket
 
     private class ChangesetKey
     {
-        final Authentication auth;
         final String id;
-		private final String repositoryUrl;
+		private final SourceControlRepository repository;
 
-        public ChangesetKey(String repositoryUrl, Authentication auth, String id)
+        public ChangesetKey(SourceControlRepository repository, String id)
         {
-            this.repositoryUrl = repositoryUrl;
-			this.auth = auth;
+            this.repository = repository;
             this.id = id;
         }
 
@@ -38,53 +36,16 @@ public class CachingBitbucket implements Bitbucket
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             ChangesetKey that = (ChangesetKey) o;
-            if (!auth.equals(that.auth)) return false;
+            if (!repository.equals(that.repository)) return false;
             if (!id.equals(that.id)) return false;
-            if (!repositoryUrl.equals(that.repositoryUrl)) return false;
             return true;
         }
 
         @Override
 		public int hashCode()
         {
-            int result = auth.hashCode();
-            result = 31 * result + repositoryUrl.hashCode();
+            int result = repository.hashCode();
             result = 31 * result + id.hashCode();
-            return result;
-        }
-    }
-
-    private class RepositoryKey
-    {
-        final Authentication auth;
-        final String owner;
-        final String slug;
-
-        public RepositoryKey(Authentication auth, String owner, String slug)
-        {
-            this.auth = auth;
-            this.owner = owner;
-            this.slug = slug;
-        }
-
-        @Override
-		public boolean equals(Object o)
-        {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            RepositoryKey that = (RepositoryKey) o;
-            if (!auth.equals(that.auth)) return false;
-            if (!owner.equals(that.owner)) return false;
-            if (!slug.equals(that.slug)) return false;
-            return true;
-        }
-
-        @Override
-		public int hashCode()
-        {
-            int result = auth.hashCode();
-            result = 31 * result + owner.hashCode();
-            result = 31 * result + slug.hashCode();
             return result;
         }
     }
@@ -107,7 +68,7 @@ public class CachingBitbucket implements Bitbucket
                     {
                         public Changeset apply(ChangesetKey key)
                         {
-                            return delegate.getChangeset(key.repositoryUrl, key.auth, key.id);
+                            return delegate.getChangeset(key.repository, key.id);
                         }
                     });
 
@@ -129,11 +90,11 @@ public class CachingBitbucket implements Bitbucket
         }
     }
 
-    public Changeset getChangeset(String repositoryUrl, Authentication auth, String id)
+    public Changeset getChangeset(SourceControlRepository repository, String id)
     {
         try
         {
-            return changesetMap.get(new ChangesetKey(repositoryUrl, auth, id));
+            return changesetMap.get(new ChangesetKey(repository, id));
         }
         catch (ComputationException e)
         {
@@ -141,11 +102,11 @@ public class CachingBitbucket implements Bitbucket
         }
     }
 
-    public Iterable<Changeset> getChangesets(Authentication auth, String owner, String slug)
+    public Iterable<Changeset> getChangesets(SourceControlRepository repository)
     {
         try
         {
-            return delegate.getChangesets(auth, owner, slug);
+            return delegate.getChangesets(repository);
         }
         catch (ComputationException e)
         {
