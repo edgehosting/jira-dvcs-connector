@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 
@@ -69,8 +68,7 @@ public class BitbucketPostCommit extends JiraWebActionSupport
 	    	}
 	    	
 	    	List<Changeset> changesets = globalRepositoryManager.parsePayload(projectKey, repositoryUrl, payload);
-			RepositoryUri repositoryUri = RepositoryUri.parse(repositoryUrl);
-			synchronizer.synchronize(projectKey, repositoryUri, changesets);
+			synchronizer.synchronize(projectKey, repositoryUrl, changesets);
         }
 
         return "postcommit";

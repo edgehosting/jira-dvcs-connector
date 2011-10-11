@@ -1,17 +1,16 @@
 package com.atlassian.jira.plugins.bitbucket;
 
 
-import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
-import com.atlassian.templaterenderer.TemplateRenderer;
-import com.atlassian.util.concurrent.BlockingReference;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
+
+import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.templaterenderer.TemplateRenderer;
+import com.atlassian.util.concurrent.BlockingReference;
 
 public class Progress
 {
@@ -87,9 +86,9 @@ public class Progress
         return key;
     }
 
-    public boolean matches(String projectKey, RepositoryUri repositoryUri)
+    public boolean matches(String projectKey, String repositoryUrl)
     {
-        return key.matches(projectKey, repositoryUri);
+        return key.matches(projectKey, repositoryUrl);
     }
 
     private Map<String, Object> createMap()

@@ -38,7 +38,7 @@ public class UrlMigrator implements ActiveObjectsUpgradeTask
 	        // re-synchronise
 	        for (ProjectMapping projectMapping : projectMappings)
 	        {
-	        	synchronizer.synchronize(projectMapping.getProjectKey(), RepositoryUri.parse(projectMapping.getRepositoryUri()));
+	        	synchronizer.synchronize(projectMapping.getProjectKey(), RepositoryUri.parse(projectMapping.getRepositoryUri()).getRepositoryUrl());
 	        }
 	        
 	        logger.debug("completed url migration");

@@ -57,14 +57,14 @@ public class TestDefaultSynchronizer
 		RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
 
 		when(repositoryManager.getRepository(projectKey, repository.getUrl())).thenReturn(repository);
-		SynchronizationKey key = new SynchronizationKey("PRJ", uri);
+		SynchronizationKey key = new SynchronizationKey("PRJ", uri.getRepositoryUrl());
 		BitbucketSynchronisation synchronisation = new BitbucketSynchronisation(key, repositoryManager, bitbucket, progressProvider);
 		when(repositoryManager.getSynchronisationOperation(any(SynchronizationKey.class), any(Function.class))).thenReturn(synchronisation);
 		when(bitbucket.getChangesets(repository)).thenReturn(Arrays.asList(changeset));
 		when(changeset.getMessage()).thenReturn("PRJ-1 Message");
 
 		new DefaultSynchronizer(Executors.newSingleThreadExecutor(), templateRenderer, repositoryManager)
-				.synchronize(projectKey, uri);
+				.synchronize(projectKey, uri.getRepositoryUrl());
 		verify(repositoryManager, times(1)).addChangeset("PRJ-1", changeset);
 	}
 

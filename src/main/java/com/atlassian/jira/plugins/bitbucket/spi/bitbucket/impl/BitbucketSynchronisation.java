@@ -28,9 +28,9 @@ public class BitbucketSynchronisation extends AbstractSynchronisationOperation
 
 	public Iterable<Changeset> getChangsetsIterator()
 	{
-		logger.debug("synchronize [ {} ] with [ {} ]", key.getProjectKey(), key.getRepositoryUri());
+		logger.debug("synchronize [ {} ] with [ {} ]", key.getProjectKey(), key.getRepositoryUrl());
 
-        SourceControlRepository repository = repositoryManager.getRepository(key.getProjectKey(), key.getRepositoryUri().getRepositoryUrl());
+        SourceControlRepository repository = repositoryManager.getRepository(key.getProjectKey(), key.getRepositoryUrl());
         Iterable<Changeset> changesets = key.getChangesets() == null ? bitbucketCommunicator.getChangesets(repository) : key.getChangesets();
 		return changesets;
 	}

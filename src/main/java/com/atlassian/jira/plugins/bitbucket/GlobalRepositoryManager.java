@@ -96,7 +96,7 @@ public class GlobalRepositoryManager implements RepositoryManager
 
 	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, Function<SynchronizationKey, Progress> progressProvider)
 	{
-		String repositoryUrl = key.getRepositoryUri().getRepositoryUrl();
+		String repositoryUrl = key.getRepositoryUrl();
 		return getManagerForUrl(repositoryUrl).getSynchronisationOperation(key, progressProvider);
 	}
 

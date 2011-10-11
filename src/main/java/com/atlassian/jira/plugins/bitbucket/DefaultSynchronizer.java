@@ -12,7 +12,6 @@ import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -80,14 +79,14 @@ public class DefaultSynchronizer implements Synchronizer
         this.coordinator = new Coordinator(executorService, templateRenderer);
     }
 
-    public void synchronize(String projectKey, RepositoryUri repositoryUri)
+    public void synchronize(String projectKey, String repositoryUrl)
     {
-        coordinator.operations.get(new SynchronizationKey(projectKey, repositoryUri));
+        coordinator.operations.get(new SynchronizationKey(projectKey, repositoryUrl));
     }
 
-    public void synchronize(String projectKey, RepositoryUri repositoryUri, List<Changeset> changesets)
+    public void synchronize(String projectKey, String repositoryUrl, List<Changeset> changesets)
     {
-        coordinator.operations.get(new SynchronizationKey(projectKey, repositoryUri, changesets));
+        coordinator.operations.get(new SynchronizationKey(projectKey, repositoryUrl, changesets));
     }
 
     public Iterable<Progress> getProgress()
@@ -95,13 +94,13 @@ public class DefaultSynchronizer implements Synchronizer
         return coordinator.operations.values();
     }
 
-    public Iterable<Progress> getProgress(final String projectKey, final RepositoryUri repositoryUri)
+    public Iterable<Progress> getProgress(final String projectKey, final String repositoryUrl)
     {
         return Iterables.filter(coordinator.operations.values(), new Predicate<Progress>()
         {
             public boolean apply(Progress input)
             {
-                return input.matches(projectKey, repositoryUri);
+                return input.matches(projectKey, repositoryUrl);
             }
         });
     }

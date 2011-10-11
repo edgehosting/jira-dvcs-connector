@@ -16,7 +16,6 @@ import com.atlassian.jira.plugins.bitbucket.Progress;
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
@@ -96,7 +95,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
             if (nextAction.equals("CurrentSyncStatus"))
             {
                 progress = new ArrayList<Progress>();
-                Iterables.addAll(progress,synchronizer.getProgress(projectKey, RepositoryUri.parse(url)));
+                Iterables.addAll(progress,synchronizer.getProgress(projectKey, url));
                 return "syncstatus";
             }
 
@@ -113,8 +112,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private void syncRepository() throws MalformedURLException
     {
         logger.debug("sync [ {} ] for project [ {} ]", url, projectKey);
-//        globalRepositoryManager.getSynchronisationOperation();
-        synchronizer.synchronize(projectKey, RepositoryUri.parse(url));
+        synchronizer.synchronize(projectKey, url);
     }
 
     public List<Project> getProjects()
