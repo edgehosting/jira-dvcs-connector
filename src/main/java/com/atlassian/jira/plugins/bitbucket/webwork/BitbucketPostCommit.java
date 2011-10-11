@@ -15,6 +15,7 @@ import com.atlassian.jira.web.action.JiraWebActionSupport;
 /**
  * Webwork action used to recieve the callback hook from bitbucket
  */
+// TODO deprecate and replace with REST service
 public class BitbucketPostCommit extends JiraWebActionSupport
 {
     private final Logger logger = LoggerFactory.getLogger(BitbucketPostCommit.class);

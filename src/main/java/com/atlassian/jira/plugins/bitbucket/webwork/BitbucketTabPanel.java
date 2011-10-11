@@ -26,8 +26,8 @@ import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
-import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.opensymphony.user.User;
+import com.opensymphony.util.TextUtils;
 
 public class BitbucketTabPanel extends AbstractIssueTabPanel
 {
@@ -109,7 +109,7 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
                 String fileCommitURL = "https://bitbucket.org/" + uri.getOwner() + "/" +
                 		uri.getSlug() + "/src/" + changeset.getNode() + "/" + urlEncode(file.getFile());
                 htmlFile = "<li><span style='color:" + color + "; font-size: 8pt;'>" +
-                        htmlEncode(fileActionName) + "</span> <a href='" +
+                        TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
                         fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
                 mapFiles.put(fileName, htmlFile);
             }
@@ -209,9 +209,9 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
 
         htmlCommitEntry = htmlCommitEntry.replace("#gravatar_url", gravatarUrl);
         htmlCommitEntry = htmlCommitEntry.replace("#user_url", "https://bitbucket.org/" + urlEncode(login));
-        htmlCommitEntry = htmlCommitEntry.replace("#login", htmlEncode(login));
-        htmlCommitEntry = htmlCommitEntry.replace("#user_name", htmlEncode(authorName));
-        htmlCommitEntry = htmlCommitEntry.replace("#commit_message", htmlEncode(changeset.getMessage()));
+        htmlCommitEntry = htmlCommitEntry.replace("#login", TextUtils.htmlEncode(login));
+        htmlCommitEntry = htmlCommitEntry.replace("#user_name", TextUtils.htmlEncode(authorName));
+        htmlCommitEntry = htmlCommitEntry.replace("#commit_message", TextUtils.htmlEncode(changeset.getMessage()));
         htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_time", changeset.getTimestamp());
         htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_date", changeset.getTimestamp());
         htmlCommitEntry = htmlCommitEntry.replace("#commit_url", commitURL);
@@ -220,13 +220,6 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
         //htmlCommitEntry = htmlCommitEntry.replace("#tree_hash", commitTree);
         return htmlCommitEntry;
     }
-
-    private String htmlEncode(String s)
-    {
-        JiraWebActionSupport jwas = new JiraWebActionSupport();
-        return jwas.htmlEncode(s);
-    }
-
 
     private String urlEncode(String s)
     {

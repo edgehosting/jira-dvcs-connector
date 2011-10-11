@@ -11,12 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.plugins.bitbucket.Progress;
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.google.common.collect.Iterables;
@@ -28,9 +26,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 {
     private final Logger logger = LoggerFactory.getLogger(ConfigureBitbucketRepositories.class);
 
-    // JIRA Project Listing
-    private ComponentManager cm = ComponentManager.getInstance();
-    private List<Project> projects = cm.getProjectManager().getProjectObjects();
     private String mode = "";
     private String bbUserName = "";
     private String bbPassword = "";
@@ -115,11 +110,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         synchronizer.synchronize(projectKey, url);
     }
 
-    public List<Project> getProjects()
-    {
-        return projects;
-    }
-
     // Stored Repository + JIRA Projects
     public List<SourceControlRepository> getProjectRepositories(String projectKey)
     {
@@ -128,7 +118,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
     public String getProjectName()
     {
-        return cm.getProjectManager().getProjectObjByKey(projectKey).getName();
+        return getProjectManager().getProjectObjByKey(projectKey).getName();
     }
 
     public void setMode(String value)
