@@ -1,13 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket.api;
 
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucketUser;
+import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlUser;
 
 /**
  * Describes a Bitbucket user
  */
 public interface SourceControlUser
 {
-    static final SourceControlUser UNKNOWN_USER = new DefaultBitbucketUser(
+    static final SourceControlUser UNKNOWN_USER = new DefaultSourceControlUser(
             "unknown", "", "", "https://secure.gravatar.com/avatar/unknown?d=mm", ""
     );
 

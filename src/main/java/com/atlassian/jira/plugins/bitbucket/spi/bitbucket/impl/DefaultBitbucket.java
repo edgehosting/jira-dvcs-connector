@@ -32,7 +32,7 @@ public class DefaultBitbucket implements BitbucketCommunicator
     {
         try
         {
-            return DefaultBitbucketUser.parse(new JSONObject(bitbucketConnection.getUser(username)));
+            return BitbucketUserFactory.parse(new JSONObject(bitbucketConnection.getUser(username)));
         }
         catch (BitbucketException e)
         {
