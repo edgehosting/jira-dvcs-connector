@@ -27,6 +27,7 @@ public class DefaultSynchronizer implements Synchronizer
     private class Coordinator
     {
     	// could this get any more complicated? 
+    	// TODO add error tracking for synchronisation
 		private final ConcurrentMap<SynchronizationKey, Progress> operations = new MapMaker().makeComputingMap(new Function<SynchronizationKey, Progress>()
 		{
 			public Progress apply(final SynchronizationKey from)

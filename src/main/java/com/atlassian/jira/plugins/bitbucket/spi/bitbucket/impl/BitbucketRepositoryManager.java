@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,8 +17,13 @@ import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
@@ -109,7 +115,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
 	public void removeRepository(String projectKey, String url)
 	{
 		repositoryPersister.removeRepository(projectKey, RepositoryUri.parse(url));
-        // Should we also delete IssueMappings?
+        // TODO Should we also delete IssueMappings? Yes we should.
 	}
 
 	public void addChangeset(String issueId, Changeset changeset)
@@ -125,5 +131,26 @@ public class BitbucketRepositoryManager implements RepositoryManager
 	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, Function<SynchronizationKey, Progress> progressProvider)
 	{
 		return new BitbucketSynchronisation(key, this, bitbucket, progressProvider);
+	}
+
+	public List<Changeset> parsePayload(String projectKey, String repositoryUrl, String payload)
+	{
+        List<Changeset> changesets = new ArrayList<Changeset>();
+        try
+		{
+			JSONObject jsonPayload = new JSONObject(payload);
+			JSONArray commits = jsonPayload.getJSONArray("commits");
+
+			for (int i = 0; i < commits.length(); ++i)
+			{
+				changesets.add(BitbucketChangesetFactory.parse(repositoryUrl, commits.getJSONObject(i)));
+			}
+		} catch (JSONException e)
+		{
+			throw new BitbucketException();
+			// TODO Auto-generated catch block
+		}
+        return changesets;
+
 	}
 }

@@ -23,6 +23,18 @@ public class GlobalRepositoryManager implements RepositoryManager
 		this.repositoryManagers = repositoryManagers;
 	}
 	
+	private RepositoryManager getManagerForUrl(String url)
+	{
+		for (RepositoryManager repositoryManager : repositoryManagers)
+		{
+			if (repositoryManager.canHandleUrl(url))
+			{
+				return repositoryManager;
+			}
+		}
+		throw new IllegalArgumentException("No repository manager found for given url ["+url+"]");
+	}
+	
 	public boolean canHandleUrl(String url)
 	{
     	for (RepositoryManager repositoryManager : repositoryManagers)
@@ -71,17 +83,6 @@ public class GlobalRepositoryManager implements RepositoryManager
 		getManagerForUrl(url).removeRepository(projectKey, url);
 	};
 
-	private RepositoryManager getManagerForUrl(String url)
-	{
-		for (RepositoryManager repositoryManager : repositoryManagers)
-		{
-			if (repositoryManager.canHandleUrl(url))
-			{
-				return repositoryManager;
-			}
-		}
-		throw new IllegalArgumentException("No repository manager found for given url ["+url+"]");
-	}
 
 	public void addChangeset(String issueId, Changeset changeset)
 	{
@@ -97,5 +98,10 @@ public class GlobalRepositoryManager implements RepositoryManager
 	{
 		String repositoryUrl = key.getRepositoryUri().getRepositoryUrl();
 		return getManagerForUrl(repositoryUrl).getSynchronisationOperation(key, progressProvider);
+	}
+
+	public List<Changeset> parsePayload(String projectKey, String repositoryUrl, String payload)
+	{
+		return getManagerForUrl(repositoryUrl).parsePayload(projectKey, repositoryUrl, payload);
 	}
 }

@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -10,9 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
-import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 
@@ -33,6 +30,7 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     // BitBucket JSON Payload
     private String payload = "";
 	private final RepositoryManager globalRepositoryManager;
+	private String repositoryUrl;
 
     public BitbucketPostCommit(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, 
     		Synchronizer synchronizer)
@@ -58,22 +56,20 @@ public class BitbucketPostCommit extends JiraWebActionSupport
 
     protected String doExecute() throws Exception
     {
-        if (validations.equals(""))
-        {
-            logger.debug("recieved callback post for project [ {} ]", projectKey);
-            
-            List<Changeset> changesets = new ArrayList<Changeset>();
-            JSONObject jsonPayload = new JSONObject(payload);
-
-            String owner = jsonPayload.getJSONObject("repository").getString("owner");
-            String slug = jsonPayload.getJSONObject("repository").getString("slug");
-            RepositoryUri repositoryUri = RepositoryUri.parse(owner+"/"+slug);
-
-            JSONArray commits = jsonPayload.getJSONArray("commits");
-
-            for (int i = 0; i < commits.length(); ++i)
-                changesets.add(BitbucketChangesetFactory.parse(repositoryUri.getRepositoryUrl(), commits.getJSONObject(i)));
-
+    	logger.debug("recieved callback post for project [ {} ]", projectKey);
+    	if (validations.equals(""))
+    	{
+	    	if (repositoryUrl==null)
+	    	{
+	    		// this is most likely post from bitbucket.org
+	    		JSONObject jsonPayload = new JSONObject(payload);
+	    		String owner = jsonPayload.getJSONObject("repository").getString("owner");
+	    		String slug = jsonPayload.getJSONObject("repository").getString("slug");
+	    		repositoryUrl = "https://bitbucket.org/"+owner+"/"+slug;
+	    	}
+	    	
+	    	List<Changeset> changesets = globalRepositoryManager.parsePayload(projectKey, repositoryUrl, payload);
+			RepositoryUri repositoryUri = RepositoryUri.parse(repositoryUrl);
 			synchronizer.synchronize(projectKey, repositoryUri, changesets);
         }
 

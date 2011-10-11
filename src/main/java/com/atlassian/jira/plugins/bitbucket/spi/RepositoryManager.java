@@ -34,4 +34,6 @@ public interface RepositoryManager
 
 	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, Function<SynchronizationKey, Progress> progressProvider);
 
+	public List<Changeset> parsePayload(String projectKey, String repositoryUrl, String payload);
+
 }
