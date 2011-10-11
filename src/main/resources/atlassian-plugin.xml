@@ -114,12 +114,6 @@
                 <view name="redirect">/templates/com/atlassian/jira/plugins/bitbucket/webwork/redirect.vm</view>
             </action>
 
-            <action name="com.atlassian.jira.plugins.bitbucket.webwork.ViewProjectRepository"
-                    alias="ViewProjectRepository" roles-required="admin">
-                <view name="viewrepository">/templates/com/atlassian/jira/plugins/bitbucket/webwork/viewrepository.vm
-                </view>
-            </action>
-
             <action name="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit" alias="BitbucketPostCommit">
                 <view name="postcommit">/templates/com/atlassian/jira/plugins/bitbucket/webwork/postcommit.vm</view>
             </action>
