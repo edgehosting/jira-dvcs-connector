@@ -111,26 +111,19 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             {
                 final RepositoryUri repositoryUri = RepositoryUri.parse(changeset.getRepositoryUrl());
                 final String projectKey = getProjectKey(issueId);
-                try
-                {
-                    final Map<String, Object> map = new HashMap<String, Object>();
-                    map.put("NODE", changeset.getNode());
-                    map.put("PROJECT_KEY", projectKey);
-                    map.put("ISSUE_ID", issueId);
-                    map.put("REPOSITORY_URI", repositoryUri.getRepositoryUri());
-                    IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
-                            "ISSUE_ID = ? and NODE = ?",
-                            issueId, changeset.getNode());
-                    logger.debug("create issue mapping [ {} ] [ {} ]", new String[]{projectKey, repositoryUri.getRepositoryUri()});
-                    if (mappings != null && mappings.length > 0)
-                        activeObjects.delete(mappings);
-                    activeObjects.create(IssueMapping.class, map);
-                }
-                catch (BitbucketException e)
-                {
-                    // the mapping does not include the branch which this changeset was found so it is ignored
-                }
-                return null;
+                final Map<String, Object> map = new HashMap<String, Object>();
+                map.put("NODE", changeset.getNode());
+                map.put("PROJECT_KEY", projectKey);
+                map.put("ISSUE_ID", issueId);
+                map.put("REPOSITORY_URI", repositoryUri.getRepositoryUri());
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
+                		"ISSUE_ID = ? and NODE = ?",
+                		issueId, changeset.getNode());
+                logger.debug("create issue mapping [ {} ] [ {} ]", new String[]{projectKey, repositoryUri.getRepositoryUri()});
+                if (mappings != null && mappings.length > 0)
+                	activeObjects.delete(mappings);
+                IssueMapping issueMapping = activeObjects.create(IssueMapping.class, map);
+                return issueMapping;
             }
         });
     }
