@@ -51,8 +51,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
 			{
 				public Changeset apply(IssueMapping from)
 				{
-					RepositoryUri uri = RepositoryUri.parse(from.getRepositoryUri());
-					ProjectMapping pm = repositoryPersister.getRepository(from.getProjectKey(), uri);
+					ProjectMapping pm = repositoryPersister.getRepository(from.getProjectKey(), from.getRepositoryUri());
                     SourceControlRepository repository = TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 					return bitbucket.getChangeset(repository, from.getNode());
 				}
@@ -89,7 +88,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
         }
 
         String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
-        ProjectMapping pm = repositoryPersister.addRepository(projectKey, RepositoryUri.parse(repositoryUrl), username, encryptedPassword);
+        ProjectMapping pm = repositoryPersister.addRepository(projectKey, repositoryUrl, username, encryptedPassword);
         return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 	}
 
@@ -102,7 +101,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
 
 	public SourceControlRepository getRepository(String projectKey, String repositoryUrl)
 	{
-		ProjectMapping repository = repositoryPersister.getRepository(projectKey, RepositoryUri.parse(repositoryUrl));
+		ProjectMapping repository = repositoryPersister.getRepository(projectKey, repositoryUrl);
 		return TO_SOURCE_CONTROL_REPOSITORY.apply(repository);
 	}
 
@@ -114,7 +113,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
 
 	public void removeRepository(String projectKey, String url)
 	{
-		repositoryPersister.removeRepository(projectKey, RepositoryUri.parse(url));
+		repositoryPersister.removeRepository(projectKey, url);
         // TODO Should we also delete IssueMappings? Yes we should.
 	}
 

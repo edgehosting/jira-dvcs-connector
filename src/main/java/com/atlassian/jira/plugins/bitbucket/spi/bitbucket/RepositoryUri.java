@@ -44,14 +44,9 @@ public class RepositoryUri
         return slug;
     }
 
-    public String getRepositoryUri()
-    {
-        return owner + "/" + slug;
-    }
-
     public String getRepositoryUrl()
     {
-        return "https://bitbucket.org/"+getRepositoryUri();
+        return "https://bitbucket.org/"+owner + "/" + slug;
     }
 
     @Override
@@ -75,6 +70,6 @@ public class RepositoryUri
     @Override
     public String toString()
     {
-        return getRepositoryUri();
+        return getRepositoryUrl();
     }
 }

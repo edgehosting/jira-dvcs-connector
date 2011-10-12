@@ -90,6 +90,8 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
         {
             for (String node : changeset.getParents())
             {
+            	// ehm ehm ... what is this? shouldn't this be 
+            	// htmlParentHashes+=
                 htmlParentHashes = "<tr><td style='color: #757575'>Parent:</td><td><a href='https://bitbucket.org/" +
                         urlEncode(uri.getOwner()) + "/" + urlEncode(uri.getSlug()) +
                         "/changeset/" + node + "' target='_new'>" + node + "</a></td></tr>";

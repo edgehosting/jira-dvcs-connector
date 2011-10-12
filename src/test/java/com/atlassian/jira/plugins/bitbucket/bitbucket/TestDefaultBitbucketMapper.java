@@ -37,7 +37,8 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
  */
 public class TestDefaultBitbucketMapper
 {
-    @Mock
+    private static final String URI = "https://bitbucket.org/owner/slug";
+	@Mock
     ActiveObjects activeObjects;
     @Mock
     BitbucketCommunicator bitbucket;
@@ -56,7 +57,7 @@ public class TestDefaultBitbucketMapper
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
-        when(projectMapping.getRepositoryUri()).thenReturn("owner/slug");
+        when(projectMapping.getRepositoryUri()).thenReturn(URI);
 
         when(activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ?", "JST")).thenReturn(
                 new ProjectMapping[]{projectMapping});
@@ -101,7 +102,7 @@ public class TestDefaultBitbucketMapper
     public void testAddAnonymousRepositoryCreatesValidMap()
     {
         new DefaultRepositoryPersister(activeObjects).
-                addRepository("JST", RepositoryUri.parse("owner/slug"), null, null);
+                addRepository("JST", RepositoryUri.parse(URI).getRepositoryUrl(), null, null);
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
@@ -110,7 +111,7 @@ public class TestDefaultBitbucketMapper
                     {
                         //noinspection unchecked
                         Map<String, Object> map = (Map<String, Object>) o;
-                        return map.get("REPOSITORY_URI").equals("owner/slug") &&
+                        return map.get("REPOSITORY_URI").equals(URI) &&
                                 map.get("PROJECT_KEY").equals("JST") &&
                                 !map.containsKey("USERNAME") && !map.containsKey("PASSWORD");
                     }
@@ -121,7 +122,7 @@ public class TestDefaultBitbucketMapper
     public void testAddAuthentictedRepositoryCreatesValidMap()
     {
         new DefaultRepositoryPersister(activeObjects).
-                addRepository("JST", RepositoryUri.parse("owner/slug"), "user", "pass");
+                addRepository("JST", RepositoryUri.parse(URI).getRepositoryUrl(), "user", "pass");
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
@@ -130,7 +131,7 @@ public class TestDefaultBitbucketMapper
                     {
                         //noinspection unchecked
                         Map<String, Object> map = (Map<String, Object>) o;
-                        return map.get("REPOSITORY_URI").equals("owner/slug") &&
+                        return map.get("REPOSITORY_URI").equals(URI) &&
                                 map.get("PROJECT_KEY").equals("JST") &&
                                 map.get("USERNAME").equals("user") &&
                                 map.containsKey("PASSWORD");
@@ -142,7 +143,7 @@ public class TestDefaultBitbucketMapper
     public void testPasswordNotStoredInPlainText()
     {
     	new BitbucketRepositoryManager(new DefaultRepositoryPersister(activeObjects), bitbucket, encryptor)
-    		.addRepository("JST", RepositoryUri.parse("owner/slug").getRepositoryUrl(), "user", "pass");
+    		.addRepository("JST", RepositoryUri.parse(URI).getRepositoryUrl(), "user", "pass");
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
@@ -162,18 +163,18 @@ public class TestDefaultBitbucketMapper
     {
         when(activeObjects.find(ProjectMapping.class,
                 "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                "JST", "owner/slug")).thenReturn(new ProjectMapping[]{projectMapping}
+                "JST", URI)).thenReturn(new ProjectMapping[]{projectMapping}
         );
         when(activeObjects.find(IssueMapping.class,
                 "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                "JST", "owner/slug")).thenReturn(new IssueMapping[]{issueMapping}
+                "JST", URI)).thenReturn(new IssueMapping[]{issueMapping}
         );
         new DefaultRepositoryPersister(activeObjects).removeRepository("JST",
-                RepositoryUri.parse("owner/slug"));
+                RepositoryUri.parse(URI).getRepositoryUrl());
         verify(activeObjects, times(1)).find(ProjectMapping.class,
-                "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", "owner/slug");
+                "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", URI);
         verify(activeObjects, times(1)).find(IssueMapping.class,
-                "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", "owner/slug");
+                "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", URI);
         verify(activeObjects, times(1)).delete(projectMapping);
         verify(activeObjects, times(1)).delete(issueMapping);
     }
@@ -182,12 +183,12 @@ public class TestDefaultBitbucketMapper
     public void testGetChangesets()
     {
         when(activeObjects.find(ProjectMapping.class,
-                "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", "owner/slug")).
+                "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", URI)).
                 thenReturn(new ProjectMapping[]{projectMapping});
         when(activeObjects.find(IssueMapping.class,
                 "ISSUE_ID = ?", "JST-1")).thenReturn(new IssueMapping[]{issueMapping});
         when(issueMapping.getNode()).thenReturn("1");
-        when(issueMapping.getRepositoryUri()).thenReturn("owner/slug");
+        when(issueMapping.getRepositoryUri()).thenReturn(URI);
         new DefaultRepositoryPersister(activeObjects).getIssueMappings("JST-1");
 //        verify(activeObjects, times(1)).find(ProjectMapping.class,
 //                "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", "owner/slug");
@@ -208,13 +209,13 @@ public class TestDefaultBitbucketMapper
     {
         when(activeObjects.find(ProjectMapping.class,
                 "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                "JST", "owner/slug")).thenReturn(new ProjectMapping[]{projectMapping});
+                "JST", URI)).thenReturn(new ProjectMapping[]{projectMapping});
         when(activeObjects.find(IssueMapping.class,
                 "ISSUE_ID = ?", "JST-1")).thenReturn(new IssueMapping[]{issueMapping});
         when(projectMapping.getUsername()).thenReturn("user");
         when(projectMapping.getPassword()).thenReturn("ssap");
         when(issueMapping.getNode()).thenReturn("1");
-        when(issueMapping.getRepositoryUri()).thenReturn("owner/slug");
+        when(issueMapping.getRepositoryUri()).thenReturn(URI);
         new DefaultRepositoryPersister(activeObjects).getIssueMappings("JST-1");
 //        verify(activeObjects, times(1)).find(ProjectMapping.class,
 //                "PROJECT_KEY = ? and REPOSITORY_URI = ?",
@@ -237,7 +238,7 @@ public class TestDefaultBitbucketMapper
     {
         when(activeObjects.find(ProjectMapping.class,
             "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-            "JST", "owner/slug")).thenReturn(new ProjectMapping[]{projectMapping});
+            "JST", URI)).thenReturn(new ProjectMapping[]{projectMapping});
 
         new DefaultRepositoryPersister(activeObjects).addChangeset("JST-1", changeset);
         verify(activeObjects, times(1)).create(eq(IssueMapping.class),
@@ -248,7 +249,7 @@ public class TestDefaultBitbucketMapper
                     {
                         //noinspection unchecked
                         Map<String, Object> map = (Map<String, Object>) o;
-                        return map.get("REPOSITORY_URI").equals("owner/slug") &&
+                        return map.get("REPOSITORY_URI").equals(URI) &&
                                 map.get("PROJECT_KEY").equals("JST") &&
                                 map.get("NODE").equals("1") &&
                                 map.get("ISSUE_ID").equals("JST-1");

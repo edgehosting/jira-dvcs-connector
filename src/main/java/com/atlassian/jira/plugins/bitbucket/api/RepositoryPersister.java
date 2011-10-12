@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 
 /**
  * Maps bitbucket repositories and commits to jira projects and issues.
@@ -17,7 +16,7 @@ public interface RepositoryPersister
      * @return a list of repositories
      */
 	// TODO change to getRepositoryById(int id);
-    ProjectMapping getRepository(String projectKey, RepositoryUri repositoryUri);
+    ProjectMapping getRepository(String projectKey, String repositoryUrl);
 
     /**
      * Return a list of all repository uris for the given project
@@ -29,19 +28,19 @@ public interface RepositoryPersister
     /**
      * Map a repository to the specified jira project
      * @param projectKey the jira project
-     * @param repositoryUri the uri of the repository to map to
+     * @param repositoryUrl the uri of the repository to map to
      * @param username the username to use to connect to this bitbucket repository
      * @param password the password to use to connect to this bitbucket repository
      * @return 
      */
-    ProjectMapping addRepository(String projectKey, RepositoryUri repositoryUri, String username, String password);
+    ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password);
 
     /**
      * Remove the mapping of the bibucket repository from the specified jira project
      * @param projectKey the jira project
-     * @param repositoryUri the uri of the repository to remove
+     * @param repositoryUrl the uri of the repository to remove
      */
-    void removeRepository(String projectKey, RepositoryUri repositoryUri);
+    void removeRepository(String projectKey, String repositoryUrl);
 
     /**
      * Return a list of all commits mapped to the given issue from the given repository

@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 
+// removing branch information from the url
 public class UrlMigrator implements ActiveObjectsUpgradeTask
 {
 	    private final Logger logger = LoggerFactory.getLogger(UrlMigrator.class);
@@ -24,14 +25,13 @@ public class UrlMigrator implements ActiveObjectsUpgradeTask
 	    {
 	        logger.debug("upgrade [ " + modelVersion + " ]");
 
-	        // TODO check if this needs to be in transaction
 	        // urls in project mappings
 	        ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class);
 	        for (ProjectMapping projectMapping : projectMappings)
 			{
 	        	// removing branch information from the url
 				RepositoryUri fixedUri = RepositoryUri.parse(projectMapping.getRepositoryUri());
-				projectMapping.setRepositoryUri(fixedUri.getRepositoryUri());
+				projectMapping.setRepositoryUri(fixedUri.getOwner()+"/"+fixedUri.getSlug());
 				projectMapping.save();
 			}
 

@@ -44,11 +44,11 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
 
-    public ProjectMapping addRepository(String projectKey, RepositoryUri repositoryUri, String username, String password)
+    public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password)
     {
         // TODO don't create duplicate mapping
         final Map<String, Object> map = new HashMap<String, Object>();
-        map.put("REPOSITORY_URI", repositoryUri.getRepositoryUri());
+        map.put("REPOSITORY_URI", repositoryUrl);
         map.put("PROJECT_KEY", projectKey);
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
         {
@@ -65,7 +65,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     }
 
     // TODO remove by repositoryId
-    public void removeRepository(final String projectKey, final RepositoryUri repositoryUri)
+    public void removeRepository(final String projectKey, final String repositoryUrl)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
         {
@@ -73,16 +73,16 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             {
                 final ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class,
                         "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                        projectKey, repositoryUri.getRepositoryUri());
+                        projectKey, repositoryUrl);
 
                 final IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class,
                         "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                        projectKey, repositoryUri.getRepositoryUri());
+                        projectKey, repositoryUrl);
 
                 logger.debug("deleting [ {} ] project mappings [ {} ] [ {} ]",
-                        new String[]{String.valueOf(projectMappings.length), projectKey, repositoryUri.getRepositoryUri()});
+                        new String[]{String.valueOf(projectMappings.length), projectKey, repositoryUrl});
                 logger.debug("deleting [ {} ] issue mappings [ {} ] [ {} ]",
-                        new String[]{String.valueOf(issueMappings.length), projectKey, repositoryUri.getRepositoryUri()});
+                        new String[]{String.valueOf(issueMappings.length), projectKey, repositoryUrl});
 
                 activeObjects.delete(projectMappings);
                 activeObjects.delete(issueMappings);
@@ -109,17 +109,17 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         {
             public Object doInTransaction()
             {
-                final RepositoryUri repositoryUri = RepositoryUri.parse(changeset.getRepositoryUrl());
+                String repositoryUrl = changeset.getRepositoryUrl();
                 final String projectKey = getProjectKey(issueId);
                 final Map<String, Object> map = new HashMap<String, Object>();
                 map.put("NODE", changeset.getNode());
                 map.put("PROJECT_KEY", projectKey);
                 map.put("ISSUE_ID", issueId);
-                map.put("REPOSITORY_URI", repositoryUri.getRepositoryUri());
+                map.put("REPOSITORY_URI", repositoryUrl);
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
                 		"ISSUE_ID = ? and NODE = ?",
                 		issueId, changeset.getNode());
-                logger.debug("create issue mapping [ {} ] [ {} ]", new String[]{projectKey, repositoryUri.getRepositoryUri()});
+                logger.debug("create issue mapping [ {} ] [ {} ]", new String[]{projectKey, repositoryUrl});
                 if (mappings != null && mappings.length > 0)
                 	activeObjects.delete(mappings);
                 IssueMapping issueMapping = activeObjects.create(IssueMapping.class, map);
@@ -143,14 +143,14 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
     
-    public ProjectMapping getRepository(String projectKey, RepositoryUri repositoryUri)
+    public ProjectMapping getRepository(String projectKey, String repositoryUrl)
     {
         ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class,
                 "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                projectKey, repositoryUri.getRepositoryUri());
+                projectKey, repositoryUrl);
         if (projectMappings == null || projectMappings.length != 1)
             throw new SourceControlException("invalid mapping for project [ " + projectKey + " ] to " +
-                    "repository [ " + repositoryUri.getRepositoryUri() + " ] was [ " +
+                    "repository [ " + repositoryUrl + " ] was [ " +
                     (projectMappings == null ? "null" : String.valueOf(projectMappings.length)) + " ]");
         return projectMappings[0];
     }

@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.bitbucket.DefaultProgress;
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.google.common.collect.Iterables;
@@ -60,6 +61,11 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         }
     }
 
+    public String doDefault()
+    {
+        return "input";
+    }
+    
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
@@ -108,6 +114,11 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     {
         logger.debug("sync [ {} ] for project [ {} ]", url, projectKey);
         synchronizer.synchronize(projectKey, url);
+    }
+    
+    public List<Project> getProjects()
+    {
+        return getProjectManager().getProjectObjects();
     }
 
     // Stored Repository + JIRA Projects
@@ -163,7 +174,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
     public void setPostCommitURL(String value)
     {
-        this.postCommitURL = value;
+    	this.postCommitURL = value;
     }
 
     public String getPostCommitURL()
