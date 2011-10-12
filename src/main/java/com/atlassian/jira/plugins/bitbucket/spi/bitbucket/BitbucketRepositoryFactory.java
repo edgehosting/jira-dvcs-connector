@@ -60,7 +60,7 @@ public class BitbucketRepositoryFactory
         }
         catch (JSONException e)
         {
-            throw new BitbucketException("invalid json object", e);
+            throw new SourceControlException("invalid json object", e);
         }
     }
 

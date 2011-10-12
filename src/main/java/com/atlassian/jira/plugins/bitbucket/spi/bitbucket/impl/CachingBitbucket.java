@@ -7,7 +7,7 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.SourceControlException;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
@@ -114,8 +114,8 @@ public class CachingBitbucket implements BitbucketCommunicator
         }
     }
 
-    private BitbucketException unrollException(ComputationException e)
+    private SourceControlException unrollException(ComputationException e)
     {
-        return e.getCause() instanceof BitbucketException ? (BitbucketException) e.getCause() : new BitbucketException(e.getCause());
+        return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause() : new SourceControlException(e.getCause());
     }
 }

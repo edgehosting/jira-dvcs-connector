@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.SourceControlException;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 
@@ -22,7 +22,7 @@ public class BitbucketUserFactory
 	    }
 	    catch (JSONException e)
 	    {
-	        throw new BitbucketException("invalid json object", e);
+	        throw new SourceControlException("invalid json object", e);
 	    }
 	}
 

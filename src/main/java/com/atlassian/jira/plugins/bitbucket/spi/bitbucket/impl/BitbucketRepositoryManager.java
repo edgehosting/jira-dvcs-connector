@@ -19,7 +19,7 @@ import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
@@ -147,7 +147,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
 			}
 		} catch (JSONException e)
 		{
-			throw new BitbucketException();
+			throw new SourceControlException();
 			// TODO Auto-generated catch block
 		}
         return changesets;

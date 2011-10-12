@@ -11,7 +11,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.SourceControlException;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 
@@ -34,7 +34,7 @@ public class DefaultBitbucket implements BitbucketCommunicator
         {
             return BitbucketUserFactory.parse(new JSONObject(bitbucketConnection.getUser(username)));
         }
-        catch (BitbucketException e)
+        catch (SourceControlException e)
         {
             logger.debug("could not load user [ "+username+" ]");
             return SourceControlUser.UNKNOWN_USER;
@@ -54,7 +54,7 @@ public class DefaultBitbucket implements BitbucketCommunicator
         }
         catch (JSONException e)
         {
-            throw new BitbucketException("could not parse json result", e);
+            throw new SourceControlException("could not parse json result", e);
         }
     }
 

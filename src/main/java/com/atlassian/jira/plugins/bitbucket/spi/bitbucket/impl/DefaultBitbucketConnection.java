@@ -13,7 +13,7 @@ import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
@@ -89,7 +89,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
         }
         catch (UnsupportedEncodingException e)
         {
-            throw new BitbucketException("required encoding not found", e);
+            throw new SourceControlException("required encoding not found", e);
         }
     }
 
@@ -126,11 +126,11 @@ public class DefaultBitbucketConnection implements BitbucketConnection
         }
         catch (ResponseException e)
         {
-            throw new BitbucketException("could not parse bitbucket response [ " + uri + " ]", e);
+            throw new SourceControlException("could not parse bitbucket response [ " + uri + " ]", e);
         }
         catch (UnsupportedEncodingException e)
         {
-            throw new BitbucketException("required encoding not found");
+            throw new SourceControlException("required encoding not found");
         }
     }
 

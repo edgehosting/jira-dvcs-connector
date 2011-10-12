@@ -13,7 +13,7 @@ import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
@@ -149,7 +149,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 "PROJECT_KEY = ? and REPOSITORY_URI = ?",
                 projectKey, repositoryUri.getRepositoryUri());
         if (projectMappings == null || projectMappings.length != 1)
-            throw new BitbucketException("invalid mapping for project [ " + projectKey + " ] to " +
+            throw new SourceControlException("invalid mapping for project [ " + projectKey + " ] to " +
                     "repository [ " + repositoryUri.getRepositoryUri() + " ] was [ " +
                     (projectMappings == null ? "null" : String.valueOf(projectMappings.length)) + " ]");
         return projectMappings[0];

@@ -28,7 +28,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketChangesetIterator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucket;
 import com.google.common.collect.Iterables;
@@ -151,7 +151,7 @@ public class TestDefaultBitbucket
     @Test
     public void testGetUnknownUser()
     {
-        when(bitbucketConnection.getUser("unknown")).thenThrow(new BitbucketException());
+        when(bitbucketConnection.getUser("unknown")).thenThrow(new SourceControlException());
         SourceControlUser user = new DefaultBitbucket(bitbucketConnection).getUser("unknown");
         assertNotNull(user);
         assertEquals(SourceControlUser.UNKNOWN_USER,user);

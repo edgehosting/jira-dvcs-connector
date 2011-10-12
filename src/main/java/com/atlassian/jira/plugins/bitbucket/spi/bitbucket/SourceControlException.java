@@ -3,23 +3,23 @@ package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 /**
  * Indicates an unhandled exceptional condition within the bitbucket client
  */
-public class BitbucketException extends RuntimeException
+public class SourceControlException extends RuntimeException
 {
-    public BitbucketException()
+    public SourceControlException()
     {
     }
 
-    public BitbucketException(String message)
+    public SourceControlException(String message)
     {
         super(message);
     }
 
-    public BitbucketException(String message, Throwable cause)
+    public SourceControlException(String message, Throwable cause)
     {
         super(message, cause);
     }
 
-    public BitbucketException(Throwable cause)
+    public SourceControlException(Throwable cause)
     {
         super(cause);
     }
