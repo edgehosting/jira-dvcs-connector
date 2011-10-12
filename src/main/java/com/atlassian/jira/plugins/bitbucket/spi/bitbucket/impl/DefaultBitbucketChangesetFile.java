@@ -1,20 +1,20 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFileType;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
 
-public class DefaultBitbucketChangesetFile implements BitbucketChangesetFile
+public class DefaultBitbucketChangesetFile implements ChangesetFile
 {
-    private final BitbucketChangesetFileType type;
+    private final ChangesetFileAction type;
     private final String file;
 
-    public DefaultBitbucketChangesetFile(BitbucketChangesetFileType type, String file)
+    public DefaultBitbucketChangesetFile(ChangesetFileAction type, String file)
     {
         this.type = type;
         this.file = file;
     }
 
-    public BitbucketChangesetFileType getType()
+    public ChangesetFileAction getFileAction()
     {
         return type;
     }

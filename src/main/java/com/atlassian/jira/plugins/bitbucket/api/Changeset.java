@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.bitbucket.api;
 
 import java.util.List;
 
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFile;
 
 /**
  * Details on a changeset
@@ -28,7 +27,7 @@ public interface Changeset
 
     public List<String> getParents();
 
-    public List<BitbucketChangesetFile> getFiles();
+    public List<ChangesetFile> getFiles();
 
     public String getRevision();
 

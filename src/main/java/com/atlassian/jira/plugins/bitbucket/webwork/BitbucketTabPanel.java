@@ -19,9 +19,9 @@ import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.security.PermissionManager;
@@ -101,11 +101,11 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
         String htmlFile = "";
         if (!changeset.getFiles().isEmpty())
         {
-            for (BitbucketChangesetFile file : changeset.getFiles())
+            for (ChangesetFile file : changeset.getFiles())
             {
                 String fileName = file.getFile();
-                String color = file.getType().getColor();
-                String fileActionName = file.getType().toString();
+                String color = file.getFileAction().getColor();
+                String fileActionName = file.getFileAction().toString();
                 String fileCommitURL = "https://bitbucket.org/" + uri.getOwner() + "/" +
                 		uri.getSlug() + "/src/" + changeset.getNode() + "/" + urlEncode(file.getFile());
                 htmlFile = "<li><span style='color:" + color + "; font-size: 8pt;'>" +

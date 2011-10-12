@@ -4,7 +4,7 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 
 /**
@@ -22,14 +22,14 @@ public class DefaultBitbucketChangeset implements Changeset
     private final String message;
     private final String revision;
     private final List<String> parents;
-    private final List<BitbucketChangesetFile> files;
+    private final List<ChangesetFile> files;
 
 	private final String repositoryUrl;
 
     public DefaultBitbucketChangeset(String repositoryUrl, 
                                      String node, String rawAuthor, String author, String timestamp,
                                      String rawNode, String branch, String message, String revision,
-                                     List<String> parents, List<BitbucketChangesetFile> files)
+                                     List<String> parents, List<ChangesetFile> files)
     {
 		this.repositoryUrl = repositoryUrl;
         this.node = node;
@@ -89,7 +89,7 @@ public class DefaultBitbucketChangeset implements Changeset
         return parents;
     }
 
-    public List<BitbucketChangesetFile> getFiles()
+    public List<ChangesetFile> getFiles()
     {
         return files;
     }

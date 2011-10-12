@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.LazyLoadedBitbucketChangeset;
@@ -73,9 +74,9 @@ public class BitbucketChangesetFactory
         return list;
     }
 
-    private static List<BitbucketChangesetFile> fileList(JSONArray parents) throws JSONException
+    private static List<ChangesetFile> fileList(JSONArray parents) throws JSONException
     {
-        List<BitbucketChangesetFile> list = new ArrayList<BitbucketChangesetFile>();
+        List<ChangesetFile> list = new ArrayList<ChangesetFile>();
         for (int i = 0; i < parents.length(); i++)
             list.add(BitbucketChangesetFileFactory.parse((JSONObject) parents.get(i)));
         return list;

@@ -1,17 +1,16 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
+package com.atlassian.jira.plugins.bitbucket.api;
 
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 
 /**
  * Describes the type of file action within a {@link Changeset changeset}.
  */
-public enum BitbucketChangesetFileType
+public enum ChangesetFileAction
 {
     ADDED("green"), REMOVED("red"), MODIFIED("blue");
 
     private final String color;
 
-    BitbucketChangesetFileType(String color)
+    ChangesetFileAction(String color)
     {
         this.color = color;
     }
