@@ -36,9 +36,9 @@ public class DefaultEncryptor implements Encryptor
         byte[] encrypted;
         try
         {
+        	// TODO - Do we need projectID? Can we use projectKey instead? 
             String projectID = projectManager.getProjectObjByKey(projectKey).getId().toString();
 
-            // Get the Key
             byte[] key = (projectID + repoURL).getBytes("UTF-8");
             MessageDigest sha = MessageDigest.getInstance("SHA-1");
             key = sha.digest(key);
