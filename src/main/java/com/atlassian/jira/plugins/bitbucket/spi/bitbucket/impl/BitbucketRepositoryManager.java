@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.atlassian.jira.plugins.bitbucket.Progress;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;

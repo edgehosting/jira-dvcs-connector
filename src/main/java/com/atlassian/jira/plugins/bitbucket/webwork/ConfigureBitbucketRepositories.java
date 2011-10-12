@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.bitbucket.Progress;
+import com.atlassian.jira.plugins.bitbucket.DefaultProgress;
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
@@ -39,7 +39,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String redirectURL = "";
 
     private final Synchronizer synchronizer;
-    private List<Progress> progress;
+    private List<DefaultProgress> defaultProgress;
 
 	private final RepositoryManager globalRepositoryManager;
 
@@ -89,8 +89,8 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("CurrentSyncStatus"))
             {
-                progress = new ArrayList<Progress>();
-                Iterables.addAll(progress,synchronizer.getProgress(projectKey, url));
+                defaultProgress = new ArrayList<DefaultProgress>();
+                Iterables.addAll(defaultProgress, synchronizer.getProgress(projectKey, url));
                 return "syncstatus";
             }
 
@@ -216,9 +216,9 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         return this.redirectURL;
     }
 
-    public List<Progress> getProgress()
+    public List<DefaultProgress> getProgress()
     {
-        return progress;
+        return defaultProgress;
     }
     
     public static String encodeUrl(String url)

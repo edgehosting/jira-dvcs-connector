@@ -32,6 +32,6 @@ public interface Synchronizer
      * @param repositoryUrl the uri of the repository
      * @return the progress of the synchronization
      */
-    public Iterable<Progress> getProgress(String projectKey, String repositoryUrl);
+    public Iterable<DefaultProgress> getProgress(String projectKey, String repositoryUrl);
 
 }

@@ -2,8 +2,8 @@ package com.atlassian.jira.plugins.bitbucket.spi;
 
 import java.util.List;
 
-import com.atlassian.jira.plugins.bitbucket.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;

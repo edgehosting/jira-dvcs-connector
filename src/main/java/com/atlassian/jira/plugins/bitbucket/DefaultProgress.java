@@ -8,11 +8,12 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
+import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.atlassian.util.concurrent.BlockingReference;
 
-public class Progress
+public class DefaultProgress implements Progress
 {
     public interface State
     {
@@ -63,7 +64,7 @@ public class Progress
     private final Future<OperationResult> future;
     private final BlockingReference<State> progress = BlockingReference.newMRSW();
 
-    public Progress(TemplateRenderer templateRenderer, SynchronizationKey key, Future<OperationResult> future)
+    public DefaultProgress(TemplateRenderer templateRenderer, SynchronizationKey key, Future<OperationResult> future)
     {
         this.templateRenderer = templateRenderer;
         this.key = key;
@@ -71,6 +72,9 @@ public class Progress
         this.progress.set(new Starting());
     }
 
+    /* (non-Javadoc)
+	 * @see com.atlassian.jira.plugins.bitbucket.Progress#inProgress(java.lang.String, int)
+	 */
     public void inProgress(String revision, int jiraCount)
     {
         this.progress.set(new InProgress(revision, jiraCount));

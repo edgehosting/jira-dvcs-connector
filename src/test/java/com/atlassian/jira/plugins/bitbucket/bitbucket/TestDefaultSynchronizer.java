@@ -14,8 +14,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
-import com.atlassian.jira.plugins.bitbucket.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;

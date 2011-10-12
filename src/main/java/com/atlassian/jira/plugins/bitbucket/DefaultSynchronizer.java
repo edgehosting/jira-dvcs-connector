@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
+import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
@@ -27,9 +28,9 @@ public class DefaultSynchronizer implements Synchronizer
     {
     	// could this get any more complicated? 
     	// TODO add error tracking for synchronisation
-		private final ConcurrentMap<SynchronizationKey, Progress> operations = new MapMaker().makeComputingMap(new Function<SynchronizationKey, Progress>()
+		private final ConcurrentMap<SynchronizationKey, DefaultProgress> operations = new MapMaker().makeComputingMap(new Function<SynchronizationKey, DefaultProgress>()
 		{
-			public Progress apply(final SynchronizationKey from)
+			public DefaultProgress apply(final SynchronizationKey from)
 			{
 				Callable<OperationResult> callable = new Callable<OperationResult>()
 				{
@@ -46,14 +47,14 @@ public class DefaultSynchronizer implements Synchronizer
 						}
 					}
 				};
-				return new Progress(templateRenderer, from, executorService.submit(callable));
+				return new DefaultProgress(templateRenderer, from, executorService.submit(callable));
 			}
 		});
 
         
 		private final Function<SynchronizationKey, Progress> progressProvider = new Function<SynchronizationKey, Progress>()
 		{
-			public Progress apply(SynchronizationKey from)
+			public DefaultProgress apply(SynchronizationKey from)
 			{
 				return coordinator.operations.get(from);
 			}
@@ -89,16 +90,16 @@ public class DefaultSynchronizer implements Synchronizer
         coordinator.operations.get(new SynchronizationKey(projectKey, repositoryUrl, changesets));
     }
 
-    public Iterable<Progress> getProgress()
+    public Iterable<DefaultProgress> getProgress()
     {
         return coordinator.operations.values();
     }
 
-    public Iterable<Progress> getProgress(final String projectKey, final String repositoryUrl)
+    public Iterable<DefaultProgress> getProgress(final String projectKey, final String repositoryUrl)
     {
-        return Iterables.filter(coordinator.operations.values(), new Predicate<Progress>()
+        return Iterables.filter(coordinator.operations.values(), new Predicate<DefaultProgress>()
         {
-            public boolean apply(Progress input)
+            public boolean apply(DefaultProgress input)
             {
                 return input.matches(projectKey, repositoryUrl);
             }
