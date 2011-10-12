@@ -22,7 +22,6 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
@@ -54,7 +53,7 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
                 bitbucketActions.add(new GenericMessageAction(formatCommitDetails(changeset)));
             }
         }
-        catch (SourceControlException e)
+        catch (com.atlassian.jira.plugins.bitbucket.api.SourceControlException e)
         {
             logger.debug("Could not retrieve changeset for [ " + issueId + " ]: " + e, e);
         }

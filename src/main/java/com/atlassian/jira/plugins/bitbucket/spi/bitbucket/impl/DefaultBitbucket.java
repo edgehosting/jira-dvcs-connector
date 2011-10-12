@@ -6,12 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.SourceControlException;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 
@@ -34,7 +34,7 @@ public class DefaultBitbucket implements BitbucketCommunicator
         {
             return BitbucketUserFactory.parse(new JSONObject(bitbucketConnection.getUser(username)));
         }
-        catch (SourceControlException e)
+        catch (com.atlassian.jira.plugins.bitbucket.api.SourceControlException e)
         {
             logger.debug("could not load user [ "+username+" ]");
             return SourceControlUser.UNKNOWN_USER;

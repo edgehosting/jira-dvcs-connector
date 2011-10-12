@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.SourceControlException;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;

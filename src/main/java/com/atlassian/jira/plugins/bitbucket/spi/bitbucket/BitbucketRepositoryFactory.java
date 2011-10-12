@@ -3,6 +3,8 @@ package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucketRepository;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;

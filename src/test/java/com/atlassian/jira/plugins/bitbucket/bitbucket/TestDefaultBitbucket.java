@@ -23,12 +23,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketChangesetIterator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucket;
 import com.google.common.collect.Iterables;
