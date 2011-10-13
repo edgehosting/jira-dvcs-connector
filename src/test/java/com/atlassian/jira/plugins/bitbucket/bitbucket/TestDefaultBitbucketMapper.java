@@ -142,7 +142,7 @@ public class TestDefaultBitbucketMapper
     @Test
     public void testPasswordNotStoredInPlainText()
     {
-    	new BitbucketRepositoryManager(new DefaultRepositoryPersister(activeObjects), bitbucket, encryptor)
+    	new BitbucketRepositoryManager(new DefaultRepositoryPersister(activeObjects), bitbucket, encryptor, null)
     		.addRepository("JST", RepositoryUri.parse(URI).getRepositoryUrl(), "user", "pass");
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()

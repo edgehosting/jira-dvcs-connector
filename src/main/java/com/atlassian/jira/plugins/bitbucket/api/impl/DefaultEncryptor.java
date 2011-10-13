@@ -77,6 +77,9 @@ public class DefaultEncryptor implements Encryptor
 
     public String decrypt(String password, String projectKey, String repoURL)
     {
+    	if (password == null) 
+    		return null; 
+    			
         try
         {
             byte[] ciphertext = DefaultEncryptor.hexStringToByteArray(password);
