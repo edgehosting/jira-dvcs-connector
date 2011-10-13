@@ -36,4 +36,6 @@ public interface RepositoryManager
 
 	public List<Changeset> parsePayload(String projectKey, String repositoryUrl, String payload);
 
+	public String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset);
+
 }

@@ -105,4 +105,9 @@ public class GlobalRepositoryManager implements RepositoryManager
 	{
 		return getManagerForUrl(repositoryUrl).parsePayload(projectKey, repositoryUrl, payload);
 	}
+
+	public String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset)
+	{
+		return getManagerForUrl(repository.getUrl()).getHtmlForChangeset(repository, changeset);
+	}
 }

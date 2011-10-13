@@ -5,14 +5,15 @@
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
     </plugin-info>
 
-    <component-import key="templateRenderer"
-                      interface="com.atlassian.templaterenderer.TemplateRenderer">
+    <component-import key="templateRenderer" interface="com.atlassian.templaterenderer.TemplateRenderer">
         <description>Template Renderer Factory</description>
     </component-import>
 
     <component-import key="ao" name="Active Objects" interface="com.atlassian.activeobjects.external.ActiveObjects">
         <description>Component to access Active Objects functionality from the plugin</description>
     </component-import>
+    
+    <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />
 
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping</entity>
