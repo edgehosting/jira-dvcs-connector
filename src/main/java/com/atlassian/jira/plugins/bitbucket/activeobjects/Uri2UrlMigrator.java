@@ -12,7 +12,7 @@ import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 
 public class Uri2UrlMigrator implements ActiveObjectsUpgradeTask
 {
-    private final Logger logger = LoggerFactory.getLogger(UrlMigrator.class);
+    private final Logger logger = LoggerFactory.getLogger(Uri2UrlMigrator.class);
 
 
 	public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
