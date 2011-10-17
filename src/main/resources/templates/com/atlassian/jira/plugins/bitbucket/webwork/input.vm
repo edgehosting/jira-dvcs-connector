@@ -10,21 +10,21 @@
 
     <script type="text/javascript">
 
-        var repoId = '$action.getRepoId()';
+        var repositoryId = '$action.getRepositoryId()';
         var syncComplete = false;
 
         // Function is located in velocity template not the global bitbucket.js include as
         // we need to dynamically insert URLs
-        function forceSync(repoId){
+        function forceSync(repositoryId){
             AJS.$('#gh_messages').css('display','block');
             AJS.$('#connector_sync_message').html("");
             AJS.$('#connector_sync_status').html("");
 
-            AJS.$('#connector_sync_message').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&repoId=' + repoId + '&atl_token=$atl_token');
+            AJS.$('#connector_sync_message').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&repositoryId=' + repositoryId + '&atl_token=$atl_token');
 
             window.setInterval(function(){
                 if(syncComplete == false){
-                    AJS.$('#connector_sync_status').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&repoId=' + repoId + '&atl_token=$atl_token');
+                    AJS.$('#connector_sync_status').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&repositoryId=' + repositoryId + '&atl_token=$atl_token');
                 }
             }, 1000);
         }
@@ -135,11 +135,6 @@
 
     </style>
 
-
-
-
-
-
   </head>
 
   <body>
@@ -162,15 +157,15 @@
                 <tr> <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$encodedProjectName</div></td> </tr>
                 <tr> <th>Repository URL</th> <th>Key</th> <th>Operations</th> </tr>
                 #foreach ($repository in $action.getProjectRepositories($projectKey))
-                    #set($repoId = $repository.getId())
+                    #set($repositoryId = $repository.getId())
                     #set($encodedMode = $textutils.htmlEncode($action.getMode()))
                     <tr>
                         <td><a href="$textutils.htmlEncode($repository.url)" target="_new">$textutils.htmlEncode($repository.url)</a></td>
                         <td>$projectKey</td>
                         <td width="260px">
-                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repoId=$repoId&nextAction=ForceSync&mode=$encodedMode&atl_token=$atl_token">Force Sync</a> |
-                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repoId=$repoId&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
-                            <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&repoId=$repoId&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
+                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repositoryId=$repositoryId&nextAction=ForceSync&mode=$encodedMode&atl_token=$atl_token">Force Sync</a> |
+                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repositoryId=$repositoryId&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
+                            <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&repositoryId=$repositoryId&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
                         </td>
                     </tr>
                 #end
