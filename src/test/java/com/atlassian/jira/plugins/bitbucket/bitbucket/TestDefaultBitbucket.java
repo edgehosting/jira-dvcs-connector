@@ -130,7 +130,7 @@ public class TestDefaultBitbucket
                 thenReturn(resource("TestBitbucket-changeset.json"));
         Changeset changeset = new DefaultBitbucket(bitbucketConnection).getChangeset(repository, "471b0c972ba6");
         assertEquals("471b0c972ba6", changeset.getNode());
-        assertEquals("https://bitbucket.org/atlassian/jira-bitbucket-connector/changeset/471b0c972ba6", changeset.getCommitURL());
+        assertEquals("https://bitbucket.org/atlassian/jira-bitbucket-connector/changeset/471b0c972ba6", changeset.getCommitURL(repository));
     }
 
     @Test
@@ -141,7 +141,7 @@ public class TestDefaultBitbucket
         final Changeset changeset = BitbucketChangesetFactory.load(bitbucket, repository, "471b0c972ba6");
 
         assertEquals("471b0c972ba6", changeset.getNode());
-        assertEquals("https://bitbucket.org/atlassian/jira-bitbucket-connector/changeset/471b0c972ba6", changeset.getCommitURL());
+        assertEquals("https://bitbucket.org/atlassian/jira-bitbucket-connector/changeset/471b0c972ba6", changeset.getCommitURL(repository));
         verify(bitbucketConnection,never()).getChangeset(Matchers.<SourceControlRepository>anyObject(), anyString());
     }
 

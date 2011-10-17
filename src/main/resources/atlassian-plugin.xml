@@ -18,10 +18,19 @@
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping</entity>
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping</entity>
+        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping2</entity>
+        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping2</entity>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.UrlMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.Uri2UrlMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ActiveObjectsV2Migrator</upgradeTask>
     </ao>
+
+    <component key="backwardCompability" name="Backward Compability"
+            class="com.atlassian.jira.plugins.bitbucket.webwork.BackwardCompabilityImpl">
+        <description>Component to provide compatibility with previous version of plugin</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.webwork.BackwardCompability</interface>
+    </component>
 
     <component key="executorService" name="Executor Service Factory Component"
             class="com.atlassian.jira.plugins.bitbucket.DefaultExecutorServiceFactoryBean">

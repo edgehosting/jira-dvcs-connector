@@ -34,10 +34,9 @@ public abstract class AbstractSynchronisationOperation implements Synchronisatio
         for (Changeset changeset : changesets)
         {
             String message = changeset.getMessage();
-
-            if (message.contains(key.getProjectKey()))
+            if (message.contains(key.getRepository().getProjectKey()))
             {
-                Set<String> extractedIssues = extractProjectKey(key.getProjectKey(), message);
+                Set<String> extractedIssues = extractProjectKey(key.getRepository().getProjectKey(), message);
                 for (String extractedIssue : extractedIssues)
                 {
                     jiraCount ++;

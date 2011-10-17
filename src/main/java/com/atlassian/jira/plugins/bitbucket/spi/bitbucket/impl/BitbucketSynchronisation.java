@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.AbstractSynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
@@ -28,10 +27,9 @@ public class BitbucketSynchronisation extends AbstractSynchronisationOperation
 
 	public Iterable<Changeset> getChangsetsIterator()
 	{
-		logger.debug("synchronize [ {} ] with [ {} ]", key.getProjectKey(), key.getRepositoryUrl());
+		logger.debug("synchronize [ {} ] with [ {} ]", key.getRepository().getProjectKey(), key.getRepository().getUrl());
 
-        SourceControlRepository repository = repositoryManager.getRepository(key.getProjectKey(), key.getRepositoryUrl());
-        Iterable<Changeset> changesets = key.getChangesets() == null ? bitbucketCommunicator.getChangesets(repository) : key.getChangesets();
+        Iterable<Changeset> changesets = key.getChangesets() == null ? bitbucketCommunicator.getChangesets(key.getRepository()) : key.getChangesets();
 		return changesets;
 	}
 

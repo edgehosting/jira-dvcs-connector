@@ -4,18 +4,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping2;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping2;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
@@ -31,72 +32,64 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         this.activeObjects = activeObjects;
     }
 
-    public List<ProjectMapping> getRepositories(final String projectKey)
+    public List<ProjectMapping2> getRepositories(final String projectKey)
     {
-        return activeObjects.executeInTransaction(new TransactionCallback<List<ProjectMapping>>()
+        return activeObjects.executeInTransaction(new TransactionCallback<List<ProjectMapping2>>()
         {
-			public List<ProjectMapping> doInTransaction()
+			public List<ProjectMapping2> doInTransaction()
             {
-                ProjectMapping[] mappings = activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ?", projectKey);
+                ProjectMapping2[] mappings = activeObjects.find(ProjectMapping2.class, "PROJECT_KEY = ?", projectKey);
                 return Lists.newArrayList(mappings);
             }
         });
     }
 
-    public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password)
+    public ProjectMapping2 addRepository(String projectKey, String repositoryUrl, String username, String password)
     {
         // TODO don't create duplicate mapping
         final Map<String, Object> map = new HashMap<String, Object>();
-        map.put("REPOSITORY_URI", repositoryUrl);
+        map.put("REPOSITORY_URL", repositoryUrl);
         map.put("PROJECT_KEY", projectKey);
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
         {
             map.put("USERNAME", username);
             map.put("PASSWORD", password);
         }
-        return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping>()
+        return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping2>()
         {
-            public ProjectMapping doInTransaction()
+            public ProjectMapping2 doInTransaction()
             {
-        		return activeObjects.create(ProjectMapping.class, map);
+        		return activeObjects.create(ProjectMapping2.class, map);
             }
         });
     }
 
-    // TODO remove by repositoryId
-    public void removeRepository(final String projectKey, final String repositoryUrl)
+    public void removeRepository(final int id)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
         {
             public Object doInTransaction()
             {
-                final ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class,
-                        "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                        projectKey, repositoryUrl);
+                final ProjectMapping2 projectMapping = activeObjects.get(ProjectMapping2.class, id);
+                final IssueMapping2[] issueMappings = activeObjects.find(IssueMapping2.class, "REPOSITORY_ID = ?", id);
 
-                final IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class,
-                        "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                        projectKey, repositoryUrl);
+                logger.debug("deleting project mapping [ {} ]", String.valueOf(id));
+                logger.debug("deleting [ {} ] issue mappings [ {} ]", new String[]{String.valueOf(issueMappings.length), String.valueOf(id)});
 
-                logger.debug("deleting [ {} ] project mappings [ {} ] [ {} ]",
-                        new String[]{String.valueOf(projectMappings.length), projectKey, repositoryUrl});
-                logger.debug("deleting [ {} ] issue mappings [ {} ] [ {} ]",
-                        new String[]{String.valueOf(issueMappings.length), projectKey, repositoryUrl});
-
-                activeObjects.delete(projectMappings);
+                activeObjects.delete(projectMapping);
                 activeObjects.delete(issueMappings);
                 return null;
             }
         });
     }
 
-    public List<IssueMapping> getIssueMappings(final String issueId)
+    public List<IssueMapping2> getIssueMappings(final String issueId)
     {
-        return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
+        return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping2>>()
         {
-            public List<IssueMapping> doInTransaction()
+            public List<IssueMapping2> doInTransaction()
             {
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", issueId);
+                IssueMapping2[] mappings = activeObjects.find(IssueMapping2.class, "ISSUE_ID = ?", issueId);
                 return Lists.newArrayList(mappings);
             }
         });
@@ -108,58 +101,33 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         {
             public Object doInTransaction()
             {
-                String repositoryUrl = changeset.getRepositoryUrl();
-                final String projectKey = getProjectKey(issueId);
-                final Map<String, Object> map = new HashMap<String, Object>();
-                map.put("NODE", changeset.getNode());
-                map.put("PROJECT_KEY", projectKey);
-                map.put("ISSUE_ID", issueId);
-                map.put("REPOSITORY_URI", repositoryUrl);
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
-                		"ISSUE_ID = ? and NODE = ?",
-                		issueId, changeset.getNode());
-                logger.debug("create issue mapping [ {} ] [ {} ]", new String[]{projectKey, repositoryUrl});
-                if (mappings != null && mappings.length > 0)
-                	activeObjects.delete(mappings);
-                IssueMapping issueMapping = activeObjects.create(IssueMapping.class, map);
-                return issueMapping;
-            }
-        });
-    }
-
-    public void removeChangeset(final String issueId, final Changeset changeset)
-    {
-        activeObjects.executeInTransaction(new TransactionCallback<Object>()
-        {
-            public Object doInTransaction()
-            {
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
-                        "ISSUE_ID = ? and NODE = ?",
-                        issueId, changeset.getNode());
-                activeObjects.delete(mappings);
-                return null;
+                int repositoryId = changeset.getRepositoryId();
+                logger.debug("create issue mapping [ {} ] [ {} - {} ] ", new String[]{issueId, changeset.getNode(), changeset.getMessage()});
+                // delete existing
+                IssueMapping2[] mappings = activeObjects.find(IssueMapping2.class, "ISSUE_ID = ? and NODE = ?", issueId, changeset.getNode());
+                if (ArrayUtils.isNotEmpty(mappings))
+				{
+					activeObjects.delete(mappings);
+				}
+                // add new
+				Map<String, Object> map = Maps.newHashMap();
+				map.put("REPOSITORY_ID", repositoryId);
+				map.put("ISSUE_ID", issueId);
+				map.put("NODE", changeset.getNode());
+                return activeObjects.create(IssueMapping2.class, map);
             }
         });
     }
     
-    public ProjectMapping getRepository(String projectKey, String repositoryUrl)
-    {
-        ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class,
-                "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                projectKey, repositoryUrl);
-        if (projectMappings == null || projectMappings.length != 1)
-            throw new SourceControlException("invalid mapping for project [ " + projectKey + " ] to " +
-                    "repository [ " + repositoryUrl + " ] was [ " +
-                    (projectMappings == null ? "null" : String.valueOf(projectMappings.length)) + " ]");
-        return projectMappings[0];
-    }
-
-    private String getProjectKey(String issueId)
-    {
-        // TODO is this safe to do?
-        return issueId.substring(0, issueId.lastIndexOf("-"));
-    }
-
-
+	public ProjectMapping2 getRepository(final int id)
+	{
+		return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping2>()
+		{
+			public ProjectMapping2 doInTransaction()
+			{
+				return activeObjects.get(ProjectMapping2.class, id);
+			}
+		});
+	}
 
 }

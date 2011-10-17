@@ -20,7 +20,6 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketSynchronisation;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
@@ -52,19 +51,16 @@ public class TestDefaultSynchronizer
 	@Test
 	public void testSynchronizeAddsSingleMapping()
 	{
-		String projectKey = "PRJ";
 		when(repository.getUrl()).thenReturn("https://bitbucket.org/owner/slug");
-		RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
-
-		when(repositoryManager.getRepository(projectKey, repository.getUrl())).thenReturn(repository);
-		SynchronizationKey key = new SynchronizationKey("PRJ", uri.getRepositoryUrl());
+		when(repository.getProjectKey()).thenReturn("PRJ");
+		SynchronizationKey key = new SynchronizationKey(repository);
 		BitbucketSynchronisation synchronisation = new BitbucketSynchronisation(key, repositoryManager, bitbucket, progressProvider);
 		when(repositoryManager.getSynchronisationOperation(any(SynchronizationKey.class), any(Function.class))).thenReturn(synchronisation);
 		when(bitbucket.getChangesets(repository)).thenReturn(Arrays.asList(changeset));
 		when(changeset.getMessage()).thenReturn("PRJ-1 Message");
 
 		new DefaultSynchronizer(Executors.newSingleThreadExecutor(), templateRenderer, repositoryManager)
-				.synchronize(projectKey, uri.getRepositoryUrl());
+				.synchronize(repository);
 		verify(repositoryManager, times(1)).addChangeset("PRJ-1", changeset);
 	}
 

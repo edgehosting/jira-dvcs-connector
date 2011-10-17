@@ -22,7 +22,7 @@ public class ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
     {
         logger.debug("upgrade [ " + modelVersion + " ]");
 
-        activeObjects.migrate(IssueMapping2.class, ProjectMapping2.class);
+        activeObjects.migrate(IssueMapping.class, ProjectMapping.class, IssueMapping2.class, ProjectMapping2.class);
 
         ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class);
         for (ProjectMapping projectMapping : projectMappings)

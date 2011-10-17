@@ -29,7 +29,7 @@ public class BitbucketChangesetFactory
      * @param slug      the slug of the repository
      * @param node      the changeset node id
      * @param repository 
-     * @return the parsed {@link DefaultSourceControlRepository}
+     * @return the parsed {@link Changeset}
      */
     public static Changeset load(BitbucketCommunicator bitbucket, SourceControlRepository repository, String node)
     {
@@ -44,12 +44,12 @@ public class BitbucketChangesetFactory
      * @param json  the json object describing the change
      * @return the parsed {@link Changeset}
      */
-    public static Changeset parse(String repositoryUrl, JSONObject json)
+    public static Changeset parse(int repositoryId, JSONObject json)
     {
         try
         {
 			return new DefaultBitbucketChangeset(
-                    repositoryUrl, 
+                    repositoryId, 
                     json.getString("node"),
                     json.getString("raw_author"),
                     json.getString("author"),

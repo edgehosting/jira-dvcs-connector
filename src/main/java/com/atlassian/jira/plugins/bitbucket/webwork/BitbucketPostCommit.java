@@ -2,13 +2,16 @@ package com.atlassian.jira.plugins.bitbucket.webwork;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 
@@ -25,26 +28,27 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     private String validations = "";
     // Project Key
     private String projectKey = "";
-    // Revision Number
-    private String revision = "";
+    private String repositoryUrl;
+    private String repositoryId;
     // BitBucket JSON Payload
     private String payload = "";
 	private final RepositoryManager globalRepositoryManager;
-	private String repositoryUrl;
+	private BackwardCompability backwardCompability;
 
     public BitbucketPostCommit(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, 
-    		Synchronizer synchronizer)
+    		Synchronizer synchronizer, BackwardCompability backwardCompability)
     {
         this.globalRepositoryManager = globalRepositoryManager;
 		this.synchronizer = synchronizer;
+		this.backwardCompability = backwardCompability;
     }
 
     protected void doValidation()
     {
 
-        if (projectKey.equals(""))
+        if (StringUtils.isEmpty(projectKey) && StringUtils.isEmpty(repositoryId) )
         {
-            validations += "Missing Required 'projectKey' parameter. <br/>";
+            validations += "Either 'projectKey' or 'repositoryId' parameter is required. <br/>";
         }
 
         if (payload.equals(""))
@@ -56,26 +60,41 @@ public class BitbucketPostCommit extends JiraWebActionSupport
 
     protected String doExecute() throws Exception
     {
-    	logger.debug("recieved callback post for project [ {} ]", projectKey);
+		try
+		{
+			int repoId = Integer.parseInt(repositoryId);
+			SourceControlRepository repo = globalRepositoryManager.getRepository(repoId);
+			List<Changeset> changesets = globalRepositoryManager.parsePayload(repo, payload);
+			synchronizer.synchronize(repo, changesets);
+			return "postcommit";
+		} catch (NumberFormatException e)
+		{
+			return backwardCompabitibleDoExecute();
+		}
+    }
+
+    private String backwardCompabitibleDoExecute() throws JSONException
+	{
     	if (validations.equals(""))
     	{
+    		logger.debug("recieved callback post for project [ {} ]", projectKey);
 	    	if (repositoryUrl==null)
 	    	{
-	    		// this is most likely post from bitbucket.org
+	    		// this is most likely post from bitbucket.org 
 	    		JSONObject jsonPayload = new JSONObject(payload);
 	    		String owner = jsonPayload.getJSONObject("repository").getString("owner");
 	    		String slug = jsonPayload.getJSONObject("repository").getString("slug");
 	    		repositoryUrl = "https://bitbucket.org/"+owner+"/"+slug;
 	    	}
-	    	
-	    	List<Changeset> changesets = globalRepositoryManager.parsePayload(projectKey, repositoryUrl, payload);
-			synchronizer.synchronize(projectKey, repositoryUrl, changesets);
+	    	SourceControlRepository repo = backwardCompability.getRepository(projectKey, repositoryUrl);
+	    	List<Changeset> changesets = globalRepositoryManager.parsePayload(repo, payload);
+	    	synchronizer.synchronize(repo, changesets);
         }
 
         return "postcommit";
-    }
+	}
 
-    public String getValidations()
+	public String getValidations()
     {
         return this.validations;
     }
@@ -88,16 +107,6 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     public String getProjectKey()
     {
         return projectKey;
-    }
-
-    public void setRevision(String value)
-    {
-        this.revision = value;
-    }
-
-    public String getRevision()
-    {
-        return revision;
     }
 
     public void setPayload(String value)

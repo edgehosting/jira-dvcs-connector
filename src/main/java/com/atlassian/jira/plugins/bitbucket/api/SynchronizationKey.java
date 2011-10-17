@@ -7,51 +7,41 @@ import java.util.List;
  */
 public class SynchronizationKey
 {
-    private final String projectKey;
-    private final String repositoryUrl;
     private final List<Changeset> changesets;
+	private final SourceControlRepository repository;
 
-    public SynchronizationKey(String projectKey, String repositoryUri, List<Changeset> changesets)
+    public SynchronizationKey(SourceControlRepository repository, List<Changeset> changesets)
     {
-        this.projectKey = projectKey;
-        this.repositoryUrl = repositoryUri;
+        this.repository = repository;
         this.changesets = changesets;
     }
 
-    public SynchronizationKey(String projectKey, String repositoryUrl)
+    public SynchronizationKey(SourceControlRepository repository)
     {
-        this.projectKey = projectKey;
-        this.repositoryUrl = repositoryUrl;
+        this.repository = repository;
         changesets = null;
     }
 
-    public String getProjectKey()
-    {
-        return projectKey;
-    }
+    public SourceControlRepository getRepository()
+	{
+		return repository;
+	}
 
-    public String getRepositoryUrl()
-    {
-        return repositoryUrl;
-    }
-
-    @Override
+	@Override
     public boolean equals(Object o)
     {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SynchronizationKey that = (SynchronizationKey) o;
         if (changesets != null ? !changesets.equals(that.changesets) : that.changesets != null) return false;
-        if (!projectKey.equals(that.projectKey)) return false;
-        if (!repositoryUrl.equals(that.repositoryUrl)) return false;
+        if (!repository.equals(that.repository)) return false;
         return true;
     }
 
     @Override
     public int hashCode()
     {
-        int result = projectKey.hashCode();
-        result = 31 * result + repositoryUrl.hashCode();
+        int result = repository.hashCode();
         result = 31 * result + (changesets != null ? changesets.hashCode() : 0);
         return result;
     }
@@ -61,8 +51,8 @@ public class SynchronizationKey
         return changesets;
     }
 
-    public boolean matches(String projectKey, String repositoryUrl)
+    public boolean matches(SourceControlRepository repository)
     {
-        return this.projectKey.equals(projectKey) && this.repositoryUrl.equals(repositoryUrl);
+        return this.repository.equals(repository);
     }
 }

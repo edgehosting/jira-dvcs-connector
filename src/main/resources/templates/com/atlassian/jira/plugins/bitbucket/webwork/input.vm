@@ -10,22 +10,21 @@
 
     <script type="text/javascript">
 
-        var url = '$textutils.htmlEncode($action.getURL())';
-        var projectKey = '$textutils.htmlEncode($action.getProjectKey())';
+        var repoId = '$action.getRepoId()';
         var syncComplete = false;
 
         // Function is located in velocity template not the global bitbucket.js include as
         // we need to dynamically insert URLs
-        function forceSync(url, projectKey){
+        function forceSync(repoId){
             AJS.$('#gh_messages').css('display','block');
             AJS.$('#connector_sync_message').html("");
             AJS.$('#connector_sync_status').html("");
 
-            AJS.$('#connector_sync_message').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&url=' + url + '&projectKey=' + projectKey + '&atl_token=$atl_token');
+            AJS.$('#connector_sync_message').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&repoId=' + repoId + '&atl_token=$atl_token');
 
             window.setInterval(function(){
                 if(syncComplete == false){
-                    AJS.$('#connector_sync_status').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&url=' + url + '&projectKey=' + projectKey + '&atl_token=$atl_token');
+                    AJS.$('#connector_sync_status').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&repoId=' + repoId + '&atl_token=$atl_token');
                 }
             }, 1000);
         }
@@ -149,7 +148,7 @@
             #if ($action.getMode() == 'single')
                 Existing Repositories Linked to $textutils.htmlEncode($action.getProjectName())
             #else
-                Bulk Configure Bitbucket Repositoriesaa
+                Bulk Configure Bitbucket Repositories
             #end
  		</h3>
 
@@ -163,16 +162,15 @@
                 <tr> <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$encodedProjectName</div></td> </tr>
                 <tr> <th>Repository URL</th> <th>Key</th> <th>Operations</th> </tr>
                 #foreach ($repository in $action.getProjectRepositories($projectKey))
-                    #set($repositoryUrl = $repository.getUrl())
-                    #set($urlEncodedRepositoryUrl = $action.encodeUrl($repositoryUrl))
+                    #set($repoId = $repository.getId())
                     #set($encodedMode = $textutils.htmlEncode($action.getMode()))
                     <tr>
-                        <td><a href="$textutils.htmlEncode($repositoryUrl)" target="_new">$textutils.htmlEncode($repositoryUrl)</a></td>
+                        <td><a href="$textutils.htmlEncode($repository.url)" target="_new">$textutils.htmlEncode($repository.url)</a></td>
                         <td>$projectKey</td>
                         <td width="260px">
-                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$urlEncodedRepositoryUrl&projectKey=$projectKey&nextAction=ForceSync&mode=$encodedMode&atl_token=$atl_token">Force Sync</a> |
-                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$urlEncodedRepositoryUrl&projectKey=$projectKey&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
-                            <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$urlEncodedRepositoryUrl&projectKey=$projectKey&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
+                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repoId=$repoId&nextAction=ForceSync&mode=$encodedMode&atl_token=$atl_token">Force Sync</a> |
+                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repoId=$repoId&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
+                            <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&repoId=$repoId&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
                         </td>
                     </tr>
                 #end

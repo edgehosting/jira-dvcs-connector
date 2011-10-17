@@ -9,6 +9,7 @@ import java.util.concurrent.Future;
 
 import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.atlassian.util.concurrent.BlockingReference;
@@ -90,9 +91,9 @@ public class DefaultProgress implements Progress
         return key;
     }
 
-    public boolean matches(String projectKey, String repositoryUrl)
+    public boolean matches(SourceControlRepository repository)
     {
-        return key.matches(projectKey, repositoryUrl);
+        return key.matches(repository);
     }
 
     private Map<String, Object> createMap()

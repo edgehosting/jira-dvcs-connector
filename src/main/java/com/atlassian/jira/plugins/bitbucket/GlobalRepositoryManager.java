@@ -3,8 +3,12 @@ package com.atlassian.jira.plugins.bitbucket;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping2;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
@@ -18,9 +22,11 @@ import com.google.common.base.Function;
 public class GlobalRepositoryManager implements RepositoryManager
 {
 	public RepositoryManager[] repositoryManagers;
+	private final RepositoryPersister repositoryPersister;
 
-	public GlobalRepositoryManager(RepositoryManager... repositoryManagers)
+	public GlobalRepositoryManager(RepositoryPersister repositoryPersister, RepositoryManager... repositoryManagers)
 	{
+		this.repositoryPersister = repositoryPersister;
 		this.repositoryManagers = repositoryManagers;
 	}
 	
@@ -34,6 +40,17 @@ public class GlobalRepositoryManager implements RepositoryManager
 			}
 		}
 		throw new IllegalArgumentException("No repository manager found for given url ["+url+"]");
+	}
+	
+	private RepositoryManager getManagerByRepoId(int id)
+	{
+		ProjectMapping2 repository = repositoryPersister.getRepository(id);
+		if (repository == null)
+			throw new IllegalArgumentException("No repository with id = '"+id+"' found");
+		String repositoryUrl = repository.getRepositoryUrl();
+		if (StringUtils.isEmpty(repositoryUrl))
+			throw new IllegalArgumentException("The url for repository ["+id+"] is empty");
+		return getManagerForUrl(repositoryUrl);
 	}
 	
 	public boolean canHandleUrl(String url)
@@ -64,11 +81,11 @@ public class GlobalRepositoryManager implements RepositoryManager
     	return allRepositories;
 	}
 
-	public SourceControlRepository getRepository(String projectKey, String repositoryUrl)
+	
+	public SourceControlRepository getRepository(int id)
 	{
-		return getManagerForUrl(repositoryUrl).getRepository(projectKey, repositoryUrl);
+		return getManagerByRepoId(id).getRepository(id);
 	}
-
 	public List<Changeset> getChangesets(final String issueKey)
 	{
 		List<Changeset> allChangesets = new ArrayList<Changeset>();
@@ -79,15 +96,15 @@ public class GlobalRepositoryManager implements RepositoryManager
     	return allChangesets;
 	}
 
-	public void removeRepository(String projectKey, String url)
+	public void removeRepository(int id)
 	{
-		getManagerForUrl(url).removeRepository(projectKey, url);
+		getManagerByRepoId(id).removeRepository(id);
 	};
 
 
 	public void addChangeset(String issueId, Changeset changeset)
 	{
-		getManagerForUrl(changeset.getRepositoryUrl()).addChangeset(issueId, changeset);
+		getManagerByRepoId(changeset.getRepositoryId()).addChangeset(issueId, changeset);
 	}
 
 	public SourceControlUser getUser(String repositoryUrl, String username)
@@ -97,13 +114,13 @@ public class GlobalRepositoryManager implements RepositoryManager
 
 	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, Function<SynchronizationKey, Progress> progressProvider)
 	{
-		String repositoryUrl = key.getRepositoryUrl();
+		String repositoryUrl = key.getRepository().getUrl();
 		return getManagerForUrl(repositoryUrl).getSynchronisationOperation(key, progressProvider);
 	}
 
-	public List<Changeset> parsePayload(String projectKey, String repositoryUrl, String payload)
+	public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
 	{
-		return getManagerForUrl(repositoryUrl).parsePayload(projectKey, repositoryUrl, payload);
+		return getManagerForUrl(repository.getUrl()).parsePayload(repository, payload);
 	}
 
 	public String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset)

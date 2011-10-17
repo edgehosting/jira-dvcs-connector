@@ -38,8 +38,19 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String validations = "";
     private String messages = "";
     private String redirectURL = "";
+    private int repoId;
 
-    private final Synchronizer synchronizer;
+    public int getRepoId()
+	{
+		return repoId;
+	}
+
+	public void setRepoId(int repoId)
+	{
+		this.repoId = repoId;
+	}
+
+	private final Synchronizer synchronizer;
     private List<DefaultProgress> defaultProgress;
 
 	private final RepositoryManager globalRepositoryManager;
@@ -54,7 +65,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     protected void doValidation()
     {
 
-        if (!globalRepositoryManager.canHandleUrl(url))
+        if (!globalRepositoryManager.canHandleUrl(url) && nextAction.equals("AddRepository"))
         {
             addErrorMessage("URL must be for a valid repository.");
             validations = "URL must be for a valid repository.";
@@ -77,7 +88,8 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
             {
                 if (!repoVisibility.equals("private") || (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword)))
                 {
-                	globalRepositoryManager.addRepository(projectKey, url, bbPassword, bbPassword);
+                	SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, bbPassword, bbPassword);
+                	repoId = repo.getId();
                     postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&repositoryUrl=" + encodeUrl(url);
                     nextAction = "ForceSync";
                 }
@@ -90,13 +102,14 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("DeleteRepository"))
             {
-            	globalRepositoryManager.removeRepository(projectKey, url);
+            	globalRepositoryManager.removeRepository(repoId);
             }
 
             if (nextAction.equals("CurrentSyncStatus"))
             {
                 defaultProgress = new ArrayList<DefaultProgress>();
-                Iterables.addAll(defaultProgress, synchronizer.getProgress(projectKey, url));
+                SourceControlRepository repository = globalRepositoryManager.getRepository(repoId);
+                Iterables.addAll(defaultProgress, synchronizer.getProgress(repository));
                 return "syncstatus";
             }
 
@@ -109,11 +122,13 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
         return INPUT;
     }
+    
 
     private void syncRepository() throws MalformedURLException
     {
-        logger.debug("sync [ {} ] for project [ {} ]", url, projectKey);
-        synchronizer.synchronize(projectKey, url);
+        logger.debug("sync repository [ {} ] ", repoId);
+        SourceControlRepository repository = globalRepositoryManager.getRepository(repoId);
+        synchronizer.synchronize(repository);
     }
     
     public List<Project> getProjects()

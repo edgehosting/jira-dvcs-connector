@@ -3,8 +3,12 @@ package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 import java.text.MessageFormat;
 import java.util.List;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 
 /**
@@ -24,14 +28,14 @@ public class DefaultBitbucketChangeset implements Changeset
     private final List<String> parents;
     private final List<ChangesetFile> files;
 
-	private final String repositoryUrl;
+	private final int repositoryId;
 
-    public DefaultBitbucketChangeset(String repositoryUrl, 
+    public DefaultBitbucketChangeset( int repositoryId, 
                                      String node, String rawAuthor, String author, String timestamp,
                                      String rawNode, String branch, String message, String revision,
                                      List<String> parents, List<ChangesetFile> files)
     {
-		this.repositoryUrl = repositoryUrl;
+		this.repositoryId = repositoryId;
         this.node = node;
         this.rawAuthor = rawAuthor;
         this.author = author;
@@ -44,9 +48,9 @@ public class DefaultBitbucketChangeset implements Changeset
         this.files = files;
     }
 
-    public String getRepositoryUrl()
+    public int getRepositoryId()
     {
-    	return repositoryUrl;
+    	return repositoryId;
     }
 
 	public String getNode()
@@ -99,9 +103,9 @@ public class DefaultBitbucketChangeset implements Changeset
         return revision;
     }
 
-    public String getCommitURL()
+    public String getCommitURL(SourceControlRepository repository)
     {
-    	RepositoryUri uri = RepositoryUri.parse(repositoryUrl);
+    	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
         return MessageFormat.format(COMMIT_URL_PATTERN, uri.getOwner(), uri.getSlug(), node);
     }
 
@@ -113,36 +117,36 @@ public class DefaultBitbucketChangeset implements Changeset
 
         DefaultBitbucketChangeset that = (DefaultBitbucketChangeset) o;
 
-        if (revision != that.revision) return false;
-        if (!author.equals(that.author)) return false;
-        if (!branch.equals(that.branch)) return false;
-        if (!files.equals(that.files)) return false;
-        if (!message.equals(that.message)) return false;
-        if (!node.equals(that.node)) return false;
-        if (!parents.equals(that.parents)) return false;
-        if (!rawAuthor.equals(that.rawAuthor)) return false;
-        if (!rawNode.equals(that.rawNode)) return false;
-        if (!repositoryUrl.equals(that.repositoryUrl)) return false;
-        if (!timestamp.equals(that.timestamp)) return false;
-
-        return true;
+        return new EqualsBuilder()
+        	.append(revision, that.revision)
+        	.append(author, that.author)
+			.append(branch, that.branch)
+			.append(files, that.files)
+			.append(message, that.message)
+			.append(node, that.node)
+			.append(parents,that.parents)
+			.append(rawAuthor,that.rawAuthor)
+			.append(rawNode, that.rawNode)
+			.append(repositoryId, that.repositoryId)
+			.append(timestamp, that.timestamp)
+			.isEquals();
     }
 
     @Override
     public int hashCode()
     {
-        int result = repositoryUrl.hashCode();
-        result = 31 * result + node.hashCode();
-        result = 31 * result + rawAuthor.hashCode();
-        result = 31 * result + author.hashCode();
-        result = 31 * result + timestamp.hashCode();
-        result = 31 * result + rawNode.hashCode();
-        result = 31 * result + branch.hashCode();
-        result = 31 * result + message.hashCode();
-        result = 31 * result + revision.hashCode();
-        result = 31 * result + parents.hashCode();
-        result = 31 * result + files.hashCode();
-        return result;
+    	return new HashCodeBuilder()        	
+	    	.append(revision)
+	    	.append(author)
+			.append(branch)
+			.append(files)
+			.append(message)
+			.append(node)
+			.append(parents)
+			.append(rawAuthor)
+			.append(rawNode)
+			.append(repositoryId)
+			.append(timestamp).hashCode();
     }
 
 }

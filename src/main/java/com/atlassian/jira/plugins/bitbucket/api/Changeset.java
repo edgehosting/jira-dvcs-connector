@@ -9,7 +9,7 @@ import java.util.List;
 public interface Changeset
 {
 	
-	public String getRepositoryUrl();
+	public int getRepositoryId();
 	
     public String getNode();
 
@@ -31,5 +31,5 @@ public interface Changeset
 
     public String getRevision();
 
-    public String getCommitURL();
+    public String getCommitURL(SourceControlRepository repository);
 }

@@ -82,12 +82,12 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
 			followingChangset = null;
             if (list.length()>PAGE_SIZE)
             {
-            	followingChangset = BitbucketChangesetFactory.parse(repository.getUrl(), list.getJSONObject(0));
+            	followingChangset = BitbucketChangesetFactory.parse(repository.getId(), list.getJSONObject(0));
             }
             int startIndex = followingChangset==null?0:1;
             for (int i = startIndex; i < Math.min(list.length(), PAGE_SIZE+1); i++)
             {
-            	changesets.add(BitbucketChangesetFactory.parse(repository.getUrl(), list.getJSONObject(i)));
+            	changesets.add(BitbucketChangesetFactory.parse(repository.getId(), list.getJSONObject(i)));
             }
             // get the changesets in the correct order
             Collections.reverse(changesets);

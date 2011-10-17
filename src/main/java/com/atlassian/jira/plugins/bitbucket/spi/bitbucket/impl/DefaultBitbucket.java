@@ -50,7 +50,7 @@ public class DefaultBitbucket implements BitbucketCommunicator
     {
         try
         {
-			return BitbucketChangesetFactory.parse(repository.getUrl(), new JSONObject(bitbucketConnection.getChangeset(repository, id)));
+			return BitbucketChangesetFactory.parse(repository.getId(), new JSONObject(bitbucketConnection.getChangeset(repository, id)));
         }
         catch (JSONException e)
         {

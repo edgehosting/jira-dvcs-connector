@@ -2,7 +2,7 @@
 
 window.onload = function(){
     if(AJS.$('#gh_messages').size() > 0){
-        forceSync(url, projectKey);
+        forceSync(repoId);
     }
 
     // Displays proper styling on JIRA Studio for Left hand navigation selection

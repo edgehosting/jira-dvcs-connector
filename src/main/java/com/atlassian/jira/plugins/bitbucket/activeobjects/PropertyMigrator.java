@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.activeobjects;
 
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
+import com.google.common.collect.Maps;
 
 /**
  */
@@ -25,11 +27,14 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
     private final ProjectManager projectManager;
     private final BitbucketProjectSettings settings;
 
+	private final ActiveObjects activeObjects;
 
-    public PropertyMigrator(ProjectManager projectManager, BitbucketProjectSettings settings)
+
+    public PropertyMigrator(ProjectManager projectManager, BitbucketProjectSettings settings, ActiveObjects activeObjects)
     {
         this.projectManager = projectManager;
         this.settings = settings;
+		this.activeObjects = activeObjects;
     }
 
     public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
@@ -56,7 +61,13 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
 
                 String repositoryUrl = RepositoryUri.parse(repository).getRepositoryUrl(); // re-convert the url in case it's in short format "owner/slug";
                 logger.debug("migrate repository [ {} ]", repositoryUrl);
-                repositoryPersister.addRepository(projectKey, repositoryUrl, username, password);
+                Map<String, Object> map = Maps.newHashMap();
+                map.put("PROJECT_KEY", projectKey);
+                map.put("REPOSITORY_URI", repositoryUrl);
+                map.put("USERNAME", username);
+                map.put("PASSWORD", password);
+                activeObjects.create(ProjectMapping.class, map);
+//                repositoryPersister.addRepository(projectKey, repositoryUrl, username, password);
                 // After addding repository we should synchronise now. 
                 // Synchronisation can be triggered from RepositoryManager, 
                 // but injecting it into this class doesn't work.

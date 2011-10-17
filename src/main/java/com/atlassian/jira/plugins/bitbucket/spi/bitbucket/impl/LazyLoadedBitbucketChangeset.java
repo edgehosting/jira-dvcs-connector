@@ -39,6 +39,11 @@ public class LazyLoadedBitbucketChangeset implements Changeset
         return lazyReference.get();
     }
 
+    public int getRepositoryId()
+    {
+    	return repository.getId();
+    }
+
     public String getNode()
     {
         return nodeId;
@@ -88,13 +93,8 @@ public class LazyLoadedBitbucketChangeset implements Changeset
     {
         return getBitbucketChangeset().getRevision();
     }
-    
-	public String getRepositoryUrl()
-	{
-		return repository.getUrl();
-	}
 
-    public String getCommitURL()
+    public String getCommitURL(SourceControlRepository repository)
     {
     	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
         return MessageFormat.format(DefaultBitbucketChangeset.COMMIT_URL_PATTERN, uri.getOwner(), uri.getSlug(), nodeId);

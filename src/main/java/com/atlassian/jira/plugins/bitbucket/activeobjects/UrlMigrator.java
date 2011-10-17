@@ -34,13 +34,15 @@ public class UrlMigrator implements ActiveObjectsUpgradeTask
 				projectMapping.setRepositoryUri(fixedUri.getOwner()+"/"+fixedUri.getSlug());
 				projectMapping.save();
 			}
-
-	        // re-synchronise
-	        for (ProjectMapping projectMapping : projectMappings)
-	        {
-	        	synchronizer.synchronize(projectMapping.getProjectKey(), RepositoryUri.parse(projectMapping.getRepositoryUri()).getRepositoryUrl());
-	        }
 	        
+//			Hmm Sync will not work - data are in old tables
+//	        // re-synchronise
+//	        for (ProjectMapping projectMapping : projectMappings)
+//	        {
+//	        	new DefaultSourceControlRepository(0, null, null, null, null)
+//	        	synchronizer.synchronize(projectMapping.getID());
+//	        }
+//	        
 	        logger.debug("completed url migration");
 	    }
 

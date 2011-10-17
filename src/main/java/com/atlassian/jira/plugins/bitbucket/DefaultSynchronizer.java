@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
@@ -80,14 +81,14 @@ public class DefaultSynchronizer implements Synchronizer
         this.coordinator = new Coordinator(executorService, templateRenderer);
     }
 
-    public void synchronize(String projectKey, String repositoryUrl)
+    public void synchronize(SourceControlRepository repository)
     {
-        coordinator.operations.get(new SynchronizationKey(projectKey, repositoryUrl));
+        coordinator.operations.get(new SynchronizationKey(repository));
     }
 
-    public void synchronize(String projectKey, String repositoryUrl, List<Changeset> changesets)
+    public void synchronize(SourceControlRepository repository, List<Changeset> changesets)
     {
-        coordinator.operations.get(new SynchronizationKey(projectKey, repositoryUrl, changesets));
+        coordinator.operations.get(new SynchronizationKey(repository, changesets));
     }
 
     public Iterable<DefaultProgress> getProgress()
@@ -95,13 +96,13 @@ public class DefaultSynchronizer implements Synchronizer
         return coordinator.operations.values();
     }
 
-    public Iterable<DefaultProgress> getProgress(final String projectKey, final String repositoryUrl)
+    public Iterable<DefaultProgress> getProgress(final SourceControlRepository repository)
     {
         return Iterables.filter(coordinator.operations.values(), new Predicate<DefaultProgress>()
         {
             public boolean apply(DefaultProgress input)
             {
-                return input.matches(projectKey, repositoryUrl);
+                return input.matches(repository);
             }
         });
     }

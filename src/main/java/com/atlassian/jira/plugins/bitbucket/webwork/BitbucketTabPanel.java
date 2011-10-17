@@ -40,8 +40,7 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
             for (Changeset changeset : globalRepositoryManager.getChangesets(issueId))
             {
                 logger.debug("found changeset [ {} ] on issue [ {} ]", changeset.getNode(), issueId);
-                String projectKey = issue.getProjectObject().getKey();
-				SourceControlRepository repository = globalRepositoryManager.getRepository(projectKey, changeset.getRepositoryUrl());
+				SourceControlRepository repository = globalRepositoryManager.getRepository(changeset.getRepositoryId());
 				String changesetAsHtml = globalRepositoryManager.getHtmlForChangeset(repository, changeset);
                 bitbucketActions.add(new GenericMessageAction(changesetAsHtml));
             }

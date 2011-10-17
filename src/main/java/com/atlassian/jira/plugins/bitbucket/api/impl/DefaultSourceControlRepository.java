@@ -54,10 +54,9 @@ public class DefaultSourceControlRepository implements SourceControlRepository
 		if (this==obj) return true;
 		if (this.getClass()!=obj.getClass()) return false;
 		DefaultSourceControlRepository that = (DefaultSourceControlRepository) obj;
-		new EqualsBuilder().append(id, that.id).append(url, that.url)
+		return new EqualsBuilder().append(id, that.id).append(url, that.url)
 			.append(projectKey, that.projectKey).append(username, that.username)
-			.append(password, that.password);
-		return super.equals(obj);
+			.append(password, that.password).isEquals();
 	}
 	
 	@Override
