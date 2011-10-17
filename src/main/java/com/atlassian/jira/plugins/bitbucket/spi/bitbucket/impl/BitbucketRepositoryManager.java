@@ -201,7 +201,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
 	        Random randDivID = new Random(System.currentTimeMillis());
 
 	        // Sort and compose all files
-	        Iterator it = mapFiles.keySet().iterator();
+	        Iterator<String> it = mapFiles.keySet().iterator();
 	        Object obj;
 
 	        String htmlHiddenDiv = "";

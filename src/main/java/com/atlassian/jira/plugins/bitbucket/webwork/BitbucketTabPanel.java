@@ -18,6 +18,7 @@ import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.opensymphony.user.User;
 
+@SuppressWarnings("deprecation")
 public class BitbucketTabPanel extends AbstractIssueTabPanel
 {
     private static final GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction("");
@@ -56,7 +57,7 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
         return bitbucketActions;
     }
 
-    public boolean showPanel(Issue issue, User user)
+	public boolean showPanel(Issue issue, User user)
     {
         return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user) &&
                 !globalRepositoryManager.getRepositories(issue.getProjectObject().getKey()).isEmpty();

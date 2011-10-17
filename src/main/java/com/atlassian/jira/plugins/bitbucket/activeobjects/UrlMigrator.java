@@ -6,20 +6,15 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
-import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 
 // removing branch information from the url
+@SuppressWarnings("deprecation")
 public class UrlMigrator implements ActiveObjectsUpgradeTask
 {
 	    private final Logger logger = LoggerFactory.getLogger(UrlMigrator.class);
-		private final Synchronizer synchronizer;
 
-		public UrlMigrator(Synchronizer synchronizer)
-		{
-			this.synchronizer = synchronizer;
-		}
 
 		public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
 	    {

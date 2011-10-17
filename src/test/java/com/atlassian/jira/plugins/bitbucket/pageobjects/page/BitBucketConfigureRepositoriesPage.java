@@ -47,7 +47,7 @@ public class BitBucketConfigureRepositoriesPage implements Page
     }
 
     @WaitUntil
-    private void waitUntilReady()
+    public void waitUntilReady()
     {
         Poller.waitUntilTrue(addRepositoryButton.timed().isPresent());
     }

@@ -11,8 +11,6 @@ import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
@@ -20,6 +18,7 @@ import com.google.common.collect.Maps;
 
 /**
  */
+@SuppressWarnings("deprecation")
 public class PropertyMigrator implements ActiveObjectsUpgradeTask
 {
     private final Logger logger = LoggerFactory.getLogger(PropertyMigrator.class);
@@ -27,14 +26,11 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
     private final ProjectManager projectManager;
     private final BitbucketProjectSettings settings;
 
-	private final ActiveObjects activeObjects;
 
-
-    public PropertyMigrator(ProjectManager projectManager, BitbucketProjectSettings settings, ActiveObjects activeObjects)
+    public PropertyMigrator(ProjectManager projectManager, BitbucketProjectSettings settings)
     {
         this.projectManager = projectManager;
         this.settings = settings;
-		this.activeObjects = activeObjects;
     }
 
     public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
@@ -44,9 +40,6 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
         //noinspection unchecked
         activeObjects.migrate(IssueMapping.class, ProjectMapping.class);
 
-        // why DI doesn't work for this?
-    	RepositoryPersister repositoryPersister = new DefaultRepositoryPersister(activeObjects);
-    	
         List<Project> projects = projectManager.getProjectObjects();
         for (Project project : projects)
         {

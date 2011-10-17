@@ -6,27 +6,30 @@ import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.config.properties.PropertiesManager;
 import com.atlassian.jira.plugin.projectoperation.AbstractPluggableProjectOperation;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.project.Project;
+import com.atlassian.sal.api.ApplicationProperties;
 import com.opensymphony.user.User;
 
+@SuppressWarnings("deprecation")
 public class ProjectSettings extends AbstractPluggableProjectOperation
 {
     private static final Pattern BITBUCKET_NAME_PATTERN = Pattern.compile(".*bitbucket.org/([^/]+/[^/]+)(/default)?");
 	private final RepositoryManager globalRepositoryManager;
+	private final ApplicationProperties applicationProperties;
 
-    public ProjectSettings(@Qualifier("globalRepositoryManager") RepositoryManager repositoryManager)
+    public ProjectSettings(@Qualifier("globalRepositoryManager") RepositoryManager repositoryManager, ApplicationProperties applicationProperties)
     {
         this.globalRepositoryManager = repositoryManager;
+		this.applicationProperties = applicationProperties;
     }
 
     public String getHtml(final Project project, final User user)
     {
 
-        String baseURL = PropertiesManager.getInstance().getPropertySet().getString("jira.baseurl");
+        String baseURL = applicationProperties.getBaseUrl();
 
         List<SourceControlRepository> repositories = globalRepositoryManager.getRepositories(project.getKey());
         StringBuilder result = new StringBuilder();

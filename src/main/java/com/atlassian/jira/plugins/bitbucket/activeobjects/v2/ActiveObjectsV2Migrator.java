@@ -13,6 +13,7 @@ import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
 import com.google.common.collect.Maps;
 
+@SuppressWarnings("deprecation")
 public class ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
 {
     private final Logger logger = LoggerFactory.getLogger(ActiveObjectsV2Migrator.class);
