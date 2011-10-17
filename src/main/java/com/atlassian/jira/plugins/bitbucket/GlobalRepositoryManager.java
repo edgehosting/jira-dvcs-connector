@@ -102,9 +102,9 @@ public class GlobalRepositoryManager implements RepositoryManager
 	};
 
 
-	public void addChangeset(String issueId, Changeset changeset)
+	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
 	{
-		getManagerByRepoId(changeset.getRepositoryId()).addChangeset(issueId, changeset);
+		getManagerForUrl(repository.getUrl()).addChangeset(repository, issueId, changeset);
 	}
 
 	public SourceControlUser getUser(String repositoryUrl, String username)

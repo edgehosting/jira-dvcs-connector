@@ -61,7 +61,7 @@ public class TestDefaultSynchronizer
 
 		new DefaultSynchronizer(Executors.newSingleThreadExecutor(), templateRenderer, repositoryManager)
 				.synchronize(repository);
-		verify(repositoryManager, times(1)).addChangeset("PRJ-1", changeset);
+		verify(repositoryManager, times(1)).addChangeset(repository, "PRJ-1", changeset);
 	}
 
 }

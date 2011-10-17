@@ -127,7 +127,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
         // TODO Should we also delete IssueMappings? Yes we should.
 	}
 
-	public void addChangeset(String issueId, Changeset changeset)
+	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
 	{
 		repositoryPersister.addChangeset(issueId, changeset);
 	}

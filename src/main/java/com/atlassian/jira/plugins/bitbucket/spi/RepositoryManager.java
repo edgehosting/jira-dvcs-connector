@@ -29,7 +29,7 @@ public interface RepositoryManager
 
 	public void removeRepository(int id);
 
-	public void addChangeset(String issueId, Changeset changeset);
+	public void addChangeset(SourceControlRepository sourceControlRepository, String issueId, Changeset changeset);
 
 	public SourceControlUser getUser(String repositoryUrl, String username);
 
