@@ -29,7 +29,5 @@ public interface Changeset
 
     public List<ChangesetFile> getFiles();
 
-    public String getRevision();
-
     public String getCommitURL(SourceControlRepository repository);
 }

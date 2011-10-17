@@ -89,11 +89,6 @@ public class LazyLoadedBitbucketChangeset implements Changeset
         return getBitbucketChangeset().getFiles();
     }
 
-    public String getRevision()
-    {
-        return getBitbucketChangeset().getRevision();
-    }
-
     public String getCommitURL(SourceControlRepository repository)
     {
     	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());

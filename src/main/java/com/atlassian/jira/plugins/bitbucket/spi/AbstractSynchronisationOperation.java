@@ -42,7 +42,7 @@ public abstract class AbstractSynchronisationOperation implements Synchronisatio
                     jiraCount ++;
                     String issueId = extractedIssue.toUpperCase();
                     repositoryManager.addChangeset(issueId, changeset);
-                    progressProvider.apply(key).inProgress(changeset.getRevision(), jiraCount);
+                    progressProvider.apply(key).inProgress(changeset.getNode(), jiraCount);
                 }
             }
         }

@@ -24,7 +24,6 @@ public class DefaultBitbucketChangeset implements Changeset
     private final String rawNode;
     private final String branch;
     private final String message;
-    private final String revision;
     private final List<String> parents;
     private final List<ChangesetFile> files;
 
@@ -32,7 +31,7 @@ public class DefaultBitbucketChangeset implements Changeset
 
     public DefaultBitbucketChangeset( int repositoryId, 
                                      String node, String rawAuthor, String author, String timestamp,
-                                     String rawNode, String branch, String message, String revision,
+                                     String rawNode, String branch, String message,
                                      List<String> parents, List<ChangesetFile> files)
     {
 		this.repositoryId = repositoryId;
@@ -43,7 +42,6 @@ public class DefaultBitbucketChangeset implements Changeset
         this.rawNode = rawNode;
         this.branch = branch;
         this.message = message;
-        this.revision = revision;
         this.parents = parents;
         this.files = files;
     }
@@ -98,11 +96,6 @@ public class DefaultBitbucketChangeset implements Changeset
         return files;
     }
 
-    public String getRevision()
-    {
-        return revision;
-    }
-
     public String getCommitURL(SourceControlRepository repository)
     {
     	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
@@ -118,7 +111,6 @@ public class DefaultBitbucketChangeset implements Changeset
         DefaultBitbucketChangeset that = (DefaultBitbucketChangeset) o;
 
         return new EqualsBuilder()
-        	.append(revision, that.revision)
         	.append(author, that.author)
 			.append(branch, that.branch)
 			.append(files, that.files)
@@ -136,7 +128,6 @@ public class DefaultBitbucketChangeset implements Changeset
     public int hashCode()
     {
     	return new HashCodeBuilder()        	
-	    	.append(revision)
 	    	.append(author)
 			.append(branch)
 			.append(files)

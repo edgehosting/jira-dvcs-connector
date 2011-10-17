@@ -56,7 +56,6 @@ public class BitbucketChangesetFactory
                     json.getString("raw_node"),
                     json.getString("branch"),
                     json.getString("message"),
-                    json.getString("revision"),
                     stringList(json.getJSONArray("parents")),
                     fileList(json.getJSONArray("files"))
             );
