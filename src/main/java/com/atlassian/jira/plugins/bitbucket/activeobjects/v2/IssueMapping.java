@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.bitbucket.activeobjects.v2;
 
 import net.java.ao.Entity;
 
-public interface IssueMapping2 extends Entity
+public interface IssueMapping extends Entity
 {
     int getRepositoryId();
 

@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.bitbucket.activeobjects.v2;
 
 import net.java.ao.Entity;
 
-public interface ProjectMapping2 extends Entity
+public interface ProjectMapping extends Entity
 {
     String getRepositoryUrl();
     String getProjectKey();

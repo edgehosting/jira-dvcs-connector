@@ -11,8 +11,8 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping2;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping2;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
@@ -43,10 +43,10 @@ public class BitbucketRepositoryManager implements RepositoryManager
 	private final Encryptor encryptor;
 	
 	/* Maps ProjectMapping to SourceControlRepository */
-	private final Function<ProjectMapping2, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = 
-			new Function<ProjectMapping2, SourceControlRepository>()
+	private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = 
+			new Function<ProjectMapping, SourceControlRepository>()
 			{
-				public SourceControlRepository apply(ProjectMapping2 pm)
+				public SourceControlRepository apply(ProjectMapping pm)
 				{
 					String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
 					return new DefaultSourceControlRepository(pm.getID(), RepositoryUri.parse(pm.getRepositoryUrl()).getRepositoryUrl(),
@@ -54,12 +54,12 @@ public class BitbucketRepositoryManager implements RepositoryManager
 				}
 			};
 
-	private final Function<IssueMapping2, Changeset> TO_CHANGESET = 
-			new Function<IssueMapping2, Changeset>()
+	private final Function<IssueMapping, Changeset> TO_CHANGESET = 
+			new Function<IssueMapping, Changeset>()
 			{
-				public Changeset apply(IssueMapping2 from)
+				public Changeset apply(IssueMapping from)
 				{
-					ProjectMapping2 pm = repositoryPersister.getRepository(from.getRepositoryId());
+					ProjectMapping pm = repositoryPersister.getRepository(from.getRepositoryId());
                     SourceControlRepository repository = TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 					return bitbucket.getChangeset(repository, from.getNode());
 				}
@@ -98,26 +98,26 @@ public class BitbucketRepositoryManager implements RepositoryManager
         }
 
         String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
-        ProjectMapping2 pm = repositoryPersister.addRepository(projectKey, repositoryUrl, username, encryptedPassword);
+        ProjectMapping pm = repositoryPersister.addRepository(projectKey, repositoryUrl, username, encryptedPassword);
         return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 	}
 
 
 	public List<SourceControlRepository> getRepositories(String projectKey)
 	{
-		 List<ProjectMapping2> repositories = repositoryPersister.getRepositories(projectKey);
+		 List<ProjectMapping> repositories = repositoryPersister.getRepositories(projectKey);
 		 return Lists.transform(repositories, TO_SOURCE_CONTROL_REPOSITORY);
 	}
 	
 	public SourceControlRepository getRepository(int id)
 	{
-		ProjectMapping2 repository = repositoryPersister.getRepository(id);
+		ProjectMapping repository = repositoryPersister.getRepository(id);
 		return TO_SOURCE_CONTROL_REPOSITORY.apply(repository);
 	}
 
 	public List<Changeset> getChangesets(String issueKey)
 	{
-		List<IssueMapping2> issueMappings = repositoryPersister.getIssueMappings(issueKey);
+		List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey);
 		return Lists.transform(issueMappings, TO_CHANGESET);
 	}
 

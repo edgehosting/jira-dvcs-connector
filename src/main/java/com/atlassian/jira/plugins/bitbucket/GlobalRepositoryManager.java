@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping2;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
@@ -44,7 +44,7 @@ public class GlobalRepositoryManager implements RepositoryManager
 	
 	private RepositoryManager getManagerByRepoId(int id)
 	{
-		ProjectMapping2 repository = repositoryPersister.getRepository(id);
+		ProjectMapping repository = repositoryPersister.getRepository(id);
 		if (repository == null)
 			throw new IllegalArgumentException("No repository with id = '"+id+"' found");
 		String repositoryUrl = repository.getRepositoryUrl();

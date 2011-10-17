@@ -18,8 +18,8 @@
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping</entity>
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping</entity>
-        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping2</entity>
-        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping2</entity>
+        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping</entity>
+        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.UrlMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.Uri2UrlMigrator</upgradeTask>

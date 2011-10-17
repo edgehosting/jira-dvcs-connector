@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping2;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
@@ -28,9 +28,9 @@ public class BackwardCompabilityImpl implements BackwardCompability
 	}
 
 	/* Maps ProjectMapping to SourceControlRepository */
-	private final Function<ProjectMapping2, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping2, SourceControlRepository>()
+	private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping, SourceControlRepository>()
 	{
-		public SourceControlRepository apply(ProjectMapping2 pm)
+		public SourceControlRepository apply(ProjectMapping pm)
 		{
 			String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
 			return new DefaultSourceControlRepository(pm.getID(), RepositoryUri.parse(pm.getRepositoryUrl())
@@ -44,7 +44,7 @@ public class BackwardCompabilityImpl implements BackwardCompability
 		{
 			public SourceControlRepository doInTransaction()
 			{
-				ProjectMapping2[] mappings = activeObjects.find(ProjectMapping2.class, "PROJECT_KEY = ? and REPOSITORY_URL = ?", projectKey, repositoryUrl);
+				ProjectMapping[] mappings = activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ? and REPOSITORY_URL = ?", projectKey, repositoryUrl);
 				if (mappings.length == 0)
 				{
 					throw new SourceControlException("No repository with projectKey [" + projectKey + "] and url [" + repositoryUrl + "] found.");

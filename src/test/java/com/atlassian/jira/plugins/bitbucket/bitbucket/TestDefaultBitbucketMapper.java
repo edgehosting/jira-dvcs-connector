@@ -21,8 +21,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping2;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping2;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister;
@@ -43,9 +43,9 @@ public class TestDefaultBitbucketMapper
     @Mock
     BitbucketCommunicator bitbucket;
     @Mock
-    ProjectMapping2 projectMapping;
+    ProjectMapping projectMapping;
     @Mock
-    IssueMapping2 issueMapping;
+    IssueMapping issueMapping;
     @Mock
     Changeset changeset;
     @Mock
@@ -57,8 +57,8 @@ public class TestDefaultBitbucketMapper
         MockitoAnnotations.initMocks(this);
         when(projectMapping.getID()).thenReturn(SOME_ID);
         when(projectMapping.getRepositoryUrl()).thenReturn(URL);
-        when(activeObjects.find(ProjectMapping2.class, "PROJECT_KEY = ?", "JST")).thenReturn(new ProjectMapping2[]{projectMapping});
-        when(activeObjects.create(eq(ProjectMapping2.class), anyMap())).thenReturn(projectMapping);
+        when(activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ?", "JST")).thenReturn(new ProjectMapping[]{projectMapping});
+        when(activeObjects.create(eq(ProjectMapping.class), anyMap())).thenReturn(projectMapping);
         when(changeset.getBranch()).thenReturn("default");
         when(changeset.getNode()).thenReturn("1");
         when(changeset.getRepositoryId()).thenReturn(SOME_ID);
@@ -97,7 +97,7 @@ public class TestDefaultBitbucketMapper
     {
         new DefaultRepositoryPersister(activeObjects).
                 addRepository("JST", RepositoryUri.parse(URL).getRepositoryUrl(), null, null);
-        verify(activeObjects, times(1)).create(eq(ProjectMapping2.class),
+        verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
                     @Override
@@ -117,7 +117,7 @@ public class TestDefaultBitbucketMapper
     {
         new DefaultRepositoryPersister(activeObjects).
                 addRepository("JST", RepositoryUri.parse(URL).getRepositoryUrl(), "user", "pass");
-        verify(activeObjects, times(1)).create(eq(ProjectMapping2.class),
+        verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
                     @Override
@@ -138,7 +138,7 @@ public class TestDefaultBitbucketMapper
     {
     	new BitbucketRepositoryManager(new DefaultRepositoryPersister(activeObjects), bitbucket, encryptor, null)
     		.addRepository("JST", RepositoryUri.parse(URL).getRepositoryUrl(), "user", "pass");
-        verify(activeObjects, times(1)).create(eq(ProjectMapping2.class),
+        verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
                     @Override
@@ -155,12 +155,12 @@ public class TestDefaultBitbucketMapper
     @Test
     public void testRemoveRepositoryAlsoRemovesIssues()
     {
-		when(activeObjects.get(ProjectMapping2.class, SOME_ID)).thenReturn(projectMapping);
-		when(activeObjects.find(IssueMapping2.class, "REPOSITORY_ID = ?", SOME_ID)).thenReturn(new IssueMapping2[] { issueMapping });
+		when(activeObjects.get(ProjectMapping.class, SOME_ID)).thenReturn(projectMapping);
+		when(activeObjects.find(IssueMapping.class, "REPOSITORY_ID = ?", SOME_ID)).thenReturn(new IssueMapping[] { issueMapping });
 
 		new DefaultRepositoryPersister(activeObjects).removeRepository(SOME_ID);
-        verify(activeObjects, times(1)).get(ProjectMapping2.class, SOME_ID);
-		verify(activeObjects, times(1)).find(IssueMapping2.class, "REPOSITORY_ID = ?", SOME_ID);
+        verify(activeObjects, times(1)).get(ProjectMapping.class, SOME_ID);
+		verify(activeObjects, times(1)).find(IssueMapping.class, "REPOSITORY_ID = ?", SOME_ID);
         verify(activeObjects, times(1)).delete(projectMapping);
         verify(activeObjects, times(1)).delete(issueMapping);
     }
@@ -168,16 +168,16 @@ public class TestDefaultBitbucketMapper
     @Test
     public void testGetChangesets()
     {
-        when(activeObjects.find(ProjectMapping2.class, "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", URL))
-        		.thenReturn(new ProjectMapping2[]{projectMapping});
-        when(activeObjects.find(IssueMapping2.class, "ISSUE_ID = ?", "JST-1"))
-        		.thenReturn(new IssueMapping2[]{issueMapping});
+        when(activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", URL))
+        		.thenReturn(new ProjectMapping[]{projectMapping});
+        when(activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", "JST-1"))
+        		.thenReturn(new IssueMapping[]{issueMapping});
         when(issueMapping.getNode()).thenReturn("1");
         when(issueMapping.getRepositoryId()).thenReturn(SOME_ID);
         new DefaultRepositoryPersister(activeObjects).getIssueMappings("JST-1");
-//        verify(activeObjects, times(1)).find(ProjectMapping2.class,
+//        verify(activeObjects, times(1)).find(ProjectMapping.class,
 //                "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", "owner/slug");
-        verify(activeObjects, times(1)).find(IssueMapping2.class,
+        verify(activeObjects, times(1)).find(IssueMapping.class,
                 "ISSUE_ID = ?", "JST-1");
 //        verify(bitbucket, times(1)).getChangeset(argThat(new ArgumentMatcher<Authentication>()
 //        {
@@ -192,20 +192,20 @@ public class TestDefaultBitbucketMapper
     @Test
     public void testGetChangesetsOnAuthenticatedRepository()
     {
-        when(activeObjects.find(ProjectMapping2.class,
+        when(activeObjects.find(ProjectMapping.class,
                 "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                "JST", URL)).thenReturn(new ProjectMapping2[]{projectMapping});
-        when(activeObjects.find(IssueMapping2.class,
-                "ISSUE_ID = ?", "JST-1")).thenReturn(new IssueMapping2[]{issueMapping});
+                "JST", URL)).thenReturn(new ProjectMapping[]{projectMapping});
+        when(activeObjects.find(IssueMapping.class,
+                "ISSUE_ID = ?", "JST-1")).thenReturn(new IssueMapping[]{issueMapping});
         when(projectMapping.getUsername()).thenReturn("user");
         when(projectMapping.getPassword()).thenReturn("ssap");
         when(issueMapping.getNode()).thenReturn("1");
         when(issueMapping.getRepositoryId()).thenReturn(SOME_ID);
         new DefaultRepositoryPersister(activeObjects).getIssueMappings("JST-1");
-//        verify(activeObjects, times(1)).find(ProjectMapping2.class,
+//        verify(activeObjects, times(1)).find(ProjectMapping.class,
 //                "PROJECT_KEY = ? and REPOSITORY_URI = ?",
 //                "JST", "owner/slug");
-        verify(activeObjects, times(1)).find(IssueMapping2.class,
+        verify(activeObjects, times(1)).find(IssueMapping.class,
                 "ISSUE_ID = ?", "JST-1");
 //        verify(bitbucket, times(1)).getChangeset(argThat(new ArgumentMatcher<Authentication>()
 //        {
@@ -221,10 +221,10 @@ public class TestDefaultBitbucketMapper
     @Test
     public void testAddChangesetToSameBranch()
     {
-        when(activeObjects.get(ProjectMapping2.class,SOME_ID)).thenReturn(projectMapping);
+        when(activeObjects.get(ProjectMapping.class,SOME_ID)).thenReturn(projectMapping);
 
         new DefaultRepositoryPersister(activeObjects).addChangeset("JST-1", changeset);
-        verify(activeObjects, times(1)).create(eq(IssueMapping2.class),
+        verify(activeObjects, times(1)).create(eq(IssueMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
                     @Override

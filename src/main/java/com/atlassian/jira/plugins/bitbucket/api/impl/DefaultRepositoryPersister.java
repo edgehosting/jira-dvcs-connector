@@ -10,8 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping2;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping2;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -32,19 +32,19 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         this.activeObjects = activeObjects;
     }
 
-    public List<ProjectMapping2> getRepositories(final String projectKey)
+    public List<ProjectMapping> getRepositories(final String projectKey)
     {
-        return activeObjects.executeInTransaction(new TransactionCallback<List<ProjectMapping2>>()
+        return activeObjects.executeInTransaction(new TransactionCallback<List<ProjectMapping>>()
         {
-			public List<ProjectMapping2> doInTransaction()
+			public List<ProjectMapping> doInTransaction()
             {
-                ProjectMapping2[] mappings = activeObjects.find(ProjectMapping2.class, "PROJECT_KEY = ?", projectKey);
+                ProjectMapping[] mappings = activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ?", projectKey);
                 return Lists.newArrayList(mappings);
             }
         });
     }
 
-    public ProjectMapping2 addRepository(String projectKey, String repositoryUrl, String username, String password)
+    public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password)
     {
         // TODO don't create duplicate mapping
         final Map<String, Object> map = new HashMap<String, Object>();
@@ -55,11 +55,11 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             map.put("USERNAME", username);
             map.put("PASSWORD", password);
         }
-        return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping2>()
+        return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping>()
         {
-            public ProjectMapping2 doInTransaction()
+            public ProjectMapping doInTransaction()
             {
-        		return activeObjects.create(ProjectMapping2.class, map);
+        		return activeObjects.create(ProjectMapping.class, map);
             }
         });
     }
@@ -70,8 +70,8 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         {
             public Object doInTransaction()
             {
-                final ProjectMapping2 projectMapping = activeObjects.get(ProjectMapping2.class, id);
-                final IssueMapping2[] issueMappings = activeObjects.find(IssueMapping2.class, "REPOSITORY_ID = ?", id);
+                final ProjectMapping projectMapping = activeObjects.get(ProjectMapping.class, id);
+                final IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class, "REPOSITORY_ID = ?", id);
 
                 logger.debug("deleting project mapping [ {} ]", String.valueOf(id));
                 logger.debug("deleting [ {} ] issue mappings [ {} ]", new String[]{String.valueOf(issueMappings.length), String.valueOf(id)});
@@ -83,13 +83,13 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
 
-    public List<IssueMapping2> getIssueMappings(final String issueId)
+    public List<IssueMapping> getIssueMappings(final String issueId)
     {
-        return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping2>>()
+        return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
         {
-            public List<IssueMapping2> doInTransaction()
+            public List<IssueMapping> doInTransaction()
             {
-                IssueMapping2[] mappings = activeObjects.find(IssueMapping2.class, "ISSUE_ID = ?", issueId);
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", issueId);
                 return Lists.newArrayList(mappings);
             }
         });
@@ -104,7 +104,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 int repositoryId = changeset.getRepositoryId();
                 logger.debug("create issue mapping [ {} ] [ {} - {} ] ", new String[]{issueId, changeset.getNode(), changeset.getMessage()});
                 // delete existing
-                IssueMapping2[] mappings = activeObjects.find(IssueMapping2.class, "ISSUE_ID = ? and NODE = ?", issueId, changeset.getNode());
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ? and NODE = ?", issueId, changeset.getNode());
                 if (ArrayUtils.isNotEmpty(mappings))
 				{
 					activeObjects.delete(mappings);
@@ -114,18 +114,18 @@ public class DefaultRepositoryPersister implements RepositoryPersister
 				map.put("REPOSITORY_ID", repositoryId);
 				map.put("ISSUE_ID", issueId);
 				map.put("NODE", changeset.getNode());
-                return activeObjects.create(IssueMapping2.class, map);
+                return activeObjects.create(IssueMapping.class, map);
             }
         });
     }
     
-	public ProjectMapping2 getRepository(final int id)
+	public ProjectMapping getRepository(final int id)
 	{
-		return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping2>()
+		return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping>()
 		{
-			public ProjectMapping2 doInTransaction()
+			public ProjectMapping doInTransaction()
 			{
-				return activeObjects.get(ProjectMapping2.class, id);
+				return activeObjects.get(ProjectMapping.class, id);
 			}
 		});
 	}

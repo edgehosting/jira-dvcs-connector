@@ -23,8 +23,9 @@ public class ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
     {
         logger.debug("upgrade [ " + modelVersion + " ]");
 
-        activeObjects.migrate(IssueMapping.class, ProjectMapping.class, IssueMapping2.class, ProjectMapping2.class);
+        activeObjects.migrate(IssueMapping.class, ProjectMapping.class, com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping.class, com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping.class);
 
+        // get all ProjectMappings from v1 and store them as ProjectMappings v2
         ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class);
         for (ProjectMapping projectMapping : projectMappings)
         {
@@ -42,8 +43,9 @@ public class ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
                 map.put("USERNAME", username);
                 map.put("PASSWORD", password);
             }
-            activeObjects.create(ProjectMapping2.class, map);
+            activeObjects.create(com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping.class, map);
 
+            // for every ProjectMapping take all associated IssueMappings and migrate from v1 to v2
             IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class, "PROJECT_KEY = ? and REPOSITORY_URI = ?", projectKey, repositoryUrl);
             for (IssueMapping issueMapping : issueMappings)
             {
@@ -54,7 +56,7 @@ public class ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
             	map2.put("REPOSITORY_ID", repositoryId);
 				map2.put("NODE", node);
 				map2.put("ISSUE_ID", issueId);
-            	activeObjects.create(IssueMapping2.class, map2);
+            	activeObjects.create(com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping.class, map2);
             }
         }
         
