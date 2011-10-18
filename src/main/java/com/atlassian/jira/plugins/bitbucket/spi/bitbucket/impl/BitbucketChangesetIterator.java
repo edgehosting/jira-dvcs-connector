@@ -34,14 +34,14 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
 
     public boolean hasNext()
     {
-    	boolean pageHasMoreChansets = getCurrentPage().hasNext();
-        if (!pageHasMoreChansets && followingChangset!=null)
+    	boolean pageHasMoreChangesets = getCurrentPage().hasNext();
+        if (!pageHasMoreChangesets && followingChangset!=null)
         {
         	currentPage = readPage(followingChangset.getNode());
-            pageHasMoreChansets = getCurrentPage().hasNext();
+            pageHasMoreChangesets = getCurrentPage().hasNext();
         }
         
-        return pageHasMoreChansets;
+        return pageHasMoreChangesets;
     }
 
 	public Changeset next()
