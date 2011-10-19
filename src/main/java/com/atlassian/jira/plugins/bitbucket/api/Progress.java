@@ -4,4 +4,5 @@ public interface Progress
 {
 	public void inProgress(String revision, int jiraCount);
 	
+	public String render();
 }

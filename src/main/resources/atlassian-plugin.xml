@@ -16,8 +16,6 @@
     <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />
 
     <ao key="ao-module" name="Active Objects Module">
-        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping</entity>
-        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping</entity>
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping</entity>
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.PropertyMigrator</upgradeTask>
@@ -171,6 +169,10 @@
         <context>atl.general</context>
         <context>atl.admin</context>
     </web-resource>
+
+    <rest key="bitbucket-rest-resources" path="/bitbucket" version="1.0">
+        <description>REST Resources</description>
+    </rest>
 
 
 </atlassian-plugin>

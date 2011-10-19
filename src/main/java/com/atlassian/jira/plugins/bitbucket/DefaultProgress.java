@@ -118,4 +118,8 @@ public class DefaultProgress implements Progress
         }
     }
 
+	public String render()
+	{
+		return getProgress().render();
+	}
 }
