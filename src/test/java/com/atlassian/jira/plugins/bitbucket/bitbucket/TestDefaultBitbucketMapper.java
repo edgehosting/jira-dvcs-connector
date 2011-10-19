@@ -223,7 +223,7 @@ public class TestDefaultBitbucketMapper
     {
         when(activeObjects.get(ProjectMapping.class,SOME_ID)).thenReturn(projectMapping);
 
-        new DefaultRepositoryPersister(activeObjects).addChangeset("JST-1", changeset);
+        new DefaultRepositoryPersister(activeObjects).addChangeset("JST-1", changeset.getRepositoryId(), changeset.getNode());
         verify(activeObjects, times(1)).create(eq(IssueMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {

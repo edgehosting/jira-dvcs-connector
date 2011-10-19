@@ -95,16 +95,15 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
     
-    public void addChangeset(final String issueId, final Changeset changeset)
+    public void addChangeset(final String issueId, final int repositoryId, final String node)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
         {
             public Object doInTransaction()
             {
-                int repositoryId = changeset.getRepositoryId();
-                logger.debug("create issue mapping [ {} ] [ {} - {} ] ", new String[]{issueId, changeset.getNode(), changeset.getMessage()});
+                logger.debug("create issue mapping [ {} ] [ {} - {} ] ", new String[]{issueId, String.valueOf(repositoryId), node});
                 // delete existing
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ? and NODE = ?", issueId, changeset.getNode());
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ? and NODE = ?", issueId, node);
                 if (ArrayUtils.isNotEmpty(mappings))
 				{
 					activeObjects.delete(mappings);
@@ -113,7 +112,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
 				Map<String, Object> map = Maps.newHashMap();
 				map.put("REPOSITORY_ID", repositoryId);
 				map.put("ISSUE_ID", issueId);
-				map.put("NODE", changeset.getNode());
+				map.put("NODE", node);
                 return activeObjects.create(IssueMapping.class, map);
             }
         });

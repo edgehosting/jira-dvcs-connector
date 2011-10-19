@@ -123,7 +123,7 @@ public class RootResource
 
     @POST
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    @Path("/repositories/{id}/sync")
+    @Path("/repository/{id}/sync")
     public Response startRepositorySync(@PathParam("id") int id, @QueryParam("payload") String payload)
     {
     	SourceControlRepository repository = globalRepositoryManager.getRepository(id);

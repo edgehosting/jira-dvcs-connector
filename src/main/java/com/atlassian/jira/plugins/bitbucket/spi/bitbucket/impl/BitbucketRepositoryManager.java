@@ -129,7 +129,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
 
 	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
 	{
-		repositoryPersister.addChangeset(issueId, changeset);
+		repositoryPersister.addChangeset(issueId, changeset.getRepositoryId(), changeset.getNode());
 	}
 
 	public SourceControlUser getUser(String repositoryUrl, String username)

@@ -54,6 +54,6 @@ public interface RepositoryPersister
      * @param issueId the jira issue id
      * @param bitbucketChangeset the changeset to map to
      */
-    void addChangeset(String issueId, Changeset bitbucketChangeset);
+    void addChangeset(final String issueId, final int repositoryId, final String node);
     
 }
