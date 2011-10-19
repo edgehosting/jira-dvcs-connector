@@ -3,7 +3,10 @@ package com.atlassian.jira.plugins.bitbucket.rest;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import com.sun.xml.txw2.annotation.XmlCDATA;
 
 @XmlRootElement(name = "repository")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -18,7 +21,7 @@ public class Repository
     @XmlAttribute
     private String url;
 
-    @XmlAttribute
+    @XmlElement
     private String status;
 
     @XmlAttribute

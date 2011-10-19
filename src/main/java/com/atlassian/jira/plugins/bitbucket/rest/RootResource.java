@@ -44,7 +44,19 @@ public class RootResource
 	private final RepositoryManager globalRepositoryManager;
 	private final Synchronizer synchronizer;
 
-    public RootResource(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, 
+	private Function<SourceControlRepository, Repository> TO_REST_REPOSITORY = new Function<SourceControlRepository, Repository>()
+	{
+		public Repository apply(SourceControlRepository from)
+		{
+			Repository repo = new Repository(from.getId(), from.getProjectKey(), from.getUrl(), from.getUsername(), null); // don't include the password¶
+			Iterator<DefaultProgress> progressIterator = synchronizer.getProgress(from).iterator();
+			String syncStatusMessage = progressIterator.hasNext() ? progressIterator.next().render() : null;
+			repo.setStatus(syncStatusMessage);
+			return repo;
+		}
+	};
+
+	public RootResource(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, 
     					PermissionManager permissionManager, ProjectManager projectManager, 
     					JiraAuthenticationContext jiraAuthenticationContext, Synchronizer synchronizer)
     {
@@ -79,18 +91,6 @@ public class RootResource
         }
         return Response.ok(new RepositoryList(list)).build();
     }
-
-    private Function<SourceControlRepository,Repository> TO_REST_REPOSITORY = new Function<SourceControlRepository,Repository>()
-	{
-		public Repository apply(SourceControlRepository from)
-		{
-	        Repository repo = new Repository(from.getId(), from.getProjectKey(), from.getUrl(), from.getUsername(), null);
-	        Iterator<DefaultProgress> progressIterator = synchronizer.getProgress(from).iterator();
-	    	String statusMessage = progressIterator.hasNext()?progressIterator.next().render():null;
-			repo.setStatus(statusMessage);
-	        return repo;
-		}
-	};
 
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})

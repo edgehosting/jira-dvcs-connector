@@ -13,12 +13,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.bitbucket.DefaultProgress;
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
+import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * Webwork action used to configure the bitbucket repositories
@@ -51,7 +53,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 	}
 
 	private final Synchronizer synchronizer;
-    private List<DefaultProgress> defaultProgress;
+    private List<Progress> defaultProgress;
 
 	private final RepositoryManager globalRepositoryManager;
 
@@ -107,7 +109,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("CurrentSyncStatus"))
             {
-                defaultProgress = new ArrayList<DefaultProgress>();
+                defaultProgress = Lists.newArrayList();
                 SourceControlRepository repository = globalRepositoryManager.getRepository(repositoryId);
                 Iterables.addAll(defaultProgress, synchronizer.getProgress(repository));
                 return "syncstatus";
@@ -242,7 +244,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         return this.redirectURL;
     }
 
-    public List<DefaultProgress> getProgress()
+    public List<Progress> getProgress()
     {
         return defaultProgress;
     }
