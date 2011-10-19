@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
@@ -62,10 +61,10 @@ public class DefaultProgress implements Progress
 
     private final TemplateRenderer templateRenderer;
     private final SynchronizationKey key;
-    private final Future<OperationResult> future;
+    private final Future<Object> future;
     private final BlockingReference<State> progress = BlockingReference.newMRSW();
 
-    public DefaultProgress(TemplateRenderer templateRenderer, SynchronizationKey key, Future<OperationResult> future)
+    public DefaultProgress(TemplateRenderer templateRenderer, SynchronizationKey key, Future<Object> future)
     {
         this.templateRenderer = templateRenderer;
         this.key = key;

@@ -6,7 +6,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.google.common.base.Function;
@@ -25,7 +24,7 @@ public abstract class AbstractSynchronisationOperation implements Synchronisatio
 		this.progressProvider = progressProvider;
 	}
 
-	public OperationResult synchronise() throws Exception
+	public void synchronise() throws Exception
     {
         Iterable<Changeset> changesets = getChangsetsIterator();
 
@@ -46,8 +45,6 @@ public abstract class AbstractSynchronisationOperation implements Synchronisatio
                 }
             }
         }
-
-        return OperationResult.YES;
     }
 
     private static Set<String> extractProjectKey(String projectKey, String message)

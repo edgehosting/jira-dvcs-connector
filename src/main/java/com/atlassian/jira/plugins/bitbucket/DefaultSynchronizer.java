@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutorService;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.OperationResult;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
@@ -33,19 +32,20 @@ public class DefaultSynchronizer implements Synchronizer
 		{
 			public DefaultProgress apply(final SynchronizationKey from)
 			{
-				Callable<OperationResult> callable = new Callable<OperationResult>()
+				Callable<Object> callable = new Callable<Object>()
 				{
-					public OperationResult call() throws Exception
+					public Object call() throws Exception
 					{
 						try
 						{
 							SynchronisationOperation synchronisationOperation = globalRepositoryManager
 									.getSynchronisationOperation(from, progressProvider);
-							return synchronisationOperation.synchronise();
+							synchronisationOperation.synchronise();
 						} finally
 						{
 							operations.remove(from);
 						}
+						return null;
 					}
 				};
 				return new DefaultProgress(templateRenderer, from, executorService.submit(callable));
