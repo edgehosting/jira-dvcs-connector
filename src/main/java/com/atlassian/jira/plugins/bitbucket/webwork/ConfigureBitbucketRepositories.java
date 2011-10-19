@@ -90,7 +90,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
             {
                 if (!repoVisibility.equals("private") || (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword)))
                 {
-                	SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, bbPassword, bbPassword);
+                	SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, bbUserName, bbPassword);
                 	repositoryId = repo.getId();
                     postCommitURL = "BitbucketPostCommit.jspa?repositoryId=" + repositoryId;
                     nextAction = "ForceSync";
