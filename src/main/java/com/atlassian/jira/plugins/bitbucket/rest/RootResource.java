@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.bitbucket.rest;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.ws.rs.DELETE;
@@ -20,9 +19,9 @@ import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.bitbucket.DefaultProgress;
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.project.Project;
@@ -36,6 +35,7 @@ import com.google.common.collect.Lists;
 @Path("/")
 public class RootResource
 {
+	
     @Context UriInfo uriInfo;
 
     private final PermissionManager permissionManager;
@@ -49,9 +49,9 @@ public class RootResource
 		public Repository apply(SourceControlRepository from)
 		{
 			Repository repo = new Repository(from.getId(), from.getProjectKey(), from.getUrl(), from.getUsername(), null); // don't include the password¶
-			Iterator<DefaultProgress> progressIterator = synchronizer.getProgress(from).iterator();
-			String syncStatusMessage = progressIterator.hasNext() ? progressIterator.next().render() : null;
-			repo.setStatus(syncStatusMessage);
+			Progress progress = synchronizer.getProgress(from);
+			if (progress!=null)
+				repo.setStatus(new SyncProgress(progress.isFinished()));
 			return repo;
 		}
 	};

@@ -40,7 +40,7 @@ public class PublicRepositoriesTest extends BitBucketBaseTest
         configureRepos.addPublicRepoToProject("QA", "https://bitbucket.org/farmas/repo-does-not-exist");
 
         String syncStatusMessage = configureRepos.getSyncStatusMessage();
-        assertThat(syncStatusMessage, containsString("Sync Processing Complete"));
+        assertThat(syncStatusMessage, containsString("Sync failed"));
         
         // BBC-60
         // assertThat(syncStatusMessage, containsString("Bitbucket repository can't be found or incorrect credentials."));
@@ -54,7 +54,7 @@ public class PublicRepositoriesTest extends BitBucketBaseTest
         configureRepos.addPublicRepoToProject("QA", TEST_PRIVATE_REPO_URL);
 
         String syncStatusMessage = configureRepos.getSyncStatusMessage();
-        assertThat(syncStatusMessage, containsString("Sync Processing Complete"));
+        assertThat(syncStatusMessage, containsString("Sync failed"));
 
         // BBC-60
         // assertThat(syncStatusMessage, containsString("Bitbucket repository can't be found or incorrect credentials."));

@@ -35,7 +35,7 @@ public class BitBucketConfigureRepositoriesPage implements Page
     @ElementBy(id = "repoVisibility")
     SelectElement visibilitySelect;
 
-    @ElementBy(id = "connector_sync_status")
+    @ElementBy(className = "sync_status")
     PageElement syncStatusDiv;
 
     @ElementBy(className = "gh_table")
@@ -68,7 +68,7 @@ public class BitBucketConfigureRepositoriesPage implements Page
         Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
 
         Poller.waitUntilTrue("Expected sync status message to be 'Sync Processing Complete'",
-                syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Processing Complete"));
+                syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
 
         return this;
     }

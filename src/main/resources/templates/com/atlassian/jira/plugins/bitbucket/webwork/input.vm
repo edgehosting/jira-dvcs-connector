@@ -11,25 +11,27 @@
     <script type="text/javascript">
 
         var repositoryId = '$action.getRepositoryId()';
-        var syncComplete = false;
 
         // Function is located in velocity template not the global bitbucket.js include as
         // we need to dynamically insert URLs
+        var syncComplete = [];
+        
         function forceSync(repositoryId){
-            AJS.$('#gh_messages').css('display','block');
-            AJS.$('#connector_sync_message').html("");
-            AJS.$('#connector_sync_status').html("");
 
-            AJS.$('#connector_sync_message').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&repositoryId=' + repositoryId + '&atl_token=$atl_token');
-
-            window.setInterval(function(){
-                if(syncComplete == false){
-                    AJS.$('#connector_sync_status').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&repositoryId=' + repositoryId + '&atl_token=$atl_token');
+            syncComplete[repositoryId] = false;
+            AJS.$('.gh_messages.repository'+repositoryId).css('display','block');
+            AJS.$('.gh_messages.repository'+repositoryId+' .sync_status').html("");
+            AJS.$('.gh_messages.repository'+repositoryId+' .sync_status').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&repositoryId=' + repositoryId + '&atl_token=$atl_token');
+        
+            var int = window.setInterval(function(){
+                if(syncComplete[repositoryId] == true) 
+                {
+                    window.clearInterval(int);
+                    return;
                 }
+                AJS.$('.gh_messages.repository'+repositoryId+' .sync_status').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&repositoryId=' + repositoryId + '&atl_token=$atl_token');
             }, 1000);
         }
-
-
 
     </script>
 
@@ -93,8 +95,16 @@
             font-size: 10pt;
         }
 
-        .gh_table td{
+        .gh_table td.status{
             border-bottom: 1px solid #cccccc;
+            font-size: 10pt;
+            padding:0 20px;
+        }
+        .gh_table td.status .error{
+            color:#f66;
+        }
+        
+        .gh_table td{
             font-size: 10pt;
         }
 
@@ -110,27 +120,21 @@
             font-size: 8pt;
         }
 
-        #gh_messages{
-            background-color: #DFEFFE;
-            margin-left: 18px;
-            margin-top: 18px;
-			margin-bottom: 20px;
-            border: 2px solid #bbb;
-            padding: 10px;
-            padding-left: 36px;
+        .gh_messages{
+            font-size: 10pt;
+            color: #666;
+            font-style: italic;
+        }
+
+        .form {
+            margin:20px;
+            background-color: #B9E6F0;
+            padding: 20px;
+            
             -moz-border-radius: 6px;
             -webkit-border-radius: 6px;
             -khtml-border-radius: 6px;
-            border-radius: 6px;
-            background-image: url('${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/blue_info_icon.jpg');
-            background-repeat: no-repeat;
-            background-position: 10px 10px;
-            font-size: 10pt;
-        }
-
-        #gh_messages h2{
-            font-size: 10pt;
-            color: #333;
+            border-radius: 6px;            
         }
 
     </style>
@@ -163,9 +167,16 @@
                         <td><a href="$textutils.htmlEncode($repository.url)" target="_new">$textutils.htmlEncode($repository.url)</a></td>
                         <td>$projectKey</td>
                         <td width="260px">
-                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repositoryId=$repositoryId&nextAction=ForceSync&mode=$encodedMode&atl_token=$atl_token">Force Sync</a> |
+                            <a href="#" onclick="forceSync($repositoryId); return false;">Force Sync</a> |
                             <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repositoryId=$repositoryId&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
                             <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&repositoryId=$repositoryId&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="status" colspan="3">
+                        <div class="gh_messages repository$repositoryId" style="display:none">
+                            <div class='sync_status'></div>
+                        </div>
                         </td>
                     </tr>
                 #end
@@ -181,21 +192,13 @@
 
             </table>
 
-            #if ($action.nextAction == 'ForceSync')
-                <div id='gh_messages' style="display: none;">
-                    <h2>Sync Summary</h2>
-                    <div id='connector_sync_status'></div>
-                    <div id='connector_sync_message'></div>
-                </div>
-            #end
-
-			<div>
+			<div class="form">
                 <p>Add additional Bitbucket repositories to the projects to link their commits with JIRA issue keys.</p>
 
                 #if ($action.getMode() == 'single')
-                    Enter the Bitbucket repository URL with the branch included.</p>
+                    Enter the Bitbucket repository URL.</p>
                 #else
-                    Enter the JIRA project and Bitbucket repository URL with the branch included.</p>
+                    Enter the JIRA project and Bitbucket repository URL.</p>
                 #end
 
                 #if ($action.getValidations() != "")
@@ -312,10 +315,15 @@
                         </tr>
 
 
-                      <table>
+                      </table>
                  </form>
 
              </div>
+        #if ($action.nextAction == 'ForceSync')
+            <script type="text/javascript">
+                    forceSync($action.getRepositoryId());
+            </script>
+        #end
 
 
   </body>

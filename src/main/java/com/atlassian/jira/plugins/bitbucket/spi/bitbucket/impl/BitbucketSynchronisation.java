@@ -5,12 +5,11 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.Progress;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.AbstractSynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
-import com.google.common.base.Function;
 
 public class BitbucketSynchronisation extends AbstractSynchronisationOperation
 {
@@ -19,7 +18,7 @@ public class BitbucketSynchronisation extends AbstractSynchronisationOperation
 	private BitbucketCommunicator bitbucketCommunicator;
 
     public BitbucketSynchronisation(SynchronizationKey key, RepositoryManager repositoryManager,
-			BitbucketCommunicator bitbucketCommunicator, Function<SynchronizationKey, Progress> progressProvider)
+			BitbucketCommunicator bitbucketCommunicator, ProgressWriter progressProvider)
 	{
     	super(key, repositoryManager, progressProvider);
 		this.bitbucketCommunicator = bitbucketCommunicator;

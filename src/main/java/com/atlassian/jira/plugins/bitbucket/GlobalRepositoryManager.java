@@ -7,14 +7,13 @@ import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.Progress;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
-import com.google.common.base.Function;
 
 /**
  * Aggregated Repository Manager that handles all Repository Managers based on the repository url
@@ -112,7 +111,7 @@ public class GlobalRepositoryManager implements RepositoryManager
 		return getManagerForUrl(repositoryUrl).getUser(repositoryUrl, username);
 	}
 
-	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, Function<SynchronizationKey, Progress> progressProvider)
+	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
 	{
 		String repositoryUrl = key.getRepository().getUrl();
 		return getManagerForUrl(repositoryUrl).getSynchronisationOperation(key, progressProvider);

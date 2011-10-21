@@ -2,7 +2,10 @@ package com.atlassian.jira.plugins.bitbucket.api;
 
 public interface Progress
 {
-	public void inProgress(String revision, int jiraCount);
+	boolean isFinished();
+
+	int getJiraCount();
+	int getChangesetCount();
 	
-	public String render();
+	String getError();
 }

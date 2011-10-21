@@ -1,124 +1,63 @@
 package com.atlassian.jira.plugins.bitbucket;
 
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Future;
-
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import com.atlassian.templaterenderer.TemplateRenderer;
-import com.atlassian.util.concurrent.BlockingReference;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 
-public class DefaultProgress implements Progress
+public class DefaultProgress implements Progress, ProgressWriter
 {
-    public interface State
+	private boolean isFinished = false;
+	private boolean isQueued = false;
+	
+	int changesetCount = 0;
+	int jiraCount = 0;
+	long startTime = 0;
+	private String error;
+
+    public void inProgress(int changesetCount, int jiraCount)
     {
-        public String render();
+    	this.changesetCount = changesetCount;
+    	this.jiraCount = jiraCount;
     }
 
-    class Starting implements State
+    public void start()
     {
-        public String render()
-        {
-            return renderTemplate("progress-starting.vm", createMap());
-        }
+    	startTime = System.currentTimeMillis();
     }
 
-    class InProgress implements State
-    {
-        final String currentNode;
-        final int jiraCount;
-
-        public InProgress(String currentNode, int jiraCount)
-        {
-            this.currentNode = currentNode;
-            this.jiraCount = jiraCount;
-        }
-
-        public String getCurrentNode()
-        {
-            return currentNode;
-        }
-
-        public int getJiraCount()
-        {
-            return jiraCount;
-        }
-
-        public String render()
-        {
-            Map<String, Object> map = createMap();
-            map.put("revision", currentNode);
-            map.put("jiraCount", jiraCount);
-            return renderTemplate("progress-inprogress.vm", map);
-        }
-
-    }
-
-    private final TemplateRenderer templateRenderer;
-    private final SynchronizationKey key;
-    private final Future<Object> future;
-    private final BlockingReference<State> progress = BlockingReference.newMRSW();
-
-    public DefaultProgress(TemplateRenderer templateRenderer, SynchronizationKey key, Future<Object> future)
-    {
-        this.templateRenderer = templateRenderer;
-        this.key = key;
-        this.future = future;
-        this.progress.set(new Starting());
-    }
-
-    /* (non-Javadoc)
-	 * @see com.atlassian.jira.plugins.bitbucket.Progress#inProgress(java.lang.String, int)
-	 */
-    public void inProgress(String revision, int jiraCount)
-    {
-        this.progress.set(new InProgress(revision, jiraCount));
-    }
-
-    public State getProgress()
-    {
-        return progress.peek();
-    }
-
-    public SynchronizationKey getKey()
-    {
-        return key;
-    }
-
-    public boolean matches(SourceControlRepository repository)
-    {
-        return key.matches(repository);
-    }
-
-    private Map<String, Object> createMap()
-    {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("key", key);
-        map.put("future", future);
-        return map;
-    }
-
-    private String renderTemplate(String templateName, Map<String, Object> context)
-    {
-        try
-        {
-            StringWriter buf = new StringWriter();
-            templateRenderer.render("templates/com/atlassian/jira/plugins/bitbucket/"+templateName, context, buf);
-            return buf.toString();
-        }
-        catch (IOException e)
-        {
-            return e.getClass().getName() + ": " + e.getMessage();
-        }
-    }
-
-	public String render()
+	public void finish()
 	{
-		return getProgress().render();
+		isFinished = true;
 	}
+
+	public int getChangesetCount()
+    {
+    	return changesetCount;
+    }
+    
+    public int getJiraCount()
+    {
+    	return jiraCount;
+    }
+
+	public void setError(String error)
+	{
+		this.error = error;
+	}
+	
+	public String getError()
+	{
+		return error;
+	}
+
+	public void queued()
+	{
+		isQueued = true;
+	}
+
+	public boolean isFinished()
+	{
+		return isFinished;
+	}
+
 }

@@ -6,32 +6,33 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.Progress;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import com.google.common.base.Function;
 
 public abstract class AbstractSynchronisationOperation implements SynchronisationOperation
 {
 	protected final SynchronizationKey key;
     protected final RepositoryManager repositoryManager;
-	private final Function<SynchronizationKey, Progress> progressProvider;
+	private final ProgressWriter progressProvider;
     
     public AbstractSynchronisationOperation(SynchronizationKey key, RepositoryManager repositoryManager,
-			Function<SynchronizationKey, Progress> progressProvider)
+			ProgressWriter progressProvider)
 	{
     	this.key = key;
 		this.repositoryManager = repositoryManager;
 		this.progressProvider = progressProvider;
 	}
 
-	public void synchronise() throws Exception
+	public void synchronise()
     {
         Iterable<Changeset> changesets = getChangsetsIterator();
 
+        int changesetCount = 0;
         int jiraCount = 0;
 
         for (Changeset changeset : changesets)
         {
+        	changesetCount ++;
             String message = changeset.getMessage();
             if (message.contains(key.getRepository().getProjectKey()))
             {
@@ -41,9 +42,9 @@ public abstract class AbstractSynchronisationOperation implements Synchronisatio
                     jiraCount ++;
                     String issueId = extractedIssue.toUpperCase();
                     repositoryManager.addChangeset(key.getRepository(), issueId, changeset);
-                    progressProvider.apply(key).inProgress(changeset.getNode(), jiraCount);
                 }
             }
+            progressProvider.inProgress(changesetCount, jiraCount);
         }
     }
 

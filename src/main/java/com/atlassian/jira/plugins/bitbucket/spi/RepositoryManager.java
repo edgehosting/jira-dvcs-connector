@@ -3,11 +3,10 @@ package com.atlassian.jira.plugins.bitbucket.spi;
 import java.util.List;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.Progress;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import com.google.common.base.Function;
 
 public interface RepositoryManager
 {
@@ -33,7 +32,7 @@ public interface RepositoryManager
 
 	public SourceControlUser getUser(String repositoryUrl, String username);
 
-	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, Function<SynchronizationKey, Progress> progressProvider);
+	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progress);
 
 	public List<Changeset> parsePayload(SourceControlRepository repository, String payload);
 

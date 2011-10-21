@@ -1,9 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -11,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.bitbucket.DefaultProgress;
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
@@ -19,8 +16,6 @@ import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 /**
  * Webwork action used to configure the bitbucket repositories
@@ -38,7 +33,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String projectKey = "";
     private String nextAction = "";
     private String validations = "";
-    private String messages = "";
     private String redirectURL = "";
     private int repositoryId;
 
@@ -53,7 +47,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 	}
 
 	private final Synchronizer synchronizer;
-    private List<Progress> defaultProgress;
+    private Progress progress;
 
 	private final RepositoryManager globalRepositoryManager;
 
@@ -109,16 +103,18 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("CurrentSyncStatus"))
             {
-                defaultProgress = Lists.newArrayList();
                 SourceControlRepository repository = globalRepositoryManager.getRepository(repositoryId);
-                Iterables.addAll(defaultProgress, synchronizer.getProgress(repository));
+                progress = synchronizer.getProgress(repository);
                 return "syncstatus";
             }
 
             if (nextAction.equals("SyncRepository"))
             {
-                syncRepository();
-                return "syncmessage";
+                logger.debug("sync repository [ {} ] ", repositoryId);
+				SourceControlRepository repository = globalRepositoryManager.getRepository(repositoryId);
+				synchronizer.synchronize(repository);
+				progress = synchronizer.getProgress(repository);
+				return "syncstatus";
             }
         }
 
@@ -126,13 +122,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     }
     
 
-    private void syncRepository() throws MalformedURLException
-    {
-        logger.debug("sync repository [ {} ] ", repositoryId);
-        SourceControlRepository repository = globalRepositoryManager.getRepository(repositoryId);
-        synchronizer.synchronize(repository);
-    }
-    
     public List<Project> getProjects()
     {
         return getProjectManager().getProjectObjects();
@@ -234,19 +223,14 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         return this.validations;
     }
 
-    public String getMessages()
-    {
-        return this.messages;
-    }
-
     public String getRedirectURL()
     {
         return this.redirectURL;
     }
 
-    public List<Progress> getProgress()
+    public Progress getProgress()
     {
-        return defaultProgress;
+        return progress;
     }
     
     public static String encodeUrl(String url)

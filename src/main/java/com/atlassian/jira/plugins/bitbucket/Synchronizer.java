@@ -1,9 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-
 import java.util.List;
+
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.Progress;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 
 
 /**
@@ -25,14 +26,13 @@ public interface Synchronizer
      * @param changesets the changesets to synchronize
      */
     public void synchronize(SourceControlRepository repository, List<Changeset> changesets);
-
+    
     /**
-     * Get the progress of any sync being executed for the matching project and repository details
-     *
-     * @param projectKey the jira project key
-     * @param repositoryUrl the uri of the repository
-     * @return the progress of the synchronization
+     * Get the progress of a sync being executed for given repository
+     * This will not return progress of sync triggered by postcommit hook. 
+     * @param repository
+     * @return
      */
-    public Iterable<DefaultProgress> getProgress(SourceControlRepository repository);
+    public Progress getProgress(SourceControlRepository repository);
 
 }

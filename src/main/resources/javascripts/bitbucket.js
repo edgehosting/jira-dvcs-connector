@@ -1,5 +1,5 @@
 
-
+/*
 window.onload = function(){
     if(AJS.$('#gh_messages').size() > 0){
         forceSync(repositoryId);
@@ -11,6 +11,7 @@ window.onload = function(){
     }
 
 }
+*/
 
 function confirmation(delete_url) {
     var answer = confirm("Are you sure you want to remove this repository?")

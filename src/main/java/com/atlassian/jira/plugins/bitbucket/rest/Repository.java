@@ -20,7 +20,7 @@ public class Repository
     private String url;
 
     @XmlElement
-    private String status;
+    private SyncProgress sync;
 
     @XmlAttribute
     private String username;
@@ -71,14 +71,14 @@ public class Repository
         this.url = url;
     }
 
-    public String getStatus()
+    public SyncProgress getSync()
     {
-        return status;
+        return sync;
     }
 
-    public void setStatus(String status)
+    public void setStatus(SyncProgress sync)
     {
-        this.status = status;
+        this.sync = sync;
     }
     public String getUsername()
 	{

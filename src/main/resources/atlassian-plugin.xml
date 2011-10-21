@@ -119,7 +119,6 @@
                 <view name="error">/templates/com/atlassian/jira/plugins/bitbucket/webwork/error.vm</view>
                 <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm</view>
                 <view name="syncstatus">/templates/com/atlassian/jira/plugins/bitbucket/webwork/syncstatus.vm</view>
-                <view name="syncmessage">/templates/com/atlassian/jira/plugins/bitbucket/webwork/syncmessage.vm</view>
                 <view name="redirect">/templates/com/atlassian/jira/plugins/bitbucket/webwork/redirect.vm</view>
             </action>
 
