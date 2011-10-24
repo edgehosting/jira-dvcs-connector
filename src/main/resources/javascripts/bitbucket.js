@@ -55,7 +55,7 @@ function forceSync(repositoryId){
 }
 
 AJS.$(document).ready(function(){
-	if(init_repositories)
+	if(typeof init_repositories == 'function')
 	{
 		init_repositories();
 	}
