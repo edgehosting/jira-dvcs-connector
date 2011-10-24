@@ -19,7 +19,7 @@
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping</entity>
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.PropertyMigrator</upgradeTask>
-`        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.Uri2UrlMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.Uri2UrlMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ActiveObjectsV2Migrator</upgradeTask>
     </ao>
 

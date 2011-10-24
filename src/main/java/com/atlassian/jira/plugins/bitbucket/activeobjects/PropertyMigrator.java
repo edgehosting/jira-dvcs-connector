@@ -11,7 +11,6 @@ import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.google.common.collect.Maps;
@@ -52,11 +51,11 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
                 String username = settings.getUsername(projectKey, repository);
                 String password = settings.getPassword(projectKey, repository);
 
-                String repositoryUrl = RepositoryUri.parse(repository).getRepositoryUrl(); // re-convert the url in case it's in short format "owner/slug";
-                logger.debug("migrate repository [ {} ]", repositoryUrl);
+                String repositoryUri = RepositoryUri.parse(repository).getRepositoryUri();
+                logger.debug("migrate repository [ {} ]", repositoryUri);
                 Map<String, Object> map = Maps.newHashMap();
                 map.put("PROJECT_KEY", projectKey);
-                map.put("REPOSITORY_URI", repositoryUrl);
+                map.put("REPOSITORY_URI", repositoryUri);
                 map.put("USERNAME", username);
                 map.put("PASSWORD", password);
                 activeObjects.create(ProjectMapping.class, map);

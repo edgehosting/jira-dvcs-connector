@@ -8,7 +8,6 @@ import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 
 @SuppressWarnings("deprecation")
 public class Uri2UrlMigrator implements ActiveObjectsUpgradeTask
