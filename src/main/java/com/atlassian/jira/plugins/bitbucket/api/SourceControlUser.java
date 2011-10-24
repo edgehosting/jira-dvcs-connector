@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.bitbucket.api;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlUser;
 
 /**
- * Describes a Bitbucket user
+ * Describes a Source Control user
  */
 public interface SourceControlUser
 {

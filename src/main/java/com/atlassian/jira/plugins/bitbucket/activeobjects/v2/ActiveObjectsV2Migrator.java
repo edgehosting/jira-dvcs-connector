@@ -6,15 +6,12 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
-import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -23,15 +20,6 @@ import com.google.common.collect.Maps;
 public class ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
 {
     private final Logger logger = LoggerFactory.getLogger(ActiveObjectsV2Migrator.class);
-	private final Synchronizer synchronizer;
-	private final RepositoryManager globalRepositoryManager;
-
-
-	public ActiveObjectsV2Migrator(Synchronizer synchronizer, @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
-	{
-		this.synchronizer = synchronizer;
-		this.globalRepositoryManager = globalRepositoryManager;
-	}
 
 	public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
     {
