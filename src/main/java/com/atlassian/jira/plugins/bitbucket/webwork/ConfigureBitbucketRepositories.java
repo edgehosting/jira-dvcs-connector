@@ -9,8 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.bitbucket.Synchronizer;
-import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.project.Project;
@@ -36,31 +34,15 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String redirectURL = "";
     private int repositoryId;
 
-    public int getRepositoryId()
-	{
-		return repositoryId;
-	}
-
-	public void setRepositoryId(int repositoryId)
-	{
-		this.repositoryId = repositoryId;
-	}
-
-	private final Synchronizer synchronizer;
-    private Progress progress;
-
 	private final RepositoryManager globalRepositoryManager;
 
-    public ConfigureBitbucketRepositories(Synchronizer synchronizer, 
-    		@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
+    public ConfigureBitbucketRepositories(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
     {
-        this.synchronizer = synchronizer;
 		this.globalRepositoryManager = globalRepositoryManager;
     }
 
     protected void doValidation()
     {
-
         if (!globalRepositoryManager.canHandleUrl(url) && nextAction.equals("AddRepository"))
         {
             addErrorMessage("URL must be for a valid repository.");
@@ -99,22 +81,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
             if (nextAction.equals("DeleteRepository"))
             {
             	globalRepositoryManager.removeRepository(repositoryId);
-            }
-
-            if (nextAction.equals("CurrentSyncStatus"))
-            {
-                SourceControlRepository repository = globalRepositoryManager.getRepository(repositoryId);
-                progress = synchronizer.getProgress(repository);
-                return "syncstatus";
-            }
-
-            if (nextAction.equals("SyncRepository"))
-            {
-                logger.debug("sync repository [ {} ] ", repositoryId);
-				SourceControlRepository repository = globalRepositoryManager.getRepository(repositoryId);
-				synchronizer.synchronize(repository);
-				progress = synchronizer.getProgress(repository);
-				return "syncstatus";
             }
         }
 
@@ -227,11 +193,18 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     {
         return this.redirectURL;
     }
+    
+    public int getRepositoryId()
+	{
+		return repositoryId;
+	}
 
-    public Progress getProgress()
-    {
-        return progress;
-    }
+	public void setRepositoryId(int repositoryId)
+	{
+		this.repositoryId = repositoryId;
+	}
+
+    
     
     public static String encodeUrl(String url)
     {

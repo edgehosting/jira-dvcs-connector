@@ -19,8 +19,7 @@
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping</entity>
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.PropertyMigrator</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.UrlMigrator</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.Uri2UrlMigrator</upgradeTask>
+`        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.Uri2UrlMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ActiveObjectsV2Migrator</upgradeTask>
     </ao>
 
@@ -118,7 +117,6 @@
                     alias="ConfigureBitbucketRepositories" roles-required="admin">
                 <view name="error">/templates/com/atlassian/jira/plugins/bitbucket/webwork/error.vm</view>
                 <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm</view>
-                <view name="syncstatus">/templates/com/atlassian/jira/plugins/bitbucket/webwork/syncstatus.vm</view>
                 <view name="redirect">/templates/com/atlassian/jira/plugins/bitbucket/webwork/redirect.vm</view>
             </action>
 

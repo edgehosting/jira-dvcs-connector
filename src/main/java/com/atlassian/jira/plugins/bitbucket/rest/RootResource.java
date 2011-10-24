@@ -51,7 +51,7 @@ public class RootResource
 			Repository repo = new Repository(from.getId(), from.getProjectKey(), from.getUrl(), from.getUsername(), null); // don't include the password¶
 			Progress progress = synchronizer.getProgress(from);
 			if (progress!=null)
-				repo.setStatus(new SyncProgress(progress.isFinished()));
+				repo.setStatus(new SyncProgress(progress.isFinished(), progress.getChangesetCount(), progress.getJiraCount(), progress.getError()));
 			return repo;
 		}
 	};
@@ -127,10 +127,16 @@ public class RootResource
     public Response startRepositorySync(@PathParam("id") int id, @QueryParam("payload") String payload)
     {
     	SourceControlRepository repository = globalRepositoryManager.getRepository(id);
-		List<Changeset> changesets = globalRepositoryManager.parsePayload(repository, payload);
-		synchronizer.synchronize(repository, changesets);
+    	if (payload == null)
+    	{
+    		synchronizer.synchronize(repository);
+    	} else
+    	{
+    		List<Changeset> changesets = globalRepositoryManager.parsePayload(repository, payload);
+    		synchronizer.synchronize(repository, changesets);
+    	}
 		// redirect to Repository resource - that will contain sync message/status
-		UriBuilder ub = uriInfo.getAbsolutePathBuilder();
+		UriBuilder ub = uriInfo.getBaseUriBuilder();
 		URI uri = ub.path("/repository/{id}").build(id);
 		return Response.seeOther(uri).build();    	
     }
