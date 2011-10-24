@@ -10,10 +10,14 @@
 
     <script type="text/javascript">
         var BASE_URL = "${baseurl}"
-        AJS.$(document).ready(function(){
+        function init_repositories()
+        {
+            #if ($action.nextAction == 'ForceSync')
+                forceSync($action.getRepositoryId());
+                AJS.$('.gh_messages.repository$action.getRepositoryId()').slideDown()
+            #end
             retrieveSyncStatus();
-        });
-         
+        }            
      </script>
 
         <style type="text/css">
@@ -319,13 +323,5 @@
                  </form>
 
              </div>
-        #if ($action.nextAction == 'ForceSync')
-            <script type="text/javascript">
-                    forceSync($action.getRepositoryId());
-                    AJS.$('.gh_messages.repository$action.getRepositoryId()').slideDown()
-            </script>
-        #end
-
-
   </body>
 </html>

@@ -31,7 +31,7 @@ function retrieveSyncStatus() {
     				syncIcon = "running";
 					syncHtml = "<strong>Sync Running:</strong>"
 				}
-    			syncHtml = syncHtml + "Synchronized <strong>"+repo.sync.changesetCount+"</strong> changesets, found <strong>"+repo.sync.jiraCount+"</strong> matching JIRA issues"; 
+    			syncHtml = syncHtml + " Synchronized <strong>"+repo.sync.changesetCount+"</strong> changesets, found <strong>"+repo.sync.jiraCount+"</strong> matching JIRA issues"; 
     			if (repo.sync.error)
     			{
     				syncIcon = "error";
@@ -53,4 +53,12 @@ function retrieveSyncStatus() {
 function forceSync(repositoryId){
 	AJS.$.post(BASE_URL+"/rest/bitbucket/1.0/repository/"+repositoryId+"/sync");
 }
+
+AJS.$(document).ready(function(){
+	if(init_repositories)
+	{
+		init_repositories();
+	}
+})
+
 
