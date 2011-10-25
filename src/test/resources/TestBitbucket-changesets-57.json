@@ -4,6 +4,26 @@
     "limit": 15, 
     "changesets": [
         {
+            "node": "bbf518979ab2", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/ConfigureBitbucketRepositories.java"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-06-01 04:34:53", 
+            "raw_node": "bbf518979ab2cbc2df59e8017dbed37b63ab26e0", 
+            "parents": [
+                "b52207caf6b3"
+            ], 
+            "branch": "default", 
+            "message": "Adding reset for current sync status to compensate for slow systems", 
+            "revision": 42, 
+            "size": 107
+        },
+        {
             "node": "c38762a98edb", 
             "files": [
                 {

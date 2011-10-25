@@ -4,6 +4,30 @@
     "limit": 15, 
     "changesets": [
         {
+            "node": "e39284a71197", 
+            "files": [
+                {
+                    "type": "modified", 
+                    "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/ConfigureBitbucketRepositories.java"
+                }, 
+                {
+                    "type": "modified", 
+                    "file": "src/main/resources/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm"
+                }
+            ], 
+            "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
+            "author": "mbuckbee", 
+            "timestamp": "2011-05-26 10:53:34", 
+            "raw_node": "e39284a71197c5091a9f72319c0f530906323aa0", 
+            "parents": [
+                "367fb20f9864"
+            ], 
+            "branch": "default", 
+            "message": "Adding single/bulk mode actions", 
+            "revision": 12, 
+            "size": 1261
+        },
+        {
             "node": "d04e9fc015fa", 
             "files": [
                 {

@@ -11,6 +11,19 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket;
 import com.atlassian.jira.plugins.bitbucket.bitbucket.RepositoryUri;
@@ -286,5 +299,15 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     public List<Progress> getProgress()
     {
         return progress;
+    }
+    public String encodeUrl(String url)
+    {
+    	try
+		{
+			return URLEncoder.encode(url, "UTF-8");
+		} catch (UnsupportedEncodingException e)
+		{
+			return null;
+		}
     }
 }

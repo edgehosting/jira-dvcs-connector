@@ -41,22 +41,16 @@ public class DefaultBitbucketConnection implements BitbucketConnection
         return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets/" + encode(id), null);
     }
 
-    public String getChangesets(BitbucketAuthentication auth, String owner, String slug, int start, int limit)
+    public String getChangesets(BitbucketAuthentication auth, String owner, String slug, String startNode, int limit)
     {
         logger.debug("parse changesets [ {} ] [ {} ] [ {} ] [ {} ]",
-                new String[]{owner, slug, String.valueOf(start), String.valueOf(limit)});
+                new String[]{owner, slug, startNode, String.valueOf(limit)});
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("limit", String.valueOf(limit));
-        params.put("start", String.valueOf(start));
-        return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets", params);
-    }
-
-    public String getChangesets(BitbucketAuthentication auth, String owner, String slug, int limit)
-    {
-        logger.debug("parse changesets [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, String.valueOf(limit)});
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("limit", String.valueOf(limit));
-        params.put("start", "tip");
+        if (startNode!=null)
+        {
+        	params.put("start", startNode);
+        }
         return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets", params);
     }
 

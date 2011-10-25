@@ -25,7 +25,7 @@ public interface BitbucketChangeset
 
     public List<BitbucketChangesetFile> getFiles();
 
-    public int getRevision();
+    public String getRevision();
 
     public String getRepositoryOwner();
 
