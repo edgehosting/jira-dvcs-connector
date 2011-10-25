@@ -49,26 +49,25 @@ public class ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
                 map.put("PASSWORD", password);
             }
             com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping pm = activeObjects.create(com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping.class, map);
+
+            if (!fixedUrl.equals(originalUrl))
+            {
+            	repositoriesToBeSynchronised.add(pm.getID());
+            }
             
-        	if (fixedUrl.equals(originalUrl))
-        	{
-        		// for every ProjectMapping take all associated IssueMappings and migrate from v1 to v2
-        		IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class, "PROJECT_KEY = ? and REPOSITORY_URI = ?", projectKey, originalUrl);
-        		for (IssueMapping issueMapping : issueMappings)
-        		{
-        			String node = issueMapping.getNode();
-        			String issueId = issueMapping.getIssueId();
-        			
-        			final Map<String, Object> map2 = Maps.newHashMap();
-        			map2.put("REPOSITORY_ID", repositoryId);
-        			map2.put("NODE", node);
-        			map2.put("ISSUE_ID", issueId);
-        			activeObjects.create(com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping.class, map2);
-        		}
-        	} else 
-        	{
-        		repositoriesToBeSynchronised.add(pm.getID());
-        	}
+            // for every ProjectMapping take all associated IssueMappings and migrate from v1 to v2
+            IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class, "PROJECT_KEY = ? and REPOSITORY_URI = ?", projectKey, originalUrl);
+            for (IssueMapping issueMapping : issueMappings)
+            {
+            	String node = issueMapping.getNode();
+            	String issueId = issueMapping.getIssueId();
+            	
+            	final Map<String, Object> map2 = Maps.newHashMap();
+            	map2.put("REPOSITORY_ID", repositoryId);
+            	map2.put("NODE", node);
+            	map2.put("ISSUE_ID", issueId);
+            	activeObjects.create(com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping.class, map2);
+            }
         }
 
 //      for (Integer id : repositoriesToBeSynchronised)
