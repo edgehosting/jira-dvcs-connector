@@ -5,62 +5,89 @@
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
     </plugin-info>
 
-    <component-import key="templateRenderer"
-                      interface="com.atlassian.templaterenderer.TemplateRenderer">
+    <component-import key="templateRenderer" interface="com.atlassian.templaterenderer.TemplateRenderer">
         <description>Template Renderer Factory</description>
     </component-import>
 
     <component-import key="ao" name="Active Objects" interface="com.atlassian.activeobjects.external.ActiveObjects">
         <description>Component to access Active Objects functionality from the plugin</description>
     </component-import>
+    
+    <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />
 
     <ao key="ao-module" name="Active Objects Module">
-        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping</entity>
-        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping</entity>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.property.PropertyMigrator</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.property.UrlMigrator</upgradeTask>
+        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping</entity>
+        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping</entity>
+        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.PropertyMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.Uri2UrlMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ActiveObjectsV2Migrator</upgradeTask>
     </ao>
 
-    <component key="executorService" name="Executor Service Factory Component"
-            class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultExecutorServiceFactoryBean">
-        <description>ExecutorService factory bean for creating executor services</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.mapper.ExecutorServiceFactoryBean</interface>
+    <component key="backwardCompability" name="Backward Compability"
+            class="com.atlassian.jira.plugins.bitbucket.webwork.BackwardCompabilityImpl">
+        <description>Component to provide compatibility with previous version of plugin</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.webwork.BackwardCompability</interface>
     </component>
 
-    <component key="mapper" name="Bitbucket Mapper"
-               class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultBitbucketMapper">
-        <description>A Service for migrating from the property set storage to ActiveObjects</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper</interface>
+    <component key="executorService" name="Executor Service Factory Component"
+            class="com.atlassian.jira.plugins.bitbucket.DefaultExecutorServiceFactoryBean">
+        <description>ExecutorService factory bean for creating executor services</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.ExecutorServiceFactoryBean</interface>
+    </component>
+
+    <component key="repositoryPersister" name="Repository Persister"
+               class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister">
+        <description>A Service for storing data in ActiveObjects</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister</interface>
     </component>
 
     <component key="synchronizer" name="Bitbucket Synchronization Service"
-               class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultSynchronizer">
+               class="com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer">
         <description>A Service for migrating from the property set storage to ActiveObjects</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.mapper.Synchronizer</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.Synchronizer</interface>
     </component>
 
     <component key="encryptor" name="Encryption Service"
-               class="com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultEncryptor">
+               class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultEncryptor">
         <description>A service for encrypting and decrypting passwords</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.mapper.Encryptor</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.api.Encryptor</interface>
+    </component>
+
+    <component key="authenticationFactory" name="Authentication Factory"
+               class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultAuthenticationFactory">
+        <description>Creating authenticators</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory</interface>
     </component>
 
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
-               class="com.atlassian.jira.plugins.bitbucket.property.DefaultBitbucketProjectSettings">
+               class="com.atlassian.jira.plugins.bitbucket.activeobjects.DefaultBitbucketProjectSettings">
         <description>A facade for storing project settings</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.property.BitbucketProjectSettings</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.activeobjects.BitbucketProjectSettings</interface>
     </component>
 
     <component key="bitbucketConnection" name="Bitbucket Remote Connection"
-               class="com.atlassian.jira.plugins.bitbucket.connection.impl.DefaultBitbucketConnection">
+               class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucketConnection">
         <description>A component used to talk to the remote bitbucket service</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.connection.BitbucketConnection</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection</interface>
     </component>
-
+    
+    
+    <component key="bitbucketRepositoryManager" name="bitbucketRepositoryManager"
+               class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager">
+        <description>bitbucketRepositoryManager</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager</interface>
+    </component>
+    
+    <component key="globalRepositoryManager" name="globalRepositoryManager"
+               class="com.atlassian.jira.plugins.bitbucket.GlobalRepositoryManager">
+        <description>globalRepositoryManager</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager</interface>
+    </component>
+    
 <!--    <component key="remoteBitbucket" name="Remote Bitbucket Service"
-               class="com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucket">
+               class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucket">
         <description>A service for using the remove bitbucket connection</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.bitbucket.Bitbucket</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator</interface>
     </component>-->
 
     <component-import key="pluginSettingsFactory">
@@ -72,7 +99,7 @@
     </component-import>
 
     <issue-tabpanel key="bitbucket-commits-tabpanel" name="BitBucket Changesets Tab Panel"
-                    class="com.atlassian.jira.plugins.bitbucket.issuetabpanels.BitbucketTabPanel">
+                    class="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketTabPanel">
 
         <description>Show Bitbucket changesets related to an issue in an issue tab panel.</description>
         <label>Bitbucket</label>
@@ -90,15 +117,7 @@
                     alias="ConfigureBitbucketRepositories" roles-required="admin">
                 <view name="error">/templates/com/atlassian/jira/plugins/bitbucket/webwork/error.vm</view>
                 <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm</view>
-                <view name="syncstatus">/templates/com/atlassian/jira/plugins/bitbucket/webwork/syncstatus.vm</view>
-                <view name="syncmessage">/templates/com/atlassian/jira/plugins/bitbucket/webwork/syncmessage.vm</view>
                 <view name="redirect">/templates/com/atlassian/jira/plugins/bitbucket/webwork/redirect.vm</view>
-            </action>
-
-            <action name="com.atlassian.jira.plugins.bitbucket.webwork.ViewProjectRepository"
-                    alias="ViewProjectRepository" roles-required="admin">
-                <view name="viewrepository">/templates/com/atlassian/jira/plugins/bitbucket/webwork/viewrepository.vm
-                </view>
             </action>
 
             <action name="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit" alias="BitbucketPostCommit">
@@ -109,7 +128,7 @@
     </webwork1>
 
     <project-operation key="com.atlassian.jira.plugins.projectlink" name="Bitbucket Project Link"
-                       class="com.atlassian.jira.plugins.bitbucket.links.ProjectSettings">
+                       class="com.atlassian.jira.plugins.bitbucket.webwork.ProjectSettings">
         <resource type="velocity" name="view" location="/templates/com/atlassian/jira/plugins/projectlinks/view.vm"/>
         <order>100</order>
     </project-operation>
@@ -147,6 +166,10 @@
         <context>atl.general</context>
         <context>atl.admin</context>
     </web-resource>
+
+    <rest key="bitbucket-rest-resources" path="/bitbucket" version="1.0">
+        <description>REST Resources</description>
+    </rest>
 
 
 </atlassian-plugin>

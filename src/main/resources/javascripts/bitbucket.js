@@ -1,17 +1,4 @@
 
-
-window.onload = function(){
-    if(AJS.$('#gh_messages').size() > 0){
-        forceSync(url, projectKey);
-    }
-
-    // Displays proper styling on JIRA Studio for Left hand navigation selection
-    if(document.location.href.indexOf('ConfigureBitbucketRepositories') > -1){
-        AJS.$('#menu_item_bitbucket_bulk_repo').parent().addClass('studio-admin-menu-section-selected');
-    }
-
-}
-
 function confirmation(delete_url) {
     var answer = confirm("Are you sure you want to remove this repository?")
     if (answer){
@@ -26,10 +13,52 @@ function toggleMoreFiles(target_div){
 }
 
 
+function retrieveSyncStatus() {
+    AJS.$.getJSON(BASE_URL+"/rest/bitbucket/1.0/repositories", function (data) {
+    	AJS.$.each(data.repositories, function(a,repo){
+    		var syncStatusDiv = AJS.$('.gh_messages.repository'+repo.id); 
+    		var syncIconElement = AJS.$('.syncicon.repository'+repo.id);
+    		var syncHtml;
+    		var syncIcon;
+    		if (repo.sync)
+    		{
+    			if(repo.sync.isFinished)
+				{
+    				syncIcon = "finished";
+    				syncHtml = "<strong>Sync Finished:</strong>"
+				} else
+				{
+    				syncIcon = "running";
+					syncHtml = "<strong>Sync Running:</strong>"
+				}
+    			syncHtml = syncHtml + " Synchronized <strong>"+repo.sync.changesetCount+"</strong> changesets, found <strong>"+repo.sync.jiraCount+"</strong> matching JIRA issues"; 
+    			if (repo.sync.error)
+    			{
+    				syncIcon = "error";
+    				syncHtml = syncHtml + "<div class=\"error\"><strong>Sync Failed:</strong> "+repo.sync.error+"</div>";
+    			} 
+    		} else
+			{
+				syncIcon = "";
+    			syncHtml = "No information about sync available"
+			}
+    		syncIconElement.removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
+    		syncStatusDiv.html(syncHtml);
+    		
+    	});
+    	window.setTimeout(retrieveSyncStatus, 2000)
+    })
+}
+
+function forceSync(repositoryId){
+	AJS.$.post(BASE_URL+"/rest/bitbucket/1.0/repository/"+repositoryId+"/sync");
+}
+
 AJS.$(document).ready(function(){
+	if(typeof init_repositories == 'function')
+	{
+		init_repositories();
+	}
+})
 
 
-
-
-
-});

@@ -9,32 +9,18 @@
     </title>
 
     <script type="text/javascript">
+        var BASE_URL = "${baseurl}"
+        function init_repositories()
+        {
+            #if ($action.nextAction == 'ForceSync')
+                forceSync($action.getRepositoryId());
+                AJS.$('.gh_messages.repository$action.getRepositoryId()').slideDown()
+            #end
+            retrieveSyncStatus();
+        }            
+     </script>
 
-        var url = '$textutils.htmlEncode($action.getURL())';
-        var projectKey = '$textutils.htmlEncode($action.getProjectKey())';
-        var syncComplete = false;
-
-        // Function is located in velocity template not the global bitbucket.js include as
-        // we need to dynamically insert URLs
-        function forceSync(url, projectKey){
-            AJS.$('#gh_messages').css('display','block');
-            AJS.$('#connector_sync_message').html("");
-            AJS.$('#connector_sync_status').html("");
-
-            AJS.$('#connector_sync_message').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=SyncRepository&url=' + url + '&projectKey=' + projectKey + '&atl_token=$atl_token');
-
-            window.setInterval(function(){
-                if(syncComplete == false){
-                    AJS.$('#connector_sync_status').load('${baseurl}/ConfigureBitbucketRepositories.jspa?nextAction=CurrentSyncStatus&url=' + url + '&projectKey=' + projectKey + '&atl_token=$atl_token');
-                }
-            }, 1000);
-        }
-
-
-
-    </script>
-
-    <style type="text/css">
+        <style type="text/css">
 
 
         #gh_config_link{
@@ -94,8 +80,16 @@
             font-size: 10pt;
         }
 
-        .gh_table td{
+        .gh_table td.status{
             border-bottom: 1px solid #cccccc;
+            font-size: 10pt;
+            padding:0 20px;
+        }
+        .gh_table td.status .error{
+            color:#f66;
+        }
+        
+        .gh_table td{
             font-size: 10pt;
         }
 
@@ -111,35 +105,43 @@
             font-size: 8pt;
         }
 
-        #gh_messages{
-            background-color: #DFEFFE;
-            margin-left: 18px;
-            margin-top: 18px;
-			margin-bottom: 20px;
-            border: 2px solid #bbb;
-            padding: 10px;
-            padding-left: 36px;
+        .gh_messages{
+            font-size: 10pt;
+            color: #666;
+            font-style: italic;
+        }
+
+        .form {
+            margin:20px;
+            background-color: #B9E6F0;
+            padding: 20px;
+            
             -moz-border-radius: 6px;
             -webkit-border-radius: 6px;
             -khtml-border-radius: 6px;
-            border-radius: 6px;
-            background-image: url('${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/blue_info_icon.jpg');
-            background-repeat: no-repeat;
-            background-position: 10px 10px;
-            font-size: 10pt;
+            border-radius: 6px;            
+        }
+        
+        .syncicon {
+            cursor: pointer;
+            width:16px;
+            display:inline-block;
+            background-image: url(http://www.businessfbpage.com/wp-content/plugins/pricing-table/images/info.gif)
         }
 
-        #gh_messages h2{
-            font-size: 10pt;
-            color: #333;
+        .syncicon.error {
+            background-image: url(http://confluence.jetbrains.net/download/attachments/24091/error.gif?version=1&modificationDate=1174560837000)
+        }
+
+        .syncicon.running {
+            background-image: url(http://avacomglobal.com/images/working.gif)
+        }
+
+        .syncicon.finished {
+            background-image: url(http://drupal.org/files/issues/status-ok.png)
         }
 
     </style>
-
-
-
-
-
 
   </head>
 
@@ -163,16 +165,22 @@
                 <tr> <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$encodedProjectName</div></td> </tr>
                 <tr> <th>Repository URL</th> <th>Key</th> <th>Operations</th> </tr>
                 #foreach ($repository in $action.getProjectRepositories($projectKey))
-                    #set($repositoryUrl = $repository.getRepositoryUrl())
-                    #set($urlEncodedRepositoryUrl = $action.encodeUrl($repositoryUrl))
+                    #set($repositoryId = $repository.getId())
                     #set($encodedMode = $textutils.htmlEncode($action.getMode()))
                     <tr>
-                        <td><a href="$textutils.htmlEncode($repositoryUrl)" target="_new">$textutils.htmlEncode($repositoryUrl)</a></td>
+                        <td><a href="$textutils.htmlEncode($repository.url)" target="_new">$textutils.htmlEncode($repository.url)</a></td>
                         <td>$projectKey</td>
                         <td width="260px">
-                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$urlEncodedRepositoryUrl&projectKey=$projectKey&nextAction=ForceSync&mode=$encodedMode&atl_token=$atl_token">Force Sync</a> |
-                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?url=$urlEncodedRepositoryUrl&projectKey=$projectKey&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
-                            <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&url=$urlEncodedRepositoryUrl&projectKey=$projectKey&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
+                            <span title="Show/Hide info about syncing" class="syncicon repository$repositoryId" onclick="AJS.$('.gh_messages.repository$repositoryId').slideToggle()">&nbsp;</span>
+                            <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Force Sync</a> |
+                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repositoryId=$repositoryId&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
+                            <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&repositoryId=$repositoryId&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="status" colspan="3">
+                        <div name="sync_status_message" class="gh_messages repository$repositoryId" style="display:none">
+                        </div>
                         </td>
                     </tr>
                 #end
@@ -188,21 +196,13 @@
 
             </table>
 
-            #if ($action.nextAction == 'ForceSync')
-                <div id='gh_messages' style="display: none;">
-                    <h2>Sync Summary</h2>
-                    <div id='connector_sync_status'></div>
-                    <div id='connector_sync_message'></div>
-                </div>
-            #end
-
-			<div>
+			<div class="form">
                 <p>Add additional Bitbucket repositories to the projects to link their commits with JIRA issue keys.</p>
 
                 #if ($action.getMode() == 'single')
-                    Enter the Bitbucket repository URL with the branch included.</p>
+                    Enter the Bitbucket repository URL.</p>
                 #else
-                    Enter the JIRA project and Bitbucket repository URL with the branch included.</p>
+                    Enter the JIRA project and Bitbucket repository URL.</p>
                 #end
 
                 #if ($action.getValidations() != "")
@@ -319,11 +319,9 @@
                         </tr>
 
 
-                      <table>
+                      </table>
                  </form>
 
              </div>
-
-
   </body>
 </html>

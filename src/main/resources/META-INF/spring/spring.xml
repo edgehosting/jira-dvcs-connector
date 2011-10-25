@@ -3,12 +3,13 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation=" http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-    <bean id="remoteBitbucket" class="com.atlassian.jira.plugins.bitbucket.bitbucket.impl.CachingBitbucket">
+    <bean id="remoteBitbucket" class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.CachingBitbucket">
         <constructor-arg>
-            <bean class="com.atlassian.jira.plugins.bitbucket.bitbucket.impl.DefaultBitbucket">
+            <bean class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucket">
                 <constructor-arg ref="bitbucketConnection"/>
             </bean>
         </constructor-arg>
     </bean>
+
 
 </beans>

@@ -1,50 +1,75 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.mapper.BitbucketMapper;
-import com.atlassian.jira.plugins.bitbucket.mapper.impl.DefaultSynchronizer;
-import com.atlassian.templaterenderer.TemplateRenderer;
-import com.atlassian.util.concurrent.ThreadFactories;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.MockitoAnnotations;
-import org.mockito.MockitoAnnotations.Mock;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 
-import static org.mockito.Mockito.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.Progress;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketSynchronisation;
 
 /**
  * Unit tests for {@link DefaultSynchronizer}
  */
 public class TestDefaultSynchronizer
 {
-    @Mock
-    private Bitbucket bitbucket;
-    @Mock
-    private BitbucketMapper bitbucketMapper;
-    @Mock
-    private BitbucketChangeset changeset;
-    @Mock
-    private TemplateRenderer templateRenderer;
+	@Mock
+	private BitbucketCommunicator bitbucket;
+	@Mock
+	private Changeset changeset;
+	@Mock
+	private RepositoryManager repositoryManager;
+	@Mock
+	private SourceControlRepository repository;
+	@Mock
+	private ProgressWriter progressProvider;
 
-    @Before
-    public void setup()
-    {
-        MockitoAnnotations.initMocks(this);
-    }
+	@Before
+	public void setup()
+	{
+		MockitoAnnotations.initMocks(this);
+	}
 
-    @Test
-    public void testSynchronizeAddsSingleMapping()
-    {
-        String projectKey = "PRJ";
-        RepositoryUri repositoryUri = RepositoryUri.parse("owner/slug");
-        when(bitbucketMapper.getAuthentication(projectKey,repositoryUri)).thenReturn(BitbucketAuthentication.ANONYMOUS);
-        when(bitbucket.getChangesets(BitbucketAuthentication.ANONYMOUS, "owner", "slug")).thenReturn(Arrays.asList(changeset));
-        when(changeset.getMessage()).thenReturn("PRJ-1 Message");
+	@Test
+	public void testSynchronizeAddsSingleMapping() throws InterruptedException
+	{
+		when(repository.getUrl()).thenReturn("https://bitbucket.org/owner/slug");
+		when(repository.getProjectKey()).thenReturn("PRJ");
+		SynchronizationKey key = new SynchronizationKey(repository);
+		BitbucketSynchronisation synchronisation = new BitbucketSynchronisation(key, repositoryManager, bitbucket, progressProvider);
+		when(repositoryManager.getSynchronisationOperation(any(SynchronizationKey.class), any(ProgressWriter.class))).thenReturn(synchronisation);
+		when(bitbucket.getChangesets(repository)).thenReturn(Arrays.asList(changeset));
+		when(changeset.getMessage()).thenReturn("PRJ-1 Message");
 
-        new DefaultSynchronizer(bitbucket, bitbucketMapper,
-                Executors.newSingleThreadExecutor(), templateRenderer).synchronize(projectKey, repositoryUri);
-        verify(bitbucketMapper, times(1)).addChangeset("PRJ-1", changeset);
-    }
+		DefaultSynchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadExecutor(), repositoryManager);
+		assertNull(synchronizer.getProgress(repository));
+		synchronizer.synchronize(repository);
+		assertNotNull(synchronizer.getProgress(repository));
+		
+		Progress progress = synchronizer.getProgress(repository);
+		while (!progress.isFinished())
+		{
+			Thread.sleep(10);
+		}
+		verify(repositoryManager, times(1)).addChangeset(repository, "PRJ-1", changeset);
+	}
+
 }
