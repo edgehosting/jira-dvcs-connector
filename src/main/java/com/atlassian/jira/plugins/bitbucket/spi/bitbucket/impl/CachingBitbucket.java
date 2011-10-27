@@ -3,6 +3,9 @@ package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
@@ -49,15 +52,44 @@ public class CachingBitbucket implements BitbucketCommunicator
             return result;
         }
     }
+    
+    private class UserKey
+    {
+    	SourceControlRepository repository;
+    	String username;
+    	
+		public UserKey(SourceControlRepository repository, String username)
+		{
+			this.repository = repository;
+			this.username = username;
+		}
 
-    private final Map<String, SourceControlUser> userMap = new MapMaker()
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (obj == null) return false;
+			if (this==obj) return true;
+			if (this.getClass()!=obj.getClass()) return false;
+			UserKey that = (UserKey) obj;
+			return new EqualsBuilder().append(repository, that.repository).append(username, that.username).isEquals();
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return new HashCodeBuilder(17,37).append(repository).append(username).toHashCode();
+		}
+		
+    }
+
+    private final Map<UserKey, SourceControlUser> userMap = new MapMaker()
             .expiration(30, TimeUnit.MINUTES)
             .makeComputingMap(
-                    new Function<String, SourceControlUser>()
+                    new Function<UserKey, SourceControlUser>()
                     {
-                        public SourceControlUser apply(String key)
+                        public SourceControlUser apply(UserKey key)
                         {
-                            return delegate.getUser(key);
+                            return delegate.getUser(key.repository, key.username);
                         }
                     });
 
@@ -78,11 +110,11 @@ public class CachingBitbucket implements BitbucketCommunicator
         this.delegate = delegate;
     }
 
-    public SourceControlUser getUser(String username)
+    public SourceControlUser getUser(SourceControlRepository repository, String username)
     {
         try
         {
-            return userMap.get(username);
+            return userMap.get(new UserKey(repository, username));
         }
         catch (ComputationException e)
         {

@@ -11,24 +11,9 @@ import static org.junit.Assert.assertEquals;
  */
 public class TestRepositoryUri
 {
-
-    @Test
-    public void testParseRepositoryUriWithBranch() {
-        RepositoryUri repositoryUri = RepositoryUri.parse("owner/slug/default");
-        assertEquals("owner", repositoryUri.getOwner());
-        assertEquals("slug", repositoryUri.getSlug());
-    }
-
     @Test
     public void testParseRepositoryFullUrlWithBranch() {
         RepositoryUri repositoryUri = RepositoryUri.parse("http://bitbucket.org/owner/slug/default");
-        assertEquals("owner", repositoryUri.getOwner());
-        assertEquals("slug", repositoryUri.getSlug());
-    }
-
-    @Test
-    public void testParseRepositoryUri() {
-        RepositoryUri repositoryUri = RepositoryUri.parse("owner/slug");
         assertEquals("owner", repositoryUri.getOwner());
         assertEquals("slug", repositoryUri.getSlug());
     }

@@ -106,9 +106,9 @@ public class GlobalRepositoryManager implements RepositoryManager
 		getManagerForUrl(repository.getUrl()).addChangeset(repository, issueId, changeset);
 	}
 
-	public SourceControlUser getUser(String repositoryUrl, String username)
+	public SourceControlUser getUser(SourceControlRepository repository, String username)
 	{
-		return getManagerForUrl(repositoryUrl).getUser(repositoryUrl, username);
+		return getManagerForUrl(repository.getUrl()).getUser(repository, username);
 	}
 
 	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)

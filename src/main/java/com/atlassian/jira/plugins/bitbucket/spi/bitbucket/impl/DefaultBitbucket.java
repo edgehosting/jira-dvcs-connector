@@ -28,11 +28,11 @@ public class DefaultBitbucket implements BitbucketCommunicator
         this.bitbucketConnection = bitbucketConnection;
     }
 
-    public SourceControlUser getUser(String username)
+    public SourceControlUser getUser(SourceControlRepository repository, String username)
     {
         try
         {
-            return BitbucketUserFactory.parse(new JSONObject(bitbucketConnection.getUser(username)));
+            return BitbucketUserFactory.parse(new JSONObject(bitbucketConnection.getUser(repository, username)));
         }
         catch (com.atlassian.jira.plugins.bitbucket.api.SourceControlException e)
         {

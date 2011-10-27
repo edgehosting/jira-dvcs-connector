@@ -24,7 +24,6 @@ import com.atlassian.sal.api.net.ResponseException;
  */
 public class DefaultBitbucketConnection implements BitbucketConnection
 {
-    private static final String BASE_URL = "https://api.bitbucket.org/1.0/";
     private final RequestFactory<?> requestFactory;
     private final Logger logger = LoggerFactory.getLogger(DefaultBitbucketConnection.class);
 	private final AuthenticationFactory authenticationFactory;
@@ -43,7 +42,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
     	Authentication auth = authenticationFactory.getAuthentication(repository);
 
     	logger.debug("parse repository [ {} ] [ {} ]", uri.getOwner(), uri.getSlug());
-        return get(auth, "repositories/" + encode(owner) + "/" + encode(slug), null);
+        return get(auth, "repositories/" + encode(owner) + "/" + encode(slug), null, uri.getApiUrl());
     }
 
     public String getChangeset(SourceControlRepository repository, String id)
@@ -54,7 +53,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
     	Authentication auth = authenticationFactory.getAuthentication(repository);
 
     	logger.debug("parse changeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, id});
-        return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets/" + encode(id), null);
+        return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets/" + encode(id), null, uri.getApiUrl());
     }
 
     public String getChangesets(SourceControlRepository repository, String startNode, int limit)
@@ -72,13 +71,14 @@ public class DefaultBitbucketConnection implements BitbucketConnection
         {
         	params.put("start", startNode);
         }
-		return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets", params);
+		return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets", params, uri.getApiUrl());
     }
 
-    public String getUser(String username)
+    public String getUser(SourceControlRepository repository, String username)
     {
+    	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
         logger.debug("parse user [ {} ]", username);
-        return get(Authentication.ANONYMOUS, "users/" + encode(username), null);
+        return get(Authentication.ANONYMOUS, "users/" + encode(username), null, uri.getApiUrl());
     }
 
     private String encode(String s)
@@ -93,7 +93,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
         }
     }
 
-    private String get(Authentication auth, String uri, Map<String, Object> params)
+    private String get(Authentication auth, String uri, Map<String, Object> params, String apiBaseUrl)
     {
         try
         {
@@ -113,7 +113,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
                 }
             }
 
-            String url = BASE_URL + uri + queryString.toString();
+            String url = apiBaseUrl + "/" + uri + queryString.toString();
             logger.debug("get [ " + url + " ]");
             Request<?, ?> request = requestFactory.createRequest(Request.MethodType.GET, url);
 

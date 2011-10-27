@@ -38,12 +38,13 @@ public class TestDefaultBitbucketConnection
     {
         MockitoAnnotations.initMocks(this);
         when(requestFactory.createRequest(eq(Request.MethodType.GET), anyString())).thenReturn(request);
+        when(repository.getUrl()).thenReturn("https://bitbucket.org/user/repo");
     }
 
     @Test
     public void getUser() throws Exception
     {
-        new DefaultBitbucketConnection(requestFactory, authenticationFactory).getUser("fred");
+        new DefaultBitbucketConnection(requestFactory, authenticationFactory).getUser(repository, "fred");
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/users/fred");
         verify(request, never()).addBasicAuthentication("user", "pass");
     }

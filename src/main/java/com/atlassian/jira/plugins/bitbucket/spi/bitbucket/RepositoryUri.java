@@ -2,35 +2,50 @@ package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.MessageFormat;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 
 /**
- * Used to identify a repository, contains an owner, a slug and optionally, a branch.
+ * Used to identify a repository, contains an owner, and a slug 
  */
 public class RepositoryUri
 {
-    public static RepositoryUri parse(String uri)
+    public static RepositoryUri parse(String urlString)
     {
-        try
+    	try
         {
-            URL url = new URL(uri);
-            uri = url.getPath();
-            uri = uri.substring(1);
+    		URL url = new URL(urlString);
+    		String protocol = url.getProtocol();
+    		String hostname = url.getHost();
+    		String path = url.getPath();
+    		String[] split = StringUtils.split(path,"/");
+    		if (split.length<2)
+    		{
+    			throw new SourceControlException("Expected url is https://domainname.com/username/repository");
+    		}
+    		String owner = split[0];
+    		String slug = split[1];
+    		return new RepositoryUri(protocol, hostname, owner, slug);
         }
         catch (MalformedURLException e)
         {
-            // assume the uri only includes a path
+        	throw new SourceControlException("Invalid url ["+urlString+"]");
         }
-
-        String[] split = uri.split("/");
-        return new RepositoryUri(split[0], split[1]);
     }
 
+    private final String protocol;
     private final String owner;
     private final String slug;
+	private final String hostname;
 
-    public RepositoryUri(String owner, String slug)
+    private RepositoryUri(String protocol, String hostname, String owner, String slug)
     {
-        this.owner = owner;
+        this.protocol = protocol;
+		this.hostname = hostname;
+		this.owner = owner;
         this.slug = slug;
     }
 
@@ -43,33 +58,29 @@ public class RepositoryUri
     {
         return slug;
     }
-
+    
+    public String getBaseUrl()
+    {
+    	return MessageFormat.format("{0}://{1}", protocol, hostname);
+    }
+    
     public String getRepositoryUrl()
     {
-        return "https://bitbucket.org/"+owner + "/" + slug;
+    	return MessageFormat.format("{0}://{1}/{2}/{3}", protocol, hostname, owner, slug);
     }
 
-    @Override
-    public boolean equals(Object o)
+    public String getApiUrl()
     {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        RepositoryUri that = (RepositoryUri) o;
-        return  !(owner != null ? !owner.equals(that.owner) : that.owner != null)
-                && !(slug != null ? !slug.equals(that.slug) : that.slug != null);
+    	return MessageFormat.format("{0}://api.{1}/1.0", protocol, hostname, owner, slug);
+    }
+    
+    public String getCommitUrl(String node)
+    {
+    	return MessageFormat.format("{0}://{1}/{2}/{3}/changeset/{4}", protocol, hostname, owner, slug, node);
     }
 
-    @Override
-    public int hashCode()
+    public String getUserUrl(String username)
     {
-        int result = owner != null ? owner.hashCode() : 0;
-        result = 31 * result + (slug != null ? slug.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString()
-    {
-        return getRepositoryUrl();
+    	return MessageFormat.format("{0}://{1}/{2}", protocol, hostname, username);
     }
 }

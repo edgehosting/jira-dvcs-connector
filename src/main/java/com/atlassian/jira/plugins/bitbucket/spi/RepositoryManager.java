@@ -67,7 +67,7 @@ public interface RepositoryManager
 	 * @param username
 	 * @return the details about the user
 	 */
-	public SourceControlUser getUser(String repositoryUrl, String username);
+	public SourceControlUser getUser(SourceControlRepository repository, String username);
 
 	/**
 	 * Returns callback function that is used for synchronisation of the repository. 

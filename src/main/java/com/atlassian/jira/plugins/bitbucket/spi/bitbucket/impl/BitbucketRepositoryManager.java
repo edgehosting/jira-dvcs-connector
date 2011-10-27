@@ -77,8 +77,8 @@ public class BitbucketRepositoryManager implements RepositoryManager
 
 	public boolean canHandleUrl(String url)
 	{
-        // Valid URL and URL starts with bitbucket.org domain
-        Pattern p = Pattern.compile("^(https|http)://bitbucket.org/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
+        // Valid URL 
+        Pattern p = Pattern.compile("^(https|http)://[a-zA-Z0-9][-a-zA-Z0-9]*.[a-zA-Z0-9]+/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
         Matcher m = p.matcher(url);
         return m.matches();
 	}
@@ -132,9 +132,9 @@ public class BitbucketRepositoryManager implements RepositoryManager
 		repositoryPersister.addChangeset(issueId, changeset.getRepositoryId(), changeset.getNode());
 	}
 
-	public SourceControlUser getUser(String repositoryUrl, String username)
+	public SourceControlUser getUser(SourceControlRepository repository, String username)
 	{
-		return bitbucket.getUser(username);
+		return bitbucket.getUser(repository, username);
 	}
 
 	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
@@ -156,8 +156,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
 			}
 		} catch (JSONException e)
 		{
-			throw new SourceControlException();
-			// TODO Auto-generated catch block
+			throw new SourceControlException(e);
 		}
         return changesets;
 
@@ -288,11 +287,13 @@ public class BitbucketRepositoryManager implements RepositoryManager
 	        String authorName = changeset.getRawAuthor();
 	        String login = changeset.getAuthor();
 	        String commitURL = changeset.getCommitURL(repository);
-	        SourceControlUser user = getUser(repository.getUrl(), changeset.getAuthor());
+	        SourceControlUser user = getUser(repository, changeset.getAuthor());
 	        String gravatarUrl = user.getAvatar().replace("s=32", "s=60");
+	        RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
+			String baseRepositoryUrl = uri.getBaseUrl();
 
 	        htmlCommitEntry = htmlCommitEntry.replace("#gravatar_url", gravatarUrl);
-	        htmlCommitEntry = htmlCommitEntry.replace("#user_url", "https://bitbucket.org/" + urlEncode(login));
+	        htmlCommitEntry = htmlCommitEntry.replace("#user_url", baseRepositoryUrl + "/" + urlEncode(login));
 	        htmlCommitEntry = htmlCommitEntry.replace("#login", TextUtils.htmlEncode(login));
 	        htmlCommitEntry = htmlCommitEntry.replace("#user_name", TextUtils.htmlEncode(authorName));
 	        htmlCommitEntry = htmlCommitEntry.replace("#commit_message", TextUtils.htmlEncode(changeset.getMessage()));
@@ -304,6 +305,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
 	        //htmlCommitEntry = htmlCommitEntry.replace("#tree_hash", commitTree);
 	        return htmlCommitEntry;		
 	}
+
 
     private String urlEncode(String s)
     {

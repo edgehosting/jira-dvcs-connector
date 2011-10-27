@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
+ * TODO - this should be probably merged/united with {@link BitbucketConnection}
  */
 public interface BitbucketCommunicator
 {
@@ -14,7 +15,7 @@ public interface BitbucketCommunicator
      * @param username the user to load
      * @return the bitbucket user details
      */
-    public SourceControlUser getUser(String username);
+    public SourceControlUser getUser(SourceControlRepository repository, String username);
 
     /**
      * Retrieves information about a changeset by changeset id

@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
-import java.text.MessageFormat;
 import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -16,7 +15,6 @@ import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
  */
 public class DefaultBitbucketChangeset implements Changeset
 {
-    static final String COMMIT_URL_PATTERN = "https://bitbucket.org/{0}/{1}/changeset/{2}";
     private final String node;
     private final String rawAuthor;
     private final String author;
@@ -99,7 +97,7 @@ public class DefaultBitbucketChangeset implements Changeset
     public String getCommitURL(SourceControlRepository repository)
     {
     	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
-        return MessageFormat.format(COMMIT_URL_PATTERN, uri.getOwner(), uri.getSlug(), node);
+        return uri.getCommitUrl(node);
     }
 
     @Override

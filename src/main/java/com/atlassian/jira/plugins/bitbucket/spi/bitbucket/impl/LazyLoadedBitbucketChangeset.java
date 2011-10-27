@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
-import java.text.MessageFormat;
 import java.util.List;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -26,7 +25,8 @@ public class LazyLoadedBitbucketChangeset implements Changeset
 		this.repository = repository;
 		this.lazyReference = new LazyReference<Changeset>()
         {
-            protected Changeset create() throws Exception
+            @Override
+			protected Changeset create() throws Exception
             {
                 return bitbucket.getChangeset(repository, nodeId);
             }
@@ -92,6 +92,6 @@ public class LazyLoadedBitbucketChangeset implements Changeset
     public String getCommitURL(SourceControlRepository repository)
     {
     	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
-        return MessageFormat.format(DefaultBitbucketChangeset.COMMIT_URL_PATTERN, uri.getOwner(), uri.getSlug(), nodeId);
+        return uri.getCommitUrl(nodeId);
     }
 }

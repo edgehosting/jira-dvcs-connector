@@ -113,8 +113,8 @@ public class TestDefaultBitbucket
     @Test
     public void testGetUser() throws Exception
     {
-        when(bitbucketConnection.getUser("mjensen")).thenReturn(resource("TestBitbucket-user.json"));
-        SourceControlUser user = new DefaultBitbucket(bitbucketConnection).getUser("mjensen");
+        when(bitbucketConnection.getUser(repository, "mjensen")).thenReturn(resource("TestBitbucket-user.json"));
+        SourceControlUser user = new DefaultBitbucket(bitbucketConnection).getUser(repository, "mjensen");
         assertEquals("https://secure.gravatar.com/avatar/e0fe5875ffbe955718f93b8a364454fe?d=identicon&s=32", user.getAvatar());
         assertEquals("mjensen", user.getUsername());
         assertEquals("Matthew", user.getFirstName());
@@ -151,8 +151,8 @@ public class TestDefaultBitbucket
     @Test
     public void testGetUnknownUser()
     {
-        when(bitbucketConnection.getUser("unknown")).thenThrow(new SourceControlException());
-        SourceControlUser user = new DefaultBitbucket(bitbucketConnection).getUser("unknown");
+        when(bitbucketConnection.getUser(repository, "unknown")).thenThrow(new SourceControlException());
+        SourceControlUser user = new DefaultBitbucket(bitbucketConnection).getUser(repository, "unknown");
         assertNotNull(user);
         assertEquals(SourceControlUser.UNKNOWN_USER,user);
     }

@@ -42,5 +42,5 @@ public interface BitbucketConnection
      * @param username the username of the user to load
      * @return the json payload describing the user
      */
-    String getUser(String username);
+    String getUser(SourceControlRepository repository, String username);
 }
