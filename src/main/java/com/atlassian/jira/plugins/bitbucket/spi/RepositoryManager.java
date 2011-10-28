@@ -92,4 +92,10 @@ public interface RepositoryManager
 	 */
 	public String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset);
 
+    /**
+     *
+     * @return the identifier of repository type
+     */
+    public String getRepositoryTypeId();
+
 }

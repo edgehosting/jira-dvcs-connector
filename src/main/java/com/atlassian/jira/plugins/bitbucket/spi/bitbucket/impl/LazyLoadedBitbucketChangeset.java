@@ -5,7 +5,7 @@ import java.util.List;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.util.concurrent.LazyReference;
 
@@ -20,7 +20,7 @@ public class LazyLoadedBitbucketChangeset implements Changeset
     private final String nodeId;
 	private final SourceControlRepository repository;
 
-    public LazyLoadedBitbucketChangeset(final BitbucketCommunicator bitbucket, final SourceControlRepository repository, final String nodeId)
+    public LazyLoadedBitbucketChangeset(final Communicator bitbucket, final SourceControlRepository repository, final String nodeId)
     {
 		this.repository = repository;
 		this.lazyReference = new LazyReference<Changeset>()

@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
@@ -32,24 +31,25 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         this.activeObjects = activeObjects;
     }
 
-    public List<ProjectMapping> getRepositories(final String projectKey)
+    public List<ProjectMapping> getRepositories(final String projectKey, final String repositoryTypeId)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<ProjectMapping>>()
         {
 			public List<ProjectMapping> doInTransaction()
             {
-                ProjectMapping[] mappings = activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ?", projectKey);
+                ProjectMapping[] mappings = activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ? AND REPOSITORY_TYPE_ID = ?", projectKey, repositoryTypeId);
                 return Lists.newArrayList(mappings);
             }
         });
     }
 
-    public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password)
+    public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String repositoryTypeId)
     {
         // TODO don't create duplicate mapping
         final Map<String, Object> map = new HashMap<String, Object>();
         map.put("REPOSITORY_URL", repositoryUrl);
         map.put("PROJECT_KEY", projectKey);
+        map.put("REPOSITORY_TYPE_ID", repositoryTypeId);
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
         {
             map.put("USERNAME", username);

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,6 @@ import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -41,7 +41,7 @@ public class TestDefaultBitbucketMapper
 	@Mock
     ActiveObjects activeObjects;
     @Mock
-    BitbucketCommunicator bitbucket;
+    Communicator bitbucket;
     @Mock
     ProjectMapping projectMapping;
     @Mock
@@ -96,7 +96,7 @@ public class TestDefaultBitbucketMapper
     public void testAddAnonymousRepositoryCreatesValidMap()
     {
         new DefaultRepositoryPersister(activeObjects).
-                addRepository("JST", RepositoryUri.parse(URL).getRepositoryUrl(), null, null);
+                addRepository("JST", RepositoryUri.parse(URL).getRepositoryUrl(), null, null, "bitbucket");
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
@@ -116,7 +116,7 @@ public class TestDefaultBitbucketMapper
     public void testAddAuthentictedRepositoryCreatesValidMap()
     {
         new DefaultRepositoryPersister(activeObjects).
-                addRepository("JST", RepositoryUri.parse(URL).getRepositoryUrl(), "user", "pass");
+                addRepository("JST", RepositoryUri.parse(URL).getRepositoryUrl(), "user", "pass", "bitbucket");
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {

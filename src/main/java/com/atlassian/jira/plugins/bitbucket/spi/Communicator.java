@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
+package com.atlassian.jira.plugins.bitbucket.spi;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
@@ -6,9 +6,9 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
- * TODO - this should be probably merged/united with {@link BitbucketConnection}
+ * TODO - this should be probably merged/united with {@link com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection}
  */
-public interface BitbucketCommunicator
+public interface Communicator
 {
     /**
      * Retrieves information about a bitbucket user

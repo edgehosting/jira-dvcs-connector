@@ -19,20 +19,24 @@ public interface RepositoryPersister
 
     /**
      * Return a list of all repository uris for the given project
+     *
      * @param projectKey the jira project
+     * @param repositoryTypeId
      * @return a list of repositories
      */
-    List<ProjectMapping> getRepositories(String projectKey);
+    List<ProjectMapping> getRepositories(String projectKey, String repositoryTypeId);
 
     /**
      * Map a repository to the specified jira project
+     *
      * @param projectKey the jira project
      * @param repositoryUrl the uri of the repository to map to
      * @param username the username to use to connect to this bitbucket repository
      * @param password the password to use to connect to this bitbucket repository
-     * @return 
+     * @param repositoryTypeId
+     * @return
      */
-    ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password);
+    ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String repositoryTypeId);
 
     /**
      * Remove the mapping of the bibucket repository from the specified jira project

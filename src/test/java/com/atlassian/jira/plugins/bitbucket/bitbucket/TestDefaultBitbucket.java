@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,14 +28,12 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketChangesetIterator;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucket;
 import com.google.common.collect.Iterables;
 
 /**
- * Unit tests for {@link BitbucketCommunicator}
+ * Unit tests for {@link com.atlassian.jira.plugins.bitbucket.spi.Communicator}
  */
 public class TestDefaultBitbucket
 {
@@ -61,7 +60,7 @@ public class TestDefaultBitbucket
         setupBitbucketConnection();
 
         List<Changeset> list = new ArrayList<Changeset>();
-        Iterables.addAll(list, new DefaultBitbucket(bitbucketConnection).getChangesets(repository));
+        Iterables.addAll(list, new BitbucketCommunicator(bitbucketConnection).getChangesets(repository));
         assertEquals(90, list.size());
 
         verifyBitbucketConnection();
@@ -71,7 +70,7 @@ public class TestDefaultBitbucket
     {
         setupBitbucketConnection();
 
-        Iterator<Changeset> changesets = new DefaultBitbucket(bitbucketConnection).getChangesets(repository).iterator();
+        Iterator<Changeset> changesets = new BitbucketCommunicator(bitbucketConnection).getChangesets(repository).iterator();
         for(int i=0;i<90;i++) {
             try
             {
@@ -114,7 +113,7 @@ public class TestDefaultBitbucket
     public void testGetUser() throws Exception
     {
         when(bitbucketConnection.getUser(repository, "mjensen")).thenReturn(resource("TestBitbucket-user.json"));
-        SourceControlUser user = new DefaultBitbucket(bitbucketConnection).getUser(repository, "mjensen");
+        SourceControlUser user = new BitbucketCommunicator(bitbucketConnection).getUser(repository, "mjensen");
         assertEquals("https://secure.gravatar.com/avatar/e0fe5875ffbe955718f93b8a364454fe?d=identicon&s=32", user.getAvatar());
         assertEquals("mjensen", user.getUsername());
         assertEquals("Matthew", user.getFirstName());
@@ -128,7 +127,7 @@ public class TestDefaultBitbucket
     	setupBitbucketConnection();
         when(bitbucketConnection.getChangeset(repository, "471b0c972ba6")).
                 thenReturn(resource("TestBitbucket-changeset.json"));
-        Changeset changeset = new DefaultBitbucket(bitbucketConnection).getChangeset(repository, "471b0c972ba6");
+        Changeset changeset = new BitbucketCommunicator(bitbucketConnection).getChangeset(repository, "471b0c972ba6");
         assertEquals("471b0c972ba6", changeset.getNode());
         assertEquals("https://bitbucket.org/atlassian/jira-bitbucket-connector/changeset/471b0c972ba6", changeset.getCommitURL(repository));
     }
@@ -137,7 +136,7 @@ public class TestDefaultBitbucket
     public void testGetCachedChangeset() throws Exception
     {
     	setupBitbucketConnection();
-        final DefaultBitbucket bitbucket = new DefaultBitbucket(bitbucketConnection);
+        final BitbucketCommunicator bitbucket = new BitbucketCommunicator(bitbucketConnection);
         final Changeset changeset = BitbucketChangesetFactory.load(bitbucket, repository, "471b0c972ba6");
 
         assertEquals("471b0c972ba6", changeset.getNode());
@@ -152,7 +151,7 @@ public class TestDefaultBitbucket
     public void testGetUnknownUser()
     {
         when(bitbucketConnection.getUser(repository, "unknown")).thenThrow(new SourceControlException());
-        SourceControlUser user = new DefaultBitbucket(bitbucketConnection).getUser(repository, "unknown");
+        SourceControlUser user = new BitbucketCommunicator(bitbucketConnection).getUser(repository, "unknown");
         assertNotNull(user);
         assertEquals(SourceControlUser.UNKNOWN_USER,user);
     }

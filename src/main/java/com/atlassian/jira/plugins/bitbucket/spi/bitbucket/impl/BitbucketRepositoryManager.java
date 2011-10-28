@@ -23,57 +23,33 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
+import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import com.opensymphony.util.TextUtils;
 
-public class BitbucketRepositoryManager implements RepositoryManager
+public class BitbucketRepositoryManager extends DvcsRepositoryManager
 {
 	private final RepositoryPersister repositoryPersister;
-	private final BitbucketCommunicator bitbucket;
-	private final Encryptor encryptor;
-	
-	/* Maps ProjectMapping to SourceControlRepository */
-	private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = 
-			new Function<ProjectMapping, SourceControlRepository>()
-			{
-				public SourceControlRepository apply(ProjectMapping pm)
-				{
-					String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
-					return new DefaultSourceControlRepository(pm.getID(), RepositoryUri.parse(pm.getRepositoryUrl()).getRepositoryUrl(),
-							pm.getProjectKey(), pm.getUsername(), decryptedPassword);
-				}
-			};
+	private final Communicator bitbucketCommunicator;
 
-	private final Function<IssueMapping, Changeset> TO_CHANGESET = 
-			new Function<IssueMapping, Changeset>()
-			{
-				public Changeset apply(IssueMapping from)
-				{
-					ProjectMapping pm = repositoryPersister.getRepository(from.getRepositoryId());
-                    SourceControlRepository repository = TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
-					return bitbucket.getChangeset(repository, from.getNode());
-				}
-			};
-			
-	private final ApplicationProperties applicationProperties;
-
-	public BitbucketRepositoryManager(RepositoryPersister repositoryPersister, BitbucketCommunicator bitbucket, Encryptor encryptor, ApplicationProperties applicationProperties)
+	public BitbucketRepositoryManager(RepositoryPersister repositoryPersister, Communicator communicator, Encryptor encryptor, ApplicationProperties applicationProperties)
 	{
+        super(encryptor, applicationProperties);
 		this.repositoryPersister = repositoryPersister;
-		this.bitbucket = bitbucket;
-		this.encryptor = encryptor;
-		this.applicationProperties = applicationProperties;
+		this.bitbucketCommunicator = communicator;
 	}
+
+    public String getRepositoryTypeId() {
+        return "bitbucketCommunicator";
+    }
 
 	public boolean canHandleUrl(String url)
 	{
@@ -83,63 +59,19 @@ public class BitbucketRepositoryManager implements RepositoryManager
         return m.matches();
 	}
 
-	public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username, String password)
-	{
-        // Remove trailing slashes from URL
-        if (repositoryUrl.endsWith("/"))
-        {
-            repositoryUrl = repositoryUrl.substring(0, repositoryUrl.length() - 1);
-        }
+    @Override
+    public RepositoryPersister getRepositoryPersister() {
+        return repositoryPersister;
+    }
 
-        // Set all URLs to HTTPS
-        if (repositoryUrl.startsWith("http:"))
-        {
-            repositoryUrl = repositoryUrl.replaceFirst("http:", "https:");
-        }
-
-        String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
-        ProjectMapping pm = repositoryPersister.addRepository(projectKey, repositoryUrl, username, encryptedPassword);
-        return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
-	}
-
-
-	public List<SourceControlRepository> getRepositories(String projectKey)
-	{
-		 List<ProjectMapping> repositories = repositoryPersister.getRepositories(projectKey);
-		 return Lists.transform(repositories, TO_SOURCE_CONTROL_REPOSITORY);
-	}
-	
-	public SourceControlRepository getRepository(int id)
-	{
-		ProjectMapping repository = repositoryPersister.getRepository(id);
-		return TO_SOURCE_CONTROL_REPOSITORY.apply(repository);
-	}
-
-	public List<Changeset> getChangesets(String issueKey)
-	{
-		List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey);
-		return Lists.transform(issueMappings, TO_CHANGESET);
-	}
-
-	public void removeRepository(int id)
-	{
-		repositoryPersister.removeRepository(id);
-        // TODO Should we also delete IssueMappings? Yes we should.
-	}
-
-	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
-	{
-		repositoryPersister.addChangeset(issueId, changeset.getRepositoryId(), changeset.getNode());
-	}
-
-	public SourceControlUser getUser(SourceControlRepository repository, String username)
-	{
-		return bitbucket.getUser(repository, username);
-	}
+    @Override
+    public Communicator getCommunicator() {
+        return bitbucketCommunicator;
+    }
 
 	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
 	{
-		return new BitbucketSynchronisation(key, this, bitbucket, progressProvider);
+		return new BitbucketSynchronisation(key, this, bitbucketCommunicator, progressProvider);
 	}
 
 	public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
@@ -264,7 +196,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
 	                htmlHiddenDiv +
 
 	                "<div style='margin-top: 10px'>" +
-	                "<img src='" + applicationProperties.getBaseUrl() + "/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/document.jpg' align='center'> <span class='commit_date' style='color: #757575; font-size: 9pt;'>#formatted_commit_date</span>" +
+	                "<img src='" + getApplicationProperties().getBaseUrl() + "/download/resources/com.atlassian.jira.plugins.jira-bitbucketCommunicator-connector-plugin/images/document.jpg' align='center'> <span class='commit_date' style='color: #757575; font-size: 9pt;'>#formatted_commit_date</span>" +
 	                "</div>" +
 
 	                "</td>" +
@@ -305,18 +237,4 @@ public class BitbucketRepositoryManager implements RepositoryManager
 	        //htmlCommitEntry = htmlCommitEntry.replace("#tree_hash", commitTree);
 	        return htmlCommitEntry;		
 	}
-
-
-    private String urlEncode(String s)
-    {
-        try
-        {
-            return URLEncoder.encode(s, "UTF-8");
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            throw new RuntimeException("required encoding not found");
-        }
-    }
-
 }

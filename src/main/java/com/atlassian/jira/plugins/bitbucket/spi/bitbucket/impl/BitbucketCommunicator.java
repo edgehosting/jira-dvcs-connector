@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
 import java.util.Iterator;
 
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +11,6 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -18,12 +18,12 @@ import com.atlassian.jira.util.json.JSONObject;
 /**
  * Starting point for remote API calls to the bitbucket remote API
  */
-public class DefaultBitbucket implements BitbucketCommunicator
+public class BitbucketCommunicator implements Communicator
 {
-    private final Logger logger = LoggerFactory.getLogger(DefaultBitbucket.class);
+    private final Logger logger = LoggerFactory.getLogger(BitbucketCommunicator.class);
     private final BitbucketConnection bitbucketConnection;
 
-    public DefaultBitbucket(BitbucketConnection bitbucketConnection)
+    public BitbucketCommunicator(BitbucketConnection bitbucketConnection)
     {
         this.bitbucketConnection = bitbucketConnection;
     }

@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -10,17 +11,16 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
 
 /**
- * A {@link BitbucketCommunicator} implementation that caches results for quicker subsequent lookup times
+ * A {@link com.atlassian.jira.plugins.bitbucket.spi.Communicator} implementation that caches results for quicker subsequent lookup times
  */
-public class CachingBitbucket implements BitbucketCommunicator
+public class CachingCommunicator implements Communicator
 {
-    private final BitbucketCommunicator delegate;
+    private final Communicator delegate;
 
     private class ChangesetKey
     {
@@ -105,7 +105,7 @@ public class CachingBitbucket implements BitbucketCommunicator
                     });
 
 
-    public CachingBitbucket(BitbucketCommunicator delegate)
+    public CachingCommunicator(Communicator delegate)
     {
         this.delegate = delegate;
     }
