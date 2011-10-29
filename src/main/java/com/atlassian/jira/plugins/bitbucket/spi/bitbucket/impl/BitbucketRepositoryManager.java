@@ -38,6 +38,7 @@ import com.opensymphony.util.TextUtils;
 
 public class BitbucketRepositoryManager implements RepositoryManager
 {
+	private final ApplicationProperties applicationProperties;
 	private final RepositoryPersister repositoryPersister;
 	private final BitbucketCommunicator bitbucket;
 	private final Encryptor encryptor;
@@ -65,7 +66,6 @@ public class BitbucketRepositoryManager implements RepositoryManager
 				}
 			};
 			
-	private final ApplicationProperties applicationProperties;
 
 	public BitbucketRepositoryManager(RepositoryPersister repositoryPersister, BitbucketCommunicator bitbucket, Encryptor encryptor, ApplicationProperties applicationProperties)
 	{
@@ -318,5 +318,11 @@ public class BitbucketRepositoryManager implements RepositoryManager
             throw new RuntimeException("required encoding not found");
         }
     }
+
+	public void setupPostcommitHook(SourceControlRepository repo, String username, String password)
+	{
+		String postCommitUrl = applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/"+repo.getId()+"/sync";
+		bitbucket.setupPostcommitHook(repo, username, password, postCommitUrl);
+	}
 
 }

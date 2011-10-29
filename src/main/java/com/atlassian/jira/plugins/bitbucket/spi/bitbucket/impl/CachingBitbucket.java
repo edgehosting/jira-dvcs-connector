@@ -150,4 +150,9 @@ public class CachingBitbucket implements BitbucketCommunicator
     {
         return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause() : new SourceControlException(e.getCause());
     }
+
+	public void setupPostcommitHook(SourceControlRepository repo, String username, String password, String postCommitUrl)
+	{
+		delegate.setupPostcommitHook(repo, username, password, postCommitUrl);
+	}
 }

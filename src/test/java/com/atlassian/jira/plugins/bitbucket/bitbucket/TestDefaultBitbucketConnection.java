@@ -37,6 +37,7 @@ public class TestDefaultBitbucketConnection
     public void setup() throws Exception
     {
         MockitoAnnotations.initMocks(this);
+        when(requestFactory.createRequest(eq(Request.MethodType.POST), anyString())).thenReturn(request);
         when(requestFactory.createRequest(eq(Request.MethodType.GET), anyString())).thenReturn(request);
         when(repository.getUrl()).thenReturn("https://bitbucket.org/user/repo");
     }
@@ -122,6 +123,19 @@ public class TestDefaultBitbucketConnection
         new DefaultBitbucketConnection(requestFactory, authenticationFactory).getChangesets(repository, null, BitbucketChangesetIterator.PAGE_SIZE);
         verify(requestFactory).createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/repositories/owner/slug/changesets?limit=15");
         verify(request).addBasicAuthentication("user", "pass");
+    }
+    
+    @Test
+    public void setupPostcommitHook()
+    {
+    	String postCommitUrl = "http://this.jira.server:1234/jira/rest/postcommithandler";
+    	DefaultBitbucketConnection bitbucketConnection = new DefaultBitbucketConnection(requestFactory, authenticationFactory);
+
+    	bitbucketConnection.setupPostcommitHook(repository, "user", "pass", postCommitUrl);
+    	
+    	verify(requestFactory).createRequest(Request.MethodType.POST, "https://api.bitbucket.org/1.0/repositories/user/repo/services");
+    	verify(request).addBasicAuthentication("user", "pass");
+    	verify(request).setRequestBody("type=post;URL=" + postCommitUrl);
     }
 
 }

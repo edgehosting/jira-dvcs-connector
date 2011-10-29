@@ -42,7 +42,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
     	Authentication auth = authenticationFactory.getAuthentication(repository);
 
     	logger.debug("parse repository [ {} ] [ {} ]", uri.getOwner(), uri.getSlug());
-        return get(auth, "repositories/" + encode(owner) + "/" + encode(slug), null, uri.getApiUrl());
+        return get(auth, "/repositories/" + encode(owner) + "/" + encode(slug), null, uri.getApiUrl());
     }
 
     public String getChangeset(SourceControlRepository repository, String id)
@@ -53,7 +53,7 @@ public class DefaultBitbucketConnection implements BitbucketConnection
     	Authentication auth = authenticationFactory.getAuthentication(repository);
 
     	logger.debug("parse changeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, id});
-        return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets/" + encode(id), null, uri.getApiUrl());
+        return get(auth, "/repositories/" + encode(owner) + "/" + encode(slug) + "/changesets/" + encode(id), null, uri.getApiUrl());
     }
 
     public String getChangesets(SourceControlRepository repository, String startNode, int limit)
@@ -71,14 +71,14 @@ public class DefaultBitbucketConnection implements BitbucketConnection
         {
         	params.put("start", startNode);
         }
-		return get(auth, "repositories/" + encode(owner) + "/" + encode(slug) + "/changesets", params, uri.getApiUrl());
+		return get(auth, "/repositories/" + encode(owner) + "/" + encode(slug) + "/changesets", params, uri.getApiUrl());
     }
 
     public String getUser(SourceControlRepository repository, String username)
     {
     	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
         logger.debug("parse user [ {} ]", username);
-        return get(Authentication.ANONYMOUS, "users/" + encode(username), null, uri.getApiUrl());
+        return get(Authentication.ANONYMOUS, "/users/" + encode(username), null, uri.getApiUrl());
     }
 
     private String encode(String s)
@@ -92,46 +92,74 @@ public class DefaultBitbucketConnection implements BitbucketConnection
             throw new SourceControlException("required encoding not found", e);
         }
     }
+    
+    private String buildQueryString(Map<String, Object> params)
+    {
+    	try
+		{
+			StringBuilder queryStringBuilder = new StringBuilder();
+			
+			if (params != null && !params.isEmpty())
+			{
+				queryStringBuilder.append("?");
+				for (Iterator<Map.Entry<String, Object>> iterator = params.entrySet().iterator(); iterator.hasNext(); )
+				{
+					Map.Entry<String, Object> entry = iterator.next();
+					queryStringBuilder.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+					queryStringBuilder.append("=");
+					queryStringBuilder.append(URLEncoder.encode(String.valueOf(entry.getValue()), "UTF-8"));
+					if (iterator.hasNext())
+						queryStringBuilder.append("&");
+				}
+			}
+			return queryStringBuilder.toString();
+		} catch (UnsupportedEncodingException e)
+		{
+			throw new SourceControlException("required encoding not found");
+		}
+    }
 
     private String get(Authentication auth, String uri, Map<String, Object> params, String apiBaseUrl)
     {
+    	return runRequest(Request.MethodType.GET, apiBaseUrl, uri, auth, params, null);
+    }
+
+    private String post(Authentication auth, String uri, String postData, String apiBaseUrl)
+    {
+    	return runRequest(Request.MethodType.POST, apiBaseUrl, uri, auth, null, postData);
+    }
+    
+    private String runRequest(Request.MethodType methodType, String apiBaseUrl, String uri, Authentication auth, Map<String, Object> params, String postData)
+    {
+    	String url = apiBaseUrl + uri + buildQueryString(params);
+    	logger.debug("get [ " + url + " ]");
         try
         {
-            StringBuilder queryString = new StringBuilder();
-
-            if (params != null && !params.isEmpty())
-            {
-                queryString.append("?");
-                for (Iterator<Map.Entry<String, Object>> iterator = params.entrySet().iterator(); iterator.hasNext(); )
-                {
-                    Map.Entry<String, Object> entry = iterator.next();
-                    queryString.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-                    queryString.append("=");
-                    queryString.append(URLEncoder.encode(String.valueOf(entry.getValue()), "UTF-8"));
-                    if (iterator.hasNext())
-                        queryString.append("&");
-                }
-            }
-
-            String url = apiBaseUrl + "/" + uri + queryString.toString();
-            logger.debug("get [ " + url + " ]");
-            Request<?, ?> request = requestFactory.createRequest(Request.MethodType.GET, url);
-
+            Request<?, ?> request = requestFactory.createRequest(methodType, url);
             if (auth != null)
                 auth.addAuthentication(request);
-
+            if (postData!=null)
+            	request.setRequestBody(postData);
             request.setSoTimeout(60000);
-
             return request.execute();
         }
         catch (ResponseException e)
         {
-            throw new SourceControlException("could not parse bitbucket response [ " + uri + " ]", e);
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            throw new SourceControlException("required encoding not found");
+            throw new SourceControlException("could not parse bitbucket response [ " + url + " ]", e);
         }
     }
+
+
+	public void setupPostcommitHook(SourceControlRepository repo, String username, String password, String postCommitUrl)
+	{
+		
+		RepositoryUri uri = RepositoryUri.parse(repo.getUrl());
+		Authentication auth = Authentication.basic(username, password);
+		String urlPath =  "/repositories/"+uri.getOwner()+"/"+uri.getSlug()+"/services";
+		String apiUrl = uri.getApiUrl();
+		String postData = "type=post;URL=" + postCommitUrl;
+
+		post(auth, urlPath, postData, apiUrl);
+	}
 
 }

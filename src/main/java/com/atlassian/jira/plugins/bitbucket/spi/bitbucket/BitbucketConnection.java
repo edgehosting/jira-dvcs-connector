@@ -43,4 +43,13 @@ public interface BitbucketConnection
      * @return the json payload describing the user
      */
     String getUser(SourceControlRepository repository, String username);
+
+	/**
+	 * Installs a postcommit service for this repository
+	 * @param repo
+	 * @param username
+	 * @param password
+	 * @param postCommitUrl 
+	 */
+	void setupPostcommitHook(SourceControlRepository repo, String username, String password, String postCommitUrl);
 }

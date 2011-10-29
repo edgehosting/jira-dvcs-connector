@@ -38,4 +38,12 @@ public interface BitbucketCommunicator
      */
     public Iterable<Changeset> getChangesets(SourceControlRepository repository);
 
+	/**
+	 * @param repo
+	 * @param username
+	 * @param password
+	 * @param postCommitUrl 
+	 */
+	public void setupPostcommitHook(SourceControlRepository repo, String username, String password, String postCommitUrl);
+
 }

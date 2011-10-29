@@ -46,7 +46,7 @@ function retrieveSyncStatus() {
     		syncStatusDiv.html(syncHtml);
     		
     	});
-    	window.setTimeout(retrieveSyncStatus, 2000)
+    	window.setTimeout(retrieveSyncStatus, 4000)
     })
 }
 

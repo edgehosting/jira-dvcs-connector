@@ -34,6 +34,8 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private final Logger logger = LoggerFactory.getLogger(ConfigureBitbucketRepositories.class);
 
     private String mode = "";
+    private String serviceUsername = "";
+ 	private String servicePassword = "";
     private String bbUserName = "";
     private String bbPassword = "";
     private String url = "";
@@ -78,6 +80,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
                 if (!repoVisibility.equals("private") || (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword)))
                 {
                 	SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, bbUserName, bbPassword);
+                	globalRepositoryManager.setupPostcommitHook(repo, serviceUsername, servicePassword);
                 	repositoryId = repo.getId();
                     postCommitURL = "BitbucketPostCommit.jspa?repositoryId=" + repositoryId;
                     nextAction = "ForceSync";
@@ -213,6 +216,26 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 	public void setRepositoryId(int repositoryId)
 	{
 		this.repositoryId = repositoryId;
+	}
+	
+	public String getServiceUsername()
+	{
+		return serviceUsername;
+	}
+
+	public void setServiceUsername(String serviceUsername)
+	{
+		this.serviceUsername = serviceUsername;
+	}
+
+	public String getServicePassword()
+	{
+		return servicePassword;
+	}
+
+	public void setServicePassword(String servicePassword)
+	{
+		this.servicePassword = servicePassword;
 	}
 
     

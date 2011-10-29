@@ -92,4 +92,12 @@ public interface RepositoryManager
 	 */
 	public String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset);
 
+	/**
+	 * Installs a postcommit service for this repository
+	 * @param repo
+	 * @param username
+	 * @param password
+	 */
+	public void setupPostcommitHook(SourceControlRepository repo, String username, String password);
+
 }
