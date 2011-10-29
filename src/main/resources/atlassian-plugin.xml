@@ -162,14 +162,7 @@
     <resource type="download" name="images/" location="images/"/>
 
     <web-resource name="Resources" key="resources">
-        <!--
-         <resource name="javascripts/atlassian.js" type="download" location="javascripts/atlassian.js"/>
-         <resource name="javascripts/datejs/date.js" type="download" location="javascripts/datejs/date.js"/>
-         <resource name="javascripts/ajs.date.js" type="download" location="javascripts/ajs.date.js"/>
-        -->
-
         <resource name="javascripts/bitbucket.js" type="download" location="javascripts/bitbucket.js"/>
-
         <context>atl.general</context>
         <context>atl.admin</context>
     </web-resource>
@@ -177,6 +170,5 @@
     <rest key="bitbucket-rest-resources" path="/bitbucket" version="1.0">
         <description>REST Resources</description>
     </rest>
-
 
 </atlassian-plugin>
