@@ -150,11 +150,11 @@ public class DefaultBitbucketConnection implements BitbucketConnection
     }
 
 
-	public void setupPostcommitHook(SourceControlRepository repo, String username, String password, String postCommitUrl)
+	public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl)
 	{
 		
 		RepositoryUri uri = RepositoryUri.parse(repo.getUrl());
-		Authentication auth = Authentication.basic(username, password);
+		Authentication auth = Authentication.basic(repo.getAdminUsername(), repo.getAdminPassword());
 		String urlPath =  "/repositories/"+uri.getOwner()+"/"+uri.getSlug()+"/services";
 		String apiUrl = uri.getApiUrl();
 		String postData = "type=post;URL=" + postCommitUrl;

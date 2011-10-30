@@ -29,4 +29,15 @@ public interface SourceControlRepository
 	 * @return project key of the project where repository is mapped to
 	 */
 	String getProjectKey();
+	
+	/**
+	 * Admin username - used when (un)installing postcommit hook
+	 * @return
+	 */
+	String getAdminUsername();
+	/**
+	 * Admin password - used when (un)installing postcommit hook
+	 * @return
+	 */
+	String getAdminPassword();
 }

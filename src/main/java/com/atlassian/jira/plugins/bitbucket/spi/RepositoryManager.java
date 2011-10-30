@@ -25,9 +25,11 @@ public interface RepositoryManager
 	 * @param repositoryUrl
 	 * @param username
 	 * @param password
+	 * @param adminUsername - used when (un)installing postcommit hook
+	 * @param adminPassword - used when (un)installing postcommit hook
 	 * @return
 	 */
-	public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username, String password);
+	public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword);
 	
 	/**
 	 * @param repositoryId
@@ -95,9 +97,7 @@ public interface RepositoryManager
 	/**
 	 * Installs a postcommit service for this repository
 	 * @param repo
-	 * @param username
-	 * @param password
 	 */
-	public void setupPostcommitHook(SourceControlRepository repo, String username, String password);
+	public void setupPostcommitHook(SourceControlRepository repo);
 
 }

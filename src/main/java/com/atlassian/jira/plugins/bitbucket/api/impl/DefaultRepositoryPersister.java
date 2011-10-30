@@ -44,7 +44,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
 
-    public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password)
+    public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword)
     {
         // TODO don't create duplicate mapping
         final Map<String, Object> map = new HashMap<String, Object>();
@@ -54,6 +54,11 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         {
             map.put("USERNAME", username);
             map.put("PASSWORD", password);
+        }
+        if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminPassword))
+        {
+        	map.put("ADMIN_USERNAME", adminUsername);
+        	map.put("ADMIN_PASSWORD", adminPassword);
         }
         return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping>()
         {

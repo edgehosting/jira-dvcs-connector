@@ -128,10 +128,14 @@ public class TestDefaultBitbucketConnection
     @Test
     public void setupPostcommitHook()
     {
+    	when(repository.getAdminUsername()).thenReturn("user");
+    	when(repository.getAdminPassword()).thenReturn("pass");
+
+    	
     	String postCommitUrl = "http://this.jira.server:1234/jira/rest/postcommithandler";
     	DefaultBitbucketConnection bitbucketConnection = new DefaultBitbucketConnection(requestFactory, authenticationFactory);
 
-    	bitbucketConnection.setupPostcommitHook(repository, "user", "pass", postCommitUrl);
+    	bitbucketConnection.setupPostcommitHook(repository, postCommitUrl);
     	
     	verify(requestFactory).createRequest(Request.MethodType.POST, "https://api.bitbucket.org/1.0/repositories/user/repo/services");
     	verify(request).addBasicAuthentication("user", "pass");

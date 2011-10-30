@@ -10,9 +10,13 @@ public interface ProjectMapping extends Entity
     String getProjectKey();
     String getUsername();
     String getPassword();
+    String getAdminPassword();
+    String getAdminUsername();
 
     void setRepositoryUrl(String repositoryId);
     void setProjectKey(String projectKey);
     void setUsername(String username);
     void setPassword(String password);
+    void setAdminPassword(String pasword);
+    void setAdminUsername(String username);
 }

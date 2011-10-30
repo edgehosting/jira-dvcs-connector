@@ -1,16 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
@@ -79,8 +68,8 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
             {
                 if (!repoVisibility.equals("private") || (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword)))
                 {
-                	SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, bbUserName, bbPassword);
-                	globalRepositoryManager.setupPostcommitHook(repo, serviceUsername, servicePassword);
+                	SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, bbUserName, bbPassword, serviceUsername, servicePassword);
+                	globalRepositoryManager.setupPostcommitHook(repo);
                 	repositoryId = repo.getId();
                     postCommitURL = "BitbucketPostCommit.jspa?repositoryId=" + repositoryId;
                     nextAction = "ForceSync";

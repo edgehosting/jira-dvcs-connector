@@ -69,9 +69,9 @@ public class DefaultBitbucket implements BitbucketCommunicator
         };
     }
 
-	public void setupPostcommitHook(SourceControlRepository repo, String username, String password, String postCommitUrl)
+	public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl)
 	{
-		bitbucketConnection.setupPostcommitHook(repo, username, password, postCommitUrl);
+		bitbucketConnection.setupPostcommitHook(repo, postCommitUrl);
 		
 	}
     

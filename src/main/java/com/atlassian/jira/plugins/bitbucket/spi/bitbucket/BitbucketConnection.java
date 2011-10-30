@@ -47,9 +47,7 @@ public interface BitbucketConnection
 	/**
 	 * Installs a postcommit service for this repository
 	 * @param repo
-	 * @param username
-	 * @param password
 	 * @param postCommitUrl 
 	 */
-	void setupPostcommitHook(SourceControlRepository repo, String username, String password, String postCommitUrl);
+	void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl);
 }

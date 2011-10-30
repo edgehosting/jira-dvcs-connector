@@ -33,8 +33,9 @@ public class BackwardCompabilityImpl implements BackwardCompability
 		public SourceControlRepository apply(ProjectMapping pm)
 		{
 			String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
+			String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
 			return new DefaultSourceControlRepository(pm.getID(), RepositoryUri.parse(pm.getRepositoryUrl())
-					.getRepositoryUrl(), pm.getProjectKey(), pm.getUsername(), decryptedPassword);
+					.getRepositoryUrl(), pm.getProjectKey(), pm.getUsername(), decryptedPassword, pm.getAdminUsername(), decryptedAdminPassword);
 		}
 	};
 

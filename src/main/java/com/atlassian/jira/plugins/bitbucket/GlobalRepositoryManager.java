@@ -64,9 +64,9 @@ public class GlobalRepositoryManager implements RepositoryManager
 		return false;
 	}
 
-	public SourceControlRepository addRepository(String projectKey, String url, String username, String password)
+	public SourceControlRepository addRepository(String projectKey, String url, String username, String password, String adminUsername, String adminPassword)
 	{
-		return getManagerForUrl(url).addRepository(projectKey, url, username, password);
+		return getManagerForUrl(url).addRepository(projectKey, url, username, password, adminUsername, adminPassword);
 	}
 
 
@@ -127,8 +127,8 @@ public class GlobalRepositoryManager implements RepositoryManager
 		return getManagerForUrl(repository.getUrl()).getHtmlForChangeset(repository, changeset);
 	}
 
-	public void setupPostcommitHook(SourceControlRepository repo, String username, String password)
+	public void setupPostcommitHook(SourceControlRepository repo)
 	{
-		getManagerForUrl(repo.getUrl()).setupPostcommitHook(repo, username, password);
+		getManagerForUrl(repo.getUrl()).setupPostcommitHook(repo);
 	}
 }

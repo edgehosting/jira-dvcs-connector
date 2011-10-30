@@ -30,9 +30,11 @@ public interface RepositoryPersister
      * @param repositoryUrl the uri of the repository to map to
      * @param username the username to use to connect to this bitbucket repository
      * @param password the password to use to connect to this bitbucket repository
+     * @param adminUsername the username of repository admin - used to create/delete postcommit hook
+     * @param adminPassword the password of repository admin - used to create/delete postcommit hook
      * @return 
      */
-    ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password);
+    ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword);
 
     /**
      * Remove the mapping of the bibucket repository from the specified jira project

@@ -50,8 +50,9 @@ public class BitbucketRepositoryManager implements RepositoryManager
 				public SourceControlRepository apply(ProjectMapping pm)
 				{
 					String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
+					String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
 					return new DefaultSourceControlRepository(pm.getID(), RepositoryUri.parse(pm.getRepositoryUrl()).getRepositoryUrl(),
-							pm.getProjectKey(), pm.getUsername(), decryptedPassword);
+							pm.getProjectKey(), pm.getUsername(), decryptedPassword, pm.getAdminUsername(), decryptedAdminPassword);
 				}
 			};
 
@@ -83,7 +84,7 @@ public class BitbucketRepositoryManager implements RepositoryManager
         return m.matches();
 	}
 
-	public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username, String password)
+	public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword)
 	{
         // Remove trailing slashes from URL
         if (repositoryUrl.endsWith("/"))
@@ -98,7 +99,8 @@ public class BitbucketRepositoryManager implements RepositoryManager
         }
 
         String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
-        ProjectMapping pm = repositoryPersister.addRepository(projectKey, repositoryUrl, username, encryptedPassword);
+        String encryptedAdminPassword = encryptor.encrypt(adminPassword, projectKey, repositoryUrl);
+        ProjectMapping pm = repositoryPersister.addRepository(projectKey, repositoryUrl, username, encryptedPassword, adminUsername, encryptedAdminPassword);
         return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 	}
 
@@ -319,10 +321,10 @@ public class BitbucketRepositoryManager implements RepositoryManager
         }
     }
 
-	public void setupPostcommitHook(SourceControlRepository repo, String username, String password)
+	public void setupPostcommitHook(SourceControlRepository repo)
 	{
 		String postCommitUrl = applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/"+repo.getId()+"/sync";
-		bitbucket.setupPostcommitHook(repo, username, password, postCommitUrl);
+		bitbucket.setupPostcommitHook(repo, postCommitUrl);
 	}
 
 }

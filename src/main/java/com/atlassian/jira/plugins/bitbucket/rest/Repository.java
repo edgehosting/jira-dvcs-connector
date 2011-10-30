@@ -27,18 +27,26 @@ public class Repository
 
     @XmlAttribute
     private String password;
+    
+    @XmlAttribute
+    private String adminUsername;
+
+	@XmlAttribute
+    private String adminPassword;
 
 	public Repository()
     {
     }
 
-    public Repository(int id, String projectKey, String url, String username, String password)
+    public Repository(int id, String projectKey, String url, String username, String password, String adminUsername, String adminPassword)
     {
         this.id = id;
         this.projectKey = projectKey;
         this.url = url;
 		this.username = username;
 		this.password = password;
+		this.adminUsername = adminUsername;
+		this.adminPassword = adminPassword;
     }
 
     public int getId()
@@ -98,5 +106,25 @@ public class Repository
 	public void setPassword(String password)
 	{
 		this.password = password;
+	}
+
+    public String getAdminUsername()
+	{
+		return adminUsername;
+	}
+
+	public void setAdminUsername(String adminUsername)
+	{
+		this.adminUsername = adminUsername;
+	}
+
+	public String getAdminPassword()
+	{
+		return adminPassword;
+	}
+
+	public void setAdminPassword(String adminPassword)
+	{
+		this.adminPassword = adminPassword;
 	}
 }

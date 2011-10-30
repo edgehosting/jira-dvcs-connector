@@ -40,10 +40,8 @@ public interface BitbucketCommunicator
 
 	/**
 	 * @param repo
-	 * @param username
-	 * @param password
 	 * @param postCommitUrl 
 	 */
-	public void setupPostcommitHook(SourceControlRepository repo, String username, String password, String postCommitUrl);
+	public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl);
 
 }
