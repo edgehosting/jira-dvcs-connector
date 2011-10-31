@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,16 +10,15 @@ import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.AbstractSynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 
 public class BitbucketSynchronisation extends AbstractSynchronisationOperation
 {
     private final Logger logger = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
-	private BitbucketCommunicator bitbucketCommunicator;
+	private Communicator bitbucketCommunicator;
 
     public BitbucketSynchronisation(SynchronizationKey key, RepositoryManager repositoryManager,
-			BitbucketCommunicator bitbucketCommunicator, ProgressWriter progressProvider)
+			Communicator bitbucketCommunicator, ProgressWriter progressProvider)
 	{
     	super(key, repositoryManager, progressProvider);
 		this.bitbucketCommunicator = bitbucketCommunicator;

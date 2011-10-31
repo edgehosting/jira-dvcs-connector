@@ -100,4 +100,10 @@ public interface RepositoryManager
 	 */
 	public void setupPostcommitHook(SourceControlRepository repo);
 
+	/**
+     *
+     * @return the identifier of repository type
+     */
+   public String getRepositoryTypeId();
+
 }

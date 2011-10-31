@@ -126,7 +126,11 @@ public class GlobalRepositoryManager implements RepositoryManager
 	{
 		return getManagerForUrl(repository.getUrl()).getHtmlForChangeset(repository, changeset);
 	}
-
+	
+    public String getRepositoryTypeId() {
+        return "unknown";
+    }
+    
 	public void setupPostcommitHook(SourceControlRepository repo)
 	{
 		getManagerForUrl(repo.getUrl()).setupPostcommitHook(repo);

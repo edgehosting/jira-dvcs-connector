@@ -11,6 +11,7 @@ import static org.junit.Assert.assertNull;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -23,7 +24,6 @@ import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketSynchronisation;
 
 /**
@@ -32,7 +32,7 @@ import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketSynchron
 public class TestDefaultSynchronizer
 {
 	@Mock
-	private BitbucketCommunicator bitbucket;
+	private Communicator bitbucket;
 	@Mock
 	private Changeset changeset;
 	@Mock
