@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,18 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String nextAction = "";
     private String validations = "";
     private String redirectURL = "";
-    private int repositoryId;
+    private String addPostCommitService = "";
+	public String getAddPostCommitService()
+	{
+		return addPostCommitService;
+	}
+
+	public void setAddPostCommitService(String addPostCommitService)
+	{
+		this.addPostCommitService = addPostCommitService;
+	}
+
+	private int repositoryId;
 
 	private final RepositoryManager globalRepositoryManager;
 
@@ -69,7 +81,10 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
                 if (!repoVisibility.equals("private") || (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword)))
                 {
                 	SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, bbUserName, bbPassword, serviceUsername, servicePassword);
-                	globalRepositoryManager.setupPostcommitHook(repo);
+                	if (BooleanUtils.toBoolean(addPostCommitService))
+                	{
+                		globalRepositoryManager.setupPostcommitHook(repo);
+                	}
                 	repositoryId = repo.getId();
                     postCommitURL = "BitbucketPostCommit.jspa?repositoryId=" + repositoryId;
                     nextAction = "ForceSync";
@@ -226,9 +241,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 	{
 		this.servicePassword = servicePassword;
 	}
-
-    
-    
+	
     public static String encodeUrl(String url)
     {
     	try
