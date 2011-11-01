@@ -24,8 +24,8 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private final Logger logger = LoggerFactory.getLogger(ConfigureBitbucketRepositories.class);
 
     private String mode = "";
-    private String serviceUsername = "";
- 	private String servicePassword = "";
+    private String adminUsername = "";
+    private String adminPassword = "";
     private String bbUserName = "";
     private String bbPassword = "";
     private String url = "";
@@ -34,17 +34,19 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String projectKey = "";
     private String nextAction = "";
     private String validations = "";
-    private String redirectURL = "";
+    private final String redirectURL = "";
     private String addPostCommitService = "";
-	private int repositoryId;
+    private int repositoryId;
 
-	private final RepositoryManager globalRepositoryManager;
+    private final RepositoryManager globalRepositoryManager;
 
-    public ConfigureBitbucketRepositories(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
+    public ConfigureBitbucketRepositories(
+            @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
     {
-		this.globalRepositoryManager = globalRepositoryManager;
+        this.globalRepositoryManager = globalRepositoryManager;
     }
 
+    @Override
     protected void doValidation()
     {
         if (!globalRepositoryManager.canHandleUrl(url) && nextAction.equals("AddRepository"))
@@ -54,11 +56,13 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         }
     }
 
+    @Override
     public String doDefault()
     {
         return "input";
     }
-    
+
+    @Override
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
@@ -68,14 +72,16 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         {
             if (nextAction.equals("AddRepository"))
             {
-                if (!repoVisibility.equals("private") || (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword)))
+                if (!repoVisibility.equals("private")
+                        || (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword)))
                 {
-                	SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, bbUserName, bbPassword, serviceUsername, servicePassword);
-                	if (BooleanUtils.toBoolean(addPostCommitService))
-                	{
-                		globalRepositoryManager.setupPostcommitHook(repo);
-                	}
-                	repositoryId = repo.getId();
+                    SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, bbUserName,
+                            bbPassword, adminUsername, adminPassword);
+                    if (BooleanUtils.toBoolean(addPostCommitService))
+                    {
+                        globalRepositoryManager.setupPostcommitHook(repo);
+                    }
+                    repositoryId = repo.getId();
                     postCommitURL = "BitbucketPostCommit.jspa?repositoryId=" + repositoryId;
                     nextAction = "ForceSync";
                 }
@@ -83,20 +89,20 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("ShowPostCommitURL"))
             {
-                postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&repositoryUrl=" + encodeUrl(url);
+                postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&repositoryUrl="
+                        + encodeUrl(url);
             }
 
             if (nextAction.equals("DeleteRepository"))
             {
-            	SourceControlRepository repo = globalRepositoryManager.getRepository(repositoryId);
-            	globalRepositoryManager.removeRepository(repositoryId);
-            	globalRepositoryManager.removePostcommitHook(repo);
+                SourceControlRepository repo = globalRepositoryManager.getRepository(repositoryId);
+                globalRepositoryManager.removeRepository(repositoryId);
+                globalRepositoryManager.removePostcommitHook(repo);
             }
         }
 
         return INPUT;
     }
-    
 
     public List<Project> getProjects()
     {
@@ -156,7 +162,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
     public void setPostCommitURL(String value)
     {
-    	this.postCommitURL = value;
+        this.postCommitURL = value;
     }
 
     public String getPostCommitURL()
@@ -203,55 +209,55 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     {
         return this.redirectURL;
     }
-    
+
     public int getRepositoryId()
-	{
-		return repositoryId;
-	}
+    {
+        return repositoryId;
+    }
 
-	public void setRepositoryId(int repositoryId)
-	{
-		this.repositoryId = repositoryId;
-	}
-	
-	public String getServiceUsername()
-	{
-		return serviceUsername;
-	}
+    public void setRepositoryId(int repositoryId)
+    {
+        this.repositoryId = repositoryId;
+    }
 
-	public void setServiceUsername(String serviceUsername)
-	{
-		this.serviceUsername = serviceUsername;
-	}
+    public String getAdminUsername()
+    {
+        return adminUsername;
+    }
 
-	public String getServicePassword()
-	{
-		return servicePassword;
-	}
+    public void setAdminUsername(String serviceUsername)
+    {
+        this.adminUsername = serviceUsername;
+    }
 
-	public void setServicePassword(String servicePassword)
-	{
-		this.servicePassword = servicePassword;
-	}
+    public String getAdminPassword()
+    {
+        return adminPassword;
+    }
 
-	public String getAddPostCommitService()
-	{
-		return addPostCommitService;
-	}
+    public void setAdminPassword(String servicePassword)
+    {
+        this.adminPassword = servicePassword;
+    }
 
-	public void setAddPostCommitService(String addPostCommitService)
-	{
-		this.addPostCommitService = addPostCommitService;
-	}
+    public String getAddPostCommitService()
+    {
+        return addPostCommitService;
+    }
+
+    public void setAddPostCommitService(String addPostCommitService)
+    {
+        this.addPostCommitService = addPostCommitService;
+    }
 
     public static String encodeUrl(String url)
     {
-    	try
-		{
-			return URLEncoder.encode(url, "UTF-8");
-		} catch (UnsupportedEncodingException e)
-		{
-			return null;
-		}
+        try
+        {
+            return URLEncoder.encode(url, "UTF-8");
+        } catch (UnsupportedEncodingException e)
+        {
+            return null;
+        }
     }
 }

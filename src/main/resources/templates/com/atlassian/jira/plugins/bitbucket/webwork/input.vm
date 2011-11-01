@@ -167,7 +167,13 @@
   </head>
 
   <body>
+            ## used in func tests
+            #if ($action.nextAction == 'ForceSync')
+                <input type="hidden" id="addedRepositoryId" value="$action.getRepositoryId()">
+            #end
 
+    
+    
  		<h3>
             #if ($action.getMode() == 'single')
                 Existing Repositories Linked to $textutils.htmlEncode($action.getProjectName())
@@ -335,8 +341,8 @@
                             <input type="checkbox" name="addPostCommitService" id="addPostCommitService">
                             <div class="postCommitServiceDetails" id="postCommitServiceDetails">
                                 Installing postcommit service requires admin access to the repository.
-                                <div><label for="serviceUsername">Username</label><input type="text" name="serviceUsername" id="serviceUsername"></div>
-                                <div><label for="servicePassword">Password</label><input type="password" name="servicePassword" id="servicePassword"></div>
+                                <div><label for="adminUsername">Username</label><input type="text" name="adminUsername" id="adminUsername"></div>
+                                <div><label for="adminPassword">Password</label><input type="password" name="adminPassword" id="adminPassword"></div>
                             </div>
                           </td>
                         </tr>  
