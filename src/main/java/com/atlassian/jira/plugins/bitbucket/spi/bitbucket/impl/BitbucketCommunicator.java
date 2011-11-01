@@ -73,4 +73,9 @@ public class BitbucketCommunicator implements Communicator
 	{
 		bitbucketConnection.setupPostcommitHook(repo, postCommitUrl);
 	}
+
+	public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
+	{
+		bitbucketConnection.removePostcommitHook(repo, postCommitUrl);
+	}
 }

@@ -24,4 +24,10 @@ public class GithubCommunicator implements Communicator {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
+
+	public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not implemented yet.");
+	}
 }

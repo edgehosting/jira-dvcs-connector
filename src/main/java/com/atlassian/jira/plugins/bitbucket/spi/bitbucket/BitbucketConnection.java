@@ -50,4 +50,10 @@ public interface BitbucketConnection
 	 * @param postCommitUrl 
 	 */
 	void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl);
+
+	/**
+	 * @param repo
+	 * @param postCommitUrl
+	 */
+	void removePostcommitHook(SourceControlRepository repo, String postCommitUrl);
 }

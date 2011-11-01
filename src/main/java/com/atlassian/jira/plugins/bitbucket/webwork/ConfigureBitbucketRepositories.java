@@ -36,16 +36,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String validations = "";
     private String redirectURL = "";
     private String addPostCommitService = "";
-	public String getAddPostCommitService()
-	{
-		return addPostCommitService;
-	}
-
-	public void setAddPostCommitService(String addPostCommitService)
-	{
-		this.addPostCommitService = addPostCommitService;
-	}
-
 	private int repositoryId;
 
 	private final RepositoryManager globalRepositoryManager;
@@ -98,7 +88,9 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("DeleteRepository"))
             {
+            	SourceControlRepository repo = globalRepositoryManager.getRepository(repositoryId);
             	globalRepositoryManager.removeRepository(repositoryId);
+            	globalRepositoryManager.removePostcommitHook(repo);
             }
         }
 
@@ -241,7 +233,17 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 	{
 		this.servicePassword = servicePassword;
 	}
-	
+
+	public String getAddPostCommitService()
+	{
+		return addPostCommitService;
+	}
+
+	public void setAddPostCommitService(String addPostCommitService)
+	{
+		this.addPostCommitService = addPostCommitService;
+	}
+
     public static String encodeUrl(String url)
     {
     	try

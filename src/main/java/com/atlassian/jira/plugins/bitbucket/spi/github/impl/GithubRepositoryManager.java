@@ -70,4 +70,10 @@ public class GithubRepositoryManager extends DvcsRepositoryManager {
 		// TODO
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
+
+	public void removePostcommitHook(SourceControlRepository repo)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not implemented yet.");
+	}
 }

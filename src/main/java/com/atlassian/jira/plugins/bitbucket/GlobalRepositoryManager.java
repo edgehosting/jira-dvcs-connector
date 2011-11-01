@@ -135,4 +135,9 @@ public class GlobalRepositoryManager implements RepositoryManager
 	{
 		getManagerForUrl(repo.getUrl()).setupPostcommitHook(repo);
 	}
+
+	public void removePostcommitHook(SourceControlRepository repo)
+	{
+		getManagerForUrl(repo.getUrl()).removePostcommitHook(repo);
+	}
 }

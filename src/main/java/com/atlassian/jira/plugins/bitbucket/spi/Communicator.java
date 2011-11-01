@@ -44,4 +44,10 @@ public interface Communicator
 	 */
 	public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl);
 
+	/**
+	 * @param repo
+	 * @param postCommitUrl
+	 */
+	public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl);
+
 }

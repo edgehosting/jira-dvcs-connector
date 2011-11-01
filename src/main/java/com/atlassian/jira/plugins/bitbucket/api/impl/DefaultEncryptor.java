@@ -102,7 +102,7 @@ public class DefaultEncryptor implements Encryptor
             String originalString = new String(original);
             //logger.debug("Original string: " + originalString + "\nOriginal string (Hex): " + original.toString());
 
-            logger.debug("decrypted password [ " + original+" ]");
+//            logger.debug("decrypted password [ " + original+" ]");
             return originalString;
 
         }

@@ -99,6 +99,12 @@ public interface RepositoryManager
 	 * @param repo
 	 */
 	public void setupPostcommitHook(SourceControlRepository repo);
+	
+	/**
+	 * Removes a postcommit service for this repository
+	 * @param repo
+	 */
+	public void removePostcommitHook(SourceControlRepository repo);
 
 	/**
      *

@@ -156,4 +156,9 @@ public class CachingCommunicator implements Communicator
 		delegate.setupPostcommitHook(repo, postCommitUrl);
 	}
 
+	public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
+	{
+		delegate.removePostcommitHook(repo, postCommitUrl);
+	}
+
 }

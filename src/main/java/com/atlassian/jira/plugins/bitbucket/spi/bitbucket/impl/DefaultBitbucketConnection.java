@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,19 +122,25 @@ public class DefaultBitbucketConnection implements BitbucketConnection
 		}
     }
 
-    private String get(Authentication auth, String uri, Map<String, Object> params, String apiBaseUrl)
+    private String get(Authentication auth, String urlPath, Map<String, Object> params, String apiBaseUrl)
     {
-    	return runRequest(Request.MethodType.GET, apiBaseUrl, uri, auth, params, null);
+    	return runRequest(Request.MethodType.GET, apiBaseUrl, urlPath, auth, params, null);
     }
 
-    private String post(Authentication auth, String uri, String postData, String apiBaseUrl)
+    private String post(Authentication auth, String urlPath, String postData, String apiBaseUrl)
     {
-    	return runRequest(Request.MethodType.POST, apiBaseUrl, uri, auth, null, postData);
+    	return runRequest(Request.MethodType.POST, apiBaseUrl, urlPath, auth, null, postData);
     }
+
+    private void delete(Authentication auth, String apiUrl, String urlPath)
+	{
+		runRequest(Request.MethodType.DELETE, apiUrl, urlPath, auth, null, null);
+	}
+
     
-    private String runRequest(Request.MethodType methodType, String apiBaseUrl, String uri, Authentication auth, Map<String, Object> params, String postData)
+    private String runRequest(Request.MethodType methodType, String apiBaseUrl, String urlPath, Authentication auth, Map<String, Object> params, String postData)
     {
-    	String url = apiBaseUrl + uri + buildQueryString(params);
+    	String url = apiBaseUrl + urlPath + buildQueryString(params);
     	logger.debug("get [ " + url + " ]");
         try
         {
@@ -160,6 +169,41 @@ public class DefaultBitbucketConnection implements BitbucketConnection
 		String postData = "type=post;URL=" + postCommitUrl;
 
 		post(auth, urlPath, postData, apiUrl);
+	}
+
+	public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
+	{
+		RepositoryUri uri = RepositoryUri.parse(repo.getUrl());
+		Authentication auth = Authentication.basic(repo.getAdminUsername(), repo.getAdminPassword());
+		String urlPath =  "/repositories/"+uri.getOwner()+"/"+uri.getSlug()+"/services";
+		String apiUrl = uri.getApiUrl();
+		// Find the hook 
+		try
+		{
+			String responseString = get(auth, urlPath, null, apiUrl);
+			JSONArray jsonArray = new JSONArray(responseString);
+			for (int i = 0; i < jsonArray.length(); i++)
+			{
+				JSONObject data = (JSONObject) jsonArray.get(i);
+				String id = data.getString("id");
+				JSONObject service = data.getJSONObject("service");
+				JSONArray fields = service.getJSONArray("fields");
+				JSONObject fieldData = (JSONObject) fields.get(0);
+				String name = fieldData.getString("name");
+				String value = fieldData.getString("value");
+				if ("URL".equals(name) && postCommitUrl.equals(value))
+				{
+					// We have the hook, lets remove it
+					delete(auth, apiUrl, urlPath+"/"+id);
+				}
+			}
+		} catch (JSONException e)
+		{
+			logger.warn("Error removing postcommit service [{}]", e.getMessage());
+		} catch (SourceControlException e)
+		{
+			logger.warn("Error removing postcommit service [{}]", e.getMessage());
+		}
 	}
 
 }

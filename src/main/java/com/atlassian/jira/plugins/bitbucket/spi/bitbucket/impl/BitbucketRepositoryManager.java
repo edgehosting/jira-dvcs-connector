@@ -234,8 +234,17 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 	}
 	public void setupPostcommitHook(SourceControlRepository repo)
 	{
-		String postCommitUrl = getApplicationProperties().getBaseUrl() + "/rest/bitbucket/1.0/repository/"+repo.getId()+"/sync";
-		bitbucketCommunicator.setupPostcommitHook(repo, postCommitUrl);
+		bitbucketCommunicator.setupPostcommitHook(repo, getPostCommitUrl(repo));
+	}
+
+	private String getPostCommitUrl(SourceControlRepository repo)
+	{
+		return getApplicationProperties().getBaseUrl() + "/rest/bitbucket/1.0/repository/"+repo.getId()+"/sync";
+	}
+
+	public void removePostcommitHook(SourceControlRepository repo)
+	{
+		bitbucketCommunicator.removePostcommitHook(repo, getPostCommitUrl(repo));
 	}
 
 }
