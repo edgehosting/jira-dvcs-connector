@@ -16,8 +16,10 @@ import java.util.List;
 public abstract class DvcsRepositoryManager implements RepositoryManager
 {
 
-	private final Encryptor encryptor;
-	private final ApplicationProperties applicationProperties;
+    private final RepositoryPersister repositoryPersister;
+    private final Communicator communicator;
+    private final Encryptor encryptor;
+    private final ApplicationProperties applicationProperties;
 
 	/* Maps ProjectMapping to SourceControlRepository */
 	private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping, SourceControlRepository>()
@@ -37,17 +39,19 @@ public abstract class DvcsRepositoryManager implements RepositoryManager
 	{
 		public Changeset apply(IssueMapping from)
 		{
-			ProjectMapping pm = getRepositoryPersister().getRepository(from.getRepositoryId());
+			ProjectMapping pm = repositoryPersister.getRepository(from.getRepositoryId());
 			SourceControlRepository repository = TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 			return getCommunicator().getChangeset(repository, from.getNode());
 		}
 	};
 
-	public DvcsRepositoryManager(Encryptor encryptor, ApplicationProperties applicationProperties)
-	{
-		this.encryptor = encryptor;
-		this.applicationProperties = applicationProperties;
-	}
+    public DvcsRepositoryManager(Communicator communicator, RepositoryPersister repositoryPersister, Encryptor encryptor, ApplicationProperties applicationProperties)
+    {
+        this.communicator = communicator;
+        this.repositoryPersister = repositoryPersister;
+        this.encryptor = encryptor;
+        this.applicationProperties = applicationProperties;
+    }
 
 	public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username,
 			String password, String adminUsername, String adminPassword)
@@ -66,38 +70,38 @@ public abstract class DvcsRepositoryManager implements RepositoryManager
 
 		String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
 		String encryptedAdminPassword = encryptor.encrypt(adminPassword, projectKey, repositoryUrl);
-		ProjectMapping pm = getRepositoryPersister().addRepository(projectKey, repositoryUrl, username,
-				encryptedPassword, adminUsername, encryptedAdminPassword, getRepositoryTypeId());
+		ProjectMapping pm = repositoryPersister.addRepository(projectKey, repositoryUrl, username,
+				encryptedPassword, adminUsername, encryptedAdminPassword, getRepositoryType());
 		return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 	}
 
 	public SourceControlRepository getRepository(int repositoryId)
 	{
-		ProjectMapping repository = getRepositoryPersister().getRepository(repositoryId);
+		ProjectMapping repository = repositoryPersister.getRepository(repositoryId);
 		return TO_SOURCE_CONTROL_REPOSITORY.apply(repository);
 	}
 
 	public List<SourceControlRepository> getRepositories(String projectKey)
 	{
-		List<ProjectMapping> repositories = getRepositoryPersister().getRepositories(projectKey, getRepositoryTypeId());
+		List<ProjectMapping> repositories = repositoryPersister.getRepositories(projectKey, getRepositoryType());
 		return Lists.transform(repositories, TO_SOURCE_CONTROL_REPOSITORY);
 	}
 
 	public List<Changeset> getChangesets(String issueKey)
 	{
-		List<IssueMapping> issueMappings = getRepositoryPersister().getIssueMappings(issueKey);
+		List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey);
 		return Lists.transform(issueMappings, TO_CHANGESET);
 	}
 
 	public void removeRepository(int id)
 	{
-		getRepositoryPersister().removeRepository(id);
+		repositoryPersister.removeRepository(id);
 		// TODO Should we also delete IssueMappings? Yes we should.
 	}
 
 	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
 	{
-		getRepositoryPersister().addChangeset(issueId, changeset.getRepositoryId(), changeset.getNode());
+		repositoryPersister.addChangeset(issueId, changeset.getRepositoryId(), changeset.getNode());
 	}
 
 	public SourceControlUser getUser(SourceControlRepository repository, String username)
@@ -105,34 +109,32 @@ public abstract class DvcsRepositoryManager implements RepositoryManager
 		return getCommunicator().getUser(repository, username);
 	}
 
-	public abstract String getRepositoryTypeId();
-
-	public abstract RepositoryPersister getRepositoryPersister();
-
-	public abstract Communicator getCommunicator();
+	public abstract String getRepositoryType();
 
 	public abstract boolean canHandleUrl(String url);
 
 	public abstract SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progress);
 
-	public abstract List<Changeset> parsePayload(SourceControlRepository repository, String payload);
+    protected String urlEncode(String s)
+    {
+        try
+        {
+            return URLEncoder.encode(s, "UTF-8");
+        } catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException("required encoding not found");
+        }
+    }
 
-	public abstract String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset);
+    public ApplicationProperties getApplicationProperties()
+    {
+        return applicationProperties;
+    }
 
-	protected String urlEncode(String s)
-	{
-		try
-		{
-			return URLEncoder.encode(s, "UTF-8");
-		} catch (UnsupportedEncodingException e)
-		{
-			throw new RuntimeException("required encoding not found");
-		}
-	}
+    public Communicator getCommunicator()
+    {
+        return communicator;
+    }
 
-	public ApplicationProperties getApplicationProperties()
-	{
-		return applicationProperties;
-	}
 
 }

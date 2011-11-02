@@ -1,19 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Aggregated Repository Manager that handles all Repository Managers based on the repository url
@@ -98,7 +92,7 @@ public class GlobalRepositoryManager implements RepositoryManager
 	public void removeRepository(int id)
 	{
 		getManagerByRepoId(id).removeRepository(id);
-	};
+	}
 
 
 	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
@@ -127,7 +121,7 @@ public class GlobalRepositoryManager implements RepositoryManager
 		return getManagerForUrl(repository.getUrl()).getHtmlForChangeset(repository, changeset);
 	}
 	
-    public String getRepositoryTypeId() {
+    public String getRepositoryType() {
         return "unknown";
     }
     

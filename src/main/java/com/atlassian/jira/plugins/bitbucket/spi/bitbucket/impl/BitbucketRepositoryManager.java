@@ -1,23 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
-import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
@@ -29,19 +12,19 @@ import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.opensymphony.util.TextUtils;
 
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class BitbucketRepositoryManager extends DvcsRepositoryManager
 {
-	private final RepositoryPersister repositoryPersister;
-	private final Communicator bitbucketCommunicator;
-	
+
 	public BitbucketRepositoryManager(RepositoryPersister repositoryPersister, Communicator communicator, Encryptor encryptor, ApplicationProperties applicationProperties)
 	{
-        super(encryptor, applicationProperties);
-		this.repositoryPersister = repositoryPersister;
-		this.bitbucketCommunicator = communicator;
+        super(communicator, repositoryPersister, encryptor, applicationProperties);
 	}
 
-    public String getRepositoryTypeId() {
+    public String getRepositoryType() {
         return "bitbucketCommunicator";
     }
 
@@ -53,20 +36,9 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
         return m.matches();
 	}
 
-    @Override
-    public RepositoryPersister getRepositoryPersister() {
-        return repositoryPersister;
-    }
-
-    @Override
-    public Communicator getCommunicator() {
-        return bitbucketCommunicator;
-    }
-
-
 	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
 	{
-		return new BitbucketSynchronisation(key, this, bitbucketCommunicator, progressProvider);
+		return new BitbucketSynchronisation(key, this, getCommunicator(), progressProvider);
 	}
 
 	public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
@@ -97,7 +69,7 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 	        {
 	            for (String node : changeset.getParents())
 	            {
-	            	// ehm ehm ... what is this? shouldn't this be 
+	            	// ehm ehm ... what is this? shouldn't this be
 	            	// htmlParentHashes+=
 	                htmlParentHashes = "<tr><td style='color: #757575'>Parent:</td><td><a href='" + repository.getUrl() +
 	                        "/changeset/" + node + "' target='_new'>" + node + "</a></td></tr>";
@@ -191,7 +163,7 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 	                htmlHiddenDiv +
 
 	                "<div style='margin-top: 10px'>" +
-	                "<img src='" + getApplicationProperties().getBaseUrl() + "/download/resources/com.atlassian.jira.plugins.jira-bitbucketCommunicator-connector-plugin/images/document.jpg' align='center'> <span class='commit_date' style='color: #757575; font-size: 9pt;'>#formatted_commit_date</span>" +
+	                "<img src='" + getApplicationProperties().getBaseUrl() + "/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/document.jpg' align='center'> <span class='commit_date' style='color: #757575; font-size: 9pt;'>#formatted_commit_date</span>" +
 	                "</div>" +
 
 	                "</td>" +
@@ -230,11 +202,11 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 	        htmlCommitEntry = htmlCommitEntry.replace("#commit_hash", changeset.getNode());
 	        //htmlCommitEntry = htmlCommitEntry.replace("#tree_url", "https://github.com/" + login + "/" + projectName + "/tree/" + commit_hash);
 	        //htmlCommitEntry = htmlCommitEntry.replace("#tree_hash", commitTree);
-	        return htmlCommitEntry;		
+	        return htmlCommitEntry;
 	}
 	public void setupPostcommitHook(SourceControlRepository repo)
 	{
-		bitbucketCommunicator.setupPostcommitHook(repo, getPostCommitUrl(repo));
+		getCommunicator().setupPostcommitHook(repo, getPostCommitUrl(repo));
 	}
 
 	private String getPostCommitUrl(SourceControlRepository repo)
@@ -244,7 +216,7 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 
 	public void removePostcommitHook(SourceControlRepository repo)
 	{
-		bitbucketCommunicator.removePostcommitHook(repo, getPostCommitUrl(repo));
+		getCommunicator().removePostcommitHook(repo, getPostCommitUrl(repo));
 	}
 
 }
