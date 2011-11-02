@@ -283,12 +283,10 @@
 
                 #if ($action.getPostCommitURL() != "")
                     <div>
-                           <h3 id="gh_post_receive_header">Add a Post-Commit Hook</h3>
-
+                           <h3 id="gh_post_receive_header">Post-Commit Hook</h3>
                             <p>Please add the URL below as a post-commit service to the Bitbucket repository.</p>
-
                             <p>
-								<input id="gh_post_receive_textbox" type"text" size="90" value="${baseurl}/$action.getPostCommitURL()">
+								<input id="gh_post_receive_textbox" type"text" size="90" value="$action.getPostCommitURL()">
                             </p>
 
                     </div>

@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.atlassian.sal.api.ApplicationProperties;
 
 /**
  * Webwork action used to configure the bitbucket repositories
@@ -37,13 +38,16 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private final String redirectURL = "";
     private String addPostCommitService = "";
     private int repositoryId;
+    private final String baseUrl;
 
     private final RepositoryManager globalRepositoryManager;
 
     public ConfigureBitbucketRepositories(
-            @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
+            @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager,
+            ApplicationProperties applicationProperties)
     {
         this.globalRepositoryManager = globalRepositoryManager;
+        this.baseUrl = applicationProperties.getBaseUrl();
     }
 
     @Override
@@ -82,7 +86,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
                         globalRepositoryManager.setupPostcommitHook(repo);
                     }
                     repositoryId = repo.getId();
-                    postCommitURL = "BitbucketPostCommit.jspa?repositoryId=" + repositoryId;
+                    postCommitURL = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
                     nextAction = "ForceSync";
                 }
             }
