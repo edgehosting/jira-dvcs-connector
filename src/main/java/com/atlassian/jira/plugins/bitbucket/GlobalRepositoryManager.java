@@ -4,7 +4,6 @@ import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,11 +39,32 @@ public class GlobalRepositoryManager implements RepositoryManager
 		ProjectMapping repository = repositoryPersister.getRepository(id);
 		if (repository == null)
 			throw new IllegalArgumentException("No repository with id = '"+id+"' found");
-		String repositoryUrl = repository.getRepositoryUrl();
-		if (StringUtils.isEmpty(repositoryUrl))
-			throw new IllegalArgumentException("The url for repository ["+id+"] is empty");
-		return getManagerForUrl(repositoryUrl);
+
+        RepositoryManager repositoryManager = getManagerByRepositoryType(repository.getRepositoryType());
+        if (repositoryManager == null)
+        {
+		    throw new IllegalArgumentException("No repository manager found for given id = '"+id+"'");
+        }
+
+        return repositoryManager;
 	}
+
+    private RepositoryManager getManagerByRepository(SourceControlRepository repository) {
+        return getManagerByRepositoryType(repository.getRepositoryType());
+    }
+
+    private RepositoryManager getManagerByRepositoryType(String repositoryType)
+    {
+        for (RepositoryManager repositoryManager : repositoryManagers)
+        {
+            if (repositoryManager.getRepositoryType().equals(repositoryType))
+            {
+                return repositoryManager;
+            }
+        }
+        return null;
+    }
+
 	
 	public boolean canHandleUrl(String url)
 	{
@@ -97,28 +117,28 @@ public class GlobalRepositoryManager implements RepositoryManager
 
 	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
 	{
-		getManagerForUrl(repository.getUrl()).addChangeset(repository, issueId, changeset);
+		getManagerByRepository(repository).addChangeset(repository, issueId, changeset);
 	}
 
 	public SourceControlUser getUser(SourceControlRepository repository, String username)
 	{
-		return getManagerForUrl(repository.getUrl()).getUser(repository, username);
+		return getManagerByRepository(repository).getUser(repository, username);
 	}
 
 	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
 	{
-		String repositoryUrl = key.getRepository().getUrl();
-		return getManagerForUrl(repositoryUrl).getSynchronisationOperation(key, progressProvider);
+		return getManagerByRepository(key.getRepository()).getSynchronisationOperation(key, progressProvider);
 	}
 
 	public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
 	{
-		return getManagerForUrl(repository.getUrl()).parsePayload(repository, payload);
+		return getManagerByRepository(repository).parsePayload(repository, payload);
 	}
 
 	public String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset)
 	{
-		return getManagerForUrl(repository.getUrl()).getHtmlForChangeset(repository, changeset);
+        RepositoryManager repositoryManager = getManagerByRepositoryType(repository.getRepositoryType());
+		return repositoryManager.getHtmlForChangeset(repository, changeset);
 	}
 	
     public String getRepositoryType() {
@@ -127,11 +147,11 @@ public class GlobalRepositoryManager implements RepositoryManager
     
 	public void setupPostcommitHook(SourceControlRepository repo)
 	{
-		getManagerForUrl(repo.getUrl()).setupPostcommitHook(repo);
+		getManagerByRepository(repo).setupPostcommitHook(repo);
 	}
 
 	public void removePostcommitHook(SourceControlRepository repo)
 	{
-		getManagerForUrl(repo.getUrl()).removePostcommitHook(repo);
+		getManagerByRepository(repo).removePostcommitHook(repo);
 	}
 }

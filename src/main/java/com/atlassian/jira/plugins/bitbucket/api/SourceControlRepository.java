@@ -40,4 +40,9 @@ public interface SourceControlRepository
 	 * @return
 	 */
 	String getAdminPassword();
+
+    /**
+     * @return type of repository (bitbucket, github, ...)
+     */
+    String getRepositoryType();
 }

@@ -1,11 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
-
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+package com.atlassian.jira.plugins.bitbucket.spi;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
@@ -14,6 +7,11 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A {@link com.atlassian.jira.plugins.bitbucket.spi.Communicator} implementation that caches results for quicker subsequent lookup times

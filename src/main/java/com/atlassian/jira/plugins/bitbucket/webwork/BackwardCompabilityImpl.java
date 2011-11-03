@@ -35,7 +35,8 @@ public class BackwardCompabilityImpl implements BackwardCompability
 			String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
 			String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
 			return new DefaultSourceControlRepository(pm.getID(), RepositoryUri.parse(pm.getRepositoryUrl())
-					.getRepositoryUrl(), pm.getProjectKey(), pm.getUsername(), decryptedPassword, pm.getAdminUsername(), decryptedAdminPassword);
+					.getRepositoryUrl(), pm.getProjectKey(), pm.getUsername(), decryptedPassword, pm.getAdminUsername(),
+                    decryptedAdminPassword, pm.getRepositoryType());
 		}
 	};
 

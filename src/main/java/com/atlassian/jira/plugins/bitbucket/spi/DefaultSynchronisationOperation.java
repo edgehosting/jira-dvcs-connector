@@ -1,27 +1,34 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-
-public abstract class AbstractSynchronisationOperation implements SynchronisationOperation
+public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
+    private final Logger logger = LoggerFactory.getLogger(DefaultSynchronizer.class);
+
 	protected final SynchronizationKey key;
     protected final RepositoryManager repositoryManager;
 	private final ProgressWriter progressProvider;
+    private Communicator communicator;
     
-    public AbstractSynchronisationOperation(SynchronizationKey key, RepositoryManager repositoryManager,
-			ProgressWriter progressProvider)
+    public DefaultSynchronisationOperation(SynchronizationKey key, RepositoryManager repositoryManager,
+                                           Communicator communicator, ProgressWriter progressProvider)
 	{
     	this.key = key;
 		this.repositoryManager = repositoryManager;
-		this.progressProvider = progressProvider;
-	}
+        this.communicator = communicator;
+        this.progressProvider = progressProvider;
+    }
 
 	public void synchronise()
     {
@@ -65,5 +72,12 @@ public abstract class AbstractSynchronisationOperation implements Synchronisatio
         return matches;
     }
     
-    public abstract Iterable<Changeset> getChangsetsIterator();
+    public Iterable<Changeset> getChangsetsIterator()
+    {
+        logger.debug("synchronize [ {} ] with [ {} ]", key.getRepository().getProjectKey(), key.getRepository().getUrl());
+
+        Iterable<Changeset> changesets = key.getChangesets() == null ? communicator.getChangesets(key.getRepository()) : key.getChangesets();
+        return changesets;
+    }
+
 }
