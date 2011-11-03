@@ -15,7 +15,7 @@ public class RepositoryTypeMigrator implements ActiveObjectsUpgradeTask {
 
         ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class);
         for (ProjectMapping projectMapping : projectMappings) {
-            projectMapping.setRepositoryTypeId("bitbucket");
+            projectMapping.setRepositoryType("bitbucket");
             projectMapping.save();
         }
     }

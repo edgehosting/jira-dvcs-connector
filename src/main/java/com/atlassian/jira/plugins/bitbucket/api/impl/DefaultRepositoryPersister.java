@@ -1,14 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -16,6 +7,14 @@ import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
@@ -31,25 +30,25 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         this.activeObjects = activeObjects;
     }
 
-    public List<ProjectMapping> getRepositories(final String projectKey, final String repositoryTypeId)
+    public List<ProjectMapping> getRepositories(final String projectKey, final String repositoryType)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<ProjectMapping>>()
         {
 			public List<ProjectMapping> doInTransaction()
             {
-                ProjectMapping[] mappings = activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ? AND REPOSITORY_TYPE_ID = ?", projectKey, repositoryTypeId);
+                ProjectMapping[] mappings = activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ? AND REPOSITORY_TYPE = ?", projectKey, repositoryType);
                 return Lists.newArrayList(mappings);
             }
         });
     }
 
-    public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String repositoryTypeId)
+    public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String repositoryType)
     {
         // TODO don't create duplicate mapping
         final Map<String, Object> map = new HashMap<String, Object>();
         map.put("REPOSITORY_URL", repositoryUrl);
         map.put("PROJECT_KEY", projectKey);
-        map.put("REPOSITORY_TYPE_ID", repositoryTypeId);
+        map.put("REPOSITORY_TYPE", repositoryType);
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
         {
             map.put("USERNAME", username);

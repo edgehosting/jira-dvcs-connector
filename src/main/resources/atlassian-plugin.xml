@@ -72,18 +72,18 @@
         <interface>com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager</interface>
     </component>
     
-    <component key="githubRepositoryManager" name="githubRepositoryManager"
-               class="com.atlassian.jira.plugins.bitbucket.spi.github.impl.GithubRepositoryManager">
-        <description>githubRepositoryManager</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager</interface>
-    </component>
+    <!--<component key="githubRepositoryManager" name="githubRepositoryManager"-->
+               <!--class="com.atlassian.jira.plugins.bitbucket.spi.github.impl.GithubRepositoryManager">-->
+        <!--<description>githubRepositoryManager</description>-->
+        <!--<interface>com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager</interface>-->
+    <!--</component>-->
 
     <component key="globalRepositoryManager" name="globalRepositoryManager"
                class="com.atlassian.jira.plugins.bitbucket.GlobalRepositoryManager">
         <description>globalRepositoryManager</description>
         <interface>com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager</interface>
     </component>
-    
+
 <!--    <component key="remoteBitbucket" name="Remote Bitbucket Service"
                class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicatorcator">
         <description>A service for using the remove bitbucket connection</description>

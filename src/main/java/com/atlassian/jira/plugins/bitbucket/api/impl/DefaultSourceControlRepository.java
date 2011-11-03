@@ -1,9 +1,8 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 
 public class DefaultSourceControlRepository implements SourceControlRepository
 {
@@ -14,9 +13,10 @@ public class DefaultSourceControlRepository implements SourceControlRepository
 	private final String projectKey;
 	private final String adminUsername;
 	private final String adminPassword;
+    private final String repositoryType;
 
-	public DefaultSourceControlRepository(int id, String url, String projectKey, String username, String password,
-			String adminUsername, String adminPassword)
+    public DefaultSourceControlRepository(int id, String url, String projectKey, String username, String password,
+			String adminUsername, String adminPassword, String repositoryType)
 	{
 		this.id = id;
 		this.url = url;
@@ -25,7 +25,8 @@ public class DefaultSourceControlRepository implements SourceControlRepository
 		this.password = password;
 		this.adminUsername = adminUsername;
 		this.adminPassword = adminPassword;
-	}
+        this.repositoryType = repositoryType;
+    }
 	public int getId()
 	{
 		return id;
@@ -61,8 +62,14 @@ public class DefaultSourceControlRepository implements SourceControlRepository
 	{
 		return adminPassword;
 	}
-	
-	@Override
+
+    public String getRepositoryType()
+    {
+        return repositoryType;
+    }
+
+
+    @Override
 	public boolean equals(Object obj)
 	{
 		if (obj == null) return false;
