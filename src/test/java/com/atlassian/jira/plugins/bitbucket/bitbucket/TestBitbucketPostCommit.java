@@ -78,7 +78,8 @@ public class TestBitbucketPostCommit
 		    public boolean matches(Object o)
 		    {
 		        //noinspection unchecked
-		        List<Changeset> list = (List<Changeset>) o;
+		        @SuppressWarnings("unchecked")
+                List<Changeset> list = (List<Changeset>) o;
 		        Changeset changeset = list.get(0);
 		        return list.size()==1 && changeset.getNode().equals("f2851c9f1db8");
 		    }

@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -11,6 +11,7 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
@@ -25,7 +26,7 @@ public class CachingCommunicator implements Communicator
     private class ChangesetKey
     {
         final String id;
-		private final SourceControlRepository repository;
+        private final SourceControlRepository repository;
 
         public ChangesetKey(SourceControlRepository repository, String id)
         {
@@ -34,7 +35,7 @@ public class CachingCommunicator implements Communicator
         }
 
         @Override
-		public boolean equals(Object o)
+        public boolean equals(Object o)
         {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -45,65 +46,64 @@ public class CachingCommunicator implements Communicator
         }
 
         @Override
-		public int hashCode()
+        public int hashCode()
         {
             int result = repository.hashCode();
             result = 31 * result + id.hashCode();
             return result;
         }
     }
-    
+
     private class UserKey
     {
-    	SourceControlRepository repository;
-    	String username;
-    	
-		public UserKey(SourceControlRepository repository, String username)
-		{
-			this.repository = repository;
-			this.username = username;
-		}
+        SourceControlRepository repository;
+        String username;
 
-		@Override
-		public boolean equals(Object obj)
-		{
+        public UserKey(SourceControlRepository repository, String username)
+        {
+            this.repository = repository;
+            this.username = username;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
 			if (obj == null) return false;
 			if (this==obj) return true;
 			if (this.getClass()!=obj.getClass()) return false;
-			UserKey that = (UserKey) obj;
-			return new EqualsBuilder().append(repository, that.repository).append(username, that.username).isEquals();
-		}
-		
-		@Override
-		public int hashCode()
-		{
-			return new HashCodeBuilder(17,37).append(repository).append(username).toHashCode();
-		}
-		
+            UserKey that = (UserKey) obj;
+            return new EqualsBuilder().append(repository, that.repository).append(username, that.username).isEquals();
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return new HashCodeBuilder(17, 37).append(repository).append(username).toHashCode();
+        }
+
     }
 
     private final Map<UserKey, SourceControlUser> userMap = new MapMaker()
             .expiration(30, TimeUnit.MINUTES)
             .makeComputingMap(
                     new Function<UserKey, SourceControlUser>()
-                    {
-                        public SourceControlUser apply(UserKey key)
-                        {
-                            return delegate.getUser(key.repository, key.username);
-                        }
-                    });
+            {
+                public SourceControlUser apply(UserKey key)
+                {
+                    return delegate.getUser(key.repository, key.username);
+                }
+            });
 
     private final Map<ChangesetKey, Changeset> changesetMap = new MapMaker()
             .expiration(30, TimeUnit.MINUTES)
             .makeComputingMap(
                     new Function<ChangesetKey, Changeset>()
-                    {
-                        public Changeset apply(ChangesetKey key)
-                        {
-                            return delegate.getChangeset(key.repository, key.id);
-                        }
-                    });
-
+            {
+                public Changeset apply(ChangesetKey key)
+                {
+                    return delegate.getChangeset(key.repository, key.id);
+                }
+            });
 
     public CachingCommunicator(Communicator delegate)
     {
@@ -134,11 +134,11 @@ public class CachingCommunicator implements Communicator
         }
     }
 
-    public Iterable<Changeset> getChangesets(SourceControlRepository repository)
+    public List<Changeset> getChangesets(SourceControlRepository repository, String startNode, int limit)
     {
         try
         {
-            return delegate.getChangesets(repository);
+            return delegate.getChangesets(repository, startNode, limit);
         }
         catch (ComputationException e)
         {
@@ -148,17 +148,18 @@ public class CachingCommunicator implements Communicator
 
     private SourceControlException unrollException(ComputationException e)
     {
-        return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause() : new SourceControlException(e.getCause());
+        return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause()
+                : new SourceControlException(e.getCause());
     }
 
-	public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl)
-	{
-		delegate.setupPostcommitHook(repo, postCommitUrl);
-	}
+    public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl)
+    {
+        delegate.setupPostcommitHook(repo, postCommitUrl);
+    }
 
-	public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
-	{
-		delegate.removePostcommitHook(repo, postCommitUrl);
-	}
+    public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
+    {
+        delegate.removePostcommitHook(repo, postCommitUrl);
+    }
 
 }

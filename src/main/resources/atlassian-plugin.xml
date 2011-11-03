@@ -66,13 +66,6 @@
         <interface>com.atlassian.jira.plugins.bitbucket.activeobjects.BitbucketProjectSettings</interface>
     </component>
 
-    <component key="bitbucketConnection" name="Bitbucket Remote Connection"
-               class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucketConnection">
-        <description>A component used to talk to the remote bitbucket service</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection</interface>
-    </component>
-    
-    
     <component key="bitbucketRepositoryManager" name="bitbucketRepositoryManager"
                class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager">
         <description>bitbucketRepositoryManager</description>

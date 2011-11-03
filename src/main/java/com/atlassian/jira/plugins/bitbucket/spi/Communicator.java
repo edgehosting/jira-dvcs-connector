@@ -1,12 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
- * TODO - this should be probably merged/united with {@link com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketConnection}
  */
 public interface Communicator
 {
@@ -29,25 +30,25 @@ public interface Communicator
     public Changeset getChangeset(SourceControlRepository repository, String id);
 
     /**
-     * Retrieves all changesets for the specified repository
-     *
-     * @param auth  the authentication rules for this request
-     * @param owner the owner of the project
-     * @param slug  the slug of the project
-     * @return the project
+     * Retrieves changesets
+     * 
+     * @param repository
+     * @param startNode
+     * @param limit
+     * @return
      */
-    public Iterable<Changeset> getChangesets(SourceControlRepository repository);
+    public List<Changeset> getChangesets(SourceControlRepository repository, String startNode, int limit);
 
-	/**
-	 * @param repo
-	 * @param postCommitUrl 
-	 */
-	public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl);
+    /**
+     * @param repo
+     * @param postCommitUrl 
+     */
+    public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl);
 
-	/**
-	 * @param repo
-	 * @param postCommitUrl
-	 */
-	public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl);
+    /**
+     * @param repo
+     * @param postCommitUrl
+     */
+    public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl);
 
 }
