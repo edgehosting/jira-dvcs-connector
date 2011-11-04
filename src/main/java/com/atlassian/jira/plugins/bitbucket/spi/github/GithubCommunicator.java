@@ -36,4 +36,10 @@ public class GithubCommunicator implements Communicator
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Not implemented yet.");
     }
+
+    public Iterable<Changeset> getChangesets(SourceControlRepository repository)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

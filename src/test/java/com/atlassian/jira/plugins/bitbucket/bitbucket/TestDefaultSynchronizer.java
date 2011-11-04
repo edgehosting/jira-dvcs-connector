@@ -22,8 +22,9 @@ import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
+import com.atlassian.jira.plugins.bitbucket.spi.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketSynchronisation;
+import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
 
 /**
  * Unit tests for {@link DefaultSynchronizer}
@@ -53,13 +54,13 @@ public class TestDefaultSynchronizer
         when(repository.getUrl()).thenReturn("https://bitbucket.org/owner/slug");
         when(repository.getProjectKey()).thenReturn("PRJ");
         SynchronizationKey key = new SynchronizationKey(repository);
-        BitbucketSynchronisation synchronisation = new BitbucketSynchronisation(key, repositoryManager, bitbucket, progressProvider);
-        when(repositoryManager.getSynchronisationOperation(any(SynchronizationKey.class), any(ProgressWriter.class))).thenReturn(synchronisation);
-        when(bitbucket.getChangesets(repository, null, 16)).thenReturn(Arrays.asList(changeset));
+        SynchronisationOperation synchronisation = new DefaultSynchronisationOperation(key, repositoryManager, bitbucket, progressProvider);
+        when(repositoryManager.getSynchronisationOperation(any(SynchronizationKey.class), any(ProgressWriter.class))).thenReturn(
+            synchronisation);
+        when(bitbucket.getChangesets(repository)).thenReturn(Arrays.asList(changeset));
         when(changeset.getMessage()).thenReturn("PRJ-1 Message");
 
-        DefaultSynchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadExecutor(),
-                repositoryManager);
+        DefaultSynchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadExecutor(), repositoryManager);
         assertNull(synchronizer.getProgress(repository));
 
         synchronizer.synchronize(repository);

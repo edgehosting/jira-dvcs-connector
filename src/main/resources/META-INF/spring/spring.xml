@@ -3,7 +3,7 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation=" http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-    <bean id="bitbucketCommunicator" class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.CachingCommunicator">
+    <bean id="bitbucketCommunicator" class="com.atlassian.jira.plugins.bitbucket.spi.CachingCommunicator">
         <constructor-arg>
             <bean class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator">
                 <constructor-arg ref="requestFactory"/>

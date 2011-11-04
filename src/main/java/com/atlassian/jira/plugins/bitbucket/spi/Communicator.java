@@ -51,4 +51,10 @@ public interface Communicator
      */
     public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl);
 
+    /**
+     * @param repository
+     * @return
+     */
+    public Iterable<Changeset> getChangesets(SourceControlRepository repository);
+
 }

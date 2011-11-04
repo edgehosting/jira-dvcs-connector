@@ -72,8 +72,8 @@ public class BitbucketCommunicator implements Communicator
             Authentication auth = authenticationFactory.getAuthentication(repository);
 
             logger.debug("parse changeset [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, id });
-            String responseString = get(auth, "/repositories/" + encode(owner) + "/" + encode(slug) + "/changesets/"
-                    + encode(id), null, uri.getApiUrl());
+            String responseString = get(auth, "/repositories/" + encode(owner) + "/" + encode(slug) + "/changesets/" + encode(id), null,
+                uri.getApiUrl());
 
             return BitbucketChangesetFactory.parse(repository.getId(), new JSONObject(responseString));
         } catch (JSONException e)
@@ -89,16 +89,14 @@ public class BitbucketCommunicator implements Communicator
         String slug = uri.getSlug();
         Authentication auth = authenticationFactory.getAuthentication(repository);
 
-        logger.debug("parse changesets [ {} ] [ {} ] [ {} ] [ {} ]",
-                new String[] { owner, slug, startNode, String.valueOf(limit) });
+        logger.debug("parse changesets [ {} ] [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, startNode, String.valueOf(limit) });
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("limit", String.valueOf(limit));
         if (startNode != null)
         {
             params.put("start", startNode);
         }
-        String responseString = get(auth, "/repositories/" + encode(owner) + "/" + encode(slug) + "/changesets",
-                params, uri.getApiUrl());
+        String responseString = get(auth, "/repositories/" + encode(owner) + "/" + encode(slug) + "/changesets", params, uri.getApiUrl());
 
         List<Changeset> changesets = new ArrayList<Changeset>();
         try
@@ -190,17 +188,15 @@ public class BitbucketCommunicator implements Communicator
     }
 
     private String runRequest(Request.MethodType methodType, String apiBaseUrl, String urlPath, Authentication auth,
-            Map<String, Object> params, String postData)
+        Map<String, Object> params, String postData)
     {
         String url = apiBaseUrl + urlPath + buildQueryString(params);
         logger.debug("get [ " + url + " ]");
         try
         {
             Request<?, ?> request = requestFactory.createRequest(methodType, url);
-            if (auth != null)
-                auth.addAuthentication(request);
-            if (postData != null)
-                request.setRequestBody(postData);
+            if (auth != null) auth.addAuthentication(request);
+            if (postData != null) request.setRequestBody(postData);
             request.setSoTimeout(60000);
             return request.execute();
         } catch (ResponseException e)
@@ -224,8 +220,7 @@ public class BitbucketCommunicator implements Communicator
                     queryStringBuilder.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
                     queryStringBuilder.append("=");
                     queryStringBuilder.append(URLEncoder.encode(String.valueOf(entry.getValue()), "UTF-8"));
-                    if (iterator.hasNext())
-                        queryStringBuilder.append("&");
+                    if (iterator.hasNext()) queryStringBuilder.append("&");
                 }
             }
             return queryStringBuilder.toString();
@@ -233,6 +228,17 @@ public class BitbucketCommunicator implements Communicator
         {
             throw new SourceControlException("required encoding not found");
         }
+    }
+
+    public Iterable<Changeset> getChangesets(final SourceControlRepository repository)
+    {
+        return new Iterable<Changeset>()
+        {
+            public Iterator<Changeset> iterator()
+            {
+                return new BitbucketChangesetIterator(BitbucketCommunicator.this, repository);
+            }
+        };
     }
 
 }

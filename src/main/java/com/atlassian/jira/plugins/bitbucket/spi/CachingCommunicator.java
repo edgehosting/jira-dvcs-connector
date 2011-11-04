@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
+package com.atlassian.jira.plugins.bitbucket.spi;
 
 import java.util.List;
 import java.util.Map;
@@ -11,7 +11,6 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
@@ -68,9 +67,9 @@ public class CachingCommunicator implements Communicator
         @Override
         public boolean equals(Object obj)
         {
-			if (obj == null) return false;
-			if (this==obj) return true;
-			if (this.getClass()!=obj.getClass()) return false;
+            if (obj == null) return false;
+            if (this == obj) return true;
+            if (this.getClass() != obj.getClass()) return false;
             UserKey that = (UserKey) obj;
             return new EqualsBuilder().append(repository, that.repository).append(username, that.username).isEquals();
         }
@@ -83,27 +82,23 @@ public class CachingCommunicator implements Communicator
 
     }
 
-    private final Map<UserKey, SourceControlUser> userMap = new MapMaker()
-            .expiration(30, TimeUnit.MINUTES)
-            .makeComputingMap(
-                    new Function<UserKey, SourceControlUser>()
+    private final Map<UserKey, SourceControlUser> userMap = new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(
+        new Function<UserKey, SourceControlUser>()
+        {
+            public SourceControlUser apply(UserKey key)
             {
-                public SourceControlUser apply(UserKey key)
-                {
-                    return delegate.getUser(key.repository, key.username);
-                }
-            });
+                return delegate.getUser(key.repository, key.username);
+            }
+        });
 
-    private final Map<ChangesetKey, Changeset> changesetMap = new MapMaker()
-            .expiration(30, TimeUnit.MINUTES)
-            .makeComputingMap(
-                    new Function<ChangesetKey, Changeset>()
+    private final Map<ChangesetKey, Changeset> changesetMap = new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(
+        new Function<ChangesetKey, Changeset>()
+        {
+            public Changeset apply(ChangesetKey key)
             {
-                public Changeset apply(ChangesetKey key)
-                {
-                    return delegate.getChangeset(key.repository, key.id);
-                }
-            });
+                return delegate.getChangeset(key.repository, key.id);
+            }
+        });
 
     public CachingCommunicator(Communicator delegate)
     {
@@ -115,8 +110,7 @@ public class CachingCommunicator implements Communicator
         try
         {
             return userMap.get(new UserKey(repository, username));
-        }
-        catch (ComputationException e)
+        } catch (ComputationException e)
         {
             throw unrollException(e);
         }
@@ -127,8 +121,7 @@ public class CachingCommunicator implements Communicator
         try
         {
             return changesetMap.get(new ChangesetKey(repository, id));
-        }
-        catch (ComputationException e)
+        } catch (ComputationException e)
         {
             throw unrollException(e);
         }
@@ -139,8 +132,7 @@ public class CachingCommunicator implements Communicator
         try
         {
             return delegate.getChangesets(repository, startNode, limit);
-        }
-        catch (ComputationException e)
+        } catch (ComputationException e)
         {
             throw unrollException(e);
         }
@@ -148,8 +140,8 @@ public class CachingCommunicator implements Communicator
 
     private SourceControlException unrollException(ComputationException e)
     {
-        return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause()
-                : new SourceControlException(e.getCause());
+        return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause() : new SourceControlException(e
+            .getCause());
     }
 
     public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl)
@@ -160,6 +152,11 @@ public class CachingCommunicator implements Communicator
     public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
         delegate.removePostcommitHook(repo, postCommitUrl);
+    }
+
+    public Iterable<Changeset> getChangesets(SourceControlRepository repository)
+    {
+        return delegate.getChangesets(repository);
     }
 
 }
