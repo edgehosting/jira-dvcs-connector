@@ -93,8 +93,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("ShowPostCommitURL"))
             {
-                postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&repositoryUrl="
-                        + encodeUrl(url);
+                postCommitURL = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
             }
 
             if (nextAction.equals("DeleteRepository"))
