@@ -4,7 +4,6 @@ import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -13,8 +12,10 @@ import com.opensymphony.util.TextUtils;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public abstract class DvcsRepositoryManager implements RepositoryManager
+public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
 
     private final RepositoryPersister repositoryPersister;
@@ -30,8 +31,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager
 			String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
 			String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(),
 					pm.getRepositoryUrl());
-			return new DefaultSourceControlRepository(pm.getID(), RepositoryUri.parse(pm.getRepositoryUrl())
-					.getRepositoryUrl(), pm.getProjectKey(), pm.getUsername(), decryptedPassword,
+			return new DefaultSourceControlRepository(pm.getID(), getRepositoryUri(pm.getRepositoryUrl()),
+                    pm.getProjectKey(), pm.getUsername(), decryptedPassword,
 					pm.getAdminUsername(), decryptedAdminPassword, pm.getRepositoryType());
 		}
 	};
@@ -115,13 +116,14 @@ public abstract class DvcsRepositoryManager implements RepositoryManager
     {
 
             String htmlParentHashes = "";
+            String repositoryUrl = repository.getRepositoryUri().getRepositoryUrl();
             if (!changeset.getParents().isEmpty())
             {
                 for (String node : changeset.getParents())
                 {
                     // ehm ehm ... what is this? shouldn't this be
                     // htmlParentHashes+=
-                    htmlParentHashes = "<tr><td style='color: #757575'>Parent:</td><td><a href='" + repository.getUrl() +
+                    htmlParentHashes = "<tr><td style='color: #757575'>Parent:</td><td><a href='" + repositoryUrl +
                             "/changeset/" + node + "' target='_new'>" + node + "</a></td></tr>";
                 }
             }
@@ -135,7 +137,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager
                     String fileName = file.getFile();
                     String color = file.getFileAction().getColor();
                     String fileActionName = file.getFileAction().toString();
-                    String fileCommitURL = repository.getUrl() + "/src/" + changeset.getNode() + "/" + urlEncode(file.getFile());
+                    String fileCommitURL = repositoryUrl + "/src/" + changeset.getNode() + "/" + urlEncode(file.getFile());
                     htmlFile = "<li><span style='color:" + color + "; font-size: 8pt;'>" +
                             TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
                             fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
@@ -238,8 +240,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager
             String commitURL = changeset.getCommitURL(repository);
             SourceControlUser user = getUser(repository, changeset.getAuthor());
             String gravatarUrl = user.getAvatar().replace("s=32", "s=60");
-            RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
-            String baseRepositoryUrl = uri.getBaseUrl();
+            String baseRepositoryUrl = repository.getRepositoryUri().getBaseUrl();
 
             htmlCommitEntry = htmlCommitEntry.replace("#gravatar_url", gravatarUrl);
             htmlCommitEntry = htmlCommitEntry.replace("#user_url", baseRepositoryUrl + "/" + urlEncode(login));
@@ -259,6 +260,14 @@ public abstract class DvcsRepositoryManager implements RepositoryManager
     public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
     {
         return new DefaultSynchronisationOperation(key, this, getCommunicator(), progressProvider);
+    }
+
+    protected boolean hasValidFormat(String url)
+    {
+        // Valid URL
+        Pattern p = Pattern.compile("^(https|http)://[a-zA-Z0-9][-a-zA-Z0-9]*.[a-zA-Z0-9]+/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
+        Matcher m = p.matcher(url);
+        return m.matches();
     }
 
 	public abstract String getRepositoryType();

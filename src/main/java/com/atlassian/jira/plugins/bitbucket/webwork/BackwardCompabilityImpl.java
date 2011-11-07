@@ -6,7 +6,7 @@ import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryUri;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 
@@ -34,8 +34,9 @@ public class BackwardCompabilityImpl implements BackwardCompability
 		{
 			String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
 			String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
-			return new DefaultSourceControlRepository(pm.getID(), RepositoryUri.parse(pm.getRepositoryUrl())
-					.getRepositoryUrl(), pm.getProjectKey(), pm.getUsername(), decryptedPassword, pm.getAdminUsername(),
+			return new DefaultSourceControlRepository(pm.getID(),
+                    new BitbucketRepositoryUri("","","",""),
+                    pm.getProjectKey(), pm.getUsername(), decryptedPassword, pm.getAdminUsername(),
                     decryptedAdminPassword, pm.getRepositoryType());
 		}
 	};

@@ -7,7 +7,7 @@ import java.net.URL;
  * Used to identify a repository, contains an owner, a slug and optionally, a branch.
  * @deprecated used in migration only
  */
-class RepositoryUri
+public class RepositoryUri
 {
     public static RepositoryUri parse(String uri)
     {

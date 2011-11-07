@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.util.List;
-
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+
+import java.util.List;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
@@ -56,5 +56,7 @@ public interface Communicator
      * @return
      */
     public Iterable<Changeset> getChangesets(SourceControlRepository repository);
+
+    public boolean isRepositoryValid(RepositoryUri repositoryUri);
 
 }

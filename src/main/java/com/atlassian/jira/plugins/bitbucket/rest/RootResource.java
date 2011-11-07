@@ -1,24 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.rest;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
@@ -31,6 +12,13 @@ import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 @Path("/")
 public class RootResource
@@ -49,9 +37,9 @@ public class RootResource
     {
         public Repository apply(SourceControlRepository from)
         {
-            Repository repo = new Repository(from.getId(), from.getProjectKey(), from.getUrl(), from.getUsername(),
-                    null, from.getAdminUsername(), null); // don't include the
-                                                          // password
+            Repository repo = new Repository(from.getId(), from.getProjectKey(), from.getRepositoryUri().getRepositoryUrl(),
+                    from.getUsername(), null, from.getAdminUsername(), null); // don't include the
+                                                                              // password
             Progress progress = synchronizer.getProgress(from);
             if (progress != null)
                 repo.setStatus(new SyncProgress(progress.isFinished(), progress.getChangesetCount(), progress

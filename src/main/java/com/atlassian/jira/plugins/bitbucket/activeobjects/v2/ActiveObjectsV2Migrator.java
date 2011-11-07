@@ -1,20 +1,19 @@
 package com.atlassian.jira.plugins.bitbucket.activeobjects.v2;
 
-import java.util.List;
-import java.util.Map;
-
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
+import com.atlassian.activeobjects.external.ModelVersion;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
-import com.atlassian.activeobjects.external.ModelVersion;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("deprecation")
 public class ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
@@ -38,7 +37,8 @@ public class ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
         	String projectKey = projectMapping.getProjectKey();
         	int repositoryId = projectMapping.getID();
 
-        	String fixedUrl = RepositoryUri.parse(originalUrl).getRepositoryUrl();
+            RepositoryUri repositoryUri = RepositoryUri.parse(originalUrl);
+            String fixedUrl = "https://bitbucket.org/" + repositoryUri.getOwner() + "/" + repositoryUri.getSlug();
         	
         	final Map<String, Object> map = Maps.newHashMap();
 			map.put("REPOSITORY_URL", fixedUrl);

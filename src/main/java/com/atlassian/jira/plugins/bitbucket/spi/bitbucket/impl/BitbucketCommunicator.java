@@ -1,31 +1,21 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugins.bitbucket.api.Authentication;
-import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.ResponseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.*;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
@@ -46,7 +36,7 @@ public class BitbucketCommunicator implements Communicator
     {
         try
         {
-            RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
+            RepositoryUri uri = repository.getRepositoryUri();
             logger.debug("parse user [ {} ]", username);
 
             String responseString = get(Authentication.ANONYMOUS, "/users/" + encode(username), null, uri.getApiUrl());
@@ -66,7 +56,7 @@ public class BitbucketCommunicator implements Communicator
     {
         try
         {
-            RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
+            RepositoryUri uri = repository.getRepositoryUri();
             String owner = uri.getOwner();
             String slug = uri.getSlug();
             Authentication auth = authenticationFactory.getAuthentication(repository);
@@ -84,7 +74,7 @@ public class BitbucketCommunicator implements Communicator
 
     public List<Changeset> getChangesets(final SourceControlRepository repository, String startNode, int limit)
     {
-        RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
+        RepositoryUri uri = repository.getRepositoryUri();
         String owner = uri.getOwner();
         String slug = uri.getSlug();
         Authentication auth = authenticationFactory.getAuthentication(repository);
@@ -116,7 +106,7 @@ public class BitbucketCommunicator implements Communicator
 
     public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
-        RepositoryUri uri = RepositoryUri.parse(repo.getUrl());
+        RepositoryUri uri = repo.getRepositoryUri();
         Authentication auth = Authentication.basic(repo.getAdminUsername(), repo.getAdminPassword());
         String urlPath = "/repositories/" + uri.getOwner() + "/" + uri.getSlug() + "/services";
         String apiUrl = uri.getApiUrl();
@@ -127,7 +117,7 @@ public class BitbucketCommunicator implements Communicator
 
     public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
-        RepositoryUri uri = RepositoryUri.parse(repo.getUrl());
+        RepositoryUri uri = repo.getRepositoryUri();
         Authentication auth = Authentication.basic(repo.getAdminUsername(), repo.getAdminPassword());
         String urlPath = "/repositories/" + uri.getOwner() + "/" + uri.getSlug() + "/services";
         String apiUrl = uri.getApiUrl();
@@ -239,6 +229,29 @@ public class BitbucketCommunicator implements Communicator
                 return new BitbucketChangesetIterator(BitbucketCommunicator.this, repository);
             }
         };
+    }
+
+    public boolean isRepositoryValid(RepositoryUri repositoryUri)
+    {
+        String owner = repositoryUri.getOwner();
+        String slug = repositoryUri.getSlug();
+
+        logger.debug("parse repository [ {} ]", slug);
+        String responseString = get(Authentication.ANONYMOUS, "/repositories/" + encode(owner) + "/" + encode(slug), null, repositoryUri.getApiUrl());
+
+        try
+        {
+            String name = new JSONObject(responseString).getString("name");
+            if (name.equalsIgnoreCase(repositoryUri.getSlug()))
+            {
+                return true;
+            }
+        } catch (JSONException e)
+        {
+            throw new SourceControlException("Could not parse json object", e);
+        }
+
+        return false;
     }
 
 }

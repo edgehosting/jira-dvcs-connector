@@ -3,17 +3,19 @@ package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class BitbucketRepositoryManager extends DvcsRepositoryManager
 {
@@ -30,14 +32,39 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 
 	public boolean canHandleUrl(String url)
 	{
-        // Valid URL 
-        Pattern p = Pattern.compile("^(https|http)://[a-zA-Z0-9][-a-zA-Z0-9]*.[a-zA-Z0-9]+/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
-        Matcher m = p.matcher(url);
-        return m.matches();
+        if (!hasValidFormat(url)) return false;
+        RepositoryUri repositoryUri = getRepositoryUri(url);
+
+        return getCommunicator().isRepositoryValid(repositoryUri);
 	}
 
+    public RepositoryUri getRepositoryUri(String urlString)
+    {
+        try
+        {
+            URL url = new URL(urlString);
+            String protocol = url.getProtocol();
+            String hostname = url.getHost();
+            String path = url.getPath();
+            String[] split = StringUtils.split(path, "/");
+            if (split.length<2)
+            {
+                throw new SourceControlException("Expected url is https://domainname.com/username/repository");
+            }
+            String owner = split[0];
+            String slug = split[1];
+            return new BitbucketRepositoryUri(protocol, hostname, owner, slug);
+        }
+        catch (MalformedURLException e)
+        {
+            throw new SourceControlException("Invalid url ["+urlString+"]");
+        }
 
-	public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
+    }
+
+
+
+    public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
 	{
         List<Changeset> changesets = new ArrayList<Changeset>();
         try

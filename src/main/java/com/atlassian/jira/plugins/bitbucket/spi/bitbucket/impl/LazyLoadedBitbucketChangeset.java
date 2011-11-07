@@ -1,13 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
-import java.util.List;
-
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.atlassian.util.concurrent.LazyReference;
+
+import java.util.List;
 
 /**
  * A lazy loaded remote bitbucket changeset.  Will only load the changeset details if the
@@ -91,7 +90,6 @@ public class LazyLoadedBitbucketChangeset implements Changeset
 
     public String getCommitURL(SourceControlRepository repository)
     {
-    	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
-        return uri.getCommitUrl(nodeId);
+        return repository.getRepositoryUri().getCommitUrl(nodeId);
     }
 }
