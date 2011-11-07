@@ -17,9 +17,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 @SuppressWarnings("deprecation")
-public class ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
+public class To_04_ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
 {
-    private final Logger logger = LoggerFactory.getLogger(ActiveObjectsV2Migrator.class);
+    private final Logger logger = LoggerFactory.getLogger(To_04_ActiveObjectsV2Migrator.class);
 
 	public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
     {
@@ -70,12 +70,6 @@ public class ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
             }
         }
 
-//      for (Integer id : repositoriesToBeSynchronised)
-//		{
-//		//		This triggers another upgrade and gets into the loop         
-//        	SourceControlRepository scr = globalRepositoryManager.getRepository(id);
-//			synchronizer.synchronize(scr);
-//		}
         logger.debug("completed uri to url migration");
     }
 

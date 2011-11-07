@@ -14,7 +14,7 @@
     </component-import>
     
     <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />
-<!--
+
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping</entity>
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping</entity>
@@ -22,16 +22,7 @@
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.Uri2UrlMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_04_ActiveObjectsV2Migrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_05_RepositoryTypeMigrator</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_06_GithubRepositories</upgradeTask>
-    </ao>
--->
-    <ao key="ao-module" name="Active Objects Module">
-        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping</entity>
-        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping</entity>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.PropertyMigrator</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.Uri2UrlMigrator</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ActiveObjectsV2Migrator</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.RepositoryTypeMigrator</upgradeTask>
+        <!--upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_06_GithubRepositories</upgradeTask-->
     </ao>
 
     <component key="executorService" name="Executor Service Factory Component"
@@ -87,12 +78,6 @@
         <description>globalRepositoryManager</description>
         <interface>com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager</interface>
     </component>
-
-<!--    <component key="remoteBitbucket" name="Remote Bitbucket Service"
-               class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicatorcator">
-        <description>A service for using the remove bitbucket connection</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.spi.bitbucket.Communicatorce>
-    </component>-->
 
     <component-import key="pluginSettingsFactory">
         <interface>com.atlassian.sal.api.pluginsettings.PluginSettingsFactory</interface>
