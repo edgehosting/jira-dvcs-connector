@@ -1,14 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
-import java.util.List;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import java.util.List;
 
 /**
  * Details on a changeset found in Bitbucket.
@@ -96,8 +94,7 @@ public class DefaultBitbucketChangeset implements Changeset
 
     public String getCommitURL(SourceControlRepository repository)
     {
-    	RepositoryUri uri = RepositoryUri.parse(repository.getUrl());
-        return uri.getCommitUrl(node);
+        return repository.getRepositoryUri().getCommitUrl(node);
     }
 
     @Override

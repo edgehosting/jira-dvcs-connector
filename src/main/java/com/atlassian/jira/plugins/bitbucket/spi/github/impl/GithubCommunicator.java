@@ -1,11 +1,12 @@
-package com.atlassian.jira.plugins.bitbucket.spi.github;
-
-import java.util.List;
+package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+
+import java.util.List;
 
 public class GithubCommunicator implements Communicator
 {
@@ -41,5 +42,10 @@ public class GithubCommunicator implements Communicator
     {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public boolean isRepositoryValid(RepositoryUri repositoryUri)
+    {
+        return false;
     }
 }

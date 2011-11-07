@@ -1,28 +1,26 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-
+import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryUri;
+import com.atlassian.sal.api.net.Request;
+import com.atlassian.sal.api.net.RequestFactory;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator;
-import com.atlassian.sal.api.net.Request;
-import com.atlassian.sal.api.net.RequestFactory;
+import java.io.IOException;
+
+import static junit.framework.Assert.*;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
 public class TestBitbucketCommunicator
 {
@@ -40,7 +38,8 @@ public class TestBitbucketCommunicator
     public void setup() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        when(repository.getUrl()).thenReturn("https://bitbucket.org/atlassian/jira-bitbucket-connector");
+        RepositoryUri repositoryUri = new BitbucketRepositoryUri("https", "bitbucket.org","atlassian","jira-bitbucket-connector");
+        when(repository.getRepositoryUri()).thenReturn(repositoryUri);
     }
 
     private String resource(String name) throws IOException
@@ -119,6 +118,20 @@ public class TestBitbucketCommunicator
             "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/services");
         verify(request).addBasicAuthentication("user", "pass");
         verify(request).setRequestBody("type=post;URL=" + postCommitUrl);
+    }
+
+    @Test
+    public void testIsRepositoryValid() throws Exception
+    {
+        when(requestFactory.createRequest(Request.MethodType.GET,
+                "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector")).thenReturn(request);
+        when(request.execute()).thenReturn(resource("TestBitbucket-repository.json"));
+
+        RepositoryUri repositoryUri = new BitbucketRepositoryUri("https", "bitbucket.org","atlassian","jira-bitbucket-connector");
+        BitbucketCommunicator communicator = new BitbucketCommunicator(requestFactory, authenticationFactory);
+
+        assertTrue(communicator.isRepositoryValid(repositoryUri));
+
     }
 
 }

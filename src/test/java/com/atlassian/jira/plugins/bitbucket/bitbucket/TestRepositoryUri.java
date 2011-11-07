@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager;
 import org.junit.Test;
-
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 
 import static org.junit.Assert.assertEquals;
 
@@ -13,14 +13,22 @@ public class TestRepositoryUri
 {
     @Test
     public void testParseRepositoryFullUrlWithBranch() {
-        RepositoryUri repositoryUri = RepositoryUri.parse("http://bitbucket.org/owner/slug/default");
+
+        String repositoryUrl = "http://bitbucket.org/owner/slug/default";
+        BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, null, null, null);
+        RepositoryUri repositoryUri = brm.getRepositoryUri(repositoryUrl);
+
         assertEquals("owner", repositoryUri.getOwner());
         assertEquals("slug", repositoryUri.getSlug());
     }
 
     @Test
     public void testParseRepositoryFullUrl() {
-        RepositoryUri repositoryUri = RepositoryUri.parse("http://bitbucket.org/owner/slug");
+
+        String repositoryUrl = "http://bitbucket.org/owner/slug";
+        BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, null, null, null);
+        RepositoryUri repositoryUri = brm.getRepositoryUri(repositoryUrl);
+
         assertEquals("owner", repositoryUri.getOwner());
         assertEquals("slug", repositoryUri.getSlug());
     }

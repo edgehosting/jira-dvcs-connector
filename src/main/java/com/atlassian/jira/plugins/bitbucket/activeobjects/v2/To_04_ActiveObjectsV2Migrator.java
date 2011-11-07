@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.RepositoryUri;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 

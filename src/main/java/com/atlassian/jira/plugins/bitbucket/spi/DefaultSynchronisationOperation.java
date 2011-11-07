@@ -74,7 +74,8 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     
     public Iterable<Changeset> getChangsetsIterator()
     {
-        logger.debug("synchronize [ {} ] with [ {} ]", key.getRepository().getProjectKey(), key.getRepository().getUrl());
+        logger.debug("synchronize [ {} ] with [ {} ]", key.getRepository().getProjectKey(),
+                key.getRepository().getRepositoryUri().getRepositoryUrl());
 
         Iterable<Changeset> changesets = key.getChangesets() == null ? communicator.getChangesets(key.getRepository()) : key.getChangesets();
         return changesets;

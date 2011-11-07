@@ -1,17 +1,16 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugin.projectoperation.AbstractPluggableProjectOperation;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.project.Project;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.opensymphony.user.User;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("deprecation")
 public class ProjectSettings extends AbstractPluggableProjectOperation
@@ -51,7 +50,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
                 result.append("None");
                 break;
             case 1:
-                result.append(getRepositoryName(repositories.get(0).getUrl()));
+                result.append(getRepositoryName(repositories.get(0).getRepositoryUri().getRepositoryUrl()));
                 break;
             default:
                 result.append(repositories.size()).append(" repositories");

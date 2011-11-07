@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.api;
 
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+
 /**
  * Interface describing the repository
  */
@@ -9,11 +11,11 @@ public interface SourceControlRepository
 	 * @return id of the repository
 	 */
 	int getId();
-	
-	/**
-	 * @return full url of the repository
-	 */
-	String getUrl();
+
+    /**
+     * @return object which gives all necessary kinds of repository URLs (base, api, ... )
+     */
+    RepositoryUri getRepositoryUri();
 
 	/**
 	 * @return username to use for authenticating

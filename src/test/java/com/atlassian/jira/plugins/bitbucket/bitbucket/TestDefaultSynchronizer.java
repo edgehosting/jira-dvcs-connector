@@ -1,30 +1,21 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Arrays;
-import java.util.concurrent.Executors;
-
+import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
+import com.atlassian.jira.plugins.bitbucket.api.*;
+import com.atlassian.jira.plugins.bitbucket.spi.*;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryUri;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.Progress;
-import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
-import com.atlassian.jira.plugins.bitbucket.spi.DefaultSynchronisationOperation;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
+import java.util.Arrays;
+import java.util.concurrent.Executors;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link DefaultSynchronizer}
@@ -51,7 +42,9 @@ public class TestDefaultSynchronizer
     @Test
     public void testSynchronizeAddsSingleMapping() throws InterruptedException
     {
-        when(repository.getUrl()).thenReturn("https://bitbucket.org/owner/slug");
+        RepositoryUri repositoryUri = new BitbucketRepositoryUri("https", "bitbucket.org","owner","slug");
+        when(repository.getRepositoryUri()).thenReturn(repositoryUri);
+
         when(repository.getProjectKey()).thenReturn("PRJ");
         SynchronizationKey key = new SynchronizationKey(repository);
         SynchronisationOperation synchronisation = new DefaultSynchronisationOperation(key, repositoryManager, bitbucket, progressProvider);

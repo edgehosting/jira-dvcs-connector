@@ -1,18 +1,17 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class GithubRepositoryManager extends DvcsRepositoryManager
 {
@@ -24,10 +23,8 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
 
     public boolean canHandleUrl(String url)
     {
-        Pattern p = Pattern.compile("^(https|http)://github.com/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
-        Matcher m = p.matcher(url);
-        return m.matches();
-
+        // todo like in bitbucket...
+        return false;
     }
 
     public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
@@ -51,5 +48,29 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
     {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    public RepositoryUri getRepositoryUri(String urlString)
+    {
+        try
+        {
+            URL url = new URL(urlString);
+            String protocol = url.getProtocol();
+            String hostname = url.getHost();
+            String path = url.getPath();
+            String[] split = StringUtils.split(path, "/");
+            if (split.length<2)
+            {
+                throw new SourceControlException("Expected url is https://domainname.com/username/repository");
+            }
+            String owner = split[0];
+            String slug = split[1];
+            return new GithubRepositoryUri(protocol, hostname, owner, slug);
+        }
+        catch (MalformedURLException e)
+        {
+            throw new SourceControlException("Invalid url ["+urlString+"]");
+        }
+
     }
 }
