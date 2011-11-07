@@ -1,10 +1,11 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import static junit.framework.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -16,10 +17,10 @@ import org.mockito.MockitoAnnotations;
 
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.webwork.BackwardCompability;
 import com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit;
 
 /**
@@ -31,8 +32,6 @@ public class TestBitbucketPostCommit
     Synchronizer synchronizer;
     @Mock
 	private RepositoryManager repositoryManager;
-    @Mock
-	private BackwardCompability backwardCompability;
 
 
     @Before
@@ -52,10 +51,10 @@ public class TestBitbucketPostCommit
     	String projectKey = "PRJ";
     	String repositoryUrl = "https://bitbucket.org/mjensen/test";
     	String payload = resource("TestBitbucketPostCommit-payload.json");
-    	DefaultSourceControlRepository repo = new DefaultSourceControlRepository(0, repositoryUrl, projectKey, null, null, null, null, "bitbucket");
-    	when(backwardCompability.getRepository(projectKey, repositoryUrl)).thenReturn(repo);
+    	SourceControlRepository repo = new DefaultSourceControlRepository(0, repositoryUrl, projectKey, null, null, null, null, "bitbucket");
+    	when(repositoryManager.getRepositories(projectKey)).thenReturn(Arrays.asList(repo));
 
-		BitbucketPostCommit bitbucketPostCommit = new BitbucketPostCommit(repositoryManager, synchronizer, backwardCompability);
+		BitbucketPostCommit bitbucketPostCommit = new BitbucketPostCommit(repositoryManager, synchronizer);
 		bitbucketPostCommit.setProjectKey(projectKey);
 		bitbucketPostCommit.setPayload(payload);
         bitbucketPostCommit.execute();
@@ -75,7 +74,8 @@ public class TestBitbucketPostCommit
     	
         ArgumentMatcher<List<Changeset>> matcher = new ArgumentMatcher<List<Changeset>>()
 		{
-		    public boolean matches(Object o)
+		    @Override
+            public boolean matches(Object o)
 		    {
 		        //noinspection unchecked
 		        @SuppressWarnings("unchecked")

@@ -33,16 +33,15 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     // BitBucket JSON Payload
     private String payload = "";
 	private final RepositoryManager globalRepositoryManager;
-	private BackwardCompability backwardCompability;
 
     public BitbucketPostCommit(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, 
-    		Synchronizer synchronizer, BackwardCompability backwardCompability)
+    		Synchronizer synchronizer)
     {
         this.globalRepositoryManager = globalRepositoryManager;
 		this.synchronizer = synchronizer;
-		this.backwardCompability = backwardCompability;
     }
 
+    @Override
     protected void doValidation()
     {
 
@@ -58,6 +57,7 @@ public class BitbucketPostCommit extends JiraWebActionSupport
 
     }
 
+    @Override
     protected String doExecute() throws Exception
     {
 		try
@@ -86,13 +86,29 @@ public class BitbucketPostCommit extends JiraWebActionSupport
 	    		String slug = jsonPayload.getJSONObject("repository").getString("slug");
 	    		repositoryUrl = "https://bitbucket.org/"+owner+"/"+slug;
 	    	}
-	    	SourceControlRepository repo = backwardCompability.getRepository(projectKey, repositoryUrl);
-	    	List<Changeset> changesets = globalRepositoryManager.parsePayload(repo, payload);
-	    	synchronizer.synchronize(repo, changesets);
+	    	SourceControlRepository repo = findRepository();
+	    	if (repo!=null)
+	    	{
+	    	    List<Changeset> changesets = globalRepositoryManager.parsePayload(repo, payload);
+	    	    synchronizer.synchronize(repo, changesets);
+	    	}
         }
 
         return "postcommit";
 	}
+
+    private SourceControlRepository findRepository()
+    {
+        List<SourceControlRepository> repositories = globalRepositoryManager.getRepositories(projectKey);
+        for (SourceControlRepository repo : repositories)
+        {
+            if (repositoryUrl.equals(repo.getUrl()))
+            {
+                return repo;
+            }
+        }
+        return null;
+    }
 
 	public String getValidations()
     {
