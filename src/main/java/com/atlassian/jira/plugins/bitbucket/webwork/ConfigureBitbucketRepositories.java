@@ -1,21 +1,20 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.List;
-
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.List;
 
 /**
  * Webwork action used to configure the bitbucket repositories
@@ -93,8 +92,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
             if (nextAction.equals("ShowPostCommitURL"))
             {
-                postCommitURL = "BitbucketPostCommit.jspa?projectKey=" + projectKey + "&repositoryUrl="
-                        + encodeUrl(url);
+                postCommitURL = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
             }
 
             if (nextAction.equals("DeleteRepository"))

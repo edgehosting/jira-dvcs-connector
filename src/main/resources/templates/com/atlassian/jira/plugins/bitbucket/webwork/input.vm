@@ -193,6 +193,7 @@
                 <tr> <th>Repository URL</th> <th>Key</th> <th>Operations</th> </tr>
                 #foreach ($repository in $action.getProjectRepositories($projectKey))
                     #set($repositoryId = $repository.getId())
+                    #set($encodedProjectKey = $textutils.htmlEncode($action.getProjectKey()))
                     #set($encodedMode = $textutils.htmlEncode($action.getMode()))
                     <tr>
                         <td><a href="$textutils.htmlEncode($repository.url)" target="_new">$textutils.htmlEncode($repository.url)</a></td>
@@ -200,8 +201,8 @@
                         <td width="260px">
                             <span title="Show/Hide info about syncing" class="syncicon repository$repositoryId" onclick="AJS.$('.gh_messages.repository$repositoryId').slideToggle()">&nbsp;</span>
                             <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Force Sync</a> |
-                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repositoryId=$repositoryId&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
-                            <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&repositoryId=$repositoryId&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
+                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repositoryId=$repositoryId&projectKey=$encodedProjectKey&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
+                            <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&projectKey=$encodedProjectKey&repositoryId=$repositoryId&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
                         </td>
                     </tr>
                     <tr>

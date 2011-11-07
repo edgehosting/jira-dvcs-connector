@@ -1,12 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
@@ -14,6 +7,12 @@ import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.List;
 
 /**
  * Webwork action used to recieve the callback hook from bitbucket
@@ -33,16 +32,15 @@ public class BitbucketPostCommit extends JiraWebActionSupport
     // BitBucket JSON Payload
     private String payload = "";
 	private final RepositoryManager globalRepositoryManager;
-	private BackwardCompability backwardCompability;
 
     public BitbucketPostCommit(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, 
-    		Synchronizer synchronizer, BackwardCompability backwardCompability)
+    		Synchronizer synchronizer)
     {
         this.globalRepositoryManager = globalRepositoryManager;
 		this.synchronizer = synchronizer;
-		this.backwardCompability = backwardCompability;
     }
 
+    @Override
     protected void doValidation()
     {
 
@@ -58,6 +56,7 @@ public class BitbucketPostCommit extends JiraWebActionSupport
 
     }
 
+    @Override
     protected String doExecute() throws Exception
     {
 		try
@@ -86,13 +85,29 @@ public class BitbucketPostCommit extends JiraWebActionSupport
 	    		String slug = jsonPayload.getJSONObject("repository").getString("slug");
 	    		repositoryUrl = "https://bitbucket.org/"+owner+"/"+slug;
 	    	}
-	    	SourceControlRepository repo = backwardCompability.getRepository(projectKey, repositoryUrl);
-	    	List<Changeset> changesets = globalRepositoryManager.parsePayload(repo, payload);
-	    	synchronizer.synchronize(repo, changesets);
+	    	SourceControlRepository repo = findRepository();
+	    	if (repo!=null)
+	    	{
+	    	    List<Changeset> changesets = globalRepositoryManager.parsePayload(repo, payload);
+	    	    synchronizer.synchronize(repo, changesets);
+	    	}
         }
 
         return "postcommit";
 	}
+
+    private SourceControlRepository findRepository()
+    {
+        List<SourceControlRepository> repositories = globalRepositoryManager.getRepositories(projectKey);
+        for (SourceControlRepository repo : repositories)
+        {
+            if (repositoryUrl.equals(repo.getRepositoryUri().getRepositoryUrl()))
+            {
+                return repo;
+            }
+        }
+        return null;
+    }
 
 	public String getValidations()
     {
