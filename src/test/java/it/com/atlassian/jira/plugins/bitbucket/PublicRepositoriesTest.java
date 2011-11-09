@@ -7,6 +7,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Test;
 
 /**
@@ -16,7 +21,6 @@ public class PublicRepositoriesTest extends BitBucketBaseTest
 {
     private static final String TEST_REPO_URL = "https://bitbucket.org/farmas/testrepo-qa";
     private static final String TEST_PRIVATE_REPO_URL = "https://bitbucket.org/farmas/privatetestrepo-qa-tst";
-    private final BitbucketApi bitbucketApi = new BitbucketApi();
 
     @Test
     public void addRepoAppearsOnList()
@@ -78,17 +82,30 @@ public class PublicRepositoriesTest extends BitBucketBaseTest
         // check that it created postcommit hook
         String syncUrl = baseUrl + "/rest/bitbucket/1.0/repository/" + repoId + "/sync";
         String bitbucketServiceConfigUrl = "https://api.bitbucket.org/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
-        servicesConfig = bitbucketApi.getServices(bitbucketServiceConfigUrl, "jirabitbucketconnector",
+        servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, "jirabitbucketconnector",
                 "jirabitbucketconnector");
         assertThat(servicesConfig, containsString(syncUrl));
         // delete repository
         configureRepos.deleteAllRepositories();
         // check that postcommit hook is removed
-        servicesConfig = bitbucketApi.getServices(bitbucketServiceConfigUrl, "jirabitbucketconnector",
+        servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, "jirabitbucketconnector",
                 "jirabitbucketconnector");
         assertThat(servicesConfig, not(containsString(syncUrl)));
     }
 
+    private String getBitbucketServices(String url, String username, String password) throws Exception
+    {
+        HttpClient httpClient = new HttpClient();
+        HttpMethod method = new GetMethod(url);
+
+        AuthScope authScope = new AuthScope(method.getURI().getHost(), AuthScope.ANY_PORT, null, AuthScope.ANY_SCHEME);
+        httpClient.getParams().setAuthenticationPreemptive(true);
+        httpClient.getState().setCredentials(authScope, new UsernamePasswordCredentials(username, password));
+
+        httpClient.executeMethod(method);
+        return method.getResponseBodyAsString();
+    }    
+    
     public void testSyncFromPostCommit()
     {
         // TODO
