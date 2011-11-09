@@ -1,23 +1,68 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.*;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.opensymphony.util.TextUtils;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
+    private static final Logger log = LoggerFactory.getLogger(DvcsRepositoryManager.class);
 
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    private static final Comparator<? super Changeset> CHANGESET_COMPARATOR = new Comparator<Changeset>()
+    {
+        private long parse(Changeset c)
+        {
+            if (c == null) return -1;
+            try
+            {
+                return DATE_FORMAT.parse(c.getTimestamp()).getTime();
+            } catch (ParseException e)
+            {
+                log.warn("Error parsing timestamp [{}] from changeset [{}], repositoryId [{}] ", 
+                    new String[] {c.getTimestamp(), c.getNode(), String.valueOf(c.getRepositoryId())});
+                return -1;
+            }
+        }
+        public int compare(Changeset c1, Changeset c2)
+        {
+            long t1 = parse(c1);
+            long t2 = parse(c2);
+            if (t1<t2) return -1;
+            if (t1>t2) return 1;
+            return 0;
+        }
+    };
+    
     private final RepositoryPersister repositoryPersister;
     private final Communicator communicator;
     private final Encryptor encryptor;
@@ -92,7 +137,9 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 	public List<Changeset> getChangesets(String issueKey)
 	{
 		List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey);
-		return Lists.transform(issueMappings, TO_CHANGESET);
+		List<Changeset> changesets = Lists.newArrayList(Lists.transform(issueMappings, TO_CHANGESET));
+		Collections.sort(changesets, CHANGESET_COMPARATOR);
+        return changesets;
 	}
 
 	public void removeRepository(int id)

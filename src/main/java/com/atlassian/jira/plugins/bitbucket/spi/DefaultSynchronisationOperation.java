@@ -1,25 +1,26 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
-    private final Logger logger = LoggerFactory.getLogger(DefaultSynchronizer.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
 	protected final SynchronizationKey key;
     protected final RepositoryManager repositoryManager;
 	private final ProgressWriter progressProvider;
-    private Communicator communicator;
+    private final Communicator communicator;
     
     public DefaultSynchronisationOperation(SynchronizationKey key, RepositoryManager repositoryManager,
                                            Communicator communicator, ProgressWriter progressProvider)
@@ -41,6 +42,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         {
         	changesetCount ++;
             String message = changeset.getMessage();
+            log.debug("syncing changeset [{}] [{}]", changeset.getNode(), changeset.getMessage());
             if (message.contains(key.getRepository().getProjectKey()))
             {
                 Set<String> extractedIssues = extractProjectKey(key.getRepository().getProjectKey(), message);
@@ -74,7 +76,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     
     public Iterable<Changeset> getChangsetsIterator()
     {
-        logger.debug("synchronize [ {} ] with [ {} ]", key.getRepository().getProjectKey(),
+        log.debug("synchronize [ {} ] with [ {} ]", key.getRepository().getProjectKey(),
                 key.getRepository().getRepositoryUri().getRepositoryUrl());
 
         Iterable<Changeset> changesets = key.getChangesets() == null ? communicator.getChangesets(key.getRepository()) : key.getChangesets();
