@@ -14,7 +14,9 @@ public class To_05_RepositoryTypeMigrator implements ActiveObjectsUpgradeTask
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
         logger.debug("upgrade [ " + currentVersion + " ]");
-
+        
+        activeObjects.migrate(ProjectMapping.class, IssueMapping.class);
+        
         ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class);
         for (ProjectMapping projectMapping : projectMappings)
         {
