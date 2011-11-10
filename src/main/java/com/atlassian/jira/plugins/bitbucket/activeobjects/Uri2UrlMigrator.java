@@ -17,7 +17,9 @@ public class Uri2UrlMigrator implements ActiveObjectsUpgradeTask
 
 	public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
     {
-        logger.debug("upgrade [ " + modelVersion + " ]");
+        activeObjects.migrate(IssueMapping.class, ProjectMapping.class);
+
+	    logger.debug("upgrade [ " + modelVersion + " ]");
 
         // urls in project mappings
         ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class);
