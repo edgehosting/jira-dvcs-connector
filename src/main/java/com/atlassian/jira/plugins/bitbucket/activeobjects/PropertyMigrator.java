@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.activeobjects;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +49,6 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
             List<String> repositories = settings.getRepositories(projectKey);
             for (String repository : repositories)
             {
-
                 String username = settings.getUsername(projectKey, repository);
                 String password = settings.getPassword(projectKey, repository);
 
@@ -59,25 +60,13 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
                 map.put("USERNAME", username);
                 map.put("PASSWORD", password);
                 activeObjects.create(ProjectMapping.class, map);
-//                repositoryPersister.addRepository(projectKey, repositoryUrl, username, password);
-                // After addding repository we should synchronise now. 
-                // Synchronisation can be triggered from RepositoryManager, 
-                // but injecting it into this class doesn't work.
-                // Until we come with better solutions users with old data 
-                // will have to manually trigger Force Synchronisation
-/*
+
                 try
                 {
-                    String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUri());
-                    DefaultSourceControlRepository repo = new DefaultSourceControlRepository(pm.getID(), RepositoryUri.parse(pm.getRepositoryUri()).getRepositoryUrl(),
-							pm.getProjectKey(), pm.getUsername(), decryptedPassword);
-
                     List<String> issueIds = settings.getIssueIds(projectKey, repository);
                     for (String issueId : issueIds)
                     {
-
                         List<String> commits = settings.getCommits(projectKey, repository, issueId);
-
                         for (String commit : commits)
                         {
                             URL changesetURL = new URL(commit);
@@ -85,8 +74,12 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
                             String node = changesetPath.substring(changesetPath.lastIndexOf("/") + 1);
                             logger.debug("add changeset [ {} ] to [ {} ]", changesetPath, issueId);
 
-							Changeset changeset = BitbucketChangesetFactory.load(bitbucket, repo, node);
-							repositoryPersister.addChangeset(issueId, changeset);
+                            Map<String, Object> issueMap = Maps.newHashMap();
+                            issueMap.put("NODE", node);
+                            issueMap.put("PROJECT_KEY", projectKey);
+                            issueMap.put("ISSUE_ID", issueId);
+                            issueMap.put("REPOSITORY_URI", repositoryUri);
+                            activeObjects.create(IssueMapping.class, issueMap);
                         }
                     }
                 }
@@ -94,7 +87,6 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
                 {
                     logger.error("invalid repository url [ " + repository + " ] was not processed");
                 }
-*/
             }
         }
         logger.debug("completed property migration");
