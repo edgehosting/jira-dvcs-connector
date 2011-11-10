@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.webwork.ConfigureBitbucketRepositories;
@@ -168,8 +169,15 @@ public class RootResource
             String adminUsername = repository.getUsername();
             String adminPassword = repository.getPassword();
 
-            SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, username, password,
-                    adminUsername, adminPassword);
+            SourceControlRepository repo;
+            try
+            {
+                repo = globalRepositoryManager.addRepository(projectKey, url, username, password,
+                        adminUsername, adminPassword);
+            } catch (SourceControlException e)
+            {
+                return Response.serverError().entity(e).build();
+            }
             return Response.ok(TO_REST_REPOSITORY.apply(repo)).build();
         } else
             return Response.status(Response.Status.FORBIDDEN).build();

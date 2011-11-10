@@ -1,20 +1,22 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.project.Project;
-import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
-import com.atlassian.jira.web.action.JiraWebActionSupport;
-import com.atlassian.sal.api.ApplicationProperties;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.List;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.List;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.project.Project;
+import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.atlassian.sal.api.ApplicationProperties;
 
 /**
  * Webwork action used to configure the bitbucket repositories
@@ -33,7 +35,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String repoVisibility = "";
     private String projectKey = "";
     private String nextAction = "";
-    private String validations = "";
     private final String redirectURL = "";
     private String addPostCommitService = "";
     private int repositoryId;
@@ -55,7 +56,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         if (!globalRepositoryManager.canHandleUrl(url) && nextAction.equals("AddRepository"))
         {
             addErrorMessage("URL must be for a valid repository.");
-            validations = "URL must be for a valid repository.";
         }
     }
 
@@ -71,36 +71,42 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     {
         logger.debug("configure repository [ " + nextAction + " ]");
 
-        if (validations.equals(""))
+        try
         {
-            if (nextAction.equals("AddRepository"))
+            if (getErrorMessages().isEmpty())
             {
-                if (!repoVisibility.equals("private")
-                        || (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword)))
+                if (nextAction.equals("AddRepository"))
                 {
-                    SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, bbUserName,
-                            bbPassword, adminUsername, adminPassword);
-                    if (BooleanUtils.toBoolean(addPostCommitService))
+                    if (!repoVisibility.equals("private")
+                            || (StringUtils.isNotBlank(bbUserName) && StringUtils.isNotBlank(bbPassword)))
                     {
-                        globalRepositoryManager.setupPostcommitHook(repo);
+                        SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, bbUserName,
+                                bbPassword, adminUsername, adminPassword);
+                        if (BooleanUtils.toBoolean(addPostCommitService))
+                        {
+                            globalRepositoryManager.setupPostcommitHook(repo);
+                        }
+                        repositoryId = repo.getId();
+                        postCommitURL = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
+                        nextAction = "ForceSync";
                     }
-                    repositoryId = repo.getId();
+                }
+
+                if (nextAction.equals("ShowPostCommitURL"))
+                {
                     postCommitURL = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
-                    nextAction = "ForceSync";
+                }
+
+                if (nextAction.equals("DeleteRepository"))
+                {
+                    SourceControlRepository repo = globalRepositoryManager.getRepository(repositoryId);
+                    globalRepositoryManager.removeRepository(repositoryId);
+                    globalRepositoryManager.removePostcommitHook(repo);
                 }
             }
-
-            if (nextAction.equals("ShowPostCommitURL"))
-            {
-                postCommitURL = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
-            }
-
-            if (nextAction.equals("DeleteRepository"))
-            {
-                SourceControlRepository repo = globalRepositoryManager.getRepository(repositoryId);
-                globalRepositoryManager.removeRepository(repositoryId);
-                globalRepositoryManager.removePostcommitHook(repo);
-            }
+        } catch (SourceControlException e)
+        {
+            addErrorMessage(e.getMessage());
         }
 
         return INPUT;
@@ -200,11 +206,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     public String getNextAction()
     {
         return this.nextAction;
-    }
-
-    public String getValidations()
-    {
-        return this.validations;
     }
 
     public String getRedirectURL()

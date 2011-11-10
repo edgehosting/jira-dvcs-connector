@@ -1,20 +1,22 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
@@ -44,7 +46,12 @@ public class DefaultRepositoryPersister implements RepositoryPersister
 
     public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String repositoryType)
     {
-        // TODO don't create duplicate mapping
+        
+        final ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_URL = ? and PROJECT_KEY = ?", repositoryUrl, projectKey);
+        if (projectMappings.length>0)
+        {
+            throw new SourceControlException("Repository ["+repositoryUrl+"] is already linked to project ["+projectKey+"]");
+        }
         final Map<String, Object> map = new HashMap<String, Object>();
         map.put("REPOSITORY_URL", repositoryUrl);
         map.put("PROJECT_KEY", projectKey);

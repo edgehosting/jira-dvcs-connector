@@ -233,12 +233,11 @@
                     Enter the JIRA project and Bitbucket repository URL.</p>
                 #end
 
-                #if ($action.getValidations() != "")
-                    <div style="margin: 10px; border: 2px solid red; width: 400px; background: #ddd; padding: 15px;">
-                           <h3>$action.getValidations() </h3>
+                #foreach ($errorMessage in $action.getErrorMessages())
+                    <div style="margin: 10px; border: 2px solid red; background: #ffb; padding: 15px;">
+                           <h4>$errorMessage </h4>
                     </div>
                 #end
-
 
                 #if ($action.getNextAction() == "AddRepository" && $action.getRepoVisibility() == "private")
                     <div style='margin-bottom: 12px'>
