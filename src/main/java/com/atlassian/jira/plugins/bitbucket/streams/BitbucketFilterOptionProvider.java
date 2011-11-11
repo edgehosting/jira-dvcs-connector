@@ -54,6 +54,7 @@ public class BitbucketFilterOptionProvider implements StreamsFilterOptionProvide
 //            return upmVerbs.newVerb(entryType.name().toLowerCase(), update());
 //        }
 
+        
         public static ActivityVerb getVerb(String name) {
             return upmVerbs.newVerb(name.toLowerCase(), update());
         }
