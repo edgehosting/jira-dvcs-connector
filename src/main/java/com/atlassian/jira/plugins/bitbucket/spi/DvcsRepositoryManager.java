@@ -14,6 +14,8 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,15 +45,16 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         private long parse(Changeset c)
         {
             if (c == null) return -1;
-            try
-            {
-                return DATE_FORMAT.parse(c.getTimestamp()).getTime();
-            } catch (ParseException e)
-            {
-                log.warn("Error parsing timestamp [{}] from changeset [{}], repositoryId [{}] ", 
-                    new String[] {c.getTimestamp(), c.getNode(), String.valueOf(c.getRepositoryId())});
-                return -1;
-            }
+//            try
+//            {
+//                return DATE_FORMAT.parse(c.getTimestamp()).getTime();
+//            } catch (ParseException e)
+//            {
+//                log.warn("Error parsing timestamp [{}] from changeset [{}], repositoryId [{}] ",
+//                    new String[] {c.getTimestamp(), c.getNode(), String.valueOf(c.getRepositoryId())});
+//                return -1;
+//            }
+            return c.getTimestamp().getTime();
         }
         public int compare(Changeset c1, Changeset c2)
         {
@@ -149,7 +152,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 
 	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
 	{
-		repositoryPersister.addChangeset(issueId, changeset.getRepositoryId(), changeset.getNode());
+		repositoryPersister.addChangeset(issueId, changeset);
 	}
 
 	public SourceControlUser getUser(SourceControlRepository repository, String username)
@@ -293,8 +296,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             htmlCommitEntry = htmlCommitEntry.replace("#login", TextUtils.htmlEncode(login));
             htmlCommitEntry = htmlCommitEntry.replace("#user_name", TextUtils.htmlEncode(authorName));
             htmlCommitEntry = htmlCommitEntry.replace("#commit_message", TextUtils.htmlEncode(changeset.getMessage()));
-            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_time", changeset.getTimestamp());
-            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_date", changeset.getTimestamp());
+            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_time", BitbucketChangesetFactory.getDateString(changeset.getTimestamp()));
+            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_date", BitbucketChangesetFactory.getDateString(changeset.getTimestamp()));
             htmlCommitEntry = htmlCommitEntry.replace("#commit_url", commitURL);
             htmlCommitEntry = htmlCommitEntry.replace("#commit_hash", changeset.getNode());
             //htmlCommitEntry = htmlCommitEntry.replace("#tree_url", "https://github.com/" + login + "/" + projectName + "/tree/" + commit_hash);
@@ -343,4 +346,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
 
+    @Override
+    public List<ChangesetMapping> getLastChangesetMappings(int count) {
+        return repositoryPersister.getLastChangesetMappings(count);
+    }
 }

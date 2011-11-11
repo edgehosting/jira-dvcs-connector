@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
 import com.atlassian.jira.plugins.bitbucket.api.*;
 
 import java.util.List;
@@ -109,4 +110,10 @@ public interface RepositoryManager
      */
     public String getRepositoryType();
 
+    /**
+     * Find last changeset to the given count ordered by timestamp
+     * @param count changesets count
+     * @return list of Changeset mappings
+     */
+    public List<ChangesetMapping> getLastChangesetMappings(final int count);
 }

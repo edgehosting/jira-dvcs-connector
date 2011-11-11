@@ -1,23 +1,25 @@
 package com.atlassian.jira.plugins.bitbucket.api;
 
+import org.joda.time.DateTime;
+
+import java.util.Date;
 import java.util.List;
 
 
 /**
  * Details on a changeset
  */
-public interface Changeset
-{
-	
-	public int getRepositoryId();
-	
+public interface Changeset {
+
+    public int getRepositoryId();
+
     public String getNode();
 
     public String getRawAuthor();
 
     public String getAuthor();
 
-    public String getTimestamp();
+    public Date getTimestamp();
 
     public String getRawNode();
 

@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket;
 
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
@@ -154,4 +155,9 @@ public class GlobalRepositoryManager implements RepositoryManager
 	{
 		getManagerByRepository(repo).removePostcommitHook(repo);
 	}
+
+    @Override
+    public List<ChangesetMapping> getLastChangesetMappings(int count) {
+        return repositoryPersister.getLastChangesetMappings(count);
+    }
 }

@@ -93,6 +93,44 @@
             <version>2.4.0</version>
             <scope>provided</scope>
         </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>com.atlassian.streams</groupId>-->
+            <!--<artifactId>streams-thirdparty-api</artifactId>-->
+            <!--<version>5.0</version>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>com.atlassian.streams</groupId>-->
+            <!--<artifactId>streams-api</artifactId>-->
+            <!--<version>5.0</version>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
+
+        <dependency>
+            <groupId>com.atlassian.streams</groupId>
+            <artifactId>streams-api</artifactId>
+            <version>${streams.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.streams</groupId>
+            <artifactId>streams-spi</artifactId>
+            <version>${streams.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.atlassian.upm</groupId>-->
+            <!--<artifactId>upm-api</artifactId>-->
+            <!--<version>1.6-m3</version>-->
+            <!--&lt;!&ndash;<scope>provided</scope>&ndash;&gt;-->
+        <!--</dependency>-->
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>1.6</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -127,8 +165,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                 </configuration>
             </plugin>
         </plugins>
@@ -136,8 +174,11 @@
 
     <properties>
         <jira.version>4.4.1-studio-rc1</jira.version>
+        <!--<jira.version>5.0-beta3</jira.version>-->
         <jira.data.version>4.3.4</jira.data.version>
+        <!--<jira.data.version>5.0-beta3</jira.data.version>-->
         <ao.version>0.15</ao.version>
+        <streams.version>4.1.2</streams.version>
     </properties>
 
     <distributionManagement>
