@@ -34,7 +34,6 @@ public class To_06_GithubRepositories implements ActiveObjectsUpgradeTask
     private List<String> getRepositories(String projectKey)
     {
         List<String> repoUrls = (List<String>) pluginSettingsFactory.createSettingsForKey(projectKey).get("githubRepositoryURLArray");
-        //TODO remove this value from the project settings? 
         return repoUrls != null ? repoUrls : Collections.<String> emptyList();
     }
 

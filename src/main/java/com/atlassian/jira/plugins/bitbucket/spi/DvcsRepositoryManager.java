@@ -145,7 +145,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 	public void removeRepository(int id)
 	{
 		repositoryPersister.removeRepository(id);
-		// TODO Should we also delete IssueMappings? Yes we should.
 	}
 
 	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
