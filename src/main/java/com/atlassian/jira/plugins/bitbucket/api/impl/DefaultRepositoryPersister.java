@@ -5,17 +5,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import net.java.ao.Query;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -36,11 +37,13 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         this.activeObjects = activeObjects;
     }
 
+    @Override
     public List<ProjectMapping> getRepositories(final String projectKey, final String repositoryType)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<ProjectMapping>>()
         {
-			public List<ProjectMapping> doInTransaction()
+			@Override
+            public List<ProjectMapping> doInTransaction()
             {
                 ProjectMapping[] mappings = activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ? AND REPOSITORY_TYPE = ?", projectKey, repositoryType);
                 return Lists.newArrayList(mappings);
@@ -48,6 +51,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
 
+    @Override
     public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String repositoryType)
     {
         
@@ -72,6 +76,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         }
         return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping>()
         {
+            @Override
             public ProjectMapping doInTransaction()
             {
         		return activeObjects.create(ProjectMapping.class, map);
@@ -79,10 +84,12 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
 
+    @Override
     public void removeRepository(final int id)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
         {
+            @Override
             public Object doInTransaction()
             {
                 final ProjectMapping projectMapping = activeObjects.get(ProjectMapping.class, id);
@@ -98,10 +105,12 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
 
+    @Override
     public List<IssueMapping> getIssueMappings(final String issueId)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
         {
+            @Override
             public List<IssueMapping> doInTransaction()
             {
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", issueId);
@@ -110,6 +119,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
     
+    @Override
     public void addChangeset(final String issueId, final Changeset changeset)
     {
         final int repositoryId = changeset.getRepositoryId();
@@ -117,6 +127,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
 
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
         {
+            @Override
             public Object doInTransaction()
             {
                 logger.debug("create issue mapping [ {} ] [ {} - {} ] ", new String[]{issueId, String.valueOf(repositoryId), node});
@@ -134,7 +145,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 return activeObjects.create(IssueMapping.class, map);
             }
         });
-
+/*
         activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
         {
             public ChangesetMapping doInTransaction()
@@ -160,12 +171,14 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 return activeObjects.create(ChangesetMapping.class, map);
             }
         });
+ */
     }
-
+    @Override
     public List<ChangesetMapping> getLastChangesetMappings(final int count)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
         {
+            @Override
             public List<ChangesetMapping> doInTransaction()
             {
                 ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, Query.select().limit(count).order("timestamp DESC"));
@@ -174,11 +187,13 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
     
-	public ProjectMapping getRepository(final int id)
+	@Override
+    public ProjectMapping getRepository(final int id)
 	{
 		return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping>()
 		{
-			public ProjectMapping doInTransaction()
+			@Override
+            public ProjectMapping doInTransaction()
 			{
 				return activeObjects.get(ProjectMapping.class, id);
 			}
