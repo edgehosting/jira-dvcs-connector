@@ -162,11 +162,16 @@
     <component-import key="userProfileAccessor" interface="com.atlassian.streams.spi.UserProfileAccessor" />
     <!--<component-import key="pluginLogService" interface="com.atlassian.upm.api.log.PluginLogService" />-->
 
+<!-- 
     <activity-streams-provider key="external-provider" name="External Provider" i18n-name-key="Bitbucket Connector"
                        class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsActivityProvider">
         <filter-provider class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketFilterOptionProvider" />
-        <!--<validator class="com.atlassian.streams.ExternalStreamsValidator" />-->
-        <!--<key-provider class="com.atlassian.streams.ExternalStreamsKeyProvider" />-->
-        <!--<comment-handler class="com.atlassian.streams.ExternalStreamsCommentHandler" />-->
+        <!-
+        <validator class="com.atlassian.streams.ExternalStreamsValidator" />
+        <key-provider class="com.atlassian.streams.ExternalStreamsKeyProvider" />
+        <comment-handler class="com.atlassian.streams.ExternalStreamsCommentHandler" />
+        ->
     </activity-streams-provider>
+ -->
+ 
 </atlassian-plugin>
