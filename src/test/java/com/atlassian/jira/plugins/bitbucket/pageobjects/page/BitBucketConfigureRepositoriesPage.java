@@ -41,8 +41,8 @@ public class BitBucketConfigureRepositoriesPage implements Page
     @ElementBy(id = "adminPassword")
     PageElement adminPasswordTextbox;
 
-    @ElementBy(id = "repoVisibility")
-    SelectElement visibilitySelect;
+    @ElementBy(id = "privateRepository")
+    CheckboxElement visibilitySelect;
 
     @ElementBy(id = "addPostCommitService")
     CheckboxElement addPostCommitServiceCheckbox;
@@ -56,6 +56,7 @@ public class BitBucketConfigureRepositoriesPage implements Page
     @ElementBy(id = "addedRepositoryId")
     PageElement addedRepositoryIdSpan;
 
+    @Override
     public String getUrl()
     {
         return "/secure/admin/ConfigureBitbucketRepositories!default.jspa";
@@ -80,7 +81,7 @@ public class BitBucketConfigureRepositoriesPage implements Page
     {
         urlTextbox.clear().type(url);
         projectSelect.select(Options.value(projectKey));
-        visibilitySelect.select(Options.value("public"));
+        visibilitySelect.clear();
         // postcommit hook
         addPostCommitServiceCheckbox.click();
         adminUsernameTextbox.clear().type(adminUsername);
@@ -105,7 +106,7 @@ public class BitBucketConfigureRepositoriesPage implements Page
     public BitBucketConfigureRepositoriesPage addPublicRepoToProject(String projectKey, String url)
     {
         projectSelect.select(Options.value(projectKey));
-        visibilitySelect.select(Options.value("public"));
+        visibilitySelect.clear();
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
 
