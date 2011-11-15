@@ -131,19 +131,19 @@
             cursor: pointer;
             width:16px;
             display:inline-block;
-            background-image: url(http://www.businessfbpage.com/wp-content/plugins/pricing-table/images/info.gif)
+            background-image: url(${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.gif)
         }
 
         .syncicon.error {
-            background-image: url(http://confluence.jetbrains.net/download/attachments/24091/error.gif?version=1&modificationDate=1174560837000)
+            background-image: url(${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.gif)
         }
 
         .syncicon.running {
-            background-image: url(http://avacomglobal.com/images/working.gif)
+            background-image: url(${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif)
         }
 
         .syncicon.finished {
-            background-image: url(http://drupal.org/files/issues/status-ok.png)
+            background-image: url(${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/images/status-ok.png)
         }
         label {
             font-weight:bold;
