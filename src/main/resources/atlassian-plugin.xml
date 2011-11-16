@@ -18,7 +18,6 @@
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping</entity>
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping</entity>
-        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.Uri2UrlMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_04_ActiveObjectsV2Migrator</upgradeTask>
@@ -162,16 +161,16 @@
     <component-import key="userProfileAccessor" interface="com.atlassian.streams.spi.UserProfileAccessor" />
     <!--<component-import key="pluginLogService" interface="com.atlassian.upm.api.log.PluginLogService" />-->
 
-<!-- 
-    <activity-streams-provider key="external-provider" name="External Provider" i18n-name-key="Bitbucket Connector"
+
+    <activity-streams-provider key="bitbucket-streams-provider" name="External Provider" i18n-name-key="Bitbucket Connector"
                        class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsActivityProvider">
         <filter-provider class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketFilterOptionProvider" />
-        <!-
+        <!--
         <validator class="com.atlassian.streams.ExternalStreamsValidator" />
         <key-provider class="com.atlassian.streams.ExternalStreamsKeyProvider" />
         <comment-handler class="com.atlassian.streams.ExternalStreamsCommentHandler" />
-        ->
+        -->
     </activity-streams-provider>
- -->
+
  
 </atlassian-plugin>

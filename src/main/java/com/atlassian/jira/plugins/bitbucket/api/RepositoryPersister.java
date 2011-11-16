@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.api;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 
@@ -71,5 +70,5 @@ public interface RepositoryPersister {
      * @param count changesets count
      * @return list of Changeset mappings
      */
-    public List<ChangesetMapping> getLastChangesetMappings(final int count);
+    public List<IssueMapping> getLastChangesetMappings(final int count);
 }

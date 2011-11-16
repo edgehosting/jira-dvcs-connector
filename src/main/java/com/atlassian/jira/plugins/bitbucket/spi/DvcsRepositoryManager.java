@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.bitbucket.spi;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,7 +13,6 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +37,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 {
     private static final Logger log = LoggerFactory.getLogger(DvcsRepositoryManager.class);
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     private static final Comparator<? super Changeset> CHANGESET_COMPARATOR = new Comparator<Changeset>()
     {
         private long parse(Changeset c)
@@ -347,7 +344,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 
 
     @Override
-    public List<ChangesetMapping> getLastChangesetMappings(int count) {
+    public List<IssueMapping> getLastChangesetMappings(int count) {
         return repositoryPersister.getLastChangesetMappings(count);
     }
 }

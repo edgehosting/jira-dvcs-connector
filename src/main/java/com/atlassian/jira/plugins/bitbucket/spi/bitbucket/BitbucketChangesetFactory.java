@@ -22,6 +22,7 @@ import java.util.List;
  * Factory for {@link Changeset} implementations
  */
 public class BitbucketChangesetFactory {
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     /**
      * Load the changeset details based on the authentication method, the repository owner, repository
      * slug, and changeset node id
@@ -67,9 +68,8 @@ public class BitbucketChangesetFactory {
 
     public static Date getDate(String dateStr) {
         // example:    2011-05-26 10:54:41
-        DateFormat df = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss");
         try {
-            return df.parse(dateStr);
+            return DATE_FORMAT.parse(dateStr);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -78,8 +78,7 @@ public class BitbucketChangesetFactory {
 
     public static String getDateString(Date datetime) {
         // example:    2011-05-26 10:54:41
-        DateFormat df = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss");
-        return df.format(datetime);
+        return DATE_FORMAT.format(datetime);
     }
 
     private static List<String> stringList(JSONArray parents) throws JSONException {

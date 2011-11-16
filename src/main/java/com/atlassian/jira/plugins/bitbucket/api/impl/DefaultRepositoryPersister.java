@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -142,47 +141,28 @@ public class DefaultRepositoryPersister implements RepositoryPersister
 				map.put("REPOSITORY_ID", repositoryId);
 				map.put("ISSUE_ID", issueId);
 				map.put("NODE", node);
+                map.put("REPOSITORY_ID", repositoryId);
+                map.put("RAW_AUTHOR", changeset.getRawAuthor());
+                map.put("AUTHOR", changeset.getAuthor());
+                map.put("TIMESTAMP", changeset.getTimestamp());
+                map.put("RAW_NODE", changeset.getRawNode());
+                map.put("BRANCH", changeset.getBranch());
+                map.put("MESSAGE", changeset.getMessage());
+
                 return activeObjects.create(IssueMapping.class, map);
             }
         });
-/*
-        activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
-        {
-            public ChangesetMapping doInTransaction()
-            {
-                logger.debug("create changeset mapping [ {} ] [ {} - {} ] ", new String[]{issueId, String.valueOf(repositoryId), node});
-                // delete existing
-//                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, "REPOSITORY_ID = ? and NODE = ?", repositoryId, node);
-//                if (ArrayUtils.isNotEmpty(mappings))
-//				{
-//					activeObjects.delete(mappings);
-//				}
-                // add new
-				Map<String, Object> map = Maps.newHashMap();
-				map.put("REPOSITORY_ID", repositoryId);
-				map.put("ISSUE_ID", issueId);
-				map.put("NODE", node);
-				map.put("RAW_AUTHOR", changeset.getRawAuthor());
-				map.put("AUTHOR", changeset.getAuthor());
-				map.put("TIMESTAMP", changeset.getTimestamp());
-				map.put("RAW_NODE", changeset.getRawNode());
-				map.put("BRANCH", changeset.getBranch());
-				map.put("MESSAGE", changeset.getMessage());
-                return activeObjects.create(ChangesetMapping.class, map);
-            }
-        });
- */
     }
     @Override
-    public List<ChangesetMapping> getLastChangesetMappings(final int count)
+    public List<IssueMapping> getLastChangesetMappings(final int count)
     {
-        return activeObjects.executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
+        return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
         {
             @Override
-            public List<ChangesetMapping> doInTransaction()
+            public List<IssueMapping> doInTransaction()
             {
-                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, Query.select().limit(count).order("timestamp DESC"));
-                return mappings == null ? new ArrayList<ChangesetMapping>() : Lists.newArrayList(mappings);
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, Query.select().limit(count).order("timestamp DESC"));
+                return mappings == null ? new ArrayList<IssueMapping>() : Lists.newArrayList(mappings);
             }
         });
     }
