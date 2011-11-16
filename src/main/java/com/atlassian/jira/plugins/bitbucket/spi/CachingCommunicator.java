@@ -10,7 +10,6 @@ import com.google.common.collect.MapMaker;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -120,17 +119,6 @@ public class CachingCommunicator implements Communicator
         try
         {
             return changesetMap.get(new ChangesetKey(repository, id));
-        } catch (ComputationException e)
-        {
-            throw unrollException(e);
-        }
-    }
-
-    public List<Changeset> getChangesets(SourceControlRepository repository, String startNode, int limit)
-    {
-        try
-        {
-            return delegate.getChangesets(repository, startNode, limit);
         } catch (ComputationException e)
         {
             throw unrollException(e);

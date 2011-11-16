@@ -1,13 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 
 /**
  * An iterator that will load pages of changesets from the remote repository in pages transparently.
@@ -18,11 +17,11 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
     private Iterator<Changeset> currentPage = null;
     private Changeset followingChangset = null; // next changeset after current page
     private final SourceControlRepository repository;
-    private final Communicator communicator;
+    private final BitbucketCommunicator bitbucketCommunicator;
 
-    public BitbucketChangesetIterator(Communicator communicator, SourceControlRepository repository)
+    public BitbucketChangesetIterator(BitbucketCommunicator bitbucketCommunicator, SourceControlRepository repository)
     {
-        this.communicator = communicator;
+        this.bitbucketCommunicator = bitbucketCommunicator;
         this.repository = repository;
     }
 
@@ -68,7 +67,7 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
 
         // read PAGE_SIZE + 1 changesets. Last changeset will be used as starting node 
         // for next page (last changeset is actually returned as first in the list)
-        List<Changeset> changesets = communicator.getChangesets(repository, startNode, PAGE_SIZE + 1);
+        List<Changeset> changesets = bitbucketCommunicator.getChangesets(repository, startNode, PAGE_SIZE + 1);
 
         followingChangset = null;
         if (changesets.size() > PAGE_SIZE)

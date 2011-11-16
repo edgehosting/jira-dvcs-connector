@@ -1,14 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.List;
-
-import org.apache.commons.lang.BooleanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
@@ -16,6 +7,12 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.apache.commons.lang.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.List;
 
 /**
  * Webwork action used to configure the bitbucket repositories
@@ -225,17 +222,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     public void setAddPostCommitService(String addPostCommitService)
     {
         this.addPostCommitService = addPostCommitService;
-    }
-
-    public static String encodeUrl(String url)
-    {
-        try
-        {
-            return URLEncoder.encode(url, "UTF-8");
-        } catch (UnsupportedEncodingException e)
-        {
-            return null;
-        }
     }
 
     public boolean isPrivateRepository()

@@ -5,11 +5,13 @@ import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucketChangeset;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.LazyLoadedBitbucketChangeset;
+import com.atlassian.jira.plugins.bitbucket.spi.DefaultBitbucketChangeset;
+import com.atlassian.jira.plugins.bitbucket.spi.LazyLoadedBitbucketChangeset;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -22,6 +24,9 @@ import java.util.List;
  * Factory for {@link Changeset} implementations
  */
 public class BitbucketChangesetFactory {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BitbucketChangesetFactory.class);
+
     /**
      * Load the changeset details based on the authentication method, the repository owner, repository
      * slug, and changeset node id
@@ -53,7 +58,7 @@ public class BitbucketChangesetFactory {
                     json.getString("node"),
                     json.getString("raw_author"),
                     json.getString("author"),
-                    getDate(json.getString("timestamp")),
+                    parseDate(json.getString("timestamp")),
                     json.getString("raw_node"),
                     json.getString("branch"),
                     json.getString("message"),
@@ -65,15 +70,14 @@ public class BitbucketChangesetFactory {
         }
     }
 
-    public static Date getDate(String dateStr) {
+    public static Date parseDate(String dateStr) {
         // example:    2011-05-26 10:54:41
         DateFormat df = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss");
         try {
             return df.parse(dateStr);
         } catch (ParseException e) {
-            e.printStackTrace();
+            throw new SourceControlException("Could not parse date string from JSON.", e);
         }
-        return null;
     }
 
     public static String getDateString(Date datetime) {

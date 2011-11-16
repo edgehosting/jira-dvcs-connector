@@ -4,8 +4,6 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 
-import java.util.List;
-
 /**
  * Starting point for remote API calls to the bitbucket remote API
  */
@@ -29,15 +27,6 @@ public interface Communicator
      */
     public Changeset getChangeset(SourceControlRepository repository, String id);
 
-    /**
-     * Retrieves changesets
-     * 
-     * @param repository
-     * @param startNode
-     * @param limit
-     * @return
-     */
-    public List<Changeset> getChangesets(SourceControlRepository repository, String startNode, int limit);
 
     /**
      * @param repo
@@ -57,6 +46,10 @@ public interface Communicator
      */
     public Iterable<Changeset> getChangesets(SourceControlRepository repository);
 
+    /**
+     * @param repositoryUri
+     * @return tests if request to given repositoryUri return valid result
+     */
     public boolean isRepositoryValid(RepositoryUri repositoryUri);
 
 }

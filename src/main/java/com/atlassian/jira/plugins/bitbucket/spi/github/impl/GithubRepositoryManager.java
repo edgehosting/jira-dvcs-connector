@@ -1,13 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
@@ -18,6 +10,13 @@ import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GithubRepositoryManager extends DvcsRepositoryManager
 {
@@ -25,13 +24,6 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
     public GithubRepositoryManager(RepositoryPersister repositoryPersister,@Qualifier("githubCommunicator") Communicator communicator, Encryptor encryptor, ApplicationProperties applicationProperties)
     {
         super(communicator, repositoryPersister, encryptor, applicationProperties);
-    }
-
-    @Override
-    public boolean canHandleUrl(String url)
-    {
-        // todo like in bitbucket...
-        return false;
     }
 
     @Override

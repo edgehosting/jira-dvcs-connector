@@ -1,24 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -30,14 +12,24 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.opensymphony.util.TextUtils;
 
+import java.text.SimpleDateFormat;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
-    private static final Logger log = LoggerFactory.getLogger(DvcsRepositoryManager.class);
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     private static final Comparator<? super Changeset> CHANGESET_COMPARATOR = new Comparator<Changeset>()
@@ -103,6 +95,15 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         this.applicationProperties = applicationProperties;
     }
 
+    public boolean canHandleUrl(String url)
+    {
+        if (!hasValidFormat(url)) return false;
+        RepositoryUri repositoryUri = getRepositoryUri(url);
+
+        return getCommunicator().isRepositoryValid(repositoryUri);
+    }
+
+
 	public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username,
 			String password, String adminUsername, String adminPassword)
 	{
@@ -140,14 +141,13 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 	public List<Changeset> getChangesets(String issueKey)
 	{
 		List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey);
-		List<Changeset> changesets = Lists.newArrayList(Lists.transform(issueMappings, TO_CHANGESET));
-		Collections.sort(changesets, CHANGESET_COMPARATOR);
-        return changesets;
+		return Lists.transform(issueMappings, TO_CHANGESET);
 	}
 
 	public void removeRepository(int id)
 	{
 		repositoryPersister.removeRepository(id);
+		// TODO Should we also delete IssueMappings? Yes we should.
 	}
 
 	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
@@ -186,7 +186,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
                     String fileName = file.getFile();
                     String color = file.getFileAction().getColor();
                     String fileActionName = file.getFileAction().toString();
-                    String fileCommitURL = repositoryUrl + "/src/" + changeset.getNode() + "/" + urlEncode(file.getFile());
+                    String fileCommitURL = repositoryUrl + "/src/" + changeset.getNode() + "/" + CustomStringUtils.encode(file.getFile());
                     htmlFile = "<li><span style='color:" + color + "; font-size: 8pt;'>" +
                             TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
                             fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
@@ -292,7 +292,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             String baseRepositoryUrl = repository.getRepositoryUri().getBaseUrl();
 
             htmlCommitEntry = htmlCommitEntry.replace("#gravatar_url", gravatarUrl);
-            htmlCommitEntry = htmlCommitEntry.replace("#user_url", baseRepositoryUrl + "/" + urlEncode(login));
+            htmlCommitEntry = htmlCommitEntry.replace("#user_url", baseRepositoryUrl + "/" + CustomStringUtils.encode(login));
             htmlCommitEntry = htmlCommitEntry.replace("#login", TextUtils.htmlEncode(login));
             htmlCommitEntry = htmlCommitEntry.replace("#user_name", TextUtils.htmlEncode(authorName));
             htmlCommitEntry = htmlCommitEntry.replace("#commit_message", TextUtils.htmlEncode(changeset.getMessage()));
@@ -320,20 +320,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
 	public abstract String getRepositoryType();
-
-	public abstract boolean canHandleUrl(String url);
-
-
-    protected String urlEncode(String s)
-    {
-        try
-        {
-            return URLEncoder.encode(s, "UTF-8");
-        } catch (UnsupportedEncodingException e)
-        {
-            throw new RuntimeException("required encoding not found");
-        }
-    }
 
     public ApplicationProperties getApplicationProperties()
     {

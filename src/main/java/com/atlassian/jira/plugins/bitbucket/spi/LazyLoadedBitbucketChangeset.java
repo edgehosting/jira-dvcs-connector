@@ -1,16 +1,15 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
+package com.atlassian.jira.plugins.bitbucket.spi;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.util.concurrent.LazyReference;
 
 import java.util.Date;
 import java.util.List;
 
 /**
- * A lazy loaded remote bitbucket changeset.  Will only load the changeset details if the
+ * A lazy loaded remote changeset.  Will only load the changeset details if the
  * details that aren't stored locally are required.
  */
 public class LazyLoadedBitbucketChangeset implements Changeset {
@@ -19,12 +18,15 @@ public class LazyLoadedBitbucketChangeset implements Changeset {
     private final String nodeId;
     private final SourceControlRepository repository;
 
-    public LazyLoadedBitbucketChangeset(final Communicator bitbucket, final SourceControlRepository repository, final String nodeId) {
-        this.repository = repository;
-        this.lazyReference = new LazyReference<Changeset>() {
+    public LazyLoadedBitbucketChangeset(final Communicator communicator, final SourceControlRepository repository, final String nodeId)
+    {
+		this.repository = repository;
+		this.lazyReference = new LazyReference<Changeset>()
+        {
             @Override
-            protected Changeset create() throws Exception {
-                return bitbucket.getChangeset(repository, nodeId);
+			protected Changeset create() throws Exception
+            {
+                return communicator.getChangeset(repository, nodeId);
             }
         };
         this.nodeId = nodeId;
