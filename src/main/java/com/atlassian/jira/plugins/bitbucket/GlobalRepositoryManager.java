@@ -1,13 +1,19 @@
 package com.atlassian.jira.plugins.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.*;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
+import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 
 /**
  * Aggregated Repository Manager that handles all Repository Managers based on the repository url
@@ -67,7 +73,8 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
 	
-	public boolean canHandleUrl(String url)
+	@Override
+    public boolean canHandleUrl(String url)
 	{
     	for (RepositoryManager repositoryManager : repositoryManagers)
 		{
@@ -79,13 +86,18 @@ public class GlobalRepositoryManager implements RepositoryManager
 		return false;
 	}
 
-	public SourceControlRepository addRepository(String projectKey, String url, String username, String password, String adminUsername, String adminPassword)
+	@Override
+    public SourceControlRepository addRepository(String projectKey, String url, String username, String password, String adminUsername, String adminPassword)
 	{
+	    // TODO when creating new repository we should supply the type of repository 
+	    // the type should be detected in a form
+
 		return getManagerForUrl(url).addRepository(projectKey, url, username, password, adminUsername, adminPassword);
 	}
 
 
-	public List<SourceControlRepository> getRepositories(String projectKey)
+	@Override
+    public List<SourceControlRepository> getRepositories(String projectKey)
 	{
 		List<SourceControlRepository> allRepositories = new ArrayList<SourceControlRepository>();
     	for (RepositoryManager repositoryManager : repositoryManagers)
@@ -96,11 +108,13 @@ public class GlobalRepositoryManager implements RepositoryManager
 	}
 
 	
-	public SourceControlRepository getRepository(int id)
+	@Override
+    public SourceControlRepository getRepository(int id)
 	{
 		return getManagerByRepoId(id).getRepository(id);
 	}
-	public List<Changeset> getChangesets(final String issueKey)
+	@Override
+    public List<Changeset> getChangesets(final String issueKey)
 	{
 		List<Changeset> allChangesets = new ArrayList<Changeset>();
     	for (RepositoryManager repositoryManager : repositoryManagers)
@@ -110,48 +124,57 @@ public class GlobalRepositoryManager implements RepositoryManager
     	return allChangesets;
 	}
 
-	public void removeRepository(int id)
+	@Override
+    public void removeRepository(int id)
 	{
 		getManagerByRepoId(id).removeRepository(id);
 	}
 
 
-	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
+	@Override
+    public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
 	{
 		getManagerByRepository(repository).addChangeset(repository, issueId, changeset);
 	}
 
-	public SourceControlUser getUser(SourceControlRepository repository, String username)
+	@Override
+    public SourceControlUser getUser(SourceControlRepository repository, String username)
 	{
 		return getManagerByRepository(repository).getUser(repository, username);
 	}
 
-	public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
+	@Override
+    public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
 	{
 		return getManagerByRepository(key.getRepository()).getSynchronisationOperation(key, progressProvider);
 	}
 
-	public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
+	@Override
+    public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
 	{
 		return getManagerByRepository(repository).parsePayload(repository, payload);
 	}
 
-	public String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset)
+	@Override
+    public String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset)
 	{
         RepositoryManager repositoryManager = getManagerByRepositoryType(repository.getRepositoryType());
 		return repositoryManager.getHtmlForChangeset(repository, changeset);
 	}
 	
+    @Override
     public String getRepositoryType() {
         return "unknown";
     }
     
-	public void setupPostcommitHook(SourceControlRepository repo)
+	@Override
+    public void setupPostcommitHook(SourceControlRepository repo)
 	{
 		getManagerByRepository(repo).setupPostcommitHook(repo);
 	}
 
-	public void removePostcommitHook(SourceControlRepository repo)
+	@Override
+    public void removePostcommitHook(SourceControlRepository repo)
 	{
 		getManagerByRepository(repo).removePostcommitHook(repo);
 	}
@@ -159,5 +182,20 @@ public class GlobalRepositoryManager implements RepositoryManager
     @Override
     public List<ChangesetMapping> getLastChangesetMappings(int count) {
         return repositoryPersister.getLastChangesetMappings(count);
+    }
+
+    @Override
+    public UrlInfo getUrlInfo(String repositoryUrl)
+    {
+        for (RepositoryManager repositoryManager : repositoryManagers)
+        {
+            UrlInfo urlInfo = repositoryManager.getUrlInfo(repositoryUrl);
+            if (urlInfo!=null)
+            {
+                return urlInfo;
+            }
+        }       
+        return null;
+        
     }
 }

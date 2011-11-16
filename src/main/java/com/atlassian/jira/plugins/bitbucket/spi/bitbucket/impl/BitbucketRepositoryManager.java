@@ -18,6 +18,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
@@ -95,7 +96,7 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 
 	}
 
-	public void setupPostcommitHook(SourceControlRepository repo)
+    public void setupPostcommitHook(SourceControlRepository repo)
 	{
 		getCommunicator().setupPostcommitHook(repo, getPostCommitUrl(repo));
 	}
@@ -105,9 +106,16 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 		return getApplicationProperties().getBaseUrl() + "/rest/bitbucket/1.0/repository/"+repo.getId()+"/sync";
 	}
 
-	public void removePostcommitHook(SourceControlRepository repo)
+    public void removePostcommitHook(SourceControlRepository repo)
 	{
 		getCommunicator().removePostcommitHook(repo, getPostCommitUrl(repo));
 	}
+
+    @Override
+    public UrlInfo getUrlInfo(String repositoryUrl)
+    {
+        if (!hasValidFormat(repositoryUrl)) return null;
+        return null;
+    }
 
 }

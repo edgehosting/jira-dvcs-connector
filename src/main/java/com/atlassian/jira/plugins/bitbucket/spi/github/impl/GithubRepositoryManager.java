@@ -1,17 +1,23 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import com.atlassian.jira.plugins.bitbucket.api.*;
-import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
-import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
-import com.atlassian.sal.api.ApplicationProperties;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
+import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
+import com.atlassian.sal.api.ApplicationProperties;
 
 public class GithubRepositoryManager extends DvcsRepositoryManager
 {
@@ -21,35 +27,41 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         super(communicator, repositoryPersister, encryptor, applicationProperties);
     }
 
+    @Override
     public boolean canHandleUrl(String url)
     {
         // todo like in bitbucket...
         return false;
     }
 
+    @Override
     public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
     {
         // todo
         return new ArrayList<Changeset>();
     }
 
+    @Override
     public String getRepositoryType()
     {
         return "github";
     }
 
+    @Override
     public void setupPostcommitHook(SourceControlRepository repo)
     {
         // TODO
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 
+    @Override
     public void removePostcommitHook(SourceControlRepository repo)
     {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 
+    @Override
     public RepositoryUri getRepositoryUri(String urlString)
     {
         try
@@ -72,5 +84,12 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
             throw new SourceControlException("Invalid url ["+urlString+"]");
         }
 
+    }
+
+    @Override
+    public UrlInfo getUrlInfo(String repositoryUrl)
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -1,9 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
-import com.atlassian.jira.plugins.bitbucket.api.*;
-
 import java.util.List;
+
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 
 public interface RepositoryManager
 {
@@ -116,4 +120,6 @@ public interface RepositoryManager
      * @return list of Changeset mappings
      */
     public List<ChangesetMapping> getLastChangesetMappings(final int count);
+
+    public UrlInfo getUrlInfo(String repositoryUrl);
 }
