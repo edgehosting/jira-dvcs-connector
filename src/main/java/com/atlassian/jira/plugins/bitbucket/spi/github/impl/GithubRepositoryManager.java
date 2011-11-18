@@ -43,14 +43,13 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
     public void setupPostcommitHook(SourceControlRepository repo)
     {
         // TODO
-        throw new UnsupportedOperationException("Not implemented yet.");
+
     }
 
     @Override
     public void removePostcommitHook(SourceControlRepository repo)
     {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     @Override
