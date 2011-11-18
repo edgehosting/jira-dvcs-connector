@@ -12,7 +12,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -70,13 +69,38 @@ public class GithubChangesetFactory
     }
 
     public static Date parseDate(String dateStr) {
-        // Atom (ISO 8601) example: 2011-11-09T06:24:13-08:00
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        try {
+//        // Atom (ISO 8601) example: 2011-11-09T06:24:13-08:00
+//        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+//        try {
+//            return df.parse(dateStr);
+//        } catch (ParseException e) {
+//            throw new SourceControlException("Could not parse date string from JSON.", e);
+//        }
+
+        //NOTE: SimpleDateFormat uses GMT[-+]hh:mm for the TZ which breaks
+        //things a bit.  Before we go on we have to repair this.
+
+        try
+        {
+            SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssz" );
+
+            //this is zero time so we need to add that TZ indicator for
+            if ( dateStr.endsWith( "Z" ) ) {
+                dateStr = dateStr.substring( 0, dateStr.length() - 1) + "GMT-00:00";
+            } else {
+                int inset = 6;
+
+                String s0 = dateStr.substring( 0, dateStr.length() - inset );
+                String s1 = dateStr.substring( dateStr.length() - inset, dateStr.length() );
+
+                dateStr = s0 + "GMT" + s1;
+            }
             return df.parse(dateStr);
-        } catch (ParseException e) {
+        } catch (ParseException e)
+        {
             throw new SourceControlException("Could not parse date string from JSON.", e);
         }
+
     }
 
 

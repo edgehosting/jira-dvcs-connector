@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
+package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlUser;
@@ -8,16 +8,16 @@ import com.atlassian.jira.util.json.JSONObject;
 public class BitbucketUserFactory
 {
 
-	public static DefaultSourceControlUser parse(JSONObject json)
+	public static DefaultSourceControlUser parse(JSONObject userJson)
 	{
 	    try
 	    {
 	        return new DefaultSourceControlUser(
-	                json.getJSONObject("user").getString("username"),
-	                json.getJSONObject("user").getString("first_name"),
-	                json.getJSONObject("user").getString("last_name"),
-	                json.getJSONObject("user").getString("avatar"),
-	                json.getJSONObject("user").getString("resource_uri")
+	                userJson.getString("username"),
+	                userJson.getString("first_name"),
+	                userJson.getString("last_name"),
+	                userJson.getString("avatar"),
+	                userJson.getString("resource_uri")
 	        );
 	    }
 	    catch (JSONException e)

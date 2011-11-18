@@ -56,7 +56,7 @@ public interface RepositoryPersister {
      * @param issueId           the jira issue id
      * @return a list of changesets
      */
-    List<IssueMapping> getIssueMappings(String issueId);
+    List<IssueMapping> getIssueMappings(String issueId, String repositoryType);
 
     /**
      * Map a changeset to an issue id for the given repository

@@ -32,7 +32,7 @@ public class LazyLoadedBitbucketChangeset implements Changeset {
         this.nodeId = nodeId;
     }
 
-    private Changeset getBitbucketChangeset() {
+    private Changeset getChangesetDelegate() {
         return lazyReference.get();
     }
 
@@ -45,35 +45,35 @@ public class LazyLoadedBitbucketChangeset implements Changeset {
     }
 
     public String getRawAuthor() {
-        return getBitbucketChangeset().getRawAuthor();
+        return getChangesetDelegate().getRawAuthor();
     }
 
     public String getAuthor() {
-        return getBitbucketChangeset().getAuthor();
+        return getChangesetDelegate().getAuthor();
     }
 
     public Date getTimestamp() {
-        return getBitbucketChangeset().getTimestamp();
+        return getChangesetDelegate().getTimestamp();
     }
 
     public String getRawNode() {
-        return getBitbucketChangeset().getRawNode();
+        return getChangesetDelegate().getRawNode();
     }
 
     public String getBranch() {
-        return getBitbucketChangeset().getBranch();
+        return getChangesetDelegate().getBranch();
     }
 
     public String getMessage() {
-        return getBitbucketChangeset().getMessage();
+        return getChangesetDelegate().getMessage();
     }
 
     public List<String> getParents() {
-        return getBitbucketChangeset().getParents();
+        return getChangesetDelegate().getParents();
     }
 
     public List<ChangesetFile> getFiles() {
-        return getBitbucketChangeset().getFiles();
+        return getChangesetDelegate().getFiles();
     }
 
     public String getCommitURL(SourceControlRepository repository) {
