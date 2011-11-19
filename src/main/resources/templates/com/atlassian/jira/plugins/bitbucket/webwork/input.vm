@@ -1,3 +1,4 @@
+
 <html>
   <head>
     <title>
@@ -17,152 +18,16 @@
                 AJS.$('.gh_messages.repository$action.getRepositoryId()').slideDown()
             #end
             retrieveSyncStatus();
-            
+/*            
             AJS.$("#addPostCommitService").click(function(a){
                 AJS.$("#postCommitServiceDetails").slideToggle()
                 });
-            
-            AJS.$("#privateRepository").click(function(a){
-                AJS.$("#repositoryCredentials").slideToggle()
-                });
+
+  */              
+            AJS.$("#Submit").click(submitFunction);
         }            
      </script>
-
-        <style type="text/css">
-
-
-        #gh_config_link{
-            margin-top: 10px;
-        }
-
-        #gh_config_link a{
-            background: url('${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/pencil_icon.jpg');
-            background-repeat: no-repeat;
-            background-position: right center;
-            padding-right: 20px;
-            font-size: 10pt;
-        }
-
-        .gh_config_h4{
-            font-weight: normal;
-            color: #3676B7;
-            background: url('${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/down_gray_arrow.jpg');
-            background-repeat: no-repeat;
-            background-position: left center;
-            padding-left: 18px;
-            margin-top: 18px;
-        }
-
-        #gh_post_receive_header{
-            font-weight: normal;
-            font-size: 10pt;
-            color: #666;
-            margin-top: 18px;
-            margin-bottom: 10px;
-        }
-
-        #gh_post_receive_textbox{
-            font-size: 10pt;
-            padding: 4px;
-        }
-
-        #gh_post_receive{
-            margin-bottom: 10px;
-        }
-
-        .gh_table{
-            margin-left: 16px;
-            width: 100%
-        }
-
-        .gh_table_project_name{
-            font-size: 10pt;
-            color: #5F6262;
-            padding-top: 14px;
-        }
-
-        .gh_table th{
-            font-weight: normal;
-            color: #656565;
-            border-bottom: 1px solid #cccccc;
-            font-size: 10pt;
-        }
-
-        .gh_table td.status{
-            border-bottom: 1px solid #cccccc;
-            font-size: 10pt;
-            padding:0 20px;
-        }
-        .gh_table td.status .error{
-            color:#f66;
-        }
         
-        .gh_table td{
-            font-size: 10pt;
-        }
-
-        .gh_table_td_pname{
-            border-bottom: none !important;
-        }
-
-        #gh_example_link{
-            font-size: 6pt;
-        }
-
-        #gh_submit{
-            font-size: 8pt;
-        }
-
-        .gh_messages{
-            font-size: 10pt;
-            color: #666;
-            font-style: italic;
-        }
-
-        .form {
-            margin:20px;
-            background-color: #B9E6F0;
-            padding: 20px;
-            
-            -moz-border-radius: 6px;
-            -webkit-border-radius: 6px;
-            -khtml-border-radius: 6px;
-            border-radius: 6px;            
-        }
-        
-        .syncicon {
-            cursor: pointer;
-            width:16px;
-            display:inline-block;
-            background-image: url(${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.gif)
-        }
-
-        .syncicon.error {
-            background-image: url(${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.gif)
-        }
-
-        .syncicon.running {
-            background-image: url(${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif)
-        }
-
-        .syncicon.finished {
-            background-image: url(${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/images/status-ok.png)
-        }
-        label {
-            font-weight:bold;
-        }
-        .hiddendiv {
-            display:none;
-        }
-        .innerform label{
-            float:left
-        }
-        .innerform div{
-            width: 260px;
-            text-align: right;
-        }
-    </style>
-
   </head>
 
   <body>
@@ -222,11 +87,11 @@
 
             </table>
 
-            #if ($action.getPostCommitURL() != "")
+            #if ($action.getPostCommitUrl() != "")
             <div class="form">
               <h3 id="gh_post_receive_header">Post-Commit Hook</h3>
               <p>Please add the URL below as a post-commit service to the Bitbucket repository.</p>
-              <p><input id="gh_post_receive_textbox" type"text" size="90" value="$action.getPostCommitURL()"></p>
+              <p><input id="gh_post_receive_textbox" type"text" size="90" value="$action.getPostCommitUrl()"></p>
             </div>
             #end
                 
@@ -245,40 +110,15 @@
                     </div>
                 #end
 
-
                 <form id="repoEntry" method="post" action="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa">
-                  <input type="hidden" name="nextAction" value="AddRepository">
                   <input type="hidden" name="atl_token" value="$atl_token">
+                  <input type="hidden" name="isPrivate" id="isPrivate">
                   <table>
-                    <tr>
-                      <td><label for="url">Repository Url</label></td>
-                      <td><input type="text" id="url" name="url" value="$textutils.htmlEncode($action.getURL())" size="60" /></td>
-                      <td><i>eg: https://bitbucket.org/atlassianguy/my-repository</i></td>
-                    </tr>  
-                    <tr>  
-                      <td valign="top"><label for="repoVisibility">Repository is private</label></td>
-                        #if ($action.isPrivateRepository()) 
-                            #set ($checked = "checked") 
-                            #set ($hidden = "") 
-                        #else 
-                            #set ($checked = "") 
-                            #set ($hidden = "style='display:none'") 
-                        #end
-                      <td colspan="2"> 
-                        <input type="checkbox" name="privateRepository" id="privateRepository" $checked>
-                        <div class="innerform" id="repositoryCredentials" $hidden>
-                            <span>Please enter the username and password to access the repository</span>
-                            <div><label for="bbUsername">Username</label><input type="text" name="bbUsername" id="bbUsername" value="$action.getBbUsername()"></div>
-                            <div><label for="bPassword">Password</label><input type="password" name="bbPassword" id="bbPassword" value="$action.getBbPassword()"></div>
-                        </div>
-                      </td>
-                    </tr>  
                     #if ($action.getMode() == 'single')
                         <input type='hidden' name='projectKey' value='$action.getProjectKey()'>
                         <input type='hidden' name='mode' value='single'>
                     #else
                     <tr>  
-
                       <td><label for="projectKey">Choose project</label></td>
                       <td valign='top'>
                           <select name="projectKey" id="projectKey">
@@ -289,25 +129,12 @@
                       </td>
                     </tr>  
                     #end
-                    
-                    <tr>  
-                      <td valign="top"><label for="addPostCommitService">Add postcomit service</label></td>
-                    #if ($action.addPostCommitService()) 
-                        #set ($checked = "checked") 
-                        #set ($hidden = "") 
-                    #else 
-                        #set ($checked = "") 
-                        #set ($hidden = "style='display:none'") 
-                    #end
-                      <td colspan="2"> 
-                        <input type="checkbox" name="addPostCommitService" id="addPostCommitService" $checked>
-                        <div class="innerform" id="postCommitServiceDetails" $hidden>
-                            <span>Installing postcommit service requires admin access to the repository.</span>
-                            <div><label for="adminUsername">Username</label><input type="text" name="adminUsername" id="adminUsername" value="$action.getAdminUsername()"></div>
-                            <div><label for="adminPassword">Password</label><input type="text" name="adminPassword" id="adminPassword" value="$action.getAdminPassword()"></div>
-                        </div>
-                      </td>
+                    <tr>
+                      <td><label for="repositoryUrl">Repository Url</label></td>
+                      <td><input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" /></td>
+                      <td><i>eg: https://bitbucket.org/atlassianguy/my-repository</i></td>
                     </tr>  
+              
                     <tr>
                         <td>&nbsp;</td><td></td>
                     </tr>  
@@ -318,7 +145,7 @@
                         <td></td>
                     </tr>
                   </table>
-             </form>
+                 </form>
 
          </div>
   </body>

@@ -1,5 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
@@ -8,18 +16,12 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.sal.api.ApplicationProperties;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GithubRepositoryManager extends DvcsRepositoryManager
 {
+
+    public static final String GITHUB = "github";
 
     public GithubRepositoryManager(RepositoryPersister repositoryPersister,@Qualifier("githubCommunicator") Communicator communicator, Encryptor encryptor, ApplicationProperties applicationProperties)
     {
@@ -36,7 +38,7 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
     @Override
     public String getRepositoryType()
     {
-        return "github";
+        return GITHUB;
     }
 
     @Override
@@ -75,13 +77,5 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         {
             throw new SourceControlException("Invalid url ["+urlString+"]");
         }
-
-    }
-
-    @Override
-    public UrlInfo getUrlInfo(String repositoryUrl)
-    {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

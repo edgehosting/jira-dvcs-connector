@@ -1,5 +1,15 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import java.text.SimpleDateFormat;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -17,16 +27,6 @@ import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.opensymphony.util.TextUtils;
-
-import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
@@ -48,6 +48,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 //            }
             return c.getTimestamp().getTime();
         }
+        @Override
         public int compare(Changeset c1, Changeset c2)
         {
             long t1 = parse(c1);
@@ -66,7 +67,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 	/* Maps ProjectMapping to SourceControlRepository */
 	private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping, SourceControlRepository>()
 	{
-		public SourceControlRepository apply(ProjectMapping pm)
+		@Override
+        public SourceControlRepository apply(ProjectMapping pm)
 		{
 			String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
 			String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(),
@@ -79,7 +81,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 
 	private final Function<IssueMapping, Changeset> TO_CHANGESET = new Function<IssueMapping, Changeset>()
 	{
-		public Changeset apply(IssueMapping from)
+		@Override
+        public Changeset apply(IssueMapping from)
 		{
 			ProjectMapping pm = repositoryPersister.getRepository(from.getRepositoryId());
 			SourceControlRepository repository = TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
@@ -95,16 +98,18 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         this.applicationProperties = applicationProperties;
     }
 
+    @Override
     public boolean canHandleUrl(String url)
     {
         if (!hasValidFormat(url)) return false;
         RepositoryUri repositoryUri = getRepositoryUri(url);
 
-        return getCommunicator().isRepositoryValid(repositoryUri);
+        return getCommunicator().getUrlInfo(repositoryUri)!=null;
     }
 
 
-	public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username,
+	@Override
+    public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username,
 			String password, String adminUsername, String adminPassword)
 	{
 		// Remove trailing slashes from URL
@@ -126,41 +131,48 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 		return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 	}
 
-	public SourceControlRepository getRepository(int repositoryId)
+	@Override
+    public SourceControlRepository getRepository(int repositoryId)
 	{
 		ProjectMapping repository = repositoryPersister.getRepository(repositoryId);
 		return TO_SOURCE_CONTROL_REPOSITORY.apply(repository);
 	}
 
-	public List<SourceControlRepository> getRepositories(String projectKey)
+	@Override
+    public List<SourceControlRepository> getRepositories(String projectKey)
 	{
 		List<ProjectMapping> repositories = repositoryPersister.getRepositories(projectKey, getRepositoryType());
 		return Lists.transform(repositories, TO_SOURCE_CONTROL_REPOSITORY);
 	}
 
-	public List<Changeset> getChangesets(String issueKey)
+	@Override
+    public List<Changeset> getChangesets(String issueKey)
 	{
 		List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey);
 		return Lists.transform(issueMappings, TO_CHANGESET);
 	}
 
-	public void removeRepository(int id)
+	@Override
+    public void removeRepository(int id)
 	{
 		repositoryPersister.removeRepository(id);
 		// TODO Should we also delete IssueMappings? Yes we should.
 	}
 
-	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
+	@Override
+    public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
 	{
 		repositoryPersister.addChangeset(issueId, changeset);
 	}
 
-	public SourceControlUser getUser(SourceControlRepository repository, String username)
+	@Override
+    public SourceControlUser getUser(SourceControlRepository repository, String username)
 	{
 		return getCommunicator().getUser(repository, username);
 	}
 
 
+    @Override
     public String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset)
     {
 
@@ -306,6 +318,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
 
+    @Override
     public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
     {
         return new DefaultSynchronisationOperation(key, this, getCommunicator(), progressProvider);
@@ -319,7 +332,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         return m.matches();
     }
 
-	public abstract String getRepositoryType();
+	@Override
+    public abstract String getRepositoryType();
 
     public ApplicationProperties getApplicationProperties()
     {
@@ -335,5 +349,12 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     @Override
     public List<ChangesetMapping> getLastChangesetMappings(int count) {
         return repositoryPersister.getLastChangesetMappings(count);
+    }
+
+    @Override
+    public UrlInfo getUrlInfo(String repositoryUrl)
+    {
+        if (!hasValidFormat(repositoryUrl)) return null;
+        return getCommunicator().getUrlInfo(getRepositoryUri(repositoryUrl));
     }
 }

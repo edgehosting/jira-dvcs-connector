@@ -1,5 +1,15 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
@@ -8,24 +18,15 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.ApplicationProperties;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 public class BitbucketRepositoryManager extends DvcsRepositoryManager
 {
+    public static final String BITBUCKET = "bitbucket";
     private final Logger log = LoggerFactory.getLogger(BitbucketRepositoryManager.class);
 
 	public BitbucketRepositoryManager(RepositoryPersister repositoryPersister, @Qualifier("bitbucketCommunicator") Communicator communicator, Encryptor encryptor, ApplicationProperties applicationProperties)
@@ -36,9 +37,10 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
     @Override
     public String getRepositoryType()
     {
-        return "bitbucket";
+        return BITBUCKET;
     }
 
+    @Override
     public RepositoryUri getRepositoryUri(String urlString)
     {
         try
@@ -63,10 +65,10 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 
     }
 
-
-
+    @Override
     public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
 	{
+        log.debug("parsing payload: '{}' for repository [{}]", payload, repository);
         List<Changeset> changesets = new ArrayList<Changeset>();
         try
 		{
@@ -85,6 +87,7 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 
 	}
 
+    @Override
     public void setupPostcommitHook(SourceControlRepository repo)
 	{
 		getCommunicator().setupPostcommitHook(repo, getPostCommitUrl(repo));
@@ -95,16 +98,10 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 		return getApplicationProperties().getBaseUrl() + "/rest/bitbucket/1.0/repository/"+repo.getId()+"/sync";
 	}
 
+    @Override
     public void removePostcommitHook(SourceControlRepository repo)
 	{
 		getCommunicator().removePostcommitHook(repo, getPostCommitUrl(repo));
 	}
-
-    @Override
-    public UrlInfo getUrlInfo(String repositoryUrl)
-    {
-        if (!hasValidFormat(repositoryUrl)) return null;
-        return null;
-    }
 
 }

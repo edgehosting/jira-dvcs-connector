@@ -1,26 +1,35 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryUri;
-import com.atlassian.sal.api.net.Request;
-import com.atlassian.sal.api.net.RequestFactory;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.io.IOException;
-
-import static junit.framework.Assert.*;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
+import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryUri;
+import com.atlassian.sal.api.net.Request;
+import com.atlassian.sal.api.net.RequestFactory;
+import com.atlassian.sal.api.net.Response;
 
 public class TestBitbucketCommunicator
 {
@@ -33,6 +42,8 @@ public class TestBitbucketCommunicator
     private SourceControlRepository repository;
     @Mock
     private Request<?, ?> request;
+    @Mock
+    private Response response;
 
     @Before
     public void setup() throws Exception
@@ -121,17 +132,44 @@ public class TestBitbucketCommunicator
     }
 
     @Test
-    public void testIsRepositoryValid() throws Exception
+    public void testPublicRepositoryValid() throws Exception
     {
-        when(requestFactory.createRequest(Request.MethodType.GET,
-                "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector")).thenReturn(request);
-        when(request.execute()).thenReturn(resource("TestBitbucket-repository.json"));
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.getResponseBodyAsString()).thenReturn(resource("TestBitbucket-repository.json"));
 
-        RepositoryUri repositoryUri = new BitbucketRepositoryUri("https", "bitbucket.org","atlassian","jira-bitbucket-connector");
-        BitbucketCommunicator communicator = new BitbucketCommunicator(requestFactory, authenticationFactory);
+        CommunicatorHelper.RepositoryInfoResponseHandler handler = new CommunicatorHelper.RepositoryInfoResponseHandler();
+        handler.handle(response);
 
-        assertTrue(communicator.isRepositoryValid(repositoryUri));
+        assertNotNull(handler.isPrivate());
+        assertFalse(handler.isPrivate());
 
     }
 
+    @Test
+    public void testPrivateRepositoryValid() throws Exception
+    {
+        when(response.isSuccessful()).thenReturn(false);
+        when(response.getStatusCode()).thenReturn(401);
+
+        CommunicatorHelper.RepositoryInfoResponseHandler handler = new CommunicatorHelper.RepositoryInfoResponseHandler();
+        handler.handle(response);
+
+        assertNotNull(handler.isPrivate());
+        assertTrue(handler.isPrivate());
+
+    }
+
+    @Test
+    public void testRepositoryInvalid() throws Exception
+    {
+        when(response.isSuccessful()).thenReturn(false);
+        when(response.getStatusCode()).thenReturn(404);
+
+        CommunicatorHelper.RepositoryInfoResponseHandler handler = new CommunicatorHelper.RepositoryInfoResponseHandler();
+        handler.handle(response);
+
+        assertNull(handler.isPrivate());
+    }
+
+    
 }

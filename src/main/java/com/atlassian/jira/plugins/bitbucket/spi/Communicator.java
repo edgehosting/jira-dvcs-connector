@@ -48,8 +48,8 @@ public interface Communicator
 
     /**
      * @param repositoryUri
-     * @return tests if request to given repositoryUri return valid result
+     * @return info about the repository or null if repository is invalid
      */
-    public boolean isRepositoryValid(RepositoryUri repositoryUri);
+    public UrlInfo getUrlInfo(final RepositoryUri repositoryUri);
 
 }

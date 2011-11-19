@@ -54,6 +54,25 @@ function forceSync(repositoryId){
 	AJS.$.post(BASE_URL+"/rest/bitbucket/1.0/repository/"+repositoryId+"/sync");
 }
 
+function submitFunction(a){
+    var repositoryUrl = AJS.$("#url").val();
+    var requestUrl = BASE_URL+"/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl)
+
+    AJS.$.getJSON(requestUrl, function(data) {
+    	
+    	if (data.repositoryType == "github")
+    		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddGithubRepository!default.jspa");
+    	else if (data.repositoryType == "bitbucket")
+    		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddBitbucketRepository!default.jspa");
+    	AJS.$("#isPrivate").val(data.isPrivate);
+    	AJS.$('#repoEntry').submit();
+
+    }).error(function huh(a){
+    	console.log("yah")
+    });
+    return false;
+}
+
 AJS.$(document).ready(function(){
 	if(typeof init_repositories == 'function')
 	{

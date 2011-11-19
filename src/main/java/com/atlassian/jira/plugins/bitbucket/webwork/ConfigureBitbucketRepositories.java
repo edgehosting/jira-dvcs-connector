@@ -1,5 +1,11 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
@@ -7,12 +13,6 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
-import org.apache.commons.lang.BooleanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.util.List;
 
 /**
  * Webwork action used to configure the bitbucket repositories
@@ -22,17 +22,10 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private final Logger logger = LoggerFactory.getLogger(ConfigureBitbucketRepositories.class);
 
     private String mode = "";
-    private String adminUsername = "";
-    private String adminPassword = "";
-    private String bbUsername = "";
-    private String bbPassword = "";
-    private String url = "";
-    private String postCommitURL = "";
-    private String repoVisibility = "";
+    private String repositoryUrl = "";
+    private String postCommitUrl = "";
     private String projectKey = "";
     private String nextAction = "";
-    private String addPostCommitService = "";
-    private String privateRepository = "";
     private int repositoryId;
     private final String baseUrl;
 
@@ -49,16 +42,10 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     @Override
     protected void doValidation()
     {
-        if (!globalRepositoryManager.canHandleUrl(url) && nextAction.equals("AddRepository"))
+        if (!globalRepositoryManager.canHandleUrl(repositoryUrl) && nextAction.equals("AddRepository"))
         {
             addErrorMessage("URL must be for a valid repository.");
         }
-    }
-
-    @Override
-    public String doDefault()
-    {
-        return "input";
     }
 
     @Override
@@ -69,29 +56,11 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
         try
         {
-            if (!isPrivateRepository())
-            {
-                bbUsername = "";
-                bbPassword = "";
-            }
             if (getErrorMessages().isEmpty())
             {
-                if (nextAction.equals("AddRepository"))
-                {
-                    SourceControlRepository repo = globalRepositoryManager.addRepository(projectKey, url, bbUsername,
-                        bbPassword, adminUsername, adminPassword);
-                    if (addPostCommitService())
-                    {
-                        globalRepositoryManager.setupPostcommitHook(repo);
-                    }
-                    repositoryId = repo.getId();
-                    postCommitURL = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
-                    nextAction = "ForceSync";
-                }
-
                 if (nextAction.equals("ShowPostCommitURL"))
                 {
-                    postCommitURL = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
+                    postCommitUrl = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
                 }
 
                 if (nextAction.equals("DeleteRepository"))
@@ -134,34 +103,24 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     {
         return mode;
     }
-    public void setUrl(String value)
+    public void setRepositoryUrl(String value)
     {
-        this.url = value;
+        this.repositoryUrl = value;
     }
 
-    public String getURL()
+    public String getRepositoryUrl()
     {
-        return url;
+        return repositoryUrl;
     }
 
-    public void setPostCommitURL(String value)
+    public void setPostCommitUrl(String value)
     {
-        this.postCommitURL = value;
+        this.postCommitUrl = value;
     }
 
-    public String getPostCommitURL()
+    public String getPostCommitUrl()
     {
-        return postCommitURL;
-    }
-
-    public void setRepoVisibility(String value)
-    {
-        this.repoVisibility = value;
-    }
-
-    public String getRepoVisibility()
-    {
-        return repoVisibility;
+        return postCommitUrl;
     }
 
     public void setProjectKey(String value)
@@ -194,63 +153,4 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         this.repositoryId = repositoryId;
     }
 
-    public String getAdminUsername()
-    {
-        return adminUsername;
-    }
-
-    public void setAdminUsername(String serviceUsername)
-    {
-        this.adminUsername = serviceUsername;
-    }
-
-    public String getAdminPassword()
-    {
-        return adminPassword;
-    }
-
-    public void setAdminPassword(String servicePassword)
-    {
-        this.adminPassword = servicePassword;
-    }
-
-    public boolean addPostCommitService()
-    {
-        return BooleanUtils.toBoolean(addPostCommitService);
-    }
-
-    public void setAddPostCommitService(String addPostCommitService)
-    {
-        this.addPostCommitService = addPostCommitService;
-    }
-
-    public boolean isPrivateRepository()
-    {
-        return BooleanUtils.toBoolean(privateRepository);
-    }
-
-    public void setPrivateRepository(String privateRepository)
-    {
-        this.privateRepository = privateRepository;
-    }
-
-    public String getBbUsername()
-    {
-        return bbUsername;
-    }
-
-    public void setBbUsername(String bbUsername)
-    {
-        this.bbUsername = bbUsername;
-    }
-
-    public String getBbPassword()
-    {
-        return bbPassword;
-    }
-
-    public void setBbPassword(String bbPassword)
-    {
-        this.bbPassword = bbPassword;
-    }
 }

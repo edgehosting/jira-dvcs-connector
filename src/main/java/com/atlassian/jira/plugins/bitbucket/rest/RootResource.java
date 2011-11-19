@@ -29,7 +29,6 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
-import com.atlassian.jira.plugins.bitbucket.webwork.ConfigureBitbucketRepositories;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
@@ -46,7 +45,7 @@ public class RootResource
     @Context
     UriInfo uriInfo;
 
-    private final Logger log = LoggerFactory.getLogger(ConfigureBitbucketRepositories.class);
+    private final Logger log = LoggerFactory.getLogger(RootResource.class);
 
     private final PermissionManager permissionManager;
     private final ProjectManager projectManager;
@@ -118,18 +117,6 @@ public class RootResource
             return Response.ok(TO_REST_REPOSITORY.apply(repository)).build();
         else
             return Response.status(Response.Status.FORBIDDEN).build();
-    }
-
-    @GET
-    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-    @Path("/repositoryinfo")
-    public Response checkPath(@QueryParam("repositoryUrl") String repositoryUrl)
-    {
-        UrlInfo urlInfo = globalRepositoryManager.getUrlInfo(repositoryUrl);
-        if (urlInfo!=null)
-            return Response.ok(urlInfo).build();
-        else 
-            return Response.status(Response.Status.NO_CONTENT).build();
     }
     
     @GET
@@ -212,4 +199,16 @@ public class RootResource
             return Response.status(Response.Status.FORBIDDEN).build();
     }
 
+    
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/urlinfo")
+    public Response urlInfo(@QueryParam("repositoryUrl") String repositoryUrl)
+    {
+        UrlInfo urlInfo = globalRepositoryManager.getUrlInfo(repositoryUrl);
+        if (urlInfo!=null)
+            return Response.ok(urlInfo).build();
+        else 
+            return Response.status(Response.Status.NOT_FOUND).build();
+    }
 }

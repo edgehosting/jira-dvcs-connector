@@ -1,0 +1,83 @@
+<html>
+  <head>
+    <title>
+        #if ($action.getMode() == 'single')
+            Bitbucket Repositories
+        #else
+            Bulk Configure Bitbucket Repositories
+        #end
+    </title>
+
+    <script type="text/javascript">
+        var BASE_URL = "${baseurl}"
+        function init_repositories()
+        {
+            #if ($action.nextAction == 'ForceSync')
+                forceSync($action.getRepositoryId());
+                AJS.$('.gh_messages.repository$action.getRepositoryId()').slideDown()
+            #end
+            retrieveSyncStatus();
+            
+            AJS.$("#addPostCommitService").click(function(a){
+                AJS.$("#postCommitServiceDetails").slideToggle()
+                });
+   
+        }            
+     </script>
+
+  </head>
+
+  <body>
+    <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddBitbucketRepository.jspa">
+      <input type="hidden" name="atl_token" value="$atl_token">
+      <table>
+        <tr>
+          <td><label for="repositoryUrl">Repository Url</label></td>
+          <td><input type="text" id="repositoryUrl" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" readonly="readonly"/></td>
+        </tr>  
+        <tr>
+          <td><label for="url">Project Key</label></td>
+          <td><input type="text" id="projectKey" name="projectKey" value="$textutils.htmlEncode($action.getProjectKey())" size="60" readonly="readonly"/></td>
+        </tr>  
+        <tr>  
+          <td valign="top"><label for="repoVisibility">Repository is private</label></td>
+          <td colspan="2"> 
+            <div class="innerform" id="repositoryCredentials">
+                <span>Please enter the username and password to access the repository</span>
+                <div><label for="bbUsername">Username</label><input type="text" name="bbUsername" id="bbUsername" value="$textutils.htmlEncode($action.getBbUsername())"></div>
+                <div><label for="bPassword">Password</label><input type="password" name="bbPassword" id="bbPassword" value=""></div>
+            </div>
+          </td>
+        </tr>  
+        
+        <tr>  
+          <td valign="top"><label for="addPostCommitService">Add postcomit service</label></td>
+            #if ($action.addPostCommitService()) 
+                #set ($checked = "checked") 
+                #set ($hidden = "") 
+            #else 
+                #set ($checked = "") 
+                #set ($hidden = "style='display:none'") 
+            #end
+          <td colspan="2"> 
+            <input type="checkbox" name="addPostCommitService" id="addPostCommitService" $checked>
+            <div class="innerform" id="postCommitServiceDetails" $hidden>
+                <span>Installing postcommit service requires admin access to the repository.</span>
+                <div><label for="adminUsername">Username</label><input type="text" name="adminUsername" id="adminUsername" value="$textutils.htmlEncode($action.getAdminUsername())"></div>
+                <div><label for="adminPassword">Password</label><input type="password" name="adminPassword" id="adminPassword" value=""></div>
+            </div>
+          </td>
+        </tr>  
+        <tr>
+            <td>&nbsp;</td><td></td>
+        </tr>  
+        <tr>  
+            <td valign='top'>
+                <input type="submit" name="Submit" id="Submit" value="Add Repository"/>
+            </td>
+            <td></td>
+        </tr>
+      </table>
+     </form>
+</body>
+</html>

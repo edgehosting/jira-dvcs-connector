@@ -1,5 +1,15 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -10,21 +20,13 @@ import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.ResponseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
@@ -41,7 +43,8 @@ public class BitbucketCommunicator implements Communicator
         this.authenticationFactory = authenticationFactory;
         this.communicatorHelper = new CommunicatorHelper(requestFactory);
     }
-
+    
+    @Override
     public SourceControlUser getUser(SourceControlRepository repository, String username)
     {
         try
@@ -62,6 +65,7 @@ public class BitbucketCommunicator implements Communicator
         }
     }
 
+    @Override
     public Changeset getChangeset(SourceControlRepository repository, String id)
     {
         try
@@ -129,6 +133,7 @@ public class BitbucketCommunicator implements Communicator
         return changesets;
     }
 
+    @Override
     public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
         RepositoryUri uri = repo.getRepositoryUri();
@@ -146,6 +151,7 @@ public class BitbucketCommunicator implements Communicator
         }
     }
 
+    @Override
     public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
         RepositoryUri uri = repo.getRepositoryUri();
@@ -181,41 +187,26 @@ public class BitbucketCommunicator implements Communicator
         }
     }
 
+    @Override
     public Iterable<Changeset> getChangesets(final SourceControlRepository repository)
     {
         return new Iterable<Changeset>()
         {
+            @Override
             public Iterator<Changeset> iterator()
             {
                 return new BitbucketChangesetIterator(BitbucketCommunicator.this, repository);
             }
         };
     }
-
-    public boolean isRepositoryValid(RepositoryUri repositoryUri)
+    
+    @Override
+    public UrlInfo getUrlInfo(final RepositoryUri repositoryUri)
     {
-        String owner = repositoryUri.getOwner();
-        String slug = repositoryUri.getSlug();
-
-        logger.debug("get repository info in bitbucket [ {} ]", slug);
-
-        try
-        {
-            String responseString = communicatorHelper.get(Authentication.ANONYMOUS, "/repositories/" +
-                    CustomStringUtils.encode(owner) + "/" + CustomStringUtils.encode(slug), null, repositoryUri.getApiUrl());
-
-            String name = new JSONObject(responseString).getString("name");
-            if (name.equalsIgnoreCase(repositoryUri.getSlug()))
-            {
-                return true;
-            }
-        } catch (Exception e)
-        {
-            logger.info("Not bitbucket repository [ {} ]", slug );
-            return false;
-        }
-
-        return false;
+        logger.debug("get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
+        Boolean repositoryPrivate = communicatorHelper.isRepositoryPrivate(repositoryUri);
+        if (repositoryPrivate == null) return null;
+        return new UrlInfo(BitbucketRepositoryManager.BITBUCKET, repositoryPrivate.booleanValue());
     }
-
+    
 }

@@ -103,16 +103,19 @@
         </description>
         <actions>
 
-            <action name="com.atlassian.jira.plugins.bitbucket.webwork.ConfigureBitbucketRepositories"
-                    alias="ConfigureBitbucketRepositories" roles-required="admin">
-                <view name="error">/templates/com/atlassian/jira/plugins/bitbucket/webwork/error.vm</view>
-                <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm</view>
-                <view name="redirect">/templates/com/atlassian/jira/plugins/bitbucket/webwork/redirect.vm</view>
-            </action>
+	        <action name="com.atlassian.jira.plugins.bitbucket.webwork.ConfigureBitbucketRepositories"
+	                alias="ConfigureBitbucketRepositories" roles-required="admin">
+	            <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm</view>
+	        </action>
+	
+	        <action name="com.atlassian.jira.plugins.bitbucket.webwork.AddBitbucketRepository" alias="AddBitbucketRepository">
+	            <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/addbitbucketrepository.vm</view>
+	        </action>
 
-            <action name="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit" alias="BitbucketPostCommit">
-                <view name="postcommit">/templates/com/atlassian/jira/plugins/bitbucket/webwork/postcommit.vm</view>
-            </action>
+            <!-- this is here for backward compatibility -->
+	        <action name="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit" alias="BitbucketPostCommit">
+	            <view name="postcommit">/templates/com/atlassian/jira/plugins/bitbucket/webwork/postcommit.vm</view>
+	        </action>
 
         </actions>
     </webwork1>
@@ -143,9 +146,10 @@
     </web-item>
 
     <resource type="download" name="images/" location="images/"/>
-
-    <web-resource name="Resources" key="resources">
-        <resource name="javascripts/bitbucket.js" type="download" location="javascripts/bitbucket.js"/>
+ 
+    <web-resource name="resources" key="resources">
+        <resource type="download" name="javascripts/bitbucket.js" location="javascripts/bitbucket.js"/>
+	    <resource type="download" name="css/styles.css" location="css/styles.css" />
         <context>atl.general</context>
         <context>atl.admin</context>
     </web-resource>
@@ -153,8 +157,6 @@
     <rest key="bitbucket-rest-resources" path="/bitbucket" version="1.0">
         <description>REST Resources</description>
     </rest>
-
-
 
     <!--<component-import key="activityService" interface="com.atlassian.streams.thirdparty.api.ActivityService"/>-->
     <component-import key="i18nResolver" interface="com.atlassian.sal.api.message.I18nResolver" />
