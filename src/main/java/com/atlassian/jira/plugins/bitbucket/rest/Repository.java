@@ -14,6 +14,9 @@ public class Repository
     private int id;
 
     @XmlAttribute
+    private String repositoryType;
+    
+    @XmlAttribute
     private String projectKey;
     
     @XmlAttribute
@@ -38,9 +41,10 @@ public class Repository
     {
     }
 
-    public Repository(int id, String projectKey, String url, String username, String password, String adminUsername, String adminPassword)
+    public Repository(int id, String repositoryType, String projectKey, String url, String username, String password, String adminUsername, String adminPassword)
     {
         this.id = id;
+        this.repositoryType = repositoryType;
         this.projectKey = projectKey;
         this.url = url;
 		this.username = username;
@@ -127,4 +131,14 @@ public class Repository
 	{
 		this.adminPassword = adminPassword;
 	}
+
+    public String getRepositoryType()
+    {
+        return repositoryType;
+    }
+
+    public void setRepositoryType(String repositoryType)
+    {
+        this.repositoryType = repositoryType;
+    }
 }

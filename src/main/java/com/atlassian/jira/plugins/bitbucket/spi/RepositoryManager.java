@@ -13,15 +13,9 @@ public interface RepositoryManager
 {
 
     /**
-     * Returns true if this RepositoryManager can manage repository with given url
-     * @param url
-     * @return
-     */
-    public boolean canHandleUrl(String url);
-
-    /**
      * Mapps a repository to given project
      *
+     * @param repositoryType
      * @param projectKey
      * @param repositoryUrl
      * @param username
@@ -30,7 +24,7 @@ public interface RepositoryManager
      * @param adminPassword - used when (un)installing postcommit hook
      * @return
      */
-    public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username,
+    public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl, String username,
             String password, String adminUsername, String adminPassword);
 
     /**

@@ -29,18 +29,6 @@ public class GlobalRepositoryManager implements RepositoryManager
 		this.repositoryManagers = repositoryManagers;
 	}
 	
-	private RepositoryManager getManagerForUrl(String url)
-	{
-		for (RepositoryManager repositoryManager : repositoryManagers)
-		{
-			if (repositoryManager.canHandleUrl(url))
-			{
-				return repositoryManager;
-			}
-		}
-		throw new IllegalArgumentException("No repository manager found for given url ["+url+"]");
-	}
-	
 	private RepositoryManager getManagerByRepoId(int id)
 	{
 		ProjectMapping repository = repositoryPersister.getRepository(id);
@@ -72,27 +60,17 @@ public class GlobalRepositoryManager implements RepositoryManager
         return null;
     }
 
-	
 	@Override
-    public boolean canHandleUrl(String url)
+    public SourceControlRepository addRepository(String repositoryType, String projectKey, String url, String username, String password, String adminUsername, String adminPassword)
 	{
-    	for (RepositoryManager repositoryManager : repositoryManagers)
-		{
-    		if (repositoryManager.canHandleUrl(url))
-    		{
-    			return true;
-    		}
-		}		
-		return false;
-	}
-
-	@Override
-    public SourceControlRepository addRepository(String projectKey, String url, String username, String password, String adminUsername, String adminPassword)
-	{
-	    // TODO when creating new repository we should supply the type of repository 
-	    // the type should be detected in a form
-
-		return getManagerForUrl(url).addRepository(projectKey, url, username, password, adminUsername, adminPassword);
+	    for (RepositoryManager repositoryManager : repositoryManagers)
+	    {
+	        if (repositoryManager.getRepositoryType().equals(repositoryType))
+	        {
+	            return repositoryManager.addRepository(repositoryType, projectKey, url, username, password, adminUsername, adminPassword);
+	        }
+	    }		
+        throw new IllegalArgumentException("No repository manager found for given repository type ["+repositoryType+"]");
 	}
 
 

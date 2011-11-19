@@ -58,7 +58,7 @@ public class RootResource
         @Override
         public Repository apply(SourceControlRepository from)
         {
-            Repository repo = new Repository(from.getId(), from.getProjectKey(), from.getRepositoryUri().getRepositoryUrl(),
+            Repository repo = new Repository(from.getId(), from.getRepositoryType(), from.getProjectKey(), from.getRepositoryUri().getRepositoryUrl(),
                     from.getUsername(), null, from.getAdminUsername(), null); // don't include the
                                                                               // password
             Progress progress = synchronizer.getProgress(from);
@@ -165,6 +165,7 @@ public class RootResource
         if (canAdmin(repository.getProjectKey()))
         {
             String url = repository.getUrl();
+            String repositoryType = repository.getRepositoryType();
             String projectKey = repository.getProjectKey();
             String username = repository.getUsername();
             String password = repository.getPassword();
@@ -174,7 +175,7 @@ public class RootResource
             SourceControlRepository repo;
             try
             {
-                repo = globalRepositoryManager.addRepository(projectKey, url, username, password,
+                repo = globalRepositoryManager.addRepository(repositoryType, projectKey, url, username, password,
                         adminUsername, adminPassword);
             } catch (SourceControlException e)
             {

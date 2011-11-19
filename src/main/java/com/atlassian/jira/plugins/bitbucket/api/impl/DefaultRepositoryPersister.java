@@ -52,7 +52,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     }
 
     @Override
-    public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String repositoryType)
+    public ProjectMapping addRepository(String repositoryType, String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword)
     {
         
         final ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_URL = ? and PROJECT_KEY = ?", repositoryUrl, projectKey);

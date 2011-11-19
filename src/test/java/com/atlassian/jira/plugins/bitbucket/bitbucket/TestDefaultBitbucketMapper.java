@@ -69,6 +69,7 @@ public class TestDefaultBitbucketMapper
         when(activeObjects.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(
                 new Answer<Object>()
                 {
+                    @Override
                     public Object answer(InvocationOnMock invocationOnMock) throws Throwable
                     {
                         return ((TransactionCallback) invocationOnMock.getArguments()[0]).doInTransaction();
@@ -78,6 +79,7 @@ public class TestDefaultBitbucketMapper
         when(encryptor.encrypt(anyString(), anyString(), anyString())).thenAnswer(
                 new Answer<String>()
                 {
+                    @Override
                     public String answer(InvocationOnMock invocationOnMock) throws Throwable
                     {
                         return StringUtils.reverse(String.valueOf(invocationOnMock.getArguments()[0]));
@@ -87,6 +89,7 @@ public class TestDefaultBitbucketMapper
         when(encryptor.decrypt(anyString(), anyString(), anyString())).thenAnswer(
                 new Answer<String>()
                 {
+                    @Override
                     public String answer(InvocationOnMock invocationOnMock) throws Throwable
                     {
                         return StringUtils.reverse(String.valueOf(invocationOnMock.getArguments()[0]));
@@ -99,7 +102,7 @@ public class TestDefaultBitbucketMapper
     public void testAddAnonymousRepositoryCreatesValidMap()
     {
         new DefaultRepositoryPersister(activeObjects).
-                addRepository("JST", REPOSITORY_URI.getRepositoryUrl(), null, null, null, null, "bitbucket");
+                addRepository("bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), null, null, null, null);
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
@@ -119,7 +122,7 @@ public class TestDefaultBitbucketMapper
     public void testAddAuthentictedRepositoryCreatesValidMap()
     {
         new DefaultRepositoryPersister(activeObjects).
-                addRepository("JST", REPOSITORY_URI.getRepositoryUrl(), "user", "pass", null, null, "bitbucket");
+                addRepository("bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), "user", "pass", null, null);
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
@@ -140,7 +143,7 @@ public class TestDefaultBitbucketMapper
     public void testPasswordNotStoredInPlainText()
     {
     	new BitbucketRepositoryManager(new DefaultRepositoryPersister(activeObjects), bitbucket, encryptor, null)
-    		.addRepository("JST", REPOSITORY_URI.getRepositoryUrl(), "user", "pass", null, null);
+    		.addRepository("bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), "user", "pass", null, null);
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {

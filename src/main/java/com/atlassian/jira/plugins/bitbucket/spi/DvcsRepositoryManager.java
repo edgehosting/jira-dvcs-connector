@@ -98,18 +98,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         this.applicationProperties = applicationProperties;
     }
 
-    @Override
-    public boolean canHandleUrl(String url)
-    {
-        if (!hasValidFormat(url)) return false;
-        RepositoryUri repositoryUri = getRepositoryUri(url);
-
-        return getCommunicator().getUrlInfo(repositoryUri)!=null;
-    }
-
-
 	@Override
-    public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username,
+    public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl, String username,
 			String password, String adminUsername, String adminPassword)
 	{
 		// Remove trailing slashes from URL
@@ -126,8 +116,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 
 		String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
 		String encryptedAdminPassword = encryptor.encrypt(adminPassword, projectKey, repositoryUrl);
-		ProjectMapping pm = repositoryPersister.addRepository(projectKey, repositoryUrl, username,
-				encryptedPassword, adminUsername, encryptedAdminPassword, getRepositoryType());
+		ProjectMapping pm = repositoryPersister.addRepository(repositoryType, projectKey, repositoryUrl, username,
+				encryptedPassword, adminUsername, encryptedAdminPassword);
 		return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 	}
 

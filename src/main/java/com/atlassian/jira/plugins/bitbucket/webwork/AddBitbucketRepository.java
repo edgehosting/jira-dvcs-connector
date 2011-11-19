@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 
 /**
  * Webwork action used to configure the bitbucket repositories
+ * TODO move to spi.bitbucket package
  */
 public class AddBitbucketRepository extends JiraWebActionSupport
 {
@@ -44,7 +46,7 @@ public class AddBitbucketRepository extends JiraWebActionSupport
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        SourceControlRepository repository = globalRepositoryManager.addRepository(projectKey, repositoryUrl, bbUsername, bbPassword,
+        SourceControlRepository repository = globalRepositoryManager.addRepository(BitbucketRepositoryManager.BITBUCKET, projectKey, repositoryUrl, bbUsername, bbPassword,
             adminUsername, adminPassword);
         globalRepositoryManager.setupPostcommitHook(repository);
         synchronizer.synchronize(repository);

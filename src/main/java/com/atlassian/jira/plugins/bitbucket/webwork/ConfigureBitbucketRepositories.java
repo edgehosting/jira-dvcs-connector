@@ -42,10 +42,6 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     @Override
     protected void doValidation()
     {
-        if (!globalRepositoryManager.canHandleUrl(repositoryUrl) && nextAction.equals("AddRepository"))
-        {
-            addErrorMessage("URL must be for a valid repository.");
-        }
     }
 
     @Override
