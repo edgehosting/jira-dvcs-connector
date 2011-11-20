@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.webwork;
+package com.atlassian.jira.plugins.bitbucket.spi.github.webwork;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,15 +7,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.webwork.AddBitbucketRepository;
+import com.atlassian.jira.plugins.bitbucket.spi.github.impl.GithubRepositoryManager;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 
-/**
- * Webwork action used to configure the bitbucket repositories
- * TODO move to spi.bitbucket package
- */
-public class AddBitbucketRepository extends JiraWebActionSupport
+public class AddGithubRepository extends JiraWebActionSupport
 {
     private final Logger log = LoggerFactory.getLogger(AddBitbucketRepository.class);
 
@@ -31,7 +28,7 @@ public class AddBitbucketRepository extends JiraWebActionSupport
 
     private final Synchronizer synchronizer;
 
-    public AddBitbucketRepository(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, Synchronizer synchronizer)
+    public AddGithubRepository(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, Synchronizer synchronizer)
     {
         this.globalRepositoryManager = globalRepositoryManager;
         this.synchronizer = synchronizer;
@@ -46,7 +43,7 @@ public class AddBitbucketRepository extends JiraWebActionSupport
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        SourceControlRepository repository = globalRepositoryManager.addRepository(BitbucketRepositoryManager.BITBUCKET, projectKey, repositoryUrl, bbUsername, bbPassword,
+        SourceControlRepository repository = globalRepositoryManager.addRepository(GithubRepositoryManager.GITHUB, projectKey, repositoryUrl, bbUsername, bbPassword,
             adminUsername, adminPassword);
         globalRepositoryManager.setupPostcommitHook(repository);
         synchronizer.synchronize(repository);

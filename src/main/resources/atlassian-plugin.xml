@@ -108,7 +108,11 @@
 	            <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm</view>
 	        </action>
 	
-	        <action name="com.atlassian.jira.plugins.bitbucket.webwork.AddBitbucketRepository" alias="AddBitbucketRepository">
+	        <action name="com.atlassian.jira.plugins.bitbucket.spi.github.webwork.AddGithubRepository" alias="AddGithubRepository">
+	            <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/addgithubrepository.vm</view>
+	        </action>
+
+	        <action name="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.webwork.AddBitbucketRepository" alias="AddBitbucketRepository">
 	            <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/addbitbucketrepository.vm</view>
 	        </action>
 

@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Add new Bitbucket repository</title>
+    <title>Add new Github repository</title>
 
     <script type="text/javascript">
         var BASE_URL = "${baseurl}"
@@ -16,7 +16,7 @@
   </head>
 
   <body>
-    <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddBitbucketRepository.jspa" class="aui">
+    <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddGithubRepository.jspa" class="aui">
       <h2>New Bitbucket repository</h2>
       <input type="hidden" name="atl_token" value="$atl_token">
       
@@ -55,7 +55,7 @@
       <div class="field-group">
         <label for="adminUsername">Admin username</label>
         <input type="text" name="adminUsername" id="adminUsername" value="$textutils.htmlEncode($action.getAdminUsername())">
-      </div>  
+      </div>    
       <div class="field-group">
         <label for="adminPassword">Admin password</label>
         <input type="password" name="adminPassword" id="adminPassword" value="">

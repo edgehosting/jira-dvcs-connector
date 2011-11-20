@@ -115,16 +115,7 @@
 .syncicon.finished {
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/status-ok.png)
 }
-label {
-    font-weight:bold;
-}
-.hiddendiv {
-    display:none;
-}
-.innerform label{
-    float:left
-}
-.innerform div{
-    width: 260px;
-    text-align: right;
+
+#postCommitServiceDetails{
+    margin-bottom:20px;
 }
