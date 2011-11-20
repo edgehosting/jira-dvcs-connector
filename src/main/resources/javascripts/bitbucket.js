@@ -59,7 +59,6 @@ function submitFunction(a){
     var requestUrl = BASE_URL+"/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl)
 
     AJS.$.getJSON(requestUrl, function(data) {
-    	
     	if (data.repositoryType == "github")
     		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddGithubRepository!default.jspa");
     	else if (data.repositoryType == "bitbucket")

@@ -19,10 +19,10 @@ public class AddGithubRepository extends JiraWebActionSupport
     private String repositoryUrl;
     private String projectKey;
     private String isPrivate;
-    private String adminUsername;
-    private String adminPassword;
-    private String bbUsername;
-    private String bbPassword;
+    private String adminUsername = "";
+    private String adminPassword = "";
+    private String bbUsername = "";
+    private String bbPassword = "";
 
     private final RepositoryManager globalRepositoryManager;
 
@@ -73,9 +73,9 @@ public class AddGithubRepository extends JiraWebActionSupport
         this.projectKey = projectKey;
     }
 
-    public String getIsPrivate()
+    public boolean isPrivate()
     {
-        return isPrivate;
+        return Boolean.parseBoolean(isPrivate);
     }
 
     public void setIsPrivate(String isPrivate)

@@ -3,9 +3,9 @@
   <head>
     <title>
         #if ($action.getMode() == 'single')
-            Bitbucket Repositories
+            Configure Repositories
         #else
-            Bulk Configure Bitbucket Repositories
+            Bulk Configure Repositories
         #end
     </title>
 
@@ -18,12 +18,6 @@
                 AJS.$('.gh_messages.repository$action.getRepositoryId()').slideDown()
             #end
             retrieveSyncStatus();
-/*            
-            AJS.$("#addPostCommitService").click(function(a){
-                AJS.$("#postCommitServiceDetails").slideToggle()
-                });
-
-  */              
             AJS.$("#Submit").click(submitFunction);
         }            
      </script>

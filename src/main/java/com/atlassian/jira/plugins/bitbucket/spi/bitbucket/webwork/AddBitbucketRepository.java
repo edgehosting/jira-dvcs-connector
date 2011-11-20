@@ -75,9 +75,9 @@ public class AddBitbucketRepository extends JiraWebActionSupport
         this.projectKey = projectKey;
     }
 
-    public String getIsPrivate()
+    public boolean isPrivate()
     {
-        return isPrivate;
+        return Boolean.parseBoolean(isPrivate);
     }
 
     public void setIsPrivate(String isPrivate)

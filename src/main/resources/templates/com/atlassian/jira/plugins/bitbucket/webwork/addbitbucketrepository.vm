@@ -28,6 +28,8 @@
         <label for="url">Project Key</label>
         <input type="text" id="projectKey" name="projectKey" value="$textutils.htmlEncode($action.getProjectKey())" size="60" readonly="readonly"/>
       </div>  
+      
+      #if ($action.isPrivate())
       <h3>Access credentials</h3>
       <div class="field-group">
         <label for="bbUsername">Username</label>
@@ -37,6 +39,7 @@
         <label for="bPassword">Password</label>
         <input type="password" name="bbPassword" id="bbPassword" value="">
       </div>  
+      #end
 
       #if ($action.addPostCommitService()) 
         #set ($checked = "checked") 
