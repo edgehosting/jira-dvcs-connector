@@ -16,6 +16,7 @@ import com.atlassian.sal.api.ApplicationProperties;
 
 /**
  * Webwork action used to configure the bitbucket repositories
+ * TODO test this on project page (mode='single')
  */
 public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 {

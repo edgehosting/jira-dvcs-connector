@@ -58,16 +58,25 @@ function submitFunction(a){
     var repositoryUrl = AJS.$("#url").val();
     var requestUrl = BASE_URL+"/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl)
 
-    AJS.$.getJSON(requestUrl, function(data) {
+    AJS.$("#aui-message-bar").empty();
+	AJS.messages.generic({
+	    title: "Working...",
+	    body: "Trying to connect to the repository."
+	});
+
+	AJS.$.getJSON(requestUrl, function(data) {
     	if (data.repositoryType == "github")
     		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddGithubRepository!default.jspa");
     	else if (data.repositoryType == "bitbucket")
     		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddBitbucketRepository!default.jspa");
     	AJS.$("#isPrivate").val(data.isPrivate);
     	AJS.$('#repoEntry').submit();
-
-    }).error(function huh(a){
-    	console.log("yah")
+    }).error(function(a){
+        AJS.$("#aui-message-bar").empty();
+    	AJS.messages.error({
+    	    title: "Error!",
+    	    body: "The repository url [<b>"+AJS.$("#url").val()+"</b>] is incorrect or the repository is not responding."
+    	});
     });
     return false;
 }

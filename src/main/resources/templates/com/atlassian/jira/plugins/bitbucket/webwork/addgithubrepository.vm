@@ -67,7 +67,8 @@
       <div class="buttons-container">
         <div class="buttons">
           <div>&nbsp;</div>
-          <input type="submit" name="Submit" id="Submit" value="Add Repository"/>
+            <input type="submit" name="Submit" id="Submit" value="Add Repository"/>
+            <a class="cancel" href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?atl_token=${atl_token}">Cancel</a>
         </div>
       </div>
     

@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -115,8 +114,13 @@ public class BitbucketCommunicator implements Communicator
                     CustomStringUtils.encode(slug) + "/changesets", params, uri.getApiUrl());
         } catch (ResponseException e)
         {
-            logger.debug("Could not get repositories from start: {}", startNode);
-            return Collections.emptyList();
+            logger.debug("Could not get changesets from node: {}", startNode);
+            // ResponseException should really provide the error code :(
+            if ("Unexpected response received. Status code: 401".equals(e.getMessage()))
+            {
+                throw new SourceControlException("Incorrect credentials");
+            }
+            throw new SourceControlException("Error requesting changesets. Node: "+startNode + ". ["+e.getMessage()+"]", e);
         }
 
         try
@@ -148,7 +152,7 @@ public class BitbucketCommunicator implements Communicator
             communicatorHelper.post(auth, urlPath, postData, apiUrl);
         } catch (ResponseException e)
         {
-            throw new SourceControlException("Could not add postcommit hook");
+            throw new SourceControlException("Could not add postcommit hook",e);
         }
     }
 

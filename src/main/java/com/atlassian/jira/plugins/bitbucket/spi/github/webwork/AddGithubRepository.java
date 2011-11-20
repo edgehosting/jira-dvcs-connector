@@ -45,10 +45,8 @@ public class AddGithubRepository extends JiraWebActionSupport
     {
         SourceControlRepository repository = globalRepositoryManager.addRepository(GithubRepositoryManager.GITHUB, projectKey, repositoryUrl, bbUsername, bbPassword,
             adminUsername, adminPassword);
-        globalRepositoryManager.setupPostcommitHook(repository);
         synchronizer.synchronize(repository);
-
-//        postCommitUrl = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
+        globalRepositoryManager.setupPostcommitHook(repository);
 
         return getRedirect("ConfigureBitbucketRepositories.jspa?atl_token=" + getXsrfToken());
     }

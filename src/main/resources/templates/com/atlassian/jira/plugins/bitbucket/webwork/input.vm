@@ -130,7 +130,8 @@
                     </tr>  
               
                     <tr>
-                        <td>&nbsp;</td><td></td>
+                        <td>&nbsp;</td>
+                        <td colspan="2"><div id="aui-message-bar"></div></td>
                     </tr>  
                     <tr>  
                         <td valign='top'>

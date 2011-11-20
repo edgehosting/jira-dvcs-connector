@@ -115,8 +115,13 @@ public class GithubCommunicator implements Communicator
                     CustomStringUtils.encode(slug) + "/master", params, uri.getApiUrl());
         } catch (ResponseException e)
         {
-            logger.debug("Could not get repositories from page: {}", pageNumber);
-            return Collections.emptyList();
+            logger.debug("Could not get changesets from page: {}", pageNumber);
+            // ResponseException should really provide the error code :(
+            if ("Unexpected response received. Status code: 401".equals(e.getMessage()))
+            {
+                throw new SourceControlException("Incorrect credentials");
+            }
+            throw new SourceControlException("Error requesting changesets. Page: "+pageNumber + ". ["+e.getMessage()+"]", e);
         }
 
         try
