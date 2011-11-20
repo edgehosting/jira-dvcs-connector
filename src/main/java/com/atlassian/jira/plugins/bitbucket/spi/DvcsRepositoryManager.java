@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,12 +24,10 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.opensymphony.util.TextUtils;
-
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
 
@@ -138,7 +138,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 	@Override
     public List<Changeset> getChangesets(String issueKey)
 	{
-		List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey);
+		List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey, getRepositoryType());
 		return Lists.transform(issueMappings, TO_CHANGESET);
 	}
 
@@ -298,14 +298,21 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             htmlCommitEntry = htmlCommitEntry.replace("#login", TextUtils.htmlEncode(login));
             htmlCommitEntry = htmlCommitEntry.replace("#user_name", TextUtils.htmlEncode(authorName));
             htmlCommitEntry = htmlCommitEntry.replace("#commit_message", TextUtils.htmlEncode(changeset.getMessage()));
-            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_time", BitbucketChangesetFactory.getDateString(changeset.getTimestamp()));
-            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_date", BitbucketChangesetFactory.getDateString(changeset.getTimestamp()));
+            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_time", getDateString(changeset.getTimestamp()));
+            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_date", getDateString(changeset.getTimestamp()));
             htmlCommitEntry = htmlCommitEntry.replace("#commit_url", commitURL);
             htmlCommitEntry = htmlCommitEntry.replace("#commit_hash", changeset.getNode());
             //htmlCommitEntry = htmlCommitEntry.replace("#tree_url", "https://github.com/" + login + "/" + projectName + "/tree/" + commit_hash);
             //htmlCommitEntry = htmlCommitEntry.replace("#tree_hash", commitTree);
             return htmlCommitEntry;
     }
+
+    public String getDateString(Date datetime) {
+        // example:    2011-05-26 10:54:41
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return df.format(datetime);
+    }
+
 
 
     @Override

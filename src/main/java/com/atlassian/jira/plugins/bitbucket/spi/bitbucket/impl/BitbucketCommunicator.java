@@ -22,6 +22,7 @@ import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketUserFactory;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -53,7 +54,7 @@ public class BitbucketCommunicator implements Communicator
             logger.debug("parse user [ {} ]", username);
 
             String responseString = communicatorHelper.get(Authentication.ANONYMOUS, "/users/" + CustomStringUtils.encode(username), null, uri.getApiUrl());
-            return BitbucketUserFactory.parse(new JSONObject(responseString));
+            return BitbucketUserFactory.parse(new JSONObject(responseString).getJSONObject("user"));
         } catch (ResponseException e)
         {
             logger.debug("could not load user [ " + username + " ]");

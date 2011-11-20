@@ -20,13 +20,13 @@ public class GithubRepositoryUri extends DefaultRepositoryUri
     @Override
     public String getCommitUrl(String node)
     {
-        return null;
+        return MessageFormat.format("{0}://{1}/{2}/{3}/commit/{4}", getProtocol(), getHostname(), getOwner(), getSlug(), node);
     }
 
     @Override
     public String getUserUrl(String username)
     {
-        return null;
+        return MessageFormat.format("{0}://{1}/{2}", getProtocol(), getHostname(), username);
     }
 
     @Override

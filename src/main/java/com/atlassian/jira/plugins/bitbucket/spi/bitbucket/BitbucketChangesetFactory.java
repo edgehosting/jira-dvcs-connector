@@ -80,12 +80,6 @@ public class BitbucketChangesetFactory {
         }
     }
 
-    public static String getDateString(Date datetime) {
-        // example:    2011-05-26 10:54:41
-        DateFormat df = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss");
-        return df.format(datetime);
-    }
-
     private static List<String> stringList(JSONArray parents) throws JSONException {
         List<String> list = new ArrayList<String>();
         for (int i = 0; i < parents.length(); i++)

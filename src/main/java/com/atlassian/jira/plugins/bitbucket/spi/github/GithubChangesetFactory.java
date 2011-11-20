@@ -12,10 +12,9 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import javax.xml.bind.DatatypeConverter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -70,13 +69,15 @@ public class GithubChangesetFactory
     }
 
     public static Date parseDate(String dateStr) {
-        // Atom (ISO 8601) example: 2011-11-09T06:24:13-08:00
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+//        // Atom (ISO 8601) example: 2011-11-09T06:24:13-08:00
+
         try {
-            return df.parse(dateStr);
-        } catch (ParseException e) {
+            Calendar calendar = DatatypeConverter.parseDateTime(dateStr);
+            return calendar.getTime();
+        } catch (IllegalArgumentException e) {
             throw new SourceControlException("Could not parse date string from JSON.", e);
         }
+
     }
 
 

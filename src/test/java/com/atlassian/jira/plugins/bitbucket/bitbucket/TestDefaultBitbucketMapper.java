@@ -1,5 +1,8 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
@@ -9,7 +12,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Map;
+
+import net.java.ao.Query;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
@@ -176,15 +182,17 @@ public class TestDefaultBitbucketMapper
     {
         when(activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", URL))
         		.thenReturn(new ProjectMapping[]{projectMapping});
-        when(activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", "JST-1"))
+        when(activeObjects.find(any(Class.class), any(Query.class)))
         		.thenReturn(new IssueMapping[]{issueMapping});
         when(issueMapping.getNode()).thenReturn("1");
         when(issueMapping.getRepositoryId()).thenReturn(SOME_ID);
-        new DefaultRepositoryPersister(activeObjects).getIssueMappings("JST-1");
+        List<IssueMapping> issueMappings = new DefaultRepositoryPersister(activeObjects).getIssueMappings("JST-1", "bitbucket");
+        assertTrue(issueMappings.size()==1);
+        assertEquals(issueMapping, issueMappings.get(0));
 //        verify(activeObjects, times(1)).find(ProjectMapping.class,
 //                "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", "owner/slug");
-        verify(activeObjects, times(1)).find(IssueMapping.class,
-                "ISSUE_ID = ?", "JST-1");
+//        verify(activeObjects, times(1)).find(IssueMapping.class,
+//                "ISSUE_ID = ?", "JST-1");
 //        verify(bitbucket, times(1)).getChangeset(argThat(new ArgumentMatcher<Authentication>()
 //        {
 //            @Override
@@ -201,18 +209,20 @@ public class TestDefaultBitbucketMapper
         when(activeObjects.find(ProjectMapping.class,
                 "PROJECT_KEY = ? and REPOSITORY_URI = ?",
                 "JST", URL)).thenReturn(new ProjectMapping[]{projectMapping});
-        when(activeObjects.find(IssueMapping.class,
-                "ISSUE_ID = ?", "JST-1")).thenReturn(new IssueMapping[]{issueMapping});
+        when(activeObjects.find(any(Class.class), any(Query.class)))
+            .thenReturn(new IssueMapping[]{issueMapping});
         when(projectMapping.getUsername()).thenReturn("user");
         when(projectMapping.getPassword()).thenReturn("ssap");
         when(issueMapping.getNode()).thenReturn("1");
         when(issueMapping.getRepositoryId()).thenReturn(SOME_ID);
-        new DefaultRepositoryPersister(activeObjects).getIssueMappings("JST-1");
+        List<IssueMapping> issueMappings = new DefaultRepositoryPersister(activeObjects).getIssueMappings("JST-1", "bitbucket");
+        assertTrue(issueMappings.size()==1);
+        assertEquals(issueMapping, issueMappings.get(0));
 //        verify(activeObjects, times(1)).find(ProjectMapping.class,
 //                "PROJECT_KEY = ? and REPOSITORY_URI = ?",
 //                "JST", "owner/slug");
-        verify(activeObjects, times(1)).find(IssueMapping.class,
-                "ISSUE_ID = ?", "JST-1");
+//        verify(activeObjects, times(1)).find(IssueMapping.class,
+//                "ISSUE_ID = ?", "JST-1");
 //        verify(bitbucket, times(1)).getChangeset(argThat(new ArgumentMatcher<Authentication>()
 //        {
 //            @Override

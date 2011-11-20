@@ -106,14 +106,16 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     }
 
     @Override
-    public List<IssueMapping> getIssueMappings(final String issueId)
+    public List<IssueMapping> getIssueMappings(final String issueId, final String repositoryType)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
         {
             @Override
             public List<IssueMapping> doInTransaction()
             {
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", issueId);
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
+                        Query.select().join(ProjectMapping.class, "AO_E8B6CC_ISSUE_MAPPING_V2.REPOSITORY_ID = AO_E8B6CC_PROJECT_MAPPING_V2.ID")
+                                .where("ISSUE_ID = ? AND REPOSITORY_TYPE = ?", issueId, repositoryType));
                 return Lists.newArrayList(mappings);
             }
         });
