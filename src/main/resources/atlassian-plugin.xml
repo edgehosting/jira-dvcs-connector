@@ -165,11 +165,9 @@
     <activity-streams-provider key="bitbucket-streams-provider" name="External Provider" i18n-name-key="Bitbucket Connector"
                        class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsActivityProvider">
         <filter-provider class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketFilterOptionProvider" />
-        <!--
-        <validator class="com.atlassian.streams.ExternalStreamsValidator" />
-        <key-provider class="com.atlassian.streams.ExternalStreamsKeyProvider" />
-        <comment-handler class="com.atlassian.streams.ExternalStreamsCommentHandler" />
-        -->
+        <validator class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsValidator" />
+        <!--<comment-handler class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsCommentHandler" />-->
+
     </activity-streams-provider>
 
  

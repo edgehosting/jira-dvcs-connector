@@ -1,12 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import net.java.ao.Query;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -154,14 +152,34 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
     @Override
-    public List<IssueMapping> getLastChangesetMappings(final int count)
+    public List<IssueMapping> getLastChangesetMappings(final int count, final Set<String> inProjects, final Set<String> notInProjects)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
         {
             @Override
             public List<IssueMapping> doInTransaction()
             {
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, Query.select().limit(count).order("timestamp DESC"));
+                StringBuilder whereClauseSb = new StringBuilder();
+                if(!CollectionUtils.isEmpty(inProjects)){
+                    for(String projectKey : inProjects){
+                        if(whereClauseSb.length() != 0){
+                            whereClauseSb.append(" AND ");
+                        }
+                        whereClauseSb.append("ISSUE_ID like '").append(projectKey).append("-%' ");
+                    }
+                }
+                if(!CollectionUtils.isEmpty(notInProjects)){
+                    for(String projectKey : notInProjects){
+                        if(whereClauseSb.length() != 0){
+                            whereClauseSb.append(" AND ");
+                        }
+                        whereClauseSb.append("ISSUE_ID not like '").append(projectKey).append("-%' ");
+                    }
+                }
+                if(whereClauseSb.length() == 0){
+                    whereClauseSb.append(" true ");
+                }
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, Query.select().where(whereClauseSb.toString()).limit(count).order("TIMESTAMP DESC"));
                 return mappings == null ? new ArrayList<IssueMapping>() : Lists.newArrayList(mappings);
             }
         });
@@ -180,4 +198,17 @@ public class DefaultRepositoryPersister implements RepositoryPersister
 		});
 	}
 
+    @Override
+    public IssueMapping getIssueMapping(final String node)
+    {
+        return activeObjects.executeInTransaction(new TransactionCallback<IssueMapping>()
+        {
+            @Override
+            public IssueMapping doInTransaction()
+            {
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "NODE = ?", node);
+                return mappings.length != 0 ? mappings[0] : null;
+            }
+        });
+    }
 }

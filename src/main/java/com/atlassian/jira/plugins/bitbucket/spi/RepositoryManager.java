@@ -4,6 +4,7 @@ import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.*;
 
 import java.util.List;
+import java.util.Set;
 
 public interface RepositoryManager
 {
@@ -112,8 +113,17 @@ public interface RepositoryManager
 
     /**
      * Find last changeset to the given count ordered by timestamp
+     *
      * @param count changesets count
-     * @return list of Changeset mappings
+     * @param inProjects
+     *@param notInProjects @return list of Changeset mappings
      */
-    public List<IssueMapping> getLastChangesetMappings(final int count);
+    public List<IssueMapping> getLastChangesetMappings(final int count, Set<String> inProjects, Set<String> notInProjects);
+
+    /**
+     * @param node
+     * @return changeset by node
+     */
+    public Changeset getChangeset(String node);
+
 }
