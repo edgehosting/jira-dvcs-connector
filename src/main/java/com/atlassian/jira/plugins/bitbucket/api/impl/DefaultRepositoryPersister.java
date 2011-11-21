@@ -163,7 +163,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 if(!CollectionUtils.isEmpty(inProjects)){
                     for(String projectKey : inProjects){
                         if(whereClauseSb.length() != 0){
-                            whereClauseSb.append(" AND ");
+                            whereClauseSb.append(" OR ");
                         }
                         whereClauseSb.append("ISSUE_ID like '").append(projectKey).append("-%' ");
                     }
