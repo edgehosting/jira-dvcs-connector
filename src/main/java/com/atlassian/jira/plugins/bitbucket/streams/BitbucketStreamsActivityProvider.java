@@ -5,7 +5,6 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.streams.api.*;
@@ -34,20 +33,16 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
     private ApplicationProperties applicationProperties;
     private UserProfileAccessor userProfileAccessor;
     private RepositoryManager globalRepositoryManager;
-    private WebResourceManager webResourceManager;
 
     private static final Logger log = LoggerFactory.getLogger(BitbucketStreamsActivityProvider.class);
 
 
-    public BitbucketStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties, UserProfileAccessor userProfileAccessor,
-                                            @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager,
-                                            WebResourceManager webResourceManager)
+    public BitbucketStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties, UserProfileAccessor userProfileAccessor, @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
     {
         this.applicationProperties = applicationProperties;
         this.i18nResolver = i18nResolver;
         this.userProfileAccessor = userProfileAccessor;
         this.globalRepositoryManager = globalRepositoryManager;
-        this.webResourceManager = webResourceManager;
     }
 
 
@@ -64,9 +59,9 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
     }
 
     /**
-     * Transforms a single {@link AuditLogEntry} to a {@link StreamsEntry}.
+     * Transforms a single {@link IssueMapping} to a {@link StreamsEntry}.
      *
-     * @param changesetEntry the log entry
+     * @param changesetEntry the changeset entry
      * @return the transformed streams entry
      */
     private StreamsEntry toStreamsEntry(final IssueMapping changesetEntry)
@@ -209,7 +204,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
     public StreamsFeed getActivityFeed(ActivityRequest activityRequest) throws StreamsException
     {
-        //get all audit log entries that match the specified activity filters
+        //get all changeset entries that match the specified activity filters
         Set<String> inProjects = Filters.getIsValues(activityRequest.getProviderFilters().values());
         Set<String> notInProjects = Filters.getNotValues(activityRequest.getProviderFilters().values());
 
