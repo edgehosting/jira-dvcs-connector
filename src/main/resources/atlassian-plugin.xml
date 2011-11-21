@@ -162,7 +162,8 @@
     <!--<component-import key="pluginLogService" interface="com.atlassian.upm.api.log.PluginLogService" />-->
 
 
-    <activity-streams-provider key="bitbucket-streams-provider" name="External Provider" i18n-name-key="Bitbucket Connector"
+    <resource type="i18n" name="bitbucket-i18n" location="i18n"/>
+    <activity-streams-provider key="bitbucket-streams-provider" name="Bitbucket Streams Provider" i18n-name-key="bitbucket.streams.provider.name"
                        class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsActivityProvider">
         <filter-provider class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketFilterOptionProvider" />
         <validator class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsValidator" />
