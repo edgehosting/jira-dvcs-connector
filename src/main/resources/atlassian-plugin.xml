@@ -5,15 +5,17 @@
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
     </plugin-info>
 
-    <component-import key="templateRenderer" interface="com.atlassian.templaterenderer.TemplateRenderer">
-        <description>Template Renderer Factory</description>
-    </component-import>
-
-    <component-import key="ao" name="Active Objects" interface="com.atlassian.activeobjects.external.ActiveObjects">
-        <description>Component to access Active Objects functionality from the plugin</description>
-    </component-import>
-    
+    <component-import key="templateRenderer" interface="com.atlassian.templaterenderer.TemplateRenderer" />
+    <component-import key="ao" name="Active Objects" interface="com.atlassian.activeobjects.external.ActiveObjects" />
     <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />
+    <component-import key="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory" />
+    <component-import key="requestFactory" interface="com.atlassian.sal.api.net.RequestFactory" />
+    <component-import key="i18nResolver" interface="com.atlassian.sal.api.message.I18nResolver" />
+    <component-import key="webResourceManager" interface="com.atlassian.plugin.webresource.WebResourceManager" />
+    <component-import key="userProfileAccessor" interface="com.atlassian.streams.spi.UserProfileAccessor" />
+    <!--<component-import key="activityService" interface="com.atlassian.streams.thirdparty.api.ActivityService"/>-->
+    <!--<component-import key="pluginLogService" interface="com.atlassian.upm.api.log.PluginLogService" />-->
+
 
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping</entity>
@@ -80,13 +82,11 @@
         <interface>com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager</interface>
     </component>
 
-    <component-import key="pluginSettingsFactory">
-        <interface>com.atlassian.sal.api.pluginsettings.PluginSettingsFactory</interface>
-    </component-import>
-
-    <component-import key="requestFactory">
-        <interface>com.atlassian.sal.api.net.RequestFactory</interface>
-    </component-import>
+    <component key="githubOAuth" name="githubOAuth"
+               class="com.atlassian.jira.plugins.bitbucket.spi.github.impl.DefaultGithubOAuth">
+        <description>githubOAuth</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth</interface>
+    </component>
 
     <issue-tabpanel key="bitbucket-commits-tabpanel" name="BitBucket Changesets Tab Panel"
                     class="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketTabPanel">
@@ -117,6 +117,10 @@
 	            <view name="error">/templates/com/atlassian/jira/plugins/bitbucket/webwork/addbitbucketrepositoryserviceerror.vm</view>
 	        </action>
 
+            <action name="com.atlassian.jira.plugins.bitbucket.spi.github.webwork.ConfigureGithubOAuth" alias="ConfigureGithubOAuth">
+                <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/configuregithuboauth.vm</view>
+            </action>
+
             <!-- this is here for backward compatibility -->
 	        <action name="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit" alias="BitbucketPostCommit">
 	            <view name="postcommit">/templates/com/atlassian/jira/plugins/bitbucket/webwork/postcommit.vm</view>
@@ -135,23 +139,26 @@
     <web-section key="bitbucket" name="Bitbucket Admin" location="system.admin" weight="105">
         <description key="section.bitbucket.admin.desc">Authentication and Repository setup for the Bitbucket Connector
         </description>
-        <label>Bitbucket</label>
+        <label>Bitbucket and Github</label>
         <name>Bitbucket Name Section</name>
     </web-section>
 
     <web-item key="bitbucket_bulk_repo" name="Bitbucket Bulk Repository" section="system.admin/bitbucket" weight="10">
-        <description>Bulk Configure Bitbucket Repositories</description>
-        <label>Bitbucket</label>
-
+        <description>Bulk Configure Bitbucket and Github Repositories</description>
+        <label>Bitbucket and Github Repositories</label>
         <name>Bitbucket Name Item</name>
-
         <link>/secure/admin/ConfigureBitbucketRepositories!default.jspa</link>
         <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
-
+    </web-item>
+    
+    <web-item key="github_oauth" name="GitHub OAuth" section="system.admin/bitbucket" weight="10">
+        <description>Static link to github.com.</description>
+        <label>GitHub OAuth Settings</label>
+        <name>GitHub Name Item</name>
+        <link>/secure/admin/ConfigureGithubOAuth!default.jspa</link>
+        <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
     </web-item>
 
-    <resource type="download" name="images/" location="images/"/>
- 
     <web-resource name="resources" key="resources">
         <resource type="download" name="javascripts/bitbucket.js" location="javascripts/bitbucket.js"/>
 	    <resource type="download" name="css/styles.css" location="css/styles.css" />
@@ -163,22 +170,6 @@
         <description>REST Resources</description>
     </rest>
 
-    <!--<component-import key="activityService" interface="com.atlassian.streams.thirdparty.api.ActivityService"/>-->
-    <component-import key="i18nResolver" interface="com.atlassian.sal.api.message.I18nResolver" />
-    <component-import key="webResourceManager" interface="com.atlassian.plugin.webresource.WebResourceManager" />
-    <component-import key="userProfileAccessor" interface="com.atlassian.streams.spi.UserProfileAccessor" />
-    <!--<component-import key="pluginLogService" interface="com.atlassian.upm.api.log.PluginLogService" />-->
-
-<!-- 
-    <activity-streams-provider key="external-provider" name="External Provider" i18n-name-key="Bitbucket Connector"
-                       class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsActivityProvider">
-        <filter-provider class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketFilterOptionProvider" />
-        <!-
-        <validator class="com.atlassian.streams.ExternalStreamsValidator" />
-        <key-provider class="com.atlassian.streams.ExternalStreamsKeyProvider" />
-        <comment-handler class="com.atlassian.streams.ExternalStreamsCommentHandler" />
-        ->
-    </activity-streams-provider>
- -->
+    <resource type="download" name="images/" location="images/"/>
  
 </atlassian-plugin>
