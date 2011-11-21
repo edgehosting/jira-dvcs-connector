@@ -22,7 +22,7 @@ import java.util.List;
  * Factory for {@link Changeset} implementations
  */
 public class BitbucketChangesetFactory {
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     /**
      * Load the changeset details based on the authentication method, the repository owner, repository
      * slug, and changeset node id

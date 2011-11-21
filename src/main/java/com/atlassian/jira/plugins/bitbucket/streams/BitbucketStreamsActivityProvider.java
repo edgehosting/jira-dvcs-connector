@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.streams.api.*;
@@ -33,17 +34,20 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
     private ApplicationProperties applicationProperties;
     private UserProfileAccessor userProfileAccessor;
     private RepositoryManager globalRepositoryManager;
+    private WebResourceManager webResourceManager;
 
     private static final Logger log = LoggerFactory.getLogger(BitbucketStreamsActivityProvider.class);
 
 
     public BitbucketStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties, UserProfileAccessor userProfileAccessor,
-                                            @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
+                                            @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager,
+                                            WebResourceManager webResourceManager)
     {
         this.applicationProperties = applicationProperties;
         this.i18nResolver = i18nResolver;
         this.userProfileAccessor = userProfileAccessor;
         this.globalRepositoryManager = globalRepositoryManager;
+        this.webResourceManager = webResourceManager;
     }
 
 
@@ -94,15 +98,9 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
             {
                 SourceControlRepository repo = globalRepositoryManager.getRepository(changesetEntry.getRepositoryId());
 
-                StringBuilder sb = new StringBuilder();
-                sb.append(changesetEntry.getMessage());
-                sb.append("<br>").append("<br>").append("Changes:").append("<br>");
-                sb.append("<ul>");
-
                 Map<String, String> mapFiles = new HashMap<String, String>();
                 String htmlFile = "";
-                List<Changeset> changesets = globalRepositoryManager.getChangesets(changesetEntry.getIssueId());
-                Changeset changeset = changesets.get(changesets.size() - 1);
+                Changeset changeset = globalRepositoryManager.getChangeset(changesetEntry.getNode());
                 if (!changeset.getFiles().isEmpty())
                 {
                     for (ChangesetFile file : changeset.getFiles())
@@ -117,11 +115,17 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                         mapFiles.put(fileName, htmlFile);
                     }
                 }
+
                 String htmlFiles = "";
+                String htmlFilesHiddenDescription = "";
+                Integer numSeeMore = 0;
+                Random randDivID = new Random(System.currentTimeMillis());
 
                 // Sort and compose all files
                 Iterator<String> it = mapFiles.keySet().iterator();
                 Object obj;
+
+                String htmlHiddenDiv = "";
 
                 if (mapFiles.size() <= 5)
                 {
@@ -130,6 +134,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                         obj = it.next();
                         htmlFiles += mapFiles.get(obj);
                     }
+                    htmlFilesHiddenDescription = "";
                 } else
                 {
                     Integer i = 0;
@@ -141,14 +146,46 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                         if (i <= 4)
                         {
                             htmlFiles += mapFiles.get(obj);
+                        } else
+                        {
+                            htmlHiddenDiv += mapFiles.get(obj);
                         }
 
                         i++;
                     }
+
+                    numSeeMore = mapFiles.size() - 5;
+                    Integer divID = randDivID.nextInt();
+
+                    htmlFilesHiddenDescription = "<div class='see_more' id='see_more_" + divID.toString() + "' style='color: #3C78B5; cursor: pointer; text-decoration: underline;' onclick='toggleMoreFiles(" + divID.toString() + ")'>" +
+                            "See " + numSeeMore.toString() + " more" +
+                            "</div>" +
+                            "<div class='hide_more' id='hide_more_" + divID.toString() + "' style='display: none; color: #3C78B5;  cursor: pointer; text-decoration: underline;' onclick='toggleMoreFiles(" + divID.toString() + ")'>Hide " + numSeeMore.toString() + " Files</div>";
+
+                    htmlHiddenDiv = htmlFilesHiddenDescription + "<div id='" + divID.toString() + "' style='display: none;'><ul>" + htmlHiddenDiv + "</ul></div>";
+
                 }
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(getJavascriptForToggling());
+                sb.append(changesetEntry.getMessage());
+                sb.append("<br>").append("<br>").append("Changes:").append("<br>");
+                sb.append("<ul>");
                 sb.append(htmlFiles);
                 sb.append("</ul>");
+                sb.append(htmlHiddenDiv);
                 return Option.some(new StreamsEntry.Html(sb.toString()));
+            }
+
+            private String getJavascriptForToggling()
+            {
+                return "<script type=\"text/javascript\">" +
+                        "function toggleMoreFiles(target_div){\n" +
+                        "        AJS.$('#' + target_div).toggle();\n" +
+                        "        AJS.$('#see_more_' + target_div).toggle();\n" +
+                        "        AJS.$('#hide_more_' + target_div).toggle();\n" +
+                        "}\n" +
+                        "</script>";
             }
         };
 
@@ -177,8 +214,8 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         Set<String> notInProjects = Filters.getNotValues(activityRequest.getProviderFilters().values());
 
         Iterable<IssueMapping> changesetEntries = globalRepositoryManager.getLastChangesetMappings(activityRequest.getMaxResults(), inProjects, notInProjects);
-        Iterable<StreamsEntry> auditLogEntries = transformEntries(changesetEntries);
-        return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), auditLogEntries, Option.<String>none());
+        Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
+        return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
     }
 
     protected String urlEncode(String s)
