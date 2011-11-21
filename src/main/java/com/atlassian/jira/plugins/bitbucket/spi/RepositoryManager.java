@@ -22,10 +22,11 @@ public interface RepositoryManager
      * @param password
      * @param adminUsername - used when (un)installing postcommit hook
      * @param adminPassword - used when (un)installing postcommit hook
+     * @param accessToken - token for authenticating if this repository is accessed using OAuth
      * @return
      */
     public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl, String username,
-            String password, String adminUsername, String adminPassword);
+            String password, String adminUsername, String adminPassword, String accessToken);
 
     /**
      * @param repositoryId

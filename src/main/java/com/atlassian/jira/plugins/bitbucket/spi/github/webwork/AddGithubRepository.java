@@ -43,8 +43,23 @@ public class AddGithubRepository extends JiraWebActionSupport
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
+
+//        if (isPrivate())
+//        {
+//            
+//        } else
+//        {
+//            
+//        }
+//        int repoId = gitHubMapper.addRepository1(new SourceControlRepository(projectKey, url));
+//        String encodedUrl = URLEncoder.encode(ap.getBaseUrl() + "/secure/admin/GitHubOAuth2.jspa?&repositoryId="+repoId, "UTF-8"); 
+//        String redirectURI = "https://github.com/login/oauth/authorize?scope=repo&client_id=" + clientID + "&redirect_uri="+encodedUrl;
+//
+//        
+        
+        
         SourceControlRepository repository = globalRepositoryManager.addRepository(GithubRepositoryManager.GITHUB, projectKey, repositoryUrl, bbUsername, bbPassword,
-            adminUsername, adminPassword);
+            adminUsername, adminPassword, "");
         synchronizer.synchronize(repository);
         globalRepositoryManager.setupPostcommitHook(repository);
 

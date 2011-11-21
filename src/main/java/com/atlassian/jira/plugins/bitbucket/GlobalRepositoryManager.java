@@ -61,13 +61,13 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
 	@Override
-    public SourceControlRepository addRepository(String repositoryType, String projectKey, String url, String username, String password, String adminUsername, String adminPassword)
+    public SourceControlRepository addRepository(String repositoryType, String projectKey, String url, String username, String password, String adminUsername, String adminPassword, String accessToken)
 	{
 	    for (RepositoryManager repositoryManager : repositoryManagers)
 	    {
 	        if (repositoryManager.getRepositoryType().equals(repositoryType))
 	        {
-	            return repositoryManager.addRepository(repositoryType, projectKey, url, username, password, adminUsername, adminPassword);
+	            return repositoryManager.addRepository(repositoryType, projectKey, url, username, password, adminUsername, adminPassword, "");
 	        }
 	    }		
         throw new IllegalArgumentException("No repository manager found for given repository type ["+repositoryType+"]");

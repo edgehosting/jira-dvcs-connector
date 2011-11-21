@@ -100,7 +100,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 
 	@Override
     public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl, String username,
-			String password, String adminUsername, String adminPassword)
+			String password, String adminUsername, String adminPassword, String accessToken)
 	{
 		// Remove trailing slashes from URL
 		if (repositoryUrl.endsWith("/"))

@@ -176,7 +176,7 @@ public class RootResource
             try
             {
                 repo = globalRepositoryManager.addRepository(repositoryType, projectKey, url, username, password,
-                        adminUsername, adminPassword);
+                        adminUsername, adminPassword, "");
             } catch (SourceControlException e)
             {
                 return Response.serverError().entity(e).build();
