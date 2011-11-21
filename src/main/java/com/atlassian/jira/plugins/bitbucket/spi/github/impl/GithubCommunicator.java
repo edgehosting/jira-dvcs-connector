@@ -1,15 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -28,6 +18,16 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.ResponseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class GithubCommunicator implements Communicator
 {
@@ -112,7 +112,7 @@ public class GithubCommunicator implements Communicator
         try
         {
             responseString = communicatorHelper.get(Authentication.ANONYMOUS, "/commits/list/" + CustomStringUtils.encode(owner) + "/" +
-                    CustomStringUtils.encode(slug) + "/master", params, uri.getApiUrl());
+                    CustomStringUtils.encode(slug) + "/" + branch, params, uri.getApiUrl());
         } catch (ResponseException e)
         {
             logger.debug("Could not get changesets from page: {}", pageNumber);
@@ -163,10 +163,12 @@ public class GithubCommunicator implements Communicator
             @Override
             public Iterator<Changeset> iterator()
             {
-                return new GithubChangesetIterator(GithubCommunicator.this, repository);
+                List<String> branches = getBranches(repository);
+                return new GithubChangesetIterator(GithubCommunicator.this, repository, branches);
             }
         };
     }
+
 
     @Override
     public UrlInfo getUrlInfo(final RepositoryUri repositoryUri)
@@ -175,5 +177,35 @@ public class GithubCommunicator implements Communicator
         Boolean repositoryPrivate = communicatorHelper.isRepositoryPrivate(repositoryUri);
         if (repositoryPrivate == null) return null;
         return new UrlInfo(GithubRepositoryManager.GITHUB, repositoryPrivate.booleanValue());
+    }
+
+    private List<String> getBranches(SourceControlRepository repository)
+    {
+        List<String> branches = new ArrayList<String>();
+        RepositoryUri repositoryUri = repository.getRepositoryUri();
+        String owner = repositoryUri.getOwner();
+        String slug = repositoryUri.getSlug();
+
+        logger.debug("get list of branches in github repository [ {} ]", slug);
+
+        try
+        {
+            String responseString = communicatorHelper.get(Authentication.ANONYMOUS, "/repos/show/" +
+                    CustomStringUtils.encode(owner) + "/" + CustomStringUtils.encode(slug) + "/branches", null, repositoryUri.getApiUrl());
+
+            JSONArray list = new JSONObject(responseString).getJSONObject("branches").names();
+            for (int i = 0; i < list.length(); i++)
+            {
+                branches.add(list.getString(i));
+            }
+        } catch (Exception e)
+        {
+            logger.info("Can not obtain branches list from repository [ {} ]", slug);
+            // we have to use at least master branch
+            return Arrays.asList("master");
+        }
+
+        return branches;
+
     }
 }

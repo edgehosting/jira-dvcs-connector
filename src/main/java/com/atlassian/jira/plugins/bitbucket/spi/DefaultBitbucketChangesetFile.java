@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
+package com.atlassian.jira.plugins.bitbucket.spi;
 
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
