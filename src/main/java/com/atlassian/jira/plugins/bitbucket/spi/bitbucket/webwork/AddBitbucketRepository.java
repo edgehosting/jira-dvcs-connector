@@ -27,6 +27,7 @@ public class AddBitbucketRepository extends JiraWebActionSupport
     private String adminPassword = "";
     private String bbUsername = "";
     private String bbPassword = "";
+    private String addPostCommitService = "";
     private String postCommitUrl;
 
     private final RepositoryManager globalRepositoryManager;
@@ -51,6 +52,11 @@ public class AddBitbucketRepository extends JiraWebActionSupport
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
+        if (!addPostCommitService())
+        {
+            adminUsername = "";
+            adminPassword = "";
+        }
         SourceControlRepository repository;
         try
         {
@@ -66,7 +72,8 @@ public class AddBitbucketRepository extends JiraWebActionSupport
         }
         try
         {
-            globalRepositoryManager.setupPostcommitHook(repository);
+            if (addPostCommitService())
+                globalRepositoryManager.setupPostcommitHook(repository);
         } catch (SourceControlException e)
         {
             log.debug("Failed adding postcommit hook: ["+e.getMessage()+"]");
@@ -155,5 +162,15 @@ public class AddBitbucketRepository extends JiraWebActionSupport
     public void setPostCommitUrl(String postCommitUrl)
     {
         this.postCommitUrl = postCommitUrl;
+    }
+
+    public boolean addPostCommitService()
+    {
+        return Boolean.parseBoolean(addPostCommitService);
+    }
+
+    public void setAddPostCommitService(String addPostCommitService)
+    {
+        this.addPostCommitService = addPostCommitService;
     }
 }
