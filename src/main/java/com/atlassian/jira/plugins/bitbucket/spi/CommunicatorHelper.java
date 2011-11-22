@@ -21,6 +21,7 @@ import com.atlassian.sal.api.net.ResponseHandler;
 // TODO make it a component 
 public class CommunicatorHelper
 {
+
     private final Logger logger = LoggerFactory.getLogger(CommunicatorHelper.class);
 
     protected final RequestFactory<?> requestFactory;
@@ -99,67 +100,57 @@ public class CommunicatorHelper
     }
 
     
-    public static class RepositoryInfoResponseHandler implements ResponseHandler<Response>
+    public static class ExtendedResponseHandler implements ResponseHandler<Response>
     {
-        private final Logger logger = LoggerFactory.getLogger(RepositoryInfoResponseHandler.class);
-
-        private final AtomicReference<Boolean> isPrivate = new AtomicReference<Boolean>();
+        private final AtomicReference<Integer> statusCode = new AtomicReference<Integer>();
+        private final AtomicReference<String> responseString = new AtomicReference<String>();
+        private final AtomicReference<Boolean> isSuccessful = new AtomicReference<Boolean>();
        
         @Override
         public void handle(Response response) throws ResponseException
         {
-            if (isRepositoryAccessible(response))
-            {
-                isPrivate.set(false);
-            } else if (isRepositoryPrivate(response))
-            {
-                isPrivate.set(true);
-            } else
-            {
-                logger.debug("Response code " + response.getStatusCode() );
-            }
-        }
-
-        private boolean isRepositoryPrivate(Response response)
-        {
-            return (response.getStatusCode() == HttpStatus.SC_UNAUTHORIZED);
-        }
-
-        private boolean isRepositoryAccessible(Response response) throws ResponseException
-        {
-            if (response.isSuccessful())
-            {
-                try
-                {
-                    String responseString = response.getResponseBodyAsString();
-                    // is this valid JSON?
-                    new JSONObject(responseString);
-                    return true;
-                } catch (JSONException e)
-                {
-                    logger.debug(e.getMessage());
-                }
-            }
-            return false;
+            isSuccessful.set(response.isSuccessful());
+            statusCode.set(response.getStatusCode());
+            responseString.set(response.getResponseBodyAsString());
         }
         
-        public Boolean isPrivate()
+        public int getStatusCode()
         {
-            return isPrivate.get();
+            return statusCode.get();
+        }
+        
+        public String getResponseString()
+        {
+            return responseString.get();
+        }
+        
+        public boolean isSuccessful()
+        {
+            return isSuccessful.get();
         }
     }
     
-    public Boolean isRepositoryPrivate(final RepositoryUri repositoryUri)
+    public Boolean isRepositoryPrivate1(final RepositoryUri repositoryUri)
     {
+        ExtendedResponseHandler responseHandler = new ExtendedResponseHandler();
         try
         {
-            RepositoryInfoResponseHandler responseHandler = new RepositoryInfoResponseHandler();
             get(Authentication.ANONYMOUS, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl(), responseHandler);
-            return responseHandler.isPrivate();
+            if (responseHandler.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+            {
+                return true;
+            } 
+            // is this valid JSON?
+            new JSONObject(responseHandler.getResponseString());
+            return false;
+        } catch (JSONException e)
+        {
+            logger.debug(e.getMessage());
         } catch (ResponseException e)
         {
-            return null;
+            logger.debug(e.getMessage());
         }
+        return null;
     }
 
     

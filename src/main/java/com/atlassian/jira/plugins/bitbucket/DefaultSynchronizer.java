@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -20,6 +22,7 @@ import com.google.common.collect.MapMaker;
  */
 public class DefaultSynchronizer implements Synchronizer
 {
+    private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
 	private final ExecutorService executorService;
 	private final RepositoryManager globalRepositoryManager;
@@ -54,9 +57,11 @@ public class DefaultSynchronizer implements Synchronizer
 								SynchronisationOperation synchronisationOperation = globalRepositoryManager
 										.getSynchronisationOperation(from, progress);
 								synchronisationOperation.synchronise();
-							} catch (Throwable sce)
+							} catch (Throwable e)
 							{
-								progress.setError(sce.getMessage());
+                                String errorMessage = e.getMessage() == null ? e.toString() : e.getMessage();
+                                progress.setError(errorMessage);
+                                log.debug(e.getMessage(), e);
 							} finally
 							{
 								progress.finish();

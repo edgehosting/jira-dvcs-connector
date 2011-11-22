@@ -1,5 +1,17 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -8,6 +20,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper;
+import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
@@ -18,16 +31,6 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.ResponseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 public class GithubCommunicator implements Communicator
 {
@@ -61,7 +64,6 @@ public class GithubCommunicator implements Communicator
             logger.debug("could not load user [ " + username + " ]");
             return SourceControlUser.UNKNOWN_USER;
         }
-
     }
 
     @Override
@@ -88,7 +90,6 @@ public class GithubCommunicator implements Communicator
         {
             throw new SourceControlException("could not parse json result", e);
         }
-
     }
 
     public List<Changeset> getChangesets(SourceControlRepository repository, String branch, int pageNumber)
@@ -105,29 +106,31 @@ public class GithubCommunicator implements Communicator
 
         List<Changeset> changesets = new ArrayList<Changeset>();
 
-        String responseString = null;
+        ExtendedResponseHandler responseHandler = new ExtendedResponseHandler();
         try
         {
-            responseString = communicatorHelper.get(authentication, "/commits/list/" + CustomStringUtils.encode(owner) + "/" +
-                    CustomStringUtils.encode(slug) + "/" + branch, params, uri.getApiUrl());
-        } catch (ResponseException e)
-        {
-            logger.debug("Could not get changesets from page: {}", pageNumber,e);
-            // ResponseException should really provide the error code :(
-            if ("Unexpected response received. Status code: 401".equals(e.getMessage()))
+            communicatorHelper.get(authentication, "/commits/list/" + CustomStringUtils.encode(owner) + "/" +
+                    CustomStringUtils.encode(slug) + "/" + branch, params, uri.getApiUrl(), responseHandler);
+            
+            if (responseHandler.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
                 throw new SourceControlException("Incorrect credentials");
+            } else if (responseHandler.getStatusCode() == HttpStatus.SC_NOT_FOUND)
+            {
+                // no more changesets
+                return Collections.emptyList();
             }
-            throw new SourceControlException("Error requesting changesets. Page: "+pageNumber + ". ["+e.getMessage()+"]", e);
-        }
-
-        try
-        {
+            
+            String responseString = responseHandler.getResponseString();
             JSONArray list = new JSONObject(responseString).getJSONArray("commits");
             for (int i = 0; i < list.length(); i++)
             {
                 changesets.add(GithubChangesetFactory.parse(repository.getId(), branch, list.getJSONObject(i)));
             }
+        } catch (ResponseException e)
+        {
+            logger.debug("Could not get changesets from page: {}", pageNumber, e);
+            throw new SourceControlException("Error requesting changesets. Page: " + pageNumber + ". [" + e.getMessage() + "]", e);
         } catch (JSONException e)
         {
             logger.debug("Could not parse repositories from page: {}", pageNumber);
@@ -135,7 +138,6 @@ public class GithubCommunicator implements Communicator
         }
 
         return changesets;
-
     }
 
     @Override
@@ -170,7 +172,7 @@ public class GithubCommunicator implements Communicator
     public UrlInfo getUrlInfo(final RepositoryUri repositoryUri)
     {
         logger.debug("get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
-        Boolean repositoryPrivate = communicatorHelper.isRepositoryPrivate(repositoryUri);
+        Boolean repositoryPrivate = communicatorHelper.isRepositoryPrivate1(repositoryUri);
         if (repositoryPrivate == null) return null;
         return new UrlInfo(GithubRepositoryManager.GITHUB, repositoryPrivate.booleanValue());
     }

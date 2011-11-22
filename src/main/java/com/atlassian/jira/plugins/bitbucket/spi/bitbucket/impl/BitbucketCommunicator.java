@@ -1,11 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +20,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper;
+import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
@@ -108,34 +111,34 @@ public class BitbucketCommunicator implements Communicator
 
         List<Changeset> changesets = new ArrayList<Changeset>();
 
-        String responseString = null;
+        ExtendedResponseHandler responseHandler = new ExtendedResponseHandler();
         try
         {
-            responseString = communicatorHelper.get(auth, "/repositories/" + CustomStringUtils.encode(owner) + "/" +
-                    CustomStringUtils.encode(slug) + "/changesets", params, uri.getApiUrl());
-        } catch (ResponseException e)
-        {
-            logger.debug("Could not get changesets from node: {}", startNode);
-            // ResponseException should really provide the error code :(
-            if ("Unexpected response received. Status code: 401".equals(e.getMessage()))
+            communicatorHelper.get(auth, "/repositories/" + CustomStringUtils.encode(owner) + "/" +
+                    CustomStringUtils.encode(slug) + "/changesets", params, uri.getApiUrl(), responseHandler);
+
+            if (responseHandler.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
                 throw new SourceControlException("Incorrect credentials");
+            } else if (responseHandler.getStatusCode() == HttpStatus.SC_NOT_FOUND)
+            {
+                // no more changesets
+                return Collections.emptyList();
             }
-            throw new SourceControlException("Error requesting changesets. Node: "+startNode + ". ["+e.getMessage()+"]", e);
-        }
 
-        try
-        {
-            JSONArray list = new JSONObject(responseString).getJSONArray("changesets");
+            JSONArray list = new JSONObject(responseHandler.getResponseString()).getJSONArray("changesets");
             for (int i = 0; i < list.length(); i++)
             {
                 changesets.add(BitbucketChangesetFactory.parse(repository.getId(), list.getJSONObject(i)));
-            }
+            }            
+        } catch (ResponseException e)
+        {
+            logger.debug("Could not get changesets from node: {}", startNode);
+            throw new SourceControlException("Error requesting changesets. Node: " + startNode + ". [" + e.getMessage() + "]", e);
         } catch (JSONException e)
         {
             throw new SourceControlException("Could not parse json object", e);
         }
-
         return changesets;
     }
 
@@ -210,7 +213,7 @@ public class BitbucketCommunicator implements Communicator
     public UrlInfo getUrlInfo(final RepositoryUri repositoryUri)
     {
         logger.debug("get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
-        Boolean repositoryPrivate = communicatorHelper.isRepositoryPrivate(repositoryUri);
+        Boolean repositoryPrivate = communicatorHelper.isRepositoryPrivate1(repositoryUri);
         if (repositoryPrivate == null) return null;
         return new UrlInfo(BitbucketRepositoryManager.BITBUCKET, repositoryPrivate.booleanValue());
     }
