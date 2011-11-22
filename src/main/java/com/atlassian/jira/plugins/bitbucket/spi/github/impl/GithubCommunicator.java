@@ -42,7 +42,6 @@ public class GithubCommunicator implements Communicator
         this.communicatorHelper = new CommunicatorHelper(requestFactory);
     }
 
-
     @Override
     public SourceControlUser getUser(SourceControlRepository repository, String username)
     {
@@ -50,8 +49,8 @@ public class GithubCommunicator implements Communicator
         {
             RepositoryUri uri = repository.getRepositoryUri();
             logger.debug("parse user [ {} ]", username);
-
-            String responseString = communicatorHelper.get(Authentication.ANONYMOUS, "/user/show/" + CustomStringUtils.encode(username), null, uri.getApiUrl());
+            Authentication authentication = authenticationFactory.getAuthentication(repository);
+            String responseString = communicatorHelper.get(authentication, "/user/show/" + CustomStringUtils.encode(username), null, uri.getApiUrl());
             return GithubUserFactory.parse(new JSONObject(responseString).getJSONObject("user"));
         } catch (ResponseException e)
         {
@@ -73,11 +72,10 @@ public class GithubCommunicator implements Communicator
             RepositoryUri uri = repository.getRepositoryUri();
             String owner = uri.getOwner();
             String slug = uri.getSlug();
-            // TODO: oAuth
-//            Authentication auth = authenticationFactory.getAuthentication(repository);
+            Authentication authentication = authenticationFactory.getAuthentication(repository);
 
             logger.debug("parse gihchangeset [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, id });
-            String responseString = communicatorHelper.get(Authentication.ANONYMOUS, "/commits/show/" + CustomStringUtils.encode(owner) + "/" +
+            String responseString = communicatorHelper.get(authentication, "/commits/show/" + CustomStringUtils.encode(owner) + "/" +
                     CustomStringUtils.encode(slug) + "/" + CustomStringUtils.encode(id), null,
                     uri.getApiUrl());
 
@@ -98,8 +96,7 @@ public class GithubCommunicator implements Communicator
         RepositoryUri uri = repository.getRepositoryUri();
         String owner = uri.getOwner();
         String slug = uri.getSlug();
-        // TODO: oAuth
-        // Authentication auth = authenticationFactory.getAuthentication(repository);
+        Authentication authentication = authenticationFactory.getAuthentication(repository);
 
         logger.debug("parse github changesets [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, String.valueOf(pageNumber) });
 
@@ -111,11 +108,11 @@ public class GithubCommunicator implements Communicator
         String responseString = null;
         try
         {
-            responseString = communicatorHelper.get(Authentication.ANONYMOUS, "/commits/list/" + CustomStringUtils.encode(owner) + "/" +
+            responseString = communicatorHelper.get(authentication, "/commits/list/" + CustomStringUtils.encode(owner) + "/" +
                     CustomStringUtils.encode(slug) + "/master", params, uri.getApiUrl());
         } catch (ResponseException e)
         {
-            logger.debug("Could not get changesets from page: {}", pageNumber);
+            logger.debug("Could not get changesets from page: {}", pageNumber,e);
             // ResponseException should really provide the error code :(
             if ("Unexpected response received. Status code: 401".equals(e.getMessage()))
             {

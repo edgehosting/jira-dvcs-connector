@@ -1,13 +1,14 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.sal.api.net.Request;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Basic authentication
  */
-public class BasicAuthentication extends Authentication
+public class BasicAuthentication implements Authentication
 {
     private final String username;
     private final String password;
@@ -18,23 +19,15 @@ public class BasicAuthentication extends Authentication
         this.password = password;
     }
 
-    public void addAuthentication(Request<?, ?> request)
+    @Override
+    public void addAuthentication(Request<?, ?> request, String url)
     {
         // add basic authentication
         if (!StringUtils.isBlank(username) && !StringUtils.isBlank(password))
             request.addBasicAuthentication(username, password);
     }
 
-    public String getUsername()
-    {
-        return username;
-    }
-
-    public String getPassword()
-    {
-        return password;
-    }
-
+    @Override
     public boolean equals(Object o)
     {
         if (this == o) return true;

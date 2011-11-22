@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
+import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.Request;
@@ -60,8 +61,12 @@ public class CommunicatorHelper
     {
         String url = apiBaseUrl + urlPath + buildQueryString(params);
         logger.debug("get [ " + url + " ]");
+        if (auth instanceof GithubOAuthAuthentication)
+        {
+            url+="&access_token="+((GithubOAuthAuthentication) auth).getAccessToken();
+        }
         Request<?, ?> request = requestFactory.createRequest(methodType, url);
-        if (auth != null) auth.addAuthentication(request);
+        if (auth != null) auth.addAuthentication(request, url);
         if (postData != null) request.setRequestBody(postData);
         request.setSoTimeout(60000);
         if (responseHandler!=null)

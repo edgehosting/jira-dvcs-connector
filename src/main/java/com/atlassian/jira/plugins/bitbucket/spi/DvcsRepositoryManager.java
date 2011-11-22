@@ -73,9 +73,9 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 			String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
 			String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(),
 					pm.getRepositoryUrl());
-			return new DefaultSourceControlRepository(pm.getID(), getRepositoryUri(pm.getRepositoryUrl()),
+			return new DefaultSourceControlRepository(pm.getID(), pm.getRepositoryType(), getRepositoryUri(pm.getRepositoryUrl()),
                     pm.getProjectKey(), pm.getUsername(), decryptedPassword,
-					pm.getAdminUsername(), decryptedAdminPassword, pm.getRepositoryType());
+					pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken());
 		}
 	};
 
@@ -117,7 +117,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 		String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
 		String encryptedAdminPassword = encryptor.encrypt(adminPassword, projectKey, repositoryUrl);
 		ProjectMapping pm = repositoryPersister.addRepository(repositoryType, projectKey, repositoryUrl, username,
-				encryptedPassword, adminUsername, encryptedAdminPassword);
+				encryptedPassword, adminUsername, encryptedAdminPassword, accessToken);
 		return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 	}
 

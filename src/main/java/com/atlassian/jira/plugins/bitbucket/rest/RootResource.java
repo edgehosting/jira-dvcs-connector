@@ -59,8 +59,7 @@ public class RootResource
         public Repository apply(SourceControlRepository from)
         {
             Repository repo = new Repository(from.getId(), from.getRepositoryType(), from.getProjectKey(), from.getRepositoryUri().getRepositoryUrl(),
-                    from.getUsername(), null, from.getAdminUsername(), null); // don't include the
-                                                                              // password
+                    from.getUsername(), null, from.getAdminUsername(), null, null); // don't include password or accessToken
             Progress progress = synchronizer.getProgress(from);
             if (progress != null)
                 repo.setStatus(new SyncProgress(progress.isFinished(), progress.getChangesetCount(), progress
@@ -171,12 +170,13 @@ public class RootResource
             String password = repository.getPassword();
             String adminUsername = repository.getUsername();
             String adminPassword = repository.getPassword();
+            String accessToken = repository.getAccessToken();
 
             SourceControlRepository repo;
             try
             {
                 repo = globalRepositoryManager.addRepository(repositoryType, projectKey, url, username, password,
-                        adminUsername, adminPassword, "");
+                        adminUsername, adminPassword, accessToken);
             } catch (SourceControlException e)
             {
                 return Response.serverError().entity(e).build();

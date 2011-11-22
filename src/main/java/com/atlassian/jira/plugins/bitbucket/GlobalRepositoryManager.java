@@ -67,7 +67,7 @@ public class GlobalRepositoryManager implements RepositoryManager
 	    {
 	        if (repositoryManager.getRepositoryType().equals(repositoryType))
 	        {
-	            return repositoryManager.addRepository(repositoryType, projectKey, url, username, password, adminUsername, adminPassword, "");
+	            return repositoryManager.addRepository(repositoryType, projectKey, url, username, password, adminUsername, adminPassword, accessToken);
 	        }
 	    }		
         throw new IllegalArgumentException("No repository manager found for given repository type ["+repositoryType+"]");

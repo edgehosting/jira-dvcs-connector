@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
@@ -142,7 +143,7 @@ public class BitbucketCommunicator implements Communicator
     public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
         RepositoryUri uri = repo.getRepositoryUri();
-        Authentication auth = Authentication.basic(repo.getAdminUsername(), repo.getAdminPassword());
+        Authentication auth = new BasicAuthentication(repo.getAdminUsername(), repo.getAdminPassword());
         String urlPath = "/repositories/" + uri.getOwner() + "/" + uri.getSlug() + "/services";
         String apiUrl = uri.getApiUrl();
         String postData = "type=post;URL=" + postCommitUrl;
@@ -160,7 +161,7 @@ public class BitbucketCommunicator implements Communicator
     public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
         RepositoryUri uri = repo.getRepositoryUri();
-        Authentication auth = Authentication.basic(repo.getAdminUsername(), repo.getAdminPassword());
+        Authentication auth = new BasicAuthentication(repo.getAdminUsername(), repo.getAdminPassword());
         String urlPath = "/repositories/" + uri.getOwner() + "/" + uri.getSlug() + "/services";
         String apiUrl = uri.getApiUrl();
         // Find the hook

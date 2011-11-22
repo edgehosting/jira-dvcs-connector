@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.api;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-
-import java.util.List;
 
 /**
  * Maps bitbucket repositories and commits to jira projects and issues.
@@ -37,9 +37,10 @@ public interface RepositoryPersister {
      * @param adminUsername  the username of repository admin - used to create/delete postcommit hook
      * @param adminPassword  the password of repository admin - used to create/delete postcommit hook
      * @param repositoryType which type of repository is it (bitbucket, github, ... )
+     * @param accessToken accessToken for github OAuth
      * @return
      */
-    ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String repositoryType);
+    ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String repositoryType, String accessToken);
 
     /**
      * Remove the mapping of the bibucket repository from the specified jira project

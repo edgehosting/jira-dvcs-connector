@@ -28,17 +28,6 @@
         <label for="url">Project Key</label>
         <input type="text" id="projectKey" name="projectKey" value="$textutils.htmlEncode($action.getProjectKey())" size="60" readonly="readonly"/>
       </div>  
-      #if ($action.isPrivate())
-      <h3>Access credentials</h3>
-      <div class="field-group">
-        <label for="bbUsername">Username</label>
-        <input type="text" name="bbUsername" id="bbUsername" value="$textutils.htmlEncode($action.getBbUsername())">
-      </div>  
-      <div class="field-group">
-        <label for="bPassword">Password</label>
-        <input type="password" name="bbPassword" id="bbPassword" value="">
-      </div>  
-      #end
 
       #if ($action.addPostCommitService()) 
         #set ($checked = "checked") 
@@ -63,6 +52,19 @@
         <input type="password" name="adminPassword" id="adminPassword" value="">
       </div>  
       </div>  
+      
+      <div id="aui-message-bar">
+        #foreach ($errorMessage in $action.getErrorMessages())
+        <div class="aui-message error">
+            <p class="title">
+                <span class="aui-icon icon-error"></span>
+                <strong>Error!</strong>
+            </p>
+            <p>$errorMessage</p>
+        </div>                       
+        #end
+      </div>
+
       
       <div class="buttons-container">
         <div class="buttons">
