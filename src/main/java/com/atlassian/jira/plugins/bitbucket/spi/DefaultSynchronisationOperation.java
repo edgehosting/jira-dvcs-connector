@@ -1,17 +1,16 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
@@ -59,6 +58,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
     private static Set<String> extractProjectKey(String projectKey, String message)
     {
+        // TODO check that issue exists
         Pattern projectKeyPattern = Pattern.compile("(" + projectKey + "-\\d*)", Pattern.CASE_INSENSITIVE);
         Matcher match = projectKeyPattern.matcher(message);
 
