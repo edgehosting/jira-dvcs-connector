@@ -1829,7 +1829,7 @@
                 }, 
                 {
                     "type": "modified", 
-                    "file": "src/test/java/it/com/atlassian/jira/plugins/bitbucket/PublicRepositoriesTest.java"
+                    "file": "src/test/java/it/com/atlassian/jira/plugins/bitbucket/BitbucketRepositoriesTest.java"
                 }, 
                 {
                     "type": "modified", 
