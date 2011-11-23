@@ -20,6 +20,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper;
+import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
@@ -116,17 +117,18 @@ public class BitbucketCommunicator implements Communicator
         {
             communicatorHelper.get(auth, "/repositories/" + CustomStringUtils.encode(owner) + "/" +
                     CustomStringUtils.encode(slug) + "/changesets", params, uri.getApiUrl(), responseHandler);
+            ExtendedResponse extendedResponse = responseHandler.getExtendedResponse();
 
-            if (responseHandler.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+            if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
                 throw new SourceControlException("Incorrect credentials");
-            } else if (responseHandler.getStatusCode() == HttpStatus.SC_NOT_FOUND)
+            } else if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
             {
                 // no more changesets
                 return Collections.emptyList();
             }
 
-            JSONArray list = new JSONObject(responseHandler.getResponseString()).getJSONArray("changesets");
+            JSONArray list = new JSONObject(extendedResponse.getResponseString()).getJSONArray("changesets");
             for (int i = 0; i < list.length(); i++)
             {
                 changesets.add(BitbucketChangesetFactory.parse(repository.getId(), list.getJSONObject(i)));

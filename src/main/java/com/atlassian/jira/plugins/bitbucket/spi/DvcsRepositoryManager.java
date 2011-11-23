@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.bitbucket.spi;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,7 +29,7 @@ import com.google.common.collect.Lists;
 import com.opensymphony.util.TextUtils;
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
-
+/*
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     private static final Comparator<? super Changeset> CHANGESET_COMPARATOR = new Comparator<Changeset>()
     {
@@ -58,7 +57,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             return 0;
         }
     };
-    
+  */  
     private final RepositoryPersister repositoryPersister;
     private final Communicator communicator;
     private final Encryptor encryptor;

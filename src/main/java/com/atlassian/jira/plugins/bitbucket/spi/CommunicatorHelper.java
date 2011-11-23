@@ -100,56 +100,89 @@ public class CommunicatorHelper
     }
 
     
+    public static class ExtendedResponse
+    {
+        private final boolean successful;
+        private final int statusCode;
+        private final String responseString;
+
+        public ExtendedResponse(boolean successful, int statusCode, String responseString)
+        {
+            this.successful = successful;
+            this.statusCode = statusCode;
+            this.responseString = responseString;
+        }
+
+        public boolean isSuccessful()
+        {
+            return successful;
+        }
+
+        public int getStatusCode()
+        {
+            return statusCode;
+        }
+
+        public String getResponseString()
+        {
+            return responseString;
+        }
+    }
+
     public static class ExtendedResponseHandler implements ResponseHandler<Response>
     {
-        private final AtomicReference<Integer> statusCode = new AtomicReference<Integer>();
-        private final AtomicReference<String> responseString = new AtomicReference<String>();
-        private final AtomicReference<Boolean> isSuccessful = new AtomicReference<Boolean>();
-       
+        private final AtomicReference<ExtendedResponse> extendedResponse = new AtomicReference<ExtendedResponse>();
         @Override
         public void handle(Response response) throws ResponseException
         {
-            isSuccessful.set(response.isSuccessful());
-            statusCode.set(response.getStatusCode());
-            responseString.set(response.getResponseBodyAsString());
+            ExtendedResponse er = new ExtendedResponse(response.isSuccessful(), response.getStatusCode(), response.getResponseBodyAsString());
+            extendedResponse.set(er);
         }
         
-        public int getStatusCode()
+        public ExtendedResponse getExtendedResponse()
         {
-            return statusCode.get();
-        }
-        
-        public String getResponseString()
-        {
-            return responseString.get();
-        }
-        
-        public boolean isSuccessful()
-        {
-            return isSuccessful.get();
+            return extendedResponse.get();
         }
     }
     
-    public Boolean isRepositoryPrivate1(final RepositoryUri repositoryUri)
+    public ExtendedResponse getRepositoryInfo(final RepositoryUri repositoryUri)
     {
         ExtendedResponseHandler responseHandler = new ExtendedResponseHandler();
         try
         {
             get(Authentication.ANONYMOUS, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl(), responseHandler);
-            if (responseHandler.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
-            {
-                return true;
-            } 
-            // is this valid JSON?
-            new JSONObject(responseHandler.getResponseString());
+        } catch (ResponseException e)
+        {
+            logger.warn(e.getMessage());
+        }
+        return responseHandler.getExtendedResponse();
+    }
+    
+    public Boolean isRepositoryPrivate1(final RepositoryUri repositoryUri)
+    {
+        ExtendedResponse extendedResponse = getRepositoryInfo(repositoryUri);
+        if (extendedResponse==null)
+        {
+            logger.warn("Unable to retrieve repository info for: " +repositoryUri.getRepositoryUrl());
+            return null;
+        }
+        
+        if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+        {
+            // this looks like a private repository
+            return true;
+        }
+        
+        try
+        {
+            // this looks like public repo. Lets check if response looks parseable
+            new JSONObject(extendedResponse.getResponseString());
+            // everything looks fine, this repository is not public
             return false;
         } catch (JSONException e)
         {
             logger.debug(e.getMessage());
-        } catch (ResponseException e)
-        {
-            logger.debug(e.getMessage());
-        }
+        } 
         return null;
     }
 

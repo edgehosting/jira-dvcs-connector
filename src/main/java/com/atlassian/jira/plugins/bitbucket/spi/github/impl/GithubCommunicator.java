@@ -20,6 +20,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper;
+import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
@@ -112,16 +113,18 @@ public class GithubCommunicator implements Communicator
             communicatorHelper.get(authentication, "/commits/list/" + CustomStringUtils.encode(owner) + "/" +
                     CustomStringUtils.encode(slug) + "/" + branch, params, uri.getApiUrl(), responseHandler);
             
-            if (responseHandler.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+            ExtendedResponse extendedResponse = responseHandler.getExtendedResponse();
+
+            if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
                 throw new SourceControlException("Incorrect credentials");
-            } else if (responseHandler.getStatusCode() == HttpStatus.SC_NOT_FOUND)
+            } else if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
             {
                 // no more changesets
                 return Collections.emptyList();
             }
             
-            String responseString = responseHandler.getResponseString();
+            String responseString = extendedResponse.getResponseString();
             JSONArray list = new JSONObject(responseString).getJSONArray("commits");
             for (int i = 0; i < list.length(); i++)
             {
