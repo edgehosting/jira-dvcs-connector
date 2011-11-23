@@ -78,7 +78,7 @@ public class AddGithubRepository extends JiraWebActionSupport
                 synchronizer.synchronize(repository);
                 // BBC-28 - Install postcommit service on github 
                 // globalRepositoryManager.setupPostcommitHook(repository);
-                return getRedirect("ConfigureBitbucketRepositories.jspa?atl_token=" + getXsrfToken());
+                return getRedirect("ConfigureBitbucketRepositories.jspa?addedRepositoryId="+repository.getId()+"&atl_token=" + getXsrfToken());
             }
         } catch (SourceControlException e)
         {
@@ -113,7 +113,7 @@ public class AddGithubRepository extends JiraWebActionSupport
             synchronizer.synchronize(repository);
             // BBC-28 - Install postcommit service on github 
             // globalRepositoryManager.setupPostcommitHook(repository);
-            return getRedirect("ConfigureBitbucketRepositories.jspa?atl_token=" + getXsrfToken());
+            return getRedirect("ConfigureBitbucketRepositories.jspa?addedRepositoryId="+repository.getId()+"&atl_token=" + getXsrfToken());
         } catch (SourceControlException e)
         {
             log.debug(e.getMessage(),e);

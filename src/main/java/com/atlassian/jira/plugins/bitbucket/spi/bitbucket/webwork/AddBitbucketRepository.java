@@ -73,7 +73,9 @@ public class AddBitbucketRepository extends JiraWebActionSupport
         try
         {
             if (addPostCommitService())
+            {
                 globalRepositoryManager.setupPostcommitHook(repository);
+            }
         } catch (SourceControlException e)
         {
             log.debug("Failed adding postcommit hook: ["+e.getMessage()+"]");
@@ -81,7 +83,7 @@ public class AddBitbucketRepository extends JiraWebActionSupport
             return ERROR;
         }
 
-        return getRedirect("ConfigureBitbucketRepositories.jspa?atl_token=" + getXsrfToken());
+        return getRedirect("ConfigureBitbucketRepositories.jspa?addedRepositoryId="+repository.getId()+"&atl_token=" + getXsrfToken());
     }
 
     public String getRepositoryUrl()

@@ -27,6 +27,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String postCommitUrl = "";
     private String projectKey = "";
     private String nextAction = "";
+    private String addedRepositoryId="";
     private int repositoryId;
     private final String baseUrl;
 
@@ -148,6 +149,16 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     public void setRepositoryId(int repositoryId)
     {
         this.repositoryId = repositoryId;
+    }
+
+    public String getAddedRepositoryId()
+    {
+        return addedRepositoryId;
+    }
+
+    public void setAddedRepositoryId(String addedRepositoryId)
+    {
+        this.addedRepositoryId = addedRepositoryId;
     }
 
 }

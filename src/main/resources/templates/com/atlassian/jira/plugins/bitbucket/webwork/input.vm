@@ -25,10 +25,7 @@
   </head>
 
   <body>
-        ## used in func tests
-        #if ($action.nextAction == 'ForceSync')
-            <input type="hidden" id="addedRepositoryId" value="$action.getRepositoryId()">
-        #end
+        <input type="hidden" id="addedRepositoryId" value="$action.getAddedRepositoryId()">
 
  		<h3>
             #if ($action.getMode() == 'single')
@@ -62,7 +59,22 @@
                 </tr>
                 <tr>
                     <td class="status" colspan="3">
-                    <div name="sync_status_message" class="gh_messages repository$repositoryId" style="display:none">
+                    #if ($action.getAddedRepositoryId().equals("$repository.getId()")) 
+                        #set ($style = "")
+                    #else
+                        #set ($style = "style='display:none'") 
+                    #end
+                    
+                    <div name="sync_status_message" class="gh_messages repository$repositoryId" $style>
+                        <div class="content"></div>
+                        #if ($action.getAddedRepositoryId().equals("$repository.getId()"))
+                        <div class="aui-message success closeable">
+                            <p class="title">
+                                <span class="aui-icon icon-success"></span>
+                                <strong>Repository successfully added!</strong>
+                            </p>
+                        </div> 
+                        #end
                     </div>
                     </td>
                 </tr>
