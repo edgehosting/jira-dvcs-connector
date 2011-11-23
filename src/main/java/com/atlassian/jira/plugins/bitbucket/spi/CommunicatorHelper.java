@@ -173,16 +173,19 @@ public class CommunicatorHelper
             return true;
         }
         
-        try
+        if (extendedResponse.isSuccessful())
         {
-            // this looks like public repo. Lets check if response looks parseable
-            new JSONObject(extendedResponse.getResponseString());
-            // everything looks fine, this repository is not public
-            return false;
-        } catch (JSONException e)
-        {
-            logger.debug(e.getMessage());
-        } 
+            try
+            {
+                // this looks like public repo. Lets check if response looks parseable
+                new JSONObject(extendedResponse.getResponseString());
+                // everything looks fine, this repository is not public
+                return false;
+            } catch (JSONException e)
+            {
+                logger.debug(e.getMessage());
+            } 
+        }
         return null;
     }
 
