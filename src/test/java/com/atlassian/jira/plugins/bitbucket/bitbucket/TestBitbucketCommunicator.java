@@ -1,7 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -10,6 +13,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -20,12 +24,13 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
+import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper;
+import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryUri;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
-import com.atlassian.sal.api.net.Response;
 
 public class TestBitbucketCommunicator
 {
@@ -38,8 +43,6 @@ public class TestBitbucketCommunicator
     private SourceControlRepository repository;
     @Mock
     private Request<?, ?> request;
-    @Mock
-    private Response response;
     @Mock
     private RepositoryUri repositoryUri;
 
@@ -129,56 +132,57 @@ public class TestBitbucketCommunicator
         verify(request).setRequestBody("type=post;URL=" + postCommitUrl);
     }
 
-    /*
     @Test
     public void testPublicRepositoryValid() throws Exception
     {
-        when(response.isSuccessful()).thenReturn(true);
-        when(response.getResponseBodyAsString()).thenReturn(resource("TestBitbucket-repository.json"));
-     
-        when(repositoryUri.getApiUrl()).thenReturn("https://api.someserver.com/1.0");
-        when(repositoryUri.getRepositoryInfoUrl()).thenReturn("/repositories/owner/slug");
+        final ExtendedResponse extendedResponse = new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-repository.json"));
+        CommunicatorHelper communicatorHelper = new CommunicatorHelper(requestFactory)
+        {
+            @Override
+            public ExtendedResponse getRepositoryInfo(RepositoryUri repositoryUri)
+            {
+                return extendedResponse;
+            }
+        };
+        Boolean repositoryIsPrivate = communicatorHelper.isRepositoryPrivate1(repositoryUri);
         
-        when(
-            requestFactory.createRequest(Request.MethodType.GET,
-                "https://api.someserver.com/1.0/repositories/owner/slug")).thenReturn(request);
-        
-
-        BitbucketCommunicator communicator = new BitbucketCommunicator(requestFactory, authenticationFactory);
-        UrlInfo urlInfo = communicator.getUrlInfo(repositoryUri);
-
-        CommunicatorHelper.RepositoryInfoResponseHandler handler = new CommunicatorHelper.RepositoryInfoResponseHandler();
-        handler.handle(response);
-
-        assertNotNull(handler.isPrivate());
-        assertFalse(handler.isPrivate());
+        assertNotNull(repositoryIsPrivate);
+        assertFalse(repositoryIsPrivate);
 
     }
+
     @Test
     public void testPrivateRepositoryValid() throws Exception
     {
-        when(response.isSuccessful()).thenReturn(false);
-        when(response.getStatusCode()).thenReturn(401);
+        final ExtendedResponse extendedResponse = new ExtendedResponse(false, HttpStatus.SC_UNAUTHORIZED, "blah");
+        CommunicatorHelper communicatorHelper = new CommunicatorHelper(requestFactory)
+        {
+            @Override
+            public ExtendedResponse getRepositoryInfo(RepositoryUri repositoryUri)
+            {
+                return extendedResponse;
+            }
+        };
+        Boolean repositoryIsPrivate = communicatorHelper.isRepositoryPrivate1(repositoryUri);
 
-        CommunicatorHelper.RepositoryInfoResponseHandler handler = new CommunicatorHelper.RepositoryInfoResponseHandler();
-        handler.handle(response);
-
-        assertNotNull(handler.isPrivate());
-        assertTrue(handler.isPrivate());
-
+        assertNotNull(repositoryIsPrivate);
+        assertTrue(repositoryIsPrivate);
     }
 
     @Test
     public void testRepositoryInvalid() throws Exception
     {
-        when(response.isSuccessful()).thenReturn(false);
-        when(response.getStatusCode()).thenReturn(404);
-
-        CommunicatorHelper.RepositoryInfoResponseHandler handler = new CommunicatorHelper.RepositoryInfoResponseHandler();
-        handler.handle(response);
-
-        assertNull(handler.isPrivate());
+        
+        final ExtendedResponse extendedResponse = new ExtendedResponse(false, HttpStatus.SC_NOT_FOUND, "blah");
+        CommunicatorHelper communicatorHelper = new CommunicatorHelper(requestFactory)
+        {
+            @Override
+            public ExtendedResponse getRepositoryInfo(RepositoryUri repositoryUri)
+            {
+                return extendedResponse;
+            }
+        };
+        Boolean repositoryIsPrivate = communicatorHelper.isRepositoryPrivate1(repositoryUri);
+        assertNull(repositoryIsPrivate);
     }
-*/
-    
 }
