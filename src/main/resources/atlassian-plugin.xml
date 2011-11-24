@@ -25,7 +25,7 @@
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.Uri2UrlMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_04_ActiveObjectsV2Migrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_05_RepositoryTypeMigrator</upgradeTask>
-        <!--upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_06_GithubRepositories</upgradeTask-->
+        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_06_GithubRepositories</upgradeTask>
     </ao>
 
     <component key="executorService" name="Executor Service Factory Component"
@@ -33,6 +33,18 @@
         <description>ExecutorService factory bean for creating executor services</description>
         <interface>com.atlassian.jira.plugins.bitbucket.ExecutorServiceFactoryBean</interface>
     </component>
+    
+    <component key="requestHelper" name="requestHelper"
+            class="com.atlassian.jira.plugins.bitbucket.spi.DefaultRequestHelper">
+        <interface>com.atlassian.jira.plugins.bitbucket.spi.RequestHelper</interface>
+    </component>
+<!-- 
+    <component key="responseHandlerFactory" name="responseHandlerFactory"
+            class="com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.DefaultExtendedResponseHandlerFactory">
+                   com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.DefaultExtendedResponseHandlerFactory
+        <interface>com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponseHandlerFactory</interface>
+    </component>
+ -->
 
     <component key="repositoryPersister" name="Repository Persister"
                class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister">

@@ -1,14 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+
+import static junit.framework.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 
@@ -24,9 +19,12 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
-import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper;
-import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.spi.DefaultRequestHelper;
+import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler;
+import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryUri;
 import com.atlassian.sal.api.net.Request;
@@ -45,6 +43,12 @@ public class TestBitbucketCommunicator
     private Request<?, ?> request;
     @Mock
     private RepositoryUri repositoryUri;
+    @Mock
+    private ExtendedResponseHandlerFactory responseHandlerFactory;
+    @Mock
+    private ExtendedResponseHandler extendedResponseHandler;
+    @Mock
+    private RequestHelper requestHelper;
 
     @Before
     public void setup() throws Exception
@@ -65,7 +69,7 @@ public class TestBitbucketCommunicator
         when(requestFactory.createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/users/mjensen")).thenReturn(request);
         when(request.execute()).thenReturn("");
 
-        BitbucketCommunicator communicator = new BitbucketCommunicator(requestFactory, authenticationFactory);
+        BitbucketCommunicator communicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, responseHandlerFactory));
         SourceControlUser user = communicator.getUser(repository, "mjensen");
         assertNotNull(user);
         assertEquals(SourceControlUser.UNKNOWN_USER, user);
@@ -77,7 +81,7 @@ public class TestBitbucketCommunicator
         when(requestFactory.createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/users/mjensen")).thenReturn(request);
         when(request.execute()).thenReturn(resource("TestBitbucket-user.json"));
 
-        BitbucketCommunicator communicator = new BitbucketCommunicator(requestFactory, authenticationFactory);
+        BitbucketCommunicator communicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, responseHandlerFactory));
         SourceControlUser user = communicator.getUser(repository, "mjensen");
 
         verify(request).setSoTimeout(60000);
@@ -99,7 +103,7 @@ public class TestBitbucketCommunicator
                 "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/changesets/aaaaa")).thenReturn(request);
         when(request.execute()).thenReturn("{I am invalid json}");
 
-        BitbucketCommunicator communicator = new BitbucketCommunicator(requestFactory, authenticationFactory);
+        BitbucketCommunicator communicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, responseHandlerFactory));
         try
         {
             communicator.getChangeset(repository, "aaaaa");
@@ -122,7 +126,7 @@ public class TestBitbucketCommunicator
                 "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/services")).thenReturn(request);
 
         String postCommitUrl = "http://this.jira.server:1234/jira/rest/postcommithandler";
-        BitbucketCommunicator communicator = new BitbucketCommunicator(requestFactory, authenticationFactory);
+        BitbucketCommunicator communicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, responseHandlerFactory));
 
         communicator.setupPostcommitHook(repository, postCommitUrl);
 
@@ -135,35 +139,28 @@ public class TestBitbucketCommunicator
     @Test
     public void testPublicRepositoryValid() throws Exception
     {
-        final ExtendedResponse extendedResponse = new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-repository.json"));
-        CommunicatorHelper communicatorHelper = new CommunicatorHelper(requestFactory)
-        {
-            @Override
-            public ExtendedResponse getRepositoryInfo(RepositoryUri repositoryUri)
-            {
-                return extendedResponse;
-            }
-        };
-        Boolean repositoryIsPrivate = communicatorHelper.isRepositoryPrivate1(repositoryUri);
+        ExtendedResponse extendedResponse = new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-repository.json"));
+        when(responseHandlerFactory.create()).thenReturn(extendedResponseHandler);
+        when(extendedResponseHandler.getExtendedResponse()).thenReturn(extendedResponse);
+        when(requestFactory.createRequest(any(Request.MethodType.class), any(String.class))).thenReturn(request);
+
+        DefaultRequestHelper requestHelper = new DefaultRequestHelper(requestFactory, responseHandlerFactory);
+        Boolean repositoryIsPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
         
         assertNotNull(repositoryIsPrivate);
         assertFalse(repositoryIsPrivate);
-
     }
-
+    
     @Test
     public void testPrivateRepositoryValid() throws Exception
     {
         final ExtendedResponse extendedResponse = new ExtendedResponse(false, HttpStatus.SC_UNAUTHORIZED, "blah");
-        CommunicatorHelper communicatorHelper = new CommunicatorHelper(requestFactory)
-        {
-            @Override
-            public ExtendedResponse getRepositoryInfo(RepositoryUri repositoryUri)
-            {
-                return extendedResponse;
-            }
-        };
-        Boolean repositoryIsPrivate = communicatorHelper.isRepositoryPrivate1(repositoryUri);
+        when(responseHandlerFactory.create()).thenReturn(extendedResponseHandler);
+        when(extendedResponseHandler.getExtendedResponse()).thenReturn(extendedResponse);
+        when(requestFactory.createRequest(any(Request.MethodType.class), any(String.class))).thenReturn(request);
+
+        DefaultRequestHelper requestHelper = new DefaultRequestHelper(requestFactory, responseHandlerFactory);
+        Boolean repositoryIsPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
 
         assertNotNull(repositoryIsPrivate);
         assertTrue(repositoryIsPrivate);
@@ -174,15 +171,14 @@ public class TestBitbucketCommunicator
     {
         
         final ExtendedResponse extendedResponse = new ExtendedResponse(false, HttpStatus.SC_NOT_FOUND, "blah");
-        CommunicatorHelper communicatorHelper = new CommunicatorHelper(requestFactory)
-        {
-            @Override
-            public ExtendedResponse getRepositoryInfo(RepositoryUri repositoryUri)
-            {
-                return extendedResponse;
-            }
-        };
-        Boolean repositoryIsPrivate = communicatorHelper.isRepositoryPrivate1(repositoryUri);
+
+        when(responseHandlerFactory.create()).thenReturn(extendedResponseHandler);
+        when(extendedResponseHandler.getExtendedResponse()).thenReturn(extendedResponse);
+        when(requestFactory.createRequest(any(Request.MethodType.class), any(String.class))).thenReturn(request);
+
+        DefaultRequestHelper requestHelper = new DefaultRequestHelper(requestFactory, responseHandlerFactory);
+        Boolean repositoryIsPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
+
         assertNull(repositoryIsPrivate);
     }
 }

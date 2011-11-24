@@ -1,8 +1,28 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.IOUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.spi.DefaultRequestHelper;
+import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler;
+import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketChangesetIterator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator;
@@ -11,20 +31,6 @@ import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.ResponseException;
 import com.google.common.collect.Iterables;
-import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link com.atlassian.jira.plugins.bitbucket.spi.Communicator}
@@ -40,6 +46,10 @@ public class TestDefaultBitbucket
     SourceControlRepository repository;
     @Mock
     private Request<?, ?> request;
+    @Mock
+    private ExtendedResponseHandlerFactory extendedResponseHandlerFactory;
+    @Mock
+    private ExtendedResponseHandler responseHandler;
 
     @Before
     public void setup() throws Exception
@@ -52,44 +62,34 @@ public class TestDefaultBitbucket
         return IOUtils.toString(getClass().getClassLoader().getResourceAsStream(name));
     }
 
-    private void setupRequest(String queryParams) throws ResponseException, IOException
-    {
-        when(
-                requestFactory.createRequest(Request.MethodType.GET,
-                        "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/changesets?"
-                                + queryParams)).thenReturn(request);
-    }
-
     private void setupBitbucketConnection() throws IOException, ResponseException
     {
+        when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
         RepositoryUri repositoryUri = new BitbucketRepositoryUri("https", "bitbucket.org","atlassian","jira-bitbucket-connector");
         when(repository.getRepositoryUri()).thenReturn(repositoryUri);
+        when(extendedResponseHandlerFactory.create()).thenReturn(responseHandler);
+        
+        when(responseHandler.getExtendedResponse())
+        .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-tip.json")))
+        .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-72.json")))
+        .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-57.json")))
+        .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-42.json")))
+        .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-27.json")))
+        .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-12.json")));
 
-        setupRequest("limit=16");
-        setupRequest("limit=16&start=fc92e54ea14e");
-        setupRequest("limit=16&start=e62ad4bdd158");
-        setupRequest("limit=16&start=bbf518979ab2");
-        setupRequest("limit=16&start=551cb8f8ad63");
-        setupRequest("limit=16&start=e39284a71197");
-
-        when(request.execute()).thenReturn(resource("TestBitbucket-changesets-tip.json"))
-                .thenReturn(resource("TestBitbucket-changesets-72.json"))
-                .thenReturn(resource("TestBitbucket-changesets-57.json"))
-                .thenReturn(resource("TestBitbucket-changesets-42.json"))
-                .thenReturn(resource("TestBitbucket-changesets-27.json"))
-                .thenReturn(resource("TestBitbucket-changesets-12.json"));
     }
 
     @Test
     public void testGetChangesetsLargeFromTip() throws Exception
     {
         setupBitbucketConnection();
-        BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(requestFactory, authenticationFactory);
+        
+        BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory));
 
-        final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator,
-                repository);
+        final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator, repository);
         Iterable<Changeset> iterable = new Iterable<Changeset>()
         {
+            @Override
             public Iterator<Changeset> iterator()
             {
                 return changesetIterator;
@@ -107,8 +107,8 @@ public class TestDefaultBitbucket
     public void testIteratorCyclesOnNext() throws Exception
     {
         setupBitbucketConnection();
-        BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(requestFactory, authenticationFactory);
-
+        
+        BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory));
         final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator,
                 repository);
 
@@ -122,7 +122,6 @@ public class TestDefaultBitbucket
                 fail("next() failed at index [ " + i + " ]");
             }
         }
-
     }
 
 }

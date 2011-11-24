@@ -19,18 +19,16 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
-import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper;
-import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper.ExtendedResponse;
-import com.atlassian.jira.plugins.bitbucket.spi.CommunicatorHelper.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
+import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketUserFactory;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
-import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.ResponseException;
 
 /**
@@ -41,12 +39,12 @@ public class BitbucketCommunicator implements Communicator
     private final Logger logger = LoggerFactory.getLogger(BitbucketCommunicator.class);
 
     private final AuthenticationFactory authenticationFactory;
-    private final CommunicatorHelper communicatorHelper;
+    private final RequestHelper requestHelper;
 
-    public BitbucketCommunicator(RequestFactory<?> requestFactory, AuthenticationFactory authenticationFactory)
+    public BitbucketCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper)
     {
         this.authenticationFactory = authenticationFactory;
-        this.communicatorHelper = new CommunicatorHelper(requestFactory);
+        this.requestHelper = requestHelper;
     }
     
     @Override
@@ -57,7 +55,7 @@ public class BitbucketCommunicator implements Communicator
             RepositoryUri uri = repository.getRepositoryUri();
             logger.debug("parse user [ {} ]", username);
 
-            String responseString = communicatorHelper.get(Authentication.ANONYMOUS, "/users/" + CustomStringUtils.encode(username), null, uri.getApiUrl());
+            String responseString = requestHelper.get(Authentication.ANONYMOUS, "/users/" + CustomStringUtils.encode(username), null, uri.getApiUrl());
             return BitbucketUserFactory.parse(new JSONObject(responseString).getJSONObject("user"));
         } catch (ResponseException e)
         {
@@ -81,7 +79,7 @@ public class BitbucketCommunicator implements Communicator
             Authentication auth = authenticationFactory.getAuthentication(repository);
 
             logger.debug("parse changeset [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, id });
-            String responseString = communicatorHelper.get(auth, "/repositories/" + CustomStringUtils.encode(owner) + "/" +
+            String responseString = requestHelper.get(auth, "/repositories/" + CustomStringUtils.encode(owner) + "/" +
                     CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(id), null,
                     uri.getApiUrl());
 
@@ -112,12 +110,10 @@ public class BitbucketCommunicator implements Communicator
 
         List<Changeset> changesets = new ArrayList<Changeset>();
 
-        ExtendedResponseHandler responseHandler = new ExtendedResponseHandler();
         try
         {
-            communicatorHelper.get(auth, "/repositories/" + CustomStringUtils.encode(owner) + "/" +
-                    CustomStringUtils.encode(slug) + "/changesets", params, uri.getApiUrl(), responseHandler);
-            ExtendedResponse extendedResponse = responseHandler.getExtendedResponse();
+             ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, "/repositories/" + CustomStringUtils.encode(owner) + "/" +
+                    CustomStringUtils.encode(slug) + "/changesets", params, uri.getApiUrl());
 
             if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
@@ -155,7 +151,7 @@ public class BitbucketCommunicator implements Communicator
 
         try
         {
-            communicatorHelper.post(auth, urlPath, postData, apiUrl);
+            requestHelper.post(auth, urlPath, postData, apiUrl);
         } catch (ResponseException e)
         {
             throw new SourceControlException("Could not add postcommit hook",e);
@@ -172,7 +168,7 @@ public class BitbucketCommunicator implements Communicator
         // Find the hook
         try
         {
-            String responseString = communicatorHelper.get(auth, urlPath, null, apiUrl);
+            String responseString = requestHelper.get(auth, urlPath, null, apiUrl);
             JSONArray jsonArray = new JSONArray(responseString);
             for (int i = 0; i < jsonArray.length(); i++)
             {
@@ -186,7 +182,7 @@ public class BitbucketCommunicator implements Communicator
                 if ("URL".equals(name) && postCommitUrl.equals(value))
                 {
                     // We have the hook, lets remove it
-                    communicatorHelper.delete(auth, apiUrl, urlPath + "/" + id);
+                    requestHelper.delete(auth, apiUrl, urlPath + "/" + id);
                 }
             }
         } catch (ResponseException e)
@@ -215,7 +211,7 @@ public class BitbucketCommunicator implements Communicator
     public UrlInfo getUrlInfo(final RepositoryUri repositoryUri)
     {
         logger.debug("get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
-        Boolean repositoryPrivate = communicatorHelper.isRepositoryPrivate1(repositoryUri);
+        Boolean repositoryPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
         if (repositoryPrivate == null) return null;
         return new UrlInfo(BitbucketRepositoryManager.BITBUCKET, repositoryPrivate.booleanValue());
     }

@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.bitbucket.spi;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.slf4j.Logger;
@@ -10,42 +9,59 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
+import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.DefaultExtendedResponseHandlerFactory;
+import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
-import com.atlassian.sal.api.net.Response;
 import com.atlassian.sal.api.net.ResponseException;
 import com.atlassian.sal.api.net.ResponseHandler;
 
-// TODO make it a component 
-public class CommunicatorHelper
+public class DefaultRequestHelper implements RequestHelper 
 {
 
-    private final Logger logger = LoggerFactory.getLogger(CommunicatorHelper.class);
+    private final Logger logger = LoggerFactory.getLogger(DefaultRequestHelper.class);
+    private final RequestFactory<?> requestFactory;
+    private final ExtendedResponseHandlerFactory responseHandlerFactory;
 
-    protected final RequestFactory<?> requestFactory;
-
-    public CommunicatorHelper(RequestFactory<?> requestFactory)
+    /**
+     * For testing only
+     */
+    public DefaultRequestHelper(RequestFactory<?> requestFactory, ExtendedResponseHandlerFactory responseHandlerFactory)
     {
         this.requestFactory = requestFactory;
+        this.responseHandlerFactory = responseHandlerFactory;
     }
 
+    public DefaultRequestHelper(RequestFactory<?> requestFactory)
+    {
+        this.requestFactory = requestFactory;
+        this.responseHandlerFactory = new DefaultExtendedResponseHandlerFactory();
+    }
+
+    @Override
     public String get(Authentication auth, String urlPath, Map<String, Object> params, String apiBaseUrl) throws ResponseException
     {
         return runRequest(Request.MethodType.GET, apiBaseUrl, urlPath, auth, params, null);
     }
 
-    public void get(Authentication auth, String urlPath, Map<String, Object> params, String apiBaseUrl, ResponseHandler responseHandler) throws ResponseException
+    @Override
+    public ExtendedResponse getExtendedResponse(Authentication auth, String urlPath, Map<String, Object> params, String apiBaseUrl) throws ResponseException
     {
+        ExtendedResponseHandler responseHandler = responseHandlerFactory.create();
         runRequest(Request.MethodType.GET, apiBaseUrl, urlPath, auth, params, null, responseHandler);
+        return responseHandler.getExtendedResponse();
     }
 
+    @Override
     public String post(Authentication auth, String urlPath, String postData, String apiBaseUrl) throws ResponseException
     {
         return runRequest(Request.MethodType.POST, apiBaseUrl, urlPath, auth, null, postData);
     }
 
+    @Override
     public void delete(Authentication auth, String apiUrl, String urlPath) throws ResponseException
     {
         runRequest(Request.MethodType.DELETE, apiUrl, urlPath, auth, null, null);
@@ -100,67 +116,20 @@ public class CommunicatorHelper
     }
 
     
-    public static class ExtendedResponse
+
+
+    @Override
+    public Boolean isRepositoryPrivate1(final RepositoryUri repositoryUri)
     {
-        private final boolean successful;
-        private final int statusCode;
-        private final String responseString;
-
-        public ExtendedResponse(boolean successful, int statusCode, String responseString)
-        {
-            this.successful = successful;
-            this.statusCode = statusCode;
-            this.responseString = responseString;
-        }
-
-        public boolean isSuccessful()
-        {
-            return successful;
-        }
-
-        public int getStatusCode()
-        {
-            return statusCode;
-        }
-
-        public String getResponseString()
-        {
-            return responseString;
-        }
-    }
-
-    public static class ExtendedResponseHandler implements ResponseHandler<Response>
-    {
-        private final AtomicReference<ExtendedResponse> extendedResponse = new AtomicReference<ExtendedResponse>();
-        @Override
-        public void handle(Response response) throws ResponseException
-        {
-            ExtendedResponse er = new ExtendedResponse(response.isSuccessful(), response.getStatusCode(), response.getResponseBodyAsString());
-            extendedResponse.set(er);
-        }
-        
-        public ExtendedResponse getExtendedResponse()
-        {
-            return extendedResponse.get();
-        }
-    }
-    
-    public ExtendedResponse getRepositoryInfo(final RepositoryUri repositoryUri)
-    {
-        ExtendedResponseHandler responseHandler = new ExtendedResponseHandler();
+        ExtendedResponse extendedResponse = null;
         try
         {
-            get(Authentication.ANONYMOUS, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl(), responseHandler);
+            extendedResponse = getExtendedResponse(Authentication.ANONYMOUS, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl());
         } catch (ResponseException e)
         {
             logger.warn(e.getMessage());
         }
-        return responseHandler.getExtendedResponse();
-    }
-    
-    public Boolean isRepositoryPrivate1(final RepositoryUri repositoryUri)
-    {
-        ExtendedResponse extendedResponse = getRepositoryInfo(repositoryUri);
+        
         if (extendedResponse==null)
         {
             logger.warn("Unable to retrieve repository info for: " +repositoryUri.getRepositoryUrl());
