@@ -102,7 +102,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         addRepositoryButton.click();
         Poller.waitUntil(addedRepositoryH2.timed().getText(), AnyOf.anyOf(new IsEqual<String>("New Bitbucket repository"), new IsEqual<String>("New Github repository")));
         bbUsernameInput.type("jirabitbucketconnector");
-        bbPasswordInput.type("jirabitbucketconnector");
+        bbPasswordInput.type("jirabitbucketconnector1");
         addRepositoryButton.click();
 
         // TODO: remove following line and uncomment next 2 lines after GUI fix of showing sync_message div during synchronisation

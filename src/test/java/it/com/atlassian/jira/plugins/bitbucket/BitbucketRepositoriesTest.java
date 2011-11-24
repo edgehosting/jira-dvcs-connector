@@ -1,13 +1,5 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.not;
-
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BaseConfigureRepositoriesPage;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -16,14 +8,18 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Test;
 
+import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
 /**
  * Test to verify behaviour when syncing bitbucket repository..
  */
 public class BitbucketRepositoriesTest extends BitBucketBaseTest
 {
     private static final String TEST_REPO_URL = "https://bitbucket.org/farmas/testrepo-qa";
-    private static final String TEST_PRIVATE_REPO_URL = "https://bitbucket.org/farmas/privatetestrepo-qa-tst";
-    private static final String TEST_NOT_EXISTING_REPO_URL = "https://bitbucket.org/farmas/repo-does-not-exist.org/farmas/privatetestrepo-qa-tst";
+    private static final String TEST_PRIVATE_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/private-hg-repo";
+    private static final String TEST_NOT_EXISTING_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/repo-does-not-exist";
 
     @Override
     protected Class getPageClass()
@@ -70,9 +66,7 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
 
         String syncStatusMessage = configureRepos.getSyncStatusMessage();
 
-        // TODO: remove following line and uncomment next line after GUI fix of showing sync_message div during synchronisation
-        assertThat(syncStatusMessage, equalTo(""));
-        //assertThat(syncStatusMessage, containsString("Sync Failed"));
+        assertThat(syncStatusMessage, containsString("Sync Failed: Incorrect credentials"));
     }
 
     @Test
@@ -84,10 +78,8 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
 
         String syncStatusMessage = configureRepos.getSyncStatusMessage();
 
-        // TODO: remove following line and uncomment next 2 lines after GUI fix of showing sync_message div during synchronisation
-        assertThat(syncStatusMessage, equalTo(""));
-        //assertThat(syncStatusMessage, containsString("Sync Finished"));
-        // assertThat(syncStatusMessage, not(containsString("Sync Failed")));
+        assertThat(syncStatusMessage, containsString("Sync Finished"));
+        assertThat(syncStatusMessage, not(containsString("Sync Failed")));
     }
 
     @Test
@@ -126,8 +118,8 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
 
         httpClient.executeMethod(method);
         return method.getResponseBodyAsString();
-    }    
-    
+    }
+
     public void testSyncFromPostCommit()
     {
         // TODO

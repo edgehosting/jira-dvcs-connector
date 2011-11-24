@@ -43,10 +43,8 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         // add
         addRepositoryButton.click();
 
-        // TODO: remove following line and uncomment next 2 lines after GUI fix of showing sync_message div during synchronisation
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isPresent());
-        //Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        //Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
+        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
+        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
 
         return addedRepositoryIdSpan.timed().getValue().byDefaultTimeout();
     }
@@ -66,10 +64,8 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         Poller.waitUntil(addedRepositoryH2.timed().getText(), AnyOf.anyOf(new IsEqual<String>("New Bitbucket repository"), new IsEqual<String>("New Github repository")));
         addRepositoryButton.click();
 
-        // TODO: remove following line and uncomment next 2 lines after GUI fix of showing sync_message div during synchronisation
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isPresent());
-        //Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        //Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
+        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
+        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
 
         return this;
     }
@@ -107,10 +103,8 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         bbPasswordInput.type("jirabitbucketconnector");
         addRepositoryButton.click();
 
-        // TODO: remove following line and uncomment next 2 lines after GUI fix of showing sync_message div during synchronisation
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isPresent());
-        //Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        //Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
+        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
+        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
 
         return this;
     }

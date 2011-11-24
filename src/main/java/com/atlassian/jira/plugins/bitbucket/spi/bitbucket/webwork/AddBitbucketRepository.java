@@ -168,7 +168,7 @@ public class AddBitbucketRepository extends JiraWebActionSupport
 
     public boolean addPostCommitService()
     {
-        return Boolean.parseBoolean(addPostCommitService);
+        return addPostCommitService != null && (addPostCommitService.toLowerCase().equals("on") || addPostCommitService.toLowerCase().equals("true"));
     }
 
     public void setAddPostCommitService(String addPostCommitService)
