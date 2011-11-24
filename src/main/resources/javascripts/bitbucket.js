@@ -16,7 +16,7 @@ function toggleMoreFiles(target_div){
 function retrieveSyncStatus() {
     AJS.$.getJSON(BASE_URL+"/rest/bitbucket/1.0/repositories", function (data) {
     	AJS.$.each(data.repositories, function(a,repo){
-    		var syncStatusDiv = AJS.$('.gh_messages.repository'+repo.id); 
+    		var syncStatusDiv = AJS.$('.gh_messages.repository'+repo.id+" .content"); 
     		var syncIconElement = AJS.$('.syncicon.repository'+repo.id);
     		var syncHtml;
     		var syncIcon;
