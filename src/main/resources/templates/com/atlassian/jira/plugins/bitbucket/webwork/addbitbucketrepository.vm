@@ -27,7 +27,7 @@
             <input type="hidden" id="repositoryUrl" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())"/>
         </div>
         <div class="field-group">
-            <label for="url">Project Key</label>
+            <label for="projectKey">Project Key</label>
             <input type="hidden" id="projectKey" name="projectKey" value="$textutils.htmlEncode($action.getProjectKey())"/>
             <span class="field-value">$textutils.htmlEncode($action.getProjectKey())</span>
         </div>
@@ -40,7 +40,7 @@
         <input type="text" name="bbUsername" id="bbUsername" value="$textutils.htmlEncode($action.getBbUsername())">
       </div>  
       <div class="field-group">
-        <label for="bPassword">Password</label>
+        <label for="bbPassword">Password</label>
         <input type="password" name="bbPassword" id="bbPassword" value="">
       </div>  
       #end

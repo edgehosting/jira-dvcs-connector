@@ -62,19 +62,6 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
     }
 
     @Override
-    public void setupPostcommitHook(SourceControlRepository repo)
-    {
-        // TODO
-
-    }
-
-    @Override
-    public void removePostcommitHook(SourceControlRepository repo)
-    {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
     public RepositoryUri getRepositoryUri(String urlString)
     {
         try

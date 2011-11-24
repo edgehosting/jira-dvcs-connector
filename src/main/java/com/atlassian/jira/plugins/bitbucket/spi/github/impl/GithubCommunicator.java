@@ -1,17 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.httpclient.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -32,6 +20,17 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.ResponseException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class GithubCommunicator implements Communicator
 {
@@ -121,6 +120,7 @@ public class GithubCommunicator implements Communicator
             } else if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
             {
                 // no more changesets
+                logger.debug("Page: {} not contains changesets. Return empty list", pageNumber);
                 return Collections.emptyList();
             }
             
@@ -146,15 +146,31 @@ public class GithubCommunicator implements Communicator
     @Override
     public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not implemented yet.");
+        RepositoryUri uri = repo.getRepositoryUri();
+        Authentication auth = authenticationFactory.getAuthentication(repo);
+
+        String urlPath = "/repos/" + uri.getOwner() + "/" + uri.getSlug() + "/hooks";
+        String apiUrl = uri.getApiUrl();
+
+        try
+        {
+            JSONObject configJson = new JSONObject().append("url", postCommitUrl);
+            JSONObject postDataJson = new JSONObject().append("name", "web").append("active", true).append("config", configJson);
+            communicatorHelper.post(auth, urlPath, postDataJson.toString(), apiUrl);
+        } catch (JSONException e)
+        {
+            throw new SourceControlException("Could not create relevant POST data for postcommit hook.",e);
+        } catch (ResponseException e)
+        {
+            throw new SourceControlException("Could not add postcommit hook",e);
+        }
     }
 
     @Override
     public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not implemented yet.");
+
     }
 
     @Override
@@ -186,12 +202,13 @@ public class GithubCommunicator implements Communicator
         RepositoryUri repositoryUri = repository.getRepositoryUri();
         String owner = repositoryUri.getOwner();
         String slug = repositoryUri.getSlug();
+        Authentication authentication = authenticationFactory.getAuthentication(repository);
 
         logger.debug("get list of branches in github repository [ {} ]", slug);
 
         try
         {
-            String responseString = communicatorHelper.get(Authentication.ANONYMOUS, "/repos/show/" +
+            String responseString = communicatorHelper.get(authentication, "/repos/show/" +
                     CustomStringUtils.encode(owner) + "/" + CustomStringUtils.encode(slug) + "/branches", null, repositoryUri.getApiUrl());
 
             JSONArray list = new JSONObject(responseString).getJSONObject("branches").names();

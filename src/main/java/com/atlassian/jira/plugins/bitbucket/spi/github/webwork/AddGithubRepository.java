@@ -28,17 +28,16 @@ public class AddGithubRepository extends JiraWebActionSupport
     private String repositoryUrl;
     private String projectKey;
     private String isPrivate;
-    private String adminUsername = "";
-    private String adminPassword = "";
-    private String bbUsername = "";
-    private String bbPassword = "";
+
+    private String addPostCommitService = "";
     private String code;
 
     private final RepositoryManager globalRepositoryManager;
     private final Synchronizer synchronizer;
     private final ApplicationProperties ap;
     private final GithubOAuth githubOAuth;
-    
+    private String accessToken = "";
+
 
     public AddGithubRepository(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, Synchronizer synchronizer, 
         ApplicationProperties applicationProperties, GithubOAuth githubOAuth)
@@ -55,43 +54,30 @@ public class AddGithubRepository extends JiraWebActionSupport
     }
 
     @Override
-    public String doDefault() throws Exception
-    {
-        return doExecute();
-    }
-    
-    @Override
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        try
+        if (isPrivate() || addPostCommitService())
         {
-            if (isPrivate())
-            {
-                return redirectUserToGithub();
-            } else
-            {
-                SourceControlRepository repository = globalRepositoryManager.addRepository(GithubRepositoryManager.GITHUB, projectKey, repositoryUrl, bbUsername, bbPassword,
-                    adminUsername, adminPassword, "");
-                synchronizer.synchronize(repository);
-                // BBC-28 - Install postcommit service on github 
-                // globalRepositoryManager.setupPostcommitHook(repository);
-                return getRedirect("ConfigureBitbucketRepositories.jspa?atl_token=" + getXsrfToken());
-            }
-        } catch (SourceControlException e)
-        {
-            log.debug(e.getMessage(),e);
-            addErrorMessage(e.getMessage());
-            return INPUT;
+            return redirectUserToGithub(isPrivate());
         }
+
+        return doAddRepository();
+
     }
 
-    private String redirectUserToGithub()
+    private String redirectUserToGithub(boolean isPrivate)
     {
         if (StringUtils.isBlank(githubOAuth.getClientId()))
         {
             String oAuthSetupUrl = ap.getBaseUrl() + "/secure/admin/ConfigureGithubOAuth!default.jspa";
-            addErrorMessage("OAuth needs to be <a href='"+oAuthSetupUrl+"' target='_blank'>configured</> before adding private github repository.");
+            if (isPrivate)
+            {
+                addErrorMessage("OAuth needs to be <a href='"+oAuthSetupUrl+"' target='_blank'>configured</a> before adding private github repository.");
+            } else
+            {
+                addErrorMessage("OAuth needs to be <a href='"+oAuthSetupUrl+"' target='_blank'>configured</a> before install postcomit service.");
+            }
             return INPUT;
         }
         String encodedRepositoryUrl = CustomStringUtils.encode(repositoryUrl);
@@ -103,21 +89,38 @@ public class AddGithubRepository extends JiraWebActionSupport
     
     public String doFinish()
     {
+        accessToken = requestAccessToken();
+        return doAddRepository();
+    }
+
+    private String doAddRepository()
+    {
+        SourceControlRepository repository;
         try
         {
-            String accessToken = requestAccessToken();
-            SourceControlRepository repository = globalRepositoryManager.addRepository(GithubRepositoryManager.GITHUB, projectKey,
-                repositoryUrl, "", "", "", "", accessToken);
+            repository = globalRepositoryManager.addRepository(GithubRepositoryManager.GITHUB, projectKey, repositoryUrl, "", "",
+                "", "", "");
             synchronizer.synchronize(repository);
-            // BBC-28 - Install postcommit service on github 
-            // globalRepositoryManager.setupPostcommitHook(repository);
-            return getRedirect("ConfigureBitbucketRepositories.jspa?atl_token=" + getXsrfToken());
+
         } catch (SourceControlException e)
         {
-            log.debug(e.getMessage(),e);
-            addErrorMessage(e.getMessage());
+            addErrorMessage("Failed adding the repository: ["+e.getMessage()+"]");
+            log.debug("Failed adding the repository: ["+e.getMessage()+"]");
             return INPUT;
         }
+
+        try
+        {
+            if (addPostCommitService())
+                globalRepositoryManager.setupPostcommitHook(repository);
+        } catch (SourceControlException e)
+        {
+            log.debug("Failed adding postcommit hook: ["+e.getMessage()+"]");
+//            postCommitUrl = baseUrl + "/rest/bitbucket/1.0/repository/" + repository.getId() + "/sync";
+            return ERROR;
+        }
+
+        return getRedirect("ConfigureBitbucketRepositories.jspa?atl_token=" + getXsrfToken());
     }
 
     // TODO rewrite this nicely (using RequestFactory)
@@ -149,10 +152,10 @@ public class AddGithubRepository extends JiraWebActionSupport
             rd.close();
         } catch (MalformedURLException e)
         {
-            e.printStackTrace();
+            log.error("Error obtain access token", e);
         } catch (Exception e)
         {
-            e.printStackTrace();
+            log.error("Error obtain access token", e);
         }
 
         result = result.replaceAll("access_token=(.*)&token_type.*", "$1");
@@ -190,46 +193,6 @@ public class AddGithubRepository extends JiraWebActionSupport
         this.isPrivate = isPrivate;
     }
 
-    public String getAdminUsername()
-    {
-        return adminUsername;
-    }
-
-    public void setAdminUsername(String adminUsername)
-    {
-        this.adminUsername = adminUsername;
-    }
-
-    public String getAdminPassword()
-    {
-        return adminPassword;
-    }
-
-    public void setAdminPassword(String adminPassword)
-    {
-        this.adminPassword = adminPassword;
-    }
-
-    public String getBbUsername()
-    {
-        return bbUsername;
-    }
-
-    public void setBbUsername(String bbUsername)
-    {
-        this.bbUsername = bbUsername;
-    }
-
-    public String getBbPassword()
-    {
-        return bbPassword;
-    }
-
-    public void setBbPassword(String bbPassword)
-    {
-        this.bbPassword = bbPassword;
-    }
-
     public String getCode()
     {
         return code;
@@ -239,4 +202,15 @@ public class AddGithubRepository extends JiraWebActionSupport
     {
         this.code = code;
     }
+
+    public boolean addPostCommitService()
+    {
+        return Boolean.parseBoolean(addPostCommitService);
+    }
+
+    public void setAddPostCommitService(String addPostCommitService)
+    {
+        this.addPostCommitService = addPostCommitService;
+    }
+
 }
