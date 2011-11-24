@@ -26,6 +26,7 @@ public abstract class BitBucketBaseTest
         jira = TestedProductFactory.create(JiraTestedProduct.class);
 
         configureRepos = (BaseConfigureRepositoriesPage) jira.gotoLoginPage().loginAsSysAdmin(getPageClass());
+        configureRepos.setJiraTestedProduct(jira);
     }
 
     protected abstract Class getPageClass();

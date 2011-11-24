@@ -9,6 +9,7 @@ import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import com.atlassian.webdriver.jira.JiraTestedProduct;
 import org.openqa.selenium.By;
 
 import javax.inject.Inject;
@@ -55,6 +56,8 @@ public abstract class BaseConfigureRepositoriesPage implements Page
 
     @ElementBy(id = "aui-message-bar")
     PageElement messageBarDiv;
+
+    protected JiraTestedProduct jiraTestedProduct;
 
 
     @Override
@@ -153,4 +156,9 @@ public abstract class BaseConfigureRepositoriesPage implements Page
     public abstract BaseConfigureRepositoriesPage addRepoToProjectFailing(String projectKey, String url);
     public abstract BaseConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url);
     public abstract String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername, String adminPassword);
+
+    public void setJiraTestedProduct(JiraTestedProduct jiraTestedProduct)
+    {
+        this.jiraTestedProduct = jiraTestedProduct;
+    }
 }

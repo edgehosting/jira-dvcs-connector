@@ -63,13 +63,11 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     {
         configureRepos.deleteAllRepositories();
 
-        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
+        configureRepos.addRepoToProjectFailing("QA", TEST_PRIVATE_REPO_URL);
 
-        String syncStatusMessage = configureRepos.getSyncStatusMessage();
+        String errorStatusMessage = configureRepos.getErrorStatusMessage();
 
-        // TODO: remove following line and uncomment next line after GUI fix of showing sync_message div during synchronisation
-        assertThat(syncStatusMessage, equalTo(""));
-        //assertThat(syncStatusMessage, containsString("Sync Failed"));
+        assertThat(errorStatusMessage, containsString("Error!"));
     }
 
     @Test
@@ -81,10 +79,8 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
 
         String syncStatusMessage = configureRepos.getSyncStatusMessage();
 
-        // TODO: remove following line and uncomment next 2 lines after GUI fix of showing sync_message div during synchronisation
-        assertThat(syncStatusMessage, equalTo(""));
-        //assertThat(syncStatusMessage, containsString("Sync Finished"));
-        // assertThat(syncStatusMessage, not(containsString("Sync Failed")));
+        assertThat(syncStatusMessage, containsString("Sync Finished"));
+        assertThat(syncStatusMessage, not(containsString("Sync Failed")));
     }
 //
 //    @Test
