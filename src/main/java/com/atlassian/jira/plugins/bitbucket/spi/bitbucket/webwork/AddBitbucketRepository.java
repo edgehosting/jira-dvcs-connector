@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException.UnauthorisedException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager;
@@ -64,6 +65,11 @@ public class AddBitbucketRepository extends JiraWebActionSupport
             repository = globalRepositoryManager.addRepository(BitbucketRepositoryManager.BITBUCKET, projectKey, repositoryUrl, bbUsername, bbPassword,
                 adminUsername, adminPassword, "");
             synchronizer.synchronize(repository);
+        } catch (UnauthorisedException e)
+        {
+            addErrorMessage("Failed adding the repository: ["+e.getMessage()+"]");
+            log.debug("Failed adding the repository: ["+e.getMessage()+"]");
+            return INPUT;
         } catch (SourceControlException e)
         {
             addErrorMessage("Failed adding the repository: ["+e.getMessage()+"]");
@@ -85,7 +91,7 @@ public class AddBitbucketRepository extends JiraWebActionSupport
 
         return getRedirect("ConfigureBitbucketRepositories.jspa?addedRepositoryId="+repository.getId()+"&atl_token=" + getXsrfToken());
     }
-
+    
     public String getRepositoryUrl()
     {
         return repositoryUrl;

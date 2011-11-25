@@ -117,4 +117,5 @@ public interface RepositoryManager
     public List<ChangesetMapping> getLastChangesetMappings(final int count);
 
     public UrlInfo getUrlInfo(String repositoryUrl);
+    
 }

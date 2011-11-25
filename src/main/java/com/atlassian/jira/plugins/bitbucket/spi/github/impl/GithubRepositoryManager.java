@@ -1,5 +1,15 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
@@ -13,15 +23,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.ApplicationProperties;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GithubRepositoryManager extends DvcsRepositoryManager
 {
@@ -83,5 +84,12 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         {
             throw new SourceControlException("Invalid url ["+urlString+"]");
         }
+    }
+
+    @Override
+    public void validateRepositoryAccess(String repositoryType, String projectKey, String repositoryUrl,
+        String username, String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    {
+        // TODO Auto-generated method stub
     }
 }

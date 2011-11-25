@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 
@@ -51,5 +52,8 @@ public interface Communicator
      * @return info about the repository or null if repository is invalid
      */
     public UrlInfo getUrlInfo(final RepositoryUri repositoryUri);
+
+    public void validateRepositoryAccess(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
+        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException;
 
 }

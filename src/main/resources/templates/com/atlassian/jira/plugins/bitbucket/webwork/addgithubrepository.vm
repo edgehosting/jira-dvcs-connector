@@ -30,7 +30,6 @@
           <div class="description">Installing postcommit service requires oAuth authorized access to the repository.</div>
         </div>
 
-
       <div id="aui-message-bar">
         #foreach ($errorMessage in $action.getErrorMessages())
         <div class="aui-message error">
@@ -43,7 +42,6 @@
         #end
       </div>
 
-      
       <div class="buttons-container">
         <div class="buttons">
           <div>&nbsp;</div>

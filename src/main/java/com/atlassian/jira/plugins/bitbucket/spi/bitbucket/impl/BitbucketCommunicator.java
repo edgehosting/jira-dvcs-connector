@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,7 @@ import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException.UnauthorisedException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
@@ -215,5 +217,33 @@ public class BitbucketCommunicator implements Communicator
         if (repositoryPrivate == null) return null;
         return new UrlInfo(BitbucketRepositoryManager.BITBUCKET, repositoryPrivate.booleanValue());
     }
+
+    @Override
+    public void validateRepositoryAccess(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username, String password,
+        String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    {
+
+        Authentication auth;
+        if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
+        {
+            auth = new BasicAuthentication(username, password);
+        } else
+        {
+            auth = Authentication.ANONYMOUS;
+        }
+        
+        try
+        {
+            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl());
+            if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+                throw new UnauthorisedException("Invalid credentials");
+        } catch (ResponseException e)
+        {
+            logger.debug(e.getMessage(), e);
+            throw new SourceControlException(e.getMessage());
+        }
+    }
+
+  
     
 }

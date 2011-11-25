@@ -159,4 +159,11 @@ public class CachingCommunicator implements Communicator
     {
         return delegate.getUrlInfo(repositoryUri);
     }
+
+    @Override
+    public void validateRepositoryAccess(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
+        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    {
+        delegate.validateRepositoryAccess(repositoryType, projectKey, repositoryUri, username, password, adminUsername, adminPassword, accessToken);
+    }
 }

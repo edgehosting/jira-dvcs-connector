@@ -168,7 +168,7 @@ public class GithubCommunicator implements Communicator
         RepositoryUri uri = repo.getRepositoryUri();
         Authentication auth = authenticationFactory.getAuthentication(repo);
         String urlPath = "/repos/" + uri.getOwner() + "/" + uri.getSlug() + "/hooks";
-        String apiUrl = "https://api.github.com"; // we have to use API v3
+        String apiUrl = "https://api.github.com"; // hardcoded url because we have to use API v3
         // Find the hook
         try
         {
@@ -247,5 +247,12 @@ public class GithubCommunicator implements Communicator
 
         return branches;
 
+    }
+
+    @Override
+    public void validateRepositoryAccess(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
+        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    {
+        // TODO Auto-generated method stub
     }
 }

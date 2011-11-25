@@ -1,22 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
-import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
-import com.atlassian.sal.api.ApplicationProperties;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.opensymphony.util.TextUtils;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,46 +10,36 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
+import com.atlassian.sal.api.ApplicationProperties;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.opensymphony.util.TextUtils;
+
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
-/*
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-    private static final Comparator<? super Changeset> CHANGESET_COMPARATOR = new Comparator<Changeset>()
-    {
-        private long parse(Changeset c)
-        {
-            if (c == null) return -1;
-//            try
-//            {
-//                return DATE_FORMAT.parse(c.getTimestamp()).getTime();
-//            } catch (ParseException e)
-//            {
-//                log.warn("Error parsing timestamp [{}] from changeset [{}], repositoryId [{}] ",
-//                    new String[] {c.getTimestamp(), c.getNode(), String.valueOf(c.getRepositoryId())});
-//                return -1;
-//            }
-            return c.getTimestamp().getTime();
-        }
-        @Override
-        public int compare(Changeset c1, Changeset c2)
-        {
-            long t1 = parse(c1);
-            long t2 = parse(c2);
-            if (t1<t2) return -1;
-            if (t1>t2) return 1;
-            return 0;
-        }
-    };
-  */  
     private final RepositoryPersister repositoryPersister;
     private final Communicator communicator;
     private final Encryptor encryptor;
     private final ApplicationProperties applicationProperties;
 
-	/* Maps ProjectMapping to SourceControlRepository */
-	private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping, SourceControlRepository>()
-	{
-		@Override
+    /* Maps ProjectMapping to SourceControlRepository */
+    private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping, SourceControlRepository>()
+    {
+        @Override
         public SourceControlRepository apply(ProjectMapping pm)
 		{
 			String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
@@ -97,10 +70,18 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         this.applicationProperties = applicationProperties;
     }
 
+    public void validateRepositoryAccess(String repositoryType, String projectKey, String repositoryUrl, String username,
+        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    {
+        RepositoryUri repositoryUri = getRepositoryUri(repositoryUrl);
+        getCommunicator().validateRepositoryAccess(repositoryType, projectKey, repositoryUri, username, password, adminUsername, adminPassword, accessToken);
+    }
+    
 	@Override
     public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl, String username,
 			String password, String adminUsername, String adminPassword, String accessToken)
 	{
+	    
 		// Remove trailing slashes from URL
 		if (repositoryUrl.endsWith("/"))
 		{
@@ -112,6 +93,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 		{
 			repositoryUrl = repositoryUrl.replaceFirst("http:", "https:");
 		}
+		validateRepositoryAccess(repositoryType, projectKey, repositoryUrl, username, password, adminUsername, adminPassword, accessToken);
 
 		String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
 		String encryptedAdminPassword = encryptor.encrypt(adminPassword, projectKey, repositoryUrl);
@@ -323,7 +305,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     protected boolean hasValidFormat(String url)
     {
         // Valid URL
-        Pattern p = Pattern.compile("^(https|http)://[a-zA-Z0-9][-a-zA-Z0-9]*.[a-zA-Z0-9]+/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
+        Pattern p = Pattern.compile("^(https|http)://[a-zA-Z0-9][-a-zA-Z0-9]*(.[a-zA-Z0-9]+)+/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
         Matcher m = p.matcher(url);
         return m.matches();
     }
@@ -340,7 +322,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     {
         return communicator;
     }
-
 
     @Override
     public List<ChangesetMapping> getLastChangesetMappings(int count) {
