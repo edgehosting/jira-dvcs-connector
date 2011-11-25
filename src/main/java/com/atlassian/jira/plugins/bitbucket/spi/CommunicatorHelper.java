@@ -1,13 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.commons.httpclient.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
 import com.atlassian.jira.util.json.JSONException;
@@ -17,6 +9,13 @@ import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.Response;
 import com.atlassian.sal.api.net.ResponseException;
 import com.atlassian.sal.api.net.ResponseHandler;
+import org.apache.commons.httpclient.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 // TODO make it a component 
 public class CommunicatorHelper
@@ -61,12 +60,13 @@ public class CommunicatorHelper
                                 Map<String, Object> params, String postData, ResponseHandler responseHandler) throws ResponseException
     {
         String url = apiBaseUrl + urlPath + buildQueryString(params);
+        Request<?, ?> request = requestFactory.createRequest(methodType, url);
         logger.debug("get [ " + url + " ]");
         if (auth instanceof GithubOAuthAuthentication)
         {
-            url+="&access_token="+((GithubOAuthAuthentication) auth).getAccessToken();
+            String separator = (params == null || params.isEmpty()) ? "?" : "&";
+            url+= separator + "access_token="+((GithubOAuthAuthentication) auth).getAccessToken();
         }
-        Request<?, ?> request = requestFactory.createRequest(methodType, url);
         if (auth != null) auth.addAuthentication(request, url);
         if (postData != null) request.setRequestBody(postData);
         request.setSoTimeout(60000);

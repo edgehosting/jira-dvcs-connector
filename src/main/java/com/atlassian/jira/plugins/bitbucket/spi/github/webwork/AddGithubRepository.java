@@ -29,13 +29,14 @@ public class AddGithubRepository extends JiraWebActionSupport
     private String projectKey;
     private String isPrivate;
 
-    private String addPostCommitService = "";
+    private String addPostCommitService ;
     private String code;
 
     private final RepositoryManager globalRepositoryManager;
     private final Synchronizer synchronizer;
     private final ApplicationProperties ap;
     private final GithubOAuth githubOAuth;
+    private String postCommitUrl;
     private String accessToken = "";
 
 
@@ -54,34 +55,54 @@ public class AddGithubRepository extends JiraWebActionSupport
     }
 
     @Override
+    public String doDefault() throws Exception
+    {
+        if (oAuthIsNeeded()) {
+            checkOAuthConfig();
+        }
+        return INPUT;
+    }
+
+    @Override
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        if (isPrivate() || addPostCommitService())
-        {
-            return redirectUserToGithub(isPrivate());
+        if (oAuthIsNeeded()) {
+            checkOAuthConfig();
+            if (hasAnyErrors()) {
+                return INPUT;
+            }
+            return redirectUserToGithub();
         }
 
         return doAddRepository();
 
     }
 
-    private String redirectUserToGithub(boolean isPrivate)
-    {
+    private void checkOAuthConfig() {
         if (StringUtils.isBlank(githubOAuth.getClientId()))
         {
             String oAuthSetupUrl = ap.getBaseUrl() + "/secure/admin/ConfigureGithubOAuth!default.jspa";
-            if (isPrivate)
+            if (isPrivate())
             {
                 addErrorMessage("OAuth needs to be <a href='"+oAuthSetupUrl+"' target='_blank'>configured</a> before adding private github repository.");
             } else
             {
                 addErrorMessage("OAuth needs to be <a href='"+oAuthSetupUrl+"' target='_blank'>configured</a> before install postcomit service.");
             }
-            return INPUT;
         }
+    }
+
+    private boolean oAuthIsNeeded()
+    {
+        return isPrivate() || addPostCommitService();
+    }
+
+
+    private String redirectUserToGithub()
+    {
         String encodedRepositoryUrl = CustomStringUtils.encode(repositoryUrl);
-        String encodedRedirectUrl = CustomStringUtils.encode(ap.getBaseUrl() + "/secure/admin/AddGithubRepository!finish.jspa?repositoryUrl="+encodedRepositoryUrl+"&projectKey="+projectKey+"&atl_token=" + getXsrfToken()); 
+        String encodedRedirectUrl = CustomStringUtils.encode(ap.getBaseUrl() + "/secure/admin/AddGithubRepository!finish.jspa?repositoryUrl="+encodedRepositoryUrl+"&projectKey="+projectKey+"&addPostCommitService="+addPostCommitService()+"&atl_token=" + getXsrfToken());
         String githubAuthorizeUrl = "https://github.com/login/oauth/authorize?scope=repo&client_id=" + githubOAuth.getClientId() + "&redirect_uri="+encodedRedirectUrl;
         return getRedirect(githubAuthorizeUrl);
     }
@@ -99,7 +120,7 @@ public class AddGithubRepository extends JiraWebActionSupport
         try
         {
             repository = globalRepositoryManager.addRepository(GithubRepositoryManager.GITHUB, projectKey, repositoryUrl, "", "",
-                "", "", "");
+                "", "", accessToken);
             synchronizer.synchronize(repository);
 
         } catch (SourceControlException e)
@@ -116,7 +137,7 @@ public class AddGithubRepository extends JiraWebActionSupport
         } catch (SourceControlException e)
         {
             log.debug("Failed adding postcommit hook: ["+e.getMessage()+"]");
-//            postCommitUrl = baseUrl + "/rest/bitbucket/1.0/repository/" + repository.getId() + "/sync";
+            postCommitUrl = ap.getBaseUrl() + "/rest/bitbucket/1.0/repository/" + repository.getId() + "/sync";
             return ERROR;
         }
 
@@ -205,7 +226,7 @@ public class AddGithubRepository extends JiraWebActionSupport
 
     public boolean addPostCommitService()
     {
-        return Boolean.parseBoolean(addPostCommitService);
+        return addPostCommitService != null && (addPostCommitService.toLowerCase().equals("on") || addPostCommitService.toLowerCase().equals("true"));
     }
 
     public void setAddPostCommitService(String addPostCommitService)
@@ -213,4 +234,13 @@ public class AddGithubRepository extends JiraWebActionSupport
         this.addPostCommitService = addPostCommitService;
     }
 
+    public String getPostCommitUrl()
+    {
+        return postCommitUrl;
+    }
+
+    public void setPostCommitUrl(String postCommitUrl)
+    {
+        this.postCommitUrl = postCommitUrl;
+    }
 }

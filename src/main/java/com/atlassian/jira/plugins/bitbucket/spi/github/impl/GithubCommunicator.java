@@ -150,12 +150,12 @@ public class GithubCommunicator implements Communicator
         Authentication auth = authenticationFactory.getAuthentication(repo);
 
         String urlPath = "/repos/" + uri.getOwner() + "/" + uri.getSlug() + "/hooks";
-        String apiUrl = uri.getApiUrl();
+        String apiUrl = "https://api.github.com"; // we have to use API v3
 
         try
         {
-            JSONObject configJson = new JSONObject().append("url", postCommitUrl);
-            JSONObject postDataJson = new JSONObject().append("name", "web").append("active", true).append("config", configJson);
+            JSONObject configJson = new JSONObject().accumulate("url", postCommitUrl);
+            JSONObject postDataJson = new JSONObject().accumulate("name", "web").accumulate("active", true).accumulate("config", configJson);
             communicatorHelper.post(auth, urlPath, postDataJson.toString(), apiUrl);
         } catch (JSONException e)
         {
@@ -169,8 +169,34 @@ public class GithubCommunicator implements Communicator
     @Override
     public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
-        // TODO Auto-generated method stub
-
+        RepositoryUri uri = repo.getRepositoryUri();
+        Authentication auth = authenticationFactory.getAuthentication(repo);
+        String urlPath = "/repos/" + uri.getOwner() + "/" + uri.getSlug() + "/hooks";
+        String apiUrl = "https://api.github.com"; // we have to use API v3
+        // Find the hook
+        try
+        {
+            String responseString = communicatorHelper.get(auth, urlPath, null, apiUrl);
+            JSONArray jsonArray = new JSONArray(responseString);
+            for (int i = 0; i < jsonArray.length(); i++)
+            {
+                JSONObject data = (JSONObject) jsonArray.get(i);
+                String id = data.getString("id");
+                JSONObject config = data.getJSONObject("config");
+                String url = config.getString("url");
+                if (postCommitUrl.equals(url))
+                {
+                    // We have the hook, lets remove it
+                    communicatorHelper.delete(auth, apiUrl, urlPath + "/" + id);
+                }
+            }
+        } catch (ResponseException e)
+        {
+            logger.warn("Error removing postcommit service [{}]", e.getMessage());
+        } catch (JSONException e)
+        {
+            logger.warn("Error removing postcommit service [{}]", e.getMessage());
+        }
     }
 
     @Override

@@ -94,7 +94,7 @@
         #if ($action.getPostCommitUrl() != "")
         <div class="form">
           <h3 id="gh_post_receive_header">Post-Commit Hook</h3>
-          <p>Please add the URL below as a post-commit service to the Bitbucket repository.</p>
+          <p>Please add the URL below as a post-commit service to the $action.getPostCommitRepositoryType() repository.</p>
           <p><input id="gh_post_receive_textbox" type"text" size="90" value="$action.getPostCommitUrl()"></p>
         </div>
         #end
@@ -134,7 +134,7 @@
                 </tr>  
                 #end
                 <tr>
-                  <td><label for="repositoryUrl">Repository Url</label></td>
+                  <td><label for="url">Repository Url</label></td>
                   <td><input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" /></td>
                   <td><i>eg: https://bitbucket.org/atlassianguy/my-repository</i></td>
                 </tr>  

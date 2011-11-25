@@ -110,6 +110,7 @@
 	
 	        <action name="com.atlassian.jira.plugins.bitbucket.spi.github.webwork.AddGithubRepository" alias="AddGithubRepository">
 	            <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/addgithubrepository.vm</view>
+	            <view name="error">/templates/com/atlassian/jira/plugins/bitbucket/webwork/addgithubrepositoryserviceerror.vm</view>
 	        </action>
 
 	        <action name="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.webwork.AddBitbucketRepository" alias="AddBitbucketRepository">
