@@ -1,17 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import net.java.ao.Query;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
@@ -22,6 +10,19 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import net.java.ao.Query;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
@@ -110,17 +111,29 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     }
 
     @Override
+
     public List<IssueMapping> getIssueMappings(final String issueId, final String repositoryType)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
         {
+            @SuppressWarnings("unchecked")
             @Override
             public List<IssueMapping> doInTransaction()
             {
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class,
-                        Query.select().join(ProjectMapping.class, "AO_E8B6CC_ISSUE_MAPPING_V2.REPOSITORY_ID = AO_E8B6CC_PROJECT_MAPPING_V2.ID")
-                                .where("ISSUE_ID = ? AND REPOSITORY_TYPE = ?", issueId, repositoryType));
-                return Lists.newArrayList(mappings);
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", issueId);
+                return  Lists.newArrayList(CollectionUtils.select(Arrays.asList(mappings), new Predicate()
+                {
+                    @Override
+                    public boolean evaluate(Object o)
+                    {
+                        if (!(o instanceof IssueMapping)) {
+                            return false;
+                        }
+                        IssueMapping issueMapping = (IssueMapping) o;
+                        ProjectMapping projectMapping = activeObjects.get(ProjectMapping.class, issueMapping.getRepositoryId());
+                        return repositoryType.equalsIgnoreCase(projectMapping.getRepositoryType());
+                    }
+                }));
             }
         });
     }
