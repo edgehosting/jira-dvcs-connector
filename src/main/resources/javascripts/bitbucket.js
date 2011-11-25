@@ -52,6 +52,7 @@ function retrieveSyncStatus() {
 
 function forceSync(repositoryId){
 	AJS.$.post(BASE_URL+"/rest/bitbucket/1.0/repository/"+repositoryId+"/sync");
+	retrieveSyncStatus();
 }
 
 function submitFunction(a){
