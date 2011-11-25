@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import java.text.MessageFormat;
-
 import com.atlassian.jira.plugins.bitbucket.spi.DefaultRepositoryUri;
+
+import java.text.MessageFormat;
 
 public class GithubRepositoryUri extends DefaultRepositoryUri
 {
@@ -33,5 +33,11 @@ public class GithubRepositoryUri extends DefaultRepositoryUri
     public String getRepositoryInfoUrl()
     {
         return MessageFormat.format("/repos/show/{0}/{1}", getOwner(), getSlug());
+    }
+
+    @Override
+    public String getFileCommitUrl(String node, String file)
+    {
+        return MessageFormat.format("{0}://{1}/{2}/{3}/blob/{4}/{5}", getProtocol(), getHostname(), getOwner(), getSlug(), node, file);
     }
 }

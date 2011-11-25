@@ -18,4 +18,6 @@ public interface RepositoryUri
     String getUserUrl(String username);
 
     String getRepositoryInfoUrl();
+
+    String getFileCommitUrl(String node, String file);
 }

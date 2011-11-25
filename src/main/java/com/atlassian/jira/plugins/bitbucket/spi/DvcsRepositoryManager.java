@@ -148,7 +148,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     {
 
             String htmlParentHashes = "";
-            String repositoryUrl = repository.getRepositoryUri().getRepositoryUrl();
+            RepositoryUri repositoryUri = repository.getRepositoryUri();
+            String repositoryUrl = repositoryUri.getRepositoryUrl();
             if (!changeset.getParents().isEmpty())
             {
                 for (String node : changeset.getParents())
@@ -169,10 +170,10 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
                     String fileName = file.getFile();
                     String color = file.getFileAction().getColor();
                     String fileActionName = file.getFileAction().toString();
-                    String fileCommitURL = repositoryUrl + "/src/" + changeset.getNode() + "/" + CustomStringUtils.encode(file.getFile());
+                    String fileCommitURL = repositoryUri.getFileCommitUrl(changeset.getNode(), CustomStringUtils.encode(file.getFile()));
                     htmlFile = "<li><span style='color:" + color + "; font-size: 8pt;'>" +
-                            TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
-                            fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
+                        TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
+                        fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
                     mapFiles.put(fileName, htmlFile);
                 }
             }
@@ -272,7 +273,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             String commitURL = changeset.getCommitURL(repository);
             SourceControlUser user = getUser(repository, changeset.getAuthor());
             String gravatarUrl = user.getAvatar().replace("s=32", "s=60");
-            String baseRepositoryUrl = repository.getRepositoryUri().getBaseUrl();
+            String baseRepositoryUrl = repositoryUri.getBaseUrl();
 
             htmlCommitEntry = htmlCommitEntry.replace("#gravatar_url", gravatarUrl);
             htmlCommitEntry = htmlCommitEntry.replace("#user_url", baseRepositoryUrl + "/" + CustomStringUtils.encode(login));

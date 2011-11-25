@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
-import java.text.MessageFormat;
-
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.DefaultRepositoryUri;
+
+import java.text.MessageFormat;
 
 /**
  * Used to identify a repository, contains an owner, and a slug 
@@ -37,5 +37,11 @@ public class BitbucketRepositoryUri extends DefaultRepositoryUri
     public String getRepositoryInfoUrl()
     {
         return MessageFormat.format("/repositories/{0}/{1}", CustomStringUtils.encode(getOwner()), CustomStringUtils.encode(getSlug()));  
+    }
+
+    @Override
+    public String getFileCommitUrl(String node, String file)
+    {
+        return MessageFormat.format("{0}://{1}/{2}/{3}/src/{4}/{5}", getProtocol(), getHostname(), getOwner(), getSlug(), node, file);
     }
 }
