@@ -85,11 +85,4 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
             throw new SourceControlException("Invalid url ["+urlString+"]");
         }
     }
-
-    @Override
-    public void validateRepositoryAccess(String repositoryType, String projectKey, String repositoryUrl,
-        String username, String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
-    {
-        // TODO Auto-generated method stub
-    }
 }
