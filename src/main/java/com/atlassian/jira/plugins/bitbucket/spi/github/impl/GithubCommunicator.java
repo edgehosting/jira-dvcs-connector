@@ -116,6 +116,7 @@ public class GithubCommunicator implements Communicator
             } else if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
             {
                 // no more changesets
+                log.debug("Page: {} not contains changesets. Return empty list", pageNumber);
                 return Collections.emptyList();
             }
             
@@ -141,15 +142,57 @@ public class GithubCommunicator implements Communicator
     @Override
     public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not implemented yet.");
+        RepositoryUri uri = repo.getRepositoryUri();
+        Authentication auth = authenticationFactory.getAuthentication(repo);
+
+        String urlPath = "/repos/" + uri.getOwner() + "/" + uri.getSlug() + "/hooks";
+        String apiUrl = "https://api.github.com"; // we have to use API v3
+
+        try
+        {
+            JSONObject configJson = new JSONObject().accumulate("url", postCommitUrl);
+            JSONObject postDataJson = new JSONObject().accumulate("name", "web").accumulate("active", true).accumulate("config", configJson);
+            requestHelper.post(auth, urlPath, postDataJson.toString(), apiUrl);
+        } catch (JSONException e)
+        {
+            throw new SourceControlException("Could not create relevant POST data for postcommit hook.",e);
+        } catch (ResponseException e)
+        {
+            throw new SourceControlException("Could not add postcommit hook",e);
+        }
     }
 
     @Override
     public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not implemented yet.");
+        RepositoryUri uri = repo.getRepositoryUri();
+        Authentication auth = authenticationFactory.getAuthentication(repo);
+        String urlPath = "/repos/" + uri.getOwner() + "/" + uri.getSlug() + "/hooks";
+        String apiUrl = "https://api.github.com"; // we have to use API v3
+        // Find the hook
+        try
+        {
+            String responseString = requestHelper.get(auth, urlPath, null, apiUrl);
+            JSONArray jsonArray = new JSONArray(responseString);
+            for (int i = 0; i < jsonArray.length(); i++)
+            {
+                JSONObject data = (JSONObject) jsonArray.get(i);
+                String id = data.getString("id");
+                JSONObject config = data.getJSONObject("config");
+                String url = config.getString("url");
+                if (postCommitUrl.equals(url))
+                {
+                    // We have the hook, lets remove it
+                    requestHelper.delete(auth, apiUrl, urlPath + "/" + id);
+                }
+            }
+        } catch (ResponseException e)
+        {
+            log.warn("Error removing postcommit service [{}]", e.getMessage());
+        } catch (JSONException e)
+        {
+            log.warn("Error removing postcommit service [{}]", e.getMessage());
+        }
     }
 
     @Override
@@ -181,12 +224,13 @@ public class GithubCommunicator implements Communicator
         RepositoryUri repositoryUri = repository.getRepositoryUri();
         String owner = repositoryUri.getOwner();
         String slug = repositoryUri.getSlug();
+        Authentication authentication = authenticationFactory.getAuthentication(repository);
 
         log.debug("get list of branches in github repository [ {} ]", slug);
 
         try
         {
-            String responseString = requestHelper.get(Authentication.ANONYMOUS, "/repos/show/" +
+            String responseString = requestHelper.get(authentication, "/repos/show/" +
                     CustomStringUtils.encode(owner) + "/" + CustomStringUtils.encode(slug) + "/branches", null, repositoryUri.getApiUrl());
 
             JSONArray list = new JSONObject(responseString).getJSONObject("branches").names();

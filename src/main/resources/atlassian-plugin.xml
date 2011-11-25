@@ -38,13 +38,11 @@
             class="com.atlassian.jira.plugins.bitbucket.spi.DefaultRequestHelper">
         <interface>com.atlassian.jira.plugins.bitbucket.spi.RequestHelper</interface>
     </component>
-<!-- 
+
     <component key="responseHandlerFactory" name="responseHandlerFactory"
-            class="com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.DefaultExtendedResponseHandlerFactory">
-                   com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.DefaultExtendedResponseHandlerFactory
-        <interface>com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponseHandlerFactory</interface>
+            class="com.atlassian.jira.plugins.bitbucket.spi.DefaultExtendedResponseHandlerFactory">
+        <interface>com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandlerFactory</interface>
     </component>
- -->
 
     <component key="repositoryPersister" name="Repository Persister"
                class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister">
@@ -122,6 +120,7 @@
 	
 	        <action name="com.atlassian.jira.plugins.bitbucket.spi.github.webwork.AddGithubRepository" alias="AddGithubRepository">
 	            <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/addgithubrepository.vm</view>
+	            <view name="error">/templates/com/atlassian/jira/plugins/bitbucket/webwork/addgithubrepositoryserviceerror.vm</view>
 	        </action>
 
 	        <action name="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.webwork.AddBitbucketRepository" alias="AddBitbucketRepository">

@@ -1,16 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -27,6 +16,17 @@ import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.opensymphony.util.TextUtils;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
 /*
@@ -353,4 +353,22 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         if (!hasValidFormat(repositoryUrl)) return null;
         return getCommunicator().getUrlInfo(getRepositoryUri(repositoryUrl));
     }
+
+    @Override
+    public void setupPostcommitHook(SourceControlRepository repo)
+	{
+		getCommunicator().setupPostcommitHook(repo, getPostCommitUrl(repo));
+	}
+
+	private String getPostCommitUrl(SourceControlRepository repo)
+	{
+		return getApplicationProperties().getBaseUrl() + "/rest/bitbucket/1.0/repository/"+repo.getId()+"/sync";
+	}
+
+    @Override
+    public void removePostcommitHook(SourceControlRepository repo)
+	{
+		getCommunicator().removePostcommitHook(repo, getPostCommitUrl(repo));
+	}
+
 }

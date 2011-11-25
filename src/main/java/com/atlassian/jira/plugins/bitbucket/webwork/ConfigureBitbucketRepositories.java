@@ -1,11 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
@@ -13,6 +7,12 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.List;
 
 /**
  * Webwork action used to configure the bitbucket repositories
@@ -32,6 +32,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private final String baseUrl;
 
     private final RepositoryManager globalRepositoryManager;
+    private String postCommitRepositoryType;
 
     public ConfigureBitbucketRepositories(
             @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager,
@@ -56,9 +57,12 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         {
             if (getErrorMessages().isEmpty())
             {
+
                 if (nextAction.equals("ShowPostCommitURL"))
                 {
+                    SourceControlRepository repo = globalRepositoryManager.getRepository(repositoryId);
                     postCommitUrl = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
+                    postCommitRepositoryType = StringUtils.capitalize(repo.getRepositoryType());
                 }
 
                 if (nextAction.equals("DeleteRepository"))
@@ -161,4 +165,13 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
         this.addedRepositoryId = addedRepositoryId;
     }
 
+    public String getPostCommitRepositoryType()
+    {
+        return postCommitRepositoryType;
+    }
+
+    public void setPostCommitRepositoryType(String postCommitRepositoryType)
+    {
+        this.postCommitRepositoryType = postCommitRepositoryType;
+    }
 }

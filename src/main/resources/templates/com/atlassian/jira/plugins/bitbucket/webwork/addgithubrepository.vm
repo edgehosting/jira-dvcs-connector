@@ -2,33 +2,35 @@
   <head>
     <title>Add new Github repository</title>
 
-    <script type="text/javascript">
-        var BASE_URL = "${baseurl}"
-        function init_repositories()
-        {
-            AJS.$("#addPostCommitService").click(function(a){
-                AJS.$("#postCommitServiceDetails").slideToggle()
-                });
-   
-        }            
-     </script>
-
   </head>
 
   <body>
     <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddGithubRepository.jspa" class="aui">
+      <input type="hidden" name="isPrivate" id="isPrivate" value="$action.isPrivate()">
       <h2>New Github repository</h2>
       <input type="hidden" name="atl_token" value="$atl_token">
       
-      <div class="field-group">
-        <label for="repositoryUrl">Repository Url</label>
-        <input type="text" id="repositoryUrl" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" readonly="readonly"/>
-      </div>  
-      <div class="field-group">
-        <label for="url">Project Key</label>
-        <input type="text" id="projectKey" name="projectKey" value="$textutils.htmlEncode($action.getProjectKey())" size="60" readonly="readonly"/>
-      </div>  
-      
+        <fieldset>
+          <div class="field-group">
+              <label for="repositoryUrl">Repository Url</label>
+              <span class="field-value">$textutils.htmlEncode($action.getRepositoryUrl())</span>
+              <input type="hidden" id="repositoryUrl" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())"/>
+          </div>
+          <div class="field-group">
+              <label for="projectKey">Project Key</label>
+              <input type="hidden" id="projectKey" name="projectKey" value="$textutils.htmlEncode($action.getProjectKey())"/>
+              <span class="field-value">$textutils.htmlEncode($action.getProjectKey())</span>
+          </div>
+        </fieldset>
+
+        <h3>Repository Services</h3>
+        <div class="checkbox">
+          <input class="checkbox" type="checkbox" name="addPostCommitService" id="addPostCommitService"  #if ($action.addPostCommitService()) checked #end>
+          <label for="addPostCommitService">Install postcomit service</label>
+          <div class="description">Installing postcommit service requires oAuth authorized access to the repository.</div>
+        </div>
+
+
       <div id="aui-message-bar">
         #foreach ($errorMessage in $action.getErrorMessages())
         <div class="aui-message error">

@@ -9,9 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
-import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.DefaultExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
-import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.Request;
@@ -22,7 +20,7 @@ import com.atlassian.sal.api.net.ResponseHandler;
 public class DefaultRequestHelper implements RequestHelper 
 {
 
-    private final Logger logger = LoggerFactory.getLogger(DefaultRequestHelper.class);
+    private final Logger log = LoggerFactory.getLogger(DefaultRequestHelper.class);
     private final RequestFactory<?> requestFactory;
     private final ExtendedResponseHandlerFactory responseHandlerFactory;
 
@@ -77,12 +75,14 @@ public class DefaultRequestHelper implements RequestHelper
                                 Map<String, Object> params, String postData, ResponseHandler responseHandler) throws ResponseException
     {
         String url = apiBaseUrl + urlPath + buildQueryString(params);
-        logger.debug("get [ " + url + " ]");
+        log.debug("get [ " + url + " ]");
         if (auth instanceof GithubOAuthAuthentication)
         {
-            url+="&access_token="+((GithubOAuthAuthentication) auth).getAccessToken();
+            String separator = (params == null || params.isEmpty()) ? "?" : "&";
+            url += separator + "access_token=" + ((GithubOAuthAuthentication) auth).getAccessToken();
         }
         Request<?, ?> request = requestFactory.createRequest(methodType, url);
+             
         if (auth != null) auth.addAuthentication(request, url);
         if (postData != null) request.setRequestBody(postData);
         request.setSoTimeout(60000);
@@ -127,12 +127,12 @@ public class DefaultRequestHelper implements RequestHelper
             extendedResponse = getExtendedResponse(Authentication.ANONYMOUS, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl());
         } catch (ResponseException e)
         {
-            logger.warn(e.getMessage());
+            log.warn(e.getMessage());
         }
         
         if (extendedResponse==null)
         {
-            logger.warn("Unable to retrieve repository info for: " +repositoryUri.getRepositoryUrl());
+            log.warn("Unable to retrieve repository info for: " +repositoryUri.getRepositoryUrl());
             return null;
         }
         
@@ -152,7 +152,7 @@ public class DefaultRequestHelper implements RequestHelper
                 return false;
             } catch (JSONException e)
             {
-                logger.debug(e.getMessage());
+                log.debug(e.getMessage());
             } 
         }
         return null;

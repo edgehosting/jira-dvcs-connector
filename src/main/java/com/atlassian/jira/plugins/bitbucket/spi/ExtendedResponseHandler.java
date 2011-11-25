@@ -54,18 +54,4 @@ public class ExtendedResponseHandler implements ResponseHandler<Response>
             return responseString;
         }
     }
-    
-    public interface ExtendedResponseHandlerFactory
-    {
-        public ExtendedResponseHandler create();
-    }
-    
-    public static class DefaultExtendedResponseHandlerFactory implements ExtendedResponseHandlerFactory
-    {
-        @Override
-        public ExtendedResponseHandler create()
-        {
-            return new ExtendedResponseHandler();
-        }
-    }
 }

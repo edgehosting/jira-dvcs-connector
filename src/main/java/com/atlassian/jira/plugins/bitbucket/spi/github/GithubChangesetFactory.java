@@ -16,6 +16,7 @@ import com.atlassian.jira.util.json.JSONObject;
 import javax.xml.bind.DatatypeConverter;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -48,11 +49,12 @@ public class GithubChangesetFactory
     {
         try
         {
-			return new DefaultBitbucketChangeset(
+            JSONObject author = commitJson.getJSONObject("author");
+            return new DefaultBitbucketChangeset(
                     repositoryId,
                     commitJson.getString("id"),
-                    commitJson.getJSONObject("author").getString("name"),
-                    commitJson.getJSONObject("author").getString("login"),
+                    author.has("name") ? author.getString("name") : "",
+                    author.has("login") ? author.getString("login") : "",
                     parseDate(commitJson.getString("authored_date")),
                     "", // todo: raw-node. what is it in github?
                     branch,
@@ -67,6 +69,38 @@ public class GithubChangesetFactory
             throw new SourceControlException("invalid json object", e);
         }
     }
+
+    /**
+     * Parse the json object from github post-commit hook as a bitbucket changeset
+     *
+     * @param json  the json object describing the change
+     * @return the parsed {@link com.atlassian.jira.plugins.bitbucket.api.Changeset}
+     */
+    public static Changeset parseFromPostcommitHook(int repositoryId, JSONObject commitJson)
+    {
+        try
+        {
+            JSONObject author = commitJson.getJSONObject("author");
+            return new DefaultBitbucketChangeset(
+                    repositoryId,
+                    commitJson.getString("id"),
+                    author.has("name") ? author.getString("name") : "",
+                    author.has("login") ? author.getString("login") : "",
+                    parseDate(commitJson.getString("timestamp")),
+                    "",
+                    "",
+                    commitJson.getString("message"),
+                    Collections.<String>emptyList(),
+                    Collections.<ChangesetFile>emptyList()
+            );
+        }
+
+        catch (JSONException e)
+        {
+            throw new SourceControlException("invalid json object", e);
+        }
+    }
+
 
     public static Date parseDate(String dateStr) {
         // Atom (ISO 8601) example: 2011-11-09T06:24:13-08:00
