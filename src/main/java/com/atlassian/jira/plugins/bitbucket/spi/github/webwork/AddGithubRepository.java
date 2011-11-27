@@ -89,7 +89,7 @@ public class AddGithubRepository extends JiraWebActionSupport
                 addErrorMessage("OAuth needs to be <a href='"+oAuthSetupUrl+"' target='_blank'>configured</a> before adding private github repository.");
             } else
             {
-                addErrorMessage("OAuth needs to be <a href='"+oAuthSetupUrl+"' target='_blank'>configured</a> before install postcomit service.");
+                addErrorMessage("OAuth needs to be <a href='"+oAuthSetupUrl+"' target='_blank'>configured</a> before install postcommit service.");
             }
         }
     }
