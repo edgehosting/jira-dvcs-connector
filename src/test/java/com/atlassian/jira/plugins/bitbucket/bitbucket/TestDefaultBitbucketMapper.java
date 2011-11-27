@@ -1,21 +1,11 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static junit.framework.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.List;
 import java.util.Map;
-
-import net.java.ao.Query;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
@@ -180,10 +170,10 @@ public class TestDefaultBitbucketMapper
     @Test
     public void testGetChangesets()
     {
-        when(activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", URL))
-        		.thenReturn(new ProjectMapping[]{projectMapping});
-        when(activeObjects.find(any(Class.class), any(Query.class)))
-        		.thenReturn(new IssueMapping[]{issueMapping});
+        when(activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", "JST-1"))
+            .thenReturn(new IssueMapping[] { issueMapping });
+        when(activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", "bitbucket"))
+            .thenReturn(new ProjectMapping[] { projectMapping });
         when(issueMapping.getNode()).thenReturn("1");
         when(issueMapping.getRepositoryId()).thenReturn(SOME_ID);
         List<IssueMapping> issueMappings = new DefaultRepositoryPersister(activeObjects).getIssueMappings("JST-1", "bitbucket");
@@ -206,11 +196,10 @@ public class TestDefaultBitbucketMapper
     @Test
     public void testGetChangesetsOnAuthenticatedRepository()
     {
-        when(activeObjects.find(ProjectMapping.class,
-                "PROJECT_KEY = ? and REPOSITORY_URI = ?",
-                "JST", URL)).thenReturn(new ProjectMapping[]{projectMapping});
-        when(activeObjects.find(any(Class.class), any(Query.class)))
-            .thenReturn(new IssueMapping[]{issueMapping});
+        when(activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", "JST-1"))
+            .thenReturn(new IssueMapping[] { issueMapping });
+        when(activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", "bitbucket"))
+            .thenReturn(new ProjectMapping[] { projectMapping });
         when(projectMapping.getUsername()).thenReturn("user");
         when(projectMapping.getPassword()).thenReturn("ssap");
         when(issueMapping.getNode()).thenReturn("1");
