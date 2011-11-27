@@ -54,7 +54,7 @@
                         <span title="Show/Hide info about syncing" class="syncicon repository$repositoryId" onclick="AJS.$('.gh_messages.repository$repositoryId').slideToggle()">&nbsp;</span>
                         <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Force Sync</a> |
                         <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repositoryId=$repositoryId&projectKey=$encodedProjectKey&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
-                        <a href="#" onclick="confirmation('${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?nextAction=DeleteRepository&projectKey=$encodedProjectKey&repositoryId=$repositoryId&mode=$encodedMode&atl_token=$atl_token')">Delete</a>
+                        <a href="#" onclick="deleteRepository($repositoryId, '$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)')">Delete</a>
                     </td>
                 </tr>
                 <tr>

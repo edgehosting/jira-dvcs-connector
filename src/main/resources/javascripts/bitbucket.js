@@ -1,8 +1,13 @@
 
-function confirmation(delete_url) {
-    var answer = confirm("Are you sure you want to remove this repository?")
+function deleteRepository(repositoryId, repositoryUrl) {
+    var answer = confirm("Are you sure you want to remove this repository? \n " + repositoryUrl )
     if (answer){
-        window.location = delete_url;
+    	AJS.$.ajax({
+    	    url: BASE_URL+"/rest/bitbucket/1.0/repository/"+repositoryId,
+    	    type: 'DELETE',
+    	    success: function(result) {
+    	    	window.location.reload();    	    }
+    	});
     }
 }
 
