@@ -194,7 +194,9 @@ public class RootResource
         SourceControlRepository repository = globalRepositoryManager.getRepository(id);
         if (canAdmin(repository.getProjectKey()))
         {
+            SourceControlRepository repo = globalRepositoryManager.getRepository(id);
             globalRepositoryManager.removeRepository(id);
+            globalRepositoryManager.removePostcommitHook(repo);
             return Response.ok().build();
         } else
             return Response.status(Response.Status.FORBIDDEN).build();
