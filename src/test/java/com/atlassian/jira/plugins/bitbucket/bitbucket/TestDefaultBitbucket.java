@@ -38,6 +38,7 @@ import com.google.common.collect.Iterables;
 public class TestDefaultBitbucket
 {
 
+    @SuppressWarnings("rawtypes")
     @Mock
     private RequestFactory requestFactory;
     @Mock

@@ -24,7 +24,7 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
     private static final GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction("");
     private final PermissionManager permissionManager;
     private final Logger logger = LoggerFactory.getLogger(BitbucketTabPanel.class);
-	private RepositoryManager globalRepositoryManager;
+	private final RepositoryManager globalRepositoryManager;
 
     public BitbucketTabPanel(PermissionManager permissionManager, @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
     {
@@ -32,6 +32,7 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
         this.globalRepositoryManager = globalRepositoryManager;
     }
 
+    @Override
     public List<IssueAction> getActions(Issue issue, User user)
     {
         String issueId = issue.getKey();
@@ -57,7 +58,8 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
         return bitbucketActions;
     }
 
-	public boolean showPanel(Issue issue, User user)
+	@Override
+    public boolean showPanel(Issue issue, User user)
     {
         return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user) &&
                 !globalRepositoryManager.getRepositories(issue.getProjectObject().getKey()).isEmpty();

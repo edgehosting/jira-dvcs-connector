@@ -1,8 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import static junit.framework.Assert.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static junit.framework.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -27,6 +26,7 @@ import com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit;
 /**
  * Unit test for {@link BitbucketPostCommit}
  */
+@SuppressWarnings("deprecation")
 public class TestBitbucketPostCommit
 {
     @Mock
@@ -69,7 +69,6 @@ public class TestBitbucketPostCommit
     public void testParsePayload() throws Exception
 	{
     	String projectKey = "PRJ";
-    	String repositoryUrl = "https://bitbucket.org/mjensen/test";
     	String payload = resource("TestBitbucketPostCommit-payload.json");
     	DefaultSourceControlRepository repo = new DefaultSourceControlRepository(0, "bitbucket", repositoryUri, projectKey, null, null, null, null, null);
 

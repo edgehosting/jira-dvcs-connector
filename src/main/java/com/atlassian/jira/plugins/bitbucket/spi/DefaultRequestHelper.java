@@ -71,6 +71,7 @@ public class DefaultRequestHelper implements RequestHelper
         return runRequest(methodType, apiBaseUrl, urlPath, auth, params, postData, null);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private String runRequest(Request.MethodType methodType, String apiBaseUrl, String urlPath, Authentication auth,
                                 Map<String, Object> params, String postData, ResponseHandler responseHandler) throws ResponseException
     {

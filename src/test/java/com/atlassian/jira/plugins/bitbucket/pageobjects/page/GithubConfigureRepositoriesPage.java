@@ -1,12 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
+import org.hamcrest.core.AnyOf;
+import org.hamcrest.core.IsEqual;
+import org.openqa.selenium.By;
+
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.Options;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import org.hamcrest.core.AnyOf;
-import org.hamcrest.core.IsEqual;
-import org.openqa.selenium.By;
 
 /**
  * Represents the page to link repositories to projects
@@ -29,6 +30,8 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
      * @param adminPassword password used to install the service (postcommit hook)
      * @return BitBucketConfigureRepositoriesPage
      */
+    @Override
+    @SuppressWarnings("unchecked")
     public String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername,
                                                           String adminPassword)
     {
@@ -58,6 +61,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
      * @param url        The url to the bitucket public repo
      * @return BitBucketConfigureRepositoriesPage
      */
+    @Override
     public BaseConfigureRepositoriesPage addPublicRepoToProjectSuccessfully(String projectKey, String url)
     {
         projectSelect.select(Options.value(projectKey));
@@ -79,6 +83,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
      * @param url        The url to the bitucket public repo
      * @return BitBucketConfigureRepositoriesPage
      */
+    @Override
     public GithubConfigureRepositoriesPage addRepoToProjectFailing(String projectKey, String url)
     {
         projectSelect.select(Options.value(projectKey));
@@ -95,6 +100,8 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
      * @param url        The url to the bitucket public repo
      * @return BitBucketConfigureRepositoriesPage
      */
+    @SuppressWarnings("unchecked")
+    @Override
     public GithubConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url)
     {
         projectSelect.select(Options.value(projectKey));

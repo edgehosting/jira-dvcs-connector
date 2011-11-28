@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 /**
  *  Data migration from jira-github-connector plugin to jira-bitbucket-connector plugin
  */
+@SuppressWarnings("unchecked")
 public class To_06_GithubRepositories implements ActiveObjectsUpgradeTask
 {
     private final Logger log = LoggerFactory.getLogger(To_06_GithubRepositories.class);

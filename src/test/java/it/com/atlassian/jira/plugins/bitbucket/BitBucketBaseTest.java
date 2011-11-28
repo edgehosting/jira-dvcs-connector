@@ -2,12 +2,11 @@ package it.com.atlassian.jira.plugins.bitbucket;
 
 import java.util.List;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BaseConfigureRepositoriesPage;
 import org.junit.After;
 import org.junit.Before;
 
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BaseConfigureRepositoriesPage;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
@@ -20,6 +19,7 @@ public abstract class BitBucketBaseTest
     protected JiraTestedProduct jira;
     protected BaseConfigureRepositoriesPage configureRepos;
 
+    @SuppressWarnings("unchecked")
     @Before
     public void loginToJira()
     {
@@ -28,6 +28,7 @@ public abstract class BitBucketBaseTest
         configureRepos = (BaseConfigureRepositoriesPage) jira.gotoLoginPage().loginAsSysAdmin(getPageClass());
     }
 
+    @SuppressWarnings("rawtypes")
     protected abstract Class getPageClass();
 
     @After

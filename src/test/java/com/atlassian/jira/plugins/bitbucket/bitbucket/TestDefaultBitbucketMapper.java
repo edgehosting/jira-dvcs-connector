@@ -31,6 +31,7 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 /**
  * Unit tests for {@link DefaultRepositoryPersister}
  */
+@SuppressWarnings("unchecked")
 public class TestDefaultBitbucketMapper
 {
     private static final String URL = "https://bitbucket.org/owner/slug";
@@ -65,6 +66,7 @@ public class TestDefaultBitbucketMapper
         when(activeObjects.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(
                 new Answer<Object>()
                 {
+                    @SuppressWarnings("rawtypes")
                     @Override
                     public Object answer(InvocationOnMock invocationOnMock) throws Throwable
                     {

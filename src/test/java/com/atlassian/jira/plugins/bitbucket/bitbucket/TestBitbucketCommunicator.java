@@ -24,7 +24,6 @@ import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryUri;
 import com.atlassian.sal.api.net.Request;
@@ -47,8 +46,6 @@ public class TestBitbucketCommunicator
     private ExtendedResponseHandlerFactory responseHandlerFactory;
     @Mock
     private ExtendedResponseHandler extendedResponseHandler;
-    @Mock
-    private RequestHelper requestHelper;
 
     @Before
     public void setup() throws Exception

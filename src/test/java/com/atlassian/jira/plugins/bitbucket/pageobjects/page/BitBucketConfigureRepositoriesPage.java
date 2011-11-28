@@ -30,6 +30,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
      * @param adminPassword password used to install the service (postcommit hook)
      * @return BitBucketConfigureRepositoriesPage
      */
+    @SuppressWarnings("unchecked")
     @Override
     public String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername,
                                                           String adminPassword)
@@ -58,6 +59,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
      * @param url        The url to the bitucket public repo
      * @return BitBucketConfigureRepositoriesPage
      */
+    @SuppressWarnings("unchecked")
     @Override
     public BaseConfigureRepositoriesPage addPublicRepoToProjectSuccessfully(String projectKey, String url)
     {
@@ -97,6 +99,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
      * @param url        The url to the bitucket public repo
      * @return BitBucketConfigureRepositoriesPage
      */
+    @SuppressWarnings({ "unchecked" })
     @Override
     public BitBucketConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url)
     {

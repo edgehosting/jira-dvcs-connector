@@ -1,16 +1,17 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.plugin.projectoperation.AbstractPluggableProjectOperation;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.project.Project;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.opensymphony.user.User;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @SuppressWarnings("deprecation")
 public class ProjectSettings extends AbstractPluggableProjectOperation
@@ -25,6 +26,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
 		this.applicationProperties = applicationProperties;
     }
 
+    @Override
     public String getHtml(final Project project, final User user)
     {
 
@@ -84,6 +86,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
         return result;
     }
 
+    @Override
     public boolean showOperation(final Project project, final User user)
     {
         return true;

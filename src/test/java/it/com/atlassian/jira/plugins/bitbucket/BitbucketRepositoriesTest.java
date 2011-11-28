@@ -1,6 +1,9 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
+import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -8,9 +11,7 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Test;
 
-import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
 
 /**
  * Test to verify behaviour when syncing bitbucket repository..
@@ -22,7 +23,7 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
     private static final String TEST_NOT_EXISTING_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/repo-does-not-exist";
 
     @Override
-    protected Class getPageClass()
+    protected Class<BitBucketConfigureRepositoriesPage> getPageClass()
     {
         return BitBucketConfigureRepositoriesPage.class;
     }
