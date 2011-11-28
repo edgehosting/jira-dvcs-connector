@@ -39,7 +39,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         urlTextbox.clear().type(url);
         projectSelect.select(Options.value(projectKey));
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), AnyOf.anyOf(new IsEqual<String>("New Bitbucket repository"), new IsEqual<String>("New Github repository")));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
         // postcommit hook
         addPostCommitServiceCheckbox.click();
         adminUsernameTextbox.clear().type(adminUsername);
@@ -66,6 +66,9 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
 
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
+        addRepositoryButton.click();
+        
         Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
         Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
 
@@ -100,7 +103,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), AnyOf.anyOf(new IsEqual<String>("New Bitbucket repository"), new IsEqual<String>("New Github repository")));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
         if(messageBarDiv.isPresent()){
             PageElement messageBarErrorDiv = messageBarDiv.find(By.className("error"));
             if(messageBarErrorDiv.isPresent() && messageBarErrorDiv.timed().getText().now().contains("OAuth needs to be")){
@@ -114,7 +117,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
                     addRepositoryButton.click();
                     Poller.waitUntilTrue("Expected sync status message to be 'GitHub Client Identifiers Set Correctly'", ghMessagesDiv.find(By.tagName("h2")).timed().hasText("GitHub Client Identifiers Set Correctly"));
                     jiraTestedProduct.getTester().getDriver().navigate().to(currentUrl);
-                    Poller.waitUntil(addedRepositoryH2.timed().getText(), AnyOf.anyOf(new IsEqual<String>("New Bitbucket repository"), new IsEqual<String>("New Github repository")));
+                    Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
 
                 }
             }

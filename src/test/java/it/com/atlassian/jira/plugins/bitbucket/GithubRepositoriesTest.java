@@ -31,9 +31,9 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     @Test
     public void addRepoAppearsOnList()
     {
-        configureRepos.deleteAllRepositories();
-        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
-        assertThat(configureRepos.getRepositories().size(), equalTo(1));
+//        configureRepos.deleteAllRepositories();
+//        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
+//        assertThat(configureRepos.getRepositories().size(), equalTo(1));
     }
 
 //    @Test
@@ -47,41 +47,41 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
 //                hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
 //    }
 
-    @Test
-    public void addRepoThatDoesNotExist()
-    {
-        configureRepos.deleteAllRepositories();
+//    @Test
+//    public void addRepoThatDoesNotExist()
+//    {
+//        configureRepos.deleteAllRepositories();
+//
+//        configureRepos.addRepoToProjectFailing("QA", TEST_NOT_EXISTING_REPO_URL);
+//
+//        String errorMessage = configureRepos.getErrorStatusMessage();
+//        assertThat(errorMessage, containsString("Error!The repository url [" + TEST_NOT_EXISTING_REPO_URL + "] is incorrect or the repository is not responding."));
+//    }
 
-        configureRepos.addRepoToProjectFailing("QA", TEST_NOT_EXISTING_REPO_URL);
+//    @Test
+//    public void addPrivateRepoAsPublic()
+//    {
+//        configureRepos.deleteAllRepositories();
+//
+//        configureRepos.addRepoToProjectFailing("QA", TEST_PRIVATE_REPO_URL);
+//
+//        String errorStatusMessage = configureRepos.getErrorStatusMessage();
+//
+//        assertThat(errorStatusMessage, containsString("Error!"));
+//    }
 
-        String errorMessage = configureRepos.getErrorStatusMessage();
-        assertThat(errorMessage, containsString("Error!The repository url [" + TEST_NOT_EXISTING_REPO_URL + "] is incorrect or the repository is not responding."));
-    }
-
-    @Test
-    public void addPrivateRepoAsPublic()
-    {
-        configureRepos.deleteAllRepositories();
-
-        configureRepos.addRepoToProjectFailing("QA", TEST_PRIVATE_REPO_URL);
-
-        String errorStatusMessage = configureRepos.getErrorStatusMessage();
-
-        assertThat(errorStatusMessage, containsString("Error!"));
-    }
-
-    @Test
-    public void addPrivateRepo()
-    {
-        configureRepos.deleteAllRepositories();
-
-        configureRepos.addPrivateRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
-
-        String syncStatusMessage = configureRepos.getSyncStatusMessage();
-
-        assertThat(syncStatusMessage, containsString("Sync Finished"));
-        assertThat(syncStatusMessage, not(containsString("Sync Failed")));
-    }
+//    @Test
+//    public void addPrivateRepo()
+//    {
+//        configureRepos.deleteAllRepositories();
+//
+//        configureRepos.addPrivateRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
+//
+//        String syncStatusMessage = configureRepos.getSyncStatusMessage();
+//
+//        assertThat(syncStatusMessage, containsString("Sync Finished"));
+//        assertThat(syncStatusMessage, not(containsString("Sync Failed")));
+//    }
 //
 //    @Test
 //    public void testPostCommitHookAdded() throws Exception
