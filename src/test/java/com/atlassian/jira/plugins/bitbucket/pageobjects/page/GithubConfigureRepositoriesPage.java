@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
-import org.hamcrest.core.AnyOf;
 import org.hamcrest.core.IsEqual;
 import org.openqa.selenium.By;
 
@@ -33,14 +32,12 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
      * @return BitBucketConfigureRepositoriesPage
      */
     @Override
-    @SuppressWarnings("unchecked")
     public String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername, String adminPassword)
     {
         urlTextbox.clear().type(url);
         projectSelect.select(Options.value(projectKey));
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), AnyOf.anyOf(new IsEqual<String>("New Bitbucket repository"),
-            new IsEqual<String>("New Github repository")));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
         // postcommit hook
         addPostCommitServiceCheckbox.click();
         adminUsernameTextbox.clear().type(adminUsername);
@@ -69,6 +66,9 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
 
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
+        addRepositoryButton.click();
+        
         Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
         Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
             .hasText("Sync Finished:"));
@@ -101,15 +101,13 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
      * @param url        The url to the bitucket public repo
      * @return BitBucketConfigureRepositoriesPage
      */
-    @SuppressWarnings("unchecked")
     @Override
     public GithubConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url)
     {
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), AnyOf.anyOf(new IsEqual<String>("New Bitbucket repository"),
-            new IsEqual<String>("New Github repository")));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
         if (messageBarDiv.isPresent())
         {
             PageElement messageBarErrorDiv = messageBarDiv.find(By.className("error"));
@@ -127,8 +125,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
                     Poller.waitUntilTrue("Expected sync status message to be 'GitHub Client Identifiers Set Correctly'", ghMessagesDiv
                         .find(By.tagName("h2")).timed().hasText("GitHub Client Identifiers Set Correctly"));
                     jiraTestedProduct.getTester().getDriver().navigate().to(currentUrl);
-                    Poller.waitUntil(addedRepositoryH2.timed().getText(), AnyOf.anyOf(new IsEqual<String>("New Bitbucket repository"),
-                        new IsEqual<String>("New Github repository")));
+                    Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
 
                 }
             }
