@@ -1,16 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -28,6 +17,17 @@ import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.opensymphony.util.TextUtils;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
@@ -98,7 +98,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 		String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
 		String encryptedAdminPassword = encryptor.encrypt(adminPassword, projectKey, repositoryUrl);
 		ProjectMapping pm = repositoryPersister.addRepository(repositoryType, projectKey, repositoryUrl, username,
-				encryptedPassword, adminUsername, encryptedAdminPassword, accessToken);
+                encryptedPassword, adminUsername, encryptedAdminPassword, accessToken);
 		return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 	}
 
@@ -151,12 +151,12 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             String repositoryUrl = repositoryUri.getRepositoryUrl();
             if (!changeset.getParents().isEmpty())
             {
-                for (String node : changeset.getParents())
+                for (String parentNode : changeset.getParents())
                 {
                     // ehm ehm ... what is this? shouldn't this be
                     // htmlParentHashes+=
-                    htmlParentHashes = "<tr><td style='color: #757575'>Parent:</td><td><a href='" + repositoryUrl +
-                            "/changeset/" + node + "' target='_new'>" + node + "</a></td></tr>";
+                    String parentURL = repositoryUri.getParentUrl(parentNode);
+                    htmlParentHashes = "<tr><td style='color: #757575'>Parent:</td><td><a href='" + parentURL + "' target='_new'>" + parentNode + "</a></td></tr>";
                 }
             }
 
