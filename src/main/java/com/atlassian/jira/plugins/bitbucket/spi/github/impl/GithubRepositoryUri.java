@@ -40,4 +40,10 @@ public class GithubRepositoryUri extends DefaultRepositoryUri
     {
         return MessageFormat.format("{0}://{1}/{2}/{3}/blob/{4}/{5}", getProtocol(), getHostname(), getOwner(), getSlug(), node, file);
     }
+
+    @Override
+    public String getParentUrl(String parentNode)
+    {
+        return MessageFormat.format("{0}://{1}/{2}/{3}/commit/{4}", getProtocol(), getHostname(), getOwner(), getSlug(), parentNode);
+    }
 }
