@@ -11,6 +11,8 @@ public class To_05_RepositoryTypeMigrator implements ActiveObjectsUpgradeTask
 {
     private final Logger logger = LoggerFactory.getLogger(To_05_RepositoryTypeMigrator.class);
 
+    @Override
+    @SuppressWarnings("unchecked")
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
         logger.debug("upgrade [ " + currentVersion + " ]");
@@ -25,6 +27,7 @@ public class To_05_RepositoryTypeMigrator implements ActiveObjectsUpgradeTask
         }
     }
 
+    @Override
     public ModelVersion getModelVersion()
     {
         return ModelVersion.valueOf("5");

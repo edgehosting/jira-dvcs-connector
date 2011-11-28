@@ -21,7 +21,9 @@ public class To_04_ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
 {
     private final Logger logger = LoggerFactory.getLogger(To_04_ActiveObjectsV2Migrator.class);
 
-	public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
+	@Override
+    @SuppressWarnings("unchecked")
+    public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
     {
         logger.debug("upgrade [ " + modelVersion + " ]");
 
@@ -73,6 +75,7 @@ public class To_04_ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
         logger.debug("completed uri to url migration");
     }
 
+    @Override
     public ModelVersion getModelVersion()
     {
         return ModelVersion.valueOf("4");

@@ -1,0 +1,121 @@
+#gh_config_link{
+    margin-top: 10px;
+}
+
+#gh_config_link a{
+    background: url('../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/pencil_icon.jpg');
+    background-repeat: no-repeat;
+    background-position: right center;
+    padding-right: 20px;
+    font-size: 10pt;
+}
+
+.gh_config_h4{
+    font-weight: normal;
+    color: #3676B7;
+    background: url('../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/down_gray_arrow.jpg');
+    background-repeat: no-repeat;
+    background-position: left center;
+    padding-left: 18px;
+    margin-top: 18px;
+}
+
+#gh_post_receive_header{
+    font-weight: normal;
+    font-size: 10pt;
+    color: #666;
+    margin-top: 18px;
+    margin-bottom: 10px;
+}
+
+#gh_post_receive_textbox{
+    font-size: 10pt;
+    padding: 4px;
+}
+
+#gh_post_receive{
+    margin-bottom: 10px;
+}
+
+.gh_table{
+    margin-left: 16px;
+    width: 100%
+}
+
+.gh_table_project_name{
+    font-size: 10pt;
+    color: #5F6262;
+    padding-top: 14px;
+}
+
+.gh_table th{
+    font-weight: normal;
+    color: #656565;
+    border-bottom: 1px solid #cccccc;
+    font-size: 10pt;
+}
+
+.gh_table td.status{
+    border-bottom: 1px solid #cccccc;
+    font-size: 10pt;
+    padding:0 20px;
+}
+.gh_table td.status .error{
+    color:#f66;
+}
+
+.gh_table td{
+    font-size: 10pt;
+}
+
+.gh_table_td_pname{
+    border-bottom: none !important;
+}
+
+#gh_example_link{
+    font-size: 6pt;
+}
+
+#gh_submit{
+    font-size: 8pt;
+}
+
+.gh_messages{
+    font-size: 10pt;
+    color: #666;
+    font-style: italic;
+}
+
+.form {
+    margin:20px;
+    background-color: #B9E6F0;
+    padding: 20px;
+    
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -khtml-border-radius: 6px;
+    border-radius: 6px;            
+}
+
+.syncicon {
+    cursor: pointer;
+    width:16px;
+    display:inline-block;
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.gif)
+}
+
+.syncicon.error {
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.gif)
+}
+
+.syncicon.running {
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif)
+}
+
+.syncicon.finished {
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/status-ok.png)
+}
+
+#postCommitServiceDetails{
+    margin-bottom:20px;
+}

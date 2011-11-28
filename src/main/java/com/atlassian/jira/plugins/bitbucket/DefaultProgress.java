@@ -7,13 +7,13 @@ import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 public class DefaultProgress implements Progress, ProgressWriter
 {
 	private boolean isFinished = false;
-	private boolean isQueued = false;
 	
 	int changesetCount = 0;
 	int jiraCount = 0;
 	long startTime = 0;
 	private String error;
 
+    @Override
     public void inProgress(int changesetCount, int jiraCount)
     {
     	this.changesetCount = changesetCount;
@@ -30,11 +30,13 @@ public class DefaultProgress implements Progress, ProgressWriter
 		isFinished = true;
 	}
 
-	public int getChangesetCount()
+	@Override
+    public int getChangesetCount()
     {
     	return changesetCount;
     }
     
+    @Override
     public int getJiraCount()
     {
     	return jiraCount;
@@ -45,17 +47,19 @@ public class DefaultProgress implements Progress, ProgressWriter
 		this.error = error;
 	}
 	
-	public String getError()
+	@Override
+    public String getError()
 	{
 		return error;
 	}
 
 	public void queued()
 	{
-		isQueued = true;
+	    // not used
 	}
 
-	public boolean isFinished()
+	@Override
+    public boolean isFinished()
 	{
 		return isFinished;
 	}

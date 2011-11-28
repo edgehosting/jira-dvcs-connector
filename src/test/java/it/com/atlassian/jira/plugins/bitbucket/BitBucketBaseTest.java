@@ -6,7 +6,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BaseConfigureRepositoriesPage;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
@@ -17,15 +17,20 @@ import com.atlassian.webdriver.jira.JiraTestedProduct;
 public abstract class BitBucketBaseTest
 {
     protected JiraTestedProduct jira;
-    protected BitBucketConfigureRepositoriesPage configureRepos;
+    protected BaseConfigureRepositoriesPage configureRepos;
 
+    @SuppressWarnings("unchecked")
     @Before
     public void loginToJira()
     {
         jira = TestedProductFactory.create(JiraTestedProduct.class);
 
-        configureRepos = jira.gotoLoginPage().loginAsSysAdmin(BitBucketConfigureRepositoriesPage.class);
+        configureRepos = (BaseConfigureRepositoriesPage) jira.gotoLoginPage().loginAsSysAdmin(getPageClass());
+        configureRepos.setJiraTestedProduct(jira);
     }
+
+    @SuppressWarnings("rawtypes")
+    protected abstract Class getPageClass();
 
     @After
     public void logout()
@@ -37,7 +42,7 @@ public abstract class BitBucketBaseTest
     {
         if(configureRepos.isRepositoryPresent(projectKey, repoUrl) == false)
         {
-            configureRepos.addPublicRepoToProject(projectKey, repoUrl);
+            configureRepos.addPublicRepoToProjectSuccessfully(projectKey, repoUrl);
         }
     }
 

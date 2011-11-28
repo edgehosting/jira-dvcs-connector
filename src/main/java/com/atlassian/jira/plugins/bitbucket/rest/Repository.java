@@ -14,6 +14,9 @@ public class Repository
     private int id;
 
     @XmlAttribute
+    private String repositoryType;
+    
+    @XmlAttribute
     private String projectKey;
     
     @XmlAttribute
@@ -30,23 +33,28 @@ public class Repository
     
     @XmlAttribute
     private String adminUsername;
+    
+    @XmlAttribute
+    private String adminPassword;
 
 	@XmlAttribute
-    private String adminPassword;
+    private String accessToken;
 
 	public Repository()
     {
     }
 
-    public Repository(int id, String projectKey, String url, String username, String password, String adminUsername, String adminPassword)
+    public Repository(int id, String repositoryType, String projectKey, String url, String username, String password, String adminUsername, String adminPassword, String accessToken)
     {
         this.id = id;
+        this.repositoryType = repositoryType;
         this.projectKey = projectKey;
         this.url = url;
 		this.username = username;
 		this.password = password;
 		this.adminUsername = adminUsername;
 		this.adminPassword = adminPassword;
+        this.accessToken = accessToken;
     }
 
     public int getId()
@@ -127,4 +135,24 @@ public class Repository
 	{
 		this.adminPassword = adminPassword;
 	}
+
+    public String getRepositoryType()
+    {
+        return repositoryType;
+    }
+
+    public void setRepositoryType(String repositoryType)
+    {
+        this.repositoryType = repositoryType;
+    }
+
+    public String getAccessToken()
+    {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken)
+    {
+        this.accessToken = accessToken;
+    }
 }

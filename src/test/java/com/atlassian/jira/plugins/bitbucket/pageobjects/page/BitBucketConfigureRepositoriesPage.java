@@ -1,86 +1,42 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-
-import org.openqa.selenium.By;
-
-import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketRepository;
-import com.atlassian.pageobjects.Page;
-import com.atlassian.pageobjects.PageBinder;
-import com.atlassian.pageobjects.binder.WaitUntil;
-import com.atlassian.pageobjects.elements.CheckboxElement;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.Options;
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import org.hamcrest.Matchers;
+import org.hamcrest.core.IsEqual;
+import org.openqa.selenium.By;
 
 /**
  * Represents the page to link repositories to projects
  */
-public class BitBucketConfigureRepositoriesPage implements Page
+public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositoriesPage
 {
-    @Inject
-    PageBinder pageBinder;
+    @ElementBy(id = "bbUsername")
+    PageElement bbUsernameInput;
 
-    @ElementBy(id = "Submit")
-    PageElement addRepositoryButton;
+    @ElementBy(id = "bbPassword")
+    PageElement bbPasswordInput;
 
-    @ElementBy(name = "projectKey")
-    SelectElement projectSelect;
-
-    @ElementBy(id = "url")
-    PageElement urlTextbox;
-
-    @ElementBy(id = "adminUsername")
-    PageElement adminUsernameTextbox;
-
-    @ElementBy(id = "adminPassword")
-    PageElement adminPasswordTextbox;
-
-    @ElementBy(id = "repoVisibility")
-    SelectElement visibilitySelect;
-
-    @ElementBy(id = "addPostCommitService")
-    CheckboxElement addPostCommitServiceCheckbox;
-
-    @ElementBy(name = "sync_status_message")
-    PageElement syncStatusDiv;
-
-    @ElementBy(className = "gh_table")
-    PageElement projectsTable;
-
-    @ElementBy(id = "addedRepositoryId")
-    PageElement addedRepositoryIdSpan;
-
-    public String getUrl()
-    {
-        return "/secure/admin/ConfigureBitbucketRepositories!default.jspa";
-    }
-
-    @WaitUntil
-    public void waitUntilReady()
-    {
-        Poller.waitUntilTrue(addRepositoryButton.timed().isPresent());
-    }
 
     /**
      * Links a public repository to the given JIRA project
-     * @param projectKey The JIRA project key
-     * @param url The url to the bitucket public repo
+     *
+     * @param projectKey    The JIRA project key
+     * @param url           The url to the bitucket public repo
      * @param adminUsername username used to install the service (postcommit hook)
      * @param adminPassword password used to install the service (postcommit hook)
      * @return BitBucketConfigureRepositoriesPage
      */
+    @Override
     public String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername,
-            String adminPassword)
+                                                          String adminPassword)
     {
         urlTextbox.clear().type(url);
         projectSelect.select(Options.value(projectKey));
-        visibilitySelect.select(Options.value("public"));
+        addRepositoryButton.click();
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"), Poller.by(10000));
         // postcommit hook
         addPostCommitServiceCheckbox.click();
         adminUsernameTextbox.clear().type(adminUsername);
@@ -89,96 +45,71 @@ public class BitBucketConfigureRepositoriesPage implements Page
         addRepositoryButton.click();
 
         Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-
-        Poller.waitUntilTrue("Expected sync status message to be 'Sync Processing Complete'",
-                syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
+        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
 
         return addedRepositoryIdSpan.timed().getValue().byDefaultTimeout();
     }
 
     /**
      * Links a public repository to the given JIRA project
+     *
      * @param projectKey The JIRA project key
-     * @param url The url to the bitucket public repo
+     * @param url        The url to the bitucket public repo
      * @return BitBucketConfigureRepositoriesPage
      */
-    public BitBucketConfigureRepositoriesPage addPublicRepoToProject(String projectKey, String url)
+    @Override
+    public BaseConfigureRepositoriesPage addPublicRepoToProjectSuccessfully(String projectKey, String url)
     {
         projectSelect.select(Options.value(projectKey));
-        visibilitySelect.select(Options.value("public"));
         urlTextbox.clear().type(url);
+        addRepositoryButton.click();
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"), Poller.by(10000));
         addRepositoryButton.click();
 
         Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-
-        Poller.waitUntilTrue("Expected sync status message to be 'Sync Processing Complete'",
-                syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
+        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
 
         return this;
     }
 
     /**
-     * Returns a list of <tt>BitBucketRepository</tt> with the current list of repositories linked.
-     * @return List of <tt>BitBucketRepository</tt>
-     */
-    public List<BitBucketRepository> getRepositories()
-    {
-        List<BitBucketRepository> list = new ArrayList<BitBucketRepository>();
-        for (PageElement row : projectsTable.findAll(By.tagName("tr")))
-        {
-            if (row.getText().contains("Force Sync"))
-            {
-                list.add(pageBinder.bind(BitBucketRepository.class, row));
-            }
-        }
-
-        return list;
-    }
-
-    /**
-     * Deletes all repositories
+     * Links a public repository to the given JIRA project
+     *
+     * @param projectKey The JIRA project key
+     * @param url        The url to the bitucket public repo
      * @return BitBucketConfigureRepositoriesPage
      */
-    public BitBucketConfigureRepositoriesPage deleteAllRepositories()
+    @Override
+    public BitBucketConfigureRepositoriesPage addRepoToProjectFailing(String projectKey, String url)
     {
-        List<BitBucketRepository> repos;
-        while (!(repos = getRepositories()).isEmpty())
-        {
-            repos.get(0).delete();
-        }
-
+        projectSelect.select(Options.value(projectKey));
+        urlTextbox.clear().type(url);
+        addRepositoryButton.click();
+        Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed().hasText("Error!"));
         return this;
     }
 
     /**
-     * Whether a repository is currently linked to a given project
+     * Links a public repository to the given JIRA project
+     *
      * @param projectKey The JIRA project key
-     * @param url The repository url
-     * @return True if repository is linked, false otherwise
+     * @param url        The url to the bitucket public repo
+     * @return BitBucketConfigureRepositoriesPage
      */
-    public boolean isRepositoryPresent(String projectKey, String url)
+    @Override
+    public BitBucketConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url)
     {
-        boolean commitFound = false;
-        for (BitBucketRepository repo : getRepositories())
-        {
-            if (repo.getProjectKey().equals(projectKey) && repo.getUrl().equals(url))
-            {
-                commitFound = true;
-                break;
-            }
-        }
+        projectSelect.select(Options.value(projectKey));
+        urlTextbox.clear().type(url);
+        addRepositoryButton.click();
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"), Poller.by(10000));
+        bbUsernameInput.type("jirabitbucketconnector");
+        bbPasswordInput.type("jirabitbucketconnector");
+        addRepositoryButton.click();
 
-        return commitFound;
+        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
+        Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().getText(), Matchers.equalTo("Sync Finished:"), Poller.by(20000));
+
+        return this;
     }
-
-    /**
-     * The current sync status message
-     * @return Sync status message
-     */
-
-    public String getSyncStatusMessage()
-    {
-        return syncStatusDiv.getText();
-    }
-
 }

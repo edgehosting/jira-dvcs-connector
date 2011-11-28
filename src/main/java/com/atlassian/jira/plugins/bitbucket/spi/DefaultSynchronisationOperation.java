@@ -31,7 +31,8 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         this.progressProvider = progressProvider;
     }
 
-	public void synchronise()
+	@Override
+    public void synchronise()
     {
         Iterable<Changeset> changesets = getChangsetsIterator();
 
@@ -59,6 +60,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
     private static Set<String> extractProjectKey(String projectKey, String message)
     {
+        // should check that issue exists?
         Pattern projectKeyPattern = Pattern.compile("(" + projectKey + "-\\d*)", Pattern.CASE_INSENSITIVE);
         Matcher match = projectKeyPattern.matcher(message);
 

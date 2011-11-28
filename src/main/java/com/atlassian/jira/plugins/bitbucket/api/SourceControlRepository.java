@@ -12,10 +12,20 @@ public interface SourceControlRepository
 	 */
 	int getId();
 
+	/**
+	 * @return project key of the project where repository is mapped to
+	 */
+	String getProjectKey();
+	
     /**
      * @return object which gives all necessary kinds of repository URLs (base, api, ... )
      */
     RepositoryUri getRepositoryUri();
+    
+    /**
+     * @return type of repository (bitbucket, github, ...)
+     */
+    String getRepositoryType();
 
 	/**
 	 * @return username to use for authenticating
@@ -28,11 +38,6 @@ public interface SourceControlRepository
 	String getPassword();
 
 	/**
-	 * @return project key of the project where repository is mapped to
-	 */
-	String getProjectKey();
-	
-	/**
 	 * Admin username - used when (un)installing postcommit hook
 	 * @return
 	 */
@@ -42,9 +47,9 @@ public interface SourceControlRepository
 	 * @return
 	 */
 	String getAdminPassword();
-
-    /**
-     * @return type of repository (bitbucket, github, ...)
-     */
-    String getRepositoryType();
+	
+	/**
+	 * @return access token foe oAuth authentication when accessing private github repository
+	 */
+	String getAccessToken();
 }

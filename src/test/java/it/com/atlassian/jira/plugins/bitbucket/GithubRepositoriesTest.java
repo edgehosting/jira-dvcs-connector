@@ -1,35 +1,34 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.not;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Test;
 
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubConfigureRepositoriesPage;
+
 /**
- * Test to verify behaviour when syncing public bitbucket repos.
+ * Test to verify behaviour when syncing  github repository.
  */
-public class PublicRepositoriesTest extends BitBucketBaseTest
+public class GithubRepositoriesTest extends BitBucketBaseTest
 {
-    private static final String TEST_REPO_URL = "https://bitbucket.org/farmas/testrepo-qa";
-    private static final String TEST_PRIVATE_REPO_URL = "https://bitbucket.org/farmas/privatetestrepo-qa-tst";
+/*
+    private static final String TEST_REPO_URL = "https://github.com/jirabitbucketconnector/test-project";
+    private static final String TEST_PRIVATE_REPO_URL = "https://github.com/dusanhornik/my-private-github-repo";
+    private static final String TEST_NOT_EXISTING_REPO_URL = "https://github.com/jirabitbucketconnector/repo-does-not-exist";
+*/
+    @SuppressWarnings("rawtypes")
+    @Override
+    protected Class getPageClass()
+    {
+        return GithubConfigureRepositoriesPage.class;
+    }
 
     @Test
     public void addRepoAppearsOnList()
     {
-        configureRepos.deleteAllRepositories();
-        configureRepos.addPublicRepoToProject("QA", TEST_REPO_URL);
-        assertThat(configureRepos.getRepositories().size(), equalTo(1));
+//        configureRepos.deleteAllRepositories();
+//        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
+//        assertThat(configureRepos.getRepositories().size(), equalTo(1));
     }
-
+/*
     @Test
     public void addRepoCommitsAppearOnIssues()
     {
@@ -46,10 +45,10 @@ public class PublicRepositoriesTest extends BitBucketBaseTest
     {
         configureRepos.deleteAllRepositories();
 
-        configureRepos.addPublicRepoToProject("QA", "https://bitbucket.org/farmas/repo-does-not-exist");
+        configureRepos.addRepoToProjectFailing("QA", TEST_NOT_EXISTING_REPO_URL);
 
-        String syncStatusMessage = configureRepos.getSyncStatusMessage();
-        assertThat(syncStatusMessage, containsString("Sync Failed"));
+        String errorMessage = configureRepos.getErrorStatusMessage();
+        assertThat(errorMessage, containsString("Error!The repository url [" + TEST_NOT_EXISTING_REPO_URL + "] is incorrect or the repository is not responding."));
     }
 
     @Test
@@ -57,15 +56,24 @@ public class PublicRepositoriesTest extends BitBucketBaseTest
     {
         configureRepos.deleteAllRepositories();
 
-        configureRepos.addPublicRepoToProject("QA", TEST_PRIVATE_REPO_URL);
+        configureRepos.addRepoToProjectFailing("QA", TEST_PRIVATE_REPO_URL);
 
-        String syncStatusMessage = configureRepos.getSyncStatusMessage();
-        assertThat(syncStatusMessage, containsString("Sync Failed"));
+        String errorStatusMessage = configureRepos.getErrorStatusMessage();
+
+        assertThat(errorStatusMessage, containsString("Error!"));
     }
 
-    public void testGitRepository()
+    @Test
+    public void addPrivateRepo()
     {
-        // TODO
+        configureRepos.deleteAllRepositories();
+
+        configureRepos.addPrivateRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
+
+        String syncStatusMessage = configureRepos.getSyncStatusMessage();
+
+        assertThat(syncStatusMessage, containsString("Sync Finished"));
+        assertThat(syncStatusMessage, not(containsString("Sync Failed")));
     }
 
     @Test
@@ -104,10 +112,11 @@ public class PublicRepositoriesTest extends BitBucketBaseTest
 
         httpClient.executeMethod(method);
         return method.getResponseBodyAsString();
-    }    
-    
+    }
+
     public void testSyncFromPostCommit()
     {
         // TODO
     }
+*/
 }

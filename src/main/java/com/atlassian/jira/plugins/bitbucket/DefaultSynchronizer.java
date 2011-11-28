@@ -4,11 +4,12 @@ import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
@@ -21,6 +22,7 @@ import com.google.common.collect.MapMaker;
  */
 public class DefaultSynchronizer implements Synchronizer
 {
+    private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
 	private final ExecutorService executorService;
 	private final RepositoryManager globalRepositoryManager;
@@ -38,14 +40,16 @@ public class DefaultSynchronizer implements Synchronizer
 	private final ConcurrentMap<SynchronizationKey, DefaultProgress> operations = new MapMaker()
 			.makeComputingMap(new Function<SynchronizationKey, DefaultProgress>()
 			{
-				public DefaultProgress apply(final SynchronizationKey from)
+				@Override
+                public DefaultProgress apply(final SynchronizationKey from)
 				{
 					final DefaultProgress progress = new DefaultProgress();
 					progressMap.put(from, progress);
 					
 					Runnable runnable = new Runnable()
 					{
-						public void run()
+						@Override
+                        public void run()
 						{
 							try
 							{
@@ -53,9 +57,11 @@ public class DefaultSynchronizer implements Synchronizer
 								SynchronisationOperation synchronisationOperation = globalRepositoryManager
 										.getSynchronisationOperation(from, progress);
 								synchronisationOperation.synchronise();
-							} catch (SourceControlException sce)
+							} catch (Throwable e)
 							{
-								progress.setError(sce.getMessage());
+                                String errorMessage = e.getMessage() == null ? e.toString() : e.getMessage();
+                                progress.setError(errorMessage);
+                                log.debug(e.getMessage(), e);
 							} finally
 							{
 								progress.finish();
@@ -70,16 +76,19 @@ public class DefaultSynchronizer implements Synchronizer
 				}
 			});
 
+    @Override
     public void synchronize(SourceControlRepository repository)
     {
         operations.get(new SynchronizationKey(repository));
     }
 
+    @Override
     public void synchronize(SourceControlRepository repository, List<Changeset> changesets)
     {
         operations.get(new SynchronizationKey(repository, changesets));
     }
 
+    @Override
     public Progress getProgress(final SourceControlRepository repository)
     {
 		return progressMap.get(new SynchronizationKey(repository));

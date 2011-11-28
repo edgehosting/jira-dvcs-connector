@@ -12,6 +12,7 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 /**
  * Uses a plugin Settings Factory to store the state of the plugin
  */
+@SuppressWarnings("deprecation")
 public class DefaultBitbucketProjectSettings implements BitbucketProjectSettings
 {
     public static final String PROGRESS_TIP = "tip";
@@ -54,6 +55,7 @@ public class DefaultBitbucketProjectSettings implements BitbucketProjectSettings
             removeValue(projectKey, key);
     }
 
+    @Override
     public void startSyncProgress(String projectKey, String repositoryUrl)
     {
         logger.debug("starting sync for [ {} ] at [ {} ]", projectKey, repositoryUrl);
@@ -62,12 +64,14 @@ public class DefaultBitbucketProjectSettings implements BitbucketProjectSettings
         setStringProperty(projectKey, key, value);
     }
 
+    @Override
     public void setSyncProgress(String projectKey, String repositoryUrl, int revision)
     {
         logger.debug("setting progress for [ {} ] at [ {} ] to [ {} ]", new Object[]{projectKey, repositoryUrl, revision});
         setStringProperty(projectKey, "currentsync" + repositoryUrl + projectKey, String.valueOf(revision));
     }
 
+    @Override
     public void completeSyncProgress(String projectKey, String repositoryUrl)
     {
         logger.debug("complete progress for [ {} ] at [ {} ]", projectKey, repositoryUrl);
@@ -75,69 +79,82 @@ public class DefaultBitbucketProjectSettings implements BitbucketProjectSettings
         setStringProperty(projectKey, "bitbucketLastSyncTime" + repositoryUrl, new Date().toString());
     }
 
+    @Override
     public int getCount(String projectKey, String repositoryUrl, String type)
     {
         String commitCountString = getStringProperty(projectKey, type + repositoryUrl);
         return commitCountString == null ? 0 : Integer.parseInt(commitCountString);
     }
 
+    @Override
     public void resetCount(String projectKey, String repositoryUrl, String type, int count)
     {
         removeValue(projectKey, type + repositoryUrl);
     }
 
+    @Override
     public void incrementCommitCount(String projectKey, String repositoryUrl, String type)
     {
         int commitCount = getCount(projectKey, repositoryUrl, type);
         setStringProperty(projectKey, type + repositoryUrl, String.valueOf(commitCount + 1));
     }
 
+    @Override
     public String getUsername(String projectKey, String repositoryURL)
     {
         return getStringProperty(projectKey, "bitbucketUserName" + repositoryURL);
     }
 
+    @Override
     public void setUsername(String projectKey, String repositoryURL, String username)
     {
         setStringProperty(projectKey, "bitbucketUserName" + repositoryURL, username);
     }
 
+    @Override
     public String getPassword(String projectKey, String repositoryURL)
     {
         return getStringProperty(projectKey, "bitbucketPassword" + repositoryURL);
     }
 
+    @Override
     public void setPassword(String projectKey, String repositoryURL, String password)
     {
         setStringProperty(projectKey, "bitbucketPassword" + repositoryURL, password);
     }
 
+    @Override
     public List<String> getCommits(String projectKey, String repositoryURL, String issueId)
     {
         return getStringListValue(projectKey, "bitbucketIssueCommitArray" + issueId);
     }
 
+    @Override
     public void setCommits(String projectKey, String repositoryURL, String issueId, List<String> commits)
     {
         String key = "bitbucketIssueCommitArray" + issueId;
         setStringListValue(projectKey, key, commits);
     }
 
+    @Override
     public List<String> getIssueIds(String projectKey, String repositoryURL)
     {
         return getStringListValue(projectKey, "bitbucketIssueIDs" + repositoryURL);
     }
 
+    @Override
     public void setIssueIds(String projectKey, String repositoryURL, List<String> issueIds)
     {
         setStringListValue(projectKey, "bitbucketIssueIDs" + repositoryURL, issueIds);
     }
 
+    @Override
     public List<String> getRepositories(String projectKey)
     {
         return getStringListValue(projectKey, "bitbucketRepositoryURLArray");
     }
 
+    @Override
     public void setRepositories(String projectKey, List<String> repositories)
     {
         setStringListValue(projectKey, "bitbucketRepositoryURLArray", repositories);

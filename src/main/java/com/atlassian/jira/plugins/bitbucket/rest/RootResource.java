@@ -11,6 +11,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -27,7 +28,7 @@ import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.webwork.ConfigureBitbucketRepositories;
+import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
@@ -44,7 +45,7 @@ public class RootResource
     @Context
     UriInfo uriInfo;
 
-    private final Logger log = LoggerFactory.getLogger(ConfigureBitbucketRepositories.class);
+    private final Logger log = LoggerFactory.getLogger(RootResource.class);
 
     private final PermissionManager permissionManager;
     private final ProjectManager projectManager;
@@ -54,11 +55,11 @@ public class RootResource
     
     private final Function<SourceControlRepository, Repository> TO_REST_REPOSITORY = new Function<SourceControlRepository, Repository>()
     {
+        @Override
         public Repository apply(SourceControlRepository from)
         {
-            Repository repo = new Repository(from.getId(), from.getProjectKey(), from.getRepositoryUri().getRepositoryUrl(),
-                    from.getUsername(), null, from.getAdminUsername(), null); // don't include the
-                                                                              // password
+            Repository repo = new Repository(from.getId(), from.getRepositoryType(), from.getProjectKey(), from.getRepositoryUri().getRepositoryUrl(),
+                    from.getUsername(), null, from.getAdminUsername(), null, null); // don't include password or accessToken
             Progress progress = synchronizer.getProgress(from);
             if (progress != null)
                 repo.setStatus(new SyncProgress(progress.isFinished(), progress.getChangesetCount(), progress
@@ -116,7 +117,7 @@ public class RootResource
         else
             return Response.status(Response.Status.FORBIDDEN).build();
     }
-
+    
     @GET
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repositories/{projectKey}")
@@ -163,17 +164,19 @@ public class RootResource
         if (canAdmin(repository.getProjectKey()))
         {
             String url = repository.getUrl();
+            String repositoryType = repository.getRepositoryType();
             String projectKey = repository.getProjectKey();
             String username = repository.getUsername();
             String password = repository.getPassword();
             String adminUsername = repository.getUsername();
             String adminPassword = repository.getPassword();
+            String accessToken = repository.getAccessToken();
 
             SourceControlRepository repo;
             try
             {
-                repo = globalRepositoryManager.addRepository(projectKey, url, username, password,
-                        adminUsername, adminPassword);
+                repo = globalRepositoryManager.addRepository(repositoryType, projectKey, url, username, password,
+                        adminUsername, adminPassword, accessToken);
             } catch (SourceControlException e)
             {
                 return Response.serverError().entity(e).build();
@@ -191,10 +194,24 @@ public class RootResource
         SourceControlRepository repository = globalRepositoryManager.getRepository(id);
         if (canAdmin(repository.getProjectKey()))
         {
+            SourceControlRepository repo = globalRepositoryManager.getRepository(id);
             globalRepositoryManager.removeRepository(id);
+            globalRepositoryManager.removePostcommitHook(repo);
             return Response.ok().build();
         } else
             return Response.status(Response.Status.FORBIDDEN).build();
     }
 
+    
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/urlinfo")
+    public Response urlInfo(@QueryParam("repositoryUrl") String repositoryUrl)
+    {
+        UrlInfo urlInfo = globalRepositoryManager.getUrlInfo(repositoryUrl);
+        if (urlInfo!=null)
+            return Response.ok(urlInfo).build();
+        else 
+            return Response.status(Response.Status.NOT_FOUND).build();
+    }
 }

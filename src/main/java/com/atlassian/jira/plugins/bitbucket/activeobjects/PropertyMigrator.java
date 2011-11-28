@@ -34,6 +34,8 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
         this.settings = settings;
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
     public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
     {
         logger.debug("upgrade [ " + modelVersion + " ]");
@@ -92,6 +94,7 @@ public class PropertyMigrator implements ActiveObjectsUpgradeTask
         logger.debug("completed property migration");
     }
 
+    @Override
     public ModelVersion getModelVersion()
     {
         return ModelVersion.valueOf("1");

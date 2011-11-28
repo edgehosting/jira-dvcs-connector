@@ -1,11 +1,8 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.text.ParseException;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -15,10 +12,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -26,6 +19,7 @@ import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
@@ -37,57 +31,30 @@ import com.opensymphony.util.TextUtils;
 
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
-    private static final Logger log = LoggerFactory.getLogger(DvcsRepositoryManager.class);
-
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-    private static final Comparator<? super Changeset> CHANGESET_COMPARATOR = new Comparator<Changeset>()
-    {
-        private long parse(Changeset c)
-        {
-            if (c == null) return -1;
-//            try
-//            {
-//                return DATE_FORMAT.parse(c.getTimestamp()).getTime();
-//            } catch (ParseException e)
-//            {
-//                log.warn("Error parsing timestamp [{}] from changeset [{}], repositoryId [{}] ",
-//                    new String[] {c.getTimestamp(), c.getNode(), String.valueOf(c.getRepositoryId())});
-//                return -1;
-//            }
-            return c.getTimestamp().getTime();
-        }
-        public int compare(Changeset c1, Changeset c2)
-        {
-            long t1 = parse(c1);
-            long t2 = parse(c2);
-            if (t1<t2) return -1;
-            if (t1>t2) return 1;
-            return 0;
-        }
-    };
-    
     private final RepositoryPersister repositoryPersister;
     private final Communicator communicator;
     private final Encryptor encryptor;
     private final ApplicationProperties applicationProperties;
 
-	/* Maps ProjectMapping to SourceControlRepository */
-	private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping, SourceControlRepository>()
-	{
-		public SourceControlRepository apply(ProjectMapping pm)
+    /* Maps ProjectMapping to SourceControlRepository */
+    private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping, SourceControlRepository>()
+    {
+        @Override
+        public SourceControlRepository apply(ProjectMapping pm)
 		{
 			String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
 			String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(),
 					pm.getRepositoryUrl());
-			return new DefaultSourceControlRepository(pm.getID(), getRepositoryUri(pm.getRepositoryUrl()),
+			return new DefaultSourceControlRepository(pm.getID(), pm.getRepositoryType(), getRepositoryUri(pm.getRepositoryUrl()),
                     pm.getProjectKey(), pm.getUsername(), decryptedPassword,
-					pm.getAdminUsername(), decryptedAdminPassword, pm.getRepositoryType());
+					pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken());
 		}
 	};
 
 	private final Function<IssueMapping, Changeset> TO_CHANGESET = new Function<IssueMapping, Changeset>()
 	{
-		public Changeset apply(IssueMapping from)
+		@Override
+        public Changeset apply(IssueMapping from)
 		{
 			ProjectMapping pm = repositoryPersister.getRepository(from.getRepositoryId());
 			SourceControlRepository repository = TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
@@ -103,9 +70,18 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         this.applicationProperties = applicationProperties;
     }
 
-	public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username,
-			String password, String adminUsername, String adminPassword)
+    public void validateRepositoryAccess(String repositoryType, String projectKey, String repositoryUrl, String username,
+        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    {
+        RepositoryUri repositoryUri = getRepositoryUri(repositoryUrl);
+        getCommunicator().validateRepositoryAccess(repositoryType, projectKey, repositoryUri, username, password, adminUsername, adminPassword, accessToken);
+    }
+    
+	@Override
+    public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl, String username,
+			String password, String adminUsername, String adminPassword, String accessToken)
 	{
+	    
 		// Remove trailing slashes from URL
 		if (repositoryUrl.endsWith("/"))
 		{
@@ -117,63 +93,69 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 		{
 			repositoryUrl = repositoryUrl.replaceFirst("http:", "https:");
 		}
+		validateRepositoryAccess(repositoryType, projectKey, repositoryUrl, username, password, adminUsername, adminPassword, accessToken);
 
 		String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
 		String encryptedAdminPassword = encryptor.encrypt(adminPassword, projectKey, repositoryUrl);
-		ProjectMapping pm = repositoryPersister.addRepository(projectKey, repositoryUrl, username,
-				encryptedPassword, adminUsername, encryptedAdminPassword, getRepositoryType());
+		ProjectMapping pm = repositoryPersister.addRepository(repositoryType, projectKey, repositoryUrl, username,
+                encryptedPassword, adminUsername, encryptedAdminPassword, accessToken);
 		return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
 	}
 
-	public SourceControlRepository getRepository(int repositoryId)
+	@Override
+    public SourceControlRepository getRepository(int repositoryId)
 	{
 		ProjectMapping repository = repositoryPersister.getRepository(repositoryId);
 		return TO_SOURCE_CONTROL_REPOSITORY.apply(repository);
 	}
 
-	public List<SourceControlRepository> getRepositories(String projectKey)
+	@Override
+    public List<SourceControlRepository> getRepositories(String projectKey)
 	{
 		List<ProjectMapping> repositories = repositoryPersister.getRepositories(projectKey, getRepositoryType());
 		return Lists.transform(repositories, TO_SOURCE_CONTROL_REPOSITORY);
 	}
 
-	public List<Changeset> getChangesets(String issueKey)
+	@Override
+    public List<Changeset> getChangesets(String issueKey)
 	{
-		List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey);
-		List<Changeset> changesets = Lists.newArrayList(Lists.transform(issueMappings, TO_CHANGESET));
-		Collections.sort(changesets, CHANGESET_COMPARATOR);
-        return changesets;
+		List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey, getRepositoryType());
+		return Lists.transform(issueMappings, TO_CHANGESET);
 	}
 
-	public void removeRepository(int id)
+	@Override
+    public void removeRepository(int id)
 	{
 		repositoryPersister.removeRepository(id);
 	}
 
-	public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
+	@Override
+    public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
 	{
 		repositoryPersister.addChangeset(issueId, changeset);
 	}
 
-	public SourceControlUser getUser(SourceControlRepository repository, String username)
+	@Override
+    public SourceControlUser getUser(SourceControlRepository repository, String username)
 	{
 		return getCommunicator().getUser(repository, username);
 	}
 
 
+    @Override
     public String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset)
     {
 
             String htmlParentHashes = "";
-            String repositoryUrl = repository.getRepositoryUri().getRepositoryUrl();
+            RepositoryUri repositoryUri = repository.getRepositoryUri();
             if (!changeset.getParents().isEmpty())
             {
-                for (String node : changeset.getParents())
+                for (String parentNode : changeset.getParents())
                 {
                     // ehm ehm ... what is this? shouldn't this be
                     // htmlParentHashes+=
-                    htmlParentHashes = "<tr><td style='color: #757575'>Parent:</td><td><a href='" + repositoryUrl +
-                            "/changeset/" + node + "' target='_new'>" + node + "</a></td></tr>";
+                    String parentURL = repositoryUri.getParentUrl(parentNode);
+                    htmlParentHashes = "<tr><td style='color: #757575'>Parent:</td><td><a href='" + parentURL + "' target='_new'>" + parentNode + "</a></td></tr>";
                 }
             }
 
@@ -186,10 +168,10 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
                     String fileName = file.getFile();
                     String color = file.getFileAction().getColor();
                     String fileActionName = file.getFileAction().toString();
-                    String fileCommitURL = repositoryUrl + "/src/" + changeset.getNode() + "/" + urlEncode(file.getFile());
+                    String fileCommitURL = repositoryUri.getFileCommitUrl(changeset.getNode(), CustomStringUtils.encode(file.getFile()));
                     htmlFile = "<li><span style='color:" + color + "; font-size: 8pt;'>" +
-                            TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
-                            fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
+                        TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
+                        fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
                     mapFiles.put(fileName, htmlFile);
                 }
             }
@@ -289,15 +271,15 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             String commitURL = changeset.getCommitURL(repository);
             SourceControlUser user = getUser(repository, changeset.getAuthor());
             String gravatarUrl = user.getAvatar().replace("s=32", "s=60");
-            String baseRepositoryUrl = repository.getRepositoryUri().getBaseUrl();
+            String baseRepositoryUrl = repositoryUri.getBaseUrl();
 
             htmlCommitEntry = htmlCommitEntry.replace("#gravatar_url", gravatarUrl);
-            htmlCommitEntry = htmlCommitEntry.replace("#user_url", baseRepositoryUrl + "/" + urlEncode(login));
+            htmlCommitEntry = htmlCommitEntry.replace("#user_url", baseRepositoryUrl + "/" + CustomStringUtils.encode(login));
             htmlCommitEntry = htmlCommitEntry.replace("#login", TextUtils.htmlEncode(login));
             htmlCommitEntry = htmlCommitEntry.replace("#user_name", TextUtils.htmlEncode(authorName));
             htmlCommitEntry = htmlCommitEntry.replace("#commit_message", TextUtils.htmlEncode(changeset.getMessage()));
-            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_time", BitbucketChangesetFactory.getDateString(changeset.getTimestamp()));
-            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_date", BitbucketChangesetFactory.getDateString(changeset.getTimestamp()));
+            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_time", getDateString(changeset.getTimestamp()));
+            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_date", getDateString(changeset.getTimestamp()));
             htmlCommitEntry = htmlCommitEntry.replace("#commit_url", commitURL);
             htmlCommitEntry = htmlCommitEntry.replace("#commit_hash", changeset.getNode());
             //htmlCommitEntry = htmlCommitEntry.replace("#tree_url", "https://github.com/" + login + "/" + projectName + "/tree/" + commit_hash);
@@ -305,7 +287,15 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             return htmlCommitEntry;
     }
 
+    public String getDateString(Date datetime) {
+        // example:    2011-05-26 10:54:41
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return df.format(datetime);
+    }
 
+
+
+    @Override
     public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
     {
         return new DefaultSynchronisationOperation(key, this, getCommunicator(), progressProvider);
@@ -314,26 +304,13 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     protected boolean hasValidFormat(String url)
     {
         // Valid URL
-        Pattern p = Pattern.compile("^(https|http)://[a-zA-Z0-9][-a-zA-Z0-9]*.[a-zA-Z0-9]+/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
+        Pattern p = Pattern.compile("^(https|http)://[a-zA-Z0-9][-a-zA-Z0-9]*(.[a-zA-Z0-9]+)+/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
         Matcher m = p.matcher(url);
         return m.matches();
     }
 
-	public abstract String getRepositoryType();
-
-	public abstract boolean canHandleUrl(String url);
-
-
-    protected String urlEncode(String s)
-    {
-        try
-        {
-            return URLEncoder.encode(s, "UTF-8");
-        } catch (UnsupportedEncodingException e)
-        {
-            throw new RuntimeException("required encoding not found");
-        }
-    }
+	@Override
+    public abstract String getRepositoryType();
 
     public ApplicationProperties getApplicationProperties()
     {
@@ -345,9 +322,33 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         return communicator;
     }
 
-
     @Override
     public List<ChangesetMapping> getLastChangesetMappings(int count) {
         return repositoryPersister.getLastChangesetMappings(count);
     }
+
+    @Override
+    public UrlInfo getUrlInfo(String repositoryUrl)
+    {
+        if (!hasValidFormat(repositoryUrl)) return null;
+        return getCommunicator().getUrlInfo(getRepositoryUri(repositoryUrl));
+    }
+
+    @Override
+    public void setupPostcommitHook(SourceControlRepository repo)
+	{
+		getCommunicator().setupPostcommitHook(repo, getPostCommitUrl(repo));
+	}
+
+	private String getPostCommitUrl(SourceControlRepository repo)
+	{
+		return getApplicationProperties().getBaseUrl() + "/rest/bitbucket/1.0/repository/"+repo.getId()+"/sync";
+	}
+
+    @Override
+    public void removePostcommitHook(SourceControlRepository repo)
+	{
+		getCommunicator().removePostcommitHook(repo, getPostCommitUrl(repo));
+	}
+
 }
