@@ -62,11 +62,11 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
     {
         configureRepos.deleteAllRepositories();
 
-        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
+        configureRepos.addPrivateRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
 
         String syncStatusMessage = configureRepos.getSyncStatusMessage();
 
-        assertThat(syncStatusMessage, containsString("Sync Failed: Incorrect credentials"));
+        assertThat(syncStatusMessage, containsString("Sync Finished"));
     }
 
     @Test
