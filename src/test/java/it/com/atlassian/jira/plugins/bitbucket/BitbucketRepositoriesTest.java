@@ -55,7 +55,8 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
         configureRepos.addRepoToProjectFailing("QA", TEST_NOT_EXISTING_REPO_URL);
 
         String errorMessage = configureRepos.getErrorStatusMessage();
-        assertThat(errorMessage, containsString("Error!The repository url [" + TEST_NOT_EXISTING_REPO_URL + "] is incorrect or the repository is not responding."));
+        assertThat(errorMessage, containsString("The repository url [" + TEST_NOT_EXISTING_REPO_URL + "] is incorrect or the repository is not responding."));
+        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
     }
 
     @Test

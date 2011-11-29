@@ -6,14 +6,13 @@ import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugin.projectoperation.AbstractPluggableProjectOperation;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.project.Project;
 import com.atlassian.sal.api.ApplicationProperties;
-import com.opensymphony.user.User;
 
-@SuppressWarnings("deprecation")
 public class ProjectSettings extends AbstractPluggableProjectOperation
 {
     private static final Pattern BITBUCKET_NAME_PATTERN = Pattern.compile(".*bitbucket.org/([^/]+/[^/]+)(/default)?");

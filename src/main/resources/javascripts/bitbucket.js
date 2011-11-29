@@ -92,6 +92,9 @@ AJS.$(document).ready(function(){
 	{
 		init_repositories();
 	}
+	
+//	jQuery('#footer').addClass('footer');
+	
 })
 
 

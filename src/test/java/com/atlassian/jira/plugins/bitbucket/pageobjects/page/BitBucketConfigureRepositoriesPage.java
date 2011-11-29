@@ -1,18 +1,21 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
+import org.hamcrest.Matchers;
+import org.hamcrest.core.IsEqual;
+import org.openqa.selenium.By;
+
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.Options;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import org.hamcrest.Matchers;
-import org.hamcrest.core.IsEqual;
-import org.openqa.selenium.By;
 
 /**
  * Represents the page to link repositories to projects
  */
 public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositoriesPage
 {
+    private static final int BIG_TIMEOUT = 60000;
+
     @ElementBy(id = "bbUsername")
     PageElement bbUsernameInput;
 
@@ -36,7 +39,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         urlTextbox.clear().type(url);
         projectSelect.select(Options.value(projectKey));
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"), Poller.by(10000));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"), Poller.by(BIG_TIMEOUT));
         // postcommit hook
         addPostCommitServiceCheckbox.click();
         adminUsernameTextbox.clear().type(adminUsername);
@@ -63,7 +66,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"), Poller.by(10000));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"), Poller.by(BIG_TIMEOUT));
         addRepositoryButton.click();
 
         Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
@@ -85,7 +88,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed().hasText("Error!"));
+        Poller.waitUntil("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed().getText(), Matchers.containsString("Error!"), Poller.by(BIG_TIMEOUT));
         return this;
     }
 
@@ -102,7 +105,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"), Poller.by(10000));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"), Poller.by(BIG_TIMEOUT));
         bbUsernameInput.type("jirabitbucketconnector");
         bbPasswordInput.type("jirabitbucketconnector");
         addRepositoryButton.click();
