@@ -61,7 +61,7 @@
         <dependency>
             <groupId>com.atlassian.selenium</groupId>
             <artifactId>atlassian-webdriver-jira</artifactId>
-            <version>2.0</version>
+            <version>2.1.0.m3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -93,20 +93,6 @@
             <version>2.4.0</version>
             <scope>provided</scope>
         </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>com.atlassian.streams</groupId>-->
-            <!--<artifactId>streams-thirdparty-api</artifactId>-->
-            <!--<version>5.0</version>-->
-            <!--<scope>provided</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>com.atlassian.streams</groupId>-->
-            <!--<artifactId>streams-api</artifactId>-->
-            <!--<version>5.0</version>-->
-            <!--<scope>provided</scope>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>com.atlassian.streams</groupId>
             <artifactId>streams-api</artifactId>
@@ -119,12 +105,6 @@
             <version>${streams.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>com.atlassian.upm</groupId>-->
-            <!--<artifactId>upm-api</artifactId>-->
-            <!--<version>1.6-m3</version>-->
-            <!--&lt;!&ndash;<scope>provided</scope>&ndash;&gt;-->
-        <!--</dependency>-->
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
@@ -138,7 +118,7 @@
             <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
                 <artifactId>maven-jira-plugin</artifactId>
-                <version>3.4</version>
+                <version>3.5.2</version>
                 <extensions>true</extensions>
                 <configuration>
                     <systemPropertyVariables>
@@ -151,13 +131,6 @@
                     <testResourcesVersion>${jira.data.version}</testResourcesVersion>
                     <productDataPath>${basedir}/src/test/resources/generated-test-resources.zip</productDataPath>
                     <log4jProperties>src/aps/log4j.properties</log4jProperties>
-                    <libArtifacts>
-                        <libArtifact>
-                            <groupId>com.atlassian.jira.plugins</groupId>
-                            <artifactId>atlassian-jira-rpc-plugin</artifactId>
-                            <version>${jira.version}</version>
-                        </libArtifact>
-                    </libArtifacts>
                 </configuration>
             </plugin>
             <plugin>
@@ -173,8 +146,8 @@
     </build>
 
     <properties>
-        <jira.version>4.4.1-studio-rc1</jira.version>
-        <jira.data.version>4.3.4</jira.data.version>
+        <jira.version>5.0-rc1</jira.version>
+        <jira.data.version>5.0-rc1</jira.data.version>
         <ao.version>0.15</ao.version>
         <streams.version>4.1.2</streams.version>
     </properties>
