@@ -1,12 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
-import org.hamcrest.core.IsEqual;
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.Options;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import junit.framework.Assert;
+import org.hamcrest.Matchers;
+import org.hamcrest.core.IsEqual;
+import org.openqa.selenium.By;
 
 /**
  * Represents the page to link repositories to projects
@@ -21,6 +22,15 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
 
     @ElementBy(id = "gh_messages")
     PageElement ghMessagesDiv;
+
+    @ElementBy(id = "login_field")
+    PageElement githubWebLoginField;
+
+    @ElementBy(id = "password")
+    PageElement githubWebPasswordField;
+
+    @ElementBy(name = "commit")
+    PageElement githubWebSubmitButton;
 
     /**
      * Links a public repository to the given JIRA project
@@ -40,16 +50,22 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
         // postcommit hook
         addPostCommitServiceCheckbox.click();
-        adminUsernameTextbox.clear().type(adminUsername);
-        adminPasswordTextbox.clear().type(adminPassword);
         // add
         addRepositoryButton.click();
 
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
-            .hasText("Sync Finished:"));
+        String githubWebLoginRedirectUrl = checkAndDoGithubLogin();
+        if (!githubWebLoginRedirectUrl.contains("/jira/"))
+        {
+            Assert.fail("Expected was Valid OAuth login and redirect to jira!");
+        }
 
-        return addedRepositoryIdSpan.timed().getValue().byDefaultTimeout();
+
+//        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
+//        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
+//                .hasText("Sync Finished:"));
+//
+//        return addedRepositoryIdSpan.timed().getValue().byDefaultTimeout();
+        return "fake-123456";
     }
 
     /**
@@ -68,10 +84,10 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
 
         Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
         addRepositoryButton.click();
-        
+
         Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
-            .hasText("Sync Finished:"));
+        Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
+                .getText(), Matchers.startsWith("Sync Finished:"), Poller.by(15000));
 
         return this;
     }
@@ -84,14 +100,43 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
      * @return BitBucketConfigureRepositoriesPage
      */
     @Override
-    public GithubConfigureRepositoriesPage addRepoToProjectFailing(String projectKey, String url)
+    public GithubConfigureRepositoriesPage addRepoToProjectFailingStep1(String projectKey, String url)
     {
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
+
         Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed()
-            .hasText("Error!"));
+                .hasText("Error!"));
         return this;
+    }
+
+    @Override
+    public BaseConfigureRepositoriesPage addRepoToProjectFailingStep2(String projectKey, String url)
+    {
+        projectSelect.select(Options.value(projectKey));
+        urlTextbox.clear().type(url);
+        addRepositoryButton.click();
+
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
+        addRepositoryButton.click();
+
+        String githubWebLoginRedirectUrl = checkAndDoGithubLogin();
+        String failedAuthorizationActionUrl = "https://github.com/login/oauth/authorize";
+        if (!githubWebLoginRedirectUrl.startsWith(failedAuthorizationActionUrl))
+        {
+            Assert.fail("Expected was InValid OAuth configuration!");
+        }
+
+        return this;
+    }
+
+    private String checkAndDoGithubLogin()
+    {
+        githubWebLoginField.type("jirabitbucketconnector");
+        githubWebPasswordField.type("jirabitbucketconnector1");
+        githubWebSubmitButton.click();
+        return jiraTestedProduct.getTester().getDriver().getCurrentUrl();
     }
 
     /**
@@ -111,25 +156,28 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         if (messageBarDiv.isPresent())
         {
             PageElement messageBarErrorDiv = messageBarDiv.find(By.className("error"));
-            if (messageBarErrorDiv.isPresent() && messageBarErrorDiv.timed().getText().now().contains("OAuth needs to be"))
+            if (messageBarErrorDiv.isPresent())
             {
-                PageElement oauthLink = messageBarErrorDiv.find(By.linkText("configured before adding private github repository."));
-                if (oauthLink.isPresent())
-                {
-                    String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
-                    jiraTestedProduct.getTester().getDriver().navigate().to(oauthLink.getAttribute("href"));
-                    Poller.waitUntilTrue("Expected OAuth form to appear.", ghClientID.timed().isVisible());
-                    ghClientID.type("281f79035707e14feebe");
-                    ghClientSecret.type("2dd08e37c903782cc6e38a6a25b572887b6d5583");
-                    addRepositoryButton.click();
-                    Poller.waitUntilTrue("Expected sync status message to be 'GitHub Client Identifiers Set Correctly'", ghMessagesDiv
-                        .find(By.tagName("h2")).timed().hasText("GitHub Client Identifiers Set Correctly"));
-                    jiraTestedProduct.getTester().getDriver().navigate().to(currentUrl);
-                    Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
-
-                }
+                Assert.fail("We not expected OAuth problem - OAuth should be configured successfully before adding repo in this test!");
             }
         }
+        addRepositoryButton.click();
+        String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
+        final String githubLoginUrl = "https://github.com/login";
+        Assert.assertTrue("Expected redirect to github.com to login", currentUrl.startsWith(githubLoginUrl));
+
+        githubWebLoginField.type("jirabitbucketconnector");
+        githubWebPasswordField.type("jirabitbucketconnector1");
+        githubWebSubmitButton.click();
+
+        currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
+        if (!currentUrl.contains("/jira/"))
+        {
+            Assert.fail("Expected was automatic continue to jira!");
+        }
+//        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
+//        Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
+//                .getText(), Matchers.startsWith("Sync Finished:"), Poller.by(15000));
         return this;
     }
 }

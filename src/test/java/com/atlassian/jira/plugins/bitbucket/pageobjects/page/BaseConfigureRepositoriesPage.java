@@ -153,7 +153,8 @@ public abstract class BaseConfigureRepositoriesPage implements Page
     }
 
     public abstract BaseConfigureRepositoriesPage addPublicRepoToProjectSuccessfully(String projectKey, String url);
-    public abstract BaseConfigureRepositoriesPage addRepoToProjectFailing(String projectKey, String url);
+    public abstract BaseConfigureRepositoriesPage addRepoToProjectFailingStep1(String projectKey, String url);
+    public abstract BaseConfigureRepositoriesPage addRepoToProjectFailingStep2(String projectKey, String url);
     public abstract BaseConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url);
     public abstract String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername, String adminPassword);
 

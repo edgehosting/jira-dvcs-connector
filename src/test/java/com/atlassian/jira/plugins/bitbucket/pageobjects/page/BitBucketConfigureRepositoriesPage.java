@@ -80,12 +80,18 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
      * @return BitBucketConfigureRepositoriesPage
      */
     @Override
-    public BitBucketConfigureRepositoriesPage addRepoToProjectFailing(String projectKey, String url)
+    public BitBucketConfigureRepositoriesPage addRepoToProjectFailingStep1(String projectKey, String url)
     {
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
         Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed().hasText("Error!"));
+        return this;
+    }
+
+    @Override
+    public BaseConfigureRepositoriesPage addRepoToProjectFailingStep2(String projectKey, String url)
+    {
         return this;
     }
 
