@@ -1,17 +1,16 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugin.projectoperation.AbstractPluggableProjectOperation;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.project.Project;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.opensymphony.user.User;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.List;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("deprecation")
 public class ProjectSettings extends AbstractPluggableProjectOperation
@@ -34,56 +33,67 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
 
         List<SourceControlRepository> repositories = globalRepositoryManager.getRepositories(project.getKey());
         StringBuilder result = new StringBuilder();
+        result.append("<div style=\"padding-bottom:5px; \">");
         result.append("<span class=\"project-config-list-label\">");
-        if (repositories.size() > 1)
-        {
-            result.append("Bitbucket Repositories:");
-        }
-        else
-        {
-            result.append("Bitbucket Repository:");
-        }
-        result.append("</span>\n")
-                .append("<span class=\"project-config-list-value\">");
-
-        switch (repositories.size())
-        {
-            case 0:
-                result.append("None");
-                break;
-            case 1:
-                result.append(getRepositoryName(repositories.get(0).getRepositoryUri().getRepositoryUrl()));
-                break;
-            default:
-                result.append(repositories.size()).append(" repositories");
-        }
+        result.append("Bitbucket and Github Repositories:");
+        result.append("</span>\n");
+        result.append("<span class=\"project-config-list-value\">");
         result.append(" (<a href='")
                 .append(baseURL)
                 .append("/secure/admin/ConfigureBitbucketRepositories!default.jspa?projectKey=")
                 .append(project.getKey())
                 .append("&mode=single'>")
                 .append("Configure</a>)");
+        result.append("</span>");
+        result.append("</div>");
+
+
+
+        if (repositories.isEmpty())
+        {
+            appendNoneRow(result);
+        } else
+        {
+            for (int i=0; i<repositories.size(); i++) {
+                SourceControlRepository repository = repositories.get(0);
+                appendRepositoryRow(result, repository);
+            }
+        }
+
         return result.toString();
 
     }
 
-    /**
-     * Tries to extract repository name from URL
-     * @param repoUrl The repo url, shouldn't be null, but could be
-     * @return The text to tell the user about this repo
-     */
-    String getRepositoryName(String repoUrl)
+    private void appendNoneRow(StringBuilder result)
     {
-        String result = "One repository";
-        if (repoUrl != null)
-        {
-            Matcher matcher = BITBUCKET_NAME_PATTERN.matcher(repoUrl);
-            if (matcher.matches())
-            {
-                result = matcher.group(1);
-            }
-        }
-        return result;
+        appendRow(result, "None");
+    }
+
+    private void appendRepositoryRow(StringBuilder result, SourceControlRepository repository)
+    {
+        StringBuffer repoRowContent = new StringBuffer();
+        RepositoryUri repositoryUri = repository.getRepositoryUri();
+
+        repoRowContent.append(repository.getRepositoryType());
+        repoRowContent.append(": ");
+
+        repoRowContent.append("<a href=\"");
+        repoRowContent.append(repositoryUri.getRepositoryUrl());
+        repoRowContent.append("\" target=\"_new\">");
+        repoRowContent.append(repositoryUri.getSlug());
+        repoRowContent.append("</a>");
+
+        appendRow(result, repoRowContent.toString());
+    }
+
+    private void appendRow(StringBuilder result, String rowText)
+    {
+        result.append("<div>");
+        result.append("<span class=\"project-config-list-label\">");
+        result.append(rowText);
+        result.append("</span>");
+        result.append("</div>");
+
     }
 
     @Override
