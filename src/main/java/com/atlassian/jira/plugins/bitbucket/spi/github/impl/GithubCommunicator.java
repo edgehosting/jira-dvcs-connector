@@ -1,23 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.httpclient.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
@@ -30,6 +19,18 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class GithubCommunicator implements Communicator
 {
@@ -158,7 +159,7 @@ public class GithubCommunicator implements Communicator
             throw new SourceControlException("Could not create relevant POST data for postcommit hook.",e);
         } catch (ResponseException e)
         {
-            throw new SourceControlException("Could not add postcommit hook",e);
+            throw new SourceControlException("Could not add postcommit hook. ",e);
         }
     }
 
@@ -253,6 +254,28 @@ public class GithubCommunicator implements Communicator
     public void validateRepositoryAccess(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
         String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
-        // TODO Auto-generated method stub
+        Authentication auth;
+        if (StringUtils.isNotBlank(accessToken))
+        {
+            auth = new GithubOAuthAuthentication(accessToken);
+        } else
+        {
+            auth = Authentication.ANONYMOUS;
+        }
+
+        try
+        {
+            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl());
+            // in case we have valid access_token but for other account github returns HttpStatus.SC_NOT_FOUND response
+            if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+            {
+                throw new SourceControlException.UnauthorisedException("You don't have access to the repository.");
+            }
+        } catch (ResponseException e)
+        {
+            log.debug(e.getMessage(), e);
+            throw new SourceControlException(e.getMessage());
+        }
+
     }
 }

@@ -35,6 +35,7 @@
                 <span class="aui-icon icon-warning"></span>
                 <strong>Error adding postcommit service.</strong>
             </p>
+            <p>This usually happens when you are not owner of the repository.</p>
             <p>Please install the postcommit service <a href="http://help.github.com/post-receive-hooks/">manually</a></p>
             <p>Postcommit url for this repository is: <b>$action.getPostCommitUrl()</b></p>
         </div>            
