@@ -16,18 +16,15 @@ import java.util.List;
  */
 public abstract class BitBucketBaseTest
 {
-    protected JiraTestedProduct jira;
+    protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     protected BaseConfigureRepositoriesPage configureRepos;
 
     @SuppressWarnings("unchecked")
     @Before
     public void loginToJira()
     {
-        jira = TestedProductFactory.create(JiraTestedProduct.class);
-
         configureRepos = (BaseConfigureRepositoriesPage) jira.gotoLoginPage().loginAsSysAdmin(getPageClass());
         configureRepos.setJiraTestedProduct(jira);
-
     }
 
     @SuppressWarnings("rawtypes")
