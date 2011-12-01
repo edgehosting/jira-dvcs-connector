@@ -136,6 +136,9 @@
 	        <action name="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit" alias="BitbucketPostCommit">
 	            <view name="postcommit">/templates/com/atlassian/jira/plugins/bitbucket/webwork/postcommit.vm</view>
 	        </action>
+	        <action name="com.atlassian.jira.plugins.bitbucket.webwork.GithubPostCommit" alias="GitHubPostCommit">
+                <view name="postcommit">/templates/com/atlassian/jira/plugins/bitbucket/webwork/postcommit.vm</view>
+            </action>
 
         </actions>
     </webwork1>
