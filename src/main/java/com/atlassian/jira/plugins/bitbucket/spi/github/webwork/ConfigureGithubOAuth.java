@@ -36,6 +36,7 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
     {
         if (!getHasErrorMessages())
         {
+            // TODO test identifiers if they are correct
             addClientIdentifiers();
         }
 

@@ -132,12 +132,15 @@
                 <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/configuregithuboauth.vm</view>
             </action>
 
-            <!-- this is here for backward compatibility -->
+            <!-- these actions are  here for backward compatibility -->
 	        <action name="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit" alias="BitbucketPostCommit">
 	            <view name="postcommit">/templates/com/atlassian/jira/plugins/bitbucket/webwork/postcommit.vm</view>
 	        </action>
 	        <action name="com.atlassian.jira.plugins.bitbucket.webwork.GithubPostCommit" alias="GitHubPostCommit">
                 <view name="postcommit">/templates/com/atlassian/jira/plugins/bitbucket/webwork/postcommit.vm</view>
+            </action>
+            <action name="com.atlassian.jira.plugins.bitbucket.webwork.GitHubOAuth2" alias="GitHubOAuth2">
+                <view name="success">/templates/com/atlassian/jira/plugins/bitbucket/webwork/githuboauth2.vm</view>
             </action>
 
         </actions>

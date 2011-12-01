@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <title>GitHub OAuth Settings</title>
+  </head>
+
+  <body>
+
+    #set($baseurl = $action.getBaseUrl())
+    
+    <div class="aui-message warning shadowed">
+        <p class="title">
+            <span class="aui-icon icon-warning"></span>
+            <strong>Warning</strong>
+        </p>
+        <p>It appears that OAuth callback URL for this Jira application is not properly configured in Github. <br />Please follow the instructions on the <a href="${baseurl}/secure/admin/ConfigureGithubOAuth!default.jspa?atl_token=${atl_token}" target="_blank">OAuth configuration page</a> and set the Callback url to <b>$baseurl</b>.</p>
+        <p><a href="$action.getRedirectUrl()">Continue</a> adding the repository.</p>
+    </div><!-- .aui-message -->       
+        
+  </body>
+</html>
