@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.bitbucket;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
@@ -20,8 +22,17 @@ import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
  */
 public class GlobalRepositoryManager implements RepositoryManager
 {
-	public RepositoryManager[] repositoryManagers;
+	private final RepositoryManager[] repositoryManagers;
 	private final RepositoryPersister repositoryPersister;
+	
+    private static final Comparator<? super Changeset> CHANGESET_COMPARATOR = new Comparator<Changeset>()
+    {
+        @Override
+        public int compare(Changeset o1, Changeset o2)
+        {
+            return o1.getTimestamp().compareTo(o2.getTimestamp());
+        }
+    };
 
 	public GlobalRepositoryManager(RepositoryPersister repositoryPersister, RepositoryManager... repositoryManagers)
 	{
@@ -99,6 +110,10 @@ public class GlobalRepositoryManager implements RepositoryManager
 		{
 			allChangesets.addAll(repositoryManager.getChangesets(issueKey));
 		}		
+    	
+    	
+        Collections.sort(allChangesets, Collections.reverseOrder(CHANGESET_COMPARATOR));
+        
     	return allChangesets;
 	}
 
