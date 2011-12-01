@@ -1,12 +1,13 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubConfigureRepositoriesPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.*;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
@@ -22,6 +23,59 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     private static final String TEST_REPO_URL = "https://github.com/jirabitbucketconnector/test-project";
     private static final String TEST_PRIVATE_REPO_URL = "https://github.com/dusanhornik/my-private-github-repo";
     private static final String TEST_NOT_EXISTING_REPO_URL = "https://github.com/jirabitbucketconnector/repo-does-not-exist";
+
+    private static String clientID;
+    private static String clientSecret;
+    private static String oauthAppName;
+    private static String oauthAppLink;
+
+    @BeforeClass
+    public static void registerAppToGithub()
+    {
+        jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
+        GithubLoginPage ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
+        ghLoginPage.doLogin();
+
+        jira.getTester().gotoUrl(GithubRegisterOAuthAppPage.PAGE_URL);
+        GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
+        oauthAppName = "testApp" + System.currentTimeMillis();
+        String baseUrl = jira.getProductInstance().getBaseUrl();
+        registerAppPage.registerApp(oauthAppName, baseUrl, baseUrl);
+
+        jira.getTester().gotoUrl(GithubRegisteredOAuthAppsPage.PAGE_URL);
+        GithubRegisteredOAuthAppsPage registeredOAuthAppsPage = jira.getPageBinder().bind(GithubRegisteredOAuthAppsPage.class);
+        registeredOAuthAppsPage.parseClientIdAndSecret(oauthAppName);
+        clientID = registeredOAuthAppsPage.getClientID();
+        clientSecret = registeredOAuthAppsPage.getClientSecret();
+        oauthAppLink = registeredOAuthAppsPage.getOauthAppUrl();
+        jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
+
+        jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
+
+
+        GithubOAuthConfigPage oauthConfigPage = jira.gotoLoginPage().loginAsSysAdmin(GithubOAuthConfigPage.class);
+        oauthConfigPage.setCredentials(clientID, clientSecret);
+
+        // logout jira
+        jira.getTester().getDriver().manage().deleteAllCookies();
+    }
+
+    @AfterClass
+    public static void deregisterAppToGithub()
+    {
+        jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
+
+        jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
+        GithubLoginPage ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
+        ghLoginPage.doLogin();
+
+
+        jira.getTester().gotoUrl(oauthAppLink);
+        GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
+        registerAppPage.deleteOAuthApp();
+
+        jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
+    }
 
     @SuppressWarnings("rawtypes")
     @Override
@@ -70,10 +124,6 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
         goToRepositoriesConfigPage();
 
         configureRepos.addRepoToProjectFailingStep2("QA", TEST_PRIVATE_REPO_URL);
-
-        //String errorStatusMessage = configureRepos.getErrorStatusMessage();
-
-        //assertThat(errorStatusMessage, containsString("Error!"));
     }
 
     @Test
@@ -81,23 +131,22 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     {
         configureRepos.deleteAllRepositories();
 
-        goToGithubOAuthConfigPage().setCredentials(GithubOAuthConfigPage.VALID_CLIENT_ID, GithubOAuthConfigPage.VALID_CLIENT_SECRET);
+        goToGithubOAuthConfigPage().setCredentials(clientID, clientSecret);
 
         goToRepositoriesConfigPage();
 
         configureRepos.addPrivateRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
 
-//        String syncStatusMessage = configureRepos.getSyncStatusMessage();
-//
-//        assertThat(syncStatusMessage, containsString("Sync Finished"));
-//        assertThat(syncStatusMessage, not(containsString("Sync Failed")));
+        String syncStatusMessage = configureRepos.getSyncStatusMessage();
+
+        assertThat(syncStatusMessage, containsString("Sync Finished"));
+        assertThat(syncStatusMessage, not(containsString("Sync Failed")));
     }
 
 
     @Test
     public void testPostCommitHookAdded() throws Exception
     {
-        String servicesConfig;
         String baseUrl = jira.getProductInstance().getBaseUrl();
 
         configureRepos.deleteAllRepositories();
@@ -106,17 +155,18 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
                 TEST_REPO_URL, "jirabitbucketconnector",
                 "jirabitbucketconnector1");
         // check that it created postcommit hook
-        String syncUrl = baseUrl + "/rest/bitbucket/1.0/repository/" + repoId + "/sync";
-        String githubServiceConfigUrl = "hhttps://api.github.com/1.0/repositories/jirabitbucketconnector/test=project/services";
-        servicesConfig = getGithubServices(githubServiceConfigUrl, "jirabitbucketconnector",
-                "jirabitbucketconnector1");
-        assertThat(servicesConfig, containsString(syncUrl));
+
+        String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/" + repoId + "/sync";
+        String hooksURL = "https://github.com/jirabitbucketconnector/test-project/admin/hooks";
+        String hooksPage = getGithubServices(hooksURL, "jirabitbucketconnector", "jirabitbucketconnector1");
+        assertThat(hooksPage, containsString(githubServiceConfigUrlPath));
+        goToRepositoriesConfigPage();
         // delete repository
         configureRepos.deleteAllRepositories();
         // check that postcommit hook is removed
-        servicesConfig = getGithubServices(githubServiceConfigUrl, "jirabitbucketconnector",
+        hooksPage = getGithubServices(hooksURL, "jirabitbucketconnector",
                 "jirabitbucketconnector1");
-        assertThat(servicesConfig, not(containsString(syncUrl)));
+        assertThat(hooksPage, not(containsString(githubServiceConfigUrlPath)));
     }
 
     private String getGithubServices(String url, String username, String password) throws Exception
@@ -131,10 +181,4 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
         httpClient.executeMethod(method);
         return method.getResponseBodyAsString();
     }
-
-    public void testSyncFromPostCommit()
-    {
-        // TODO
-    }
-
 }

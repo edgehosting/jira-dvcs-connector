@@ -14,15 +14,6 @@ import org.openqa.selenium.By;
  */
 public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPage
 {
-    @ElementBy(id = "clientID")
-    PageElement ghClientID;
-
-    @ElementBy(id = "clientSecret")
-    PageElement ghClientSecret;
-
-    @ElementBy(id = "gh_messages")
-    PageElement ghMessagesDiv;
-
     @ElementBy(id = "login_field")
     PageElement githubWebLoginField;
 
@@ -47,25 +38,30 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         urlTextbox.clear().type(url);
         projectSelect.select(Options.value(projectKey));
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(15000));
         // postcommit hook
         addPostCommitServiceCheckbox.click();
         // add
         addRepositoryButton.click();
 
         String githubWebLoginRedirectUrl = checkAndDoGithubLogin();
-        if (!githubWebLoginRedirectUrl.contains("/jira/"))
+
+        if (jiraTestedProduct.getTester().getDriver().elementExists(By.name("authorize")))
+        {
+            jiraTestedProduct.getTester().getDriver().findElement(By.name("authorize")).click();
+        }
+
+        if (!jiraTestedProduct.getTester().getDriver().getCurrentUrl().startsWith(jiraTestedProduct.getProductInstance().getBaseUrl()))
         {
             Assert.fail("Expected was Valid OAuth login and redirect to jira!");
         }
 
 
-//        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-//        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
-//                .hasText("Sync Finished:"));
-//
-//        return addedRepositoryIdSpan.timed().getValue().byDefaultTimeout();
-        return "fake-123456";
+        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
+        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
+                .hasText("Sync Finished:"));
+
+        return addedRepositoryIdSpan.timed().getValue().byDefaultTimeout();
     }
 
     /**
@@ -170,14 +166,19 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         githubWebPasswordField.type("jirabitbucketconnector1");
         githubWebSubmitButton.click();
 
+        if (jiraTestedProduct.getTester().getDriver().elementExists(By.name("authorize")))
+        {
+            jiraTestedProduct.getTester().getDriver().findElement(By.name("authorize")).click();
+        }
+
         currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
-        if (!currentUrl.contains("/jira/"))
+        if (!currentUrl.startsWith(jiraTestedProduct.getProductInstance().getBaseUrl()))
         {
             Assert.fail("Expected was automatic continue to jira!");
         }
-//        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-//        Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
-//                .getText(), Matchers.startsWith("Sync Finished:"), Poller.by(15000));
+        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
+        Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
+                .getText(), Matchers.startsWith("Sync Finished:"), Poller.by(15000));
         return this;
     }
 }

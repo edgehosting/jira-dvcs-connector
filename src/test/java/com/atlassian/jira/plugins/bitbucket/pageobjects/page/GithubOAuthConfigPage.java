@@ -14,9 +14,6 @@ import javax.inject.Inject;
  */
 public class GithubOAuthConfigPage implements Page
 {
-    public static final String VALID_CLIENT_ID = "263e39164985144bc755";
-    public static final String VALID_CLIENT_SECRET = "81df744eba20038a5db4d3434d28c3cde526c943";
-
     @Inject
     PageBinder pageBinder;
 
