@@ -7,15 +7,18 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.atlassian.sal.api.ApplicationProperties;
 
 public class ConfigureGithubOAuth extends JiraWebActionSupport
 {
     final Logger logger = LoggerFactory.getLogger(ConfigureGithubOAuth.class);
     private final GithubOAuth githubOAuth;
+    private final ApplicationProperties applicationProperties;
 
-    public ConfigureGithubOAuth(GithubOAuth githubOAuth)
+    public ConfigureGithubOAuth(GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
     {
         this.githubOAuth = githubOAuth;
+        this.applicationProperties = applicationProperties;
     }
 
     @Override
@@ -87,6 +90,11 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
     public String getMessages()
     {
         return this.messages;
+    }
+    
+    public String getBaseUrl()
+    {
+        return applicationProperties.getBaseUrl();
     }
 
 }
