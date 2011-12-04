@@ -1,24 +1,38 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
+import junit.framework.Assert;
+
+import org.hamcrest.Matchers;
+import org.hamcrest.core.IsEqual;
+import org.openqa.selenium.By;
+
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.Options;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import junit.framework.Assert;
-import org.hamcrest.Matchers;
-import org.hamcrest.core.IsEqual;
-import org.openqa.selenium.By;
 
 /**
  * Represents the page to link repositories to projects
  */
 public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPage
 {
+    @ElementBy(id = "clientID")
+    PageElement ghClientID;
+
+    @ElementBy(id = "clientSecret")
+    PageElement ghClientSecret;
+
+    @ElementBy(id = "gh_messages")
+    PageElement ghMessagesDiv;
+
     @ElementBy(id = "login_field")
     PageElement githubWebLoginField;
 
     @ElementBy(id = "password")
     PageElement githubWebPasswordField;
+    
+    @ElementBy(name = "authorize")
+    PageElement githubWebAuthorizeButton;
 
     @ElementBy(name = "commit")
     PageElement githubWebSubmitButton;
@@ -38,29 +52,18 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         urlTextbox.clear().type(url);
         projectSelect.select(Options.value(projectKey));
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(15000));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
         // postcommit hook
         addPostCommitServiceCheckbox.click();
         // add
         addRepositoryButton.click();
 
-        String githubWebLoginRedirectUrl = checkAndDoGithubLogin();
-
-        if (jiraTestedProduct.getTester().getDriver().elementExists(By.name("authorize")))
-        {
-            jiraTestedProduct.getTester().getDriver().findElement(By.name("authorize")).click();
-        }
-
-        if (!jiraTestedProduct.getTester().getDriver().getCurrentUrl().startsWith(jiraTestedProduct.getProductInstance().getBaseUrl()))
+        checkAndDoGithubLogin();
+        String githubWebLoginRedirectUrl = authorizeGithubAppIfRequired();
+        if (!githubWebLoginRedirectUrl.contains("/jira/"))
         {
             Assert.fail("Expected was Valid OAuth login and redirect to jira!");
         }
-
-
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
-                .hasText("Sync Finished:"));
-
         return addedRepositoryIdSpan.timed().getValue().byDefaultTimeout();
     }
 
@@ -117,11 +120,11 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
         addRepositoryButton.click();
 
-        String githubWebLoginRedirectUrl = checkAndDoGithubLogin();
-        String failedAuthorizationActionUrl = "https://github.com/login/oauth/authorize";
-        if (!githubWebLoginRedirectUrl.startsWith(failedAuthorizationActionUrl))
+        String currentUrl = checkAndDoGithubLogin();
+        String expectedUrl = "https://github.com/login/oauth/authorize?";
+        if (!currentUrl.startsWith(expectedUrl) || !currentUrl.contains("client_id=xxx"))
         {
-            Assert.fail("Expected was InValid OAuth configuration!");
+            Assert.fail("Unexpected url: " + currentUrl);
         }
 
         return this;
@@ -129,12 +132,25 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
 
     private String checkAndDoGithubLogin()
     {
-        githubWebLoginField.type("jirabitbucketconnector");
-        githubWebPasswordField.type("jirabitbucketconnector1");
-        githubWebSubmitButton.click();
+        String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
+        if (currentUrl.contains("https://github.com/login?"))
+        {
+            githubWebLoginField.type("jirabitbucketconnector");
+            githubWebPasswordField.type("jirabitbucketconnector1");
+            githubWebSubmitButton.click();
+        }
         return jiraTestedProduct.getTester().getDriver().getCurrentUrl();
     }
 
+    private String authorizeGithubAppIfRequired()
+    {
+        String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
+        if (currentUrl.contains("/github.com/login/oauth"))
+        {
+            githubWebAuthorizeButton.click();
+        }
+        return jiraTestedProduct.getTester().getDriver().getCurrentUrl();
+    }
     /**
      * Links a public repository to the given JIRA project
      *
@@ -158,27 +174,19 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
             }
         }
         addRepositoryButton.click();
-        String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
-        final String githubLoginUrl = "https://github.com/login";
-        Assert.assertTrue("Expected redirect to github.com to login", currentUrl.startsWith(githubLoginUrl));
+//        String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
+//        final String githubLoginUrl = "https://github.com/login";
+//        Assert.assertTrue("Expected redirect to github.com to login", currentUrl.startsWith(githubLoginUrl));
 
-        githubWebLoginField.type("jirabitbucketconnector");
-        githubWebPasswordField.type("jirabitbucketconnector1");
-        githubWebSubmitButton.click();
-
-        if (jiraTestedProduct.getTester().getDriver().elementExists(By.name("authorize")))
-        {
-            jiraTestedProduct.getTester().getDriver().findElement(By.name("authorize")).click();
-        }
-
-        currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
-        if (!currentUrl.startsWith(jiraTestedProduct.getProductInstance().getBaseUrl()))
+        String currentUrl = checkAndDoGithubLogin();
+        currentUrl = authorizeGithubAppIfRequired();
+        if (!currentUrl.contains("/jira/"))
         {
             Assert.fail("Expected was automatic continue to jira!");
         }
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
-                .getText(), Matchers.startsWith("Sync Finished:"), Poller.by(15000));
+//        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
+//        Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
+//                .getText(), Matchers.startsWith("Sync Finished:"), Poller.by(15000));
         return this;
     }
 }

@@ -1,6 +1,9 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.*;
+import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -10,9 +13,11 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubConfigureRepositoriesPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubLoginPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubRegisterOAuthAppPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubRegisteredOAuthAppsPage;
 
 /**
  * Test to verify behaviour when syncing  github repository.
@@ -137,10 +142,8 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
 
         configureRepos.addPrivateRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
 
-        String syncStatusMessage = configureRepos.getSyncStatusMessage();
-
-        assertThat(syncStatusMessage, containsString("Sync Finished"));
-        assertThat(syncStatusMessage, not(containsString("Sync Failed")));
+        configureRepos.assertThatSyncMessage(containsString("Sync Finished"));
+        configureRepos.assertThatSyncMessage(not(containsString("Sync Failed")));
     }
 
 

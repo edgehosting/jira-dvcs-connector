@@ -65,9 +65,7 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
 
         configureRepos.addPrivateRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
 
-        String syncStatusMessage = configureRepos.getSyncStatusMessage();
-
-        assertThat(syncStatusMessage, containsString("Sync Finished"));
+        configureRepos.assertThatSyncMessage(containsString("Sync Finished"));
     }
 
     @Test
@@ -77,10 +75,8 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
 
         configureRepos.addPrivateRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
 
-        String syncStatusMessage = configureRepos.getSyncStatusMessage();
-
-        assertThat(syncStatusMessage, containsString("Sync Finished"));
-        assertThat(syncStatusMessage, not(containsString("Sync Failed")));
+        configureRepos.assertThatSyncMessage(containsString("Sync Finished"));
+        configureRepos.assertThatSyncMessage(not(containsString("Sync Failed")));
     }
 
     @Test
