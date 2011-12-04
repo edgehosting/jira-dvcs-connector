@@ -102,7 +102,7 @@
                     class="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketTabPanel">
 
         <description>Show Bitbucket changesets related to an issue in an issue tab panel.</description>
-        <label>Bitbucket</label>
+        <label>Commits</label>
         <resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>
     </issue-tabpanel>
 
