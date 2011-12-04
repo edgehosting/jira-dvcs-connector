@@ -1,16 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.webwork;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
@@ -21,6 +10,16 @@ import com.atlassian.jira.plugins.bitbucket.spi.github.impl.GithubRepositoryMana
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class AddGithubRepository extends JiraWebActionSupport
 {
@@ -114,7 +113,15 @@ public class AddGithubRepository extends JiraWebActionSupport
     
     public String doFinish()
     {
-        accessToken = requestAccessToken();
+        try
+        {
+            accessToken = requestAccessToken();
+        } catch (SourceControlException sce)
+        {
+            addErrorMessage(sce.getMessage());
+            return INPUT;
+        }
+
         return doAddRepository();
     }
 
@@ -157,9 +164,13 @@ public class AddGithubRepository extends JiraWebActionSupport
         BufferedReader rd;
         String line;
         String result = "";
+
+        if (StringUtils.isEmpty(code)) {
+            throw new SourceControlException("Ops, no access code returned. Did you click Allow?");
+        }
+
         try
         {
-
             log.debug("requestAccessToken() - " + "https://github.com/login/oauth/access_token?&client_id=" + githubOAuth.getClientId()
                 + "&client_secret=" + githubOAuth.getClientSecret() + "&code=" + code);
 
@@ -181,6 +192,21 @@ public class AddGithubRepository extends JiraWebActionSupport
         } catch (Exception e)
         {
             log.error("Error obtain access token", e);
+        }
+
+        if (result.startsWith("error="))
+        {
+            String errorCode = result.replaceAll("error=", "");
+            String error = errorCode;
+            if (errorCode.equals("incorrect_client_credentials"))
+            {
+                error = "Incorrect client credentials";
+            } else if (errorCode.equals("bad_verification_code"))
+            {
+                error = "Bad verification code";
+            }
+
+            throw new SourceControlException("Error obtaining access token: " + error);
         }
 
         result = result.replaceAll("access_token=(.*)&token_type.*", "$1");
