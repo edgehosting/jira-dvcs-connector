@@ -8,6 +8,7 @@ import org.openqa.selenium.By;
 
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BaseConfigureRepositoriesPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.page.LoginPage;
@@ -19,7 +20,7 @@ import com.atlassian.webdriver.jira.page.JiraLoginPage;
  */
 public abstract class BitBucketBaseTest
 {
-    protected JiraTestedProduct jira;
+    protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     protected BaseConfigureRepositoriesPage configureRepos;
 
   
@@ -36,8 +37,6 @@ public abstract class BitBucketBaseTest
     @Before
     public void loginToJira()
     {
-        jira = TestedProductFactory.create(JiraTestedProduct.class);
-
         jira.getPageBinder().override(LoginPage.class, AnotherLoginPage.class);
         
         configureRepos = (BaseConfigureRepositoriesPage) jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(getPageClass());
@@ -69,4 +68,15 @@ public abstract class BitBucketBaseTest
                               .waitForMessages();
     }
 
+    protected GithubOAuthConfigPage goToGithubOAuthConfigPage()
+    {
+        return jira.visit(GithubOAuthConfigPage.class);
+    }
+
+    protected BaseConfigureRepositoriesPage goToRepositoriesConfigPage()
+    {
+        configureRepos = (BaseConfigureRepositoriesPage) jira.visit(getPageClass());
+        configureRepos.setJiraTestedProduct(jira);
+        return configureRepos;
+    }
 }

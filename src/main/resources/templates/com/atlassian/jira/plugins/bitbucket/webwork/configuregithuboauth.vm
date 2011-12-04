@@ -66,6 +66,9 @@
 
   <body>
 
+       #set($baseurl = $action.getBaseUrl())
+
+        
         <h3>GitHub OAuth Settings</h3>
 
             <div id='gh_config_link'>
@@ -73,7 +76,6 @@
             </div>
 
               <h4 class="gh_config_h4">Setting up a GitHub OAuth Application</h4>
-
 
                 <form class="aui" method="post" action="${baseurl}/secure/admin/ConfigureGithubOAuth.jspa">
                   <input type="hidden" name="atl_token" value="$atl_token">
@@ -84,15 +86,15 @@
                   <ol class="gh_steps">
                     <li>Copy the following Callback URL:
                        <div id="repoEntry">
-                         <input type="text" class="text long-field" value="${baseurl}/secure/admin/GitHubOAuth2.jspa">
+                         <input type="text" class="text long-field" value="${baseurl}">
                        </div>
                    </li>
 
                    <li>
-                      Browse to <a href="https://github.com/account/applications/new" target="_blank">https://github.com/account/applications/new</a> to create a new GitHub OAuth Application.
+                      Browse to <a href="https://github.com/account/applications" target="_blank">https://github.com/account/applications</a> to create a new GitHub OAuth Application.
 
                        <div id="gh_oauth_app_screenshot">
-                           <img alt='GitHub Configuration Screenshot' src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/gh_oauth_app.jpg">
+                           <img alt='GitHub Configuration Screenshot' src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_oauth.jpg">
                        </div>
                    </li>
 
@@ -163,18 +165,13 @@
                       </table>
                    </li>
 
-
                    <li>
                        Once you have completed the OAuth Application setup, you can begin <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories!default.jspa">configuring your repositories</a>.
-
                    </li>
-
 
                   </ol>
 
               </form>
-
-
 
   </body>
 </html>

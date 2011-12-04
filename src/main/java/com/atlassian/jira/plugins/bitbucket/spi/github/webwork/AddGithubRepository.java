@@ -1,5 +1,16 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.webwork;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
@@ -10,16 +21,7 @@ import com.atlassian.jira.plugins.bitbucket.spi.github.impl.GithubRepositoryMana
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 public class AddGithubRepository extends JiraWebActionSupport
 {
@@ -39,14 +41,17 @@ public class AddGithubRepository extends JiraWebActionSupport
     private String postCommitUrl;
     private String accessToken = "";
 
+    private final PluginSettingsFactory pluginSettingsFactory;
+
 
     public AddGithubRepository(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, Synchronizer synchronizer, 
-        ApplicationProperties applicationProperties, GithubOAuth githubOAuth)
+        ApplicationProperties applicationProperties, GithubOAuth githubOAuth, PluginSettingsFactory pluginSettingsFactory)
     {
         this.globalRepositoryManager = globalRepositoryManager;
         this.synchronizer = synchronizer;
         this.ap = applicationProperties;
         this.githubOAuth = githubOAuth;
+        this.pluginSettingsFactory = pluginSettingsFactory;
     }
 
     @Override
@@ -102,12 +107,33 @@ public class AddGithubRepository extends JiraWebActionSupport
     private String redirectUserToGithub()
     {
         String encodedRepositoryUrl = CustomStringUtils.encode(repositoryUrl);
-        String encodedRedirectBackUrl = CustomStringUtils.encode(ap.getBaseUrl()
-            + "/secure/admin/AddGithubRepository!finish.jspa?repositoryUrl=" + encodedRepositoryUrl + "&projectKey=" + projectKey
-            + "&addPostCommitService=" + addPostCommitService() + "&atl_token=" + getXsrfToken());
+        String redirectBackUrl = ap.getBaseUrl() + "/secure/admin/AddGithubRepository!finish.jspa?repositoryUrl=" + encodedRepositoryUrl
+            + "&projectKey=" + projectKey + "&addPostCommitService=" + addPostCommitService() + "&atl_token=" + getXsrfToken();
+        String encodedRedirectBackUrl = CustomStringUtils.encode(redirectBackUrl);
         String githubAuthorizeUrl = "https://github.com/login/oauth/authorize?scope=repo&client_id=" + githubOAuth.getClientId()
             + "&redirect_uri=" + encodedRedirectBackUrl;
+        
+        fixBackwardCompatibility();
+
         return getRedirect(githubAuthorizeUrl);
+    }
+
+    /**
+     * TODO add detailed comment what is this for.
+     * @param redirectBackUrl
+     */
+    private void fixBackwardCompatibility()
+    {
+        String encodedRepositoryUrl = CustomStringUtils.encode(repositoryUrl);
+        String parameters = "repositoryUrl=" + encodedRepositoryUrl + "&projectKey=" + projectKey + "&addPostCommitService="
+            + addPostCommitService() + "&atl_token=" + getXsrfToken();
+        String redirectBackUrl = ap.getBaseUrl() + "/secure/admin/GitHubOAuth2.jspa?" + parameters;
+        String encodedRedirectBackUrl = CustomStringUtils.encode(redirectBackUrl);
+        String githubAuthorizeUrl = "https://github.com/login/oauth/authorize?scope=repo&client_id=" + githubOAuth.getClientId()
+            + "&redirect_uri=" + encodedRedirectBackUrl;        
+        
+        pluginSettingsFactory.createGlobalSettings().put("OAuthRedirectUrl", githubAuthorizeUrl); 
+        pluginSettingsFactory.createGlobalSettings().put("OAuthRedirectUrlParameters", parameters); 
     }
 
     

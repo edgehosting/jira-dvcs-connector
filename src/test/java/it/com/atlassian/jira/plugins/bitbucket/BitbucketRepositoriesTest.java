@@ -52,7 +52,7 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
     {
         configureRepos.deleteAllRepositories();
 
-        configureRepos.addRepoToProjectFailing("QA", TEST_NOT_EXISTING_REPO_URL);
+        configureRepos.addRepoToProjectFailingStep1("QA", TEST_NOT_EXISTING_REPO_URL);
 
         String errorMessage = configureRepos.getErrorStatusMessage();
         assertThat(errorMessage, containsString("The repository url [" + TEST_NOT_EXISTING_REPO_URL + "] is incorrect or the repository is not responding."));
@@ -66,9 +66,7 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
 
         configureRepos.addPrivateRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
 
-        String syncStatusMessage = configureRepos.getSyncStatusMessage();
-
-        assertThat(syncStatusMessage, containsString("Sync Finished"));
+        configureRepos.assertThatSyncMessage(containsString("Sync Finished"));
     }
 
     @Test
@@ -78,10 +76,8 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
 
         configureRepos.addPrivateRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
 
-        String syncStatusMessage = configureRepos.getSyncStatusMessage();
-
-        assertThat(syncStatusMessage, containsString("Sync Finished"));
-        assertThat(syncStatusMessage, not(containsString("Sync Failed")));
+        configureRepos.assertThatSyncMessage(containsString("Sync Finished"));
+        configureRepos.assertThatSyncMessage(not(containsString("Sync Failed")));
     }
 
     @Test

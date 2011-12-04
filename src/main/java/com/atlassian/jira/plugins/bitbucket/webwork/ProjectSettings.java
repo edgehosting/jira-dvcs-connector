@@ -10,6 +10,10 @@ import com.atlassian.sal.api.ApplicationProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.List;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.List;
+import java.util.regex.Pattern;
 
 public class ProjectSettings extends AbstractPluggableProjectOperation
 {

@@ -1,5 +1,15 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
+import static com.atlassian.pageobjects.elements.query.Poller.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.hamcrest.Matcher;
+import org.openqa.selenium.By;
+
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketRepository;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
@@ -10,11 +20,6 @@ import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
-import org.openqa.selenium.By;
-
-import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents the page to link repositories to projects
@@ -131,14 +136,11 @@ public abstract class BaseConfigureRepositoriesPage implements Page
     }
 
     /**
-     * The current sync status message
-     *
-     * @return Sync status message
+     * @param matcher
      */
-
-    public String getSyncStatusMessage()
+    public void assertThatSyncMessage(Matcher<String> matcher)
     {
-        return syncStatusDiv.getText();
+        Poller.waitUntil(syncStatusDiv.timed().getText(), matcher, by(30000));
     }
 
     /**
@@ -153,7 +155,8 @@ public abstract class BaseConfigureRepositoriesPage implements Page
     }
 
     public abstract BaseConfigureRepositoriesPage addPublicRepoToProjectSuccessfully(String projectKey, String url);
-    public abstract BaseConfigureRepositoriesPage addRepoToProjectFailing(String projectKey, String url);
+    public abstract BaseConfigureRepositoriesPage addRepoToProjectFailingStep1(String projectKey, String url);
+    public abstract BaseConfigureRepositoriesPage addRepoToProjectFailingStep2(String projectKey, String url);
     public abstract BaseConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url);
     public abstract String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername, String adminPassword);
 
@@ -161,4 +164,5 @@ public abstract class BaseConfigureRepositoriesPage implements Page
     {
         this.jiraTestedProduct = jiraTestedProduct;
     }
+
 }
