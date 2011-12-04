@@ -100,12 +100,12 @@
         #end
                 
 		<div class="form">
-            <p>Add additional Bitbucket repositories to the projects to link their commits with JIRA issue keys.</p>
+            <p>Add additional Bitbucket and Github repositories to the projects to link their commits with JIRA issue keys.</p>
 
             #if ($action.getMode() == 'single')
                 Enter the Bitbucket repository URL.</p>
             #else
-                Enter the JIRA project and Bitbucket repository URL.</p>
+                Enter the JIRA project and repository URL.</p>
             #end
 
             #foreach ($errorMessage in $action.getErrorMessages())
@@ -136,7 +136,7 @@
                 <tr>
                   <td><label for="url">Repository Url</label></td>
                   <td><input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" /></td>
-                  <td><i>eg: https://bitbucket.org/atlassianguy/my-repository</i></td>
+                  <td><i>eg: https://bitbucket.org/atlassianguy/my-repository</i> or <i>eg: https://github.com/owner/repository</i> </td>
                 </tr>  
           
                 <tr>
