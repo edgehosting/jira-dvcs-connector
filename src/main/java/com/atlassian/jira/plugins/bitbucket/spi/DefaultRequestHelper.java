@@ -50,7 +50,11 @@ public class DefaultRequestHelper implements RequestHelper
     {
         ExtendedResponseHandler responseHandler = responseHandlerFactory.create();
         runRequest(Request.MethodType.GET, apiBaseUrl, urlPath, auth, params, null, responseHandler);
-        return responseHandler.getExtendedResponse();
+        ExtendedResponse extendedResponse = responseHandler.getExtendedResponse();
+
+        log.debug("returned: " + extendedResponse);
+
+        return extendedResponse;
     }
 
     @Override
@@ -93,7 +97,9 @@ public class DefaultRequestHelper implements RequestHelper
             return null;
         } else
         {
-            return request.execute();
+            String response = request.execute();
+            log.debug("returned: " + response);
+            return response;
         }
     }
 
@@ -115,8 +121,6 @@ public class DefaultRequestHelper implements RequestHelper
         }
         return queryStringBuilder.toString();
     }
-
-    
 
 
     @Override
