@@ -16,7 +16,7 @@
     background-repeat: no-repeat;
     background-position: right center;
     padding-right: 20px;
-    font-size: 10pt;
+    font-size: 1em;
 }
 
 .gh_config_h4{
@@ -31,14 +31,14 @@
 
 #gh_post_receive_header{
     font-weight: normal;
-    font-size: 10pt;
+    font-size: 1em;
     color: #666;
     margin-top: 18px;
     margin-bottom: 10px;
 }
 
 #gh_post_receive_textbox{
-    font-size: 10pt;
+    font-size: 1em;
     padding: 4px;
 }
 
@@ -52,7 +52,7 @@
 }
 
 .gh_table_project_name{
-    font-size: 10pt;
+    font-size: 1em;
     color: #5F6262;
     padding-top: 14px;
 }
@@ -61,12 +61,12 @@
     font-weight: normal;
     color: #656565;
     border-bottom: 1px solid #cccccc;
-    font-size: 10pt;
+    font-size: 1em;
 }
 
 .gh_table td.status{
     border-bottom: 1px solid #cccccc;
-    font-size: 10pt;
+    font-size: 1em;
     padding:0 20px;
 }
 .gh_table td.status .error{
@@ -74,23 +74,15 @@
 }
 
 .gh_table td{
-    font-size: 10pt;
+    font-size: 1em;
 }
 
 .gh_table_td_pname{
     border-bottom: none !important;
 }
 
-#gh_example_link{
-    font-size: 6pt;
-}
-
-#gh_submit{
-    font-size: 8pt;
-}
-
 .gh_messages{
-    font-size: 10pt;
+    font-size: 1em;
     color: #666;
     font-style: italic;
 }
