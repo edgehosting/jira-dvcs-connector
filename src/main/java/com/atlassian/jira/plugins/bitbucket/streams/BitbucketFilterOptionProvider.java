@@ -46,7 +46,6 @@ public class BitbucketFilterOptionProvider implements StreamsFilterOptionProvide
 
     private final Function<Project, String> toProjectKey = new Function<Project, String>()
     {
-        @Override
         public String apply(@Nullable Project project)
         {
             return project.getKey();
@@ -55,7 +54,6 @@ public class BitbucketFilterOptionProvider implements StreamsFilterOptionProvide
 
     private final Function<Project, String> toProjectLabel = new Function<Project, String>()
     {
-        @Override
         public String apply(@Nullable Project project)
         {
             return project.getName();

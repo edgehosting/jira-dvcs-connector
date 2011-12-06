@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -350,9 +351,9 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
     @Override
-    public List<IssueMapping> getLastChangesetMappings(int count, Set<String> inProjects, Set<String> notInProjects)
+    public List<IssueMapping> getLastChangesetMappings(int count, GlobalFilter gf)
     {
-        return repositoryPersister.getLastChangesetMappings(count, inProjects, notInProjects);
+        return repositoryPersister.getLastChangesetMappings(count, gf);
     }
 
     @Override

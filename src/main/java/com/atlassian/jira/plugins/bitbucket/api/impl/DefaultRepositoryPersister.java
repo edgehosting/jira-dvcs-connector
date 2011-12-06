@@ -1,15 +1,17 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import net.java.ao.Query;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.ArrayUtils;
@@ -17,16 +19,13 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
@@ -47,7 +46,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<ProjectMapping>>()
         {
-			@Override
+            @Override
             public List<ProjectMapping> doInTransaction()
             {
                 ProjectMapping[] mappings = activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ? AND REPOSITORY_TYPE = ?", projectKey, repositoryType);
@@ -59,11 +58,11 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     @Override
     public ProjectMapping addRepository(String repositoryType, String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String accessToken)
     {
-        
+
         final ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_URL = ? and PROJECT_KEY = ?", repositoryUrl, projectKey);
-        if (projectMappings.length>0)
+        if (projectMappings.length > 0)
         {
-            throw new SourceControlException("Repository ["+repositoryUrl+"] is already linked to project ["+projectKey+"]");
+            throw new SourceControlException("Repository [" + repositoryUrl + "] is already linked to project [" + projectKey + "]");
         }
         final Map<String, Object> map = new HashMap<String, Object>();
         map.put("REPOSITORY_URL", repositoryUrl);
@@ -76,8 +75,8 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         }
         if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminPassword))
         {
-        	map.put("ADMIN_USERNAME", adminUsername);
-        	map.put("ADMIN_PASSWORD", adminPassword);
+            map.put("ADMIN_USERNAME", adminUsername);
+            map.put("ADMIN_PASSWORD", adminPassword);
         }
         if (StringUtils.isNotBlank(accessToken))
         {
@@ -88,7 +87,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             @Override
             public ProjectMapping doInTransaction()
             {
-        		return activeObjects.create(ProjectMapping.class, map);
+                return activeObjects.create(ProjectMapping.class, map);
             }
         });
     }
@@ -125,18 +124,18 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             public List<IssueMapping> doInTransaction()
             {
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", issueId);
-                if (mappings.length==0)
+                if (mappings.length == 0)
                     return Collections.EMPTY_LIST;
-                
+
                 // get list of all project mappings with our type
                 ProjectMapping[] myProjectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", repositoryType);
-                
+
                 final Set<Integer> projectMappingsIds = Sets.newHashSet();
                 for (int i = 0; i < myProjectMappings.length; i++)
                 {
                     projectMappingsIds.add(myProjectMappings[i].getID());
                 }
-                
+
                 return Lists.newArrayList(CollectionUtils.select(Arrays.asList(mappings), new Predicate()
                 {
                     @Override
@@ -149,7 +148,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             }
         });
     }
-    
+
     @Override
     public void addChangeset(final String issueId, final Changeset changeset)
     {
@@ -165,14 +164,14 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 // delete existing
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ? and NODE = ?", issueId, node);
                 if (ArrayUtils.isNotEmpty(mappings))
-				{
-					activeObjects.delete(mappings);
-				}
+                {
+                    activeObjects.delete(mappings);
+                }
                 // add new
-				Map<String, Object> map = Maps.newHashMap();
-				map.put("REPOSITORY_ID", repositoryId);
-				map.put("ISSUE_ID", issueId);
-				map.put("NODE", node);
+                Map<String, Object> map = Maps.newHashMap();
+                map.put("REPOSITORY_ID", repositoryId);
+                map.put("ISSUE_ID", issueId);
+                map.put("NODE", node);
                 map.put("RAW_AUTHOR", changeset.getRawAuthor());
                 map.put("AUTHOR", changeset.getAuthor());
                 map.put("TIMESTAMP", changeset.getTimestamp());
@@ -184,8 +183,9 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             }
         });
     }
+
     @Override
-    public List<IssueMapping> getLastChangesetMappings(final int count, final Set<String> inProjects, final Set<String> notInProjects)
+    public List<IssueMapping> getLastChangesetMappings(final int count, final GlobalFilter gf)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
         {
@@ -193,23 +193,30 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             public List<IssueMapping> doInTransaction()
             {
                 StringBuilder whereClauseSb = new StringBuilder();
-                if(!CollectionUtils.isEmpty(inProjects)){
-                    for(String projectKey : inProjects){
-                        if(whereClauseSb.length() != 0){
+                if (gf.getInProjects() != null && gf.getInProjects().iterator().hasNext())
+                {
+                    for (String projectKey : gf.getInProjects())
+                    {
+                        if (whereClauseSb.length() != 0)
+                        {
                             whereClauseSb.append(" OR ");
                         }
                         whereClauseSb.append("ISSUE_ID like '").append(projectKey).append("-%' ");
                     }
                 }
-                if(!CollectionUtils.isEmpty(notInProjects)){
-                    for(String projectKey : notInProjects){
-                        if(whereClauseSb.length() != 0){
+                if (gf.getNotInProjects() != null && gf.getNotInProjects().iterator().hasNext())
+                {
+                    for (String projectKey : gf.getNotInProjects())
+                    {
+                        if (whereClauseSb.length() != 0)
+                        {
                             whereClauseSb.append(" AND ");
                         }
                         whereClauseSb.append("ISSUE_ID not like '").append(projectKey).append("-%' ");
                     }
                 }
-                if(whereClauseSb.length() == 0){
+                if (whereClauseSb.length() == 0)
+                {
                     whereClauseSb.append(" true ");
                 }
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class, Query.select().where(whereClauseSb.toString()).limit(count).order("TIMESTAMP DESC"));
@@ -217,19 +224,19 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             }
         });
     }
-    
-	@Override
+
+    @Override
     public ProjectMapping getRepository(final int id)
-	{
-		return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping>()
-		{
-			@Override
+    {
+        return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping>()
+        {
+            @Override
             public ProjectMapping doInTransaction()
-			{
-				return activeObjects.get(ProjectMapping.class, id);
-			}
-		});
-	}
+            {
+                return activeObjects.get(ProjectMapping.class, id);
+            }
+        });
+    }
 
     @Override
     public IssueMapping getIssueMapping(final String node)

@@ -7,10 +7,17 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.message.I18nResolver;
-import com.atlassian.streams.api.*;
+import com.atlassian.streams.api.ActivityObjectTypes;
+import com.atlassian.streams.api.ActivityRequest;
+import com.atlassian.streams.api.ActivityVerbs;
+import com.atlassian.streams.api.StreamsEntry;
+import com.atlassian.streams.api.StreamsException;
+import com.atlassian.streams.api.StreamsFeed;
+import com.atlassian.streams.api.UserProfile;
 import com.atlassian.streams.api.common.ImmutableNonEmptyList;
 import com.atlassian.streams.api.common.Option;
 import com.atlassian.streams.spi.Filters;
+import com.atlassian.streams.spi.StandardStreamsFilterOption;
 import com.atlassian.streams.spi.StreamsActivityProvider;
 import com.atlassian.streams.spi.UserProfileAccessor;
 import com.google.common.base.Function;
@@ -24,7 +31,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
 
 public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 {
@@ -184,7 +194,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
             }
         };
 
-        StreamsEntry streamsEntry = new StreamsEntry(StreamsEntry.params()
+        return new StreamsEntry(StreamsEntry.params()
                 .id(issueUri)
                 .postedDate(new DateTime(changesetEntry.getTimestamp().getTime()))
                 .authors(ImmutableNonEmptyList.of(userProfile))
@@ -199,16 +209,17 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 .alternateLinkUri(issueUri)
                 .renderer(renderer)
                 .applicationType(applicationProperties.getDisplayName()), i18nResolver);
-        return streamsEntry;
     }
 
     public StreamsFeed getActivityFeed(ActivityRequest activityRequest) throws StreamsException
     {
+        GlobalFilter gf = new GlobalFilter();
         //get all changeset entries that match the specified activity filters
-        Set<String> inProjects = Filters.getIsValues(activityRequest.getProviderFilters().values());
-        Set<String> notInProjects = Filters.getNotValues(activityRequest.getProviderFilters().values());
+        gf.setInProjects(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)));
+        gf.setNotInProjects(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)));
+        gf.setInProjects(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)));
 
-        Iterable<IssueMapping> changesetEntries = globalRepositoryManager.getLastChangesetMappings(activityRequest.getMaxResults(), inProjects, notInProjects);
+        Iterable<IssueMapping> changesetEntries = globalRepositoryManager.getLastChangesetMappings(activityRequest.getMaxResults(), gf);
         Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
         return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
     }

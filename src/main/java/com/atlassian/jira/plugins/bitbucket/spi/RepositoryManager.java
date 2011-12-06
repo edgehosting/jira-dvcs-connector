@@ -1,14 +1,14 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.util.List;
-
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import java.util.Set;
+import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
+
+import java.util.List;
 
 public interface RepositoryManager
 {
@@ -21,18 +21,18 @@ public interface RepositoryManager
      * @param repositoryUrl
      * @param username
      * @param password
-     * @param adminUsername - used when (un)installing postcommit hook
-     * @param adminPassword - used when (un)installing postcommit hook
-     * @param accessToken - token for authenticating if this repository is accessed using OAuth
+     * @param adminUsername  - used when (un)installing postcommit hook
+     * @param adminPassword  - used when (un)installing postcommit hook
+     * @param accessToken    - token for authenticating if this repository is accessed using OAuth
      * @return
      */
     public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl, String username,
-            String password, String adminUsername, String adminPassword, String accessToken);
+                                                 String password, String adminUsername, String adminPassword, String accessToken);
 
     /**
      * @param repositoryId
      * @return repository with given id
-     * throws IllegalArgumentException if repository with given id is not found
+     *         throws IllegalArgumentException if repository with given id is not found
      */
     public SourceControlRepository getRepository(int repositoryId);
 
@@ -50,12 +50,14 @@ public interface RepositoryManager
 
     /**
      * Removes the repository with given id and all the issue mappings for this repository
+     *
      * @param id
      */
     public void removeRepository(int id);
 
     /**
      * Links changeset with given issue
+     *
      * @param sourceControlRepository
      * @param issueId
      * @param changeset
@@ -70,15 +72,17 @@ public interface RepositoryManager
     public SourceControlUser getUser(SourceControlRepository repository, String username);
 
     /**
-     * Returns callback function that is used for synchronisation of the repository. 
+     * Returns callback function that is used for synchronisation of the repository.
+     *
      * @param key
-     * @param progress 
+     * @param progress
      * @return
      */
     public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progress);
 
     /**
      * Parses the given json string into changesets
+     *
      * @param repository
      * @param payload
      * @return
@@ -94,18 +98,19 @@ public interface RepositoryManager
 
     /**
      * Installs a postcommit service for this repository
+     *
      * @param repo
      */
     public void setupPostcommitHook(SourceControlRepository repo);
 
     /**
      * Removes a postcommit service for this repository
+     *
      * @param repo
      */
     public void removePostcommitHook(SourceControlRepository repo);
 
     /**
-     *
      * @return the identifier of repository type
      */
     public String getRepositoryType();
@@ -113,11 +118,11 @@ public interface RepositoryManager
     /**
      * Find last changeset to the given count ordered by timestamp
      *
-     * @param count changesets count
+     * @param count         changesets count
      * @param inProjects
-     *@param notInProjects @return list of Changeset mappings
+     * @param notInProjects @return list of Changeset mappings
      */
-    public List<IssueMapping> getLastChangesetMappings(final int count, Set<String> inProjects, Set<String> notInProjects);
+    public List<IssueMapping> getLastChangesetMappings(final int count, GlobalFilter gf);
 
     /**
      * @param node
@@ -127,5 +132,5 @@ public interface RepositoryManager
 
 
     public UrlInfo getUrlInfo(String repositoryUrl);
-    
+
 }

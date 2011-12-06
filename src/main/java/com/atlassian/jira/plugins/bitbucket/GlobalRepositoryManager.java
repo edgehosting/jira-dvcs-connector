@@ -1,29 +1,24 @@
 package com.atlassian.jira.plugins.bitbucket;
 
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.api.*;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
+import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
+import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
-import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 
 /**
  * Aggregated Repository Manager that handles all Repository Managers based on the repository url
  */
 public class GlobalRepositoryManager implements RepositoryManager
 {
-	private final RepositoryManager[] repositoryManagers;
+    private final RepositoryManager[] repositoryManagers;
     private final RepositoryPersister repositoryPersister;
 
     private static final Comparator<? super Changeset> CHANGESET_COMPARATOR = new Comparator<Changeset>()
@@ -73,22 +68,21 @@ public class GlobalRepositoryManager implements RepositoryManager
         return null;
     }
 
-	@Override
+    @Override
     public SourceControlRepository addRepository(String repositoryType, String projectKey, String url, String username, String password, String adminUsername, String adminPassword, String accessToken)
     {
         for (RepositoryManager repositoryManager : repositoryManagers)
         {
-	        if (repositoryManager.getRepositoryType().equals(repositoryType))
+            if (repositoryManager.getRepositoryType().equals(repositoryType))
             {
-	            return repositoryManager.addRepository(repositoryType, projectKey, url, username, password, adminUsername, adminPassword, accessToken);
+                return repositoryManager.addRepository(repositoryType, projectKey, url, username, password, adminUsername, adminPassword, accessToken);
             }
         }
-        throw new IllegalArgumentException("No repository manager found for given repository type ["+repositoryType+"]");
+        throw new IllegalArgumentException("No repository manager found for given repository type [" + repositoryType + "]");
     }
 
 
-
-	@Override
+    @Override
     public List<SourceControlRepository> getRepositories(String projectKey)
     {
         List<SourceControlRepository> allRepositories = new ArrayList<SourceControlRepository>();
@@ -100,59 +94,59 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
 
-	@Override
+    @Override
     public SourceControlRepository getRepository(int id)
     {
         return getManagerByRepoId(id).getRepository(id);
     }
 
     @Override
-	public List<Changeset> getChangesets(final String issueKey)
+    public List<Changeset> getChangesets(final String issueKey)
     {
         List<Changeset> allChangesets = new ArrayList<Changeset>();
         for (RepositoryManager repositoryManager : repositoryManagers)
         {
             allChangesets.addAll(repositoryManager.getChangesets(issueKey));
         }
-    	
-    	
+
+
         Collections.sort(allChangesets, Collections.reverseOrder(CHANGESET_COMPARATOR));
-        
+
         return allChangesets;
     }
 
-	@Override
+    @Override
     public void removeRepository(int id)
     {
         getManagerByRepoId(id).removeRepository(id);
     }
 
 
-	@Override
+    @Override
     public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
     {
         getManagerByRepository(repository).addChangeset(repository, issueId, changeset);
     }
 
-	@Override
+    @Override
     public SourceControlUser getUser(SourceControlRepository repository, String username)
     {
         return getManagerByRepository(repository).getUser(repository, username);
     }
 
-	@Override
+    @Override
     public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
     {
         return getManagerByRepository(key.getRepository()).getSynchronisationOperation(key, progressProvider);
     }
 
-	@Override
+    @Override
     public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
     {
         return getManagerByRepository(repository).parsePayload(repository, payload);
     }
 
-	@Override
+    @Override
     public String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset)
     {
         RepositoryManager repositoryManager = getManagerByRepositoryType(repository.getRepositoryType());
@@ -165,22 +159,22 @@ public class GlobalRepositoryManager implements RepositoryManager
         return "unknown";
     }
 
-	@Override
+    @Override
     public void setupPostcommitHook(SourceControlRepository repo)
     {
         getManagerByRepository(repo).setupPostcommitHook(repo);
     }
 
-	@Override
+    @Override
     public void removePostcommitHook(SourceControlRepository repo)
     {
         getManagerByRepository(repo).removePostcommitHook(repo);
     }
 
     @Override
-    public List<IssueMapping> getLastChangesetMappings(int count, Set<String> inProjects, Set<String> notInProjects)
+    public List<IssueMapping> getLastChangesetMappings(int count, GlobalFilter gf)
     {
-        return repositoryPersister.getLastChangesetMappings(count, inProjects, notInProjects);
+        return repositoryPersister.getLastChangesetMappings(count, gf);
     }
 
     @Override
@@ -204,12 +198,12 @@ public class GlobalRepositoryManager implements RepositoryManager
         for (RepositoryManager repositoryManager : repositoryManagers)
         {
             UrlInfo urlInfo = repositoryManager.getUrlInfo(repositoryUrl);
-            if (urlInfo!=null)
+            if (urlInfo != null)
             {
                 return urlInfo;
             }
-        }       
+        }
         return null;
-        
+
     }
 }

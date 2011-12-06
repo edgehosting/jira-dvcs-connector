@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 
 import java.util.List;
 import java.util.Set;
@@ -74,7 +75,7 @@ public interface RepositoryPersister {
      * @param count changesets count
      * @return list of Changeset mappings
      */
-    public List<IssueMapping> getLastChangesetMappings(int count, Set<String> inProjects, Set<String> notInProjects);
+    public List<IssueMapping> getLastChangesetMappings(int count, GlobalFilter gf);
 
     /**
      * @param node
