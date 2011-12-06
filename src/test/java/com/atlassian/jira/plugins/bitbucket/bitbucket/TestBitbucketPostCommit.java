@@ -1,5 +1,19 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
+import static junit.framework.Assert.*;
+import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
@@ -8,24 +22,11 @@ import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit;
-import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentMatcher;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-import static junit.framework.Assert.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit test for {@link BitbucketPostCommit}
  */
+@SuppressWarnings("deprecation")
 public class TestBitbucketPostCommit
 {
     @Mock
@@ -53,7 +54,7 @@ public class TestBitbucketPostCommit
     	String projectKey = "PRJ";
     	String repositoryUrl = "https://bitbucket.org/mjensen/test";
     	String payload = resource("TestBitbucketPostCommit-payload.json");
-        SourceControlRepository repo = new DefaultSourceControlRepository(0, repositoryUri, projectKey, null, null, null, null, "bitbucket");
+        SourceControlRepository repo = new DefaultSourceControlRepository(0, "bitbucket", repositoryUri, projectKey, null, null, null, null, null);
     	when(repositoryManager.getRepositories(projectKey)).thenReturn(Arrays.asList(repo));
         when(repositoryUri.getRepositoryUrl()).thenReturn(repositoryUrl);
 
@@ -68,9 +69,8 @@ public class TestBitbucketPostCommit
     public void testParsePayload() throws Exception
 	{
     	String projectKey = "PRJ";
-    	String repositoryUrl = "https://bitbucket.org/mjensen/test";
     	String payload = resource("TestBitbucketPostCommit-payload.json");
-    	DefaultSourceControlRepository repo = new DefaultSourceControlRepository(0, repositoryUri, projectKey, null, null, null, null, "bitbucket");
+    	DefaultSourceControlRepository repo = new DefaultSourceControlRepository(0, "bitbucket", repositoryUri, projectKey, null, null, null, null, null);
 
     	BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, null, null, null);
 		List<Changeset> changesets = brm.parsePayload(repo, payload);

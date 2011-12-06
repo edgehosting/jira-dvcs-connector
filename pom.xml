@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-bitbucket-connector-plugin</artifactId>
-    <version>0.15-SNAPSHOT</version>
+    <version>0.15.1-SNAPSHOT</version>
 
     <organization>
         <name>Atlassian</name>
@@ -165,8 +165,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                 </configuration>
             </plugin>
         </plugins>
@@ -174,9 +174,7 @@
 
     <properties>
         <jira.version>4.4.1-studio-rc1</jira.version>
-        <!--<jira.version>5.0-beta3</jira.version>-->
         <jira.data.version>4.3.4</jira.data.version>
-        <!--<jira.data.version>5.0-beta3</jira.data.version>-->
         <ao.version>0.15</ao.version>
         <streams.version>4.1.2</streams.version>
     </properties>

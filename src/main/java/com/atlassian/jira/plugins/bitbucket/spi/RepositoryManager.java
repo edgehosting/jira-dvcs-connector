@@ -1,34 +1,33 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.api.*;
-
 import java.util.List;
+
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import java.util.Set;
 
 public interface RepositoryManager
 {
 
     /**
-     * Returns true if this RepositoryManager can manage repository with given url
-     * @param url
-     * @return
-     */
-    public boolean canHandleUrl(String url);
-
-    /**
      * Mapps a repository to given project
      *
+     * @param repositoryType
      * @param projectKey
      * @param repositoryUrl
      * @param username
      * @param password
      * @param adminUsername - used when (un)installing postcommit hook
      * @param adminPassword - used when (un)installing postcommit hook
+     * @param accessToken - token for authenticating if this repository is accessed using OAuth
      * @return
      */
-    public SourceControlRepository addRepository(String projectKey, String repositoryUrl, String username,
-            String password, String adminUsername, String adminPassword);
+    public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl, String username,
+            String password, String adminUsername, String adminPassword, String accessToken);
 
     /**
      * @param repositoryId
@@ -126,4 +125,7 @@ public interface RepositoryManager
      */
     public Changeset getChangeset(String node);
 
+
+    public UrlInfo getUrlInfo(String repositoryUrl);
+    
 }

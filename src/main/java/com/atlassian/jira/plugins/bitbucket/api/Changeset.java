@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.api;
 
-import org.joda.time.DateTime;
-
 import java.util.Date;
 import java.util.List;
 

@@ -15,7 +15,9 @@ public class Uri2UrlMigrator implements ActiveObjectsUpgradeTask
     private final Logger logger = LoggerFactory.getLogger(Uri2UrlMigrator.class);
 
 
-	public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
+    @Override
+    @SuppressWarnings("unchecked")
+    public void upgrade(ModelVersion modelVersion, final ActiveObjects activeObjects)
     {
         activeObjects.migrate(IssueMapping.class, ProjectMapping.class);
 
@@ -41,6 +43,7 @@ public class Uri2UrlMigrator implements ActiveObjectsUpgradeTask
         logger.debug("completed uri to url migration");
     }
 
+    @Override
     public ModelVersion getModelVersion()
     {
         return ModelVersion.valueOf("3");

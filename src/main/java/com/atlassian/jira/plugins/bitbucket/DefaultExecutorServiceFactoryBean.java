@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket;
 
-import com.atlassian.util.concurrent.ThreadFactories;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import com.atlassian.util.concurrent.ThreadFactories;
 
 /**
  */
@@ -23,16 +23,19 @@ public class DefaultExecutorServiceFactoryBean implements ExecutorServiceFactory
         this.size = size;
     }
 
+    @Override
     public Object getObject() throws Exception
     {
         return Executors.newFixedThreadPool(size, ThreadFactories.namedThreadFactory(name));
     }
 
-    public Class getObjectType()
+    @Override
+    public Class<ExecutorService> getObjectType()
     {
         return ExecutorService.class;
     }
 
+    @Override
     public boolean isSingleton()
     {
         return true;

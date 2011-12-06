@@ -1,8 +1,13 @@
 
-function confirmation(delete_url) {
-    var answer = confirm("Are you sure you want to remove this repository?")
+function deleteRepository(repositoryId, repositoryUrl) {
+    var answer = confirm("Are you sure you want to remove this repository? \n " + repositoryUrl )
     if (answer){
-        window.location = delete_url;
+    	AJS.$.ajax({
+    	    url: BASE_URL+"/rest/bitbucket/1.0/repository/"+repositoryId,
+    	    type: 'DELETE',
+    	    success: function(result) {
+    	    	window.location.reload();    	    }
+    	});
     }
 }
 
@@ -16,7 +21,7 @@ function toggleMoreFiles(target_div){
 function retrieveSyncStatus() {
     AJS.$.getJSON(BASE_URL+"/rest/bitbucket/1.0/repositories", function (data) {
     	AJS.$.each(data.repositories, function(a,repo){
-    		var syncStatusDiv = AJS.$('.gh_messages.repository'+repo.id); 
+    		var syncStatusDiv = AJS.$('.gh_messages.repository'+repo.id+" .content"); 
     		var syncIconElement = AJS.$('.syncicon.repository'+repo.id);
     		var syncHtml;
     		var syncIcon;
@@ -52,6 +57,34 @@ function retrieveSyncStatus() {
 
 function forceSync(repositoryId){
 	AJS.$.post(BASE_URL+"/rest/bitbucket/1.0/repository/"+repositoryId+"/sync");
+	retrieveSyncStatus();
+}
+
+function submitFunction(a){
+    var repositoryUrl = AJS.$("#url").val();
+    var requestUrl = BASE_URL+"/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl)
+
+    AJS.$("#aui-message-bar").empty();
+	AJS.messages.generic({
+	    title: "Working...",
+	    body: "Trying to connect to the repository."
+	});
+
+	AJS.$.getJSON(requestUrl, function(data) {
+    	if (data.repositoryType == "github")
+    		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddGithubRepository!default.jspa");
+    	else if (data.repositoryType == "bitbucket")
+    		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddBitbucketRepository!default.jspa");
+    	AJS.$("#isPrivate").val(data.isPrivate);
+    	AJS.$('#repoEntry').submit();
+    }).error(function(a){
+        AJS.$("#aui-message-bar").empty();
+    	AJS.messages.error({
+    	    title: "Error!",
+    	    body: "The repository url [<b>"+AJS.$("#url").val()+"</b>] is incorrect or the repository is not responding."
+    	});
+    });
+    return false;
 }
 
 AJS.$(document).ready(function(){

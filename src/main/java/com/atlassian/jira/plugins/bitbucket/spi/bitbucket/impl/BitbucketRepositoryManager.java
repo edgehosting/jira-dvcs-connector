@@ -26,29 +26,22 @@ import com.atlassian.sal.api.ApplicationProperties;
 
 public class BitbucketRepositoryManager extends DvcsRepositoryManager
 {
+    public static final String BITBUCKET = "bitbucket";
     private final Logger log = LoggerFactory.getLogger(BitbucketRepositoryManager.class);
 
-	public BitbucketRepositoryManager(RepositoryPersister repositoryPersister, @Qualifier("bitbucketCommunicator") Communicator communicator, Encryptor encryptor, ApplicationProperties applicationProperties)
-	{
+    public BitbucketRepositoryManager(RepositoryPersister repositoryPersister,
+        @Qualifier("bitbucketCommunicator") Communicator communicator, Encryptor encryptor, ApplicationProperties applicationProperties)
+    {
         super(communicator, repositoryPersister, encryptor, applicationProperties);
-	}
+    }
 
     @Override
     public String getRepositoryType()
     {
-        return "bitbucket";
+        return BITBUCKET;
     }
 
-	@Override
-    public boolean canHandleUrl(String url)
-	{
-	    return  hasValidFormat(url);
-//	    if (!hasValidFormat(url)) return false;
-//	    RepositoryUri repositoryUri = getRepositoryUri(url);
-//	    
-//	    return getCommunicator().isRepositoryValid(repositoryUri);
-	}
-
+    @Override
     public RepositoryUri getRepositoryUri(String urlString)
     {
         try
@@ -73,10 +66,10 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 
     }
 
-
-
+    @Override
     public List<Changeset> parsePayload(SourceControlRepository repository, String payload)
 	{
+        log.debug("parsing payload: '{}' for repository [{}]", payload, repository);
         List<Changeset> changesets = new ArrayList<Changeset>();
         try
 		{
@@ -93,21 +86,6 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 		}
         return changesets;
 
-	}
-
-	public void setupPostcommitHook(SourceControlRepository repo)
-	{
-		getCommunicator().setupPostcommitHook(repo, getPostCommitUrl(repo));
-	}
-
-	private String getPostCommitUrl(SourceControlRepository repo)
-	{
-		return getApplicationProperties().getBaseUrl() + "/rest/bitbucket/1.0/repository/"+repo.getId()+"/sync";
-	}
-
-	public void removePostcommitHook(SourceControlRepository repo)
-	{
-		getCommunicator().removePostcommitHook(repo, getPostCommitUrl(repo));
 	}
 
 }

@@ -1,10 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-
-import java.util.List;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
@@ -29,15 +28,6 @@ public interface Communicator
      */
     public Changeset getChangeset(SourceControlRepository repository, String id);
 
-    /**
-     * Retrieves changesets
-     * 
-     * @param repository
-     * @param startNode
-     * @param limit
-     * @return
-     */
-    public List<Changeset> getChangesets(SourceControlRepository repository, String startNode, int limit);
 
     /**
      * @param repo
@@ -57,6 +47,13 @@ public interface Communicator
      */
     public Iterable<Changeset> getChangesets(SourceControlRepository repository);
 
-    public boolean isRepositoryValid(RepositoryUri repositoryUri);
+    /**
+     * @param repositoryUri
+     * @return info about the repository or null if repository is invalid
+     */
+    public UrlInfo getUrlInfo(final RepositoryUri repositoryUri);
+
+    public void validateRepositoryAccess(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
+        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException;
 
 }

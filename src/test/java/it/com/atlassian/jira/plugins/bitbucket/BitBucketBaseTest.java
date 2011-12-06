@@ -1,31 +1,34 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
-
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BaseConfigureRepositoriesPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
+import org.junit.After;
+import org.junit.Before;
+
+import java.util.List;
 
 /**
  * Base class for BitBucket integration tests. Initializes the JiraTestedProduct and logs admin in.
  */
 public abstract class BitBucketBaseTest
 {
-    protected JiraTestedProduct jira;
-    protected BitBucketConfigureRepositoriesPage configureRepos;
+    protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
+    protected BaseConfigureRepositoriesPage configureRepos;
 
+    @SuppressWarnings("unchecked")
     @Before
     public void loginToJira()
     {
-        jira = TestedProductFactory.create(JiraTestedProduct.class);
-
-        configureRepos = jira.gotoLoginPage().loginAsSysAdmin(BitBucketConfigureRepositoriesPage.class);
+        configureRepos = (BaseConfigureRepositoriesPage) jira.gotoLoginPage().loginAsSysAdmin(getPageClass());
+        configureRepos.setJiraTestedProduct(jira);
     }
+
+    @SuppressWarnings("rawtypes")
+    protected abstract Class getPageClass();
 
     @After
     public void logout()
@@ -35,18 +38,29 @@ public abstract class BitBucketBaseTest
 
     protected void ensureRepositoryPresent(String projectKey, String repoUrl)
     {
-        if(configureRepos.isRepositoryPresent(projectKey, repoUrl) == false)
+        if (configureRepos.isRepositoryPresent(projectKey, repoUrl) == false)
         {
-            configureRepos.addPublicRepoToProject(projectKey, repoUrl);
+            configureRepos.addPublicRepoToProjectSuccessfully(projectKey, repoUrl);
         }
     }
 
-   
+
     protected List<BitBucketCommitEntry> getCommitsForIssue(String issueKey)
     {
         return jira.visit(JiraViewIssuePage.class, issueKey)
-                              .openBitBucketPanel()
-                              .waitForMessages();
+                .openBitBucketPanel()
+                .waitForMessages();
     }
 
+    protected GithubOAuthConfigPage goToGithubOAuthConfigPage()
+    {
+        return jira.visit(GithubOAuthConfigPage.class);
+    }
+
+    protected BaseConfigureRepositoriesPage goToRepositoriesConfigPage()
+    {
+        configureRepos = (BaseConfigureRepositoriesPage) jira.visit(getPageClass());
+        configureRepos.setJiraTestedProduct(jira);
+        return configureRepos;
+    }
 }

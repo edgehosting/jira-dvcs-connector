@@ -1,22 +1,21 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.DefaultBitbucketChangeset;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.LazyLoadedBitbucketChangeset;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
-
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
+import com.atlassian.jira.plugins.bitbucket.spi.DefaultBitbucketChangeset;
+import com.atlassian.jira.plugins.bitbucket.spi.LazyLoadedBitbucketChangeset;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 
 /**
  * Factory for {@link Changeset} implementations
@@ -54,7 +53,7 @@ public class BitbucketChangesetFactory {
                     json.getString("node"),
                     json.getString("raw_author"),
                     json.getString("author"),
-                    getDate(json.getString("timestamp")),
+                    parseDate(json.getString("timestamp")),
                     json.getString("raw_node"),
                     json.getString("branch"),
                     json.getString("message"),
@@ -62,18 +61,17 @@ public class BitbucketChangesetFactory {
                     fileList(json.getJSONArray("files"))
             );
         } catch (JSONException e) {
-            throw new SourceControlException("invalid json object", e);
+            throw new SourceControlException("Invalid json object: "+json.toString(), e);
         }
     }
 
-    public static Date getDate(String dateStr) {
+    public static Date parseDate(String dateStr) {
         // example:    2011-05-26 10:54:41
         try {
             return DATE_FORMAT.parse(dateStr);
         } catch (ParseException e) {
-            e.printStackTrace();
+            throw new SourceControlException("Could not parse date string from JSON.", e);
         }
-        return null;
     }
 
     public static String getDateString(Date datetime) {

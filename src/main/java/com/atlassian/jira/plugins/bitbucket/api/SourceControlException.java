@@ -23,4 +23,14 @@ public class SourceControlException extends RuntimeException
     {
         super(cause);
     }
+    
+    
+    public static class UnauthorisedException extends SourceControlException
+    {
+        public UnauthorisedException(String message)
+        {
+            super(message);
+        }
+        
+    }
 }

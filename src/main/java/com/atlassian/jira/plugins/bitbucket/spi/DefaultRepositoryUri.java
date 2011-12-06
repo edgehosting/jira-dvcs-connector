@@ -68,4 +68,6 @@ public abstract class DefaultRepositoryUri implements RepositoryUri
     {
         return new HashCodeBuilder(17,37).append(protocol).append(owner).append(slug).append(hostname).toHashCode();
     }
+
+
 }

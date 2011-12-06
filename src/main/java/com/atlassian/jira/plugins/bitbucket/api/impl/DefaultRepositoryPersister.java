@@ -1,10 +1,17 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import net.java.ao.Query;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -19,6 +26,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
@@ -49,7 +57,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     }
 
     @Override
-    public ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String repositoryType)
+    public ProjectMapping addRepository(String repositoryType, String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String accessToken)
     {
         
         final ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_URL = ? and PROJECT_KEY = ?", repositoryUrl, projectKey);
@@ -70,6 +78,10 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         {
         	map.put("ADMIN_USERNAME", adminUsername);
         	map.put("ADMIN_PASSWORD", adminPassword);
+        }
+        if (StringUtils.isNotBlank(accessToken))
+        {
+            map.put("ACCESS_TOKEN", accessToken);
         }
         return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping>()
         {
@@ -103,15 +115,37 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     }
 
     @Override
-    public List<IssueMapping> getIssueMappings(final String issueId)
+
+    public List<IssueMapping> getIssueMappings(final String issueId, final String repositoryType)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
         {
+            @SuppressWarnings("unchecked")
             @Override
             public List<IssueMapping> doInTransaction()
             {
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", issueId);
-                return Lists.newArrayList(mappings);
+                if (mappings.length==0)
+                    return Collections.EMPTY_LIST;
+                
+                // get list of all project mappings with our type
+                ProjectMapping[] myProjectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", repositoryType);
+                
+                final Set<Integer> projectMappingsIds = Sets.newHashSet();
+                for (int i = 0; i < myProjectMappings.length; i++)
+                {
+                    projectMappingsIds.add(myProjectMappings[i].getID());
+                }
+                
+                return Lists.newArrayList(CollectionUtils.select(Arrays.asList(mappings), new Predicate()
+                {
+                    @Override
+                    public boolean evaluate(Object o)
+                    {
+                        IssueMapping issueMapping = (IssueMapping) o;
+                        return projectMappingsIds.contains(issueMapping.getRepositoryId());
+                    }
+                }));
             }
         });
     }
@@ -139,7 +173,6 @@ public class DefaultRepositoryPersister implements RepositoryPersister
 				map.put("REPOSITORY_ID", repositoryId);
 				map.put("ISSUE_ID", issueId);
 				map.put("NODE", node);
-                map.put("REPOSITORY_ID", repositoryId);
                 map.put("RAW_AUTHOR", changeset.getRawAuthor());
                 map.put("AUTHOR", changeset.getAuthor());
                 map.put("TIMESTAMP", changeset.getTimestamp());

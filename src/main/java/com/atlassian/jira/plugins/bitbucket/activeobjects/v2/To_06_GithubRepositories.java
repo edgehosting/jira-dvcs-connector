@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.activeobjects.v2;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,8 +18,9 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.collect.Maps;
 
 /**
- *  I would be good to check that github plugin is not installed
+ *  Data migration from jira-github-connector plugin to jira-bitbucket-connector plugin
  */
+@SuppressWarnings("unchecked")
 public class To_06_GithubRepositories implements ActiveObjectsUpgradeTask
 {
     private final Logger log = LoggerFactory.getLogger(To_06_GithubRepositories.class);
@@ -37,6 +39,7 @@ public class To_06_GithubRepositories implements ActiveObjectsUpgradeTask
         return repoUrls != null ? repoUrls : Collections.<String> emptyList();
     }
 
+    @Override
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
         log.debug("upgrade [ " + getModelVersion() + " ]");
@@ -100,19 +103,26 @@ public class To_06_GithubRepositories implements ActiveObjectsUpgradeTask
         return commitUrl.replaceAll("(.*/|\\?.*)", "");
     }
     
-    public static void main(String[] args)
+    public static void main(String[] args) throws MalformedURLException
     {
         String url = "https://github.com/api/v2/json/commits/show/owner/repo/jh783263h23kh?branch=mybranch";
         String s1 = url.replaceAll("(.*/|\\?.*)", "");
         System.out.println(s1);
+        
+        
+        String url1 = "https://github.com/user/repo/master/blah/asfsadfasd/asdfasdfsad/fasd/";
+        url1 = url1.replaceAll("(https://.*?/.*?/.*?)/.*", "$1");
+        System.out.println(url1);
     }
 
     private String fixUrl(String repository)
     {
-        // TODO - remove branch Auto-generated method stub
-        return repository;
+        // Converts "https://github.com/user/repo/master" to "https://github.com/user/repo";
+        return repository.replaceAll("(https://.*?/.*?/.*?)/.*", "$1");
     }
+    
 
+    @Override
     public ModelVersion getModelVersion()
     {
         return ModelVersion.valueOf("6");

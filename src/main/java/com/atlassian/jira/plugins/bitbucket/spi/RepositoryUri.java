@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+//TODO Javadoc
 public interface RepositoryUri
 {
     String getOwner();
@@ -15,4 +16,10 @@ public interface RepositoryUri
     String getCommitUrl(String node);
 
     String getUserUrl(String username);
+
+    String getRepositoryInfoUrl();
+
+    String getFileCommitUrl(String node, String file);
+
+    String getParentUrl(String parentNode);
 }

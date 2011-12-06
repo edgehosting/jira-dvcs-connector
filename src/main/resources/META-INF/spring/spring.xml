@@ -6,18 +6,17 @@
     <bean id="bitbucketCommunicator" class="com.atlassian.jira.plugins.bitbucket.spi.CachingCommunicator">
         <constructor-arg>
             <bean class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator">
-                <constructor-arg ref="requestFactory"/>
                 <constructor-arg ref="authenticationFactory"/>
+                <constructor-arg ref="requestHelper"/>
             </bean>
         </constructor-arg>
     </bean>
 
     <bean id="githubCommunicator" class="com.atlassian.jira.plugins.bitbucket.spi.CachingCommunicator">
         <constructor-arg>
-            <bean class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator">
-                <!--todo githubConnection-->
-                <constructor-arg ref="requestFactory"/>
+            <bean class="com.atlassian.jira.plugins.bitbucket.spi.github.impl.GithubCommunicator">
                 <constructor-arg ref="authenticationFactory"/>
+                <constructor-arg ref="requestHelper"/>
             </bean>
         </constructor-arg>
     </bean>
