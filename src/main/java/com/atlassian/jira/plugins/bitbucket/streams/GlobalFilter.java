@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.streams;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 /**
  *
  */
@@ -70,5 +72,11 @@ public class GlobalFilter
     public void setNotInIssues(Iterable<String> notInIssues)
     {
         this.notInIssues = notInIssues;
+    }
+
+    @Override
+    public String toString()
+    {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

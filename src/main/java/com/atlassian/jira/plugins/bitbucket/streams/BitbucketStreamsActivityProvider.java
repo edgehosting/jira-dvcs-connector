@@ -200,12 +200,6 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 .authors(ImmutableNonEmptyList.of(userProfile))
                 .addActivityObject(activityObject)
                 .verb(ActivityVerbs.update())
-//                .addLink(URI.create(webResourceManager.getStaticPluginResource(
-//                        "com.atlassian.streams.external-provider-sample:externalProviderWebResources",
-//                        "puzzle-piece.gif",
-//                        UrlMode.ABSOLUTE)),
-//                        StreamsActivityProvider.ICON_LINK_REL,
-//                        none(String.class))
                 .alternateLinkUri(issueUri)
                 .renderer(renderer)
                 .applicationType(applicationProperties.getDisplayName()), i18nResolver);
@@ -217,9 +211,14 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         //get all changeset entries that match the specified activity filters
         gf.setInProjects(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)));
         gf.setNotInProjects(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)));
-        gf.setInProjects(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)));
+        gf.setInUsers(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.USER.getKey())));
+        gf.setNotInUsers(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.USER.getKey())));
+        gf.setInIssues(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey())));
+        gf.setNotInIssues(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey())));
+        log.debug("GlobalFilter: " + gf);
 
         Iterable<IssueMapping> changesetEntries = globalRepositoryManager.getLastChangesetMappings(activityRequest.getMaxResults(), gf);
+        log.debug("Found changeset entries: " + changesetEntries);
         Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
         return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
     }
