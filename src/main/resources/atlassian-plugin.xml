@@ -33,6 +33,11 @@
         <interface>com.atlassian.jira.plugins.bitbucket.ExecutorServiceFactoryBean</interface>
     </component>
 
+    <component key="issueLinker" name="issueLinker"
+            class="com.atlassian.jira.plugins.bitbucket.IssueLinkerImpl">
+        <interface>com.atlassian.jira.plugins.bitbucket.IssueLinker</interface>
+    </component>
+    
     <component key="requestHelper" name="requestHelper"
             class="com.atlassian.jira.plugins.bitbucket.spi.DefaultRequestHelper">
         <interface>com.atlassian.jira.plugins.bitbucket.spi.RequestHelper</interface>
