@@ -25,6 +25,8 @@ public interface IssueMapping extends Entity {
 
     String getMessage();
 
+    String getFilesData();
+
 
     void setRepositoryId(int repositoryId);
 
@@ -43,4 +45,6 @@ public interface IssueMapping extends Entity {
     void setBranch(String branch);
 
     void setMessage(String message);
+
+    void setFilesData(String files);
 }

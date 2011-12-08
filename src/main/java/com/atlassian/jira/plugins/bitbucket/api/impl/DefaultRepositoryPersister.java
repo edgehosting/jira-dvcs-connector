@@ -4,9 +4,15 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -179,6 +185,41 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 map.put("BRANCH", changeset.getBranch());
                 map.put("MESSAGE", changeset.getMessage());
 
+                JSONObject filesJson = new JSONObject();
+                JSONArray added = new JSONArray();
+                JSONArray removed = new JSONArray();
+                JSONArray modified = new JSONArray();
+                try
+                {
+                    List<ChangesetFile> files = changeset.getFiles();
+                    int count = files.size();
+                    filesJson.put("count", count);
+                    for (int i=0; i< Math.min(count, DvcsRepositoryManager.MAX_VISIBLE_FILES); i++)
+                    {
+                        ChangesetFile changesetFile = files.get(i);
+                        if (changesetFile.getFileAction().equals(ChangesetFileAction.ADDED))
+                        {
+                            added.put(changesetFile.getFile());
+                        } else if (changesetFile.getFileAction().equals(ChangesetFileAction.REMOVED))
+                        {
+                            removed.put(changesetFile.getFile());
+                        } else if (changesetFile.getFileAction().equals(ChangesetFileAction.MODIFIED))
+                        {
+                            modified.put(changesetFile.getFile());
+                        }
+
+                    }
+                    filesJson.put("added", added);
+                    filesJson.put("removed", removed);
+                    filesJson.put("modified", modified);
+
+                    map.put("FILES_DATA", filesJson.toString());
+                } catch (JSONException e)
+                {
+                    logger.error("Creating files JSON failed!", e);
+                }
+
+
                 return activeObjects.create(IssueMapping.class, map);
             }
         });
@@ -192,29 +233,125 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             @Override
             public List<IssueMapping> doInTransaction()
             {
-                StringBuilder whereClauseSb = new StringBuilder();
+                StringBuilder whereClauseProjectsSb = new StringBuilder();
+                StringBuilder whereClauseIssueKyesSb = new StringBuilder();
+                StringBuilder whereClauseUsersSb = new StringBuilder();
                 if (gf.getInProjects() != null && gf.getInProjects().iterator().hasNext())
                 {
                     for (String projectKey : gf.getInProjects())
                     {
-                        if (whereClauseSb.length() != 0)
+                        if (StringUtils.isBlank(projectKey))
                         {
-                            whereClauseSb.append(" OR ");
+                            continue;
                         }
-                        whereClauseSb.append("ISSUE_ID like '").append(projectKey).append("-%' ");
+                        if (whereClauseProjectsSb.length() != 0)
+                        {
+                            whereClauseProjectsSb.append(" OR ");
+                        }
+                        whereClauseProjectsSb.append("ISSUE_ID like '").append(projectKey).append("-%' ");
                     }
                 }
                 if (gf.getNotInProjects() != null && gf.getNotInProjects().iterator().hasNext())
                 {
                     for (String projectKey : gf.getNotInProjects())
                     {
-                        if (whereClauseSb.length() != 0)
+                        if (StringUtils.isBlank(projectKey))
                         {
-                            whereClauseSb.append(" AND ");
+                            continue;
                         }
-                        whereClauseSb.append("ISSUE_ID not like '").append(projectKey).append("-%' ");
+                        if (whereClauseProjectsSb.length() != 0)
+                        {
+                            whereClauseProjectsSb.append(" AND ");
+                        }
+                        whereClauseProjectsSb.append("ISSUE_ID not like '").append(projectKey).append("-%' ");
                     }
                 }
+
+                if (gf.getInIssues() != null && gf.getInIssues().iterator().hasNext())
+                {
+                    for (String issueKey : gf.getInIssues())
+                    {
+                        if (StringUtils.isBlank(issueKey))
+                        {
+                            continue;
+                        }
+                        if (whereClauseIssueKyesSb.length() != 0)
+                        {
+                            whereClauseIssueKyesSb.append(" OR ");
+                        }
+                        whereClauseIssueKyesSb.append("ISSUE_ID like '").append(issueKey.toUpperCase()).append("' ");
+                    }
+                }
+                if (gf.getNotInIssues() != null && gf.getNotInIssues().iterator().hasNext())
+                {
+                    for (String issueKey : gf.getNotInIssues())
+                    {
+                        if (StringUtils.isBlank(issueKey))
+                        {
+                            continue;
+                        }
+                        if (whereClauseIssueKyesSb.length() != 0)
+                        {
+                            whereClauseIssueKyesSb.append(" AND ");
+                        }
+                        whereClauseIssueKyesSb.append("ISSUE_ID not like '").append(issueKey.toUpperCase()).append("' ");
+                    }
+                }
+
+                if (gf.getInUsers() != null && gf.getInUsers().iterator().hasNext())
+                {
+                    for (String username : gf.getInUsers())
+                    {
+                        if (StringUtils.isBlank(username))
+                        {
+                            continue;
+                        }
+                        if (whereClauseUsersSb.length() != 0)
+                        {
+                            whereClauseUsersSb.append(" OR ");
+                        }
+                        whereClauseUsersSb.append("AUTHOR like '").append(username).append("' ");
+                    }
+                }
+                if (gf.getNotInUsers() != null && gf.getNotInUsers().iterator().hasNext())
+                {
+                    for (String username : gf.getNotInUsers())
+                    {
+                        if (StringUtils.isBlank(username))
+                        {
+                            continue;
+                        }
+                        if (whereClauseUsersSb.length() != 0)
+                        {
+                            whereClauseUsersSb.append(" AND ");
+                        }
+                        whereClauseUsersSb.append("AUTHOR not like '").append(username).append("' ");
+                    }
+                }
+
+                StringBuilder whereClauseSb = new StringBuilder();
+                if (whereClauseProjectsSb.length() != 0)
+                {
+                    whereClauseSb.append("(").append(whereClauseProjectsSb.toString()).append(")");
+                }
+                if (whereClauseIssueKyesSb.length() != 0)
+                {
+                    if (whereClauseSb.length() != 0)
+                    {
+                        whereClauseSb.append(" AND ");
+                    }
+                    whereClauseSb.append("(").append(whereClauseIssueKyesSb.toString()).append(")");
+                }
+                if (whereClauseUsersSb.length() != 0)
+                {
+                    if (whereClauseSb.length() != 0)
+                    {
+                        whereClauseSb.append(" AND ");
+                    }
+                    whereClauseSb.append("(").append(whereClauseUsersSb.toString()).append(")");
+                }
+
+                // if no filter applyied than "no" where clause should be used
                 if (whereClauseSb.length() == 0)
                 {
                     whereClauseSb.append(" true ");

@@ -1,20 +1,14 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryUri;
 import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static junit.framework.Assert.assertEquals;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 public class TestBitbucketChansetFactory
 {
@@ -31,14 +25,4 @@ public class TestBitbucketChansetFactory
         when(repository.getRepositoryUri()).thenReturn(repositoryUri);
     }
 
-    @Test
-    public void testLazyLoadedChangeset() throws Exception
-    {
-        final Changeset changeset = BitbucketChangesetFactory.load(communicator, repository, "471b0c972ba6");
-
-        assertEquals("471b0c972ba6", changeset.getNode());
-        assertEquals("https://bitbucket.org/atlassian/jira-bitbucket-connector/changeset/471b0c972ba6",
-                changeset.getCommitURL(repository));
-        verify(communicator, never()).getChangeset(Matchers.<SourceControlRepository> anyObject(), anyString());
-    }
 }
