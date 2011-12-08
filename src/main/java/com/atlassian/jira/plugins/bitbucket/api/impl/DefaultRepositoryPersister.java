@@ -4,9 +4,15 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -178,6 +184,41 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 map.put("RAW_NODE", changeset.getRawNode());
                 map.put("BRANCH", changeset.getBranch());
                 map.put("MESSAGE", changeset.getMessage());
+
+                JSONObject filesJson = new JSONObject();
+                JSONArray added = new JSONArray();
+                JSONArray removed = new JSONArray();
+                JSONArray modified = new JSONArray();
+                try
+                {
+                    List<ChangesetFile> files = changeset.getFiles();
+                    int count = files.size();
+                    filesJson.put("count", count);
+                    for (int i=0; i< Math.min(count, DvcsRepositoryManager.MAX_VISIBLE_FILES); i++)
+                    {
+                        ChangesetFile changesetFile = files.get(i);
+                        if (changesetFile.getFileAction().equals(ChangesetFileAction.ADDED))
+                        {
+                            added.put(changesetFile.getFile());
+                        } else if (changesetFile.getFileAction().equals(ChangesetFileAction.REMOVED))
+                        {
+                            removed.put(changesetFile.getFile());
+                        } else if (changesetFile.getFileAction().equals(ChangesetFileAction.MODIFIED))
+                        {
+                            modified.put(changesetFile.getFile());
+                        }
+
+                    }
+                    filesJson.put("added", added);
+                    filesJson.put("removed", removed);
+                    filesJson.put("modified", modified);
+
+                    map.put("FILES_DATA", filesJson.toString());
+                } catch (JSONException e)
+                {
+                    logger.error("Creating files JSON failed!", e);
+                }
+
 
                 return activeObjects.create(IssueMapping.class, map);
             }

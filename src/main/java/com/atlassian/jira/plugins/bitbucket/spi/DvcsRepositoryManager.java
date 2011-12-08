@@ -1,26 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
@@ -29,14 +13,31 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.opensymphony.util.TextUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
     private static final Logger log = LoggerFactory.getLogger(DvcsRepositoryManager.class);
+
+    public static final int MAX_VISIBLE_FILES = 5;
 
     private final RepositoryPersister repositoryPersister;
     private final Communicator communicator;
@@ -63,9 +64,48 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
 		@Override
         public Changeset apply(IssueMapping from)
         {
-            ProjectMapping pm = repositoryPersister.getRepository(from.getRepositoryId());
-            SourceControlRepository repository = TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
-            return getCommunicator().getChangeset(repository, from.getNode());
+            List<ChangesetFile> files = new ArrayList<ChangesetFile>();
+            int fileCount = 0;
+
+            try
+            {
+                String filesData = from.getFilesData();
+                JSONObject filesJson = new JSONObject(filesData);
+                fileCount = filesJson.getInt("count");
+                JSONArray added = filesJson.getJSONArray("added");
+                for (int i = 0; i < added.length(); i++)
+                {
+                    String addFilename = added.getString(i);
+                    files.add(new DefaultBitbucketChangesetFile(ChangesetFileAction.ADDED, addFilename));
+                }
+                JSONArray removed = filesJson.getJSONArray("removed");
+                for (int i = 0; i < removed.length(); i++)
+                {
+                    String removedFilename = removed.getString(i);
+                    files.add(new DefaultBitbucketChangesetFile(ChangesetFileAction.REMOVED, removedFilename));
+                }
+                JSONArray modified = filesJson.getJSONArray("modified");
+                for (int i = 0; i < modified.length(); i++)
+                {
+                    String modifiedFilename = modified.getString(i);
+                    files.add(new DefaultBitbucketChangesetFile(ChangesetFileAction.MODIFIED, modifiedFilename));
+                }
+            } catch (JSONException e)
+            {
+                log.error("Failed parsing files from FileJson data.");
+            }
+
+            return new DefaultBitbucketChangeset(from.getRepositoryId(),
+                    from.getNode(),
+                    from.getRawAuthor(),
+                    from.getAuthor(),
+                    from.getTimestamp(),
+                    from.getRawNode(),
+                    from.getBranch(),
+                    from.getMessage(),
+                    Collections.<String>emptyList(),
+                    files,
+                    fileCount);
         }
     };
 
@@ -153,10 +193,10 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     {
 
         String htmlParentHashes = "";
-            RepositoryUri repositoryUri = repository.getRepositoryUri();
+        RepositoryUri repositoryUri = repository.getRepositoryUri();
         if (!changeset.getParents().isEmpty())
         {
-                for (String parentNode : changeset.getParents())
+            for (String parentNode : changeset.getParents())
             {
                 // ehm ehm ... what is this? shouldn't this be
                 // htmlParentHashes+=
@@ -165,71 +205,22 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             }
         }
 
-        Map<String, String> mapFiles = new HashMap<String, String>();
-        String htmlFile = "";
-        if (!changeset.getFiles().isEmpty())
+        String htmlFiles = "";
+        for (int i=0; i< Math.min(changeset.getFiles().size(), MAX_VISIBLE_FILES); i++)
         {
-            for (ChangesetFile file : changeset.getFiles())
-            {
-                String fileName = file.getFile();
-                String color = file.getFileAction().getColor();
-                String fileActionName = file.getFileAction().toString();
-                    String fileCommitURL = repositoryUri.getFileCommitUrl(changeset.getNode(), CustomStringUtils.encode(file.getFile()));
-                htmlFile = "<li><span style='color:" + color + "; font-size: 8pt;'>" +
-                        TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
-                        fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
-                mapFiles.put(fileName, htmlFile);
-            }
+            ChangesetFile file = changeset.getFiles().get(i);
+            String fileName = file.getFile();
+            String color = file.getFileAction().getColor();
+            String fileActionName = file.getFileAction().toString();
+                String fileCommitURL = repositoryUri.getFileCommitUrl(changeset.getNode(), CustomStringUtils.encode(file.getFile()));
+            htmlFiles  += "<li><span style='color:" + color + "; font-size: 8pt;'>" +
+                    TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
+                    fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
         }
 
-        String htmlFiles = "";
-        String htmlFilesHiddenDescription = "";
-        Integer numSeeMore = 0;
-        Random randDivID = new Random(System.currentTimeMillis());
-
-        // Sort and compose all files
-        Iterator<String> it = mapFiles.keySet().iterator();
-        Object obj;
-
-        String htmlHiddenDiv = "";
-
-        if (mapFiles.size() <= 5)
-        {
-            while (it.hasNext())
-            {
-                obj = it.next();
-                htmlFiles += mapFiles.get(obj);
-            }
-            htmlFilesHiddenDescription = "";
-        } else
-        {
-            Integer i = 0;
-
-            while (it.hasNext())
-            {
-                obj = it.next();
-
-                if (i <= 4)
-                {
-                    htmlFiles += mapFiles.get(obj);
-                } else
-                {
-                    htmlHiddenDiv += mapFiles.get(obj);
-                }
-
-                i++;
-            }
-
-            numSeeMore = mapFiles.size() - 5;
-            Integer divID = randDivID.nextInt();
-
-            htmlFilesHiddenDescription = "<div class='see_more' id='see_more_" + divID.toString() + "' style='color: #3C78B5; cursor: pointer; text-decoration: underline;' onclick='toggleMoreFiles(" + divID.toString() + ")'>" +
-                    "See " + numSeeMore.toString() + " more" +
-                    "</div>" +
-                    "<div class='hide_more' id='hide_more_" + divID.toString() + "' style='display: none; color: #3C78B5;  cursor: pointer; text-decoration: underline;' onclick='toggleMoreFiles(" + divID.toString() + ")'>Hide " + numSeeMore.toString() + " Files</div>";
-
-            htmlHiddenDiv = htmlFilesHiddenDescription + "<div id='" + divID.toString() + "' style='display: none;'><ul>" + htmlHiddenDiv + "</ul></div>";
-
+        int numSeeMore = changeset.getAllFileCount() - MAX_VISIBLE_FILES;
+        if (numSeeMore > 0) {
+            htmlFiles += "<div class='see_more' style='margin-top:5px;'><a href='#commit_url' target='_new'>See " + numSeeMore + " more</a></div>";
         }
 
         String htmlCommitEntry = "" +
@@ -246,9 +237,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
                 "<ul>" +
                 htmlFiles +
                 "</ul>" +
-
-                htmlHiddenDiv +
-
                 "<div style='margin-top: 10px'>" +
                 "<img src='" + getApplicationProperties().getBaseUrl() + "/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/document.jpg' align='center'> <span class='commit_date' style='color: #757575; font-size: 9pt;'>#formatted_commit_date</span>" +
                 "</div>" +

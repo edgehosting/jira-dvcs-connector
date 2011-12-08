@@ -4,7 +4,10 @@ import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
+import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.streams.api.ActivityObjectTypes;
@@ -31,10 +34,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
 
 public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 {
@@ -103,72 +102,25 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
             {
                 SourceControlRepository repo = globalRepositoryManager.getRepository(changesetEntry.getRepositoryId());
 
-                Map<String, String> mapFiles = new HashMap<String, String>();
-                String htmlFile = "";
                 Changeset changeset = globalRepositoryManager.getChangeset(changesetEntry.getNode());
-                if (!changeset.getFiles().isEmpty())
-                {
-                    for (ChangesetFile file : changeset.getFiles())
-                    {
-                        String fileName = file.getFile();
-                        String color = file.getFileAction().getColor();
-                        String fileActionName = file.getFileAction().toString();
-                        String fileCommitURL = repo.getRepositoryUri().getRepositoryUrl() + "/src/" + changeset.getNode() + "/" + urlEncode(file.getFile());
-                        htmlFile = "<li><span style='color:" + color + "; font-size: 8pt;'>" +
-                                TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
-                                fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
-                        mapFiles.put(fileName, htmlFile);
-                    }
-                }
+                RepositoryUri repositoryUri = repo.getRepositoryUri();
 
                 String htmlFiles = "";
-                String htmlFilesHiddenDescription = "";
-                Integer numSeeMore = 0;
-                Random randDivID = new Random(System.currentTimeMillis());
-
-                // Sort and compose all files
-                Iterator<String> it = mapFiles.keySet().iterator();
-                Object obj;
-
-                String htmlHiddenDiv = "";
-
-                if (mapFiles.size() <= 5)
+                for (int i=0; i< Math.min(changeset.getFiles().size(), DvcsRepositoryManager.MAX_VISIBLE_FILES); i++)
                 {
-                    while (it.hasNext())
-                    {
-                        obj = it.next();
-                        htmlFiles += mapFiles.get(obj);
-                    }
-                    htmlFilesHiddenDescription = "";
-                } else
-                {
-                    Integer i = 0;
+                    ChangesetFile file = changeset.getFiles().get(i);
+                    String fileName = file.getFile();
+                    String color = file.getFileAction().getColor();
+                    String fileActionName = file.getFileAction().toString();
+                    String fileCommitURL = repositoryUri.getFileCommitUrl(changeset.getNode(), CustomStringUtils.encode(file.getFile()));
+                    htmlFiles  += "<li><span style='color:" + color + "; font-size: 8pt;'>" +
+                            TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
+                            fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
+                }
 
-                    while (it.hasNext())
-                    {
-                        obj = it.next();
-
-                        if (i <= 4)
-                        {
-                            htmlFiles += mapFiles.get(obj);
-                        } else
-                        {
-                            htmlHiddenDiv += mapFiles.get(obj);
-                        }
-
-                        i++;
-                    }
-
-                    numSeeMore = mapFiles.size() - 5;
-                    Integer divID = randDivID.nextInt();
-
-                    htmlFilesHiddenDescription = "<div class='see_more' id='see_more_" + divID.toString() + "' style='color: #3C78B5; cursor: pointer; text-decoration: underline;' onclick='toggleMoreFiles(" + divID.toString() + ")'>" +
-                            "See " + numSeeMore.toString() + " more" +
-                            "</div>" +
-                            "<div class='hide_more' id='hide_more_" + divID.toString() + "' style='display: none; color: #3C78B5;  cursor: pointer; text-decoration: underline;' onclick='toggleMoreFiles(" + divID.toString() + ")'>Hide " + numSeeMore.toString() + " Files</div>";
-
-                    htmlHiddenDiv = htmlFilesHiddenDescription + "<div id='" + divID.toString() + "' style='display: none;'><ul>" + htmlHiddenDiv + "</ul></div>";
-
+                int numSeeMore = changeset.getAllFileCount() - DvcsRepositoryManager.MAX_VISIBLE_FILES;
+                if (numSeeMore > 0) {
+                    htmlFiles += "<div class='see_more' style='margin-top:5px;'><a href='#commit_url' target='_new'>See " + numSeeMore + " more</a></div>";
                 }
 
                 StringBuilder sb = new StringBuilder();
@@ -178,7 +130,6 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 sb.append("<ul>");
                 sb.append(htmlFiles);
                 sb.append("</ul>");
-                sb.append(htmlHiddenDiv);
                 return Option.some(new StreamsEntry.Html(sb.toString()));
             }
 
