@@ -29,5 +29,7 @@ public interface Changeset {
 
     public List<ChangesetFile> getFiles();
 
+    public int getAllFileCount();
+
     public String getCommitURL(SourceControlRepository repository);
 }

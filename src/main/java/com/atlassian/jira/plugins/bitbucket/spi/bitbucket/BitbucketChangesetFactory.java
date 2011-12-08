@@ -1,42 +1,25 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.spi.DefaultBitbucketChangeset;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
-import com.atlassian.jira.plugins.bitbucket.spi.DefaultBitbucketChangeset;
-import com.atlassian.jira.plugins.bitbucket.spi.LazyLoadedBitbucketChangeset;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
-
 /**
  * Factory for {@link Changeset} implementations
  */
 public class BitbucketChangesetFactory {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    /**
-     * Load the changeset details based on the authentication method, the repository owner, repository
-     * slug, and changeset node id
-     *
-     * @param bitbucket  the remote bitbucket service
-     * @param auth       the authentication method
-     * @param owner      the owner of the repository
-     * @param slug       the slug of the repository
-     * @param node       the changeset node id
-     * @param repository
-     * @return the parsed {@link Changeset}
-     */
-    public static Changeset load(Communicator bitbucket, SourceControlRepository repository, String node) {
-        return new LazyLoadedBitbucketChangeset(bitbucket, repository, node);
-    }
+
 
     /**
      * Parse the json object as a bitbucket changeset
@@ -48,6 +31,7 @@ public class BitbucketChangesetFactory {
      */
     public static Changeset parse(int repositoryId, JSONObject json) {
         try {
+            List<ChangesetFile> files = fileList(json.getJSONArray("files"));
             return new DefaultBitbucketChangeset(
                     repositoryId,
                     json.getString("node"),
@@ -58,7 +42,8 @@ public class BitbucketChangesetFactory {
                     json.getString("branch"),
                     json.getString("message"),
                     stringList(json.getJSONArray("parents")),
-                    fileList(json.getJSONArray("files"))
+                    files,
+                    files.size()
             );
         } catch (JSONException e) {
             throw new SourceControlException("Invalid json object: "+json.toString(), e);
