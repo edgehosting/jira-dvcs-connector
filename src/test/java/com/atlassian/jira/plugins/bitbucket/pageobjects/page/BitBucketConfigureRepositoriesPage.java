@@ -44,8 +44,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         // add
         addRepositoryButton.click();
 
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
+        checkSyncProcessSuccess();
 
         return addedRepositoryIdSpan.timed().getValue().byDefaultTimeout();
     }
@@ -66,10 +65,16 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"));
         addRepositoryButton.click();
 
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
+        checkSyncProcessSuccess();
 
         return this;
+    }
+
+    private void checkSyncProcessSuccess()
+    {
+        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
+        Poller.waitUntilFalse("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Running:"));
+        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
     }
 
     /**
@@ -113,8 +118,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         bbPasswordInput.type("jirabitbucketconnector");
         addRepositoryButton.click();
 
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().getText(), Matchers.equalTo("Sync Finished:"));
+        checkSyncProcessSuccess();
 
         return this;
     }

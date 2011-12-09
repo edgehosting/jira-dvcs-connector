@@ -137,9 +137,9 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 ProjectMapping[] myProjectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", repositoryType);
 
                 final Set<Integer> projectMappingsIds = Sets.newHashSet();
-                for (int i = 0; i < myProjectMappings.length; i++)
+                for (ProjectMapping myProjectMapping : myProjectMappings)
                 {
-                    projectMappingsIds.add(myProjectMappings[i].getID());
+                    projectMappingsIds.add(myProjectMapping.getID());
                 }
 
                 return Lists.newArrayList(CollectionUtils.select(Arrays.asList(mappings), new Predicate()
@@ -239,138 +239,150 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     @Override
     public List<IssueMapping> getLastChangesetMappings(final int count, final GlobalFilter gf)
     {
+        if (count <= 0)
+        {
+            return new ArrayList<IssueMapping>();
+        }
         return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
         {
             @Override
             public List<IssueMapping> doInTransaction()
             {
-                StringBuilder whereClauseProjectsSb = new StringBuilder();
-                StringBuilder whereClauseIssueKyesSb = new StringBuilder();
-                StringBuilder whereClauseUsersSb = new StringBuilder();
-                if (gf.getInProjects() != null && gf.getInProjects().iterator().hasNext())
-                {
-                    for (String projectKey : gf.getInProjects())
-                    {
-                        if (StringUtils.isBlank(projectKey))
-                        {
-                            continue;
-                        }
-                        if (whereClauseProjectsSb.length() != 0)
-                        {
-                            whereClauseProjectsSb.append(" OR ");
-                        }
-                        whereClauseProjectsSb.append("ISSUE_ID like '").append(projectKey).append("-%' ");
-                    }
-                }
-                if (gf.getNotInProjects() != null && gf.getNotInProjects().iterator().hasNext())
-                {
-                    for (String projectKey : gf.getNotInProjects())
-                    {
-                        if (StringUtils.isBlank(projectKey))
-                        {
-                            continue;
-                        }
-                        if (whereClauseProjectsSb.length() != 0)
-                        {
-                            whereClauseProjectsSb.append(" AND ");
-                        }
-                        whereClauseProjectsSb.append("ISSUE_ID not like '").append(projectKey).append("-%' ");
-                    }
-                }
-
-                if (gf.getInIssues() != null && gf.getInIssues().iterator().hasNext())
-                {
-                    for (String issueKey : gf.getInIssues())
-                    {
-                        if (StringUtils.isBlank(issueKey))
-                        {
-                            continue;
-                        }
-                        if (whereClauseIssueKyesSb.length() != 0)
-                        {
-                            whereClauseIssueKyesSb.append(" OR ");
-                        }
-                        whereClauseIssueKyesSb.append("ISSUE_ID like '").append(issueKey.toUpperCase()).append("' ");
-                    }
-                }
-                if (gf.getNotInIssues() != null && gf.getNotInIssues().iterator().hasNext())
-                {
-                    for (String issueKey : gf.getNotInIssues())
-                    {
-                        if (StringUtils.isBlank(issueKey))
-                        {
-                            continue;
-                        }
-                        if (whereClauseIssueKyesSb.length() != 0)
-                        {
-                            whereClauseIssueKyesSb.append(" AND ");
-                        }
-                        whereClauseIssueKyesSb.append("ISSUE_ID not like '").append(issueKey.toUpperCase()).append("' ");
-                    }
-                }
-
-                if (gf.getInUsers() != null && gf.getInUsers().iterator().hasNext())
-                {
-                    for (String username : gf.getInUsers())
-                    {
-                        if (StringUtils.isBlank(username))
-                        {
-                            continue;
-                        }
-                        if (whereClauseUsersSb.length() != 0)
-                        {
-                            whereClauseUsersSb.append(" OR ");
-                        }
-                        whereClauseUsersSb.append("AUTHOR like '").append(username).append("' ");
-                    }
-                }
-                if (gf.getNotInUsers() != null && gf.getNotInUsers().iterator().hasNext())
-                {
-                    for (String username : gf.getNotInUsers())
-                    {
-                        if (StringUtils.isBlank(username))
-                        {
-                            continue;
-                        }
-                        if (whereClauseUsersSb.length() != 0)
-                        {
-                            whereClauseUsersSb.append(" AND ");
-                        }
-                        whereClauseUsersSb.append("AUTHOR not like '").append(username).append("' ");
-                    }
-                }
-
-                StringBuilder whereClauseSb = new StringBuilder();
-                if (whereClauseProjectsSb.length() != 0)
-                {
-                    whereClauseSb.append("(").append(whereClauseProjectsSb.toString()).append(")");
-                }
-                if (whereClauseIssueKyesSb.length() != 0)
-                {
-                    if (whereClauseSb.length() != 0)
-                    {
-                        whereClauseSb.append(" AND ");
-                    }
-                    whereClauseSb.append("(").append(whereClauseIssueKyesSb.toString()).append(")");
-                }
-                if (whereClauseUsersSb.length() != 0)
-                {
-                    if (whereClauseSb.length() != 0)
-                    {
-                        whereClauseSb.append(" AND ");
-                    }
-                    whereClauseSb.append("(").append(whereClauseUsersSb.toString()).append(")");
-                }
-
-                // if no filter applyied than "no" where clause should be used
-                if (whereClauseSb.length() == 0)
-                {
-                    whereClauseSb.append(" true ");
-                }
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, Query.select().where(whereClauseSb.toString()).limit(count).order("TIMESTAMP DESC"));
+                String whereClauseSb = createQueryWhereClause(gf);
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, Query.select().where(whereClauseSb).limit(count).order("TIMESTAMP DESC"));
                 return mappings == null ? new ArrayList<IssueMapping>() : Lists.newArrayList(mappings);
             }
         });
+    }
+
+    private String createQueryWhereClause(GlobalFilter gf)
+    {
+        StringBuilder whereClauseProjectsSb = new StringBuilder();
+        StringBuilder whereClauseIssueKyesSb = new StringBuilder();
+        StringBuilder whereClauseUsersSb = new StringBuilder();
+        if (gf != null)
+        {
+            if (gf.getInProjects() != null && gf.getInProjects().iterator().hasNext())
+            {
+                for (String projectKey : gf.getInProjects())
+                {
+                    if (StringUtils.isBlank(projectKey))
+                    {
+                        continue;
+                    }
+                    if (whereClauseProjectsSb.length() != 0)
+                    {
+                        whereClauseProjectsSb.append(" OR ");
+                    }
+                    whereClauseProjectsSb.append("ISSUE_ID like '").append(projectKey).append("-%' ");
+                }
+            }
+            if (gf.getNotInProjects() != null && gf.getNotInProjects().iterator().hasNext())
+            {
+                for (String projectKey : gf.getNotInProjects())
+                {
+                    if (StringUtils.isBlank(projectKey))
+                    {
+                        continue;
+                    }
+                    if (whereClauseProjectsSb.length() != 0)
+                    {
+                        whereClauseProjectsSb.append(" AND ");
+                    }
+                    whereClauseProjectsSb.append("ISSUE_ID not like '").append(projectKey).append("-%' ");
+                }
+            }
+
+            if (gf.getInIssues() != null && gf.getInIssues().iterator().hasNext())
+            {
+                for (String issueKey : gf.getInIssues())
+                {
+                    if (StringUtils.isBlank(issueKey))
+                    {
+                        continue;
+                    }
+                    if (whereClauseIssueKyesSb.length() != 0)
+                    {
+                        whereClauseIssueKyesSb.append(" OR ");
+                    }
+                    whereClauseIssueKyesSb.append("ISSUE_ID like '").append(issueKey.toUpperCase()).append("' ");
+                }
+            }
+            if (gf.getNotInIssues() != null && gf.getNotInIssues().iterator().hasNext())
+            {
+                for (String issueKey : gf.getNotInIssues())
+                {
+                    if (StringUtils.isBlank(issueKey))
+                    {
+                        continue;
+                    }
+                    if (whereClauseIssueKyesSb.length() != 0)
+                    {
+                        whereClauseIssueKyesSb.append(" AND ");
+                    }
+                    whereClauseIssueKyesSb.append("ISSUE_ID not like '").append(issueKey.toUpperCase()).append("' ");
+                }
+            }
+
+            if (gf.getInUsers() != null && gf.getInUsers().iterator().hasNext())
+            {
+                for (String username : gf.getInUsers())
+                {
+                    if (StringUtils.isBlank(username))
+                    {
+                        continue;
+                    }
+                    if (whereClauseUsersSb.length() != 0)
+                    {
+                        whereClauseUsersSb.append(" OR ");
+                    }
+                    whereClauseUsersSb.append("AUTHOR like '").append(username).append("' ");
+                }
+            }
+            if (gf.getNotInUsers() != null && gf.getNotInUsers().iterator().hasNext())
+            {
+                for (String username : gf.getNotInUsers())
+                {
+                    if (StringUtils.isBlank(username))
+                    {
+                        continue;
+                    }
+                    if (whereClauseUsersSb.length() != 0)
+                    {
+                        whereClauseUsersSb.append(" AND ");
+                    }
+                    whereClauseUsersSb.append("AUTHOR not like '").append(username).append("' ");
+                }
+            }
+        }
+        StringBuilder whereClauseSb = new StringBuilder();
+        if (whereClauseProjectsSb.length() != 0)
+        {
+            whereClauseSb.append("(").append(whereClauseProjectsSb.toString()).append(")");
+        }
+        if (whereClauseIssueKyesSb.length() != 0)
+        {
+            if (whereClauseSb.length() != 0)
+            {
+                whereClauseSb.append(" AND ");
+            }
+            whereClauseSb.append("(").append(whereClauseIssueKyesSb.toString()).append(")");
+        }
+        if (whereClauseUsersSb.length() != 0)
+        {
+            if (whereClauseSb.length() != 0)
+            {
+                whereClauseSb.append(" AND ");
+            }
+            whereClauseSb.append("(").append(whereClauseUsersSb.toString()).append(")");
+        }
+
+        // if no filter applyied than "no" where clause should be used
+        if (whereClauseSb.length() == 0)
+        {
+            whereClauseSb.append(" true ");
+        }
+        return whereClauseSb.toString();
     }
 
     @Override
