@@ -100,11 +100,11 @@
     cursor: pointer;
     width:16px;
     display:inline-block;
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.gif)
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.png)
 }
 
 .syncicon.error {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.gif)
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png)
 }
 
 .syncicon.running {
