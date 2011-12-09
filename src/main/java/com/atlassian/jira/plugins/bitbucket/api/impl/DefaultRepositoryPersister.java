@@ -185,6 +185,15 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 map.put("BRANCH", changeset.getBranch());
                 map.put("MESSAGE", changeset.getMessage());
 
+
+                JSONArray parentsJson = new JSONArray();
+                for (String parent : changeset.getParents())
+                {
+                    parentsJson.put(parent);
+                }
+                map.put("PARENTS_DATA", parentsJson.toString());
+
+
                 JSONObject filesJson = new JSONObject();
                 JSONArray added = new JSONArray();
                 JSONArray removed = new JSONArray();
@@ -214,6 +223,8 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                     filesJson.put("modified", modified);
 
                     map.put("FILES_DATA", filesJson.toString());
+
+                    map.put("VERSION", IssueMapping.VERSION);
                 } catch (JSONException e)
                 {
                     logger.error("Creating files JSON failed!", e);
