@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.streams;
 
+import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
@@ -44,16 +45,19 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
     private RepositoryManager globalRepositoryManager;
 
     private static final Logger log = LoggerFactory.getLogger(BitbucketStreamsActivityProvider.class);
+    private final IssueLinker issueLinker;
 
 
-    public BitbucketStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties, UserProfileAccessor userProfileAccessor, @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager)
+    public BitbucketStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties,
+        UserProfileAccessor userProfileAccessor, @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager,
+        IssueLinker issueLinker)
     {
         this.applicationProperties = applicationProperties;
         this.i18nResolver = i18nResolver;
         this.userProfileAccessor = userProfileAccessor;
         this.globalRepositoryManager = globalRepositoryManager;
+        this.issueLinker = issueLinker;
     }
-
 
     public Iterable<StreamsEntry> transformEntries(Iterable<IssueMapping> changesetEntries) throws StreamsException
     {
@@ -125,7 +129,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
                 StringBuilder sb = new StringBuilder();
                 sb.append(getJavascriptForToggling());
-                sb.append(changesetEntry.getMessage());
+                sb.append(issueLinker.createLinks(TextUtils.htmlEncode(changesetEntry.getMessage())));
                 sb.append("<br>").append("<br>").append("Changes:").append("<br>");
                 sb.append("<ul>");
                 sb.append(htmlFiles);

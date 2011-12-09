@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
@@ -30,9 +31,10 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
     private final Logger log = LoggerFactory.getLogger(BitbucketRepositoryManager.class);
 
     public BitbucketRepositoryManager(RepositoryPersister repositoryPersister,
-        @Qualifier("bitbucketCommunicator") Communicator communicator, Encryptor encryptor, ApplicationProperties applicationProperties)
+        @Qualifier("bitbucketCommunicator") Communicator communicator, Encryptor encryptor, ApplicationProperties applicationProperties,
+        IssueLinker issueLinker)
     {
-        super(communicator, repositoryPersister, encryptor, applicationProperties);
+        super(communicator, repositoryPersister, encryptor, applicationProperties, issueLinker);
     }
 
     @Override

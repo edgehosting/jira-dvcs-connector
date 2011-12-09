@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
@@ -30,9 +31,10 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
 
     public static final String GITHUB = "github";
 
-    public GithubRepositoryManager(RepositoryPersister repositoryPersister,@Qualifier("githubCommunicator") Communicator communicator, Encryptor encryptor, ApplicationProperties applicationProperties)
+    public GithubRepositoryManager(RepositoryPersister repositoryPersister, @Qualifier("githubCommunicator") Communicator communicator,
+        Encryptor encryptor, ApplicationProperties applicationProperties, IssueLinker issueLinker)
     {
-        super(communicator, repositoryPersister, encryptor, applicationProperties);
+        super(communicator, repositoryPersister, encryptor, applicationProperties, issueLinker);
     }
 
     @Override

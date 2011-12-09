@@ -72,7 +72,7 @@ public class TestBitbucketPostCommit
     	String payload = resource("TestBitbucketPostCommit-payload.json");
     	DefaultSourceControlRepository repo = new DefaultSourceControlRepository(0, "bitbucket", repositoryUri, projectKey, null, null, null, null, null);
 
-    	BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, null, null, null);
+    	BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, null, null, null, null);
 		List<Changeset> changesets = brm.parsePayload(repo, payload);
     	
         ArgumentMatcher<List<Changeset>> matcher = new ArgumentMatcher<List<Changeset>>()

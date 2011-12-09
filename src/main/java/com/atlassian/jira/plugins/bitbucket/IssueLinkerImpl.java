@@ -6,7 +6,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.atlassian.linkers.AbstractAppLinkRendererComponent;
 import com.atlassian.sal.api.ApplicationProperties;
 
 

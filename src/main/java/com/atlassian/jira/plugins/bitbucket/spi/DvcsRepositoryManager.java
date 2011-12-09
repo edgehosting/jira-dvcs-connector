@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -43,6 +44,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     private final Communicator communicator;
     private final Encryptor encryptor;
     private final ApplicationProperties applicationProperties;
+    private final IssueLinker issueLinker;
 
     /* Maps ProjectMapping to SourceControlRepository */
     private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping, SourceControlRepository>()
@@ -109,12 +111,15 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         }
     };
 
-    public DvcsRepositoryManager(Communicator communicator, RepositoryPersister repositoryPersister, Encryptor encryptor, ApplicationProperties applicationProperties)
+
+    public DvcsRepositoryManager(Communicator communicator, RepositoryPersister repositoryPersister, Encryptor encryptor,
+        ApplicationProperties applicationProperties, IssueLinker issueLinker)
     {
         this.communicator = communicator;
         this.repositoryPersister = repositoryPersister;
         this.encryptor = encryptor;
         this.applicationProperties = applicationProperties;
+        this.issueLinker = issueLinker;
     }
 
     public void validateRepositoryAccess(String repositoryType, String projectKey, String repositoryUrl, String username,
@@ -269,7 +274,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             htmlCommitEntry = htmlCommitEntry.replace("#user_url", baseRepositoryUrl + "/" + CustomStringUtils.encode(login));
         htmlCommitEntry = htmlCommitEntry.replace("#login", TextUtils.htmlEncode(login));
         htmlCommitEntry = htmlCommitEntry.replace("#user_name", TextUtils.htmlEncode(authorName));
-        htmlCommitEntry = htmlCommitEntry.replace("#commit_message", TextUtils.htmlEncode(changeset.getMessage()));
+        String commitMessage = issueLinker.createLinks(TextUtils.htmlEncode(changeset.getMessage()));  //TODO add functional test for this
+        htmlCommitEntry = htmlCommitEntry.replace("#commit_message", commitMessage);
             htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_time", getDateString(changeset.getTimestamp()));
             htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_date", getDateString(changeset.getTimestamp()));
         htmlCommitEntry = htmlCommitEntry.replace("#commit_url", commitURL);
