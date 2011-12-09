@@ -133,4 +133,6 @@ public interface RepositoryManager
 
     public UrlInfo getUrlInfo(String repositoryUrl);
 
+    public Changeset updateChangeset(IssueMapping issueMapping);
+
 }

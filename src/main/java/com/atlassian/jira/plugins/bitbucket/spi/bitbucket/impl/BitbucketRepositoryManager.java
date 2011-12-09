@@ -1,15 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
@@ -19,11 +9,19 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BitbucketRepositoryManager extends DvcsRepositoryManager
 {
@@ -80,7 +78,11 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 
 			for (int i = 0; i < commits.length(); ++i)
 			{
-				changesets.add(BitbucketChangesetFactory.parse(repository.getId(), commits.getJSONObject(i)));
+                // from post commit service we haven't all data that we need. we have to make next request for it.
+                JSONObject commitJson = commits.getJSONObject(i);
+                String nodeId = commitJson.getString("node");
+                Changeset changeset = getCommunicator().getChangeset(repository, nodeId);
+                changesets.add(changeset);
 			}
 		} catch (JSONException e)
 		{

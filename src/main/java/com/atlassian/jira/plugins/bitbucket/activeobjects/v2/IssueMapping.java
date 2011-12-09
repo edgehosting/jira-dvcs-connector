@@ -7,6 +7,9 @@ import java.util.Date;
 
 @Table("IssueMappingV2")
 public interface IssueMapping extends Entity {
+
+    public static final int VERSION = 1;
+
     int getRepositoryId();
 
     String getNode();
@@ -26,6 +29,10 @@ public interface IssueMapping extends Entity {
     String getMessage();
 
     String getFilesData();
+
+    String getParentsData();
+
+    Integer getVersion();
 
 
     void setRepositoryId(int repositoryId);
@@ -47,4 +54,8 @@ public interface IssueMapping extends Entity {
     void setMessage(String message);
 
     void setFilesData(String files);
+
+    void setParentsData(String parents);
+
+    void setVersion(Integer version);
 }

@@ -5,7 +5,6 @@ import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
@@ -15,9 +14,6 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -27,8 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -61,56 +55,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         }
     };
 
-    private final Function<IssueMapping, Changeset> TO_CHANGESET = new Function<IssueMapping, Changeset>()
-    {
-		@Override
-        public Changeset apply(IssueMapping from)
-        {
-            List<ChangesetFile> files = new ArrayList<ChangesetFile>();
-            int fileCount = 0;
-
-            try
-            {
-                String filesData = from.getFilesData();
-                JSONObject filesJson = new JSONObject(filesData);
-                fileCount = filesJson.getInt("count");
-                JSONArray added = filesJson.getJSONArray("added");
-                for (int i = 0; i < added.length(); i++)
-                {
-                    String addFilename = added.getString(i);
-                    files.add(new DefaultBitbucketChangesetFile(ChangesetFileAction.ADDED, addFilename));
-                }
-                JSONArray removed = filesJson.getJSONArray("removed");
-                for (int i = 0; i < removed.length(); i++)
-                {
-                    String removedFilename = removed.getString(i);
-                    files.add(new DefaultBitbucketChangesetFile(ChangesetFileAction.REMOVED, removedFilename));
-                }
-                JSONArray modified = filesJson.getJSONArray("modified");
-                for (int i = 0; i < modified.length(); i++)
-                {
-                    String modifiedFilename = modified.getString(i);
-                    files.add(new DefaultBitbucketChangesetFile(ChangesetFileAction.MODIFIED, modifiedFilename));
-                }
-            } catch (JSONException e)
-            {
-                log.error("Failed parsing files from FileJson data.");
-            }
-
-            return new DefaultBitbucketChangeset(from.getRepositoryId(),
-                    from.getNode(),
-                    from.getRawAuthor(),
-                    from.getAuthor(),
-                    from.getTimestamp(),
-                    from.getRawNode(),
-                    from.getBranch(),
-                    from.getMessage(),
-                    Collections.<String>emptyList(),
-                    files,
-                    fileCount);
-        }
-    };
-
+    private final Function<IssueMapping, Changeset> TO_CHANGESET;
 
     public DvcsRepositoryManager(Communicator communicator, RepositoryPersister repositoryPersister, Encryptor encryptor,
         ApplicationProperties applicationProperties, IssueLinker issueLinker)
@@ -120,6 +65,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         this.encryptor = encryptor;
         this.applicationProperties = applicationProperties;
         this.issueLinker = issueLinker;
+
+        TO_CHANGESET = new ToChangesetTransformer(this);
     }
 
     public void validateRepositoryAccess(String repositoryType, String projectKey, String repositoryUrl, String username,
@@ -325,6 +272,16 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     {
         if (!hasValidFormat(repositoryUrl)) return null;
         return getCommunicator().getUrlInfo(getRepositoryUri(repositoryUrl));
+    }
+
+    @Override
+    public Changeset updateChangeset(IssueMapping issueMapping)
+    {
+        ProjectMapping pm = repositoryPersister.getRepository(issueMapping.getRepositoryId());
+        SourceControlRepository repository = TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
+        Changeset changeset = getCommunicator().getChangeset(repository, issueMapping.getNode());
+        repositoryPersister.addChangeset(issueMapping.getIssueId(), changeset);
+        return changeset;
     }
 
     @Override
