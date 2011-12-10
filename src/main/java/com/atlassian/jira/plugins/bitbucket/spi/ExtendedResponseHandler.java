@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import java.text.MessageFormat;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.atlassian.sal.api.net.Response;
@@ -52,6 +53,12 @@ public class ExtendedResponseHandler implements ResponseHandler<Response>
         public String getResponseString()
         {
             return responseString;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return MessageFormat.format("successful: {0}, statusCode: {1}, responseString: {2}", successful, statusCode, responseString);
         }
     }
 }

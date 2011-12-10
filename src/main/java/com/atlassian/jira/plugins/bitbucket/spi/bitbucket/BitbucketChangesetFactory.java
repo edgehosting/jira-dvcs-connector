@@ -62,7 +62,7 @@ public class BitbucketChangesetFactory {
                     fileList(json.getJSONArray("files"))
             );
         } catch (JSONException e) {
-            throw new SourceControlException("invalid json object", e);
+            throw new SourceControlException("Invalid json object: "+json.toString(), e);
         }
     }
 

@@ -71,7 +71,7 @@ public class BitbucketCommunicator implements Communicator
     }
 
     @Override
-    public Changeset getChangeset(SourceControlRepository repository, String id)
+    public Changeset getChangeset(SourceControlRepository repository, String node)
     {
         try
         {
@@ -80,18 +80,17 @@ public class BitbucketCommunicator implements Communicator
             String slug = uri.getSlug();
             Authentication auth = authenticationFactory.getAuthentication(repository);
 
-            logger.debug("parse changeset [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, id });
+            logger.debug("parse changeset [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, node });
             String responseString = requestHelper.get(auth, "/repositories/" + CustomStringUtils.encode(owner) + "/" +
-                    CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(id), null,
+                    CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(node), null,
                     uri.getApiUrl());
-
             return BitbucketChangesetFactory.parse(repository.getId(), new JSONObject(responseString));
         } catch (ResponseException e)
         {
             throw new SourceControlException("could not get result", e);
         } catch (JSONException e)
         {
-            throw new SourceControlException("could not parse json result", e);
+            throw new SourceControlException("Could not parse json result", e);
         }
     }
 
@@ -114,8 +113,8 @@ public class BitbucketCommunicator implements Communicator
 
         try
         {
-             ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, "/repositories/" + CustomStringUtils.encode(owner) + "/" +
-                    CustomStringUtils.encode(slug) + "/changesets", params, uri.getApiUrl());
+            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, "/repositories/" + CustomStringUtils.encode(owner)
+                + "/" + CustomStringUtils.encode(slug) + "/changesets", params, uri.getApiUrl());
 
             if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
@@ -130,10 +129,10 @@ public class BitbucketCommunicator implements Communicator
             for (int i = 0; i < list.length(); i++)
             {
                 changesets.add(BitbucketChangesetFactory.parse(repository.getId(), list.getJSONObject(i)));
-            }            
+            }
         } catch (ResponseException e)
         {
-            logger.debug("Could not get changesets from node: {}", startNode);
+            logger.warn("Could not get changesets from node: {}", startNode);
             throw new SourceControlException("Error requesting changesets. Node: " + startNode + ". [" + e.getMessage() + "]", e);
         } catch (JSONException e)
         {

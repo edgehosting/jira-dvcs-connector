@@ -36,7 +36,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         urlTextbox.clear().type(url);
         projectSelect.select(Options.value(projectKey));
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"), Poller.by(10000));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"));
         // postcommit hook
         addPostCommitServiceCheckbox.click();
         adminUsernameTextbox.clear().type(adminUsername);
@@ -63,7 +63,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"), Poller.by(10000));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"));
         addRepositoryButton.click();
 
         Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
@@ -108,13 +108,13 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"), Poller.by(10000));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"));
         bbUsernameInput.type("jirabitbucketconnector");
         bbPasswordInput.type("jirabitbucketconnector");
         addRepositoryButton.click();
 
         Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().getText(), Matchers.equalTo("Sync Finished:"), Poller.by(20000));
+        Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().getText(), Matchers.equalTo("Sync Finished:"));
 
         return this;
     }
