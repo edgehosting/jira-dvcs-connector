@@ -78,7 +78,7 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 
 			for (int i = 0; i < commits.length(); ++i)
 			{
-                // from post commit service we haven't all data that we need. we have to make next request for it.
+                // from post commit service we don't have all the data that we need. we have to make another request
                 JSONObject commitJson = commits.getJSONObject(i);
                 String nodeId = commitJson.getString("node");
                 Changeset changeset = getCommunicator().getChangeset(repository, nodeId);
