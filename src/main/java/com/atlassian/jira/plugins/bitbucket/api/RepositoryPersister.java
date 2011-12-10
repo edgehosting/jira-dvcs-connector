@@ -2,9 +2,12 @@ package com.atlassian.jira.plugins.bitbucket.api;
 
 import java.util.List;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ChangesetMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Maps bitbucket repositories and commits to jira projects and issues.
@@ -72,5 +75,11 @@ public interface RepositoryPersister {
      * @param count changesets count
      * @return list of Changeset mappings
      */
-    public List<ChangesetMapping> getLastChangesetMappings(final int count);
+    public List<IssueMapping> getLastChangesetMappings(int count, GlobalFilter gf);
+
+    /**
+     * @param node
+     * @return changeset by node
+     */
+    public IssueMapping getIssueMapping(String node);
 }

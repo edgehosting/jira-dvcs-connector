@@ -1,11 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
@@ -13,6 +7,11 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A {@link com.atlassian.jira.plugins.bitbucket.spi.Communicator} implementation that caches results for quicker subsequent lookup times
@@ -21,36 +20,36 @@ public class CachingCommunicator implements Communicator
 {
     private final Communicator delegate;
 
-    private class ChangesetKey
-    {
-        final String id;
-        private final SourceControlRepository repository;
-
-        public ChangesetKey(SourceControlRepository repository, String id)
-        {
-            this.repository = repository;
-            this.id = id;
-        }
-
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            ChangesetKey that = (ChangesetKey) o;
-            if (!repository.equals(that.repository)) return false;
-            if (!id.equals(that.id)) return false;
-            return true;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            int result = repository.hashCode();
-            result = 31 * result + id.hashCode();
-            return result;
-        }
-    }
+//    private class ChangesetKey
+//    {
+//        final String id;
+//        private final SourceControlRepository repository;
+//
+//        public ChangesetKey(SourceControlRepository repository, String id)
+//        {
+//            this.repository = repository;
+//            this.id = id;
+//        }
+//
+//        @Override
+//        public boolean equals(Object o)
+//        {
+//            if (this == o) return true;
+//            if (o == null || getClass() != o.getClass()) return false;
+//            ChangesetKey that = (ChangesetKey) o;
+//            if (!repository.equals(that.repository)) return false;
+//            if (!id.equals(that.id)) return false;
+//            return true;
+//        }
+//
+//        @Override
+//        public int hashCode()
+//        {
+//            int result = repository.hashCode();
+//            result = 31 * result + id.hashCode();
+//            return result;
+//        }
+//    }
 
     private class UserKey
     {
@@ -91,15 +90,15 @@ public class CachingCommunicator implements Communicator
             }
         });
 
-    private final Map<ChangesetKey, Changeset> changesetMap = new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(
-        new Function<ChangesetKey, Changeset>()
-        {
-            @Override
-            public Changeset apply(ChangesetKey key)
-            {
-                return delegate.getChangeset(key.repository, key.id);
-            }
-        });
+//    private final Map<ChangesetKey, Changeset> changesetMap = new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(
+//        new Function<ChangesetKey, Changeset>()
+//        {
+//            @Override
+//            public Changeset apply(ChangesetKey key)
+//            {
+//                return delegate.getChangeset(key.repository, key.id);
+//            }
+//        });
 
     public CachingCommunicator(Communicator delegate)
     {
@@ -121,13 +120,15 @@ public class CachingCommunicator implements Communicator
     @Override
     public Changeset getChangeset(SourceControlRepository repository, String id)
     {
-        try
-        {
-            return changesetMap.get(new ChangesetKey(repository, id));
-        } catch (ComputationException e)
-        {
-            throw unrollException(e);
-        }
+        return delegate.getChangeset(repository, id);
+
+//        try
+//        {
+//            return changesetMap.get(new ChangesetKey(repository, id));
+//        } catch (ComputationException e)
+//        {
+//            throw unrollException(e);
+//        }
     }
 
     private SourceControlException unrollException(ComputationException e)

@@ -22,10 +22,8 @@
 .gh_config_h4{
     font-weight: normal;
     color: #3676B7;
-    background: url('../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/down_gray_arrow.jpg');
     background-repeat: no-repeat;
     background-position: left center;
-    padding-left: 18px;
     margin-top: 18px;
 }
 
@@ -102,11 +100,11 @@
     cursor: pointer;
     width:16px;
     display:inline-block;
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.gif)
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.png)
 }
 
 .syncicon.error {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.gif)
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png)
 }
 
 .syncicon.running {

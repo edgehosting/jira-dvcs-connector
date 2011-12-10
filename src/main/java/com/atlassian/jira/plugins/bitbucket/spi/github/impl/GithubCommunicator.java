@@ -81,7 +81,6 @@ public class GithubCommunicator implements Communicator
                     CustomStringUtils.encode(slug) + "/" + CustomStringUtils.encode(id), null,
                     uri.getApiUrl());
 
-            // TODO; branch
             return GithubChangesetFactory.parse(repository.getId(), "master", new JSONObject(responseString).getJSONObject("commit"));
         } catch (ResponseException e)
         {
@@ -125,7 +124,11 @@ public class GithubCommunicator implements Communicator
             JSONArray list = new JSONObject(responseString).getJSONArray("commits");
             for (int i = 0; i < list.length(); i++)
             {
-                changesets.add(GithubChangesetFactory.parse(repository.getId(), branch, list.getJSONObject(i)));
+                JSONObject commitJson = list.getJSONObject(i);
+                String id = commitJson.getString("id");
+                // get detial changeset because in this response is not information about files
+                Changeset detailChangeset = getChangeset(repository, id);
+                changesets.add(detailChangeset);
             }
         } catch (ResponseException e)
         {
@@ -151,8 +154,8 @@ public class GithubCommunicator implements Communicator
 
         try
         {
-            JSONObject configJson = new JSONObject().accumulate("url", postCommitUrl);
-            JSONObject postDataJson = new JSONObject().accumulate("name", "web").accumulate("active", true).accumulate("config", configJson);
+            JSONObject configJson = new JSONObject().put("url", postCommitUrl);
+            JSONObject postDataJson = new JSONObject().put("name", "web").put("active", true).put("config", configJson);
             requestHelper.post(auth, urlPath, postDataJson.toString(), apiUrl);
         } catch (JSONException e)
         {

@@ -22,13 +22,14 @@ public class DefaultBitbucketChangeset implements Changeset {
     private final String message;
     private final List<String> parents;
     private final List<ChangesetFile> files;
+    private final int allFileCount;
 
     private final int repositoryId;
 
     public DefaultBitbucketChangeset(int repositoryId,
                                      String node, String rawAuthor, String author, Date timestamp,
                                      String rawNode, String branch, String message,
-                                     List<String> parents, List<ChangesetFile> files) {
+                                     List<String> parents, List<ChangesetFile> files, int allFileCount) {
         this.repositoryId = repositoryId;
         this.node = node;
         this.rawAuthor = rawAuthor;
@@ -39,6 +40,7 @@ public class DefaultBitbucketChangeset implements Changeset {
         this.message = message;
         this.parents = parents;
         this.files = files;
+        this.allFileCount = allFileCount;
     }
 
     public int getRepositoryId() {
@@ -81,6 +83,11 @@ public class DefaultBitbucketChangeset implements Changeset {
         return files;
     }
 
+    public int getAllFileCount()
+    {
+        return allFileCount;
+    }
+
     public String getCommitURL(SourceControlRepository repository) {
         return repository.getRepositoryUri().getCommitUrl(node);
     }
@@ -103,6 +110,7 @@ public class DefaultBitbucketChangeset implements Changeset {
                 .append(rawNode, that.rawNode)
                 .append(repositoryId, that.repositoryId)
                 .append(timestamp, that.timestamp)
+                .append(allFileCount, that.allFileCount)
                 .isEquals();
     }
 
@@ -118,7 +126,9 @@ public class DefaultBitbucketChangeset implements Changeset {
                 .append(rawAuthor)
                 .append(rawNode)
                 .append(repositoryId)
-                .append(timestamp).hashCode();
+                .append(timestamp)
+                .append(allFileCount)
+                .hashCode();
     }
 
 }
