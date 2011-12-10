@@ -52,7 +52,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         urlTextbox.clear().type(url);
         projectSelect.select(Options.value(projectKey));
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"));
         // postcommit hook
         addPostCommitServiceCheckbox.click();
         // add
@@ -64,7 +64,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         {
             Assert.fail("Expected was Valid OAuth login and redirect to jira!");
         }
-        return addedRepositoryIdSpan.timed().getValue().byDefaultTimeout();
+        return addedRepositoryIdSpan.timed().getValue().now();
     }
 
     /**
@@ -81,12 +81,12 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
 
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"));
         addRepositoryButton.click();
 
         Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
         Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
-                .getText(), Matchers.startsWith("Sync Finished:"), Poller.by(15000));
+                .getText(), Matchers.startsWith("Sync Finished:"));
 
         return this;
     }
@@ -117,7 +117,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
 
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"));
         addRepositoryButton.click();
 
         String currentUrl = checkAndDoGithubLogin();
@@ -164,7 +164,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"), Poller.by(10000));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"));
         if (messageBarDiv.isPresent())
         {
             PageElement messageBarErrorDiv = messageBarDiv.find(By.className("error"));
@@ -186,7 +186,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         }
 //        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
 //        Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
-//                .getText(), Matchers.startsWith("Sync Finished:"), Poller.by(15000));
+//                .getText(), Matchers.startsWith("Sync Finished:"));
         return this;
     }
 }
