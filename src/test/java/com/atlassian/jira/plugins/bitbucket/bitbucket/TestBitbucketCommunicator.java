@@ -107,7 +107,7 @@ public class TestBitbucketCommunicator
             fail("Expected exception when parsing invalid response");
         } catch (SourceControlException e)
         {
-            assertEquals("could not parse json result", e.getMessage());
+            assertEquals("Could not parse json result", e.getMessage());
         }
         verify(request).addBasicAuthentication("user", "pass");
 
