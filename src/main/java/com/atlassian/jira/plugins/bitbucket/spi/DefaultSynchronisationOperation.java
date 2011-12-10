@@ -61,7 +61,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     private static Set<String> extractProjectKey(String projectKey, String message)
     {
         // should check that issue exists?
-        Pattern projectKeyPattern = Pattern.compile("(" + projectKey + "-\\d*)", Pattern.CASE_INSENSITIVE);
+        Pattern projectKeyPattern = Pattern.compile("(" + projectKey + "-\\d+)", Pattern.CASE_INSENSITIVE);
         Matcher match = projectKeyPattern.matcher(message);
 
         Set<String> matches = new HashSet<String>();

@@ -38,7 +38,7 @@ public abstract class BitBucketBaseTest
 
     protected void ensureRepositoryPresent(String projectKey, String repoUrl)
     {
-        if (configureRepos.isRepositoryPresent(projectKey, repoUrl) == false)
+        if (!configureRepos.isRepositoryPresent(projectKey, repoUrl))
         {
             configureRepos.addPublicRepoToProjectSuccessfully(projectKey, repoUrl);
         }
