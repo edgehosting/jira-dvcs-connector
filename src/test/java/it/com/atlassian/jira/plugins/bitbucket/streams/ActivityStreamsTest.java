@@ -1,16 +1,20 @@
 package it.com.atlassian.jira.plugins.bitbucket.streams;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.DashboardActivityStreamsPage;
-import com.atlassian.pageobjects.TestedProductFactory;
-import com.atlassian.webdriver.jira.JiraTestedProduct;
-import com.atlassian.webdriver.jira.page.DashboardPage;
+import it.com.atlassian.jira.plugins.bitbucket.BitBucketBaseTest.AnotherLoginPage;
 import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.DashboardActivityStreamsPage;
+import com.atlassian.pageobjects.TestedProductFactory;
+import com.atlassian.pageobjects.page.LoginPage;
+import com.atlassian.webdriver.jira.JiraTestedProduct;
+import com.atlassian.webdriver.jira.page.DashboardPage;
 
 /**
  *
@@ -20,11 +24,11 @@ public class ActivityStreamsTest
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private DashboardActivityStreamsPage page;
 
-    @SuppressWarnings("unchecked")
     @Before
     public void loginToJira()
     {
-        jira.gotoLoginPage().loginAsSysAdmin(DashboardPage.class);
+        jira.getPageBinder().override(LoginPage.class, AnotherLoginPage.class);
+        jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(DashboardPage.class);
 
         BitBucketConfigureRepositoriesPage configureRepos = goToRepositoriesConfigPage();
         configureRepos.deleteAllRepositories();

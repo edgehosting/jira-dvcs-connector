@@ -1,5 +1,14 @@
 package com.atlassian.jira.plugins.bitbucket.streams;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLEncoder;
+
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -14,27 +23,22 @@ import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.streams.api.ActivityObjectTypes;
 import com.atlassian.streams.api.ActivityRequest;
 import com.atlassian.streams.api.ActivityVerbs;
+import com.atlassian.streams.api.Html;
 import com.atlassian.streams.api.StreamsEntry;
 import com.atlassian.streams.api.StreamsException;
 import com.atlassian.streams.api.StreamsFeed;
 import com.atlassian.streams.api.UserProfile;
 import com.atlassian.streams.api.common.ImmutableNonEmptyList;
 import com.atlassian.streams.api.common.Option;
+import com.atlassian.streams.spi.CancellableTask;
 import com.atlassian.streams.spi.Filters;
 import com.atlassian.streams.spi.StandardStreamsFilterOption;
 import com.atlassian.streams.spi.StreamsActivityProvider;
 import com.atlassian.streams.spi.UserProfileAccessor;
+import com.atlassian.streams.spi.CancellableTask.Result;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.opensymphony.util.TextUtils;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLEncoder;
 
 public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 {
@@ -89,20 +93,20 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
         StreamsEntry.Renderer renderer = new StreamsEntry.Renderer()
         {
-            public StreamsEntry.Html renderTitleAsHtml(StreamsEntry entry)
+            public Html renderTitleAsHtml(StreamsEntry entry)
             {
                 SourceControlRepository repo = globalRepositoryManager.getRepository(changesetEntry.getRepositoryId());
                 String userHtml = (userProfile.getProfilePageUri().isDefined()) ? "<a href=\"" + userProfile.getProfilePageUri().get() + "\"  class=\"activity-item-user activity-item-author\">" + userProfile.getUsername() + "</a>" : TextUtils.htmlEncode(userProfile.getUsername());
-                return new StreamsEntry.Html(userHtml + " committed changeset <a href=\"" + repo.getRepositoryUri().getCommitUrl(changesetEntry.getNode()) + "\">" + changesetEntry.getNode() + "</a> to the " +
+                return new Html(userHtml + " committed changeset <a href=\"" + repo.getRepositoryUri().getCommitUrl(changesetEntry.getNode()) + "\">" + changesetEntry.getNode() + "</a> to the " +
                         "<a href=\"" + issueUri + "\">" + changesetEntry.getIssueId() + "</a>" + " issue saying:");
             }
 
-            public Option<StreamsEntry.Html> renderSummaryAsHtml(StreamsEntry entry)
+            public Option<Html> renderSummaryAsHtml(StreamsEntry entry)
             {
                 return Option.none();
             }
 
-            public Option<StreamsEntry.Html> renderContentAsHtml(StreamsEntry entry)
+            public Option<Html> renderContentAsHtml(StreamsEntry entry)
             {
                 SourceControlRepository repo = globalRepositoryManager.getRepository(changesetEntry.getRepositoryId());
 
@@ -134,7 +138,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 sb.append("<ul>");
                 sb.append(htmlFiles);
                 sb.append("</ul>");
-                return Option.some(new StreamsEntry.Html(sb.toString()));
+                return Option.some(new Html(sb.toString()));
             }
 
             private String getJavascriptForToggling()
@@ -160,7 +164,8 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 .applicationType(applicationProperties.getDisplayName()), i18nResolver);
     }
 
-    public StreamsFeed getActivityFeed(ActivityRequest activityRequest) throws StreamsException
+ 
+    public CancellableTask<StreamsFeed> getActivityFeed(ActivityRequest activityRequest) throws StreamsException
     {
         GlobalFilter gf = new GlobalFilter();
         //get all changeset entries that match the specified activity filters
@@ -174,8 +179,23 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
         Iterable<IssueMapping> changesetEntries = globalRepositoryManager.getLastChangesetMappings(activityRequest.getMaxResults(), gf);
         log.debug("Found changeset entries: " + changesetEntries);
-        Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
-        return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
+        final Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
+        return new CancellableTask<StreamsFeed>()
+        {
+            
+            @Override
+            public StreamsFeed call() throws Exception
+            {
+                return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
+            }
+            
+            @Override
+            public Result cancel()
+            {
+                // TODO Auto-generated method stub
+                return null;
+            }
+        };
     }
 
     protected String urlEncode(String s)
