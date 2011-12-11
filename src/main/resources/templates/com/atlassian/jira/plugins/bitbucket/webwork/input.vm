@@ -136,7 +136,7 @@
                 <tr>
                   <td><label for="url">Repository Url</label></td>
                   <td><input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" /></td>
-                  <td><i>eg: https://bitbucket.org/atlassianguy/my-repository</i> or <i>eg: https://github.com/owner/repository</i> </td>
+                  <td><i>eg: https://bitbucket.org/atlassianguy/my-repository</i> or <i>https://github.com/owner/repository</i> </td>
                 </tr>  
           
                 <tr>
