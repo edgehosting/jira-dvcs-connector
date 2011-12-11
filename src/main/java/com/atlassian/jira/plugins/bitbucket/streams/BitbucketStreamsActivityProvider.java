@@ -61,14 +61,13 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
     public Iterable<StreamsEntry> transformEntries(Iterable<IssueMapping> changesetEntries) throws StreamsException
     {
-        return Iterables.transform(changesetEntries,
-                new Function<IssueMapping, StreamsEntry>()
-                {
-                    public StreamsEntry apply(IssueMapping from)
-                    {
-                        return toStreamsEntry(from);
-                    }
-                });
+        return Iterables.transform(changesetEntries, new Function<IssueMapping, StreamsEntry>()
+        {
+            public StreamsEntry apply(IssueMapping from)
+            {
+                return toStreamsEntry(from);
+            }
+        });
     }
 
     /**
@@ -172,7 +171,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         gf.setNotInIssues(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey())));
         log.debug("GlobalFilter: " + gf);
 
-        Iterable<IssueMapping> changesetEntries = globalRepositoryManager.getLastChangesetMappings(activityRequest.getMaxResults(), gf);
+        Iterable<IssueMapping> changesetEntries = globalRepositoryManager.getLastChangesets(activityRequest.getMaxResults(), gf);
         log.debug("Found changeset entries: " + changesetEntries);
         Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
         return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());

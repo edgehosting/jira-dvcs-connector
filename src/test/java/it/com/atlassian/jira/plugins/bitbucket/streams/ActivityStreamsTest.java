@@ -20,7 +20,6 @@ public class ActivityStreamsTest
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private DashboardActivityStreamsPage page;
 
-    @SuppressWarnings("unchecked")
     @Before
     public void loginToJira()
     {

@@ -61,6 +61,7 @@ public class BitbucketCommunicator implements Communicator
             return BitbucketUserFactory.parse(new JSONObject(responseString).getJSONObject("user"));
         } catch (ResponseException e)
         {
+            // TODO: Start with capital letter
             logger.debug("could not load user [ " + username + " ]");
             return SourceControlUser.UNKNOWN_USER;
         } catch (JSONException e)
