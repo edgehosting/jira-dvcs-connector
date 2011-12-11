@@ -59,11 +59,11 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         this.issueLinker = issueLinker;
     }
 
-    public Iterable<StreamsEntry> transformEntries(Iterable<IssueMapping> changesetEntries) throws StreamsException
+    public Iterable<StreamsEntry> transformEntries(Iterable<Changeset> changesetEntries) throws StreamsException
     {
-        return Iterables.transform(changesetEntries, new Function<IssueMapping, StreamsEntry>()
+        return Iterables.transform(changesetEntries, new Function<Changeset, StreamsEntry>()
         {
-            public StreamsEntry apply(IssueMapping from)
+            public StreamsEntry apply(Changeset from)
             {
                 return toStreamsEntry(from);
             }
@@ -73,27 +73,26 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
     /**
      * Transforms a single {@link IssueMapping} to a {@link StreamsEntry}.
      *
-     * @param changesetEntry the changeset entry
+     * @param changeset the changeset entry
      * @return the transformed streams entry
      */
-    private StreamsEntry toStreamsEntry(final IssueMapping changesetEntry)
+    private StreamsEntry toStreamsEntry(final Changeset changeset)
     {
-        final URI issueUri = URI.create(applicationProperties.getBaseUrl() + "/browse/" + changesetEntry.getIssueId());
+//        final URI issueUri = URI.create(applicationProperties.getBaseUrl() + "/browse/" + changesetEntry.getIssueId());
 
         StreamsEntry.ActivityObject activityObject = new StreamsEntry.ActivityObject(StreamsEntry.ActivityObject.params()
-                .id(changesetEntry.getNode()).alternateLinkUri(URI.create(""))
+                .id(changeset.getNode()).alternateLinkUri(URI.create(""))
                 .activityObjectType(ActivityObjectTypes.status()));
 
-        final UserProfile userProfile = userProfileAccessor.getUserProfile(changesetEntry.getAuthor());
+        final UserProfile userProfile = userProfileAccessor.getUserProfile(changeset.getAuthor());
 
         StreamsEntry.Renderer renderer = new StreamsEntry.Renderer()
         {
             public StreamsEntry.Html renderTitleAsHtml(StreamsEntry entry)
             {
-                SourceControlRepository repo = globalRepositoryManager.getRepository(changesetEntry.getRepositoryId());
+                SourceControlRepository repo = globalRepositoryManager.getRepository(changeset.getRepositoryId());
                 String userHtml = (userProfile.getProfilePageUri().isDefined()) ? "<a href=\"" + userProfile.getProfilePageUri().get() + "\"  class=\"activity-item-user activity-item-author\">" + userProfile.getUsername() + "</a>" : TextUtils.htmlEncode(userProfile.getUsername());
-                return new StreamsEntry.Html(userHtml + " committed changeset <a href=\"" + repo.getRepositoryUri().getCommitUrl(changesetEntry.getNode()) + "\">" + changesetEntry.getNode() + "</a> to the " +
-                        "<a href=\"" + issueUri + "\">" + changesetEntry.getIssueId() + "</a>" + " issue saying:");
+                return new StreamsEntry.Html(userHtml + " committed changeset <a href=\"" + repo.getRepositoryUri().getCommitUrl(changeset.getNode()) + "\">" + changeset.getNode() + "</a> saying:");
             }
 
             public Option<StreamsEntry.Html> renderSummaryAsHtml(StreamsEntry entry)
@@ -103,9 +102,8 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
             public Option<StreamsEntry.Html> renderContentAsHtml(StreamsEntry entry)
             {
-                SourceControlRepository repo = globalRepositoryManager.getRepository(changesetEntry.getRepositoryId());
+                SourceControlRepository repo = globalRepositoryManager.getRepository(changeset.getRepositoryId());
 
-                Changeset changeset = globalRepositoryManager.getChangeset(changesetEntry.getNode());
                 RepositoryUri repositoryUri = repo.getRepositoryUri();
 
                 String htmlFiles = "";
@@ -128,7 +126,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
                 StringBuilder sb = new StringBuilder();
                 sb.append(getJavascriptForToggling());
-                sb.append(issueLinker.createLinks(TextUtils.htmlEncode(changesetEntry.getMessage())));
+                sb.append(issueLinker.createLinks(TextUtils.htmlEncode(changeset.getMessage())));
                 sb.append("<br>").append("<br>").append("Changes:").append("<br>");
                 sb.append("<ul>");
                 sb.append(htmlFiles);
@@ -149,12 +147,12 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         };
 
         return new StreamsEntry(StreamsEntry.params()
-                .id(issueUri)
-                .postedDate(new DateTime(changesetEntry.getTimestamp().getTime()))
+                .id(URI.create(""))
+                .postedDate(new DateTime(changeset.getTimestamp().getTime()))
                 .authors(ImmutableNonEmptyList.of(userProfile))
                 .addActivityObject(activityObject)
                 .verb(ActivityVerbs.update())
-                .alternateLinkUri(issueUri)
+                .alternateLinkUri(URI.create(""))
                 .renderer(renderer)
                 .applicationType(applicationProperties.getDisplayName()), i18nResolver);
     }
@@ -171,7 +169,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         gf.setNotInIssues(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey())));
         log.debug("GlobalFilter: " + gf);
 
-        Iterable<IssueMapping> changesetEntries = globalRepositoryManager.getLastChangesets(activityRequest.getMaxResults(), gf);
+        Iterable<Changeset> changesetEntries = globalRepositoryManager.getLatestChangesets(activityRequest.getMaxResults(), gf);
         log.debug("Found changeset entries: " + changesetEntries);
         Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
         return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());

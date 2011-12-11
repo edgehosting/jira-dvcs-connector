@@ -17,8 +17,8 @@ import java.util.List;
 
 public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
 {
-    private static final Logger LOG = LoggerFactory.getLogger(ToChangesetTransformer.class);
-    private RepositoryManager repositoryManager;
+    public static final Logger log = LoggerFactory.getLogger(ToChangesetTransformer.class);
+    private final RepositoryManager repositoryManager;
 
     public ToChangesetTransformer(RepositoryManager repositoryManager)
     {
@@ -51,7 +51,7 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
 
     private boolean isLatestVersion(IssueMapping from)
     {
-        return from.getLatestVersion() != null && from.getLatestVersion() >= IssueMapping.LATEST_VERSION;
+        return from.getVersion() != null && from.getVersion() >= IssueMapping.LATEST_VERSION;
     }
 
     private List<String> parseParentsData(String parentsData)
@@ -72,7 +72,7 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
             }
         } catch (JSONException e)
         {
-            LOG.error("Failed parsing parents from ParentsJson data.");
+            log.error("Failed parsing parents from ParentsJson data.");
         }
 
         return parents;
@@ -107,7 +107,7 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
             }
         } catch (JSONException e)
         {
-            LOG.error("Failed parsing files from FileJson data.");
+            log.error("Failed parsing files from FileJson data.");
         }
 
         return new FileData(files, fileCount);

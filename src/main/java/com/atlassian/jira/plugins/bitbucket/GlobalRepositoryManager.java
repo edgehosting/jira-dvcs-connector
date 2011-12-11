@@ -175,23 +175,14 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
     @Override
-    public List<IssueMapping> getLastChangesets(int count, GlobalFilter globalFilter)
+    public List<Changeset> getLatestChangesets(int count, GlobalFilter globalFilter)
     {
-        return repositoryPersister.getLastIssueMappings(count, globalFilter);
-    }
-
-    @Override
-    public Changeset getChangeset(String node)
-    {
+        List<Changeset> allChangesets = new ArrayList<Changeset>();
         for (RepositoryManager repositoryManager : repositoryManagers)
         {
-            Changeset changeset = repositoryManager.getChangeset(node);
-            if (changeset != null)
-            {
-                return changeset;
-            }
+            allChangesets.addAll(repositoryManager.getLatestChangesets(count, globalFilter));
         }
-        return null;
+        return allChangesets;
     }
 
     @Override

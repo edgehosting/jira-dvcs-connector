@@ -1,5 +1,21 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import net.java.ao.Query;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -17,21 +33,6 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import net.java.ao.Query;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
@@ -120,39 +121,56 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     }
 
     @Override
-
     public List<IssueMapping> getIssueMappings(final String issueId, final String repositoryType)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
         {
-            @SuppressWarnings("unchecked")
             @Override
             public List<IssueMapping> doInTransaction()
             {
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", issueId);
-                if (mappings.length == 0)
-                    return Collections.EMPTY_LIST;
-
-                // get list of all project mappings with our type
-                ProjectMapping[] myProjectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", repositoryType);
-
-                final Set<Integer> projectMappingsIds = Sets.newHashSet();
-                for (ProjectMapping myProjectMapping : myProjectMappings)
-                {
-                    projectMappingsIds.add(myProjectMapping.getID());
-                }
-
-                return Lists.newArrayList(CollectionUtils.select(Arrays.asList(mappings), new Predicate()
-                {
-                    @Override
-                    public boolean evaluate(Object o)
-                    {
-                        IssueMapping issueMapping = (IssueMapping) o;
-                        return projectMappingsIds.contains(issueMapping.getRepositoryId());
-                    }
-                }));
+                return filterMappingsByRepositoryType(mappings, repositoryType);
             }
         });
+    }
+    
+    /**
+     * There is a bug in AO that prevents doing select on multiple tables. This is a workaround for this.
+     * TODO find the AO bug id. 
+     * TODO maybe this can be optimised using SQL: "and repositoryId in (?)" 
+     * @param mappings
+     * @param repositoryType
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private List<IssueMapping> filterMappingsByRepositoryType(IssueMapping[] mappings, String repositoryType)
+    {
+        if (mappings.length==0) 
+            return Collections.emptyList();
+        // get list of all project mappings with our type
+        final Set<Integer> projectMappingsIds = getProjectMappingsForRepositoryType(repositoryType);
+
+        return Lists.newArrayList(CollectionUtils.select(Arrays.asList(mappings), new Predicate()
+        {
+            @Override
+            public boolean evaluate(Object o)
+            {
+                IssueMapping issueMapping = (IssueMapping) o;
+                return projectMappingsIds.contains(issueMapping.getRepositoryId());
+            }
+        }));
+    }
+
+    private Set<Integer> getProjectMappingsForRepositoryType(final String repositoryType)
+    {
+        ProjectMapping[] myProjectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", repositoryType);
+        
+        final Set<Integer> projectMappingsIds = Sets.newHashSet();
+        for (ProjectMapping myProjectMapping : myProjectMappings)
+        {
+            projectMappingsIds.add(myProjectMapping.getID());
+        }
+        return projectMappingsIds;
     }
 
     @Override
@@ -228,13 +246,14 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                     logger.error("Creating files JSON failed!", e);
                 }
 
-                return activeObjects.create(IssueMapping.class, map);
+                IssueMapping create = activeObjects.create(IssueMapping.class, map);
+                return create;
             }
         });
     }
 
     @Override
-    public List<IssueMapping> getLastIssueMappings(final int count, final GlobalFilter gf)
+    public List<IssueMapping> getLatestIssueMappings(final int count, final GlobalFilter gf, final String repositoryType)
     {
         if (count <= 0)
         {
@@ -247,7 +266,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             {
                 String whereClauseSb = createQueryWhereClause(gf);
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class, Query.select().where(whereClauseSb).limit(count).order("TIMESTAMP DESC"));
-                return mappings == null ? new ArrayList<IssueMapping>() : Lists.newArrayList(mappings);
+                return filterMappingsByRepositoryType(mappings, repositoryType);
             }
         });
     }

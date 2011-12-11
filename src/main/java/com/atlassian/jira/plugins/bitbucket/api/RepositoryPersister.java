@@ -73,9 +73,10 @@ public interface RepositoryPersister {
     /**
      * Find last changeset to the given count ordered by timestamp
      * @param count changesets count
+     * @param repositoryType 
      * @return list of Changeset mappings
      */
-    public List<IssueMapping> getLastIssueMappings(int count, GlobalFilter gf);
+    public List<IssueMapping> getLatestIssueMappings(int count, GlobalFilter gf, String repositoryType);
 
     /**
      * @param node
