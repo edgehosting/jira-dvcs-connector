@@ -18,7 +18,7 @@ import java.util.List;
  * Factory for {@link Changeset} implementations
  */
 public class BitbucketChangesetFactory {
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
 
 
     /**
@@ -53,7 +53,7 @@ public class BitbucketChangesetFactory {
     public static Date parseDate(String dateStr) {
         // example:    2011-05-26 10:54:41
         try {
-            return DATE_FORMAT.parse(dateStr);
+            return DATE_FORMAT.parse(dateStr+"+0100");
         } catch (ParseException e) {
             throw new SourceControlException("Could not parse date string from JSON.", e);
         }

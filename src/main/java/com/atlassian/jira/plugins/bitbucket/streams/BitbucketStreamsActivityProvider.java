@@ -1,14 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.streams;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLEncoder;
-
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -35,10 +26,17 @@ import com.atlassian.streams.spi.Filters;
 import com.atlassian.streams.spi.StandardStreamsFilterOption;
 import com.atlassian.streams.spi.StreamsActivityProvider;
 import com.atlassian.streams.spi.UserProfileAccessor;
-import com.atlassian.streams.spi.CancellableTask.Result;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.opensymphony.util.TextUtils;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLEncoder;
 
 public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 {
@@ -53,8 +51,8 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
 
     public BitbucketStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties,
-        UserProfileAccessor userProfileAccessor, @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager,
-        IssueLinker issueLinker)
+                                            UserProfileAccessor userProfileAccessor, @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager,
+                                            IssueLinker issueLinker)
     {
         this.applicationProperties = applicationProperties;
         this.i18nResolver = i18nResolver;
@@ -113,20 +111,21 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 RepositoryUri repositoryUri = repo.getRepositoryUri();
 
                 String htmlFiles = "";
-                for (int i=0; i< Math.min(changeset.getFiles().size(), DvcsRepositoryManager.MAX_VISIBLE_FILES); i++)
+                for (int i = 0; i < Math.min(changeset.getFiles().size(), DvcsRepositoryManager.MAX_VISIBLE_FILES); i++)
                 {
                     ChangesetFile file = changeset.getFiles().get(i);
                     String fileName = file.getFile();
                     String color = file.getFileAction().getColor();
                     String fileActionName = file.getFileAction().toString();
                     String fileCommitURL = repositoryUri.getFileCommitUrl(changeset.getNode(), CustomStringUtils.encode(file.getFile()));
-                    htmlFiles  += "<li><span style='color:" + color + "; font-size: 8pt;'>" +
+                    htmlFiles += "<li><span style='color:" + color + "; font-size: 8pt;'>" +
                             TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
                             fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
                 }
 
                 int numSeeMore = changeset.getAllFileCount() - DvcsRepositoryManager.MAX_VISIBLE_FILES;
-                if (numSeeMore > 0) {
+                if (numSeeMore > 0)
+                {
                     htmlFiles += "<div class='see_more' style='margin-top:5px;'><a href='#commit_url' target='_new'>See " + numSeeMore + " more</a></div>";
                 }
 
@@ -154,7 +153,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
         return new StreamsEntry(StreamsEntry.params()
                 .id(issueUri)
-                .postedDate(new DateTime(changesetEntry.getTimestamp().getTime()))
+                .postedDate(new DateTime(changesetEntry.getTimestamp()))
                 .authors(ImmutableNonEmptyList.of(userProfile))
                 .addActivityObject(activityObject)
                 .verb(ActivityVerbs.update())
@@ -163,10 +162,10 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 .applicationType(applicationProperties.getDisplayName()), i18nResolver);
     }
 
- 
-    public CancellableTask<StreamsFeed> getActivityFeed(ActivityRequest activityRequest) throws StreamsException
+
+    public CancellableTask<StreamsFeed> getActivityFeed(final ActivityRequest activityRequest) throws StreamsException
     {
-        GlobalFilter gf = new GlobalFilter();
+        final GlobalFilter gf = new GlobalFilter();
         //get all changeset entries that match the specified activity filters
         gf.setInProjects(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)));
         gf.setNotInProjects(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)));
@@ -176,18 +175,17 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         gf.setNotInIssues(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey())));
         log.debug("GlobalFilter: " + gf);
 
-        Iterable<IssueMapping> changesetEntries = globalRepositoryManager.getLastChangesets(activityRequest.getMaxResults(), gf);
-        log.debug("Found changeset entries: " + changesetEntries);
-        final Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
         return new CancellableTask<StreamsFeed>()
         {
-            
             @Override
             public StreamsFeed call() throws Exception
             {
+                Iterable<IssueMapping> changesetEntries = globalRepositoryManager.getLastChangesets(activityRequest.getMaxResults(), gf);
+                log.debug("Found changeset entries: " + changesetEntries);
+                final Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
                 return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
             }
-            
+
             @Override
             public Result cancel()
             {
