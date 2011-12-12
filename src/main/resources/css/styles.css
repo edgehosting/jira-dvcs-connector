@@ -100,19 +100,23 @@
     cursor: pointer;
     width:16px;
     display:inline-block;
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.png)
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.png);
+    background-repeat: no-repeat;
 }
 
 .syncicon.error {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png)
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png);
+    background-repeat: no-repeat;
 }
 
 .syncicon.running {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif)
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
+    background-repeat: no-repeat;
 }
 
 .syncicon.finished {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/status-ok.png)
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/status-ok.png);
+    background-repeat: no-repeat;
 }
 
 #postCommitServiceDetails{
