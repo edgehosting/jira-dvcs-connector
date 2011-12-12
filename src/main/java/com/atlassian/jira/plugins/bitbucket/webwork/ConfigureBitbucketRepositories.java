@@ -60,9 +60,15 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
 
                 if (nextAction.equals("ShowPostCommitURL"))
                 {
-                    SourceControlRepository repo = globalRepositoryManager.getRepository(repositoryId);
-                    postCommitUrl = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
-                    postCommitRepositoryType = StringUtils.capitalize(repo.getRepositoryType());
+                    try
+                    {
+                        SourceControlRepository repo = globalRepositoryManager.getRepository(repositoryId);
+                        postCommitUrl = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
+                        postCommitRepositoryType = StringUtils.capitalize(repo.getRepositoryType());
+                    } catch (Exception e)
+                    {
+                        // do nothing. repository not found. it may be deleted
+                    }
                 }
 
                 if (nextAction.equals("DeleteRepository"))
