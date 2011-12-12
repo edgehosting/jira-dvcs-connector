@@ -93,7 +93,8 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
             public Html renderTitleAsHtml(StreamsEntry entry)
             {
                 SourceControlRepository repo = globalRepositoryManager.getRepository(changesetEntry.getRepositoryId());
-                String userHtml = (userProfile.getProfilePageUri().isDefined()) ? "<a href=\"" + userProfile.getProfilePageUri().get() + "\"  class=\"activity-item-user activity-item-author\">" + userProfile.getUsername() + "</a>" : TextUtils.htmlEncode(userProfile.getUsername());
+                String userRepoUrl = repo.getRepositoryUri().getUserUrl(changesetEntry.getAuthor());
+                String userHtml = ("<a href=\"" + userRepoUrl + "\"  class=\"activity-item-user activity-item-author\">" + changesetEntry.getAuthor() + "</a>");
                 return new Html(userHtml + " committed changeset <a href=\"" + repo.getRepositoryUri().getCommitUrl(changesetEntry.getNode()) + "\">" + changesetEntry.getNode() + "</a> to the " +
                         "<a href=\"" + issueUri + "\">" + changesetEntry.getIssueId() + "</a>" + " issue saying:");
             }
