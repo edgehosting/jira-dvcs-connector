@@ -1,15 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -28,6 +18,15 @@ import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.opensymphony.util.TextUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
@@ -216,16 +215,16 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         String commitURL = changeset.getCommitURL(repository);
         SourceControlUser user = getUser(repository, changeset.getAuthor());
         String gravatarUrl = user.getAvatar().replace("s=32", "s=60");
-            String baseRepositoryUrl = repositoryUri.getBaseUrl();
+        String baseRepositoryUrl = repositoryUri.getBaseUrl();
 
         htmlCommitEntry = htmlCommitEntry.replace("#gravatar_url", gravatarUrl);
-            htmlCommitEntry = htmlCommitEntry.replace("#user_url", baseRepositoryUrl + "/" + CustomStringUtils.encode(login));
+        htmlCommitEntry = htmlCommitEntry.replace("#user_url", baseRepositoryUrl + "/" + CustomStringUtils.encode(login));
         htmlCommitEntry = htmlCommitEntry.replace("#login", TextUtils.htmlEncode(login));
         htmlCommitEntry = htmlCommitEntry.replace("#user_name", TextUtils.htmlEncode(authorName));
         String commitMessage = issueLinker.createLinks(TextUtils.htmlEncode(changeset.getMessage()));  //TODO add functional test for this
         htmlCommitEntry = htmlCommitEntry.replace("#commit_message", commitMessage);
-            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_time", getDateString(changeset.getTimestamp()));
-            htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_date", getDateString(changeset.getTimestamp()));
+        htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_time", getDateString(changeset.getTimestamp()));
+        htmlCommitEntry = htmlCommitEntry.replace("#formatted_commit_date", getDateString(changeset.getTimestamp()));
         htmlCommitEntry = htmlCommitEntry.replace("#commit_url", commitURL);
         htmlCommitEntry = htmlCommitEntry.replace("#commit_hash", changeset.getNode());
         //htmlCommitEntry = htmlCommitEntry.replace("#tree_url", "https://github.com/" + login + "/" + projectName + "/tree/" + commit_hash);
