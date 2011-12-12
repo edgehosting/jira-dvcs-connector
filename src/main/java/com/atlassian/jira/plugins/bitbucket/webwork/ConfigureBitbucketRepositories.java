@@ -68,6 +68,9 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
                     } catch (Exception e)
                     {
                         // do nothing. repository not found. it may be deleted
+
+                        // TODO instead of catching exception we should make sure this action is not
+                        // called on deleted repositories BBC-48
                     }
                 }
 
