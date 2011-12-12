@@ -300,15 +300,9 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
     @Override
-    public List<IssueMapping> getLastChangesets(int count, GlobalFilter gf)
+    public List<Changeset> getLatestChangesets(int count, GlobalFilter gf)
     {
-        return repositoryPersister.getLastIssueMappings(count, gf);
-    }
-
-    @Override
-    public Changeset getChangeset(String node)
-    {
-        IssueMapping from = repositoryPersister.getIssueMapping(node);
-        return from == null ? null : toChangesetTransformer.apply(from);
+        List<IssueMapping> latestIssueMappings = repositoryPersister.getLatestIssueMappings(count, gf, getRepositoryType());
+        return Lists.transform(latestIssueMappings, toChangesetTransformer);
     }
 }

@@ -37,7 +37,7 @@ public interface IssueMapping extends Entity {
 
     String getParentsData();
 
-    Integer getLatestVersion();
+    Integer getVersion();
 
 
     void setRepositoryId(int repositoryId);
