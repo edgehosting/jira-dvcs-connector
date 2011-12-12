@@ -8,7 +8,12 @@ import java.util.Date;
 @Table("IssueMappingV2")
 public interface IssueMapping extends Entity {
 
-    public static final int VERSION = 1;
+    /**
+     * Rows at the table can contain data loaded by previous versions of this plugin. Some column data maybe missing 
+     * because previous versions of plugin was not loading them. To get the updated version of changeset we need 
+     * to reload the data from the BB/GH servers. This flag marks the row data as latest.
+     */
+    public static final int LATEST_VERSION = 1;
 
     int getRepositoryId();
 
@@ -32,7 +37,7 @@ public interface IssueMapping extends Entity {
 
     String getParentsData();
 
-    Integer getVersion();
+    Integer getLatestVersion();
 
 
     void setRepositoryId(int repositoryId);

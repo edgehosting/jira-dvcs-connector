@@ -28,9 +28,9 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
     @Override
     public Changeset apply(IssueMapping issueMapping)
     {
-        if (hasOldVersion(issueMapping)) {
-            Changeset changeset = loadAndStoreChangeset(issueMapping);
-            return changeset;
+        if (!isLatestVersion(issueMapping))
+        {
+            return repositoryManager.reloadChangeset(issueMapping);
         }
 
         FileData fileData = parseFilesData(issueMapping.getFilesData());
@@ -49,28 +49,25 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
                 fileData.getFileCount());
     }
 
-    private Changeset loadAndStoreChangeset(IssueMapping from)
+    private boolean isLatestVersion(IssueMapping from)
     {
-        return repositoryManager.updateChangeset(from);
-    }
-
-    private boolean hasOldVersion(IssueMapping from)
-    {
-        return from.getVersion() == null || from.getVersion() < IssueMapping.VERSION;
+        return from.getLatestVersion() != null && from.getLatestVersion() >= IssueMapping.LATEST_VERSION;
     }
 
     private List<String> parseParentsData(String parentsData)
     {
         List<String> parents = new ArrayList<String>();
 
-        if (StringUtils.isBlank(parentsData)) {
+        if (StringUtils.isBlank(parentsData))
+        {
             return parents;
         }
 
         try
         {
             JSONArray parentsJson = new JSONArray(parentsData);
-            for (int i=0; i<parentsJson.length(); i++) {
+            for (int i = 0; i < parentsJson.length(); i++)
+            {
                 parents.add(parentsJson.getString(i));
             }
         } catch (JSONException e)
@@ -81,8 +78,8 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
         return parents;
     }
 
-    private FileData parseFilesData(String filesData) {
-
+    private FileData parseFilesData(String filesData)
+    {
         List<ChangesetFile> files = new ArrayList<ChangesetFile>();
         int fileCount = 0;
 
@@ -116,8 +113,8 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
         return new FileData(files, fileCount);
     }
 
-
-    class FileData {
+    private static class FileData
+    {
         private List<ChangesetFile> files;
         private int fileCount;
 

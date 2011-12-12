@@ -55,7 +55,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         }
     };
 
-    private final Function<IssueMapping, Changeset> TO_CHANGESET;
+    private final Function<IssueMapping, Changeset> toChangesetTransformer;
 
     public DvcsRepositoryManager(Communicator communicator, RepositoryPersister repositoryPersister, Encryptor encryptor,
         ApplicationProperties applicationProperties, IssueLinker issueLinker)
@@ -66,7 +66,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         this.applicationProperties = applicationProperties;
         this.issueLinker = issueLinker;
 
-        TO_CHANGESET = new ToChangesetTransformer(this);
+        toChangesetTransformer = new ToChangesetTransformer(this);
     }
 
     public void validateRepositoryAccess(String repositoryType, String projectKey, String repositoryUrl, String username,
@@ -118,7 +118,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     public List<Changeset> getChangesets(String issueKey)
     {
 		List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey, getRepositoryType());
-		return Lists.transform(issueMappings, TO_CHANGESET);
+		return Lists.transform(issueMappings, toChangesetTransformer);
     }
 
 	@Override
@@ -238,8 +238,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         return df.format(datetime);
     }
 
-
-
     @Override
     public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
     {
@@ -275,7 +273,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
     @Override
-    public Changeset updateChangeset(IssueMapping issueMapping)
+    public Changeset reloadChangeset(IssueMapping issueMapping)
     {
         ProjectMapping pm = repositoryPersister.getRepository(issueMapping.getRepositoryId());
         SourceControlRepository repository = TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
@@ -302,15 +300,15 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
     @Override
-    public List<IssueMapping> getLastChangesetMappings(int count, GlobalFilter gf)
+    public List<IssueMapping> getLastChangesets(int count, GlobalFilter gf)
     {
-        return repositoryPersister.getLastChangesetMappings(count, gf);
+        return repositoryPersister.getLastIssueMappings(count, gf);
     }
 
     @Override
     public Changeset getChangeset(String node)
     {
         IssueMapping from = repositoryPersister.getIssueMapping(node);
-        return from == null ? null : TO_CHANGESET.apply(from);
+        return from == null ? null : toChangesetTransformer.apply(from);
     }
 }

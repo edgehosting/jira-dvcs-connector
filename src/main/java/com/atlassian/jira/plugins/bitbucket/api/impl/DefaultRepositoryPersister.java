@@ -184,14 +184,12 @@ public class DefaultRepositoryPersister implements RepositoryPersister
 				map.put("BRANCH", changeset.getBranch());
 				map.put("MESSAGE", changeset.getMessage());
 
-
                 JSONArray parentsJson = new JSONArray();
                 for (String parent : changeset.getParents())
                 {
                     parentsJson.put(parent);
                 }
                 map.put("PARENTS_DATA", parentsJson.toString());
-
 
                 JSONObject filesJson = new JSONObject();
                 JSONArray added = new JSONArray();
@@ -223,7 +221,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
 
                     map.put("FILES_DATA", filesJson.toString());
 
-                    map.put("VERSION", IssueMapping.VERSION);
+                    map.put("VERSION", IssueMapping.LATEST_VERSION);
                 } catch (JSONException e)
                 {
                     logger.error("Creating files JSON failed!", e);
@@ -235,11 +233,11 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
     @Override
-    public List<IssueMapping> getLastChangesetMappings(final int count, final GlobalFilter gf)
+    public List<IssueMapping> getLastIssueMappings(final int count, final GlobalFilter gf)
     {
         if (count <= 0)
     {
-            return new ArrayList<IssueMapping>();
+            return Collections.emptyList();
         }
         return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
         {
@@ -253,6 +251,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
     
+    // TODO move to separate class and add unit tests
     private String createQueryWhereClause(GlobalFilter gf)
     {
         StringBuilder whereClauseProjectsSb = new StringBuilder();

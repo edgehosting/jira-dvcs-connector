@@ -114,9 +114,7 @@ public class GlobalRepositoryManager implements RepositoryManager
             allChangesets.addAll(repositoryManager.getChangesets(issueKey));
         }
 
-
         Collections.sort(allChangesets, Collections.reverseOrder(CHANGESET_COMPARATOR));
-
         return allChangesets;
     }
 
@@ -177,9 +175,9 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
     @Override
-    public List<IssueMapping> getLastChangesetMappings(int count, GlobalFilter gf)
+    public List<IssueMapping> getLastChangesets(int count, GlobalFilter globalFilter)
     {
-        return repositoryPersister.getLastChangesetMappings(count, gf);
+        return repositoryPersister.getLastIssueMappings(count, globalFilter);
     }
 
     @Override
@@ -209,21 +207,11 @@ public class GlobalRepositoryManager implements RepositoryManager
             }
         }
         return null;
-
     }
 
-    // TODO: miro farkas verify following implementation
     @Override
-    public Changeset updateChangeset(IssueMapping issueMapping)
+    public Changeset reloadChangeset(IssueMapping issueMapping)
     {
-        for (RepositoryManager repositoryManager : repositoryManagers)
-        {
-            Changeset changeset = repositoryManager.updateChangeset(issueMapping);
-            if (changeset != null)
-            {
-                return changeset;
-            }
-        }
-        return null;
+        throw new UnsupportedOperationException("This implementation should never be called.");
     }
 }

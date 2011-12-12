@@ -75,7 +75,7 @@ public interface RepositoryPersister {
      * @param count changesets count
      * @return list of Changeset mappings
      */
-    public List<IssueMapping> getLastChangesetMappings(int count, GlobalFilter gf);
+    public List<IssueMapping> getLastIssueMappings(int count, GlobalFilter gf);
 
     /**
      * @param node

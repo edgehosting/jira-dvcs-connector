@@ -122,7 +122,7 @@ public interface RepositoryManager
      * @param inProjects
      * @param notInProjects @return list of Changeset mappings
      */
-    public List<IssueMapping> getLastChangesetMappings(final int count, GlobalFilter gf);
+    public List<IssueMapping> getLastChangesets(final int count, GlobalFilter gf);
 
     /**
      * @param node
@@ -133,6 +133,6 @@ public interface RepositoryManager
 
     public UrlInfo getUrlInfo(String repositoryUrl);
 
-    public Changeset updateChangeset(IssueMapping issueMapping);
+    public Changeset reloadChangeset(IssueMapping issueMapping);
 
 }
