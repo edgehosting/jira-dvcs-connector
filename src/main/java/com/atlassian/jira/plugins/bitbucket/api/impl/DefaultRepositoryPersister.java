@@ -174,6 +174,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
 				}
                 // add new
 				Map<String, Object> map = Maps.newHashMap();
+				// TODO create constants for column names in IssueMappings.class
 				map.put("REPOSITORY_ID", repositoryId);
 				map.put("ISSUE_ID", issueId);
 				map.put("NODE", node);
@@ -228,7 +229,8 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 }
 
 
-                return activeObjects.create(IssueMapping.class, map);
+                IssueMapping create = activeObjects.create(IssueMapping.class, map);
+                return create;
             }
         });
     }
