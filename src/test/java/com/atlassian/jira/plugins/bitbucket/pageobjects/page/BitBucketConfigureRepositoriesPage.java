@@ -1,18 +1,20 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
+import org.hamcrest.Matchers;
+import org.hamcrest.core.IsEqual;
+import org.openqa.selenium.By;
+
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.Options;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import org.hamcrest.Matchers;
-import org.hamcrest.core.IsEqual;
-import org.openqa.selenium.By;
 
 /**
  * Represents the page to link repositories to projects
  */
 public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositoriesPage
 {
+
     @ElementBy(id = "bbUsername")
     PageElement bbUsernameInput;
 
@@ -68,13 +70,6 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         checkSyncProcessSuccess();
 
         return this;
-    }
-
-    private void checkSyncProcessSuccess()
-    {
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        Poller.waitUntilFalse("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Running:"));
-        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
     }
 
     /**

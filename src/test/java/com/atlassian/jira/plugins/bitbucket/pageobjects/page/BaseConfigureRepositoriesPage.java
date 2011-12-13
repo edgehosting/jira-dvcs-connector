@@ -143,6 +143,15 @@ public abstract class BaseConfigureRepositoriesPage implements Page
         Poller.waitUntil(syncStatusDiv.timed().getText(), matcher, by(30000));
     }
 
+    protected void checkSyncProcessSuccess()
+    {
+        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
+        String text = syncStatusDiv.find(By.tagName("strong")).timed().getText().now();
+        if(text.equals("Sync Running:")){
+            Poller.waitUntilFalse("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Running:"));
+        }
+        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
+    }
     /**
      * The current error status message
      *
