@@ -1,5 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -12,11 +19,7 @@ import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import com.google.common.collect.Sets;
 
 /**
  * Aggregated Repository Manager that handles all Repository Managers based on the repository url
@@ -175,9 +178,10 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
     @Override
-    public List<Changeset> getLatestChangesets(int count, GlobalFilter globalFilter)
+    public Set<Changeset> getLatestChangesets(int count, GlobalFilter globalFilter)
     {
-        List<Changeset> allChangesets = new ArrayList<Changeset>();
+        
+        Set<Changeset> allChangesets = new TreeSet<Changeset>(Collections.reverseOrder(CHANGESET_COMPARATOR));
         for (RepositoryManager repositoryManager : repositoryManagers)
         {
             allChangesets.addAll(repositoryManager.getLatestChangesets(count, globalFilter));
@@ -205,4 +209,5 @@ public class GlobalRepositoryManager implements RepositoryManager
     {
         throw new UnsupportedOperationException("This implementation should never be called.");
     }
+
 }

@@ -1,5 +1,17 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -17,16 +29,8 @@ import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.opensymphony.util.TextUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
@@ -300,10 +304,11 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
     @Override
-    public List<Changeset> getLatestChangesets(int count, GlobalFilter gf)
+    public Set<Changeset> getLatestChangesets(int count, GlobalFilter gf)
     {
         List<IssueMapping> latestIssueMappings = repositoryPersister.getLatestIssueMappings(count, gf, getRepositoryType());
-        return Lists.transform(latestIssueMappings, toChangesetTransformer);
+        List<Changeset> changesets = Lists.transform(latestIssueMappings, toChangesetTransformer);
+        return Sets.newHashSet(changesets);
     }
 
 }
