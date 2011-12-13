@@ -72,13 +72,6 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         return this;
     }
 
-    private void checkSyncProcessSuccess()
-    {
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        Poller.waitUntilFalse("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Running:"));
-        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
-    }
-
     /**
      * Links a public repository to the given JIRA project
      *

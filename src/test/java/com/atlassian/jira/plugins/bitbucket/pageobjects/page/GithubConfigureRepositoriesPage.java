@@ -84,9 +84,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"));
         addRepositoryButton.click();
 
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed()
-                .getText(), Matchers.startsWith("Sync Finished:"));
+        checkSyncProcessSuccess();
 
         return this;
     }

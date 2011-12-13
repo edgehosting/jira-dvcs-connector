@@ -80,20 +80,25 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
      */
     private StreamsEntry toStreamsEntry(final Changeset changeset)
     {
-//        final URI issueUri = URI.create(applicationProperties.getBaseUrl() + "/browse/" + changesetEntry.getIssueId());
-
         StreamsEntry.ActivityObject activityObject = new StreamsEntry.ActivityObject(StreamsEntry.ActivityObject.params()
                 .id(changeset.getNode()).alternateLinkUri(URI.create(""))
                 .activityObjectType(ActivityObjectTypes.status()));
 
-        final UserProfile userProfile = userProfileAccessor.getUserProfile(changeset.getAuthor());
+        final String author = changeset.getAuthor();
+        final UserProfile userProfile = userProfileAccessor.getAnonymousUserProfile();
 
         StreamsEntry.Renderer renderer = new StreamsEntry.Renderer()
         {
             public Html renderTitleAsHtml(StreamsEntry entry)
             {
                 SourceControlRepository repo = globalRepositoryManager.getRepository(changeset.getRepositoryId());
-                String userHtml = (userProfile.getProfilePageUri().isDefined()) ? "<a href=\"" + userProfile.getProfilePageUri().get() + "\"  class=\"activity-item-user activity-item-author\">" + userProfile.getUsername() + "</a>" : TextUtils.htmlEncode(userProfile.getUsername());
+                String userHtml = "<a href='#user_url' target='_new'>#user_name - #login</a>";
+
+                userHtml = userHtml.replace("#user_url", repo.getRepositoryUri().getUserUrl(CustomStringUtils.encode(author)));
+                userHtml = userHtml.replace("#login", TextUtils.htmlEncode(author));
+                userHtml = userHtml.replace("#user_name", TextUtils.htmlEncode(changeset.getRawAuthor()));
+
+
                 return new Html(userHtml + " committed changeset <a href=\"" + repo.getRepositoryUri().getCommitUrl(changeset.getNode()) + "\">" + changeset.getNode() + "</a> saying:");
             }
 
@@ -124,11 +129,11 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 int numSeeMore = changeset.getAllFileCount() - DvcsRepositoryManager.MAX_VISIBLE_FILES;
                 if (numSeeMore > 0)
                 {
-                    htmlFiles += "<div class='see_more' style='margin-top:5px;'><a href='#commit_url' target='_new'>See " + numSeeMore + " more</a></div>";
+                    String commitURL = changeset.getCommitURL(repo);
+                    htmlFiles += "<div class='see_more' style='margin-top:5px;'><a href='" + commitURL + "' target='_new'>See " + numSeeMore + " more</a></div>";
                 }
 
                 StringBuilder sb = new StringBuilder();
-                sb.append(getJavascriptForToggling());
                 sb.append(issueLinker.createLinks(TextUtils.htmlEncode(changeset.getMessage())));
                 sb.append("<br>").append("<br>").append("Changes:").append("<br>");
                 sb.append("<ul>");
@@ -137,16 +142,6 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 return Option.some(new Html(sb.toString()));
             }
 
-            private String getJavascriptForToggling()
-            {
-                return "<script type=\"text/javascript\">" +
-                        "function toggleMoreFiles(target_div){\n" +
-                        "        AJS.$('#' + target_div).toggle();\n" +
-                        "        AJS.$('#see_more_' + target_div).toggle();\n" +
-                        "        AJS.$('#hide_more_' + target_div).toggle();\n" +
-                        "}\n" +
-                        "</script>";
-            }
         };
 
         return new StreamsEntry(StreamsEntry.params()
@@ -191,16 +186,5 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 return null;
             }
         };
-    }
-
-    protected String urlEncode(String s)
-    {
-        try
-        {
-            return URLEncoder.encode(s, "UTF-8");
-        } catch (UnsupportedEncodingException e)
-        {
-            throw new RuntimeException("required encoding not found");
-        }
     }
 }
