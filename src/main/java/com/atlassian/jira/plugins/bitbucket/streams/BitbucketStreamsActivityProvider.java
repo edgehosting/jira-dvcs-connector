@@ -93,7 +93,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 SourceControlRepository repo = globalRepositoryManager.getRepository(changeset.getRepositoryId());
                 String userHtml = "<a href='#user_url' target='_new'>#user_name - #login</a>";
 
-                userHtml = userHtml.replace("#user_url", repo.getRepositoryUri().getBaseUrl() + "/" + CustomStringUtils.encode(author));
+                userHtml = userHtml.replace("#user_url", repo.getRepositoryUri().getUserUrl(CustomStringUtils.encode(author)));
                 userHtml = userHtml.replace("#login", TextUtils.htmlEncode(author));
                 userHtml = userHtml.replace("#user_name", TextUtils.htmlEncode(changeset.getRawAuthor()));
 

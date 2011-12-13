@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.bitbucket.spi;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -222,7 +221,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         String baseRepositoryUrl = repositoryUri.getBaseUrl();
 
         htmlCommitEntry = htmlCommitEntry.replace("#gravatar_url", gravatarUrl);
-        htmlCommitEntry = htmlCommitEntry.replace("#user_url", baseRepositoryUrl + "/" + CustomStringUtils.encode(login));
+        htmlCommitEntry = htmlCommitEntry.replace("#user_url", repository.getRepositoryUri().getUserUrl(CustomStringUtils.encode(login)));
         htmlCommitEntry = htmlCommitEntry.replace("#login", TextUtils.htmlEncode(login));
         htmlCommitEntry = htmlCommitEntry.replace("#user_name", TextUtils.htmlEncode(authorName));
         String commitMessage = issueLinker.createLinks(TextUtils.htmlEncode(changeset.getMessage()));  //TODO add functional test for this
