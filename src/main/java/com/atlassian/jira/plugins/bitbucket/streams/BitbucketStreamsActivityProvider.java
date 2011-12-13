@@ -78,14 +78,12 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
      */
     private StreamsEntry toStreamsEntry(final Changeset changeset)
     {
-//        final URI issueUri = URI.create(applicationProperties.getBaseUrl() + "/browse/" + changesetEntry.getIssueId());
-
         StreamsEntry.ActivityObject activityObject = new StreamsEntry.ActivityObject(StreamsEntry.ActivityObject.params()
                 .id(changeset.getNode()).alternateLinkUri(URI.create(""))
                 .activityObjectType(ActivityObjectTypes.status()));
 
         final String author = changeset.getAuthor();
-        final UserProfile userProfile = userProfileAccessor.getUserProfile(author);
+        final UserProfile userProfile = userProfileAccessor.getAnonymousUserProfile();
 
         StreamsEntry.Renderer renderer = new StreamsEntry.Renderer()
         {
@@ -171,16 +169,5 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         log.debug("Found changeset entries: " + changesetEntries);
         Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
         return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
-    }
-
-    protected String urlEncode(String s)
-    {
-        try
-        {
-            return URLEncoder.encode(s, "UTF-8");
-        } catch (UnsupportedEncodingException e)
-        {
-            throw new RuntimeException("required encoding not found");
-        }
     }
 }
