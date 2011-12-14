@@ -49,9 +49,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     private final IssueLinker issueLinker;
     private final TemplateRenderer templateRenderer;
 
-    @InjectableComponent
-    private DateTimeFormatterFactory dateTimeFormatterFactory;
-
     /* Maps ProjectMapping to SourceControlRepository */
     private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping, SourceControlRepository>()
     {
