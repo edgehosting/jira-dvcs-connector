@@ -199,7 +199,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
 				map.put("NODE", node);
 				map.put("RAW_AUTHOR", changeset.getRawAuthor());
 				map.put("AUTHOR", changeset.getAuthor());
-				map.put("TIMESTAMP", changeset.getTimestamp());
+				map.put("DATE", changeset.getTimestamp());
 				map.put("RAW_NODE", changeset.getRawNode());
 				map.put("BRANCH", changeset.getBranch());
 				map.put("MESSAGE", changeset.getMessage());
@@ -265,7 +265,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             public List<IssueMapping> doInTransaction()
             {
                 String whereClauseSb = createQueryWhereClause(gf);
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, Query.select().where(whereClauseSb).limit(count).order("TIMESTAMP DESC"));
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, Query.select().where(whereClauseSb).limit(count).order("DATE DESC"));
                 return filterMappingsByRepositoryType(mappings, repositoryType);
             }
         });

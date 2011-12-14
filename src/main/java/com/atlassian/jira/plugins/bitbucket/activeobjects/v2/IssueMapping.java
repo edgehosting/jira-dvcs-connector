@@ -25,7 +25,7 @@ public interface IssueMapping extends Entity {
 
     String getAuthor();
 
-    Date getTimestamp();
+    Date getDate();
 
     String getRawNode();
 
@@ -50,7 +50,7 @@ public interface IssueMapping extends Entity {
 
     void setAuthor(String author);
 
-    void setTimestamp(Date timestamp);
+    void setDate(Date date);
 
     void setRawNode(String rawNode);
 

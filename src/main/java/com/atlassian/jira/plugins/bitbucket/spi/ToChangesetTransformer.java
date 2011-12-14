@@ -40,7 +40,7 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
                 issueMapping.getNode(),
                 issueMapping.getRawAuthor(),
                 issueMapping.getAuthor(),
-                issueMapping.getTimestamp(),
+                issueMapping.getDate(),
                 issueMapping.getRawNode(),
                 issueMapping.getBranch(),
                 issueMapping.getMessage(),
