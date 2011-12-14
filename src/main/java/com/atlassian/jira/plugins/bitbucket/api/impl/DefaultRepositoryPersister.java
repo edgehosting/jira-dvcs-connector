@@ -265,7 +265,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             public List<IssueMapping> doInTransaction()
             {
                 String whereClauseSb = createQueryWhereClause(gf);
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, Query.select().where(whereClauseSb).limit(count).order("TIMESTAMP DESC"));
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, Query.select().where(whereClauseSb).limit(count).order("DATE DESC"));
                 return filterMappingsByRepositoryType(mappings, repositoryType);
             }
         });
