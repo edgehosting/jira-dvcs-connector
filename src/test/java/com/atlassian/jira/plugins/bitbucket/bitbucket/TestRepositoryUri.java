@@ -15,7 +15,7 @@ public class TestRepositoryUri
     public void testParseRepositoryFullUrlWithBranch() {
 
         String repositoryUrl = "http://bitbucket.org/owner/slug/default";
-        BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, null, null, null, null);
+        BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, null, null, null, null, null);
         RepositoryUri repositoryUri = brm.getRepositoryUri(repositoryUrl);
 
         assertEquals("owner", repositoryUri.getOwner());
@@ -26,7 +26,7 @@ public class TestRepositoryUri
     public void testParseRepositoryFullUrl() {
 
         String repositoryUrl = "http://bitbucket.org/owner/slug";
-        BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, null, null, null, null);
+        BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, null, null, null, null, null);
         RepositoryUri repositoryUri = brm.getRepositoryUri(repositoryUrl);
 
         assertEquals("owner", repositoryUri.getOwner());
