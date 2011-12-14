@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.sal.api.ApplicationProperties;
+import com.opensymphony.util.TextUtils;
+import com.atlassian.templaterenderer.annotations.HtmlSafe;
 
 
 public class IssueLinkerImpl implements IssueLinker
@@ -33,8 +35,10 @@ public class IssueLinkerImpl implements IssueLinker
      * @return
      */
     @Override
+    @HtmlSafe
     public String createLinks(String text)
     {
+        text = TextUtils.htmlEncode(text);
         String baseUrl = applicationProperties.getBaseUrl();
         
         if (StringUtils.isBlank(text)) return "";

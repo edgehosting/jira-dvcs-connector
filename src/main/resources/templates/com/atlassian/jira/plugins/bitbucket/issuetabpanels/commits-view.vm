@@ -1,1 +1,69 @@
-BLARGH
+<table>
+    <tr>
+        <td valign='top' width='70px'><a href='$user_url' target='_new'><img src='$gravatar_url' border='0'></a></td>
+        <td valign='top'>
+            <div style='padding-bottom: 6px'><a href='$user_url' target='_new'>$user_name - $login</a></div>
+            <table>
+                <tr>
+                    <td>
+                        <div style='border-left: 2px solid #C9D9EF; background-color: #EAF3FF; color: #5D5F62; padding: 5px; margin-bottom: 10px;'>
+                            $issueLinker.createLinks($commit_message)
+                        </div>
+
+                        <ul>
+                            #foreach ( $file in $changeset.getFiles() )
+                                #if( $foreach.count > $MAX_VISIBLE_FILES )
+                                    #break
+                                #end
+                                #set ( $fileName = $file.getFile() )
+                                #set ( $color = $file.getFileAction().getColor() )
+                                #set ( $fileActionName = $file.getFileAction().toString() )
+                                #set ( $fileCommitURL = $repository.getRepositoryUri.getFileCommitUrl($changeset.getNode(),
+                                $velocityUtils.encodeUtf8($file.getFile())) )
+
+                                <li><span style='color:$color; font-size: 8pt;'>"$fileActionName</span>
+                                    <a href='$fileCommitURL' target='_new'>$fileName</a>
+                                </li>
+                            #end
+
+                            #set ( $numSeeMore = $changeset.getAllFileCount() - $MAX_VISIBLE_FILES )
+                            #if ( $numSeeMore > 0 )
+                                <div class='see_more' style='margin-top:5px;'><a href='$commit_url'
+                                                                                 target='_new'>See $numSeeMore more</a>
+                                </div>
+                            #end
+                        </ul>
+                        <div style='margin-top: 10px'>
+                            <img src='$documentJpgUrl'
+                                 align='center'> <span class='commit_date'
+                                                       style='color: #757575; font-size: 9pt;'>$formatted_commit_date</span>
+                        </div>
+
+                    </td>
+
+                    <td width='400' style='padding-top: 0px' valign='top'>
+                        <div style='border-left: 2px solid #cccccc; margin-left: 15px; margin-top: 0px; padding-top: 0px; padding-left: 10px'>
+                            <table style='margin-top: 0px; padding-top: 0px;'>
+                                <tr>
+                                    <td style='color: #757575'>Changeset:</td>
+                                    <td><a href='$commit_url' target='_new'>$commit_hash</a></td>
+                                </tr>
+
+                                #set ( $repositoryUri = $repository.getRepositoryUri() )
+                                #if ( !$changeset.getParents().isEmpty() )
+                                    #foreach ( $parentNode in $changeset.getParents() )
+                                        #set ( $parentURL = $repositoryUri.getParentUrl($parentNode) )
+                                        <tr>
+                                            <td style='color: #757575'>Parent:</td>
+                                            <td><a href='$parentURL' target='_new'>$parentNode</a></td>
+                                        </tr>
+                                    #end
+                                #end
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>

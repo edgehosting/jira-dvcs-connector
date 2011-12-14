@@ -13,6 +13,8 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.templaterenderer.TemplateRenderer;
+import com.atlassian.velocity.VelocityManager;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +32,9 @@ public class BitbucketRepositoryManager extends DvcsRepositoryManager
 
     public BitbucketRepositoryManager(RepositoryPersister repositoryPersister,
         @Qualifier("bitbucketCommunicator") Communicator communicator, Encryptor encryptor, ApplicationProperties applicationProperties,
-        IssueLinker issueLinker)
+        IssueLinker issueLinker, TemplateRenderer templateRenderer)
     {
-        super(communicator, repositoryPersister, encryptor, applicationProperties, issueLinker);
+        super(communicator, repositoryPersister, encryptor, applicationProperties, issueLinker, templateRenderer);
     }
 
     @Override
