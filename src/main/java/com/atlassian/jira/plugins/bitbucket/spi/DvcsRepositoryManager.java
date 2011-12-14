@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import com.atlassian.jira.datetime.DateTimeFormatterFactory;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -14,13 +15,12 @@ import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 import com.atlassian.jira.plugins.bitbucket.velocity.VelocityUtils;
-import com.atlassian.jira.util.JiraDateUtils;
+import com.atlassian.jira.util.InjectableComponent;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.opensymphony.util.TextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +48,9 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     private final ApplicationProperties applicationProperties;
     private final IssueLinker issueLinker;
     private final TemplateRenderer templateRenderer;
+
+    @InjectableComponent
+    private DateTimeFormatterFactory dateTimeFormatterFactory;
 
     /* Maps ProjectMapping to SourceControlRepository */
     private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping, SourceControlRepository>()
@@ -154,28 +157,24 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     public String getHtmlForChangeset(SourceControlRepository repository, Changeset changeset)
     {
         Map<String, Object> templateMap = new HashMap<String, Object>();
-        templateMap.put("velocityUtils", new VelocityUtils());
-        templateMap.put("issueLinker", issueLinker);
+        templateMap.put("velocity_utils", new VelocityUtils());
+        templateMap.put("issue_linker", issueLinker);
         templateMap.put("changeset", changeset);
         templateMap.put("repository", repository);
-        templateMap.put("MAX_VISIBLE_FILES", MAX_VISIBLE_FILES);
 
         String documentJpgUrl = getApplicationProperties().getBaseUrl() + "/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/document.jpg";
-        templateMap.put("documentJpgUrl", documentJpgUrl);
+        templateMap.put("document_jpg_url", documentJpgUrl);
 
         String authorName = changeset.getRawAuthor();
         String login = changeset.getAuthor();
         String commitURL = changeset.getCommitURL(repository);
         SourceControlUser user = getUser(repository, changeset.getAuthor());
         String gravatarUrl = user.getAvatar().replace("s=32", "s=60");
-//        String commitMessage = issueLinker.createLinks(changeset.getMessage());  //TODO add functional test for this
         String commitMessage = changeset.getMessage();  //TODO add functional test for this
 
         templateMap.put("gravatar_url", gravatarUrl);
         templateMap.put("user_url", repository.getRepositoryUri().getUserUrl(CustomStringUtils.encode(login)));
-//        templateMap.put("login", TextUtils.htmlEncode(login));
         templateMap.put("login", login);
-//        templateMap.put("user_name", TextUtils.htmlEncode(authorName));
         templateMap.put("user_name", authorName);
         templateMap.put("commit_message", commitMessage);
         templateMap.put("formatted_commit_time", getDateString(changeset.getTimestamp()));
@@ -190,7 +189,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             templateRenderer.render("/templates/com/atlassian/jira/plugins/bitbucket/issuetabpanels/commits-view.vm", templateMap, sw);
         } catch (IOException e)
         {
-            e.printStackTrace();
+            log.warn(e.getMessage(), e);
         }
         return sw.toString();
     }
@@ -199,7 +198,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     {
         // example:    2011-05-26 10:54:41
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        
+
         return df.format(datetime);
     }
 

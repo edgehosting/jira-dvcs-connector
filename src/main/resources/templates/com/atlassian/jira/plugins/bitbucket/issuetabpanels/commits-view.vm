@@ -7,36 +7,27 @@
                 <tr>
                     <td>
                         <div style='border-left: 2px solid #C9D9EF; background-color: #EAF3FF; color: #5D5F62; padding: 5px; margin-bottom: 10px;'>
-                            $issueLinker.createLinks($commit_message)
+                            $issue_linker.createLinks($commit_message)
                         </div>
 
                         <ul>
                             #foreach ( $file in $changeset.getFiles() )
-                                #if( $foreach.count > $MAX_VISIBLE_FILES )
-                                    #break
-                                #end
-                                #set ( $fileName = $file.getFile() )
+                                #set ( $file_name = $file.getFile() )
                                 #set ( $color = $file.getFileAction().getColor() )
-                                #set ( $fileActionName = $file.getFileAction().toString() )
-                                #set ( $fileCommitURL = $repository.getRepositoryUri.getFileCommitUrl($changeset.getNode(),
-                                $velocityUtils.encodeUtf8($file.getFile())) )
+                                #set ( $file_action_name = $file.getFileAction().toString() )
+                                #set ( $file_commit_url = $repository.getRepositoryUri.getFileCommitUrl($changeset.getNode(),
+                                    $velocity_utils.encodeUtf8($file.getFile())) )
 
-                                <li><span style='color:$color; font-size: 8pt;'>"$fileActionName</span>
-                                    <a href='$fileCommitURL' target='_new'>$fileName</a>
+                                <li><span style='color:$color; font-size: 8pt;'>$file_action_name</span>
+                                    <a href='$file_commit_url' target='_new'>$file_name</a>
                                 </li>
                             #end
-
-                            #set ( $numSeeMore = $changeset.getAllFileCount() - $MAX_VISIBLE_FILES )
-                            #if ( $numSeeMore > 0 )
-                                <div class='see_more' style='margin-top:5px;'><a href='$commit_url'
-                                                                                 target='_new'>See $numSeeMore more</a>
-                                </div>
-                            #end
                         </ul>
-                        <div style='margin-top: 10px'>
-                            <img src='$documentJpgUrl'
-                                 align='center'> <span class='commit_date'
-                                                       style='color: #757575; font-size: 9pt;'>$formatted_commit_date</span>
+                        <div style='margin-top: 10px'><img src='$document_jpg_url' align='center'>
+                            <span class='commit_date'
+                                  style='color: #757575; font-size: 9pt;'>$formatted_commit_date</span>&nbsp;&nbsp;
+                            <span class='commit_date'
+                                  style='color: #757575; font-size: 9pt;'>$velocity_utils.getRelativePastDate($changeset.getTimestamp())</span>
                         </div>
 
                     </td>
@@ -49,13 +40,13 @@
                                     <td><a href='$commit_url' target='_new'>$commit_hash</a></td>
                                 </tr>
 
-                                #set ( $repositoryUri = $repository.getRepositoryUri() )
+                                #set ( $repository_uri = $repository.getRepositoryUri() )
                                 #if ( !$changeset.getParents().isEmpty() )
-                                    #foreach ( $parentNode in $changeset.getParents() )
-                                        #set ( $parentURL = $repositoryUri.getParentUrl($parentNode) )
+                                    #foreach ( $parent_node in $changeset.getParents() )
+                                        #set ( $parent_url = $repository_uri.getParentUrl($parent_node) )
                                         <tr>
                                             <td style='color: #757575'>Parent:</td>
-                                            <td><a href='$parentURL' target='_new'>$parentNode</a></td>
+                                            <td><a href='$parent_url' target='_new'>$parent_node</a></td>
                                         </tr>
                                     #end
                                 #end
