@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 
 import java.io.UnsupportedEncodingException;
@@ -17,6 +18,21 @@ public class CustomStringUtils
             throw new SourceControlException("required encoding not found", e);
         }
     }
+
+    public static ChangesetFileAction getChangesetFileAction(String changeAction)
+    {
+        if (changeAction.equals("added"))
+        {
+            return ChangesetFileAction.ADDED;
+        } else if (changeAction.equals("removed"))
+        {
+            return ChangesetFileAction.REMOVED;
+        } else
+        {
+            return ChangesetFileAction.MODIFIED;
+        }
+    }
+
 
 
 }

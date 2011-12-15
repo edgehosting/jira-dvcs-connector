@@ -9,4 +9,8 @@ public interface ChangesetFile
     public ChangesetFileAction getFileAction();
 
     public String getFile();
+
+    public int getAdditions();
+
+    public int getDeletions();
 }

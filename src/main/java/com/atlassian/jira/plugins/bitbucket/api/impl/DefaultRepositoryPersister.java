@@ -1,27 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import net.java.ao.Query;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
@@ -33,6 +16,20 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import net.java.ao.Query;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
@@ -210,35 +207,27 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 }
                 map.put("PARENTS_DATA", parentsJson.toString());
 
-                JSONObject filesJson = new JSONObject();
-                JSONArray added = new JSONArray();
-                JSONArray removed = new JSONArray();
-                JSONArray modified = new JSONArray();
+                JSONObject filesDataJson = new JSONObject();
+                JSONArray filesJson = new JSONArray();
                 try
                 {
                     List<ChangesetFile> files = changeset.getFiles();
                     int count = files.size();
-                    filesJson.put("count", count);
+                    filesDataJson.put("count", count);
                     for (int i=0; i< Math.min(count, DvcsRepositoryManager.MAX_VISIBLE_FILES); i++)
                     {
                         ChangesetFile changesetFile = files.get(i);
-                        if (changesetFile.getFileAction().equals(ChangesetFileAction.ADDED))
-                        {
-                            added.put(changesetFile.getFile());
-                        } else if (changesetFile.getFileAction().equals(ChangesetFileAction.REMOVED))
-                        {
-                            removed.put(changesetFile.getFile());
-                        } else if (changesetFile.getFileAction().equals(ChangesetFileAction.MODIFIED))
-                        {
-                            modified.put(changesetFile.getFile());
-                        }
+                        JSONObject fileJson = new JSONObject();
+                        fileJson.put("filename", changesetFile.getFile());
+                        fileJson.put("status", changesetFile.getFileAction().getAction());
+                        fileJson.put("additions", changesetFile.getAdditions());
+                        fileJson.put("deletions", changesetFile.getDeletions());
 
+                        filesJson.put(fileJson);
                     }
-                    filesJson.put("added", added);
-                    filesJson.put("removed", removed);
-                    filesJson.put("modified", modified);
+                    filesDataJson.put("files", filesJson);
 
-                    map.put("FILES_DATA", filesJson.toString());
+                    map.put("FILES_DATA", filesDataJson.toString());
 
                     map.put("VERSION", IssueMapping.LATEST_VERSION);
                 } catch (JSONException e)

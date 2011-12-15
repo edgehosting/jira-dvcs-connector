@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.bitbucket.spi;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -85,26 +84,22 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
 
         try
         {
-            JSONObject filesJson = new JSONObject(filesData);
-            fileCount = filesJson.getInt("count");
-            JSONArray added = filesJson.getJSONArray("added");
-            for (int i = 0; i < added.length(); i++)
+            JSONObject filesDataJson = new JSONObject(filesData);
+            fileCount = filesDataJson.getInt("count");
+            JSONArray filesJson = filesDataJson.getJSONArray("files");
+
+            for (int i = 0; i < filesJson.length(); i++)
             {
-                String addFilename = added.getString(i);
-                files.add(new DefaultBitbucketChangesetFile(ChangesetFileAction.ADDED, addFilename));
+                JSONObject file = filesJson.getJSONObject(i);
+                String filename = file.getString("filename");
+                String status = file.getString("status");
+                int additions = file.getInt("additions");
+                int deletions = file.getInt("deletions");
+
+                files.add(new DefaultBitbucketChangesetFile(CustomStringUtils.getChangesetFileAction(status),
+                        filename, additions, deletions));
             }
-            JSONArray removed = filesJson.getJSONArray("removed");
-            for (int i = 0; i < removed.length(); i++)
-            {
-                String removedFilename = removed.getString(i);
-                files.add(new DefaultBitbucketChangesetFile(ChangesetFileAction.REMOVED, removedFilename));
-            }
-            JSONArray modified = filesJson.getJSONArray("modified");
-            for (int i = 0; i < modified.length(); i++)
-            {
-                String modifiedFilename = modified.getString(i);
-                files.add(new DefaultBitbucketChangesetFile(ChangesetFileAction.MODIFIED, modifiedFilename));
-            }
+
         } catch (JSONException e)
         {
             log.error("Failed parsing files from FileJson data.");
@@ -112,6 +107,8 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
 
         return new FileData(files, fileCount);
     }
+
+
 
     private static class FileData
     {
