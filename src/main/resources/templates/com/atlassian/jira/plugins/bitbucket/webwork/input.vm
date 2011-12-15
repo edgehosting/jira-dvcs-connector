@@ -100,7 +100,7 @@
         #end
                 
 		<div class="form">
-            <p>Add additional Bitbucket and Github repositories to the projects to link their commits with JIRA issue keys.</p>
+            <p>Add additional Bitbucket and GitHub repositories to the projects to link their commits with JIRA issue keys.</p>
 
             #if ($action.getMode() == 'single')
                 Enter the Bitbucket repository URL.</p>
