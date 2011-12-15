@@ -52,7 +52,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         urlTextbox.clear().type(url);
         projectSelect.select(Options.value(projectKey));
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New GitHub repository"));
         // postcommit hook
         addPostCommitServiceCheckbox.click();
         // add
@@ -62,7 +62,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         String githubWebLoginRedirectUrl = authorizeGithubAppIfRequired();
         if (!githubWebLoginRedirectUrl.contains("/jira/"))
         {
-            Assert.fail("Expected was Valid OAuth login and redirect to jira!");
+            Assert.fail("Expected was Valid OAuth login and redirect to JIRA!");
         }
         return addedRepositoryIdSpan.timed().getValue().now();
     }
@@ -81,7 +81,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
 
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New GitHub repository"));
         addRepositoryButton.click();
 
         checkSyncProcessSuccess();
@@ -115,7 +115,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
 
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New GitHub repository"));
         addRepositoryButton.click();
 
         String currentUrl = checkAndDoGithubLogin();
@@ -162,7 +162,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Github repository"));
+        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New GitHub repository"));
         if (messageBarDiv.isPresent())
         {
             PageElement messageBarErrorDiv = messageBarDiv.find(By.className("error"));

@@ -36,7 +36,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
         StringBuilder result = new StringBuilder();
         result.append("<div style=\"padding-bottom:5px; \">");
         result.append("<span class=\"project-config-list-label\">");
-        result.append("Bitbucket and Github Repositories:");
+        result.append("Bitbucket and GitHub Repositories:");
         result.append("</span>\n");
         result.append("<span class=\"project-config-list-value\">");
         result.append(" (<a href='")

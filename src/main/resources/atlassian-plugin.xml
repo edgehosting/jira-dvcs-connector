@@ -1,4 +1,4 @@
-<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="Bitbucket &amp; Github Connector" plugins-version="2">
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="Bitbucket &amp; GitHub Connector" plugins-version="2">
 
     <plugin-info>
         <description>${project.description}</description>
@@ -161,13 +161,13 @@
     <web-section key="bitbucket" name="Bitbucket Admin" location="system.admin" weight="105">
         <description key="section.bitbucket.admin.desc">Authentication and Repository setup for the Bitbucket Connector
         </description>
-        <label>Bitbucket and Github</label>
+        <label>Bitbucket and GitHub</label>
         <name>Bitbucket Name Section</name>
     </web-section>
 
     <web-item key="bitbucket_bulk_repo" name="Bitbucket Bulk Repository" section="admin_plugins_menu/source_control" weight="10">
-        <description>Bulk Configure Bitbucket and Github Repositories</description>
-        <label>Bitbucket and Github Repositories</label>
+        <description>Bulk Configure Bitbucket and GitHub Repositories</description>
+        <label>Bitbucket and GitHub Repositories</label>
         <name>Bitbucket Name Item</name>
 
         <link>/secure/admin/ConfigureBitbucketRepositories!default.jspa</link>
