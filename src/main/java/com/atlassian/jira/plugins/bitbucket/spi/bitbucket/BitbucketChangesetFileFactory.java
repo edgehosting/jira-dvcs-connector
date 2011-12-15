@@ -20,8 +20,8 @@ public class BitbucketChangesetFileFactory
         {
             return new DefaultBitbucketChangesetFile(
                     ChangesetFileAction.valueOf(json.getString("type").toUpperCase()),
-                    json.getString("file")
-            );
+                    // TODO: additions, deletions
+                    json.getString("file"), 0, 0);
         }
         catch (JSONException e)
         {

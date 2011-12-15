@@ -6,17 +6,24 @@ package com.atlassian.jira.plugins.bitbucket.api;
  */
 public enum ChangesetFileAction
 {
-    ADDED("green"), REMOVED("red"), MODIFIED("blue");
+    ADDED("added", "green"), REMOVED("removed", "red"), MODIFIED("modified", "blue");
 
+    private String action;
     private final String color;
 
-    ChangesetFileAction(String color)
+    ChangesetFileAction(String action, String color)
     {
+        this.action = action;
         this.color = color;
     }
 
     public String getColor()
     {
         return color;
+    }
+
+    public String getAction()
+    {
+        return action;
     }
 }

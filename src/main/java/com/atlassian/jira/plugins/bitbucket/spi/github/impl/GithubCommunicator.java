@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubUserFactory;
+import com.atlassian.jira.plugins.bitbucket.spi.github.MinimalInfoChangeset;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -71,17 +72,18 @@ public class GithubCommunicator implements Communicator
     {
         try
         {
+            String apiUrl = "https://api.github.com"; // we have to use API v3
             RepositoryUri uri = repository.getRepositoryUri();
             String owner = uri.getOwner();
             String slug = uri.getSlug();
             Authentication authentication = authenticationFactory.getAuthentication(repository);
 
             log.debug("parse gihchangeset [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, id });
-            String responseString = requestHelper.get(authentication, "/commits/show/" + CustomStringUtils.encode(owner) + "/" +
-                    CustomStringUtils.encode(slug) + "/" + CustomStringUtils.encode(id), null,
-                    uri.getApiUrl());
+            String responseString = requestHelper.get(authentication, "/repos/" + CustomStringUtils.encode(owner) + "/" +
+                    CustomStringUtils.encode(slug) + "/commits/" + CustomStringUtils.encode(id), null,
+                    apiUrl);
 
-            return GithubChangesetFactory.parse(repository.getId(), "master", new JSONObject(responseString).getJSONObject("commit"));
+            return GithubChangesetFactory.parse(repository.getId(), "master", new JSONObject(responseString));
         } catch (ResponseException e)
         {
             throw new SourceControlException("could not get result", e);
@@ -126,9 +128,9 @@ public class GithubCommunicator implements Communicator
             {
                 JSONObject commitJson = list.getJSONObject(i);
                 String id = commitJson.getString("id");
-                // get detial changeset because in this response is not information about files
-                Changeset detailChangeset = getChangeset(repository, id);
-                changesets.add(detailChangeset);
+                String msg = commitJson.getString("message");
+
+                changesets.add(new MinimalInfoChangeset(repository.getId(), id, msg));
             }
         } catch (ResponseException e)
         {

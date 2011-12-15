@@ -67,6 +67,16 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         return GITHUB;
     }
 
+
+    @Override
+    public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
+    {
+
+        // get detial changeset because in this response is not information about files
+        Changeset detailChangeset = getCommunicator().getChangeset(repository, changeset.getNode());
+        super.addChangeset(repository, issueId, detailChangeset);
+    }
+
     @Override
     public RepositoryUri getRepositoryUri(String urlString)
     {

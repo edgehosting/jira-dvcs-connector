@@ -2,8 +2,8 @@ package com.atlassian.jira.plugins.bitbucket.spi.github;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.DefaultBitbucketChangeset;
 import com.atlassian.jira.plugins.bitbucket.spi.DefaultBitbucketChangesetFile;
 import com.atlassian.jira.util.json.JSONArray;
@@ -28,22 +28,27 @@ public class GithubChangesetFactory
      * @param json  the json object describing the change
      * @return the parsed {@link com.atlassian.jira.plugins.bitbucket.api.Changeset}
      */
-    public static Changeset parse(int repositoryId, String branch, JSONObject commitJson)
+    public static Changeset parse(int repositoryId, String branch, JSONObject json)
     {
         try
         {
-            JSONObject author = commitJson.getJSONObject("author");
-            List<ChangesetFile> changesetFiles = fileList(commitJson, false);
+            JSONObject commitJson = json.getJSONObject("commit");
+            JSONObject commitAuthor = commitJson.getJSONObject("author");
+
+            JSONObject author = json.getJSONObject("author");
+
+            List<ChangesetFile> changesetFiles = fileList(json.getJSONArray("files"), false);
+
             return new DefaultBitbucketChangeset(
                     repositoryId,
-                    commitJson.getString("id"),
-                    author.has("name") ? author.getString("name") : "",
+                    json.getString("sha"),
+                    commitAuthor.has("name") ? commitAuthor.getString("name") : "",
                     author.has("login") ? author.getString("login") : "",
-                    parseDate(commitJson.getString("authored_date")),
+                    parseDate(commitAuthor.getString("date")),
                     "", // todo: raw-node. what is it in github?
                     branch,
                     commitJson.getString("message"),
-                    stringList(commitJson.getJSONArray("parents")),
+                    parentList(json.getJSONArray("parents")),
                     changesetFiles,
                     changesetFiles.size()
             );
@@ -68,51 +73,33 @@ public class GithubChangesetFactory
     }
 
 
-    private static List<String> stringList(JSONArray parents) throws JSONException
+    private static List<String> parentList(JSONArray parents) throws JSONException
     {
         List<String> list = new ArrayList<String>();
         for (int i = 0; i < parents.length(); i++)
-            list.add(((JSONObject) parents.get(i)).getString("id"));
+            list.add(((JSONObject) parents.get(i)).getString("sha"));
         return list;
     }
 
-    private static List<ChangesetFile> fileList(JSONObject commitJson, boolean fromPostcommitHook) throws JSONException
+    private static List<ChangesetFile> fileList(JSONArray files, boolean fromPostcommitHook) throws JSONException
     {
         List<ChangesetFile> list = new ArrayList<ChangesetFile>();
 
-        if (commitJson.has("added"))
+        for (int i = 0; i < files.length(); i++)
         {
-            JSONArray arrayAdded = commitJson.getJSONArray("added");
-            for (int i = 0; i < arrayAdded.length(); i++)
-            {
-                String addFilename = arrayAdded.getString(i);
-                list.add(new DefaultBitbucketChangesetFile(ChangesetFileAction.ADDED, addFilename));
-            }
-        }
-        if (commitJson.has("removed"))
-        {
-            JSONArray arrayRemoved = commitJson.getJSONArray("removed");
-            for (int i = 0; i < arrayRemoved.length(); i++)
-            {
-                String remFilename = arrayRemoved.getString(i);
-                list.add(new DefaultBitbucketChangesetFile(ChangesetFileAction.REMOVED, remFilename));
-            }
-        }
+            JSONObject file = files.getJSONObject(i);
+            String filename = file.getString("filename");
+            String status = file.getString("status");
+            int additions = file.getInt("additions");
+            int deletions = file.getInt("deletions");
 
-        if (commitJson.has("modified"))
-        {
-            JSONArray arrayModified = commitJson.getJSONArray("modified");
-
-            for (int i = 0; i < arrayModified.length(); i++)
-            {
-                String modFilename = (fromPostcommitHook) ? arrayModified.getString(i) : arrayModified.getJSONObject(i).getString("filename");
-                list.add(new DefaultBitbucketChangesetFile(ChangesetFileAction.MODIFIED, modFilename));
-            }
-
+            list.add(new DefaultBitbucketChangesetFile(CustomStringUtils.getChangesetFileAction(status),
+                    filename, additions, deletions));
         }
 
         return list;
     }
+
 
     private GithubChangesetFactory()
     {

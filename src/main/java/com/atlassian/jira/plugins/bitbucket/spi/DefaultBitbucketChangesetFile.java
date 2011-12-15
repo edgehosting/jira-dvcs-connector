@@ -2,16 +2,22 @@ package com.atlassian.jira.plugins.bitbucket.spi;
 
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class DefaultBitbucketChangesetFile implements ChangesetFile
 {
     private final ChangesetFileAction type;
     private final String file;
+    private int additions;
+    private int deletions;
 
-    public DefaultBitbucketChangesetFile(ChangesetFileAction type, String file)
+    public DefaultBitbucketChangesetFile(ChangesetFileAction type, String file, int additions, int deletions)
     {
         this.type = type;
         this.file = file;
+        this.additions = additions;
+        this.deletions = deletions;
     }
 
     public ChangesetFileAction getFileAction()
@@ -24,6 +30,16 @@ public class DefaultBitbucketChangesetFile implements ChangesetFile
         return file;
     }
 
+    public int getAdditions()
+    {
+        return additions;
+    }
+
+    public int getDeletions()
+    {
+        return deletions;
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -32,17 +48,22 @@ public class DefaultBitbucketChangesetFile implements ChangesetFile
 
         DefaultBitbucketChangesetFile that = (DefaultBitbucketChangesetFile) o;
 
-        if (!file.equals(that.file)) return false;
-        if (type != that.type) return false;
-
-        return true;
+        return new EqualsBuilder()
+                .append(type, that.type)
+                .append(file, that.file)
+                .append(additions, that.additions)
+                .append(deletions, that.deletions)
+                .isEquals();
     }
 
     @Override
     public int hashCode()
     {
-        int result = type.hashCode();
-        result = 31 * result + file.hashCode();
-        return result;
+        return new HashCodeBuilder()
+                .append(type)
+                .append(file)
+                .append(additions)
+                .append(deletions)
+                .hashCode();
     }
 }
