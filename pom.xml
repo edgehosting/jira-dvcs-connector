@@ -155,7 +155,7 @@
     <properties>
         <jira.version>4.4.1-studio-rc1</jira.version>
         <jira.data.version>4.3.4</jira.data.version>
-        <ao.version>0.15</ao.version>
+        <ao.version>0.15.8</ao.version>
         <streams.version>4.1.2</streams.version>
     </properties>
 
