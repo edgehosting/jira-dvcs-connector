@@ -1,13 +1,13 @@
 <html>
   <head>
-    <title>Add new Github repository</title>
+    <title>Add new GitHub repository</title>
 
   </head>
 
   <body>
     <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddGithubRepository.jspa" class="aui">
       <input type="hidden" name="isPrivate" id="isPrivate" value="$action.isPrivate()">
-      <h2>New Github repository</h2>
+      <h2>New GitHub repository</h2>
       <input type="hidden" name="atl_token" value="$atl_token">
       
         <fieldset>

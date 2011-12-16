@@ -11,7 +11,7 @@
         <h3>GitHub OAuth Settings</h3>
 
             <div id='gh_config_link'>
-                <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories!default.jspa">Bulk Configure Bitbucket and Github Repositories</a>
+                <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories!default.jspa">Bulk Configure Bitbucket and GitHub Repositories</a>
             </div>
 
               <h4 class="gh_config_h4">Setting up a GitHub OAuth Application</h4>
