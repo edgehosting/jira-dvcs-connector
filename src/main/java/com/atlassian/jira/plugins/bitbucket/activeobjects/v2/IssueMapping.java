@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.activeobjects.v2;
 
 import net.java.ao.Entity;
+import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
 import java.util.Date;
@@ -33,6 +34,7 @@ public interface IssueMapping extends Entity {
 
     String getMessage();
 
+    @StringLength(StringLength.UNLIMITED)
     String getFilesData();
 
     String getParentsData();
@@ -58,6 +60,7 @@ public interface IssueMapping extends Entity {
 
     void setMessage(String message);
 
+    @StringLength(StringLength.UNLIMITED)
     void setFilesData(String files);
 
     void setParentsData(String parents);
