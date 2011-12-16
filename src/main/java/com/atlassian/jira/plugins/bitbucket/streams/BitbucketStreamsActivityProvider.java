@@ -3,12 +3,10 @@ package com.atlassian.jira.plugins.bitbucket.streams;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
-import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.velocity.VelocityUtils;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.streams.api.ActivityObjectTypes;
@@ -26,17 +24,19 @@ import com.atlassian.streams.spi.Filters;
 import com.atlassian.streams.spi.StandardStreamsFilterOption;
 import com.atlassian.streams.spi.StreamsActivityProvider;
 import com.atlassian.streams.spi.UserProfileAccessor;
+import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
-import com.opensymphony.util.TextUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URI;
-import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 {
@@ -48,17 +48,19 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
     private static final Logger log = LoggerFactory.getLogger(BitbucketStreamsActivityProvider.class);
     private final IssueLinker issueLinker;
+    private final TemplateRenderer templateRenderer;
 
 
     public BitbucketStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties,
                                             UserProfileAccessor userProfileAccessor, @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager,
-                                            IssueLinker issueLinker)
+                                            IssueLinker issueLinker, TemplateRenderer templateRenderer)
     {
         this.applicationProperties = applicationProperties;
         this.i18nResolver = i18nResolver;
         this.userProfileAccessor = userProfileAccessor;
         this.globalRepositoryManager = globalRepositoryManager;
         this.issueLinker = issueLinker;
+        this.templateRenderer = templateRenderer;
     }
 
     public Iterable<StreamsEntry> transformEntries(Iterable<Changeset> changesetEntries) throws StreamsException
@@ -92,14 +94,24 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
             public Html renderTitleAsHtml(StreamsEntry entry)
             {
                 SourceControlRepository repo = globalRepositoryManager.getRepository(changeset.getRepositoryId());
-                String userHtml = "<a href='#user_url' target='_new'>#user_name - #login</a>";
 
-                userHtml = userHtml.replace("#user_url", repo.getRepositoryUri().getUserUrl(CustomStringUtils.encode(author)));
-                userHtml = userHtml.replace("#login", TextUtils.htmlEncode(author));
-                userHtml = userHtml.replace("#user_name", TextUtils.htmlEncode(changeset.getRawAuthor()));
+                Map<String, Object> templateMap = new HashMap<String, Object>();
+                templateMap.put("changeset", changeset);
+                templateMap.put("user_name", changeset.getRawAuthor());
+                templateMap.put("login", author);
+                templateMap.put("user_url", repo.getRepositoryUri().getUserUrl(CustomStringUtils.encode(author)));
+                templateMap.put("commit_url", repo.getRepositoryUri().getCommitUrl(changeset.getNode()));
 
+                StringWriter sw = new StringWriter();
+                try
+                {
+                    templateRenderer.render("/templates/com/atlassian/jira/plugins/bitbucket/streams/activityentry-title.vm", templateMap, sw);
+                } catch (IOException e)
+                {
+                    log.warn(e.getMessage(), e);
+                }
 
-                return new Html(userHtml + " committed changeset <a href=\"" + repo.getRepositoryUri().getCommitUrl(changeset.getNode()) + "\">" + changeset.getNode() + "</a> saying:");
+                return new Html(sw.toString());
             }
 
             public Option<Html> renderSummaryAsHtml(StreamsEntry entry)
@@ -109,37 +121,20 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
             public Option<Html> renderContentAsHtml(StreamsEntry entry)
             {
-                SourceControlRepository repo = globalRepositoryManager.getRepository(changeset.getRepositoryId());
+                Map<String, Object> templateMap = new HashMap<String, Object>();
+                templateMap.put("velocity_utils", new VelocityUtils());
+                templateMap.put("issue_linker", issueLinker);
+                templateMap.put("changeset", changeset);
 
-                RepositoryUri repositoryUri = repo.getRepositoryUri();
-
-                String htmlFiles = "";
-                for (int i = 0; i < Math.min(changeset.getFiles().size(), DvcsRepositoryManager.MAX_VISIBLE_FILES); i++)
+                StringWriter sw = new StringWriter();
+                try
                 {
-                    ChangesetFile file = changeset.getFiles().get(i);
-                    String fileName = file.getFile();
-                    String color = file.getFileAction().getColor();
-                    String fileActionName = file.getFileAction().toString();
-                    String fileCommitURL = repositoryUri.getFileCommitUrl(changeset.getNode(), CustomStringUtils.encode(file.getFile()));
-                    htmlFiles += "<li><span style='color:" + color + "; font-size: 8pt;'>" +
-                            TextUtils.htmlEncode(fileActionName) + "</span> <a href='" +
-                            fileCommitURL + "' target='_new'>" + fileName + "</a></li>";
-                }
-
-                int numSeeMore = changeset.getAllFileCount() - DvcsRepositoryManager.MAX_VISIBLE_FILES;
-                if (numSeeMore > 0)
+                    templateRenderer.render("/templates/com/atlassian/jira/plugins/bitbucket/streams/activityentry-summary.vm", templateMap, sw);
+                } catch (IOException e)
                 {
-                    String commitURL = changeset.getCommitURL(repo);
-                    htmlFiles += "<div class='see_more' style='margin-top:5px;'><a href='" + commitURL + "' target='_new'>See " + numSeeMore + " more</a></div>";
+                    log.warn(e.getMessage(), e);
                 }
-
-                StringBuilder sb = new StringBuilder();
-                sb.append(issueLinker.createLinks(TextUtils.htmlEncode(changeset.getMessage())));
-                sb.append("<br>").append("<br>").append("Changes:").append("<br>");
-                sb.append("<ul>");
-                sb.append(htmlFiles);
-                sb.append("</ul>");
-                return Option.some(new Html(sb.toString()));
+                return Option.some(new Html(sw.toString()));
             }
 
         };
