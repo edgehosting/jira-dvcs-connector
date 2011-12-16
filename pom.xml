@@ -95,6 +95,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.plugins.rest</groupId>
+            <artifactId>com.atlassian.jersey-library</artifactId>
+            <version>2.4.0</version>
+            <scope>provided</scope>
+            <type>pom</type>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.streams</groupId>
             <artifactId>streams-api</artifactId>
             <version>${streams.version}</version>
@@ -152,8 +159,8 @@
     </build>
 
     <properties>
-        <jira.version>5.0-rc1</jira.version>
-        <jira.data.version>5.0-rc1</jira.data.version>
+        <jira.version>5.0-rc2</jira.version>
+        <jira.data.version>5.0-rc2</jira.data.version>
         <ao.version>0.18.4</ao.version>
         <streams.version>5.0.1</streams.version>
     </properties>
