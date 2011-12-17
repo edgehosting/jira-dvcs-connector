@@ -167,7 +167,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         String commitURL = changeset.getCommitURL(repository);
         SourceControlUser user = getUser(repository, changeset.getAuthor());
         String gravatarUrl = user.getAvatar().replace("s=32", "s=60");
-        String commitMessage = changeset.getMessage();  //TODO add functional test for this
+        String commitMessage = changeset.getMessage();  //TODO add functional test for rendering issue numbers as links
 
         templateMap.put("gravatar_url", gravatarUrl);
         templateMap.put("user_url", repository.getRepositoryUri().getUserUrl(CustomStringUtils.encode(login)));

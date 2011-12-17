@@ -64,7 +64,6 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
 
     private Iterator<Changeset> readPage(String startNode)
     {
-
         // read PAGE_SIZE + 1 changesets. Last changeset will be used as starting node 
         // for next page (last changeset is actually returned as first in the list)
         List<Changeset> changesets = bitbucketCommunicator.getChangesets(repository, startNode, PAGE_SIZE + 1);
@@ -74,7 +73,8 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
         {
             followingChangset = changesets.remove(0);
         }
-        // get the changesets in the correct order
+        // get the changesets in the correct order (TODO this is probably not required,
+        // we sort the changesets before displaying anyway)
         Collections.reverse(changesets);
         return changesets.iterator();
 
