@@ -32,20 +32,34 @@ public class GithubChangesetFactory
     {
         try
         {
-            JSONObject commitJson = json.getJSONObject("commit");
-            JSONObject commitAuthor = commitJson.getJSONObject("author");
 
-            // TODO this can be null see https://sdog.jira.com/browse/BBC-62
-            JSONObject author = json.getJSONObject("author");
+            JSONObject commitJson = json.getJSONObject("commit");
+
+            String name = "";
+            Date date = Calendar.getInstance().getTime();
+            if (commitJson.has("author") && !commitJson.isNull("author"))
+            {
+                JSONObject commitAuthor = commitJson.getJSONObject("author");
+                name = commitAuthor.has("name") ? commitAuthor.getString("name") : "";
+                date = parseDate(commitAuthor.getString("date"));
+            }
+
+
+            String login = "";
+            if (json.has("author") && !json.isNull("author"))
+            {
+                JSONObject author = json.getJSONObject("author");
+                login = author.has("login") ? author.getString("login") : "";
+            }
 
             List<ChangesetFile> changesetFiles = fileList(json.getJSONArray("files"), false);
 
             return new DefaultBitbucketChangeset(
                     repositoryId,
                     json.getString("sha"),
-                    commitAuthor.has("name") ? commitAuthor.getString("name") : "",
-                    author.has("login") ? author.getString("login") : "",
-                    parseDate(commitAuthor.getString("date")),
+                    name,
+                    login,
+                    date,
                     "", // todo: raw-node. what is it in github?
                     branch,
                     commitJson.getString("message"),
