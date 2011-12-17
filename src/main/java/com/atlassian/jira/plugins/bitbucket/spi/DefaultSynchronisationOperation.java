@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
@@ -51,7 +52,13 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                 {
                     jiraCount ++;
                     String issueId = extractedIssue.toUpperCase();
-                    repositoryManager.addChangeset(key.getRepository(), issueId, changeset);
+                    try
+                    {
+                        repositoryManager.addChangeset(key.getRepository(), issueId, changeset);
+                    } catch (SourceControlException e)
+                    {
+                        log.error("Error adding changeset " + changeset, e);
+                    }
                 }
             }
             progressProvider.inProgress(changesetCount, jiraCount);
