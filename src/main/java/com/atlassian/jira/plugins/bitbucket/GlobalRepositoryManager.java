@@ -117,7 +117,7 @@ public class GlobalRepositoryManager implements RepositoryManager
             allChangesets.addAll(repositoryManager.getChangesets(issueKey));
         }
 
-        Collections.sort(allChangesets, Collections.reverseOrder(CHANGESET_COMPARATOR));
+        Collections.sort(allChangesets, CHANGESET_COMPARATOR);
         return allChangesets;
     }
 
