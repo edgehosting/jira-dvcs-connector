@@ -32,6 +32,7 @@ public interface IssueMapping extends Entity {
 
     String getBranch();
 
+    @StringLength(StringLength.UNLIMITED)
     String getMessage();
 
     @StringLength(StringLength.UNLIMITED)
