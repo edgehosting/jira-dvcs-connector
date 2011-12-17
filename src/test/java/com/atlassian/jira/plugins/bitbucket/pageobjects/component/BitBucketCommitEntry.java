@@ -21,6 +21,6 @@ public class BitBucketCommitEntry
      */
     public String getCommitMessage()
     {
-        return div.findAll(By.tagName("div")).get(1).getText();
+        return div.findAll(By.className("Text")).get(0).getText();
     }
 }
