@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.bitbucket.activeobjects.v2;
 
-import java.sql.Types;
-import java.util.Date;
-
 import net.java.ao.Entity;
 import net.java.ao.schema.SQLType;
 import net.java.ao.schema.Table;
+
+import java.sql.Types;
+import java.util.Date;
 
 @Table("IssueMappingV2")
 public interface IssueMapping extends Entity {
@@ -33,6 +33,7 @@ public interface IssueMapping extends Entity {
 
     String getBranch();
 
+    @SQLType(Types.CLOB)
     String getMessage();
 
     @SQLType(Types.CLOB)

@@ -195,7 +195,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 map.put("NODE", node);
                 map.put("RAW_AUTHOR", changeset.getRawAuthor());
                 map.put("AUTHOR", changeset.getAuthor());
-                map.put("TIMESTAMP", changeset.getTimestamp());
+                map.put("DATE", changeset.getTimestamp());
                 map.put("RAW_NODE", changeset.getRawNode());
                 map.put("BRANCH", changeset.getBranch());
                 map.put("MESSAGE", changeset.getMessage());
