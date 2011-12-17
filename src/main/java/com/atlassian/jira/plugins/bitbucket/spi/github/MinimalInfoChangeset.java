@@ -8,6 +8,7 @@ import java.util.Date;
 
 public class MinimalInfoChangeset extends DefaultBitbucketChangeset
 {
+    // TODO check why is this in its own class
     public MinimalInfoChangeset(int repositoryId, String node, String message)
     {
         super(repositoryId, node, "","",new Date(),"","",message, Collections.<String>emptyList(), Collections.<ChangesetFile>emptyList(), 0);
