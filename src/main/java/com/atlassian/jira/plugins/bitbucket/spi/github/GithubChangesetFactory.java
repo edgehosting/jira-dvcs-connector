@@ -35,6 +35,7 @@ public class GithubChangesetFactory
             JSONObject commitJson = json.getJSONObject("commit");
             JSONObject commitAuthor = commitJson.getJSONObject("author");
 
+            // TODO this can be null see https://sdog.jira.com/browse/BBC-62
             JSONObject author = json.getJSONObject("author");
 
             List<ChangesetFile> changesetFiles = fileList(json.getJSONArray("files"), false);

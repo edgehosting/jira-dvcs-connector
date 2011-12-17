@@ -56,7 +56,7 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
             }
         } catch (JSONException e)
         {
-            throw new SourceControlException(e);
+            throw new SourceControlException("Error parsing payload: " + payload, e);
         }
         return changesets;
     }
