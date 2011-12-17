@@ -21,10 +21,10 @@ public class CustomStringUtils
 
     public static ChangesetFileAction getChangesetFileAction(String changeAction)
     {
-        if (changeAction.equals("added"))
+        if ("added".equals(changeAction))
         {
             return ChangesetFileAction.ADDED;
-        } else if (changeAction.equals("removed"))
+        } else if ("removed".equals(changeAction))
         {
             return ChangesetFileAction.REMOVED;
         } else
