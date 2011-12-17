@@ -161,7 +161,7 @@
     <properties>
         <jira.version>5.0-rc2</jira.version>
         <jira.data.version>5.0-rc2</jira.data.version>
-        <ao.version>0.18.4</ao.version>
+        <ao.version>0.19</ao.version>
         <streams.version>5.0.1</streams.version>
     </properties>
 
