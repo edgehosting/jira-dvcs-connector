@@ -11,7 +11,7 @@
             <!-- name and date -->
             <div class="CommiterInfoPanel">
                 <a href="$user_url" target="_new"><div class="CommitUser">$user_name</div></a>
-                <div class="CommitingDate">$formatted_commit_date &nbsp;&nbsp;$velocity_utils.getRelativePastDate($changeset.getTimestamp())</div>
+                <div class="CommitingDate">$velocity_utils.getRelativePastDate($changeset.getTimestamp())</div>
             </div>
             <div class="CommiterInfoRow"></div>
             <!--  -->

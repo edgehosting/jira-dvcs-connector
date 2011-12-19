@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import com.atlassian.jira.datetime.DateTimeFormatterFactory;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -15,7 +14,6 @@ import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 import com.atlassian.jira.plugins.bitbucket.velocity.VelocityUtils;
-import com.atlassian.jira.util.InjectableComponent;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
@@ -26,9 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,8 +169,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         templateMap.put("login", login);
         templateMap.put("user_name", authorName);
         templateMap.put("commit_message", commitMessage);
-        templateMap.put("formatted_commit_time", getDateString(changeset.getTimestamp()));
-        templateMap.put("formatted_commit_date", getDateString(changeset.getTimestamp()));
         templateMap.put("commit_url", commitURL);
         templateMap.put("commit_hash", changeset.getNode());
 
@@ -189,14 +182,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             log.warn(e.getMessage(), e);
         }
         return sw.toString();
-    }
-
-    public String getDateString(Date datetime)
-    {
-        // example:    2011-05-26 10:54:41
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-        return df.format(datetime);
     }
 
     @Override
