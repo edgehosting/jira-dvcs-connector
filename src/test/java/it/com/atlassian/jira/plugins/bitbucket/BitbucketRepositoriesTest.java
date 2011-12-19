@@ -1,9 +1,7 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
+import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -11,7 +9,15 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Test;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
+import java.util.List;
+
+import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageLinksMatcher.withMessageLinks;
+import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 
 /**
  * Test to verify behaviour when syncing bitbucket repository..
@@ -117,8 +123,14 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
         return method.getResponseBodyAsString();
     }
 
-    public void testSyncFromPostCommit()
+    @Test
+    public void testIssueLinkerCommentFormatting()
     {
-        // TODO
+        configureRepos.deleteAllRepositories();
+        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
+        assertThat(configureRepos.getRepositories().size(), equalTo(1));
+
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");
+        assertThat(commitMessages, hasItem(withMessageLinks("QA-2", "QA-3")));
     }
 }

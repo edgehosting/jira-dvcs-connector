@@ -1,15 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
-import static com.atlassian.pageobjects.elements.query.Poller.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-
-import org.hamcrest.Matcher;
-import org.openqa.selenium.By;
-
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketRepository;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
@@ -19,7 +9,16 @@ import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import com.atlassian.pageobjects.elements.query.TimedCondition;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
+import org.hamcrest.Matcher;
+import org.openqa.selenium.By;
+
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.atlassian.pageobjects.elements.query.Poller.by;
 
 /**
  * Represents the page to link repositories to projects
@@ -145,13 +144,14 @@ public abstract class BaseConfigureRepositoriesPage implements Page
 
     protected void checkSyncProcessSuccess()
     {
-        Poller.waitUntilTrue("Expected sync status message to appear.", syncStatusDiv.timed().isVisible());
-        String text = syncStatusDiv.find(By.tagName("strong")).timed().getText().now();
-        if(text.equals("Sync Running:")){
-            Poller.waitUntilFalse("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Running:"));
-        }
-        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncStatusDiv.find(By.tagName("strong")).timed().hasText("Sync Finished:"));
+        final String statusXpath = "//div[@name='sync_status_message']/div[@class='content']/strong";
+        TimedCondition isMsgVisibleCond = syncStatusDiv.find(By.xpath(statusXpath)).timed().isVisible();
+        Poller.waitUntilTrue("Expected sync status message to appear.", isMsgVisibleCond);
+
+        TimedCondition syncFinishedCond = syncStatusDiv.find(By.xpath(statusXpath)).timed().hasText("Sync Finished:");
+        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncFinishedCond);
     }
+
     /**
      * The current error status message
      *
@@ -164,9 +164,13 @@ public abstract class BaseConfigureRepositoriesPage implements Page
     }
 
     public abstract BaseConfigureRepositoriesPage addPublicRepoToProjectSuccessfully(String projectKey, String url);
+
     public abstract BaseConfigureRepositoriesPage addRepoToProjectFailingStep1(String projectKey, String url);
+
     public abstract BaseConfigureRepositoriesPage addRepoToProjectFailingStep2(String projectKey, String url);
+
     public abstract BaseConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url);
+
     public abstract String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername, String adminPassword);
 
     public void setJiraTestedProduct(JiraTestedProduct jiraTestedProduct)
