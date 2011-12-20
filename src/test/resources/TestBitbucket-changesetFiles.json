@@ -1,0 +1,18 @@
+[
+    {
+        "type": "modified",
+        "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketCommits.java",
+        "diffstat": {
+            "removed": 3,
+            "added": 47
+        }
+    },
+    {
+        "type": "modified",
+        "file": "src/main/java/com/atlassian/jira/plugins/bitbucket/webwork/BitbucketPostCommit.java",
+        "diffstat": {
+            "removed": 27,
+            "added": 18
+        }
+    }
+]

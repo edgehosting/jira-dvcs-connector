@@ -13,7 +13,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-27 10:09:29", 
+            "utctimestamp": "2011-05-27 10:09:29",
             "raw_node": "551cb8f8ad637b6b496943489e3977d34ef335d3", 
             "parents": [
                 "663fc2ef3e6d"
@@ -33,7 +33,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-28 04:56:52", 
+            "utctimestamp": "2011-05-28 04:56:52",
             "raw_node": "f67777be37ac6ac3b50b7f0aaf0e49900d1e8674", 
             "parents": [
                 "551cb8f8ad63"
@@ -61,7 +61,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-28 04:57:54", 
+            "utctimestamp": "2011-05-28 04:57:54",
             "raw_node": "7b6ccd962334c3f349fb9f1b14284bf1c211af3f", 
             "parents": [
                 "f67777be37ac"
@@ -81,7 +81,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-28 05:14:44", 
+            "utctimestamp": "2011-05-28 05:14:44",
             "raw_node": "cefb45e4ab817d880d01a3395b0e8fde3d528549", 
             "parents": [
                 "7b6ccd962334"
@@ -121,7 +121,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-28 05:20:47", 
+            "utctimestamp": "2011-05-28 05:20:47",
             "raw_node": "33aea1e43d7ced3a4eb6185e65c44fd5fe5812df", 
             "parents": [
                 "cefb45e4ab81"
@@ -141,7 +141,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-30 08:24:48", 
+            "utctimestamp": "2011-05-30 08:24:48",
             "raw_node": "eb35f03b19cca6f2a78829e2eee1fc535a67dcd9", 
             "parents": [
                 "33aea1e43d7c"
@@ -165,7 +165,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-31 06:02:50", 
+            "utctimestamp": "2011-05-31 06:02:50",
             "raw_node": "bbdafa573e5d84c763832b9a9783978de548adc4", 
             "parents": [
                 "eb35f03b19cc"
@@ -189,7 +189,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-31 06:19:22", 
+            "utctimestamp": "2011-05-31 06:19:22",
             "raw_node": "4cd7cb51cd480dc29d7c136461dbf5f2876beddb", 
             "parents": [
                 "bbdafa573e5d"
@@ -209,7 +209,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-31 08:33:30", 
+            "utctimestamp": "2011-05-31 08:33:30",
             "raw_node": "f0e495a2c7b3326248f1b53875530eea9ffe0ac9", 
             "parents": [
                 "4cd7cb51cd48"
@@ -229,7 +229,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-31 10:08:42", 
+            "utctimestamp": "2011-05-31 10:08:42",
             "raw_node": "9857bfbb74b0f2ad8eda421347e53e67852835d3", 
             "parents": [
                 "f0e495a2c7b3"
@@ -249,7 +249,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-31 22:11:37", 
+            "utctimestamp": "2011-05-31 22:11:37",
             "raw_node": "61f3e937fa329ff73ce7826e98b2226ab92b3911", 
             "parents": [
                 "9857bfbb74b0"
@@ -277,7 +277,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-31 22:27:54", 
+            "utctimestamp": "2011-05-31 22:27:54",
             "raw_node": "4d147cc251b887c28773b1692f2beae526cdabb4", 
             "parents": [
                 "61f3e937fa32"
@@ -297,7 +297,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-05-31 22:56:28", 
+            "utctimestamp": "2011-05-31 22:56:28",
             "raw_node": "3362d106ce437bf10d94db586ca01d4d50a1a8bc", 
             "parents": [
                 "4d147cc251b8"
@@ -317,7 +317,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-06-01 04:34:22", 
+            "utctimestamp": "2011-06-01 04:34:22",
             "raw_node": "608004b2238120741a63e956c5c9688030920fd3", 
             "parents": [
                 "3362d106ce43"
@@ -337,7 +337,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-06-01 04:34:34", 
+            "utctimestamp": "2011-06-01 04:34:34",
             "raw_node": "b52207caf6b325a18a4a38953cf9d365ee8f799c", 
             "parents": [
                 "608004b22381"
@@ -357,7 +357,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-06-01 04:34:53", 
+            "utctimestamp": "2011-06-01 04:34:53",
             "raw_node": "bbf518979ab2cbc2df59e8017dbed37b63ab26e0", 
             "parents": [
                 "b52207caf6b3"

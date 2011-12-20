@@ -15,7 +15,7 @@
         ],
         "branch": "default",
         "author": "mjensen",
-        "timestamp": "2011-07-05 12:49:45",
+        "utctimestamp": "2011-07-05 12:49:45",
         "raw_node": "f2851c9f1db864387d361564a168d30051f343d3",
         "parents": [],
         "raw_author": "Matthew Jensen <mjensen@atlassian.com>",

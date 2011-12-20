@@ -11,6 +11,7 @@ public class BitbucketChangesetFileFactory
 {
     /**
      * Parse the json object as a {@link ChangesetFile file} within a changeset.
+     *
      * @param json the json object describing the file
      * @return the parsed {@link ChangesetFile}
      */
@@ -18,12 +19,11 @@ public class BitbucketChangesetFileFactory
     {
         try
         {
+            JSONObject diffstatJson = json.getJSONObject("diffstat");
             return new DefaultBitbucketChangesetFile(
                     ChangesetFileAction.valueOf(json.getString("type").toUpperCase()),
-                    // TODO: additions, deletions
-                    json.getString("file"), 0, 0);
-        }
-        catch (JSONException e)
+                    json.getString("file"), diffstatJson.getInt("added"), diffstatJson.getInt("removed"));
+        } catch (JSONException e)
         {
             throw new SourceControlException("invalid json object", e);
         }

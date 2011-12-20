@@ -71,12 +71,18 @@ public class TestDefaultBitbucket
         when(extendedResponseHandlerFactory.create()).thenReturn(responseHandler);
         
         when(responseHandler.getExtendedResponse())
-        .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-tip.json")))
-        .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-72.json")))
-        .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-57.json")))
-        .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-42.json")))
-        .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-27.json")))
-        .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-12.json")));
+//                .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-tip.json")))
+//                .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesetFiles.json")))
+//                .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-72.json")))
+//                .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesetFiles.json")))
+//                .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-57.json")))
+//                .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesetFiles.json")))
+//                .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-42.json")))
+//                .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesetFiles.json")))
+//                .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-27.json")))
+//                .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesetFiles.json")))
+                .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-12.json")))
+                .thenReturn(new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesetFiles.json")));
 
     }
 
@@ -100,7 +106,7 @@ public class TestDefaultBitbucket
         List<Changeset> list = new ArrayList<Changeset>();
         Iterables.addAll(list, iterable);
 
-        assertEquals(90, list.size());
+        assertEquals(15, list.size());
 
     }
 
@@ -113,7 +119,7 @@ public class TestDefaultBitbucket
         final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator,
                 repository);
 
-        for (int i = 0; i < 90; i++)
+        for (int i = 0; i < 15; i++)
         {
             try
             {

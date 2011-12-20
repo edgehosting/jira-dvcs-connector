@@ -17,7 +17,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-06-15 23:55:06", 
+            "utctimestamp": "2011-06-15 23:55:06",
             "raw_node": "fc92e54ea14eed7c08ff5f7d0ab128dded7db9c6", 
             "parents": [
                 "4db681323340"
@@ -57,7 +57,7 @@
             ], 
             "raw_author": "Michael Buckbee <michaelbuckbee@gmail.com>", 
             "author": "mbuckbee", 
-            "timestamp": "2011-06-16 00:30:46", 
+            "utctimestamp": "2011-06-16 00:30:46",
             "raw_node": "8b80509fdcca174cf4484f9a32d9279674e4c0cf", 
             "parents": [
                 "fc92e54ea14e", 
@@ -78,7 +78,7 @@
             ], 
             "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
             "author": "mjensen", 
-            "timestamp": "2011-06-16 03:42:38", 
+            "utctimestamp": "2011-06-16 03:42:38",
             "raw_node": "082e5673140309fc475f97c53b0bb0fa2ad4b68d", 
             "parents": [
                 "8b80509fdcca"
@@ -98,7 +98,7 @@
             ], 
             "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
             "author": "mjensen", 
-            "timestamp": "2011-06-16 03:44:30", 
+            "utctimestamp": "2011-06-16 03:44:30",
             "raw_node": "19be854bd4f0700cc1c308fe783ab6ed4c5f7a39", 
             "parents": [
                 "082e56731403"
@@ -130,7 +130,7 @@
             ], 
             "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
             "author": "mjensen", 
-            "timestamp": "2011-06-16 07:35:20", 
+            "utctimestamp": "2011-06-16 07:35:20",
             "raw_node": "47df8106db4e37dc2d67bd87260a453c8bf8ff48", 
             "parents": [
                 "19be854bd4f0"
@@ -150,7 +150,7 @@
             ], 
             "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
             "author": "mjensen", 
-            "timestamp": "2011-06-16 07:39:40", 
+            "utctimestamp": "2011-06-16 07:39:40",
             "raw_node": "2068588f41d85888229b2694cfc5faa0a121dc52", 
             "parents": [
                 "47df8106db4e"
@@ -170,7 +170,7 @@
             ], 
             "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
             "author": "mjensen", 
-            "timestamp": "2011-06-16 07:39:47", 
+            "utctimestamp": "2011-06-16 07:39:47",
             "raw_node": "450b2f6976a5b1117015850cf995ce777f51308f", 
             "parents": [
                 "2068588f41d8"
@@ -190,7 +190,7 @@
             ], 
             "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
             "author": "mjensen", 
-            "timestamp": "2011-06-16 07:39:58", 
+            "utctimestamp": "2011-06-16 07:39:58",
             "raw_node": "bb343f20ff0fc36bef5fdc19c241bde7e3fb7a1f", 
             "parents": [
                 "450b2f6976a5"
@@ -210,7 +210,7 @@
             ], 
             "raw_author": "Justen Stepka <jstepka@atlassian.com>", 
             "author": "jstepka", 
-            "timestamp": "2011-06-13 21:07:26", 
+            "utctimestamp": "2011-06-13 21:07:26",
             "raw_node": "0e725384c5cffebfab4cd838ae8c22c6c7e62c1c", 
             "parents": [
                 "89c438012ef4"
@@ -230,7 +230,7 @@
             ], 
             "raw_author": "Justen Stepka <jstepka@atlassian.com>", 
             "author": "jstepka", 
-            "timestamp": "2011-06-13 21:08:38", 
+            "utctimestamp": "2011-06-13 21:08:38",
             "raw_node": "347840e6d2b8e2f4820b24f95c32aca8adb0ebd7", 
             "parents": [
                 "0e725384c5cf"
@@ -250,7 +250,7 @@
             ], 
             "raw_author": "mjensen", 
             "author": "mjensen", 
-            "timestamp": "2011-06-17 01:22:41", 
+            "utctimestamp": "2011-06-17 01:22:41",
             "raw_node": "972a04d25f63093f6c095b1066308fec09768a3f", 
             "parents": [
                 "bb343f20ff0f", 
@@ -291,7 +291,7 @@
             ], 
             "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
             "author": "mjensen", 
-            "timestamp": "2011-06-16 10:24:47", 
+            "utctimestamp": "2011-06-16 10:24:47",
             "raw_node": "d8b574c329f3a11b541ad66fbd352e75b05683f1", 
             "parents": [
                 "bb343f20ff0f"
@@ -347,7 +347,7 @@
             ], 
             "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
             "author": "mjensen", 
-            "timestamp": "2011-06-17 00:51:20", 
+            "utctimestamp": "2011-06-17 00:51:20",
             "raw_node": "87768c50252e072a8a10d97757b0e65bca453ece", 
             "parents": [
                 "d8b574c329f3"
@@ -387,7 +387,7 @@
             ], 
             "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
             "author": "mjensen", 
-            "timestamp": "2011-06-17 05:46:35", 
+            "utctimestamp": "2011-06-17 05:46:35",
             "raw_node": "a0911c143f842a6814b8055799f303cd8388e04d", 
             "parents": [
                 "87768c50252e"
@@ -407,7 +407,7 @@
             ], 
             "raw_author": "Matthew Jensen <mjensen@atlassian.com>", 
             "author": "mjensen", 
-            "timestamp": "2011-06-17 05:57:07", 
+            "utctimestamp": "2011-06-17 05:57:07",
             "raw_node": "9c660aa26cc4b79525ece6c6340b61927902fb3a", 
             "parents": [
                 "a0911c143f84"
@@ -471,7 +471,7 @@
             ], 
             "raw_author": "mjensen <mjensen@atlassian.com>", 
             "author": "mjensen", 
-            "timestamp": "2011-06-17 06:03:56", 
+            "utctimestamp": "2011-06-17 06:03:56",
             "raw_node": "471b0c972ba6f3dc8660c3bb7e1e22a55a1bb1e4", 
             "parents": [
                 "972a04d25f63", 
