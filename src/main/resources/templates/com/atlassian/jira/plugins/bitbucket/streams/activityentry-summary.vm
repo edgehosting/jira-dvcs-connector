@@ -7,7 +7,7 @@ Changes:<br>
         #set ( $file_name = $file.getFile() )
         #set ( $color = $file.getFileAction().getColor() )
         #set ( $file_action_name = $file.getFileAction().toString() )
-        #set ( $file_commit_url = $repository.getRepositoryUri.getFileCommitUrl($changeset.getNode(),
+        #set ( $file_commit_url = $repository.getRepositoryUri().getFileCommitUrl($changeset.getNode(),
             $velocity_utils.encodeUtf8($file.getFile())) )
 
         <li><span style='color:$color; font-size: 8pt;'>$file_action_name</span>

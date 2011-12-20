@@ -125,6 +125,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 templateMap.put("velocity_utils", new VelocityUtils());
                 templateMap.put("issue_linker", issueLinker);
                 templateMap.put("changeset", changeset);
+                templateMap.put("repository", globalRepositoryManager.getRepository(changeset.getRepositoryId()));
 
                 StringWriter sw = new StringWriter();
                 try
