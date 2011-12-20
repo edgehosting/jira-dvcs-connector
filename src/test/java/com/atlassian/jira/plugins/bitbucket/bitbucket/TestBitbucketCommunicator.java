@@ -99,6 +99,10 @@ public class TestBitbucketCommunicator
             requestFactory.createRequest(Request.MethodType.GET,
                 "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/changesets/aaaaa")).thenReturn(request);
         when(request.execute()).thenReturn("{I am invalid json}");
+        when(
+            requestFactory.createRequest(Request.MethodType.GET,
+                "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/changesets/aaaaa/diffstat")).thenReturn(request);
+        when(request.execute()).thenReturn("{I am invalid json}");
 
         BitbucketCommunicator communicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, responseHandlerFactory));
         try
@@ -109,7 +113,7 @@ public class TestBitbucketCommunicator
         {
             assertEquals("Could not parse json result", e.getMessage());
         }
-        verify(request).addBasicAuthentication("user", "pass");
+        verify(request, times(2)).addBasicAuthentication("user", "pass");
 
     }
 
@@ -143,11 +147,11 @@ public class TestBitbucketCommunicator
 
         DefaultRequestHelper requestHelper = new DefaultRequestHelper(requestFactory, responseHandlerFactory);
         Boolean repositoryIsPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
-        
+
         assertNotNull(repositoryIsPrivate);
         assertFalse(repositoryIsPrivate);
     }
-    
+
     @Test
     public void testPrivateRepositoryValid() throws Exception
     {
@@ -166,7 +170,7 @@ public class TestBitbucketCommunicator
     @Test
     public void testRepositoryInvalid() throws Exception
     {
-        
+
         final ExtendedResponse extendedResponse = new ExtendedResponse(false, HttpStatus.SC_NOT_FOUND, "blah");
 
         when(responseHandlerFactory.create()).thenReturn(extendedResponseHandler);

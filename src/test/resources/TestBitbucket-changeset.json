@@ -52,7 +52,7 @@
     ], 
     "raw_author": "mjensen <mjensen@atlassian.com>", 
     "author": "mjensen", 
-    "timestamp": "2011-06-17 06:03:56", 
+    "utctimestamp": "2011-06-17 06:03:56",
     "raw_node": "471b0c972ba6f3dc8660c3bb7e1e22a55a1bb1e4", 
     "parents": [
         "972a04d25f63", 

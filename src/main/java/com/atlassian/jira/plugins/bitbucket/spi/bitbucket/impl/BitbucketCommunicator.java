@@ -1,17 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -32,6 +20,17 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
@@ -48,7 +47,7 @@ public class BitbucketCommunicator implements Communicator
         this.authenticationFactory = authenticationFactory;
         this.requestHelper = requestHelper;
     }
-    
+
     @Override
     public SourceControlUser getUser(SourceControlRepository repository, String username)
     {
@@ -81,11 +80,13 @@ public class BitbucketCommunicator implements Communicator
             String slug = uri.getSlug();
             Authentication auth = authenticationFactory.getAuthentication(repository);
 
-            logger.debug("parse changeset [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, node });
-            String responseString = requestHelper.get(auth, "/repositories/" + CustomStringUtils.encode(owner) + "/" +
-                    CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(node), null,
-                    uri.getApiUrl());
-            return BitbucketChangesetFactory.parse(repository.getId(), new JSONObject(responseString));
+            logger.debug("parse changeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, node});
+            final String urlPath = "/repositories/" + CustomStringUtils.encode(owner) + "/" +
+                    CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(node);
+            String responseString = requestHelper.get(auth, urlPath, null, uri.getApiUrl());
+            String responseFilesString = requestHelper.get(auth, urlPath + "/diffstat", null, uri.getApiUrl());
+            return BitbucketChangesetFactory.parse(repository.getId(), new JSONObject(responseString), new JSONArray(responseFilesString));
+
         } catch (ResponseException e)
         {
             throw new SourceControlException("could not get result", e);
@@ -102,7 +103,7 @@ public class BitbucketCommunicator implements Communicator
         String slug = uri.getSlug();
         Authentication auth = authenticationFactory.getAuthentication(repository);
 
-        logger.debug("parse bitbucket changesets [ {} ] [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, startNode, String.valueOf(limit) });
+        logger.debug("parse bitbucket changesets [ {} ] [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, startNode, String.valueOf(limit)});
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("limit", String.valueOf(limit));
         if (startNode != null)
@@ -115,7 +116,7 @@ public class BitbucketCommunicator implements Communicator
         try
         {
             ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, "/repositories/" + CustomStringUtils.encode(owner)
-                + "/" + CustomStringUtils.encode(slug) + "/changesets", params, uri.getApiUrl());
+                    + "/" + CustomStringUtils.encode(slug) + "/changesets", params, uri.getApiUrl());
 
             if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
@@ -129,7 +130,11 @@ public class BitbucketCommunicator implements Communicator
             JSONArray list = new JSONObject(extendedResponse.getResponseString()).getJSONArray("changesets");
             for (int i = 0; i < list.length(); i++)
             {
-                changesets.add(BitbucketChangesetFactory.parse(repository.getId(), list.getJSONObject(i)));
+                JSONObject json = list.getJSONObject(i);
+                final String urlPath = "/repositories/" + CustomStringUtils.encode(owner) + "/" +
+                        CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(json.getString("node"));
+                String responseFilesString = requestHelper.getExtendedResponse(auth, urlPath + "/diffstat", null, uri.getApiUrl()).getResponseString();
+                changesets.add(BitbucketChangesetFactory.parse(repository.getId(), json, new JSONArray(responseFilesString)));
             }
         } catch (ResponseException e)
         {
@@ -156,7 +161,7 @@ public class BitbucketCommunicator implements Communicator
             requestHelper.post(auth, urlPath, postData, apiUrl);
         } catch (ResponseException e)
         {
-            throw new SourceControlException("Could not add postcommit hook",e);
+            throw new SourceControlException("Could not add postcommit hook", e);
         }
     }
 
@@ -208,7 +213,7 @@ public class BitbucketCommunicator implements Communicator
             }
         };
     }
-    
+
     @Override
     public UrlInfo getUrlInfo(final RepositoryUri repositoryUri)
     {
@@ -220,7 +225,7 @@ public class BitbucketCommunicator implements Communicator
 
     @Override
     public void validateRepositoryAccess(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username, String password,
-        String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+                                         String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
 
         Authentication auth;
@@ -231,7 +236,7 @@ public class BitbucketCommunicator implements Communicator
         {
             auth = Authentication.ANONYMOUS;
         }
-        
+
         try
         {
             ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl());
@@ -244,6 +249,5 @@ public class BitbucketCommunicator implements Communicator
         }
     }
 
-  
-    
+
 }
