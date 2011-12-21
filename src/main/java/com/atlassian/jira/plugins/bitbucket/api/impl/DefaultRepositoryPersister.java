@@ -50,7 +50,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     {
         return activeObjects.executeInTransaction(new TransactionCallback<List<ProjectMapping>>()
         {
-			@Override
+            @Override
             public List<ProjectMapping> doInTransaction()
             {
                 ProjectMapping[] mappings = activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ? AND REPOSITORY_TYPE = ?", projectKey, repositoryType);
@@ -62,11 +62,11 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     @Override
     public ProjectMapping addRepository(String repositoryType, String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String accessToken)
     {
-        
+
         final ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_URL = ? and PROJECT_KEY = ?", repositoryUrl, projectKey);
-        if (projectMappings.length>0)
+        if (projectMappings.length > 0)
         {
-            throw new SourceControlException("Repository ["+repositoryUrl+"] is already linked to project ["+projectKey+"]");
+            throw new SourceControlException("Repository [" + repositoryUrl + "] is already linked to project [" + projectKey + "]");
         }
         final Map<String, Object> map = new HashMap<String, Object>();
         map.put("REPOSITORY_URL", repositoryUrl);
@@ -79,8 +79,8 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         }
         if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminPassword))
         {
-        	map.put("ADMIN_USERNAME", adminUsername);
-        	map.put("ADMIN_PASSWORD", adminPassword);
+            map.put("ADMIN_USERNAME", adminUsername);
+            map.put("ADMIN_PASSWORD", adminPassword);
         }
         if (StringUtils.isNotBlank(accessToken))
         {
@@ -91,7 +91,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             @Override
             public ProjectMapping doInTransaction()
             {
-        		return activeObjects.create(ProjectMapping.class, map);
+                return activeObjects.create(ProjectMapping.class, map);
             }
         });
     }
@@ -130,11 +130,12 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             }
         });
     }
-    
+
     /**
      * There is a bug in AO that prevents doing select on multiple tables. This is a workaround for this.
-     * TODO find the AO bug id. 
-     * TODO maybe this can be optimised using SQL: "and repositoryId in (?)" 
+     * TODO find the AO bug id.
+     * TODO maybe this can be optimised using SQL: "and repositoryId in (?)"
+     *
      * @param mappings
      * @param repositoryType
      * @return
@@ -142,34 +143,34 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     @SuppressWarnings("unchecked")
     private List<IssueMapping> filterMappingsByRepositoryType(IssueMapping[] mappings, String repositoryType)
     {
-                if (mappings.length==0)
+        if (mappings.length == 0)
             return Collections.emptyList();
-                // get list of all project mappings with our type
+        // get list of all project mappings with our type
         final Set<Integer> projectMappingsIds = getProjectMappingsForRepositoryType(repositoryType);
-                
-                return Lists.newArrayList(CollectionUtils.select(Arrays.asList(mappings), new Predicate()
-                {
-                    @Override
-                    public boolean evaluate(Object o)
-                    {
-                        IssueMapping issueMapping = (IssueMapping) o;
-                        return projectMappingsIds.contains(issueMapping.getRepositoryId());
-                    }
-                }));
+
+        return Lists.newArrayList(CollectionUtils.select(Arrays.asList(mappings), new Predicate()
+        {
+            @Override
+            public boolean evaluate(Object o)
+            {
+                IssueMapping issueMapping = (IssueMapping) o;
+                return projectMappingsIds.contains(issueMapping.getRepositoryId());
             }
+        }));
+    }
 
     private Set<Integer> getProjectMappingsForRepositoryType(final String repositoryType)
     {
         ProjectMapping[] myProjectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", repositoryType);
-        
+
         final Set<Integer> projectMappingsIds = Sets.newHashSet();
         for (ProjectMapping myProjectMapping : myProjectMappings)
         {
             projectMappingsIds.add(myProjectMapping.getID());
         }
         return projectMappingsIds;
-    }    
-    
+    }
+
     @Override
     public void addChangeset(final String issueId, final Changeset changeset)
     {
@@ -185,28 +186,27 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 // delete existing
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ? and NODE = ?", issueId, node);
                 if (ArrayUtils.isNotEmpty(mappings))
-				{
-					activeObjects.delete(mappings);
-				}
+                {
+                    activeObjects.delete(mappings);
+                }
                 // add new
-				Map<String, Object> map = Maps.newHashMap();
-				// TODO create constants for column names in IssueMappings.class
-				map.put("REPOSITORY_ID", repositoryId);
-				map.put("ISSUE_ID", issueId);
-				map.put("NODE", node);
-				map.put("RAW_AUTHOR", changeset.getRawAuthor());
-				map.put("AUTHOR", changeset.getAuthor());
-				map.put("DATE", changeset.getTimestamp());
-				map.put("RAW_NODE", changeset.getRawNode());
-				map.put("BRANCH", changeset.getBranch());
-				map.put("MESSAGE", changeset.getMessage());
+                Map<String, Object> map = Maps.newHashMap();
+                map.put(IssueMapping.COLUMN_REPOSITORY_ID, repositoryId);
+                map.put(IssueMapping.COLUMN_ISSUE_ID, issueId);
+                map.put(IssueMapping.COLUMN_NODE, node);
+                map.put(IssueMapping.COLUMN_RAW_AUTHOR, changeset.getRawAuthor());
+                map.put(IssueMapping.COLUMN_AUTHOR, changeset.getAuthor());
+                map.put(IssueMapping.COLUMN_DATE, changeset.getTimestamp());
+                map.put(IssueMapping.COLUMN_RAW_NODE, changeset.getRawNode());
+                map.put(IssueMapping.COLUMN_BRANCH, changeset.getBranch());
+                map.put(IssueMapping.COLUMN_MESSAGE, changeset.getMessage());
 
                 JSONArray parentsJson = new JSONArray();
                 for (String parent : changeset.getParents())
                 {
                     parentsJson.put(parent);
                 }
-                map.put("PARENTS_DATA", parentsJson.toString());
+                map.put(IssueMapping.COLUMN_PARENTS_DATA, parentsJson.toString());
 
                 JSONObject filesDataJson = new JSONObject();
                 JSONArray filesJson = new JSONArray();
@@ -215,7 +215,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                     List<ChangesetFile> files = changeset.getFiles();
                     int count = files.size();
                     filesDataJson.put("count", count);
-                    for (int i=0; i< Math.min(count, DvcsRepositoryManager.MAX_VISIBLE_FILES); i++)
+                    for (int i = 0; i < Math.min(count, DvcsRepositoryManager.MAX_VISIBLE_FILES); i++)
                     {
                         ChangesetFile changesetFile = files.get(i);
                         JSONObject fileJson = new JSONObject();
@@ -228,9 +228,9 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                     }
                     filesDataJson.put("files", filesJson);
 
-                    map.put("FILES_DATA", filesDataJson.toString());
+                    map.put(IssueMapping.COLUMN_FILES_DATA, filesDataJson.toString());
 
-                    map.put("VERSION", IssueMapping.LATEST_VERSION);
+                    map.put(IssueMapping.COLUMN_VERSION, IssueMapping.LATEST_VERSION);
                 } catch (JSONException e)
                 {
                     logger.error("Creating files JSON failed!", e);
@@ -241,11 +241,12 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             }
         });
     }
+
     @Override
     public List<IssueMapping> getLatestIssueMappings(final int count, final GlobalFilter gf, final String repositoryType)
     {
         if (count <= 0)
-    {
+        {
             return Collections.emptyList();
         }
         return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
@@ -259,7 +260,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             }
         });
     }
-    
+
     // TODO move to separate class and add unit tests
     private String createQueryWhereClause(GlobalFilter gf)
     {
@@ -391,18 +392,18 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         return whereClauseSb.toString();
     }
 
-	@Override
+    @Override
     public ProjectMapping getRepository(final int id)
-	{
-		return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping>()
-		{
-			@Override
+    {
+        return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping>()
+        {
+            @Override
             public ProjectMapping doInTransaction()
-			{
-				return activeObjects.get(ProjectMapping.class, id);
-			}
-		});
-	}
+            {
+                return activeObjects.get(ProjectMapping.class, id);
+            }
+        });
+    }
 
     @Override
     public IssueMapping getIssueMapping(final String node)
