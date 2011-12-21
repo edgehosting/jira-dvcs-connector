@@ -170,7 +170,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         String commitMessage = changeset.getMessage();  //TODO add functional test for rendering issue numbers as links
 
         templateMap.put("gravatar_url", gravatarUrl);
-        templateMap.put("user_url", repository.getRepositoryUri().getUserUrl(CustomStringUtils.encode(login)));
+        templateMap.put("user_url", repository.getRepositoryUri().getUserUrl(CustomStringUtils.encodeUriPath(login)));
         templateMap.put("login", login);
         templateMap.put("user_name", authorName);
         templateMap.put("commit_message", commitMessage);

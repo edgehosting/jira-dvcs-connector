@@ -36,7 +36,7 @@
                             #set ( $color = $file.getFileAction().getColor() )
                             #set ( $file_action_name = $file.getFileAction().toString() )
                             #set ( $file_commit_url = $repository.getRepositoryUri().getFileCommitUrl($changeset.getNode(),
-                                                $velocity_utils.encodeUtf8($file.getFile())) )
+                                                $velocity_utils.encodeUriPath($file.getFile())) )
                             
                             #set ( $action = $file.getFileAction().getAction() )
                             #if ( $action == 'modified' )
