@@ -10,9 +10,9 @@ import java.util.Date;
  */
 public class VelocityUtils
 {
-    public String encodeUtf8(String str)
+    public String encodeUriPath(String str)
     {
-        return CustomStringUtils.encode(str);
+        return CustomStringUtils.encodeUriPath(str);
     }
 
     public String getRelativePastDate(Date dateInPast)

@@ -99,7 +99,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 templateMap.put("changeset", changeset);
                 templateMap.put("user_name", changeset.getRawAuthor());
                 templateMap.put("login", author);
-                templateMap.put("user_url", repo.getRepositoryUri().getUserUrl(CustomStringUtils.encode(author)));
+                templateMap.put("user_url", repo.getRepositoryUri().getUserUrl(CustomStringUtils.encodeUriPath(author)));
                 templateMap.put("commit_url", repo.getRepositoryUri().getCommitUrl(changeset.getNode()));
 
                 StringWriter sw = new StringWriter();
