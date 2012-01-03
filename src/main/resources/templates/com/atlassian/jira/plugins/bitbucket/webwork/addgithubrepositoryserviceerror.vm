@@ -2,6 +2,8 @@
   <head>
     <title>Add new Bitbucket repository</title>
 
+    <meta name="admin.active.section" content="admin_plugins_menu/source_control"/>
+    <meta name="admin.active.tab" content="bitbucket_bulk_repo"/>
   </head>
 
   <body>
