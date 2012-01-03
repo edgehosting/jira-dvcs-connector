@@ -1,6 +1,9 @@
 <html>
   <head>
     <title>GitHub OAuth Settings</title>
+
+    <meta name="admin.active.section" content="admin_plugins_menu/source_control"/>
+    <meta name="admin.active.tab" content="github_oauth"/>
   </head>
 
   <body>
