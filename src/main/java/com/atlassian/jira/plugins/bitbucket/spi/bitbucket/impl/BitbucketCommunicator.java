@@ -54,18 +54,17 @@ public class BitbucketCommunicator implements Communicator
         try
         {
             RepositoryUri uri = repository.getRepositoryUri();
-            logger.debug("parse user [ {} ]", username);
+            logger.debug("Parse user [ {} ]", username);
 
             String responseString = requestHelper.get(Authentication.ANONYMOUS, "/users/" + CustomStringUtils.encode(username), null, uri.getApiUrl());
             return BitbucketUserFactory.parse(new JSONObject(responseString).getJSONObject("user"));
         } catch (ResponseException e)
         {
-            // TODO: Start with capital letter
-            logger.debug("could not load user [ " + username + " ]");
+            logger.debug("Could not load user [ " + username + " ]");
             return SourceControlUser.UNKNOWN_USER;
         } catch (JSONException e)
         {
-            logger.debug("could not load user [ " + username + " ]");
+            logger.debug("Could not load user [ " + username + " ]");
             return SourceControlUser.UNKNOWN_USER;
         }
     }
@@ -80,7 +79,7 @@ public class BitbucketCommunicator implements Communicator
             String slug = uri.getSlug();
             Authentication auth = authenticationFactory.getAuthentication(repository);
 
-            logger.debug("parse changeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, node});
+            logger.debug("Parse changeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, node});
             final String urlPath = "/repositories/" + CustomStringUtils.encode(owner) + "/" +
                     CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(node);
             String responseString = requestHelper.get(auth, urlPath, null, uri.getApiUrl());
@@ -89,7 +88,7 @@ public class BitbucketCommunicator implements Communicator
 
         } catch (ResponseException e)
         {
-            throw new SourceControlException("could not get result", e);
+            throw new SourceControlException("Could not get result", e);
         } catch (JSONException e)
         {
             throw new SourceControlException("Could not parse json result", e);
@@ -103,7 +102,7 @@ public class BitbucketCommunicator implements Communicator
         String slug = uri.getSlug();
         Authentication auth = authenticationFactory.getAuthentication(repository);
 
-        logger.debug("parse bitbucket changesets [ {} ] [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, startNode, String.valueOf(limit)});
+        logger.debug("Parse bitbucket changesets [ {} ] [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, startNode, String.valueOf(limit)});
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("limit", String.valueOf(limit));
         if (startNode != null)
@@ -217,7 +216,7 @@ public class BitbucketCommunicator implements Communicator
     @Override
     public UrlInfo getUrlInfo(final RepositoryUri repositoryUri)
     {
-        logger.debug("get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
+        logger.debug("Get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
         Boolean repositoryPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
         if (repositoryPrivate == null) return null;
         return new UrlInfo(BitbucketRepositoryManager.BITBUCKET, repositoryPrivate.booleanValue());
