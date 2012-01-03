@@ -20,13 +20,12 @@ import com.atlassian.streams.api.UserProfile;
 import com.atlassian.streams.api.common.ImmutableNonEmptyList;
 import com.atlassian.streams.api.common.Option;
 import com.atlassian.streams.spi.CancellableTask;
+import com.atlassian.streams.spi.CancelledException;
 import com.atlassian.streams.spi.Filters;
 import com.atlassian.streams.spi.StandardStreamsFilterOption;
 import com.atlassian.streams.spi.StreamsActivityProvider;
 import com.atlassian.streams.spi.UserProfileAccessor;
 import com.atlassian.templaterenderer.TemplateRenderer;
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +34,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 {
@@ -63,15 +65,16 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         this.templateRenderer = templateRenderer;
     }
 
-    public Iterable<StreamsEntry> transformEntries(Iterable<Changeset> changesetEntries) throws StreamsException
+    public Iterable<StreamsEntry> transformEntries(Iterable<Changeset> changesetEntries, AtomicBoolean cancelled) throws StreamsException
     {
-        return Iterables.transform(changesetEntries, new Function<Changeset, StreamsEntry>()
+        List<StreamsEntry> entries = new ArrayList<StreamsEntry>();
+        for (Changeset changeset : changesetEntries)
         {
-            public StreamsEntry apply(Changeset from)
-            {
-                return toStreamsEntry(from);
-            }
-        });
+            if (cancelled.get())
+                throw new CancelledException();
+            entries.add(toStreamsEntry(changeset));
+        }
+        return entries;
     }
 
     /**
@@ -166,20 +169,24 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
         return new CancellableTask<StreamsFeed>()
         {
+            private AtomicBoolean cancelled = new AtomicBoolean(false);
+
             @Override
             public StreamsFeed call() throws Exception
             {
                 Iterable<Changeset> changesetEntries = globalRepositoryManager.getLatestChangesets(activityRequest.getMaxResults(), gf);
+                if (cancelled.get())
+                    throw new CancelledException();
                 log.debug("Found changeset entries: " + changesetEntries);
-                Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
+                Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries, cancelled);
                 return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
             }
 
             @Override
             public Result cancel()
             {
-                // TODO Auto-generated method stub
-                return null;
+                cancelled.set(true);
+                return Result.CANCELLED;
             }
         };
     }
