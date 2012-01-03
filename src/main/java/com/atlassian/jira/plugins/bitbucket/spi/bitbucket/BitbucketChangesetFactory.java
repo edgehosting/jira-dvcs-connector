@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.spi.DefaultBitbucketChangeset;
+import com.atlassian.jira.plugins.bitbucket.spi.DefaultChangeset;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -40,7 +40,7 @@ public class BitbucketChangesetFactory
         try
         {
             List<ChangesetFile> files = fileList(filesJson);
-            return new DefaultBitbucketChangeset(
+            return new DefaultChangeset(
                     repositoryId,
                     baseJson.getString("node"),
                     baseJson.getString("raw_author"),

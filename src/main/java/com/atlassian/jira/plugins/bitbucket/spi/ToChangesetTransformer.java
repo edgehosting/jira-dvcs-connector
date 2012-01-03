@@ -35,7 +35,7 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
         FileData fileData = parseFilesData(issueMapping.getFilesData());
         List<String> parents = parseParentsData(issueMapping.getParentsData());
 
-        return new DefaultBitbucketChangeset(issueMapping.getRepositoryId(),
+        return new DefaultChangeset(issueMapping.getRepositoryId(),
                 issueMapping.getNode(),
                 issueMapping.getRawAuthor(),
                 issueMapping.getAuthor(),
