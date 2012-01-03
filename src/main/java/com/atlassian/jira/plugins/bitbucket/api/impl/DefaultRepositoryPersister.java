@@ -18,8 +18,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.java.ao.Query;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -126,40 +124,24 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             @Override
             public List<IssueMapping> doInTransaction()
             {
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", issueId);
-                return filterMappingsByRepositoryType(mappings, repositoryType);
+                String baseWhereClause = "ISSUE_ID = '" + issueId + "'";
+                String repositoryIdsFilteringWhereClause = getRepositoryIdsFilteringWhereClause(repositoryType);
+                Query query = Query.select().where(baseWhereClause + repositoryIdsFilteringWhereClause);
+
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, query);
+                return Arrays.asList(mappings);
             }
         });
     }
 
+
     /**
-     * There is a bug in AO that prevents doing select on multiple tables. This is a workaround for this.
-     * TODO find the AO bug id.
-     * TODO maybe this can be optimised using SQL: "and repositoryId in (?)"
+     * INFO: AO has problem to do join(), distinct() and limit() in 1 query - AOSqlException on HSQLDB. It is working fine without limit() clause but we need to use limit() in 1 case.
      *
-     * @param mappings
-     * @param repositoryType
-     * @return
+     * @param repositoryType repository type constant {@link com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager#BITBUCKET} or
+     *                       {@link com.atlassian.jira.plugins.bitbucket.spi.github.impl.GithubRepositoryManager#GITHUB}.
+     * @return set of repository ids
      */
-    @SuppressWarnings("unchecked")
-    private List<IssueMapping> filterMappingsByRepositoryType(IssueMapping[] mappings, String repositoryType)
-    {
-        if (mappings.length == 0)
-            return Collections.emptyList();
-        // get list of all project mappings with our type
-        final Set<Integer> projectMappingsIds = getProjectMappingsForRepositoryType(repositoryType);
-
-        return Lists.newArrayList(CollectionUtils.select(Arrays.asList(mappings), new Predicate()
-        {
-            @Override
-            public boolean evaluate(Object o)
-            {
-                IssueMapping issueMapping = (IssueMapping) o;
-                return projectMappingsIds.contains(issueMapping.getRepositoryId());
-            }
-        }));
-    }
-
     private Set<Integer> getProjectMappingsForRepositoryType(final String repositoryType)
     {
         ProjectMapping[] myProjectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", repositoryType);
@@ -255,11 +237,38 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             @Override
             public List<IssueMapping> doInTransaction()
             {
-                String whereClauseSb = new GlobalFilterQueryWhereClauseBuilder(gf).build();
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, Query.select().where(whereClauseSb).limit(count).order("DATE DESC"));
-                return filterMappingsByRepositoryType(mappings, repositoryType);
+                String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
+                String repositoryIdsFilteringWhereClause = getRepositoryIdsFilteringWhereClause(repositoryType);
+                Query query = Query.select().where(baseWhereClause + repositoryIdsFilteringWhereClause).limit(count).order("DATE DESC");
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, query);
+                return Arrays.asList(mappings);
             }
         });
+    }
+
+    private String getRepositoryIdsFilteringWhereClause(String repositoryType)
+    {
+        StringBuilder sb = new StringBuilder();
+        Set<Integer> ids = getProjectMappingsForRepositoryType(repositoryType);
+        if (ids != null && !ids.isEmpty())
+        {
+            sb.append(" AND REPOSITORY_ID in (");
+            boolean first = true;
+            for (Integer id : ids)
+            {
+                if (!first)
+                {
+                    sb.append(",");
+                }
+                sb.append(id);
+                first = false;
+            }
+            sb.append(")");
+        } else
+        {
+            sb.append(" AND FALSE ");
+        }
+        return sb.toString();
     }
 
     @Override
