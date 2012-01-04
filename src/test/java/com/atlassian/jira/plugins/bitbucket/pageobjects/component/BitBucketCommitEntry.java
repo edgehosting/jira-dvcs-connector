@@ -39,4 +39,30 @@ public class BitBucketCommitEntry
         }
         return linkTexts;
     }
+
+
+    public List<PageElement> getStatistics()
+    {
+        return div.findAll(By.className("CommitCount"));
+    }
+
+    public String getAdditions(PageElement pageElement)
+    {
+        return pageElement.find(By.className("CommitCountPlus")).getText();
+    }
+
+    public String getDeletions(PageElement pageElement)
+    {
+        return pageElement.find(By.className("CommitCountMinus")).getText();
+    }
+
+    public boolean isAdded(PageElement pageElement)
+    {
+        return pageElement.find(By.className("CommitCountAdded")).isPresent();
+    }
+
+    public boolean isDeleted(PageElement pageElement)
+    {
+        return pageElement.find(By.className("CommitCountRemoved")).isPresent();
+    }
 }

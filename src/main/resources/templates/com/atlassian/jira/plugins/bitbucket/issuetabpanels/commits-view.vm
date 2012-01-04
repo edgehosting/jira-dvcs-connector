@@ -46,7 +46,7 @@
                                         #set ( $additions = $file.getAdditions() )
                                         #if ( $additions == 0 )-#else +$additions #end
                                     </div>
-                                    <div class="CommitCountminus">
+                                    <div class="CommitCountMinus">
                                         #set ( $deletions = $file.getDeletions() )
                                         #if ( $deletions == 0 )-#else -$deletions #end
                                     </div>

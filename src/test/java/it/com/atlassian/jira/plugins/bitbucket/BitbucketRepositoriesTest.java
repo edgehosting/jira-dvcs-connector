@@ -2,11 +2,13 @@ package it.com.atlassian.jira.plugins.bitbucket;
 
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
+import com.atlassian.pageobjects.elements.PageElement;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -133,5 +135,37 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
 
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");
         assertThat(commitMessages, hasItem(withMessageLinks("QA-2", "QA-3")));
+    }
+
+    @Test
+    public void testCommitStatistics()
+    {
+        configureRepos.deleteAllRepositories();
+        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
+
+        // QA-2
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");
+        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        BitBucketCommitEntry commitMessage = commitMessages.get(0);
+        List<PageElement> statistics = commitMessage.getStatistics();
+        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
+        Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+1");
+        Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
+
+        // QA-3
+        commitMessages = getCommitsForIssue("QA-3");
+        Assert.assertEquals("Expected 2 commits", 2, commitMessages.size());
+        // commit 1
+        commitMessage = commitMessages.get(0);
+        statistics = commitMessage.getStatistics();
+        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
+        Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+1");
+        Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
+        // commit 2
+        commitMessage = commitMessages.get(1);
+        statistics = commitMessage.getStatistics();
+        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
+        Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+1");
+        Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
     }
 }
