@@ -157,14 +157,6 @@
         <order>100</order>
     </project-operation>
 
-
-    <web-section key="bitbucket" name="Bitbucket Admin" location="system.admin" weight="105">
-        <description key="section.bitbucket.admin.desc">Authentication and Repository setup for the Bitbucket Connector
-        </description>
-        <label>Bitbucket and GitHub</label>
-        <name>Bitbucket Name Section</name>
-    </web-section>
-
     <web-item key="bitbucket_bulk_repo" name="Bitbucket Bulk Repository" section="admin_plugins_menu/source_control" weight="10">
         <description>Bulk Configure Bitbucket and GitHub Repositories</description>
         <label>Bitbucket and GitHub Repositories</label>
