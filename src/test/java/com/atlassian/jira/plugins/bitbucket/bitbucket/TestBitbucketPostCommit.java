@@ -5,10 +5,10 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
+import com.atlassian.jira.plugins.bitbucket.spi.DefaultChangeset;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.github.MinimalInfoChangeset;
 import com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -88,7 +88,7 @@ public class TestBitbucketPostCommit
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable
             {
-                return new MinimalInfoChangeset(0, (String) invocation.getArguments()[1], null);
+                return new DefaultChangeset(0, (String) invocation.getArguments()[1], "");
             }
         });
 
