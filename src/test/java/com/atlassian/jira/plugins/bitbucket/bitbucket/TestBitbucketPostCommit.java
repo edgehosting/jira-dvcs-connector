@@ -107,7 +107,7 @@ public class TestBitbucketPostCommit
             }
         };
         Assert.assertTrue(matcher.matches(changesets));
-        verify(communicator);
+        verify(communicator).getChangeset(repo, node);
     }
 
 }
