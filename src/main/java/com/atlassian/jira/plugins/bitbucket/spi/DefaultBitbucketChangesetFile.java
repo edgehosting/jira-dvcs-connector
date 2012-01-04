@@ -30,7 +30,6 @@ public class DefaultBitbucketChangesetFile implements ChangesetFile
         return file;
     }
 
-    // TODO add func tests for additions and deletions
     public int getAdditions()
     {
         return additions;
