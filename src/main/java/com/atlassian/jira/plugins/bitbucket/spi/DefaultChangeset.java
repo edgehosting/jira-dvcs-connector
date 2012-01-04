@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +27,11 @@ public class DefaultChangeset implements Changeset
     private final int allFileCount;
 
     private final int repositoryId;
+
+    public DefaultChangeset(int repositoryId, String node, String message)
+    {
+        this(repositoryId, node, "", "", new Date(), "", "", message, Collections.<String>emptyList(), Collections.<ChangesetFile>emptyList(), 0);
+    }
 
     public DefaultChangeset(int repositoryId,
                          String node, String rawAuthor, String author, Date timestamp,

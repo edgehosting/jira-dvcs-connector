@@ -9,13 +9,13 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
+import com.atlassian.jira.plugins.bitbucket.spi.DefaultChangeset;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubUserFactory;
-import com.atlassian.jira.plugins.bitbucket.spi.github.MinimalInfoChangeset;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -78,7 +78,7 @@ public class GithubCommunicator implements Communicator
             String slug = uri.getSlug();
             Authentication authentication = authenticationFactory.getAuthentication(repository);
 
-            log.debug("parse gihchangeset [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, id });
+            log.debug("parse gihchangeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, id});
             String responseString = requestHelper.get(authentication, "/repos/" + CustomStringUtils.encode(owner) + "/" +
                     CustomStringUtils.encode(slug) + "/commits/" + CustomStringUtils.encode(id), null,
                     apiUrl);
@@ -100,7 +100,7 @@ public class GithubCommunicator implements Communicator
         String slug = uri.getSlug();
         Authentication authentication = authenticationFactory.getAuthentication(repository);
 
-        log.debug("parse github changesets [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, String.valueOf(pageNumber) });
+        log.debug("parse github changesets [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, String.valueOf(pageNumber)});
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("page", String.valueOf(pageNumber));
@@ -111,7 +111,7 @@ public class GithubCommunicator implements Communicator
         {
             ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(authentication, "/commits/list/" + CustomStringUtils.encode(owner) + "/" +
                     CustomStringUtils.encode(slug) + "/" + branch, params, uri.getApiUrl());
-            
+
             if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
                 throw new SourceControlException("Incorrect credentials");
@@ -121,7 +121,7 @@ public class GithubCommunicator implements Communicator
                 log.debug("Page: {} not contains changesets. Return empty list", pageNumber);
                 return Collections.emptyList();
             }
-            
+
             String responseString = extendedResponse.getResponseString();
             JSONArray list = new JSONObject(responseString).getJSONArray("commits");
             for (int i = 0; i < list.length(); i++)
@@ -130,7 +130,7 @@ public class GithubCommunicator implements Communicator
                 String id = commitJson.getString("id");
                 String msg = commitJson.getString("message");
 
-                changesets.add(new MinimalInfoChangeset(repository.getId(), id, msg));
+                changesets.add(new DefaultChangeset(repository.getId(), id, msg));
             }
         } catch (ResponseException e)
         {
@@ -161,10 +161,10 @@ public class GithubCommunicator implements Communicator
             requestHelper.post(auth, urlPath, postDataJson.toString(), apiUrl);
         } catch (JSONException e)
         {
-            throw new SourceControlException("Could not create relevant POST data for postcommit hook.",e);
+            throw new SourceControlException("Could not create relevant POST data for postcommit hook.", e);
         } catch (ResponseException e)
         {
-            throw new SourceControlException("Could not add postcommit hook. ",e);
+            throw new SourceControlException("Could not add postcommit hook. ", e);
         }
     }
 
@@ -257,7 +257,7 @@ public class GithubCommunicator implements Communicator
 
     @Override
     public void validateRepositoryAccess(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
-        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+                                         String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
         Authentication auth;
         if (StringUtils.isNotBlank(accessToken))
