@@ -190,7 +190,6 @@ public class GlobalRepositoryManager implements RepositoryManager
     @Override
     public UrlInfo getUrlInfo(String repositoryUrl)
     {
-        // TODO - multithread this for better user experience
         for (RepositoryManager repositoryManager : repositoryManagers)
         {
             UrlInfo urlInfo = repositoryManager.getUrlInfo(repositoryUrl);
