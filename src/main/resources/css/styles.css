@@ -140,7 +140,7 @@
 }
 .CommiterBody {
     float: left;
-    left: 10px;
+    /*left: 10px;*/
     margin: 0;
     width: 100%;
 }
@@ -160,38 +160,41 @@
 .CommitingDate {
     color: #AEAEAE;
     float: left;
-    margin-bottom: 10px;
+    margin-top: 2px;
+    font-size: 12px;
 }
 .CommitPanel {
-    background-color: #EFEFEF;
+    background-color: #f7f7f7;
     border: 1px solid #DDDDDD;
     border-radius: 3px 3px 3px 3px;
     float: left;
     padding: 0;
     width: 100%;
+    padding: 8px 6px 6px 6px;
+    -moz-box-shadow: 1px 1px 1px 1px white inset;
+    -webkit-box-shadow: 1px 1px 1px 1px white inset;
+    box-shadow: 1px 1px 1px 1px white inset;
 }
 .CommitHeader {
     float: left;
-    margin-bottom: 5px;
-    min-height: 39px;
+    min-height: 41px;
     position: relative;
     width: 100%;
 }
 .CommitBody {
-    background-color: white;
+    background-color: #fefefe;
     border: 1px solid #DDDDDD;
     float: left;
-    margin: 0 0 7px;
     padding: 0 0 8px 0;
     position: relative;
     width: 100%;
     border-radius: 3px 3px 3px 3px;
+    -moz-box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
+    -webkit-box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
+    box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
 }
 .CommitBodyPadding {
     padding: 5px 10px 10px;
-}
-.CommitBodyPaddingSide {
-    padding: 0 7px 0 5px;
 }
 .CommitBodyUp {
     float: left;
@@ -207,8 +210,7 @@
 }
 .CommitCount {
     float: left;
-    left: 0;
-    position: absolute;
+    position: relative;
     width: 80px;
 }
 .CommitCountPlus {
@@ -238,19 +240,19 @@
 .CommitHrefDATA {
     color: #326CA6;
     float: left;
-    margin-left: 88px;
+    margin-left: 10px;
     min-width: 184px;
 }
 .Text {
     color: #747474;
     margin-right: 165px;
-    padding-left: 8px;
     padding-top: 8px;
+    font-size: 13px;
 }
 .CommitButton {
     background-color: #EEEEEE;
     background-image: url("../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/newwindow.png");
-    background-position: 128px 6px;
+    background-position: 134px 8px;
     background-repeat: no-repeat;
     border: 2px solid #DDDDDD;
     border-radius: 3px 3px 3px 3px;
@@ -259,8 +261,6 @@
     font-weight: bold;
     height: 30px;
     line-height: 31px;
-    margin-right: 7px;
-    margin-top: 5px;
     padding-left: 14px;
     position: absolute;
     right: 0;
@@ -326,14 +326,13 @@
 }
 .CommiterInfoRow {
     background-image: url("../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bubblecorner.png");
-    background-position: 0 9px;
     background-repeat: no-repeat;
-    border-bottom: 1px solid #EFEFEF;
-    height: 16px;
+    border-bottom: 1px solid #f7f7f7;
+    height: 9px;
     margin-left: 12px;
-    margin-top: 15px;
+    margin-top: 22px;
     position: absolute;
-    width: 12px;
+    width: 17px;
 }
 .message-container {
     border-bottom: 1px solid #EEEEEE;

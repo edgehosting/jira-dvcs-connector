@@ -10,79 +10,83 @@
         <div class="CommiterBody">
             <!-- name and date -->
             <div class="CommiterInfoPanel">
-                <a href="$user_url" target="_new"><div class="CommitUser">$user_name</div></a>
+                <a href="$user_url" target="_new">
+                    <div class="CommitUser">$user_name</div>
+                </a>
+
                 <div class="CommitingDate">$velocity_utils.getRelativePastDate($changeset.getTimestamp())</div>
             </div>
             <div class="CommiterInfoRow"></div>
             <!--  -->
             <div class="CommitPanel">
                 <div class="CommitHeader">
-                        <a href='$commit_url' target='_new'><div class="CommitButton">View full commit</div></a>
-                        <div class="Text">$issue_linker.createLinks($commit_message)</div>
+                    <a href='$commit_url' target='_new'>
+                        <div class="CommitButton">View full commit</div>
+                    </a>
+
+                    <div class="Text">$issue_linker.createLinks($commit_message)</div>
                 </div>
-    
-                <div class="CommitBodyPaddingSide">
-                    <div class="CommitBody">
-                        <div class="CommitBodyPadding">
-                            <!-- body head -->
-                            <div class="CommitBodyUp">
-                                #if ($changeset.getBranch()!="null")
+
+                <div class="CommitBody">
+                    <div class="CommitBodyPadding">
+                        <!-- body head -->
+                        <div class="CommitBodyUp">
+                            #if ($changeset.getBranch()!="null")
                                 <div class="CommitBodyUpTitle">$changeset.getBranch()</div>
-                                #end
-                            </div>
-                            <!-- data for while -->
-                            #foreach ( $file in $changeset.getFiles() )
+                            #end
+                        </div>
+                        <!-- data for while -->
+                        #foreach ( $file in $changeset.getFiles() )
                             #set ( $file_name = $file.getFile() )
                             #set ( $color = $file.getFileAction().getColor() )
                             #set ( $file_action_name = $file.getFileAction().toString() )
                             #set ( $file_commit_url = $repository.getRepositoryUri().getFileCommitUrl($changeset.getNode(),
-                                                $velocity_utils.encodeUriPath($file.getFile())) )
-                            
+                                $velocity_utils.encodeUriPath($file.getFile())) )
+
                             #set ( $action = $file.getFileAction().getAction() )
                             #if ( $action == 'modified' )
-                            <div class="CommitRows">
-                                <div class="CommitCount">
-                                    <div class="CommitCountPlus">
-                                        #set ( $additions = $file.getAdditions() )
-                                        #if ( $additions == 0 )-#else +$additions #end
+                                <div class="CommitRows">
+                                    <div class="CommitCount">
+                                        <div class="CommitCountPlus">
+                                            #set ( $additions = $file.getAdditions() )
+                                            #if ( $additions == 0 )-#else +$additions #end
+                                        </div>
+                                        <div class="CommitCountminus">
+                                            #set ( $deletions = $file.getDeletions() )
+                                            #if ( $deletions == 0 )-#else -$deletions #end
+                                        </div>
                                     </div>
-                                    <div class="CommitCountminus">
-                                        #set ( $deletions = $file.getDeletions() )
-                                        #if ( $deletions == 0 )-#else -$deletions #end
-                                    </div>
+                                    <a href="${file_commit_url}" target="_new">
+                                        <div class="CommitHrefDATA">${file_name}</div>
+                                    </a>
                                 </div>
-                                <a href="${file_commit_url}" target="_new">
-                                    <div class="CommitHrefDATA">${file_name}</div>
-                                </a>
-                            </div>
                             #elseif ( $action == 'added' )
-                            <div class="CommitRows">
-                                <div class="CommitCount">
-                                    <div class="CommitCountAdded">Added</div>
+                                <div class="CommitRows">
+                                    <div class="CommitCount">
+                                        <div class="CommitCountAdded">Added</div>
+                                    </div>
+                                    <a href="${file_commit_url}" target="_new">
+                                        <div class="CommitHrefDATA">${file_name}</div>
+                                    </a>
                                 </div>
-                                <a href="${file_commit_url}" target="_new">
-                                    <div class="CommitHrefDATA">${file_name}</div>
-                                </a>
-                            </div>
                             #elseif ( $action == 'removed' )
-                            <div class="CommitRows">
-                                <div class="CommitCount">
-                                    <div class="CommitCountRemoved">Deleted</div>
+                                <div class="CommitRows">
+                                    <div class="CommitCount">
+                                        <div class="CommitCountRemoved">Deleted</div>
+                                    </div>
+                                    <a href="${file_commit_url}" target="_new">
+                                        <div class="CommitHrefDATA">${file_name}</div>
+                                    </a>
                                 </div>
-                                <a href="${file_commit_url}" target="_new">
-                                    <div class="CommitHrefDATA">${file_name}</div>
-                                </a>
-                            </div>
                             #end
                             <!--  -->
-                            #end
-                            #if ( $changeset.getAllFileCount() gt 5 )
+                        #end
+                        #if ( $changeset.getAllFileCount() gt 5 )
                             #set ( $rest = $changeset.getAllFileCount() - 5 )
                             <a href="$commit_url" target="_new">
                                 <div class="CommitRows">... $rest more files not shown</div>
                             </a>
-                            #end
-                        </div>
+                        #end
                     </div>
                 </div>
             </div>
