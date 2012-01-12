@@ -18,6 +18,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.java.ao.Query;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -250,19 +251,10 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     {
         StringBuilder sb = new StringBuilder();
         Set<Integer> ids = getProjectMappingsForRepositoryType(repositoryType);
-        if (ids != null && !ids.isEmpty())
+        if (CollectionUtils.isNotEmpty(ids))
         {
             sb.append(" AND REPOSITORY_ID in (");
-            boolean first = true;
-            for (Integer id : ids)
-            {
-                if (!first)
-                {
-                    sb.append(",");
-                }
-                sb.append(id);
-                first = false;
-            }
+            sb.append(StringUtils.join(ids, ","));
             sb.append(")");
         } else
         {
