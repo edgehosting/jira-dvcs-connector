@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-bitbucket-connector-plugin</artifactId>
-    <version>0.21-SNAPSHOT</version>
+    <version>0.21</version>
 
     <organization>
         <name>Atlassian</name>
