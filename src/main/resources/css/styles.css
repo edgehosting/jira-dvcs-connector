@@ -160,6 +160,7 @@
     margin-right: 10px;
     padding-left: 5px;
     text-align: left;
+    height: 19px;
 }
 .CommitingDate {
     color: #AEAEAE;
@@ -174,7 +175,7 @@
     float: left;
     padding: 0;
     width: 100%;
-    padding: 8px 6px 6px 6px;
+    padding: 7px 5px 5px 5px;
     -moz-box-shadow: 1px 1px 1px 1px white inset;
     -webkit-box-shadow: 1px 1px 1px 1px white inset;
     box-shadow: 1px 1px 1px 1px white inset;
@@ -191,7 +192,6 @@
     float: left;
     padding: 0 0 8px 0;
     position: relative;
-    width: 100%;
     border-radius: 3px 3px 3px 3px;
     -moz-box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
     -webkit-box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
@@ -207,15 +207,17 @@
 }
 .CommitRows {
     float: left;
-    margin-top: 6px;
     position: relative;
     width: 100%;
     overflow-x: hidden;
+    margin-top: 6px;
+    padding-bottom: 1px;
 }
 .CommitCount {
     float: left;
-    position: relative;
+    position: absolute;
     width: 80px;
+    margin-top: 1px;
 }
 .CommitCountPlus {
     background-color: #CCFFCC;
@@ -244,19 +246,20 @@
 .CommitHrefDATA {
     color: #326CA6;
     float: left;
-    margin-left: 10px;
+    margin-left: 85px;
     min-width: 184px;
+    word-wrap: break-word;
 }
 .Text {
     color: #747474;
     margin-right: 165px;
-    padding-top: 8px;
+    padding: 8px 0 5px 2px;
     font-size: 13px;
 }
 .CommitButton {
     background-color: #EEEEEE;
     background-image: url("../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/newwindow.png");
-    background-position: 134px 8px;
+    background-position: 130px 8px;
     background-repeat: no-repeat;
     border: 2px solid #DDDDDD;
     border-radius: 3px 3px 3px 3px;
@@ -265,7 +268,7 @@
     font-weight: bold;
     height: 30px;
     line-height: 31px;
-    padding-left: 14px;
+    padding-left: 16px;
     position: absolute;
     right: 0;
     text-align: left;
