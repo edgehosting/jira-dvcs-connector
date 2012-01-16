@@ -171,7 +171,7 @@
     float: left;
     padding: 0;
     width: 100%;
-    padding: 7px 5px 5px 5px;
+    padding: 7px 7px 5px 5px;
     -moz-box-shadow: 1px 1px 1px 1px white inset;
     -webkit-box-shadow: 1px 1px 1px 1px white inset;
     box-shadow: 1px 1px 1px 1px white inset;
@@ -192,6 +192,7 @@
     -moz-box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
     -webkit-box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
     box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
+    width: 100%;
 }
 .CommitBodyPadding {
     padding: 5px 10px 10px;
@@ -243,7 +244,6 @@
     color: #326CA6;
     float: left;
     margin-left: 85px;
-    min-width: 184px;
     word-wrap: break-word;
 }
 .Text {
