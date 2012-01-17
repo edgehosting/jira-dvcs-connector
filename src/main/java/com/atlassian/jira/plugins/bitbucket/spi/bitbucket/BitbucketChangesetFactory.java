@@ -1,5 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
+
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
@@ -8,12 +15,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 /**
  * Factory for {@link Changeset} implementations
  */
@@ -21,6 +22,10 @@ public class BitbucketChangesetFactory
 {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    static
+    {
+        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("utc"));
+    }
 
     /**
      * Parse the json object as a bitbucket changeset
