@@ -87,7 +87,8 @@
 
 .form {
     margin:20px;
-    background-color: #B9E6F0;
+    background: #F0F0F0;
+    border: 1px solid #BBB;
     padding: 20px;
     
     -moz-border-radius: 6px;
@@ -348,4 +349,12 @@
     padding-bottom: 1.5em;
     width: 100%;
     border: none !important;
+}
+
+.customClose {
+    cursor: pointer;
+    left: auto !important;
+    position: absolute;
+    right: 6px !important;
+    top: 6px !important;
 }

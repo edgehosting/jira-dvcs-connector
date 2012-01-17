@@ -139,6 +139,26 @@
                         <http.jira.port>2990</http.jira.port>
                         <context.jira.path>jira</context.jira.path>
                     </systemPropertyVariables>
+
+                    <libArtifacts>
+                                                   <libArtifact>
+                                                       <groupId>com.atlassian.activeobjects</groupId>
+                                                       <artifactId>activeobjects-spi</artifactId>
+                                                       <version>${ao.version}</version>
+                                                   </libArtifact>
+                                               </libArtifacts>
+                    <bundledArtifacts><bundledArtifact>
+                                                       <groupId>com.atlassian.activeobjects</groupId>
+                                                       <artifactId>activeobjects-jira-spi</artifactId>
+                                                       <version>${ao.version}</version>
+                                                   </bundledArtifact>
+                                                   <bundledArtifact>
+                                                           <groupId>com.atlassian.activeobjects</groupId>
+                                                           <artifactId>activeobjects-plugin</artifactId>
+                                                           <version>${ao.version}</version>
+                                                       </bundledArtifact>
+                                               </bundledArtifacts>
+
                     <productVersion>${jira.version}</productVersion>
                     <testResourcesVersion>${jira.data.version}</testResourcesVersion>
                     <productDataPath>${basedir}/src/test/resources/generated-test-resources.zip</productDataPath>
