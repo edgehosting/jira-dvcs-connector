@@ -6,14 +6,14 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 /**
  * Details on a changeset found in Bitbucket.
- * TODO rename? this class is used for GitHub changsets too
  */
-public class DefaultBitbucketChangeset implements Changeset
+public class DefaultChangeset implements Changeset
 {
     private final String node;
     private final String rawAuthor;
@@ -28,10 +28,15 @@ public class DefaultBitbucketChangeset implements Changeset
 
     private final int repositoryId;
 
-    public DefaultBitbucketChangeset(int repositoryId,
-                                     String node, String rawAuthor, String author, Date timestamp,
-                                     String rawNode, String branch, String message,
-                                     List<String> parents, List<ChangesetFile> files, int allFileCount) 
+    public DefaultChangeset(int repositoryId, String node, String message)
+    {
+        this(repositoryId, node, "", "", new Date(), "", "", message, Collections.<String>emptyList(), Collections.<ChangesetFile>emptyList(), 0);
+    }
+
+    public DefaultChangeset(int repositoryId,
+                            String node, String rawAuthor, String author, Date timestamp,
+                            String rawNode, String branch, String message,
+                            List<String> parents, List<ChangesetFile> files, int allFileCount)
     {
         this.repositoryId = repositoryId;
         this.node = node;
@@ -112,7 +117,7 @@ public class DefaultBitbucketChangeset implements Changeset
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        DefaultBitbucketChangeset that = (DefaultBitbucketChangeset) o;
+        DefaultChangeset that = (DefaultChangeset) o;
 
         return new EqualsBuilder()
                 .append(author, that.author)

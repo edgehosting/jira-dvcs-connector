@@ -7,10 +7,12 @@ import static org.mockito.Mockito.*;
 import java.util.List;
 import java.util.Map;
 
+import net.java.ao.Query;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -49,6 +51,9 @@ public class TestDefaultBitbucketMapper
     Changeset changeset;
     @Mock
     Encryptor encryptor;
+
+    @Mock
+    Query query;
 
     @Before 
     public void setup()
@@ -172,8 +177,9 @@ public class TestDefaultBitbucketMapper
     @Test
     public void testGetChangesets()
     {
-        when(activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", "JST-1"))
-            .thenReturn(new IssueMapping[] { issueMapping });
+
+        when(activeObjects.find(eq(IssueMapping.class), Matchers.<Query>anyObject()))
+                .thenReturn(new IssueMapping[]{issueMapping});
         when(activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", "bitbucket"))
             .thenReturn(new ProjectMapping[] { projectMapping });
         when(issueMapping.getNode()).thenReturn("1");
@@ -198,8 +204,8 @@ public class TestDefaultBitbucketMapper
     @Test
     public void testGetChangesetsOnAuthenticatedRepository()
     {
-        when(activeObjects.find(IssueMapping.class, "ISSUE_ID = ?", "JST-1"))
-            .thenReturn(new IssueMapping[] { issueMapping });
+        when(activeObjects.find(eq(IssueMapping.class), Matchers.<Query>anyObject()))
+                .thenReturn(new IssueMapping[]{issueMapping});
         when(activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", "bitbucket"))
             .thenReturn(new ProjectMapping[] { projectMapping });
         when(projectMapping.getUsername()).thenReturn("user");

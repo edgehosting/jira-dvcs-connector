@@ -1,23 +1,30 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
+import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubConfigureRepositoriesPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubLoginPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubRegisterOAuthAppPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubRegisteredOAuthAppsPage;
+import com.atlassian.pageobjects.elements.PageElement;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubConfigureRepositoriesPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubLoginPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubRegisterOAuthAppPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubRegisteredOAuthAppsPage;
+import java.util.List;
+
+import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 
 /**
  * Test to verify behaviour when syncing  github repository.
@@ -57,7 +64,7 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
 
         jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
 
-        
+
         GithubOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(GithubOAuthConfigPage.class);
         oauthConfigPage.setCredentials(clientID, clientSecret);
 
@@ -184,5 +191,29 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
 
         httpClient.executeMethod(method);
         return method.getResponseBodyAsString();
+    }
+
+    @Test
+    public void testCommitStatistics()
+    {
+        configureRepos.deleteAllRepositories();
+        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
+
+        // QA-2
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");
+        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        BitBucketCommitEntry commitMessage = commitMessages.get(0);
+        List<PageElement> statistics = commitMessage.getStatistics();
+        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
+        Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+1");
+        Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
+
+        // QA-4
+        commitMessages = getCommitsForIssue("QA-4");
+        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        commitMessage = commitMessages.get(0);
+        statistics = commitMessage.getStatistics();
+        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
+        Assert.assertTrue("Expected commit resource Added: 1", commitMessage.isAdded(statistics.get(0)));
     }
 }
