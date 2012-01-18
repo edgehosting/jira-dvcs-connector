@@ -60,7 +60,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     }
 
     @Override
-    public ProjectMapping addRepository(String repositoryType, String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String accessToken)
+    public ProjectMapping addRepository(String repositoryName, String repositoryType, String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String accessToken)
     {
 
         final ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_URL = ? and PROJECT_KEY = ?", repositoryUrl, projectKey);
@@ -69,6 +69,8 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             throw new SourceControlException("Repository [" + repositoryUrl + "] is already linked to project [" + projectKey + "]");
         }
         final Map<String, Object> map = new HashMap<String, Object>();
+        // TODO make constants in ProjectMappings.java
+        map.put("REPOSITORY_NAME", repositoryName);
         map.put("REPOSITORY_URL", repositoryUrl);
         map.put("PROJECT_KEY", projectKey);
         map.put("REPOSITORY_TYPE", repositoryType);

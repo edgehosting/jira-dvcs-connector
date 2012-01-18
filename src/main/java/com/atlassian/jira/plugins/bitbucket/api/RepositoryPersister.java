@@ -32,7 +32,7 @@ public interface RepositoryPersister {
 
     /**
      * Map a repository to the specified jira project
-     *
+     * @param repositoryName the name of the repository
      * @param projectKey     the jira project
      * @param repositoryUrl  the uri of the repository to map to
      * @param username       the username to use to connect to this bitbucket repository
@@ -41,9 +41,10 @@ public interface RepositoryPersister {
      * @param adminPassword  the password of repository admin - used to create/delete postcommit hook
      * @param repositoryType which type of repository is it (bitbucket, github, ... )
      * @param accessToken accessToken for github OAuth
+     *
      * @return
      */
-    ProjectMapping addRepository(String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String repositoryType, String accessToken);
+    ProjectMapping addRepository(String repositoryName, String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String repositoryType, String accessToken);
 
     /**
      * Remove the mapping of the bibucket repository from the specified jira project

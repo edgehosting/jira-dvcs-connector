@@ -23,6 +23,11 @@ public interface SourceControlRepository
     RepositoryUri getRepositoryUri();
     
     /**
+     * @return the name of the repository (usually the same as last section of url)
+     */
+    String getRepositoryName();
+
+    /**
      * @return type of repository (bitbucket, github, ...)
      */
     String getRepositoryType();

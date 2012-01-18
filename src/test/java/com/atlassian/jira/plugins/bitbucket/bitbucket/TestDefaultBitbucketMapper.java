@@ -105,7 +105,7 @@ public class TestDefaultBitbucketMapper
     public void testAddAnonymousRepositoryCreatesValidMap()
     {
         new DefaultRepositoryPersister(activeObjects).
-                addRepository("bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), null, null, null, null, null);
+                addRepository("Pretty Name", "bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), null, null, null, null, null);
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
@@ -125,7 +125,7 @@ public class TestDefaultBitbucketMapper
     public void testAddAuthentictedRepositoryCreatesValidMap()
     {
         new DefaultRepositoryPersister(activeObjects).
-                addRepository("bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), "user", "pass", null, null, null);
+                addRepository("Pretty Name", "bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), "user", "pass", null, null, null);
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
