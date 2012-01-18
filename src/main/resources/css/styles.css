@@ -215,6 +215,7 @@
     position: absolute;
     width: 80px;
     margin-top: 1px;
+    line-height: 1.2;
 }
 .CommitCountPlus {
     background-color: #CCFFCC;
@@ -269,6 +270,7 @@
     right: 0;
     text-align: left;
     width: 140px;
+    font-size: 13px;
 }
 .CommitButton:hover {
     background-color: #E3E3E3;
