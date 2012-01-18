@@ -176,9 +176,9 @@
     padding: 0;
     width: 100%;
     padding: 7px 7px 5px 5px;
-    -moz-box-shadow: 1px 1px 1px 1px white inset;
-    -webkit-box-shadow: 1px 1px 1px 1px white inset;
-    box-shadow: 1px 1px 1px 1px white inset;
+    -moz-box-shadow: 0px 1px 0px white inset;
+    -webkit-box-shadow: 0px 1px 0px white inset;
+    box-shadow: 0px 1px 0px white inset;
 }
 .CommitHeader {
     float: left;
@@ -193,9 +193,9 @@
     padding: 0 0 8px 0;
     position: relative;
     border-radius: 3px 3px 3px 3px;
-    -moz-box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
-    -webkit-box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
-    box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
+    -moz-box-shadow: 0px 1px 0px white, 0px 1px 0px #F1F1F1 inset;
+    -webkit-box-shadow: 0px 1px 0px white, 0px 1px 0px #F1F1F1 inset;
+    box-shadow: 0px 1px 0px white, 0px 1px 0px #F1F1F1 inset;
     width: 100%;
 }
 .CommitBodyPadding {
