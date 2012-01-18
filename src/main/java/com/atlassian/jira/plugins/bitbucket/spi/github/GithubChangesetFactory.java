@@ -4,7 +4,7 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
-import com.atlassian.jira.plugins.bitbucket.spi.DefaultBitbucketChangeset;
+import com.atlassian.jira.plugins.bitbucket.spi.DefaultChangeset;
 import com.atlassian.jira.plugins.bitbucket.spi.DefaultBitbucketChangesetFile;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
@@ -54,7 +54,7 @@ public class GithubChangesetFactory
 
             List<ChangesetFile> changesetFiles = fileList(json.getJSONArray("files"), false);
 
-            return new DefaultBitbucketChangeset(
+            return new DefaultChangeset(
                     repositoryId,
                     json.getString("sha"),
                     name,

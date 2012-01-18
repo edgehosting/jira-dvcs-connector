@@ -12,7 +12,8 @@ import java.util.List;
 /**
  * Details on a changeset found in Bitbucket.
  */
-public class DefaultBitbucketChangeset implements Changeset {
+public class DefaultChangeset implements Changeset
+{
     private final String node;
     private final String rawAuthor;
     private final String author;
@@ -26,10 +27,11 @@ public class DefaultBitbucketChangeset implements Changeset {
 
     private final int repositoryId;
 
-    public DefaultBitbucketChangeset(int repositoryId,
-                                     String node, String rawAuthor, String author, Date timestamp,
-                                     String rawNode, String branch, String message,
-                                     List<String> parents, List<ChangesetFile> files, int allFileCount) {
+    public DefaultChangeset(int repositoryId,
+                         String node, String rawAuthor, String author, Date timestamp,
+                         String rawNode, String branch, String message,
+                         List<String> parents, List<ChangesetFile> files, int allFileCount) 
+    {
         this.repositoryId = repositoryId;
         this.node = node;
         this.rawAuthor = rawAuthor;
@@ -43,43 +45,53 @@ public class DefaultBitbucketChangeset implements Changeset {
         this.allFileCount = allFileCount;
     }
 
-    public int getRepositoryId() {
+    public int getRepositoryId()
+    {
         return repositoryId;
     }
 
-    public String getNode() {
+    public String getNode()
+    {
         return node;
     }
 
-    public String getRawAuthor() {
+    public String getRawAuthor()
+    {
         return rawAuthor;
     }
 
-    public String getAuthor() {
+    public String getAuthor()
+    {
         return author;
     }
 
-    public Date getTimestamp() {
+    public Date getTimestamp()
+    {
         return timestamp;
     }
 
-    public String getRawNode() {
+    public String getRawNode()
+    {
         return rawNode;
     }
 
-    public String getBranch() {
+    public String getBranch()
+    {
         return branch;
     }
 
-    public String getMessage() {
+    public String getMessage()
+    {
         return message;
     }
 
-    public List<String> getParents() {
+    public List<String> getParents()
+    {
         return parents;
     }
 
-    public List<ChangesetFile> getFiles() {
+    public List<ChangesetFile> getFiles()
+    {
         return files;
     }
 
@@ -88,16 +100,18 @@ public class DefaultBitbucketChangeset implements Changeset {
         return allFileCount;
     }
 
-    public String getCommitURL(SourceControlRepository repository) {
+    public String getCommitURL(SourceControlRepository repository)
+    {
         return repository.getRepositoryUri().getCommitUrl(node);
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o)
+    {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        DefaultBitbucketChangeset that = (DefaultBitbucketChangeset) o;
+        DefaultChangeset that = (DefaultChangeset) o;
 
         return new EqualsBuilder()
                 .append(author, that.author)
@@ -115,7 +129,8 @@ public class DefaultBitbucketChangeset implements Changeset {
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return new HashCodeBuilder()
                 .append(author)
                 .append(branch)
