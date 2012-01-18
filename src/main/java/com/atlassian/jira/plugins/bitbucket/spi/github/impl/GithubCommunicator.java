@@ -256,9 +256,10 @@ public class GithubCommunicator implements Communicator
     }
 
     @Override
-    public void validateRepositoryAccess(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
-                                         String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
+        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
+
         Authentication auth;
         if (StringUtils.isNotBlank(accessToken))
         {
@@ -270,13 +271,22 @@ public class GithubCommunicator implements Communicator
 
         try
         {
-            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl());
-            // in case we have valid access_token but for other account github returns HttpStatus.SC_NOT_FOUND response
+            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null,
+                repositoryUri.getApiUrl());
+            // in case we have valid access_token but for other account github
+            // returns HttpStatus.SC_NOT_FOUND response
             if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
                 throw new SourceControlException.UnauthorisedException("You don't have access to the repository.");
             }
+            String responseString = extendedResponse.getResponseString();
+            return new JSONObject(responseString).getJSONObject("repository").getString("name");
+
         } catch (ResponseException e)
+        {
+            log.debug(e.getMessage(), e);
+            throw new SourceControlException(e.getMessage());
+        } catch (JSONException e)
         {
             log.debug(e.getMessage(), e);
             throw new SourceControlException(e.getMessage());

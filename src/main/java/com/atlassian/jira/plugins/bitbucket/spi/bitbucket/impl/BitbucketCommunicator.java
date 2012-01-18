@@ -223,7 +223,7 @@ public class BitbucketCommunicator implements Communicator
     }
 
     @Override
-    public void validateRepositoryAccess(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username, String password,
+    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username, String password,
                                          String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
 
@@ -240,13 +240,20 @@ public class BitbucketCommunicator implements Communicator
         {
             ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl());
             if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+            {
                 throw new UnauthorisedException("Invalid credentials");
+            }
+            String responseString = extendedResponse.getResponseString();
+            return new JSONObject(responseString).getString("name");
         } catch (ResponseException e)
+        {
+            logger.debug(e.getMessage(), e);
+            throw new SourceControlException(e.getMessage());
+        } catch (JSONException e)
         {
             logger.debug(e.getMessage(), e);
             throw new SourceControlException(e.getMessage());
         }
     }
-
 
 }

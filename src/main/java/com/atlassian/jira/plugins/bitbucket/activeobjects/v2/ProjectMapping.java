@@ -6,6 +6,7 @@ import net.java.ao.schema.Table;
 @Table("ProjectMappingV2")
 public interface ProjectMapping extends Entity
 {
+    String getRepositoryName();
     String getRepositoryType();
     String getRepositoryUrl();
     String getProjectKey();
@@ -15,6 +16,7 @@ public interface ProjectMapping extends Entity
     String getAdminUsername();
     String getAccessToken();
 
+    void setRepositoryName(String repositoryName);
     void setRepositoryType(String repositoryType);
     void setRepositoryUrl(String repositoryUrl);
     void setProjectKey(String projectKey);
