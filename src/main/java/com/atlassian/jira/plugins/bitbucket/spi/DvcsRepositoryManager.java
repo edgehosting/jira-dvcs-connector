@@ -1,6 +1,21 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import com.atlassian.jira.datetime.DateTimeFormatterFactory;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -15,26 +30,11 @@ import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 import com.atlassian.jira.plugins.bitbucket.velocity.VelocityUtils;
-import com.atlassian.jira.util.InjectableComponent;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
@@ -48,6 +48,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     private final ApplicationProperties applicationProperties;
     private final IssueLinker issueLinker;
     private final TemplateRenderer templateRenderer;
+    private final Function<IssueMapping, Changeset> toChangesetTransformer;
+    private final IssueManager issueManager;
 
     /* Maps ProjectMapping to SourceControlRepository */
     private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping, SourceControlRepository>()
@@ -64,10 +66,10 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         }
     };
 
-    private final Function<IssueMapping, Changeset> toChangesetTransformer;
 
     public DvcsRepositoryManager(Communicator communicator, RepositoryPersister repositoryPersister, Encryptor encryptor,
-                                 ApplicationProperties applicationProperties, IssueLinker issueLinker, TemplateRenderer templateRenderer)
+                                 ApplicationProperties applicationProperties, IssueLinker issueLinker, TemplateRenderer templateRenderer,
+                                 IssueManager issueManager)
     {
         this.communicator = communicator;
         this.repositoryPersister = repositoryPersister;
@@ -75,6 +77,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         this.applicationProperties = applicationProperties;
         this.issueLinker = issueLinker;
         this.templateRenderer = templateRenderer;
+        this.issueManager = issueManager;
 
         toChangesetTransformer = new ToChangesetTransformer(this);
     }
@@ -202,7 +205,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     @Override
     public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
     {
-        return new DefaultSynchronisationOperation(key, this, getCommunicator(), progressProvider);
+        return new DefaultSynchronisationOperation(key, this, getCommunicator(), progressProvider, issueManager);
     }
 
     protected boolean hasValidFormat(String url)

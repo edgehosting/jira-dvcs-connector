@@ -82,7 +82,7 @@ public class TestBitbucketPostCommit
         final String node = "f2851c9f1db8";
         final DefaultSourceControlRepository repo = new DefaultSourceControlRepository(0, "Pretty Name", "bitbucket", repositoryUri, projectKey, null, null, null, null, null);
 
-        BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, communicator, null, null, null, null);
+        BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, communicator, null, null, null, null, null);
 
         when(communicator.getChangeset(eq(repo), anyString())).thenAnswer(new Answer<Object>()
         {
