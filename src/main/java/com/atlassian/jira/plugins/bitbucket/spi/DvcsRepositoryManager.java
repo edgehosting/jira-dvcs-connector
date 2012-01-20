@@ -1,16 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
-import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 import com.atlassian.jira.plugins.bitbucket.velocity.VelocityUtils;
@@ -43,6 +37,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     private final ApplicationProperties applicationProperties;
     private final IssueLinker issueLinker;
     private final TemplateRenderer templateRenderer;
+    private final Function<IssueMapping, Changeset> toChangesetTransformer;
+    private final IssueManager issueManager;
 
     /* Maps ProjectMapping to SourceControlRepository */
     private final Function<ProjectMapping, SourceControlRepository> TO_SOURCE_CONTROL_REPOSITORY = new Function<ProjectMapping, SourceControlRepository>()
@@ -53,16 +49,16 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
             String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(),
                     pm.getRepositoryUrl());
-            return new DefaultSourceControlRepository(pm.getID(), pm.getRepositoryType(), getRepositoryUri(pm.getRepositoryUrl()),
+            return new DefaultSourceControlRepository(pm.getID(), pm.getRepositoryName(),  pm.getRepositoryType(), getRepositoryUri(pm.getRepositoryUrl()),
                     pm.getProjectKey(), pm.getUsername(), decryptedPassword,
                     pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken());
         }
     };
 
-    private final Function<IssueMapping, Changeset> toChangesetTransformer;
 
     public DvcsRepositoryManager(Communicator communicator, RepositoryPersister repositoryPersister, Encryptor encryptor,
-                                 ApplicationProperties applicationProperties, IssueLinker issueLinker, TemplateRenderer templateRenderer)
+                                 ApplicationProperties applicationProperties, IssueLinker issueLinker, TemplateRenderer templateRenderer,
+                                 IssueManager issueManager)
     {
         this.communicator = communicator;
         this.repositoryPersister = repositoryPersister;
@@ -70,15 +66,16 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         this.applicationProperties = applicationProperties;
         this.issueLinker = issueLinker;
         this.templateRenderer = templateRenderer;
+        this.issueManager = issueManager;
 
         toChangesetTransformer = new ToChangesetTransformer(this);
     }
 
-    public void validateRepositoryAccess(String repositoryType, String projectKey, String repositoryUrl, String username,
+    public String getRepositoryName(String repositoryType, String projectKey, String repositoryUrl, String username,
                                          String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
         RepositoryUri repositoryUri = getRepositoryUri(repositoryUrl);
-        getCommunicator().validateRepositoryAccess(repositoryType, projectKey, repositoryUri, username, password, adminUsername, adminPassword, accessToken);
+        return getCommunicator().getRepositoryName(repositoryType, projectKey, repositoryUri, username, password, adminUsername, adminPassword, accessToken);
     }
 
     @Override
@@ -96,12 +93,12 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         {
             repositoryUrl = repositoryUrl.replaceFirst("http:", "https:");
         }
-        validateRepositoryAccess(repositoryType, projectKey, repositoryUrl, username, password, adminUsername, adminPassword, accessToken);
+        String repositoryName = getRepositoryName(repositoryType, projectKey, repositoryUrl, username, password, adminUsername, adminPassword, accessToken);
 
         String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
         String encryptedAdminPassword = encryptor.encrypt(adminPassword, projectKey, repositoryUrl);
-        ProjectMapping pm = repositoryPersister.addRepository(repositoryType, projectKey, repositoryUrl, username,
-                encryptedPassword, adminUsername, encryptedAdminPassword, accessToken);
+        ProjectMapping pm = repositoryPersister.addRepository(repositoryName, repositoryType, projectKey, repositoryUrl,
+                username, encryptedPassword, adminUsername, encryptedAdminPassword, accessToken);
         return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
     }
 
@@ -187,7 +184,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     @Override
     public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
     {
-        return new DefaultSynchronisationOperation(key, this, getCommunicator(), progressProvider);
+        return new DefaultSynchronisationOperation(key, this, getCommunicator(), progressProvider, issueManager);
     }
 
     protected boolean hasValidFormat(String url)

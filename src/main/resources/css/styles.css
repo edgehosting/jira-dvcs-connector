@@ -189,13 +189,13 @@
     padding: 0;
     width: 100%;
     padding: 7px 7px 5px 5px;
-    -moz-box-shadow: 1px 1px 1px 1px white inset;
-    -webkit-box-shadow: 1px 1px 1px 1px white inset;
-    box-shadow: 1px 1px 1px 1px white inset;
+    -moz-box-shadow: 0px 1px 0px white inset;
+    -webkit-box-shadow: 0px 1px 0px white inset;
+    box-shadow: 0px 1px 0px white inset;
 }
 .CommitHeader {
     float: left;
-    min-height: 41px;
+    min-height: 37px;
     position: relative;
     width: 100%;
 }
@@ -206,9 +206,9 @@
     padding: 0 0 8px 0;
     position: relative;
     border-radius: 3px 3px 3px 3px;
-    -moz-box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
-    -webkit-box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
-    box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
+    -moz-box-shadow: 0px 1px 0px white, 0px 1px 0px #F1F1F1 inset;
+    -webkit-box-shadow: 0px 1px 0px white, 0px 1px 0px #F1F1F1 inset;
+    box-shadow: 0px 1px 0px white, 0px 1px 0px #F1F1F1 inset;
     width: 100%;
 }
 .CommitBodyPadding {
@@ -270,26 +270,32 @@
     font-size: 13px;
 }
 .CommitButton {
-    background-color: #EEEEEE;
-    background-image: url("../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/newwindow.png");
-    background-position: 130px 8px;
+    background: #f7f7f7; /* Old browsers */
+    background-image: url('../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/newwindow.png'), -moz-linear-gradient(top, #f7f7f7 1%, #eeeeee 100%); /* FF3.6+ */
+    background-image: url('../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/newwindow.png'), -webkit-gradient(linear, left top, left bottom, color-stop(1%, #f7f7f7), color-stop(100%, #eeeeee)); /* Chrome,Safari4+ */
+    background-image: url('../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/newwindow.png'), -webkit-linear-gradient(top, #f7f7f7 1%, #eeeeee 100%); /* Chrome10+,Safari5.1+ */
+    background-image: url('../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/newwindow.png'), -o-linear-gradient(top, #f7f7f7 1%, #eeeeee 100%); /* Opera 11.10+ */
+    background-image: url('../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/newwindow.png'), -ms-linear-gradient(top, #f7f7f7 1%, #eeeeee 100%); /* IE10+ */
+    background-image: url('../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/newwindow.png'), linear-gradient(top, #f7f7f7 1%, #eeeeee 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#f7f7f7', endColorstr = '#eeeeee', GradientType = 0); /* IE6-9 */
     background-repeat: no-repeat;
-    border: 2px solid #DDDDDD;
-    border-radius: 3px 3px 3px 3px;
-    color: #326CA6;
+    background-position: center right;
     float: right;
-    font-weight: bold;
-    height: 30px;
-    line-height: 31px;
-    padding-left: 16px;
-    position: absolute;
-    right: 0;
-    text-align: left;
-    width: 140px;
+    /*margin: 12px 0;*/
+    padding: 0 30px 0 10px;
+    display: block;
+    line-height: 28px;
+    height: 28px;
+    font-size: 14px;
+    border: solid 1px #dddddd;
+    border-radius: 4px;
+    -moz-box-shadow: 0px 1px rgba(255, 255, 255, 0.3), inset 0px 1px rgba(255, 255, 255, 0.3);
+    -webkit-box-shadow: 0px 1px rgba(255, 255, 255, 0.3), inset 0px 1px rgba(255, 255, 255, 0.3);
+    box-shadow: 0px 1px rgba(255, 255, 255, 0.3), inset 0px 1px rgba(255, 255, 255, 0.3);
 }
 .CommitButton:hover {
     background-color: #E3E3E3;
-    border: 2px solid #AEAEAE;
+    border: 1px solid #AEAEAE;
 }
 .CommitCountAdded {
     background-color: #CCFFCC;

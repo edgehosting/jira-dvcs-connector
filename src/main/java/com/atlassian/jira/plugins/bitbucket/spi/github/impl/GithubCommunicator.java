@@ -1,19 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import com.atlassian.jira.plugins.bitbucket.api.Authentication;
-import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
-import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
-import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
-import com.atlassian.jira.plugins.bitbucket.spi.DefaultChangeset;
+import com.atlassian.jira.plugins.bitbucket.spi.*;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
-import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubUserFactory;
 import com.atlassian.jira.util.json.JSONArray;
@@ -25,13 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GithubCommunicator implements Communicator
 {
@@ -256,9 +240,10 @@ public class GithubCommunicator implements Communicator
     }
 
     @Override
-    public void validateRepositoryAccess(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
-                                         String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
+        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
+
         Authentication auth;
         if (StringUtils.isNotBlank(accessToken))
         {
@@ -270,13 +255,22 @@ public class GithubCommunicator implements Communicator
 
         try
         {
-            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl());
-            // in case we have valid access_token but for other account github returns HttpStatus.SC_NOT_FOUND response
+            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null,
+                repositoryUri.getApiUrl());
+            // in case we have valid access_token but for other account github
+            // returns HttpStatus.SC_NOT_FOUND response
             if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
                 throw new SourceControlException.UnauthorisedException("You don't have access to the repository.");
             }
+            String responseString = extendedResponse.getResponseString();
+            return new JSONObject(responseString).getJSONObject("repository").getString("name");
+
         } catch (ResponseException e)
+        {
+            log.debug(e.getMessage(), e);
+            throw new SourceControlException(e.getMessage());
+        } catch (JSONException e)
         {
             log.debug(e.getMessage(), e);
             throw new SourceControlException(e.getMessage());

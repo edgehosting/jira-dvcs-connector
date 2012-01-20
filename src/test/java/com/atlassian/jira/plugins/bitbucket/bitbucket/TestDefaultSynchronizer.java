@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
+import com.atlassian.jira.issue.IssueManager;
+import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.*;
@@ -32,6 +34,10 @@ public class TestDefaultSynchronizer
     private SourceControlRepository repository;
     @Mock
     private ProgressWriter progressProvider;
+    @Mock
+    private IssueManager issueManager;
+    @Mock
+    private MutableIssue someIssue;
 
     @Before
     public void setup()
@@ -47,11 +53,12 @@ public class TestDefaultSynchronizer
 
         when(repository.getProjectKey()).thenReturn("PRJ");
         SynchronizationKey key = new SynchronizationKey(repository);
-        SynchronisationOperation synchronisation = new DefaultSynchronisationOperation(key, repositoryManager, bitbucket, progressProvider);
+        SynchronisationOperation synchronisation = new DefaultSynchronisationOperation(key, repositoryManager, bitbucket, progressProvider, issueManager);
         when(repositoryManager.getSynchronisationOperation(any(SynchronizationKey.class), any(ProgressWriter.class))).thenReturn(
             synchronisation);
         when(bitbucket.getChangesets(repository)).thenReturn(Arrays.asList(changeset));
         when(changeset.getMessage()).thenReturn("PRJ-1 Message");
+        when(issueManager.getIssueObject(anyString())).thenReturn(someIssue);
 
         DefaultSynchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadExecutor(), repositoryManager);
         assertNull(synchronizer.getProgress(repository));

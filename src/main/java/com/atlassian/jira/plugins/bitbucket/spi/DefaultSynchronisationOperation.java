@@ -1,18 +1,18 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
@@ -22,14 +22,17 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     protected final RepositoryManager repositoryManager;
 	private final ProgressWriter progressProvider;
     private final Communicator communicator;
+    private final IssueManager issueManager;
     
     public DefaultSynchronisationOperation(SynchronizationKey key, RepositoryManager repositoryManager,
-                                           Communicator communicator, ProgressWriter progressProvider)
+                                           Communicator communicator, ProgressWriter progressProvider, 
+                                           IssueManager issueManager)
 	{
     	this.key = key;
 		this.repositoryManager = repositoryManager;
         this.communicator = communicator;
         this.progressProvider = progressProvider;
+        this.issueManager = issueManager;
     }
 
 	@Override
@@ -65,7 +68,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         }
     }
 
-    private static Set<String> extractProjectKey(String projectKey, String message)
+    private Set<String> extractProjectKey(String projectKey, String message)
     {
         // should check that issue exists?
         Pattern projectKeyPattern = Pattern.compile("(" + projectKey + "-\\d+)", Pattern.CASE_INSENSITIVE);
@@ -77,7 +80,11 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         {
             // Get all groups for this match
             for (int i = 0; i <= match.groupCount(); i++)
-                matches.add(match.group(i));
+            {
+                String issueKey = match.group(i);
+                if (issueManager.getIssueObject(issueKey)!=null)
+                    matches.add(issueKey);
+            }
         }
 
         return matches;

@@ -1,11 +1,8 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
+import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
@@ -31,9 +28,10 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
     public static final String GITHUB = "github";
 
     public GithubRepositoryManager(RepositoryPersister repositoryPersister, @Qualifier("githubCommunicator") Communicator communicator,
-                                   Encryptor encryptor, ApplicationProperties applicationProperties, IssueLinker issueLinker, TemplateRenderer templateRenderer)
+                                   Encryptor encryptor, ApplicationProperties applicationProperties, IssueLinker issueLinker, 
+                                   TemplateRenderer templateRenderer, IssueManager issueManager)
     {
-        super(communicator, repositoryPersister, encryptor, applicationProperties, issueLinker, templateRenderer);
+        super(communicator, repositoryPersister, encryptor, applicationProperties, issueLinker, templateRenderer, issueManager);
     }
 
     @Override

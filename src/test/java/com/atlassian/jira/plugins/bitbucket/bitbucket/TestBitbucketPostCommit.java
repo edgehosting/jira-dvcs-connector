@@ -24,10 +24,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit test for {@link BitbucketPostCommit}
@@ -62,7 +59,8 @@ public class TestBitbucketPostCommit
         String projectKey = "PRJ";
         String repositoryUrl = "https://bitbucket.org/mjensen/test";
         String payload = resource("TestBitbucketPostCommit-payload.json");
-        SourceControlRepository repo = new DefaultSourceControlRepository(0, "bitbucket", repositoryUri, projectKey, null, null, null, null, null);
+        SourceControlRepository repo = new DefaultSourceControlRepository(0, "Pretty Name", "bitbucket", repositoryUri, projectKey, null, null, null, null, null);
+
         when(repositoryManager.getRepositories(projectKey)).thenReturn(Arrays.asList(repo));
         when(repositoryUri.getRepositoryUrl()).thenReturn(repositoryUrl);
 
@@ -79,9 +77,9 @@ public class TestBitbucketPostCommit
         final String projectKey = "PRJ";
         final String payload = resource("TestBitbucketPostCommit-payload.json");
         final String node = "f2851c9f1db8";
-        final DefaultSourceControlRepository repo = new DefaultSourceControlRepository(0, "bitbucket", repositoryUri, projectKey, null, null, null, null, null);
+        final DefaultSourceControlRepository repo = new DefaultSourceControlRepository(0, "Pretty Name", "bitbucket", repositoryUri, projectKey, null, null, null, null, null);
 
-        BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, communicator, null, null, null, null);
+        BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, communicator, null, null, null, null, null);
 
         when(communicator.getChangeset(eq(repo), anyString())).thenAnswer(new Answer<Object>()
         {
