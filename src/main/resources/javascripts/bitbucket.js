@@ -62,6 +62,7 @@ function forceSync(repositoryId){
 
 function submitFunction(a){
     var repositoryUrl = AJS.$("#url").val();
+    var atlToken = AJS.$("#atl_token").val();
     var requestUrl = BASE_URL+"/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl)
 
     AJS.$("#aui-message-bar").empty();
@@ -72,11 +73,27 @@ function submitFunction(a){
 
 	AJS.$.getJSON(requestUrl, function(data) {
     	if (data.repositoryType == "github")
-    		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddGithubRepository!default.jspa");
+    		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddGithubRepository.jspa");
     	else if (data.repositoryType == "bitbucket")
     		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddBitbucketRepository!default.jspa");
     	AJS.$("#isPrivate").val(data.isPrivate);
     	AJS.$('#repoEntry').submit();
+//        if (data.repositoryType == "github")
+//            var addRepositoryUrl = BASE_URL+"/secure/admin/AddGithubRepository.jspa?atl_token=" + atlToken;
+//        else if (data.repositoryType == "bitbucket")
+//            var addRepositoryUrl = BASE_URL+"/secure/admin/AddBitbucketRepository!default.jspa";
+//        AJS.$.ajax({
+//            type: "post",
+//            url: addRepositoryUrl,
+//            data: {},
+//            success:function(response) {
+//                var addRepositoryContent = AJS.$('#addRepositoryContent');
+//                addRepositoryContent.html(response);
+//        },
+//        error: function(response) {
+//            alert("failed");
+//        }});
+
     }).error(function(a){
         AJS.$("#aui-message-bar").empty();
     	AJS.messages.error({
@@ -85,6 +102,19 @@ function submitFunction(a){
     	});
     });
     return false;
+}
+
+function showAddRepoDetails(show)
+{
+    if (show)
+    {
+        AJS.$('#addRepositoryDetails').slideToggle();
+        AJS.$('#linkRepositoryButton').hide();
+    } else {
+        AJS.$('#addRepositoryDetails').slideToggle();
+        AJS.$('#linkRepositoryButton').show();
+    }
+
 }
 
 AJS.$(document).ready(function(){

@@ -46,13 +46,21 @@
 
 .gh_table{
     margin-left: 16px;
-    width: 100%
+    width: 97%
 }
 
 .gh_table_project_name{
     font-size: 1em;
     color: #5F6262;
+    padding-top: 24px;
+    font-weight: bold;
+}
+
+.gh_table_project_key{
+    font-size: 1em;
+    color: #5F6262;
     padding-top: 14px;
+    padding-left: 10px;
 }
 
 .gh_table th{
@@ -73,10 +81,14 @@
 
 .gh_table td{
     font-size: 1em;
+    vertical-align: middle;
+    padding-bottom: 0;
 }
 
 .gh_table_td_pname{
-    border-bottom: none !important;
+    /*border-bottom: none !important;*/
+    padding-top: 30px;
+    border-bottom: 1px solid #cccccc;
 }
 
 .gh_messages{

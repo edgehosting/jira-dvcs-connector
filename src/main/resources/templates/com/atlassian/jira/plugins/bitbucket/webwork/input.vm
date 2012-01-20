@@ -12,20 +12,6 @@
     <script type="text/javascript">
         var BASE_URL = "${baseurl}"
 
-        function showAddRepoDetails(show)
-        {
-            if (show)
-            {
-                AJS.$('#addRepositoryDetails').slideToggle();
-                AJS.$('#linkRepositoryButton').hide();
-            } else {
-                AJS.$('#addRepositoryDetails').slideToggle();
-                AJS.$('#linkRepositoryButton').show();
-            }
-
-        }
-
-
         function init_repositories()
         {
             #if ($action.nextAction == 'ForceSync')
@@ -55,9 +41,10 @@
 
         <br/>
 
-        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Repository" onclick="showAddRepoDetails(true)" value="Link Repository" />
+        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link a Repository" onclick="showAddRepoDetails(true)" value="Link a Repository" />
 
-        <div id="addRepositoryDetails" class="aui-message" style="padding: 10px; display: none; ">
+        <div id="addRepositoryContent">
+            <div id="addRepositoryDetails" class="aui-message" style="padding: 10px; display: none; ">
             <span class="svg-icon close size-16 customClose" onclick="showAddRepoDetails(false);"></span>
 
             <h4 style="margin: 0px;">Link new repository</h4>
@@ -70,7 +57,7 @@
 
             <form class="aui top-label" id="repoEntry" method="post" action="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa">
 
-                <input type="hidden" name="atl_token" value="$atl_token">
+                <input type="hidden" name="atl_token" id="atl_token" value="$atl_token">
                 <input type="hidden" name="isPrivate" id="isPrivate">
 
 
@@ -92,10 +79,12 @@
 
                         <div class="field-group">
                             <label for="url">Repository Url:</label>
-                            <input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" />
+## TODO                           <input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" />
+##                            <input type="text" id="url" name="repositoryUrl" value="https://github.com/farky/farky-test-repo" size="60" />
+                            <input type="text" id="url" name="repositoryUrl" value="https://github.com/dusanhornik/my-private-github-repo" size="60" />
                         </div>
                     </div>
-                    <div class="aui-item" style="padding-top: 60px;">
+                    <div class="aui-item" style="padding-top: 48px;">
                         <label>Examples:</label>
                         <div><i>https://bitbucket.org/atlassianguy/my-repository</i></div>
                         <div><i>https://github.com/owner/repository</i></div>
@@ -106,66 +95,77 @@
 
                 <div class="buttons-container" style="margin-top: 20px;">
                     <div class="buttons">
-                        <input class="button submit" type="submit" name="Submit" id="Submit" value="Continue"/>
+                        <input class="button submit" type="button" name="Submit" id="Submit" value="Continue" />
                         <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>
                     </div>
                 </div>
             </form>
         </div>
-
-
-
-
-        <table class="gh_table" cellspacing="0" cellpadding="4">
+        </div>
 
         #macro ( repositoryLineItem $projectName $projectKey )
             #set($encodedProjectName = $textutils.htmlEncode($projectName))
-            <tr> <td colspan="3" class="gh_table_td_pname"><div class="gh_table_project_name">$encodedProjectName ($projectKey)</div></td> </tr>
-            <tr> <th>Repository URL</th> <th>Operations</th> </tr>
-            #foreach ($repository in $action.getProjectRepositories($projectKey))
-                #set($repositoryId = $repository.getId())
-                #set($encodedProjectKey = $textutils.htmlEncode($action.getProjectKey()))
-                #set($encodedMode = $textutils.htmlEncode($action.getMode()))
-                <tr>
-                    <td><a href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_new">$textutils.htmlEncode($repository.repositoryUri.slug)</a></td>
-                    <td width="260px">
-                        <span title="Show/Hide info about syncing" class="syncicon repository$repositoryId" onclick="AJS.$('.gh_messages.repository$repositoryId').slideToggle()">&nbsp;</span>
-                        <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Force Sync</a> |
-                        <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repositoryId=$repositoryId&projectKey=$encodedProjectKey&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
-                        <a href="#" onclick="deleteRepository($repositoryId, '$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)')">Delete</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="status" colspan="3">
-                    #if ($action.getAddedRepositoryId().equals("$repository.getId()")) 
-                        #set ($style = "")
-                    #else
-                        #set ($style = "style='display:none'") 
-                    #end
-                    
-                    <div name="sync_status_message" class="gh_messages repository$repositoryId" $style>
-                        <div class="content"></div>
-                        #if ($action.getAddedRepositoryId().equals("$repository.getId()"))
-                        <div class="aui-message success closeable">
-                            <p class="title">
-                                <span class="aui-icon icon-success"></span>
-                                <strong>Repository successfully added!</strong>
-                            </p>
-                        </div> 
+            #set($projectRepositories = $action.getProjectRepositories($projectKey))
+            #if ($projectRepositories.size() > 0)
+                <tr> <td colspan="3" class="gh_table_td_pname">
+                    <span class="gh_table_project_name">$encodedProjectName</span><span class="gh_table_project_key">($projectKey)</span>
+                </td> </tr>
+            #end
+##            <tr> <th>Repository URL</th> <th>Operations</th> </tr>
+            #foreach ($repository in $projectRepositories)
+
+                    #set($repositoryId = $repository.getId())
+                    #set($encodedProjectKey = $textutils.htmlEncode($action.getProjectKey()))
+                    #set($encodedMode = $textutils.htmlEncode($action.getMode()))
+                    <tr>
+                        #if ($repository.getRepositoryType() == 'bitbucket')
+                            #set($repoTypeImgName = "bitbucket")
+                        #else
+                            #set($repoTypeImgName = "github")
                         #end
-                    </div>
-                    </td>
-                </tr>
+                        <td width="40px"><img style="padding-left: 15px;" src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/${repoTypeImgName}_2.png" alt="bitbucket repository"></td>
+                        <td><a href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_new">$textutils.htmlEncode($repository.repositoryUri.slug)</a></td>
+                        <td width="260px" style="text-align: right;">
+                            <span title="Show/Hide info about syncing" class="syncicon repository$repositoryId" onclick="AJS.$('.gh_messages.repository$repositoryId').slideToggle()">&nbsp;</span>
+                            <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Force Sync</a> |
+##                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repositoryId=$repositoryId&projectKey=$encodedProjectKey&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
+                            <a href="#" onclick="deleteRepository($repositoryId, '$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)')">Delete</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="status" colspan="3">
+                        #if ($action.getAddedRepositoryId().equals("$repository.getId()"))
+                            #set ($style = "")
+                        #else
+                            #set ($style = "style='display:none'")
+                        #end
+
+                        <div name="sync_status_message" class="gh_messages repository$repositoryId" $style>
+                            <div class="content"></div>
+                            #if ($action.getAddedRepositoryId().equals("$repository.getId()"))
+                            <div class="aui-message success closeable">
+                                <p class="title">
+                                    <span class="aui-icon icon-success"></span>
+                                    <strong>Repository successfully added!</strong>
+                                </p>
+                            </div>
+                            #end
+                        </div>
+                        </td>
+                    </tr>
+
             #end
         #end
 
-        #if ($action.getMode() == 'single')
-            #repositoryLineItem($action.getProjectName() $action.getProjectKey())
-        #else
-            #foreach ($project in $action.getProjects())
-                #repositoryLineItem($project.name $project.key)
+
+        <table class="gh_table" cellspacing="0" cellpadding="4">
+            #if ($action.getMode() == 'single')
+                #repositoryLineItem($action.getProjectName() $action.getProjectKey())
+            #else
+                #foreach ($project in $action.getProjects())
+                    #repositoryLineItem($project.name $project.key)
+                #end
             #end
-        #end
 
         </table>
 
