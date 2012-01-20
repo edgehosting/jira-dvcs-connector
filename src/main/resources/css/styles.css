@@ -140,7 +140,7 @@
 }
 .CommiterBody {
     float: left;
-    left: 10px;
+    /*left: 10px;*/
     margin: 0;
     width: 100%;
 }
@@ -156,42 +156,46 @@
     margin-right: 10px;
     padding-left: 5px;
     text-align: left;
+    height: 19px;
 }
 .CommitingDate {
     color: #AEAEAE;
     float: left;
-    margin-bottom: 10px;
+    margin-top: 2px;
+    font-size: 12px;
 }
 .CommitPanel {
-    background-color: #EFEFEF;
+    background-color: #f7f7f7;
     border: 1px solid #DDDDDD;
     border-radius: 3px 3px 3px 3px;
     float: left;
     padding: 0;
     width: 100%;
+    padding: 7px 7px 5px 5px;
+    -moz-box-shadow: 1px 1px 1px 1px white inset;
+    -webkit-box-shadow: 1px 1px 1px 1px white inset;
+    box-shadow: 1px 1px 1px 1px white inset;
 }
 .CommitHeader {
     float: left;
-    margin-bottom: 5px;
-    min-height: 39px;
+    min-height: 41px;
     position: relative;
     width: 100%;
 }
 .CommitBody {
-    background-color: white;
+    background-color: #fefefe;
     border: 1px solid #DDDDDD;
     float: left;
-    margin: 0 0 7px;
     padding: 0 0 8px 0;
     position: relative;
-    width: 100%;
     border-radius: 3px 3px 3px 3px;
+    -moz-box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
+    -webkit-box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
+    box-shadow: 1px 1px 1px 1px white, 1px 1px 1px 1px #F1F1F1 inset;
+    width: 100%;
 }
 .CommitBodyPadding {
     padding: 5px 10px 10px;
-}
-.CommitBodyPaddingSide {
-    padding: 0 7px 0 5px;
 }
 .CommitBodyUp {
     float: left;
@@ -200,16 +204,18 @@
 }
 .CommitRows {
     float: left;
-    margin-top: 6px;
     position: relative;
     width: 100%;
     overflow-x: hidden;
+    margin-top: 6px;
+    padding-bottom: 1px;
 }
 .CommitCount {
     float: left;
-    left: 0;
     position: absolute;
     width: 80px;
+    margin-top: 1px;
+    line-height: 1.2;
 }
 .CommitCountPlus {
     background-color: #CCFFCC;
@@ -238,19 +244,19 @@
 .CommitHrefDATA {
     color: #326CA6;
     float: left;
-    margin-left: 88px;
-    min-width: 184px;
+    margin-left: 85px;
+    word-wrap: break-word;
 }
 .Text {
     color: #747474;
     margin-right: 165px;
-    padding-left: 8px;
-    padding-top: 8px;
+    padding: 8px 0 5px 2px;
+    font-size: 13px;
 }
 .CommitButton {
     background-color: #EEEEEE;
     background-image: url("../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/newwindow.png");
-    background-position: 128px 6px;
+    background-position: 130px 8px;
     background-repeat: no-repeat;
     border: 2px solid #DDDDDD;
     border-radius: 3px 3px 3px 3px;
@@ -259,13 +265,12 @@
     font-weight: bold;
     height: 30px;
     line-height: 31px;
-    margin-right: 7px;
-    margin-top: 5px;
-    padding-left: 14px;
+    padding-left: 16px;
     position: absolute;
     right: 0;
     text-align: left;
     width: 140px;
+    font-size: 13px;
 }
 .CommitButton:hover {
     background-color: #E3E3E3;
@@ -326,14 +331,13 @@
 }
 .CommiterInfoRow {
     background-image: url("../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bubblecorner.png");
-    background-position: 0 9px;
     background-repeat: no-repeat;
-    border-bottom: 1px solid #EFEFEF;
-    height: 16px;
+    border-bottom: 1px solid #f7f7f7;
+    height: 9px;
     margin-left: 12px;
-    margin-top: 15px;
+    margin-top: 22px;
     position: absolute;
-    width: 12px;
+    width: 17px;
 }
 .message-container {
     border-bottom: 1px solid #EEEEEE;
