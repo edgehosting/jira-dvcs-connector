@@ -35,8 +35,9 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
     public String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername,
                                                           String adminPassword)
     {
-        urlTextbox.clear().type(url);
+        linkRepositoryButton.click();
         projectSelect.select(Options.value(projectKey));
+        urlTextbox.clear().type(url);
         addRepositoryButton.click();
         Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"));
         // postcommit hook
@@ -61,6 +62,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
     @Override
     public BaseConfigureRepositoriesPage addPublicRepoToProjectSuccessfully(String projectKey, String url)
     {
+        linkRepositoryButton.click();
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
@@ -82,6 +84,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
     @Override
     public BitBucketConfigureRepositoriesPage addRepoToProjectFailingStep1(String projectKey, String url)
     {
+        linkRepositoryButton.click();
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
@@ -105,6 +108,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
     @Override
     public BitBucketConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url)
     {
+        linkRepositoryButton.click();
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();

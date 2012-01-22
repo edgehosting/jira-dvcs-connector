@@ -28,6 +28,9 @@ public abstract class BaseConfigureRepositoriesPage implements Page
     @Inject
     PageBinder pageBinder;
 
+    @ElementBy(id = "linkRepositoryButton")
+    PageElement linkRepositoryButton;
+
     @ElementBy(id = "Submit")
     PageElement addRepositoryButton;
 
