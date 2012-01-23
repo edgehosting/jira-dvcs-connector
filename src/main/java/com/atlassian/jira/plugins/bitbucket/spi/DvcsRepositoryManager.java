@@ -51,7 +51,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
                     pm.getRepositoryUrl());
             return new DefaultSourceControlRepository(pm.getID(), pm.getRepositoryName(),  pm.getRepositoryType(), getRepositoryUri(pm.getRepositoryUrl()),
                     pm.getProjectKey(), pm.getUsername(), decryptedPassword,
-                    pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken());
+                    pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken(), repositoryPersister.getLastCommitDaysAgo(pm.getID()));
         }
     };
 

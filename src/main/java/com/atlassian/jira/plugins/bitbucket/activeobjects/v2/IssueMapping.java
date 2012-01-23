@@ -14,7 +14,7 @@ public interface IssueMapping extends Entity {
     public static final String COLUMN_NODE = "NODE";
     public static final String COLUMN_RAW_AUTHOR = "RAW_AUTHOR";
     public static final String COLUMN_AUTHOR = "AUTHOR";
-    public static final String COLUMN_DATE = "DATE";
+        public static final String COLUMN_DATE = "DATE";
     public static final String COLUMN_RAW_NODE = "RAW_NODE";
     public static final String COLUMN_BRANCH = "BRANCH";
     public static final String COLUMN_MESSAGE = "MESSAGE";

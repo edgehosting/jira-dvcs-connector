@@ -62,7 +62,9 @@ function forceSync(repositoryId){
 
 function submitFunction(a){
     var repositoryUrl = AJS.$("#url").val();
-    var atlToken = AJS.$("#atl_token").val();
+    var privateBbCredentialsVisible = AJS.$("#privateBbCredentialsVisible").val();
+    //var atlToken = AJS.$("#atl_token").val();
+
     var requestUrl = BASE_URL+"/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl)
 
     AJS.$("#aui-message-bar").empty();
@@ -72,12 +74,30 @@ function submitFunction(a){
 	});
 
 	AJS.$.getJSON(requestUrl, function(data) {
-    	if (data.repositoryType == "github")
+        AJS.$("#isPrivate").val(data.isPrivate);
+
+        if (data.repositoryType == "github")
     		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddGithubRepository.jspa");
-    	else if (data.repositoryType == "bitbucket")
-    		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddBitbucketRepository!default.jspa");
-    	AJS.$("#isPrivate").val(data.isPrivate);
-    	AJS.$('#repoEntry').submit();
+        else if (data.repositoryType == "bitbucket")
+    		AJS.$("#repoEntry").attr("action", BASE_URL+"/secure/admin/AddBitbucketRepository.jspa");
+
+        // todo: ak BB nema oauth
+        if (privateBbCredentialsVisible == "false" && data.repositoryType == "bitbucket" && data.isPrivate) {
+            AJS.$("#privateBbCredentialsVisible").val("true");
+            AJS.$("#aui-message-bar").empty();
+
+            var credentialsHtml = "<h3>For private Bitbucket repository you have to add access credentials</h3>" +
+                "<div class='field-group'>" +
+                "<label for='bbUsername'>Username</label>" +
+                "<input type='text' name='bbUsername' id='bbUsername' value=''></div>" +
+                "<div class='field-group'>" +
+                "<label for='bbPassword'>Password</label>" +
+                "<input type='password' name='bbPassword' id='bbPassword' value=''></div>";
+            AJS.$("#bbCredentials").html(credentialsHtml);
+        } else {
+            AJS.$('#repoEntry').submit();
+        }
+
 //        if (data.repositoryType == "github")
 //            var addRepositoryUrl = BASE_URL+"/secure/admin/AddGithubRepository.jspa?atl_token=" + atlToken;
 //        else if (data.repositoryType == "bitbucket")
@@ -112,6 +132,7 @@ function showAddRepoDetails(show)
         AJS.$('#linkRepositoryButton').hide();
     } else {
         AJS.$('#addRepositoryDetails').slideToggle();
+        AJS.$("#bbCredentials").html("");
         AJS.$('#linkRepositoryButton').show();
     }
 
