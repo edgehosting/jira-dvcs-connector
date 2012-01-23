@@ -1,11 +1,5 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
-import org.openqa.selenium.By;
-
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BaseConfigureRepositoriesPage;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
@@ -14,6 +8,11 @@ import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.page.LoginPage;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
 import com.atlassian.webdriver.jira.page.JiraLoginPage;
+import org.junit.After;
+import org.junit.Before;
+import org.openqa.selenium.By;
+
+import java.util.List;
 
 /**
  * Base class for BitBucket integration tests. Initializes the JiraTestedProduct and logs admin in.
@@ -23,22 +22,28 @@ public abstract class BitBucketBaseTest
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     protected BaseConfigureRepositoriesPage configureRepos;
 
-  
     public static class AnotherLoginPage extends JiraLoginPage
     {
         @Override
         public void doWait()
         {
+            try
+            {
+                driver.switchTo().alert().accept();
+            } catch (Exception e)
+            {
+                // ignore if no alert shown
+            }
             driver.waitUntilElementIsLocated(By.name("os_username"));
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     @Before
     public void loginToJira()
     {
         jira.getPageBinder().override(LoginPage.class, AnotherLoginPage.class);
-        
+
         configureRepos = (BaseConfigureRepositoriesPage) jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(getPageClass());
         configureRepos.setJiraTestedProduct(jira);
     }
@@ -60,12 +65,12 @@ public abstract class BitBucketBaseTest
         }
     }
 
-   
+
     protected List<BitBucketCommitEntry> getCommitsForIssue(String issueKey)
     {
         return jira.visit(JiraViewIssuePage.class, issueKey)
-                              .openBitBucketPanel()
-                              .waitForMessages();
+                .openBitBucketPanel()
+                .waitForMessages();
     }
 
     protected GithubOAuthConfigPage goToGithubOAuthConfigPage()

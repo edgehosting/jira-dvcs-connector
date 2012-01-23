@@ -88,11 +88,16 @@ public abstract class BaseConfigureRepositoriesPage implements Page
     public List<BitBucketRepository> getRepositories()
     {
         List<BitBucketRepository> list = new ArrayList<BitBucketRepository>();
+        String projectKey = null;
         for (PageElement row : projectsTable.findAll(By.tagName("tr")))
         {
+            if(row.find(By.className("gh_table_project_key")).isPresent()){
+                String projectKeyBracketed = row.find(By.className("gh_table_project_key")).getText();
+                projectKey = projectKeyBracketed.substring(1, projectKeyBracketed.length()-1);
+            }
             if (row.getText().contains("Force Sync"))
             {
-                list.add(pageBinder.bind(BitBucketRepository.class, row));
+                list.add(pageBinder.bind(BitBucketRepository.class, row, projectKey));
             }
         }
 

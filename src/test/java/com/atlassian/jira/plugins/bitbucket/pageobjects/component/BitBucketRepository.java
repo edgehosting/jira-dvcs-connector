@@ -21,27 +21,32 @@ public class BitBucketRepository
     @Inject
     PageElementFinder elementFinder;
 
-    public BitBucketRepository(PageElement row)
+    private String projectKey;
+
+    public BitBucketRepository(PageElement row, String projectKey)
     {
         this.row = row;
+        this.projectKey = projectKey;
     }
 
     /**
      * The url of this repo
+     *
      * @return Url
      */
     public String getUrl()
     {
-        return row.find(By.tagName("a")).getText();
+        return row.find(By.tagName("a")).getAttribute("href");
     }
 
     /**
      * The projec key
+     *
      * @return Key
      */
     public String getProjectKey()
     {
-        return row.findAll(By.tagName("td")).get(1).getText();
+        return projectKey;
     }
 
     /**
