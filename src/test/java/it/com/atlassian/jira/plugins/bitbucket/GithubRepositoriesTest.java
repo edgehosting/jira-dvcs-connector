@@ -198,8 +198,8 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
         configureRepos.deleteAllRepositories();
         configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
 
-        // QA-2
-        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");
+        // QA-3
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3");
         Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
