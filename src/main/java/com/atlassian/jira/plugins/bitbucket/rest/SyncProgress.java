@@ -19,6 +19,9 @@ public class SyncProgress
 	private int jiraCount;
 
     @XmlAttribute
+	private int synchroErrorCount;
+
+    @XmlAttribute
 	private String error;
 
 	public SyncProgress()
@@ -26,11 +29,12 @@ public class SyncProgress
     }
 
     
-    public SyncProgress(boolean isFinished, int changesetCount, int jiraCount, String error)
+    public SyncProgress(boolean isFinished, int changesetCount, int jiraCount, int synchroErrorCount, String error)
 	{
 		this.isFinished = isFinished;
 		this.changesetCount = changesetCount;
 		this.jiraCount = jiraCount;
+        this.synchroErrorCount = synchroErrorCount;
 		this.error = error;
 	}
 
@@ -55,7 +59,17 @@ public class SyncProgress
 		this.jiraCount = jiraCount;
 	}
 
-	public String getError()
+    public int getSynchroErrorCount()
+    {
+        return synchroErrorCount;
+    }
+
+    public void setSynchroErrorCount(int synchroErrorCount)
+    {
+        this.synchroErrorCount = synchroErrorCount;
+    }
+
+    public String getError()
 	{
 		return error;
 	}

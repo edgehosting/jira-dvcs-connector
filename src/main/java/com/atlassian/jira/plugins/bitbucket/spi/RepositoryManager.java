@@ -1,9 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
@@ -11,6 +7,10 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 public interface RepositoryManager
 {
@@ -51,6 +51,15 @@ public interface RepositoryManager
     public List<Changeset> getChangesets(String issueKey);
 
     /**
+     * Load changeset from repository with changeset details
+     *
+     * @param repository
+     * @param node
+     * @return
+     */
+    public Changeset getChangeset(SourceControlRepository repository, String node);
+
+    /**
      * Removes the repository with given id and all the issue mappings for this repository
      *
      * @param id
@@ -63,6 +72,7 @@ public interface RepositoryManager
      * @param sourceControlRepository
      * @param issueId
      * @param changeset
+     * @return true if changeset is fully loaded from repo (with statistics) and saved, otherwise false.
      */
     public void addChangeset(SourceControlRepository sourceControlRepository, String issueId, Changeset changeset);
 
@@ -134,15 +144,15 @@ public interface RepositoryManager
 
     /**
      * Reloads the changeset from the repository.
-     * In previous versions of the plugin we stored  little information about changesets locally (only changset id). 
-     * Now we keep more columns (date, message, author, etc) but instead of resyncing all repositories again we use 
+     * In previous versions of the plugin we stored  little information about changesets locally (only changset id).
+     * Now we keep more columns (date, message, author, etc) but instead of resyncing all repositories again we use
      * lazy loading to reload old changesets only when required.
-     *     
+     *
      * @param issueMapping
      * @return
      */
     public Changeset reloadChangeset(IssueMapping issueMapping);
-    
+
     public Date getLastCommitDate(SourceControlRepository repo);
 
     public void setLastCommitDate(SourceControlRepository repo, Date date);

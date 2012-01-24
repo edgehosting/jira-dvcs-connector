@@ -121,6 +121,12 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
     @Override
+    public Changeset getChangeset(SourceControlRepository repository, String node)
+    {
+        return getManagerByRepoId(repository.getId()).getChangeset(repository, node);
+    }
+
+    @Override
     public void removeRepository(int id)
     {
         getManagerByRepoId(id).removeRepository(id);

@@ -135,6 +135,10 @@
     display:inline-block;
 }
 
+.synchroErrorCount {
+    color: #E16161;
+}
+
 #postCommitServiceDetails{
     margin-bottom:20px;
 }

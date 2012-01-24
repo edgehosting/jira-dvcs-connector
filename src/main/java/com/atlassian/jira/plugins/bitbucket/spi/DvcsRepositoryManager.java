@@ -50,7 +50,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
             String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(),
                     pm.getRepositoryUrl());
-            return new DefaultSourceControlRepository(pm.getID(), pm.getRepositoryName(),  pm.getRepositoryType(), getRepositoryUri(pm.getRepositoryUrl()),
+            return new DefaultSourceControlRepository(pm.getID(), pm.getRepositoryName(), pm.getRepositoryType(), getRepositoryUri(pm.getRepositoryUrl()),
                     pm.getProjectKey(), pm.getUsername(), decryptedPassword,
                     pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken());
         }
@@ -73,7 +73,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
     public String getRepositoryName(String repositoryType, String projectKey, String repositoryUrl, String username,
-                                         String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+                                    String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
         RepositoryUri repositoryUri = getRepositoryUri(repositoryUrl);
         return getCommunicator().getRepositoryName(repositoryType, projectKey, repositoryUri, username, password, adminUsername, adminPassword, accessToken);
@@ -122,6 +122,13 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     {
         List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey, getRepositoryType());
         return Lists.transform(issueMappings, toChangesetTransformer);
+    }
+
+    @Override
+    public Changeset getChangeset(SourceControlRepository repository, String node)
+    {
+        return getCommunicator().getChangeset(repository, node);
+
     }
 
     @Override
