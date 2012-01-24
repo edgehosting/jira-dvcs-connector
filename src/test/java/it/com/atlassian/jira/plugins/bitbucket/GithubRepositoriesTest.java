@@ -124,7 +124,6 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
 
         String errorMessage = configureRepos.getErrorStatusMessage();
         assertThat(errorMessage, containsString("Error!The repository url [" + TEST_NOT_EXISTING_REPO_URL + "] is incorrect or the repository is not responding."));
-        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
     }
 
     @Test
@@ -140,7 +139,7 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     }
 
     @Test
-    public void addPrivateRepoWithValidOAuth()
+    public void testPostCommitHookNotAdded()
     {
         configureRepos.deleteAllRepositories();
 
@@ -148,10 +147,7 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
 
         goToRepositoriesConfigPage();
 
-        configureRepos.addPrivateRepoToProjectSuccessfully("QA", TEST_PRIVATE_REPO_URL);
-
-        configureRepos.assertThatSyncMessage(containsString("Sync Finished"));
-        configureRepos.assertThatSyncMessage(not(containsString("Sync Failed")));
+        configureRepos.addRepoToProjectFailingPostcommitService("QA", TEST_PRIVATE_REPO_URL);
     }
 
 

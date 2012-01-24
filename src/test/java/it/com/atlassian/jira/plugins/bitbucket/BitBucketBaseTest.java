@@ -5,7 +5,6 @@ import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BaseConfigureReposi
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.pageobjects.TestedProductFactory;
-import com.atlassian.pageobjects.page.LoginPage;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
 import com.atlassian.webdriver.jira.page.JiraLoginPage;
 import org.junit.After;
@@ -27,13 +26,20 @@ public abstract class BitBucketBaseTest
         @Override
         public void doWait()
         {
+            // hacking of confirmation dialog: "Are you sure you want to navigate away from this page?"
             try
             {
-                driver.switchTo().alert().accept();
+                String tagName = driver.switchTo().activeElement().getTagName();
+                String inputType = driver.switchTo().activeElement().getAttribute("type");
+                if ("input".equals(tagName) && "button".equals(inputType))
+                {
+                    driver.switchTo().alert().accept();
+                }
             } catch (Exception e)
             {
                 // ignore if no alert shown
             }
+            // waiting for login page
             driver.waitUntilElementIsLocated(By.name("os_username"));
         }
     }
@@ -42,8 +48,6 @@ public abstract class BitBucketBaseTest
     @Before
     public void loginToJira()
     {
-        jira.getPageBinder().override(LoginPage.class, AnotherLoginPage.class);
-
         configureRepos = (BaseConfigureRepositoriesPage) jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(getPageClass());
         configureRepos.setJiraTestedProduct(jira);
     }

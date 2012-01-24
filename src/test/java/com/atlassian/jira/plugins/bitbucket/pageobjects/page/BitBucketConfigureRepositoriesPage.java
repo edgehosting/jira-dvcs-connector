@@ -98,6 +98,12 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         return this;
     }
 
+    @Override
+    public BaseConfigureRepositoriesPage addRepoToProjectFailingPostcommitService(String projectKey, String url)
+    {
+        return this;
+    }
+
     /**
      * Links a public repository to the given JIRA project
      *
@@ -105,6 +111,8 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
      * @param url        The url to the bitucket public repo
      * @return BitBucketConfigureRepositoriesPage
      */
+
+
     @Override
     public BitBucketConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url)
     {

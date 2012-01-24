@@ -91,9 +91,10 @@ public abstract class BaseConfigureRepositoriesPage implements Page
         String projectKey = null;
         for (PageElement row : projectsTable.findAll(By.tagName("tr")))
         {
-            if(row.find(By.className("gh_table_project_key")).isPresent()){
+            if (row.find(By.className("gh_table_project_key")).isPresent())
+            {
                 String projectKeyBracketed = row.find(By.className("gh_table_project_key")).getText();
-                projectKey = projectKeyBracketed.substring(1, projectKeyBracketed.length()-1);
+                projectKey = projectKeyBracketed.substring(1, projectKeyBracketed.length() - 1);
             }
             if (row.getText().contains("Force Sync"))
             {
@@ -150,6 +151,16 @@ public abstract class BaseConfigureRepositoriesPage implements Page
         Poller.waitUntil(syncStatusDiv.timed().getText(), matcher, by(30000));
     }
 
+    public void assertThatSuccessMessage(Matcher<String> matcher)
+    {
+        Poller.waitUntil(messageBarDiv.find(By.className("success")).timed().getText(), matcher, by(30000));
+    }
+
+    public void assertThatWarningMessage(Matcher<String> matcher)
+    {
+        Poller.waitUntil(messageBarDiv.find(By.className("warning")).timed().getText(), matcher, by(30000));
+    }
+
     protected void checkSyncProcessSuccess()
     {
         final String statusXpath = "//div[@name='sync_status_message']/div[@class='content']/strong";
@@ -176,6 +187,8 @@ public abstract class BaseConfigureRepositoriesPage implements Page
     public abstract BaseConfigureRepositoriesPage addRepoToProjectFailingStep1(String projectKey, String url);
 
     public abstract BaseConfigureRepositoriesPage addRepoToProjectFailingStep2(String projectKey, String url);
+
+    public abstract BaseConfigureRepositoriesPage addRepoToProjectFailingPostcommitService(String projectKey, String url);
 
     public abstract BaseConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url);
 
