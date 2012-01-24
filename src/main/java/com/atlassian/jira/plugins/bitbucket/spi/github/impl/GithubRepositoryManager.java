@@ -32,7 +32,7 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
     public static final String GITHUB = "github";
 
     public GithubRepositoryManager(RepositoryPersister repositoryPersister, @Qualifier("githubCommunicator") Communicator communicator,
-                                   Encryptor encryptor, ApplicationProperties applicationProperties, IssueLinker issueLinker, 
+                                   Encryptor encryptor, ApplicationProperties applicationProperties, IssueLinker issueLinker,
                                    TemplateRenderer templateRenderer, IssueManager issueManager)
     {
         super(communicator, repositoryPersister, encryptor, applicationProperties, issueLinker, templateRenderer, issueManager);
@@ -67,16 +67,6 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
     public String getRepositoryType()
     {
         return GITHUB;
-    }
-
-
-    @Override
-    public void addChangeset(SourceControlRepository repository, String issueId, Changeset changeset)
-    {
-
-        // get detial changeset because in this response is not information about files
-        Changeset detailChangeset = getCommunicator().getChangeset(repository, changeset.getNode());
-        super.addChangeset(repository, issueId, detailChangeset);
     }
 
     @Override

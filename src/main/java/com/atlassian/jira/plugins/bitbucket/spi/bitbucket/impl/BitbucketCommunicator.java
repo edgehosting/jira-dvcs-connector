@@ -130,10 +130,7 @@ public class BitbucketCommunicator implements Communicator
             for (int i = 0; i < list.length(); i++)
             {
                 JSONObject json = list.getJSONObject(i);
-                final String urlPath = "/repositories/" + CustomStringUtils.encode(owner) + "/" +
-                        CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(json.getString("node"));
-                String responseFilesString = requestHelper.getExtendedResponse(auth, urlPath + "/diffstat", null, uri.getApiUrl()).getResponseString();
-                changesets.add(BitbucketChangesetFactory.parse(repository.getId(), json, new JSONArray(responseFilesString)));
+                changesets.add(BitbucketChangesetFactory.parse(repository.getId(), json, new JSONArray()));
             }
         } catch (ResponseException e)
         {

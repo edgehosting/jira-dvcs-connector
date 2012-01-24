@@ -12,7 +12,6 @@ import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
-import com.google.common.collect.Sets;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -118,6 +117,12 @@ public class GlobalRepositoryManager implements RepositoryManager
         }
         Collections.sort(allChangesets, CHANGESET_COMPARATOR);
         return new ArrayList<Changeset>(allChangesets);
+    }
+
+    @Override
+    public Changeset getChangeset(SourceControlRepository repository, String node)
+    {
+        return getManagerByRepoId(repository.getId()).getChangeset(repository, node);
     }
 
     @Override

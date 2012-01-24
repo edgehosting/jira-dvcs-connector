@@ -1,20 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
@@ -35,6 +20,20 @@ import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
@@ -60,7 +59,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
             String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(),
                     pm.getRepositoryUrl());
-            return new DefaultSourceControlRepository(pm.getID(), pm.getRepositoryName(),  pm.getRepositoryType(), getRepositoryUri(pm.getRepositoryUrl()),
+            return new DefaultSourceControlRepository(pm.getID(), pm.getRepositoryName(), pm.getRepositoryType(), getRepositoryUri(pm.getRepositoryUrl()),
                     pm.getProjectKey(), pm.getUsername(), decryptedPassword,
                     pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken());
         }
@@ -83,7 +82,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
     public String getRepositoryName(String repositoryType, String projectKey, String repositoryUrl, String username,
-                                         String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+                                    String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
         RepositoryUri repositoryUri = getRepositoryUri(repositoryUrl);
         return getCommunicator().getRepositoryName(repositoryType, projectKey, repositoryUri, username, password, adminUsername, adminPassword, accessToken);
@@ -132,6 +131,13 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     {
         List<IssueMapping> issueMappings = repositoryPersister.getIssueMappings(issueKey, getRepositoryType());
         return Lists.transform(issueMappings, toChangesetTransformer);
+    }
+
+    @Override
+    public Changeset getChangeset(SourceControlRepository repository, String node)
+    {
+        return getCommunicator().getChangeset(repository, node);
+
     }
 
     @Override

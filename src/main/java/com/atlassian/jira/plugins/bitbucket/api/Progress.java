@@ -19,7 +19,13 @@ public interface Progress
 	 * @return number of changesets synchronised
 	 */
 	int getChangesetCount();
-	
+
+    /**
+     *
+     * @return number of changesets which are not fully synchronised.
+     */
+    int getSynchroErrorCount();
+
 	/**
 	 * @return error messages
 	 */

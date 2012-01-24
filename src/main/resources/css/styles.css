@@ -115,6 +115,10 @@
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/status-ok.png)
 }
 
+.synchroErrorCount {
+    color: #E16161;
+}
+
 #postCommitServiceDetails{
     margin-bottom:20px;
 }

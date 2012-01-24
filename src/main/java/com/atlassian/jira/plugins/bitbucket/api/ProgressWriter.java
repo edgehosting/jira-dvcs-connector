@@ -10,6 +10,7 @@ public interface ProgressWriter
 	 * 
 	 * @param changesetCount
 	 * @param jiraCount
+        * @param synchroErrorCount
 	 */
-	public void inProgress(int changesetCount, int jiraCount);
+	public void inProgress(int changesetCount, int jiraCount, int synchroErrorCount);
 }

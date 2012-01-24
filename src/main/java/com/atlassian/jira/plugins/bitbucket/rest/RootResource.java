@@ -63,7 +63,7 @@ public class RootResource
             Progress progress = synchronizer.getProgress(from);
             if (progress != null)
                 repo.setStatus(new SyncProgress(progress.isFinished(), progress.getChangesetCount(), progress
-                        .getJiraCount(), progress.getError()));
+                        .getJiraCount(), progress.getSynchroErrorCount(),progress.getError()));
             return repo;
         }
     };

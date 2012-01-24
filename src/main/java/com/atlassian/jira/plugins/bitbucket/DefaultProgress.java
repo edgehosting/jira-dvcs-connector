@@ -10,14 +10,16 @@ public class DefaultProgress implements Progress, ProgressWriter
 	
 	int changesetCount = 0;
 	int jiraCount = 0;
+	int synchroErrorCount = 0;
 	long startTime = 0;
 	private String error;
 
     @Override
-    public void inProgress(int changesetCount, int jiraCount)
+    public void inProgress(int changesetCount, int jiraCount, int synchroErrorCount)
     {
     	this.changesetCount = changesetCount;
     	this.jiraCount = jiraCount;
+        this.synchroErrorCount = synchroErrorCount;
     }
 
     public void start()
@@ -42,7 +44,13 @@ public class DefaultProgress implements Progress, ProgressWriter
     	return jiraCount;
     }
 
-	public void setError(String error)
+    @Override
+    public int getSynchroErrorCount()
+    {
+        return synchroErrorCount;
+    }
+
+    public void setError(String error)
 	{
 		this.error = error;
 	}

@@ -1,71 +1,84 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
     private static final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
-	protected final SynchronizationKey key;
+    protected final SynchronizationKey key;
     protected final RepositoryManager repositoryManager;
-	private final ProgressWriter progressProvider;
+    private final ProgressWriter progressProvider;
     private final Communicator communicator;
     private final IssueManager issueManager;
-    
+
     public DefaultSynchronisationOperation(SynchronizationKey key, RepositoryManager repositoryManager,
-                                           Communicator communicator, ProgressWriter progressProvider, 
+                                           Communicator communicator, ProgressWriter progressProvider,
                                            IssueManager issueManager)
-	{
-    	this.key = key;
-		this.repositoryManager = repositoryManager;
+    {
+        this.key = key;
+        this.repositoryManager = repositoryManager;
         this.communicator = communicator;
         this.progressProvider = progressProvider;
         this.issueManager = issueManager;
     }
 
-	@Override
+    @Override
     public void synchronise()
     {
         Iterable<Changeset> changesets = getChangsetsIterator();
 
         int changesetCount = 0;
         int jiraCount = 0;
+        int synchroErrorCount = 0;
 
         for (Changeset changeset : changesets)
         {
-        	changesetCount ++;
+            changesetCount++;
             String message = changeset.getMessage();
             log.debug("syncing changeset [{}] [{}]", changeset.getNode(), changeset.getMessage());
             if (message.contains(key.getRepository().getProjectKey()))
             {
                 Set<String> extractedIssues = extractProjectKey(key.getRepository().getProjectKey(), message);
+                // get detial changeset because in this response is not information about files
+                Changeset detailChangeset = null;
+                try
+                {
+                    detailChangeset = repositoryManager.getChangeset(key.getRepository(), changeset.getNode());
+                } catch (Exception e)
+                {
+                    log.warn(e.getMessage(), e);
+                }
                 for (String extractedIssue : extractedIssues)
                 {
-                    jiraCount ++;
+                    jiraCount++;
                     String issueId = extractedIssue.toUpperCase();
                     try
                     {
-                        repositoryManager.addChangeset(key.getRepository(), issueId, changeset);
+                        repositoryManager.addChangeset(key.getRepository(), issueId, detailChangeset == null ? changeset : detailChangeset);
                     } catch (SourceControlException e)
                     {
                         log.error("Error adding changeset " + changeset, e);
                     }
                 }
+                if (detailChangeset == null)
+                {
+                    synchroErrorCount++;
+                }
             }
-            progressProvider.inProgress(changesetCount, jiraCount);
+            progressProvider.inProgress(changesetCount, jiraCount, synchroErrorCount);
         }
     }
 
@@ -83,14 +96,14 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             for (int i = 0; i <= match.groupCount(); i++)
             {
                 String issueKey = match.group(i);
-                if (issueManager.getIssueObject(issueKey)!=null)
+                if (issueManager.getIssueObject(issueKey) != null)
                     matches.add(issueKey);
             }
         }
 
         return matches;
     }
-    
+
     public Iterable<Changeset> getChangsetsIterator()
     {
         log.debug("synchronize [ {} ] with [ {} ]", key.getRepository().getProjectKey(),

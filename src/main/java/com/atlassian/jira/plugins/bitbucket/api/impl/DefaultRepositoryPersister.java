@@ -222,8 +222,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                     logger.error("Creating files JSON failed!", e);
                 }
 
-                IssueMapping create = activeObjects.create(IssueMapping.class, map);
-                return create;
+                return activeObjects.create(IssueMapping.class, map);
             }
         });
     }
