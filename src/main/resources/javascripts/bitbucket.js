@@ -46,15 +46,8 @@ function retrieveSyncStatus()
                 syncHtml = syncHtml + " Synchronized <strong>" + repo.sync.changesetCount + "</strong> changesets, found <strong>" + repo.sync.jiraCount + "</strong> matching JIRA issues";
                 if (repo.sync.synchroErrorCount > 0)
                 {
-                    var moredetailsTitle = "See the setup log files for more information";
-                    if (repo.sync.synchroErrorCount == 1)
-                    {
-                        syncHtml = syncHtml + ", <span class='synchroErrorCount'>(Unable to load details about 1 changeset!)</span>";
-                    }
-                    else
-                    {
-                        syncHtml = syncHtml + ", <span class='synchroErrorCount'>(Unable to load details about " + repo.sync.synchroErrorCount + " changesets!)</span>";
-                    }
+                    var moreDetailsTitle = "See the setup log files for more information";
+                    syncHtml = syncHtml + ", <span class='synchroErrorCount' title='" + moreDetailsTitle + "'>(Unable to load details about " + repo.sync.synchroErrorCount + " changesets)</span>";
                 }
                 if (repo.sync.error)
                 {
