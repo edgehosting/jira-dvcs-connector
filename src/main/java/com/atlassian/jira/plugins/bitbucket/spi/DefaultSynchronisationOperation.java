@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,12 +55,16 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                 Set<String> extractedIssues = extractProjectKey(key.getRepository().getProjectKey(), message);
                 // get detial changeset because in this response is not information about files
                 Changeset detailChangeset = null;
-                try
+                if (CollectionUtils.isNotEmpty(extractedIssues))
                 {
-                    detailChangeset = repositoryManager.getChangeset(key.getRepository(), changeset.getNode());
-                } catch (Exception e)
-                {
-                    log.warn(e.getMessage(), e);
+                    try
+                    {
+                        detailChangeset = repositoryManager.getChangeset(key.getRepository(), changeset.getNode());
+                    } catch (SourceControlException e)
+                    {
+                        log.warn("Unable to retrieve statistics for changeset " + changeset.getNode(), e);
+                        synchroErrorCount++;
+                    }
                 }
                 for (String extractedIssue : extractedIssues)
                 {
@@ -72,10 +77,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     {
                         log.error("Error adding changeset " + changeset, e);
                     }
-                }
-                if (detailChangeset == null)
-                {
-                    synchroErrorCount++;
                 }
             }
             progressProvider.inProgress(changesetCount, jiraCount, synchroErrorCount);
