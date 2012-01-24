@@ -24,7 +24,14 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
@@ -285,6 +292,30 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 return mappings.length != 0 ? mappings[0] : null;
             }
         });
+    }
+
+    @Override
+    public int getLastCommitDaysAgo(int repositoryId)
+    {
+        // hack for aggregation function MAX (Desc order + limit 1). AO is not supported it yet :(
+        Query query = Query.select().where("REPOSITORY_ID = ?", repositoryId).order(IssueMapping.COLUMN_DATE + " DESC").limit(1);
+        final IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class, query);
+        if (issueMappings == null || issueMappings.length != 1)
+        {
+            return 0;
+        }
+
+        final Calendar now = Calendar.getInstance();
+        final Date lastCommitDate = issueMappings[0].getDate();
+        if (lastCommitDate != null)
+        {
+            final long lastCommit = lastCommitDate.getTime();
+
+            return (int) ((now.getTime().getTime() - lastCommit) / (1000 * 60l * 60l * 24l));
+        } else
+        {
+            return -1;
+        }
     }
 
 }

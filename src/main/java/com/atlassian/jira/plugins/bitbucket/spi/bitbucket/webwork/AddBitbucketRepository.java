@@ -1,9 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.webwork;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException.UnauthorisedException;
@@ -13,6 +9,9 @@ import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketReposito
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Webwork action used to configure the bitbucket repositories
@@ -24,8 +23,8 @@ public class AddBitbucketRepository extends JiraWebActionSupport
     private String repositoryUrl;
     private String projectKey;
     private String isPrivate;
-    private String adminUsername = "";
-    private String adminPassword = "";
+//    private String adminUsername = "";
+//    private String adminPassword = "";
     private String bbUsername = "";
     private String bbPassword = "";
     private String addPostCommitService = "";
@@ -53,16 +52,16 @@ public class AddBitbucketRepository extends JiraWebActionSupport
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        if (!addPostCommitService())
-        {
-            adminUsername = "";
-            adminPassword = "";
-        }
+//        if (!addPostCommitService())
+//        {
+//            adminUsername = "";
+//            adminPassword = "";
+//        }
         SourceControlRepository repository;
         try
         {
             repository = globalRepositoryManager.addRepository(BitbucketRepositoryManager.BITBUCKET, projectKey, repositoryUrl, bbUsername, bbPassword,
-                adminUsername, adminPassword, "");
+                "", "", "");
             synchronizer.synchronize(repository);
         } catch (UnauthorisedException e)
         {
@@ -121,26 +120,6 @@ public class AddBitbucketRepository extends JiraWebActionSupport
         this.isPrivate = isPrivate;
     }
 
-    public String getAdminUsername()
-    {
-        return adminUsername;
-    }
-
-    public void setAdminUsername(String adminUsername)
-    {
-        this.adminUsername = adminUsername;
-    }
-
-    public String getAdminPassword()
-    {
-        return adminPassword;
-    }
-
-    public void setAdminPassword(String adminPassword)
-    {
-        this.adminPassword = adminPassword;
-    }
-
     public String getBbUsername()
     {
         return bbUsername;
@@ -173,7 +152,8 @@ public class AddBitbucketRepository extends JiraWebActionSupport
 
     public boolean addPostCommitService()
     {
-        return addPostCommitService != null && (addPostCommitService.toLowerCase().equals("on") || addPostCommitService.toLowerCase().equals("true"));
+        return true;
+        //return addPostCommitService != null && (addPostCommitService.toLowerCase().equals("on") || addPostCommitService.toLowerCase().equals("true"));
     }
 
     public void setAddPostCommitService(String addPostCommitService)

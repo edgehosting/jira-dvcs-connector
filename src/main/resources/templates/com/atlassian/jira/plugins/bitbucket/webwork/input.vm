@@ -59,37 +59,40 @@
 
                 <input type="hidden" name="atl_token" id="atl_token" value="$atl_token">
                 <input type="hidden" name="isPrivate" id="isPrivate">
+                <input type="hidden" name="privateBbCredentialsVisible" id="privateBbCredentialsVisible" value="false">
 
 
+                #if ($action.getMode() == 'single')
+                    <input type='hidden' name='projectKey' value='$action.getProjectKey()'>
+                    <input type='hidden' name='mode' value='single'>
+                #else
+                    <div class="field-group">
+                            <label for="projectKey">Project:</label>
+                            <select name="projectKey" id="projectKey">
+                                #foreach ($project in $action.getProjects())
+                                    <option value="${project.key}"#if ($action.getProjectKey() == $project.key) selected #end>$textutils.htmlEncode(${project.name})</option>
+                                #end
+                            </select>
+                     </div>
+                #end
                 <div class="aui-group">
                     <div class="aui-item">
-                        #if ($action.getMode() == 'single')
-                            <input type='hidden' name='projectKey' value='$action.getProjectKey()'>
-                            <input type='hidden' name='mode' value='single'>
-                        #else
-                            <div class="field-group">
-                                    <label for="projectKey">Project:</label>
-                                    <select name="projectKey" id="projectKey">
-                                        #foreach ($project in $action.getProjects())
-                                            <option value="${project.key}"#if ($action.getProjectKey() == $project.key) selected #end>$textutils.htmlEncode(${project.name})</option>
-                                        #end
-                                    </select>
-                             </div>
-                        #end
 
                         <div class="field-group">
                             <label for="url">Repository Url:</label>
-## TODO                           <input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" />
+                              <input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" />
 ##                            <input type="text" id="url" name="repositoryUrl" value="https://github.com/farky/farky-test-repo" size="60" />
-                            <input type="text" id="url" name="repositoryUrl" value="https://github.com/dusanhornik/my-private-github-repo" size="60" />
+##                            <input type="text" id="url" name="repositoryUrl" value="https://github.com/dusanhornik/my-private-github-repo" size="60" />
+##                            <input type="text" id="url" name="repositoryUrl" value="https://bitbucket.org/jirabitbucketconnector/private-hg-repo" size="60" />
                         </div>
                     </div>
-                    <div class="aui-item" style="padding-top: 48px;">
+                    <div class="aui-item">
                         <label>Examples:</label>
                         <div><i>https://bitbucket.org/atlassianguy/my-repository</i></div>
                         <div><i>https://github.com/owner/repository</i></div>
                     </div>
                 </div>
+                <div id="bbCredentials"></div>
                 <div id="aui-message-bar"></div>
 
 
@@ -125,7 +128,16 @@
                         #end
                         <td width="40px"><img style="padding-left: 15px;" src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/${repoTypeImgName}_2.png" alt="bitbucket repository"></td>
                         <td><a href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_new">$textutils.htmlEncode($repository.repositoryUri.slug)</a></td>
-                        <td width="260px" style="text-align: right;">
+                        <td width="400px" style="text-align: right;">
+
+                            #if ($repository.getLastCommitDaysAgo() > 0)
+                                #if ($repository.getLastCommitDaysAgo() == 1)
+                                    #set ($days = 'day')
+                                #else
+                                    #set ($days = 'days')
+                                #end
+                                <span class="lastCommitDaysAgo repository$repositoryId">last commit $repository.getLastCommitDaysAgo() $days ago </span>|
+                            #end
                             <span title="Show/Hide info about syncing" class="syncicon repository$repositoryId" onclick="AJS.$('.gh_messages.repository$repositoryId').slideToggle()">&nbsp;</span>
                             <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Force Sync</a> |
 ##                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repositoryId=$repositoryId&projectKey=$encodedProjectKey&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |
