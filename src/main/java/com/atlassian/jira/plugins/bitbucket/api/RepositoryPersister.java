@@ -82,11 +82,4 @@ public interface RepositoryPersister {
      */
     public IssueMapping getIssueMapping(String node);
 
-    /**
-     *
-     *
-     * @param repositoryId
-     * @return how many days ago has been last commit done for given repository
-     */
-    int getLastCommitDaysAgo(int repositoryId);
 }

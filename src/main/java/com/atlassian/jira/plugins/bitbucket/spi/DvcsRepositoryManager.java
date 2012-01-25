@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
                     pm.getRepositoryUrl());
             return new DefaultSourceControlRepository(pm.getID(), pm.getRepositoryName(),  pm.getRepositoryType(), getRepositoryUri(pm.getRepositoryUrl()),
                     pm.getProjectKey(), pm.getUsername(), decryptedPassword,
-                    pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken(), repositoryPersister.getLastCommitDaysAgo(pm.getID()));
+                    pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken());
         }
     };
 
@@ -248,5 +249,21 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         List<IssueMapping> latestIssueMappings = repositoryPersister.getLatestIssueMappings(count, gf, getRepositoryType());
         List<Changeset> changesets = Lists.transform(latestIssueMappings, toChangesetTransformer);
         return Sets.newHashSet(changesets);
+    }
+    
+    
+    @Override
+    public Date getLastCommitDate(SourceControlRepository repo)
+    {
+        ProjectMapping projectMapping = repositoryPersister.getRepository(repo.getId());
+        return projectMapping.getLastCommitDate();
+    }
+
+    @Override
+    public void setLastCommitDate(SourceControlRepository repo, Date date)
+    {
+        ProjectMapping projectMapping = repositoryPersister.getRepository(repo.getId());
+        projectMapping.setLastCommitDate(date);
+        projectMapping.save();
     }
 }

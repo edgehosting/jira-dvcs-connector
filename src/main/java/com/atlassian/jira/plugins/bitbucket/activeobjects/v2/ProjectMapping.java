@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.activeobjects.v2;
 
+import java.util.Date;
+
 import net.java.ao.Entity;
 import net.java.ao.schema.Table;
 
@@ -15,6 +17,7 @@ public interface ProjectMapping extends Entity
     String getAdminPassword();
     String getAdminUsername();
     String getAccessToken();
+    Date getLastCommitDate();
 
     void setRepositoryName(String repositoryName);
     void setRepositoryType(String repositoryType);
@@ -25,4 +28,6 @@ public interface ProjectMapping extends Entity
     void setAdminPassword(String pasword);
     void setAdminUsername(String username);
     void setAccessToken(String accessToken);
+    void setLastCommitDate(Date lastSyncDate);
+
 }

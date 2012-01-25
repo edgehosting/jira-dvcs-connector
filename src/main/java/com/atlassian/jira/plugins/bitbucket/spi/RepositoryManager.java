@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -125,8 +126,25 @@ public interface RepositoryManager
      */
     public Set<Changeset> getLatestChangesets(final int count, GlobalFilter gf);
 
+    /**
+     * @param repositoryUrl
+     * @return
+     */
     public UrlInfo getUrlInfo(String repositoryUrl);
 
+    /**
+     * Reloads the changeset from the repository.
+     * In previous versions of the plugin we stored  little information about changesets locally (only changset id). 
+     * Now we keep more columns (date, message, author, etc) but instead of resyncing all repositories again we use 
+     * lazy loading to reload old changesets only when required.
+     *     
+     * @param issueMapping
+     * @return
+     */
     public Changeset reloadChangeset(IssueMapping issueMapping);
+    
+    public Date getLastCommitDate(SourceControlRepository repo);
+
+    public void setLastCommitDate(SourceControlRepository repo, Date date);
 
 }

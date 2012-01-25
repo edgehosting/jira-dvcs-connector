@@ -7,11 +7,14 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.theplugin.commons.util.DateUtil;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -182,5 +185,11 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     public void setPostCommitRepositoryType(String postCommitRepositoryType)
     {
         this.postCommitRepositoryType = postCommitRepositoryType;
+    }
+    
+    public String getLastCommitRelativeDate(SourceControlRepository repository)
+    {
+        Date lastCommitDate = globalRepositoryManager.getLastCommitDate(repository);
+        return DateUtil.getRelativePastDate(new Date(), lastCommitDate);
     }
 }

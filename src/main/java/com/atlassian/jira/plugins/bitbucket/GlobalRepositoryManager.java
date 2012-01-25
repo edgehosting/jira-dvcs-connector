@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -207,4 +208,16 @@ public class GlobalRepositoryManager implements RepositoryManager
         throw new UnsupportedOperationException("This implementation should never be called.");
     }
 
+    @Override
+    public Date getLastCommitDate(SourceControlRepository repo)
+    {
+        return getManagerByRepository(repo).getLastCommitDate(repo);
+    }
+
+    @Override
+    public void setLastCommitDate(SourceControlRepository repo, Date date)
+    {
+        getManagerByRepository(repo).setLastCommitDate(repo, date);
+    }
+    
 }

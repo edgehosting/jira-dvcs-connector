@@ -17,10 +17,9 @@ public class DefaultSourceControlRepository implements SourceControlRepository
 	private final String adminPassword;
     private final String repositoryType;
     private final String accessToken;
-    private final int lastCommitDaysAgo;
 
     public DefaultSourceControlRepository(int id, String repositoryName, String repositoryType, RepositoryUri repositoryUri, String projectKey, String username, String password,
-			String adminUsername, String adminPassword, String accessToken, int lastCommitDaysAgo)
+			String adminUsername, String adminPassword, String accessToken)
 	{
 		this.id = id;
         this.repositoryName = repositoryName;
@@ -32,7 +31,6 @@ public class DefaultSourceControlRepository implements SourceControlRepository
 		this.adminPassword = adminPassword;
         this.repositoryType = repositoryType;
         this.accessToken = accessToken;
-        this.lastCommitDaysAgo = lastCommitDaysAgo;
     }
     
 	@Override
@@ -97,11 +95,6 @@ public class DefaultSourceControlRepository implements SourceControlRepository
 	}
 
     @Override
-    public int getLastCommitDaysAgo() {
-        return lastCommitDaysAgo;
-    }
-
-    @Override
 	public boolean equals(Object obj)
 	{
 		if (obj == null) return false;
@@ -112,7 +105,7 @@ public class DefaultSourceControlRepository implements SourceControlRepository
 			.append(projectKey, that.projectKey).append(username, that.username)
 			.append(password, that.password).append(adminUsername, that.adminUsername)
 			.append(adminPassword, that.adminPassword).append(accessToken, that.accessToken)
-            .append(lastCommitDaysAgo, that.lastCommitDaysAgo).isEquals();
+            .isEquals();
 	}
 	
 	@Override
@@ -120,6 +113,6 @@ public class DefaultSourceControlRepository implements SourceControlRepository
     {
         return new HashCodeBuilder(17, 37).append(id).append(repositoryUri).append(repositoryName).append(projectKey)
             .append(username).append(password).append(adminUsername).append(adminPassword).append(accessToken)
-            .append(lastCommitDaysAgo).toHashCode();
+            .toHashCode();
     }
 }

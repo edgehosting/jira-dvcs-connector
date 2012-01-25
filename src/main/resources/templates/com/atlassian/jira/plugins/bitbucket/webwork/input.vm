@@ -130,14 +130,7 @@
                         <td><a href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_new">$textutils.htmlEncode($repository.repositoryUri.slug)</a></td>
                         <td width="400px" style="text-align: right;">
 
-                            #if ($repository.getLastCommitDaysAgo() > 0)
-                                #if ($repository.getLastCommitDaysAgo() == 1)
-                                    #set ($days = 'day')
-                                #else
-                                    #set ($days = 'days')
-                                #end
-                                <span class="lastCommitDaysAgo repository$repositoryId">last commit $repository.getLastCommitDaysAgo() $days ago </span>|
-                            #end
+                            <span class="lastCommitDaysAgo repository$repositoryId">last commit $action.getLastCommitRelativeDate($repository)</span>|
                             <span title="Show/Hide info about syncing" class="syncicon repository$repositoryId" onclick="AJS.$('.gh_messages.repository$repositoryId').slideToggle()">&nbsp;</span>
                             <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Force Sync</a> |
 ##                            <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?repositoryId=$repositoryId&projectKey=$encodedProjectKey&nextAction=ShowPostCommitURL&mode=$encodedMode&atl_token=$atl_token">Post Commit</a> |

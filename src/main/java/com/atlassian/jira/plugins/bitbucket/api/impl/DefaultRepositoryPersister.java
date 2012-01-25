@@ -294,28 +294,4 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
 
-    @Override
-    public int getLastCommitDaysAgo(int repositoryId)
-    {
-        // hack for aggregation function MAX (Desc order + limit 1). AO is not supported it yet :(
-        Query query = Query.select().where("REPOSITORY_ID = ?", repositoryId).order(IssueMapping.COLUMN_DATE + " DESC").limit(1);
-        final IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class, query);
-        if (issueMappings == null || issueMappings.length != 1)
-        {
-            return 0;
-        }
-
-        final Calendar now = Calendar.getInstance();
-        final Date lastCommitDate = issueMappings[0].getDate();
-        if (lastCommitDate != null)
-        {
-            final long lastCommit = lastCommitDate.getTime();
-
-            return (int) ((now.getTime().getTime() - lastCommit) / (1000 * 60l * 60l * 24l));
-        } else
-        {
-            return -1;
-        }
-    }
-
 }

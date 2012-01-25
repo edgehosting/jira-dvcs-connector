@@ -57,9 +57,4 @@ public interface SourceControlRepository
 	 * @return access token foe oAuth authentication when accessing private github repository
 	 */
 	String getAccessToken();
-
-    /**
-     * @return how many days ago has been last commit done
-     */
-    int getLastCommitDaysAgo();
 }
