@@ -48,6 +48,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
     public String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername, String adminPassword)
     {
         linkRepositoryButton.click();
+        waitFormBecomeVisible();
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
@@ -87,6 +88,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
     public GithubConfigureRepositoriesPage addRepoToProjectFailingStep1(String projectKey, String url)
     {
         linkRepositoryButton.click();
+        waitFormBecomeVisible();
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
@@ -100,6 +102,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
     public BaseConfigureRepositoriesPage addRepoToProjectFailingStep2(String projectKey, String url)
     {
         linkRepositoryButton.click();
+        waitFormBecomeVisible();
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
@@ -176,6 +179,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
     public GithubConfigureRepositoriesPage addRepoToProject(String projectKey, String url)
     {
         linkRepositoryButton.click();
+        waitFormBecomeVisible();
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();

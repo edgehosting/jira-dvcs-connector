@@ -171,6 +171,16 @@ public abstract class BaseConfigureRepositoriesPage implements Page
         Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncFinishedCond);
     }
 
+    protected void waitFormBecomeVisible(){
+        try
+        {
+            Thread.sleep(2000);
+        } catch (InterruptedException e)
+        {
+            // not important state
+        }
+    }
+
     /**
      * The current error status message
      *
