@@ -128,12 +128,14 @@ function showAddRepoDetails(show)
 {
     if (show)
     {
-        AJS.$('#addRepositoryDetails').slideToggle();
-        AJS.$('#linkRepositoryButton').hide();
+    	AJS.$('#linkRepositoryButton').fadeOut(function(){
+    		AJS.$('#addRepositoryDetails').slideDown();
+    	});
     } else {
-        AJS.$('#addRepositoryDetails').slideToggle();
-        AJS.$("#bbCredentials").html("");
-        AJS.$('#linkRepositoryButton').show();
+        AJS.$('#addRepositoryDetails').slideUp(function(){
+        	AJS.$('#linkRepositoryButton').fadeIn();
+        	AJS.$("#bbCredentials").html("");
+        });
     }
 
 }
