@@ -1,12 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
-
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
@@ -14,6 +7,13 @@ import com.atlassian.jira.plugins.bitbucket.spi.DefaultChangeset;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Factory for {@link Changeset} implementations
@@ -39,7 +39,7 @@ public class BitbucketChangesetFactory
     {
         try
         {
-            List<ChangesetFile> files = fileList(filesJson);
+            List<ChangesetFile> files = fileList(baseJson, filesJson);
             return new DefaultChangeset(
                     repositoryId,
                     baseJson.getString("node"),
@@ -85,11 +85,21 @@ public class BitbucketChangesetFactory
         return list;
     }
 
-    private static List<ChangesetFile> fileList(JSONArray parents) throws JSONException
+    private static List<ChangesetFile> fileList(JSONObject baseJson, JSONArray diffstatJson) throws JSONException
     {
         List<ChangesetFile> list = new ArrayList<ChangesetFile>();
-        for (int i = 0; i < parents.length(); i++)
-            list.add(BitbucketChangesetFileFactory.parse((JSONObject) parents.get(i)));
+        JSONArray parents;
+        if (diffstatJson == null || diffstatJson.length() == 0)
+        {
+            parents = baseJson.getJSONArray("files");
+            for (int i = 0; i < parents.length(); i++)
+                list.add(BitbucketChangesetFileFactory.parseFromBaseJson((JSONObject) parents.get(i)));
+        } else
+        {
+            parents = diffstatJson;
+            for (int i = 0; i < parents.length(); i++)
+                list.add(BitbucketChangesetFileFactory.parseFromDiffstatJson((JSONObject) parents.get(i)));
+        }
         return list;
     }
 
