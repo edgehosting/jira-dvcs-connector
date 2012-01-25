@@ -126,11 +126,17 @@ public class BitbucketCommunicator implements Communicator
                 return Collections.emptyList();
             }
 
-            JSONArray list = new JSONObject(extendedResponse.getResponseString()).getJSONArray("changesets");
-            for (int i = 0; i < list.length(); i++)
+            if (extendedResponse.isSuccessful())
             {
-                JSONObject json = list.getJSONObject(i);
-                changesets.add(BitbucketChangesetFactory.parse(repository.getId(), json, new JSONArray()));
+                JSONArray list = new JSONObject(extendedResponse.getResponseString()).getJSONArray("changesets");
+                for (int i = 0; i < list.length(); i++)
+                {
+                    JSONObject json = list.getJSONObject(i);
+                    changesets.add(BitbucketChangesetFactory.parse(repository.getId(), json, new JSONArray()));
+                }
+            } else
+            {
+                throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
             }
         } catch (ResponseException e)
         {
@@ -240,8 +246,14 @@ public class BitbucketCommunicator implements Communicator
             {
                 throw new UnauthorisedException("Invalid credentials");
             }
-            String responseString = extendedResponse.getResponseString();
-            return new JSONObject(responseString).getString("name");
+            if (extendedResponse.isSuccessful())
+            {
+                String responseString = extendedResponse.getResponseString();
+                return new JSONObject(responseString).getString("name");
+            } else
+            {
+                throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
+            }
         } catch (ResponseException e)
         {
             logger.debug(e.getMessage(), e);

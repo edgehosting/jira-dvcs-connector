@@ -106,15 +106,21 @@ public class GithubCommunicator implements Communicator
                 return Collections.emptyList();
             }
 
-            String responseString = extendedResponse.getResponseString();
-            JSONArray list = new JSONObject(responseString).getJSONArray("commits");
-            for (int i = 0; i < list.length(); i++)
+            if (extendedResponse.isSuccessful())
             {
-                JSONObject commitJson = list.getJSONObject(i);
-                String id = commitJson.getString("id");
-                String msg = commitJson.getString("message");
+                String responseString = extendedResponse.getResponseString();
+                JSONArray list = new JSONObject(responseString).getJSONArray("commits");
+                for (int i = 0; i < list.length(); i++)
+                {
+                    JSONObject commitJson = list.getJSONObject(i);
+                    String id = commitJson.getString("id");
+                    String msg = commitJson.getString("message");
 
-                changesets.add(new DefaultChangeset(repository.getId(), id, msg));
+                    changesets.add(new DefaultChangeset(repository.getId(), id, msg));
+                }
+            } else
+            {
+                throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
             }
         } catch (ResponseException e)
         {
@@ -241,7 +247,7 @@ public class GithubCommunicator implements Communicator
 
     @Override
     public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
-        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+                                    String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
 
         Authentication auth;
@@ -256,16 +262,21 @@ public class GithubCommunicator implements Communicator
         try
         {
             ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null,
-                repositoryUri.getApiUrl());
+                    repositoryUri.getApiUrl());
             // in case we have valid access_token but for other account github
             // returns HttpStatus.SC_NOT_FOUND response
             if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
                 throw new SourceControlException.UnauthorisedException("You don't have access to the repository.");
             }
-            String responseString = extendedResponse.getResponseString();
-            return new JSONObject(responseString).getJSONObject("repository").getString("name");
-
+            if (extendedResponse.isSuccessful())
+            {
+                String responseString = extendedResponse.getResponseString();
+                return new JSONObject(responseString).getJSONObject("repository").getString("name");
+            } else
+            {
+                throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
+            }
         } catch (ResponseException e)
         {
             log.debug(e.getMessage(), e);
