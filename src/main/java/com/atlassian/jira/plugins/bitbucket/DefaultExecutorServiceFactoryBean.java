@@ -14,7 +14,7 @@ public class DefaultExecutorServiceFactoryBean implements ExecutorServiceFactory
 
     public DefaultExecutorServiceFactoryBean()
     {
-        this(2,"ExecutorServiceThread");
+        this(2,"BitbucketConnectorExecutorServiceThread");
     }
 
     public DefaultExecutorServiceFactoryBean(int size, String name)
