@@ -1,5 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.webwork;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException.UnauthorisedException;
@@ -8,10 +12,6 @@ import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
-import com.atlassian.sal.api.ApplicationProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Webwork action used to configure the bitbucket repositories
@@ -23,40 +23,24 @@ public class AddBitbucketRepository extends JiraWebActionSupport
     private String repositoryUrl;
     private String projectKey;
     private String isPrivate;
-//    private String adminUsername = "";
-//    private String adminPassword = "";
     private String bbUsername = "";
     private String bbPassword = "";
-    private String addPostCommitService = "";
-    private String postCommitUrl;
 
     private final RepositoryManager globalRepositoryManager;
     private final Synchronizer synchronizer;
-    private final String baseUrl;
 
 
     public AddBitbucketRepository(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, 
-        Synchronizer synchronizer, ApplicationProperties applicationProperties)
+        Synchronizer synchronizer)
     {
         this.globalRepositoryManager = globalRepositoryManager;
         this.synchronizer = synchronizer;
-        this.baseUrl = applicationProperties.getBaseUrl();
-    }
-
-    @Override
-    protected void doValidation()
-    {
     }
 
     @Override
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-//        if (!addPostCommitService())
-//        {
-//            adminUsername = "";
-//            adminPassword = "";
-//        }
         SourceControlRepository repository;
         try
         {
@@ -74,17 +58,16 @@ public class AddBitbucketRepository extends JiraWebActionSupport
             log.debug("Failed adding the repository: ["+e.getMessage()+"]");
             return INPUT;
         }
+        
         try
         {
-            if (addPostCommitService())
-            {
-                globalRepositoryManager.setupPostcommitHook(repository);
-            }
+            globalRepositoryManager.setupPostcommitHook(repository);
         } catch (SourceControlException e)
         {
             log.debug("Failed adding postcommit hook: ["+e.getMessage()+"]");
-            postCommitUrl = baseUrl + "/rest/bitbucket/1.0/repository/" + repository.getId() + "/sync";
-            return ERROR;
+            globalRepositoryManager.removeRepository(repository.getId());
+            addErrorMessage("Error adding postcommit hook. Repository was not added. Do you have admin rights to the repository? ["+e.getMessage()+"]");
+            return INPUT;
         }
 
         return getRedirect("ConfigureBitbucketRepositories.jspa?addedRepositoryId="+repository.getId()+"&atl_token=" + getXsrfToken());
@@ -138,26 +121,5 @@ public class AddBitbucketRepository extends JiraWebActionSupport
     public void setBbPassword(String bbPassword)
     {
         this.bbPassword = bbPassword;
-    }
-
-    public String getPostCommitUrl()
-    {
-        return postCommitUrl;
-    }
-
-    public void setPostCommitUrl(String postCommitUrl)
-    {
-        this.postCommitUrl = postCommitUrl;
-    }
-
-    public boolean addPostCommitService()
-    {
-        return true;
-        //return addPostCommitService != null && (addPostCommitService.toLowerCase().equals("on") || addPostCommitService.toLowerCase().equals("true"));
-    }
-
-    public void setAddPostCommitService(String addPostCommitService)
-    {
-        this.addPostCommitService = addPostCommitService;
     }
 }
