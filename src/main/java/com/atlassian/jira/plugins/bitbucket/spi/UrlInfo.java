@@ -15,12 +15,16 @@ public class UrlInfo
     @XmlAttribute
     private boolean isPrivate;
 
+    @XmlAttribute
+    private String validationError;
+
     public UrlInfo() {}
     
-    public UrlInfo(String repositoryType, boolean isPrivate)
+    public UrlInfo(String repositoryType, boolean isPrivate, String validationError)
     {
         this.repositoryType = repositoryType;
         this.isPrivate = isPrivate;
+        this.validationError = validationError;
     }
 
     public String getRepositoryType()
@@ -33,4 +37,9 @@ public class UrlInfo
         return isPrivate;
     }
 
+    public String getValidationError()
+    {
+        return validationError;
+    }
+    
 }

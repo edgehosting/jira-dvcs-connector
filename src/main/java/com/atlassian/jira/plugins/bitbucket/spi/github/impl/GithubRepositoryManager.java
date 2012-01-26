@@ -6,6 +6,8 @@ import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
+import com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -27,11 +29,14 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
 
     public static final String GITHUB = "github";
 
+    private final GithubOAuth githubOAuth;
+
     public GithubRepositoryManager(RepositoryPersister repositoryPersister, @Qualifier("githubCommunicator") Communicator communicator,
                                    Encryptor encryptor, ApplicationProperties applicationProperties, IssueLinker issueLinker,
-                                   TemplateRenderer templateRenderer, IssueManager issueManager)
+                                   TemplateRenderer templateRenderer, IssueManager issueManager, GithubOAuth githubOAuth)
     {
         super(communicator, repositoryPersister, encryptor, applicationProperties, issueLinker, templateRenderer, issueManager);
+        this.githubOAuth = githubOAuth;
     }
 
     @Override
@@ -63,6 +68,16 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
     public String getRepositoryType()
     {
         return GITHUB;
+    }
+    
+    public UrlInfo validateUrlInfo(UrlInfo urlInfo)
+    {
+        if (StringUtils.isBlank(githubOAuth.getClientId()) || StringUtils.isBlank(githubOAuth.getClientSecret()))
+        {
+            urlInfo = new UrlInfo(urlInfo.getRepositoryType(), urlInfo.isPrivate(),
+                "GitHub OAuth settings have to be configured before adding GitHub repository");
+        }
+        return super.validateUrlInfo(urlInfo);
     }
 
     @Override

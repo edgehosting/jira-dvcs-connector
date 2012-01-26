@@ -220,7 +220,14 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     public UrlInfo getUrlInfo(String repositoryUrl)
     {
         if (!hasValidFormat(repositoryUrl)) return null;
-        return getCommunicator().getUrlInfo(getRepositoryUri(repositoryUrl));
+        UrlInfo urlInfo = getCommunicator().getUrlInfo(getRepositoryUri(repositoryUrl));
+        
+        return validateUrlInfo(urlInfo);
+    }
+
+    public UrlInfo validateUrlInfo(UrlInfo urlInfo)
+    {
+        return urlInfo; 
     }
 
     @Override

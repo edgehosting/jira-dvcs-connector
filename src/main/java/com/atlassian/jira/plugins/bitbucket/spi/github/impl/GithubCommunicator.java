@@ -211,7 +211,7 @@ public class GithubCommunicator implements Communicator
         log.debug("get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
         Boolean repositoryPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
         if (repositoryPrivate == null) return null;
-        return new UrlInfo(GithubRepositoryManager.GITHUB, repositoryPrivate.booleanValue());
+        return new UrlInfo(GithubRepositoryManager.GITHUB, repositoryPrivate.booleanValue(), null);
     }
 
     private List<String> getBranches(SourceControlRepository repository)
