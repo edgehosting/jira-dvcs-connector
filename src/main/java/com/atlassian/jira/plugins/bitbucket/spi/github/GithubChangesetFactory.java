@@ -4,8 +4,8 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
-import com.atlassian.jira.plugins.bitbucket.spi.DefaultChangeset;
 import com.atlassian.jira.plugins.bitbucket.spi.DefaultBitbucketChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.spi.DefaultChangeset;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -23,12 +23,29 @@ public class GithubChangesetFactory
 {
 
     /**
-     * Parse the json object as a bitbucket changeset
+     * Parse the json object from GitHub v2. API as a changeset. We need only minimal information from that.
+     *
+     * @param json  the json object describing the change
+     * @return the parsed {@link com.atlassian.jira.plugins.bitbucket.api.Changeset} with minimal fields
+     */
+    public static Changeset parseV2(int repositoryId, JSONObject commitJson) throws JSONException
+    {
+
+        String id = commitJson.getString("id");
+        String msg = commitJson.getString("message");
+        Date date = parseDate(commitJson.getString("committed_date"));
+
+        return new DefaultChangeset(repositoryId, id, msg, date);
+    }
+
+
+    /**
+     * Parse the json object from GitHub v3. API as a changeset
      *
      * @param json  the json object describing the change
      * @return the parsed {@link com.atlassian.jira.plugins.bitbucket.api.Changeset}
      */
-    public static Changeset parse(int repositoryId, String branch, JSONObject json)
+    public static Changeset parseV3(int repositoryId, String branch, JSONObject json)
     {
         try
         {

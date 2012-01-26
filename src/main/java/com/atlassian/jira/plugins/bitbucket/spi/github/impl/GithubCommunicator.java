@@ -67,7 +67,7 @@ public class GithubCommunicator implements Communicator
                     CustomStringUtils.encode(slug) + "/commits/" + CustomStringUtils.encode(id), null,
                     apiUrl);
 
-            return GithubChangesetFactory.parse(repository.getId(), "master", new JSONObject(responseString));
+            return GithubChangesetFactory.parseV3(repository.getId(), "master", new JSONObject(responseString));
         } catch (ResponseException e)
         {
             throw new SourceControlException("could not get result", e);
@@ -113,10 +113,7 @@ public class GithubCommunicator implements Communicator
                 for (int i = 0; i < list.length(); i++)
                 {
                     JSONObject commitJson = list.getJSONObject(i);
-                    String id = commitJson.getString("id");
-                    String msg = commitJson.getString("message");
-
-                    changesets.add(new DefaultChangeset(repository.getId(), id, msg));
+                    changesets.add(GithubChangesetFactory.parseV2(repository.getId(), commitJson));
                 }
             } else
             {

@@ -1,27 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.rest;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
@@ -35,8 +13,19 @@ import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
+import com.atlassian.theplugin.commons.util.DateUtil;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Path("/")
 public class RootResource
@@ -58,8 +47,11 @@ public class RootResource
         @Override
         public Repository apply(SourceControlRepository from)
         {
+
+            final String relativePastDate = DateUtil.getRelativePastDate(new Date(), globalRepositoryManager.getLastCommitDate(from));
+
             Repository repo = new Repository(from.getId(), from.getRepositoryType(), from.getProjectKey(), from.getRepositoryUri().getRepositoryUrl(),
-                    from.getUsername(), null, from.getAdminUsername(), null, null); // don't include password or accessToken
+                    from.getUsername(), null, from.getAdminUsername(), null, null, relativePastDate); // don't include password or accessToken
             Progress progress = synchronizer.getProgress(from);
             if (progress != null)
                 repo.setStatus(new SyncProgress(progress.isFinished(), progress.getChangesetCount(), progress
@@ -208,7 +200,7 @@ public class RootResource
     @Path("/urlinfo")
     public Response urlInfo(@QueryParam("repositoryUrl") String repositoryUrl)
     {
-        UrlInfo urlInfo = globalRepositoryManager.getUrlInfo(repositoryUrl);
+        UrlInfo urlInfo = globalRepositoryManager.getUrlInfo(repositoryUrl.trim());
         if (urlInfo!=null)
             return Response.ok(urlInfo).build();
         else 
