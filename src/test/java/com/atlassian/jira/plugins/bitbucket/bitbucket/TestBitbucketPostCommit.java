@@ -86,7 +86,7 @@ public class TestBitbucketPostCommit
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable
             {
-                return new DefaultChangeset(0, (String) invocation.getArguments()[1], "");
+                return new DefaultChangeset(0, (String) invocation.getArguments()[1], "", null);
             }
         });
 

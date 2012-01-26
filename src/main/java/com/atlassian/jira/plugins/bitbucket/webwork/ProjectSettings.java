@@ -1,5 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugin.projectoperation.AbstractPluggableProjectOperation;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
@@ -7,13 +11,6 @@ import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.project.Project;
 import com.atlassian.sal.api.ApplicationProperties;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.util.List;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.util.List;
-import java.util.regex.Pattern;
 
 public class ProjectSettings extends AbstractPluggableProjectOperation
 {

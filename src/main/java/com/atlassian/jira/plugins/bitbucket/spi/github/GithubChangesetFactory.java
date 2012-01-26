@@ -69,7 +69,7 @@ public class GithubChangesetFactory
                 login = author.has("login") ? author.getString("login") : "";
             }
 
-            List<ChangesetFile> changesetFiles = fileList(json.getJSONArray("files"), false);
+            List<ChangesetFile> changesetFiles = fileList(json.getJSONArray("files"));
 
             return new DefaultChangeset(
                     repositoryId,
@@ -113,7 +113,7 @@ public class GithubChangesetFactory
         return list;
     }
 
-    private static List<ChangesetFile> fileList(JSONArray files, boolean fromPostcommitHook) throws JSONException
+    private static List<ChangesetFile> fileList(JSONArray files) throws JSONException
     {
         List<ChangesetFile> list = new ArrayList<ChangesetFile>();
 

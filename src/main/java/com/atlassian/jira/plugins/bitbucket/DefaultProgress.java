@@ -71,5 +71,4 @@ public class DefaultProgress implements Progress, ProgressWriter
 	{
 		return isFinished;
 	}
-
 }

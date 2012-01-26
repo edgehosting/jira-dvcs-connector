@@ -128,7 +128,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     public Changeset getChangeset(SourceControlRepository repository, String node)
     {
         return getCommunicator().getChangeset(repository, node);
-
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
-import org.hamcrest.Matchers;
 import org.hamcrest.core.IsEqual;
 import org.openqa.selenium.By;
 
