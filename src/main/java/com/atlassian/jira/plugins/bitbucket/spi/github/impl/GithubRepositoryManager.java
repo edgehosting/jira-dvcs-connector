@@ -74,8 +74,9 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
     {
         if (StringUtils.isBlank(githubOAuth.getClientId()) || StringUtils.isBlank(githubOAuth.getClientSecret()))
         {
+            String baseUrl = getApplicationProperties().getBaseUrl();
             urlInfo = new UrlInfo(urlInfo.getRepositoryType(), urlInfo.isPrivate(),
-                "GitHub OAuth settings have to be configured before adding GitHub repository");
+                "<a href='"+baseUrl+"/secure/admin/ConfigureGithubOAuth!default.jspa'>GitHub OAuth Settings</a> have to be configured before adding GitHub repository");
         }
         return super.validateUrlInfo(urlInfo);
     }

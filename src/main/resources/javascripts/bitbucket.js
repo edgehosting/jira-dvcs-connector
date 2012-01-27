@@ -118,11 +118,14 @@ function submitFunction() {
 			AJS.$('#projectKeyReadOnly').html(AJS.$('#projectKey').val());
 	        AJS.$('#projectKey').hide();
 			AJS.$('#projectKeyReadOnly').show();
-			
+				
+			// hide examples
+			AJS.$('#examples').hide();
+
 			//show username / password
-			var credentialsHtml = "<h3>For private Bitbucket repository you have to add access credentials</h3>"
+			var credentialsHtml = ""
 				+ "<div class='field-group'>"
-				+ "<label for='bbUsername'>Username</label>"
+				+ "<label for='bbUsername'>Username <span class='notbold'>(requires admin access to repo):</span></label>"
 				+ "<input type='text' name='bbUsername' id='bbUsername' value=''></div>"
 				+ "<div class='field-group' style='margin-bottom: 10px;'>"
 				+ "<label for='bbPassword'>Password</label>"
@@ -139,14 +142,21 @@ function showAddRepoDetails(show) {
     if (show) {
 
     	// Reset to default view:
+    	
     	// - hide username/password
         AJS.$("#bbCredentials").html("");
+        
         // - show url field
         AJS.$('#url').show();
 		AJS.$('#urlReadOnly').hide();
+		
 		// - show projectKey field
         AJS.$('#projectKey').show();
 		AJS.$('#projectKeyReadOnly').hide();
+		
+		// show examples
+		AJS.$('#examples').show();
+		
 
 		AJS.$('#linkRepositoryButton').fadeOut(function() {
             AJS.$('#addRepositoryDetails').slideDown();

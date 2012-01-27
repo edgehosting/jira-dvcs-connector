@@ -410,6 +410,8 @@ a:hover.repositoryNameLink {
 .aui-item-column1 {
     display: inline;
     float: left;
+    margin-bottom:12px;
+    
 }
 
 .aui-item-column2 {
@@ -423,6 +425,11 @@ a:hover.repositoryNameLink {
     color: #555 !important;
 }
 
+#addRepositoryDetails {
+    padding: 10px; 
+    display: none;	
+}
+
 #addRepositoryContent label {
     color: #555 !important;
     font-weight: bold;
@@ -434,4 +441,17 @@ a:hover.repositoryNameLink {
 
 #addRepositoryContent div,  #addRepositoryContent input {
     color: #555 !important;
+}
+
+.buttons-container {
+	margin-top: 20px;
+	border: none;	
+}
+
+#addRepositoryDetails .field-group input {
+    width: 380px	
+}
+
+.notbold {
+	font-weight: normal;
 }

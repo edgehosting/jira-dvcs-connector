@@ -127,7 +127,7 @@ public class AddGithubRepository extends JiraWebActionSupport
         {
             log.debug("Failed adding postcommit hook: ["+e.getMessage()+"]");
             globalRepositoryManager.removeRepository(repository.getId());
-            addErrorMessage("Error adding postcommit hook. Repository was not added. Do you have admin rights to the repository? ["+e.getMessage()+"]");
+            addErrorMessage("Error adding postcommit hook. Do you have admin rights to the repository? <br/> Repository was not added. ["+e.getMessage()+"]");
 
             return INPUT;
         }
