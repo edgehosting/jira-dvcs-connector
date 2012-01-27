@@ -27,135 +27,133 @@
   </head>
 
   <body>
+    <input type="hidden" id="addedRepositoryId" value="$action.getAddedRepositoryId()">
+
+	<h3>Manage Linked Repositories</h3>
+
+    <p>Here you can link repositories from your bitbucket or GitHub accounts.
+    You will need admin access to the repositories you wish to link. Once connected, Jira will query the repository commits searching for the  associated project ID.
+    When the repository is synced, you can see the commits integrated into tickets under the commits tab.
+    Set up OAuth for GitHub, or a post commit hook for bitbucket.</p>
+
+    <br/>
+
+    <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link a Repository" onclick="showAddRepoDetails(true)" value="Link a Repository" />
+
+    <div id="addRepositoryContent">
+        <div id="addRepositoryDetails" class="aui-message" style="padding: 10px; display: none; ">
+        <span class="svg-icon close size-16 customClose" onclick="showAddRepoDetails(false);"></span>
+
+        <h4 style="margin: 0px;">Link a new repository</h4>
+
+        #foreach ($errorMessage in $action.getErrorMessages())
+            <div style="margin: 10px; border: 2px solid red; background: #ffb; padding: 15px;">
+                <h4>$errorMessage </h4>
+            </div>
+        #end
+
+        <form class="aui top-label" id="repoEntry" method="post" action="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa">
+
+            <input type="hidden" name="atl_token" id="atl_token" value="$atl_token">
+            <input type="hidden" name="isPrivate" id="isPrivate">
 
 
-        <input type="hidden" id="addedRepositoryId" value="$action.getAddedRepositoryId()">
-
- 		<h3>Manage Linked Repositories</h3>
-
-        <p>Here you can link repositories from your bitbucket or GitHub accounts.
-        You will need admin access to the repositories you wish to link. Once connected, Jira will query the repository commits searching for the  associated project ID.
-        When the repository is synced, you can see the commits integrated into tickets under the commits tab.
-        Set up OAuth for GitHub, or a post commit hook for bitbucket.</p>
-
-        <br/>
-
-        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link a Repository" onclick="showAddRepoDetails(true)" value="Link a Repository" />
-
-        <div id="addRepositoryContent">
-            <div id="addRepositoryDetails" class="aui-message" style="padding: 10px; display: none; ">
-            <span class="svg-icon close size-16 customClose" onclick="showAddRepoDetails(false);"></span>
-
-            <h4 style="margin: 0px;">Link a new repository</h4>
-
-            #foreach ($errorMessage in $action.getErrorMessages())
-                <div style="margin: 10px; border: 2px solid red; background: #ffb; padding: 15px;">
-                    <h4>$errorMessage </h4>
-                </div>
-            #end
-
-            <form class="aui top-label" id="repoEntry" method="post" action="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa">
-
-                <input type="hidden" name="atl_token" id="atl_token" value="$atl_token">
-                <input type="hidden" name="isPrivate" id="isPrivate">
-                <input type="hidden" name="privateBbCredentialsVisible" id="privateBbCredentialsVisible" value="false">
-
-
-                #if ($action.getMode() == 'single')
-                    <input type='hidden' name='projectKey' value='$action.getProjectKey()'>
-                    <input type='hidden' name='mode' value='single'>
-                #else
-                    <div class="field-group">
-                            <label for="projectKey">Project:</label>
-                            <select name="projectKey" id="projectKey">
-                                #foreach ($project in $action.getProjects())
-                                    <option value="${project.key}"#if ($action.getProjectKey() == $project.key) selected #end>$textutils.htmlEncode(${project.name})</option>
-                                #end
-                            </select>
-                     </div>
-                #end
-                <div class="aui-group">
-                    <div class="aui-item">
-
-                        <div class="field-group">
-                            <label for="url">Repository Url:</label>
-                              <input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" />
-                        </div>
-                    </div>
-                    <div class="aui-item">
-                        <label>Examples:</label>
-                        <div><i>https://bitbucket.org/atlassianguy/my-repository</i></div>
-                        <div><i>https://github.com/owner/repository</i></div>
-                    </div>
-                </div>
-                <div id="bbCredentials"></div>
-                <div id="aui-message-bar"></div>
-
-
-                <div class="buttons-container" style="margin-top: 20px;">
-                    <div class="buttons">
-                        <input class="button submit" type="button" name="Submit" id="Submit" value="Continue" />
-                        <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>
-                    </div>
-                </div>
-            </form>
-        </div>
-        </div>
-
-        #macro ( repositoryLineItem $projectName $projectKey )
-            #set($encodedProjectName = $textutils.htmlEncode($projectName))
-            #set($projectRepositories = $action.getProjectRepositories($projectKey))
-            #if ($projectRepositories.size() > 0)
-                <tr> <td colspan="3" class="gh_table_td_pname">
-                    <span class="gh_table_project_name">$encodedProjectName</span><span class="gh_table_project_key">($projectKey)</span>
-                </td> </tr>
-            #end
-            #foreach ($repository in $projectRepositories)
-
-                    #set($repositoryId = $repository.getId())
-                    #set($encodedProjectKey = $textutils.htmlEncode($action.getProjectKey()))
-                    #set($encodedMode = $textutils.htmlEncode($action.getMode()))
-                    <tr>
-                        #if ($repository.getRepositoryType() == 'bitbucket')
-                            #set($repoTypeImgName = "bitbucket")
-                        #else
-                            #set($repoTypeImgName = "github")
+            #if ($action.getMode() == 'single')
+                <input type='hidden' name='projectKey' value='$action.getProjectKey()'>
+                <input type='hidden' name='mode' value='single'>
+            #else
+                <div class="field-group">
+                    <label for="projectKey">Project:</label>
+                    <select name="projectKey" id="projectKey">
+                        #foreach ($project in $action.getProjects())
+                            <option value="${project.key}"#if ($action.getProjectKey() == $project.key) selected #end>$textutils.htmlEncode(${project.name})</option>
                         #end
-                        <td width="40px"><img style="padding-left: 15px;" src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/${repoTypeImgName}_logo.png" alt="bitbucket repository"></td>
-                        <td><a href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_new">$textutils.htmlEncode($repository.repositoryUri.slug)</a></td>
-                        <td style="text-align: right;">
+                    </select>
+                    <div class="fieldValue" id="projectKeyReadOnly"></div>
+                 </div>
+            #end
+            <div class="aui-group">
+                <div class="aui-item">
+                    <div class="field-group">
+                        <label for="url">Repository Url:</label>
+                        <input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" />
+                        <div class="fieldValue" id="urlReadOnly"></div>
+                    </div>
+                </div>
+                <div class="aui-item">
+                    <label>Examples:</label>
+                    <div><i>https://bitbucket.org/atlassianguy/my-repository</i></div>
+                    <div><i>https://github.com/owner/repository</i></div>
+                </div>
+            </div>
+            <div id="bbCredentials"></div>
+            <div id="aui-message-bar"></div>
 
-                            <span id="syncicon_$repositoryId" class="syncicon" >&nbsp;</span>
-                            <span id="sync_status_message_$repositoryId" class="gh_messages">
-                                <span class="content"></span> |
-                            </span>
+
+            <div class="buttons-container" style="margin-top: 20px;">
+                <div class="buttons">
+                    <input class="button submit" type="button" name="Submit" id="Submit" value="Continue" />
+                    <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+    </div>
+
+    #macro ( repositoryLineItem $projectName $projectKey )
+        #set($encodedProjectName = $textutils.htmlEncode($projectName))
+        #set($projectRepositories = $action.getProjectRepositories($projectKey))
+        #if ($projectRepositories.size() > 0)
+            <tr> <td colspan="3" class="gh_table_td_pname">
+                <span class="gh_table_project_name">$encodedProjectName</span><span class="gh_table_project_key">($projectKey)</span>
+            </td> </tr>
+        #end
+        #foreach ($repository in $projectRepositories)
+
+                #set($repositoryId = $repository.getId())
+                #set($encodedProjectKey = $textutils.htmlEncode($action.getProjectKey()))
+                #set($encodedMode = $textutils.htmlEncode($action.getMode()))
+                <tr>
+                    #if ($repository.getRepositoryType() == 'bitbucket')
+                        #set($repoTypeImgName = "bitbucket")
+                    #else
+                        #set($repoTypeImgName = "github")
+                    #end
+                    <td width="40px"><img style="padding-left: 15px;" src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/${repoTypeImgName}_logo.png" alt="bitbucket repository"></td>
+                    <td><a href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_new">$textutils.htmlEncode($repository.repositoryUri.slug)</a></td>
+                    <td style="text-align: right;">
+
+                        <span id="syncicon_$repositoryId" class="syncicon" >&nbsp;</span>
+                        <span id="sync_status_message_$repositoryId" class="gh_messages">
+                            <span class="content"></span> |
+                        </span>
 
 
-                            <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Force Sync</a> |
-                            <a href="#" onclick="deleteRepository($repositoryId, '$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)')">Delete</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="status" colspan="3">
-                            <span id="sync_error_message_$repositoryId" class="gh_messages">
-                            </span>
-                        </td>
-                    </tr>
+                        <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Force Sync</a> |
+                        <a href="#" onclick="deleteRepository($repositoryId, '$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)')">Delete</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="status" colspan="3">
+                        <span id="sync_error_message_$repositoryId" class="gh_messages">
+                        </span>
+                    </td>
+                </tr>
 
+        #end
+    #end
+
+
+    <table class="gh_table" cellspacing="0" cellpadding="4">
+        #if ($action.getMode() == 'single')
+            #repositoryLineItem($action.getProjectName() $action.getProjectKey())
+        #else
+            #foreach ($project in $action.getProjects())
+                #repositoryLineItem($project.name $project.key)
             #end
         #end
 
+    </table>
 
-        <table class="gh_table" cellspacing="0" cellpadding="4">
-            #if ($action.getMode() == 'single')
-                #repositoryLineItem($action.getProjectName() $action.getProjectKey())
-            #else
-                #foreach ($project in $action.getProjects())
-                    #repositoryLineItem($project.name $project.key)
-                #end
-            #end
-
-        </table>
-
-  </body>
+</body>
 </html>

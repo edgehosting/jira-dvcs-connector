@@ -25,7 +25,6 @@
         </div>
       </fieldset>
 
-      #if ($action.isPrivate())
       <h3>Access credentials</h3>
       <div class="field-group">
         <label for="bbUsername">Username</label>
@@ -35,7 +34,6 @@
         <label for="bbPassword">Password</label>
         <input type="password" name="bbPassword" id="bbPassword" value="">
       </div>  
-      #end
 
       <div id="aui-message-bar">
         #foreach ($errorMessage in $action.getErrorMessages())

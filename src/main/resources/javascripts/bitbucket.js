@@ -17,7 +17,6 @@ function toggleMoreFiles(target_div) {
     AJS.$('#hide_more_' + target_div).toggle();
 }
 
-
 function retrieveSyncStatus() {
     AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/repositories", function (data) {
         AJS.$.each(data.repositories, function(a, repo) {
@@ -27,8 +26,6 @@ function retrieveSyncStatus() {
 
             var syncStatusHtml = "";
             var syncIcon;
-
-
 
             if (repo.sync) {
 
@@ -76,68 +73,87 @@ function forceSync(repositoryId) {
     retrieveSyncStatus();
 }
 
-function submitFunction(a) {
-    var repositoryUrl = AJS.$("#url").val().trim();
-    var privateBbCredentialsVisible = AJS.$("#privateBbCredentialsVisible").val();
-    //var atlToken = AJS.$("#atl_token").val();
-
-    var requestUrl = BASE_URL + "/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl)
-
+function submitFunction() {
+	
+	if (AJS.$('#bbUsername').val()) {
+		AJS.$('#repoEntry').submit();
+		return;
+	}
+	
     AJS.$("#aui-message-bar").empty();
-    AJS.messages.hint({
-        title: "Working...",
-        body: "Trying to connect to the repository."
-    });
+    AJS.messages.hint({ title: "Connecting...", body: "Trying to connect to the repository."});
+
+    var repositoryUrl = AJS.$("#url").val().trim();
+    var requestUrl = BASE_URL + "/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl)
 
     AJS.$.getJSON(requestUrl,
         function(data) {
             AJS.$("#aui-message-bar").empty();
             AJS.$("#isPrivate").val(data.isPrivate);
 
-            if (data.repositoryType == "github")
-                AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubRepository.jspa");
-            else if (data.repositoryType == "bitbucket")
-                AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketRepository.jspa");
-
-            if (privateBbCredentialsVisible == "false" && data.repositoryType == "bitbucket" && data.isPrivate) {
-                AJS.$("#privateBbCredentialsVisible").val("true");
-
-                var credentialsHtml = "<h3>For private Bitbucket repository you have to add access credentials</h3>" +
-                    "<div class='field-group'>" +
-                    "<label for='bbUsername'>Username</label>" +
-                    "<input type='text' name='bbUsername' id='bbUsername' value=''></div>" +
-                    "<div class='field-group' style='margin-bottom: 10px;'>" +
-                    "<label for='bbPassword'>Password</label>" +
-                    "<input type='password' name='bbPassword' id='bbPassword' value=''></div>";
-                AJS.$("#bbCredentials").html(credentialsHtml);
-            } else if (data.validationError) {
-				AJS.messages.error({
-					title : "Error!",
-					body : data.validationError
-				});
-			} else {
-                AJS.$('#repoEntry').submit();
-            }
-        }).error(function(a)
-        {
+            if (data.validationError) { 
+            	AJS.messages.error({title : "Error!", body : data.validationError});
+            } else{
+            	handler[data.repositoryType].apply(this, arguments);
+        	}
+    	}).error(function(a) {
             AJS.$("#aui-message-bar").empty();
-            AJS.messages.error({
-                title: "Error!",
-                body: "The repository url [<b>" + AJS.$("#url").val() + "</b>] is incorrect or the repository is not responding."
+            AJS.messages.error({ title: "Error!", 
+            	body: "The repository url [<b>" + AJS.$("#url").val() + "</b>] is incorrect or the repository is not responding." 
             });
         });
     return false;
 }
 
+	var handler = {
+		"bitbucket": function(data){
+			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketRepository.jspa");
+
+			// hide url input box
+			AJS.$('#urlReadOnly').html(AJS.$('#url').val());
+			AJS.$('#url').hide(); 
+			AJS.$('#urlReadOnly').show();
+			
+			// hide project selector
+			AJS.$('#projectKeyReadOnly').html(AJS.$('#projectKey').val());
+	        AJS.$('#projectKey').hide();
+			AJS.$('#projectKeyReadOnly').show();
+			
+			//show username / password
+			var credentialsHtml = "<h3>For private Bitbucket repository you have to add access credentials</h3>"
+				+ "<div class='field-group'>"
+				+ "<label for='bbUsername'>Username</label>"
+				+ "<input type='text' name='bbUsername' id='bbUsername' value=''></div>"
+				+ "<div class='field-group' style='margin-bottom: 10px;'>"
+				+ "<label for='bbPassword'>Password</label>"
+				+ "<input type='password' name='bbPassword' id='bbPassword' value=''></div>";
+			AJS.$("#bbCredentials").html(credentialsHtml);
+		}, 
+		"github":function(data) {
+			AJS.$("#repoEntry").attr("action",BASE_URL + "/secure/admin/AddGithubRepository.jspa");
+			AJS.$('#repoEntry').submit();
+		}
+	}
+
 function showAddRepoDetails(show) {
     if (show) {
-        AJS.$('#linkRepositoryButton').fadeOut(function() {
+
+    	// Reset to default view:
+    	// - hide username/password
+        AJS.$("#bbCredentials").html("");
+        // - show url field
+        AJS.$('#url').show();
+		AJS.$('#urlReadOnly').hide();
+		// - show projectKey field
+        AJS.$('#projectKey').show();
+		AJS.$('#projectKeyReadOnly').hide();
+
+		AJS.$('#linkRepositoryButton').fadeOut(function() {
             AJS.$('#addRepositoryDetails').slideDown();
         });
     } else {
         AJS.$('#addRepositoryDetails').slideUp(function() {
             AJS.$('#linkRepositoryButton').fadeIn();
-            AJS.$("#bbCredentials").html("");
         });
     }
 }

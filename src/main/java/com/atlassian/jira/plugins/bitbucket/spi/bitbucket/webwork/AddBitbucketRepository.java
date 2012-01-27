@@ -44,8 +44,7 @@ public class AddBitbucketRepository extends JiraWebActionSupport
         SourceControlRepository repository;
         try
         {
-            repository = globalRepositoryManager.addRepository(BitbucketRepositoryManager.BITBUCKET, projectKey, repositoryUrl, bbUsername, bbPassword,
-                "", "", "");
+            repository = globalRepositoryManager.addRepository(BitbucketRepositoryManager.BITBUCKET, projectKey, repositoryUrl, bbUsername, bbPassword, "", "", "");
             synchronizer.synchronize(repository);
         } catch (UnauthorisedException e)
         {
