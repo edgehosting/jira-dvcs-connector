@@ -45,21 +45,21 @@
 }
 
 .gh_table{
-    margin-left: 16px;
-    width: 97%
+    margin-left: 15px;
+    margin-bottom: 30px;
+    width: 96%
 }
 
 .gh_table_project_name{
-    font-size: 1em;
-    color: #5F6262;
-    padding-top: 24px;
+    font-size: 1.18em;
+    /*color: #5F6262;*/
+    color: #939393;
     font-weight: bold;
 }
 
 .gh_table_project_key{
-    font-size: 1em;
-    color: #5F6262;
-    padding-top: 14px;
+    font-size: 1.18em;
+    color: #707070;
     padding-left: 10px;
 }
 
@@ -87,7 +87,7 @@
 
 .gh_table_td_pname{
     /*border-bottom: none !important;*/
-    padding-top: 30px;
+    padding-top: 20px;
     border-bottom: 1px solid #cccccc;
 }
 
@@ -135,6 +135,20 @@
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/clock.png);
     display:inline-block;
     background-position: 0 2px;
+}
+
+.bitbucketLogo {
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png);
+    background-repeat: no-repeat;
+    padding: 20px 17px;
+    background-position: 10px 17px;
+}
+
+.githubLogo {
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_logo.png);
+    background-repeat: no-repeat;
+    padding: 20px 17px;
+    background-position: 8px 15px;
 }
 
 #postCommitServiceDetails{
@@ -383,3 +397,41 @@
     top: 6px !important;
 }
 
+.repositoryName {
+    font-size: 1.18em;
+    font-weight: bold;
+    color: #777;
+}
+
+a:hover.repositoryNameLink {
+    text-decoration: none;
+}
+
+.aui-item-column1 {
+    display: inline;
+    float: left;
+}
+
+.aui-item-column2 {
+    display: inline;
+    float: left;
+    padding-left: 35px;
+}
+
+#addRepositoryContent {
+    margin: 0 20px 0 0;
+    color: #555 !important;
+}
+
+#addRepositoryContent label {
+    color: #555 !important;
+    font-weight: bold;
+    padding-bottom: 6px;
+}
+#addRepositoryContent h4 {
+    color: #666 !important;
+}
+
+#addRepositoryContent div,  #addRepositoryContent input {
+    color: #555 !important;
+}
