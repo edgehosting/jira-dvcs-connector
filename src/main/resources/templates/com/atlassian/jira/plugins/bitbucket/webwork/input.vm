@@ -19,6 +19,11 @@
             #end
             retrieveSyncStatus();
             AJS.$("#Submit").click(submitFunction);
+
+            AJS.$('#linkRepositoryButton').fadeOut(function() {
+                AJS.$('#addRepositoryDetails').slideDown();
+            });
+
         }            
      </script>
 
@@ -75,16 +80,16 @@
                      </div>
                 #end
                 <div class="aui-group">
-                    <div class="aui-item">
+                    <div class="aui-item-column1">
 
-                        <div class="field-group">
+                        <div class="field-group" >
                             <label for="url">Repository Url:</label>
                               <input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())" size="60" />
                         </div>
                     </div>
-                    <div class="aui-item">
+                    <div class="aui-item-column2">
                         <label>Examples:</label>
-                        <div><i>https://bitbucket.org/atlassianguy/my-repository</i></div>
+                        <div style="padding-top: 3px;"><i>https://bitbucket.org/atlassianguy/my-repository</i></div>
                         <div><i>https://github.com/owner/repository</i></div>
                     </div>
                 </div>
@@ -92,7 +97,7 @@
                 <div id="aui-message-bar"></div>
 
 
-                <div class="buttons-container" style="margin-top: 20px;">
+                <div class="buttons-container" style="margin-top: 20px; border: none;">
                     <div class="buttons">
                         <input class="button submit" type="button" name="Submit" id="Submit" value="Continue" />
                         <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>
@@ -106,7 +111,7 @@
             #set($encodedProjectName = $textutils.htmlEncode($projectName))
             #set($projectRepositories = $action.getProjectRepositories($projectKey))
             #if ($projectRepositories.size() > 0)
-                <tr> <td colspan="3" class="gh_table_td_pname">
+                <tr> <td height="38px" colspan="3" class="gh_table_td_pname">
                     <span class="gh_table_project_name">$encodedProjectName</span><span class="gh_table_project_key">($projectKey)</span>
                 </td> </tr>
             #end
@@ -121,8 +126,12 @@
                         #else
                             #set($repoTypeImgName = "github")
                         #end
-                        <td width="40px"><img style="padding-left: 15px;" src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/${repoTypeImgName}_logo.png" alt="bitbucket repository"></td>
-                        <td><a href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_new">$textutils.htmlEncode($repository.repositoryUri.slug)</a></td>
+                        <td width="1px" height="40px">
+                            <span class="$repository.getRepositoryType()Logo">&nbsp;</span>
+                            </td>
+                        <td><a class="repositoryNameLink" href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_new">
+                            <span class="repositoryName">$textutils.htmlEncode($repository.repositoryName)</span>
+                        </a></td>
                         <td style="text-align: right;">
 
                             <span id="syncicon_$repositoryId" class="syncicon" >&nbsp;</span>
@@ -146,7 +155,7 @@
         #end
 
 
-        <table class="gh_table" cellspacing="0" cellpadding="4">
+        <table class="gh_table" cellspacing="0" cellpadding="0">
             #if ($action.getMode() == 'single')
                 #repositoryLineItem($action.getProjectName() $action.getProjectKey())
             #else
