@@ -58,8 +58,8 @@ public abstract class BaseConfigureRepositoriesPage implements Page
     @ElementBy(id = "addedRepositoryId")
     PageElement addedRepositoryIdSpan;
 
-    @ElementBy(tagName = "h2")
-    PageElement addedRepositoryH2;
+    @ElementBy(id = "bbUsername")
+    PageElement username;
 
     @ElementBy(id = "aui-message-bar")
     PageElement messageBarDiv;

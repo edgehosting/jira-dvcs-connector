@@ -39,7 +39,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"));
+        Poller.waitUntilTrue(username.timed().isVisible());
         // postcommit hook
         addPostCommitServiceCheckbox.click();
         adminUsernameTextbox.clear().type(adminUsername);
@@ -62,16 +62,17 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
     @Override
     public BaseConfigureRepositoriesPage addPublicRepoToProjectSuccessfully(String projectKey, String url)
     {
-        linkRepositoryButton.click();
-        waitFormBecomeVisible();
-        projectSelect.select(Options.value(projectKey));
-        urlTextbox.clear().type(url);
-        addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"));
-        addRepositoryButton.click();
-
-        checkSyncProcessSuccess();
-
+        addPrivateRepoToProjectSuccessfully(projectKey, url);
+//        linkRepositoryButton.click();
+//        waitFormBecomeVisible();
+//        projectSelect.select(Options.value(projectKey));
+//        urlTextbox.clear().type(url);
+//        addRepositoryButton.click();
+//        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"));
+//        addRepositoryButton.click();
+//
+//        checkSyncProcessSuccess();
+//
         return this;
     }
 
@@ -123,7 +124,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"));
+        Poller.waitUntilTrue(username.timed().isVisible());
         bbUsernameInput.type("jirabitbucketconnector");
         bbPasswordInput.type("jirabitbucketconnector");
         addRepositoryButton.click();

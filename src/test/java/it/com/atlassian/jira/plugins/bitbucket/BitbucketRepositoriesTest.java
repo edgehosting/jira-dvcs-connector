@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.not;
  */
 public class BitbucketRepositoriesTest extends BitBucketBaseTest
 {
-    private static final String TEST_REPO_URL = "https://bitbucket.org/farmas/testrepo-qa";
+    private static final String TEST_PUBLIC_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/public-hg-repo";
     private static final String TEST_PRIVATE_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/private-hg-repo";
     private static final String TEST_NOT_EXISTING_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/repo-does-not-exist";
 
@@ -40,14 +40,14 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
     public void addRepoAppearsOnList()
     {
         configureRepos.deleteAllRepositories();
-        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
+        configureRepos.addPrivateRepoToProjectSuccessfully("QA", TEST_PUBLIC_REPO_URL);
         assertThat(configureRepos.getRepositories().size(), equalTo(1));
     }
 
     @Test
     public void addRepoCommitsAppearOnIssues()
     {
-        ensureRepositoryPresent("QA", TEST_REPO_URL);
+        ensureRepositoryPresent("QA", TEST_PUBLIC_REPO_URL);
 
         assertThat(getCommitsForIssue("QA-2"),
                 hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
@@ -129,7 +129,7 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
     public void testIssueLinkerCommentFormatting()
     {
         configureRepos.deleteAllRepositories();
-        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
+        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_PUBLIC_REPO_URL);
         assertThat(configureRepos.getRepositories().size(), equalTo(1));
 
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");
@@ -140,7 +140,7 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
     public void testCommitStatistics()
     {
         configureRepos.deleteAllRepositories();
-        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
+        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_PUBLIC_REPO_URL);
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");
