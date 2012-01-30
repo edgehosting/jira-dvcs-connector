@@ -82,4 +82,6 @@ public interface RepositoryPersister {
      */
     public IssueMapping getIssueMapping(String node);
 
+    public ProjectMapping[] findRepositories(String projectKey, String repositoryUrl);
+
 }

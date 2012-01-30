@@ -217,12 +217,12 @@ public class BitbucketCommunicator implements Communicator
     }
 
     @Override
-    public UrlInfo getUrlInfo(final RepositoryUri repositoryUri)
+    public UrlInfo getUrlInfo(final RepositoryUri repositoryUri, String projectKey)
     {
         logger.debug("Get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
         Boolean repositoryPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
         if (repositoryPrivate == null) return null;
-        return new UrlInfo(BitbucketRepositoryManager.BITBUCKET, repositoryPrivate.booleanValue(), null);
+        return new UrlInfo(BitbucketRepositoryManager.BITBUCKET, repositoryPrivate.booleanValue(), repositoryUri.getRepositoryUrl(), projectKey);
     }
 
     @Override

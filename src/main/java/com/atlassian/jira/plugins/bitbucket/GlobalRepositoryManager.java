@@ -195,11 +195,11 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
     @Override
-    public UrlInfo getUrlInfo(String repositoryUrl)
+    public UrlInfo getUrlInfo(String repositoryUrl, String projectKey)
     {
         for (RepositoryManager repositoryManager : repositoryManagers)
         {
-            UrlInfo urlInfo = repositoryManager.getUrlInfo(repositoryUrl);
+            UrlInfo urlInfo = repositoryManager.getUrlInfo(repositoryUrl, projectKey);
             if (urlInfo != null)
             {
                 return urlInfo;

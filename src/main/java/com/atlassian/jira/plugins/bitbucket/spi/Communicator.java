@@ -49,11 +49,14 @@ public interface Communicator
 
     /**
      * @param repositoryUri
+     * @param projectKey
      * @return info about the repository or null if repository is invalid
      */
-    public UrlInfo getUrlInfo(final RepositoryUri repositoryUri);
+    public UrlInfo getUrlInfo(RepositoryUri repositoryUri, String projectKey);
+
 
     public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
         String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException;
+
 
 }

@@ -58,9 +58,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     public ProjectMapping addRepository(String repositoryName, String repositoryType, String projectKey, String repositoryUrl,
         String username, String password, String adminUsername, String adminPassword, String accessToken)
     {
-        final ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class, ProjectMapping.REPOSITORY_URL + " = ? and "
-            + ProjectMapping.PROJECT_KEY + " = ?", repositoryUrl, projectKey);
-        if (projectMappings.length > 0)
+        if (findRepositories(projectKey, repositoryUrl).length > 0)
         {
             throw new SourceControlException("Repository [" + repositoryUrl + "] is already linked to project [" + projectKey + "]");
         }
@@ -91,6 +89,13 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 return activeObjects.create(ProjectMapping.class, map);
             }
         });
+    }
+
+    @Override
+    public ProjectMapping[] findRepositories(String projectKey, String repositoryUrl)
+    {
+        return activeObjects.find(ProjectMapping.class, ProjectMapping.REPOSITORY_URL + " = ? and "
+            + ProjectMapping.PROJECT_KEY + " = ?", repositoryUrl, projectKey);
     }
 
     @Override

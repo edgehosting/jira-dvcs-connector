@@ -138,9 +138,10 @@ public interface RepositoryManager
 
     /**
      * @param repositoryUrl
+     * @param projectKey
      * @return
      */
-    public UrlInfo getUrlInfo(String repositoryUrl);
+    public UrlInfo getUrlInfo(String repositoryUrl, String projectKey);
 
     /**
      * Reloads the changeset from the repository.

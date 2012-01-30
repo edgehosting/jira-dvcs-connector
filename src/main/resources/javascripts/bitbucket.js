@@ -84,15 +84,17 @@ function submitFunction() {
     AJS.messages.hint({ title: "Connecting...", body: "Trying to connect to the repository."});
 
     var repositoryUrl = AJS.$("#url").val().trim();
-    var requestUrl = BASE_URL + "/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl)
+    var requestUrl = BASE_URL + "/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl) + "&projectKey="+AJS.$("#projectKey").val();
 
     AJS.$.getJSON(requestUrl,
         function(data) {
             AJS.$("#aui-message-bar").empty();
             AJS.$("#isPrivate").val(data.isPrivate);
 
-            if (data.validationError) { 
-            	AJS.messages.error({title : "Error!", body : data.validationError});
+            if (data.validationErrors.length>0) {
+            	AJS.$.each(data.validationErrors, function(i, msg){
+            		AJS.messages.error({title : "Error!", body : msg});
+            	})
             } else{
             	handler[data.repositoryType].apply(this, arguments);
         	}

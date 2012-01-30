@@ -203,12 +203,12 @@ public class GithubCommunicator implements Communicator
     }
 
     @Override
-    public UrlInfo getUrlInfo(final RepositoryUri repositoryUri)
+    public UrlInfo getUrlInfo(final RepositoryUri repositoryUri, String projectKey)
     {
         log.debug("get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
         Boolean repositoryPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
         if (repositoryPrivate == null) return null;
-        return new UrlInfo(GithubRepositoryManager.GITHUB, repositoryPrivate.booleanValue(), null);
+        return new UrlInfo(GithubRepositoryManager.GITHUB, repositoryPrivate.booleanValue(), repositoryUri.getRepositoryUrl(), projectKey);
     }
 
     private List<String> getBranches(SourceControlRepository repository)

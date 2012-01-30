@@ -198,9 +198,9 @@ public class RootResource
     @GET
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/urlinfo")
-    public Response urlInfo(@QueryParam("repositoryUrl") String repositoryUrl)
+    public Response urlInfo(@QueryParam("repositoryUrl") String repositoryUrl, @QueryParam("projectKey") String projectKey)
     {
-        UrlInfo urlInfo = globalRepositoryManager.getUrlInfo(repositoryUrl.trim());
+        UrlInfo urlInfo = globalRepositoryManager.getUrlInfo(repositoryUrl.trim(), projectKey);
         if (urlInfo!=null)
             return Response.ok(urlInfo).build();
         else 

@@ -1,8 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "urlinfo")
@@ -16,15 +20,29 @@ public class UrlInfo
     private boolean isPrivate;
 
     @XmlAttribute
-    private String validationError;
+    private String repositoryUrl;
+    
+    @XmlList
+    private final List<String> validationErrors =  new ArrayList<String>();
+
+    @XmlAttribute
+    private String projectKey;
+    
 
     public UrlInfo() {}
     
-    public UrlInfo(String repositoryType, boolean isPrivate, String validationError)
+    public UrlInfo(String repositoryType, boolean isPrivate, String repositoryUrl, String projectKey)
     {
         this.repositoryType = repositoryType;
         this.isPrivate = isPrivate;
-        this.validationError = validationError;
+        this.repositoryUrl = repositoryUrl;
+        this.projectKey = projectKey;
+    }
+    
+    public UrlInfo addValidationError(String validationError)
+    {
+        this.validationErrors.add(validationError);
+        return this;
     }
 
     public String getRepositoryType()
@@ -37,9 +55,18 @@ public class UrlInfo
         return isPrivate;
     }
 
-    public String getValidationError()
+    public String getRepositoryUrl()
     {
-        return validationError;
+        return repositoryUrl;
     }
     
+    public List<String> getValidationErrors()
+    {
+        return validationErrors;
+    }
+
+    public String getProjectKey()
+    {
+        return projectKey;
+    }
 }
