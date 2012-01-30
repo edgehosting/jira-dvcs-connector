@@ -1,12 +1,11 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
-import org.hamcrest.core.IsEqual;
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.Options;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.query.Conditions;
 import com.atlassian.pageobjects.elements.query.Poller;
+import org.openqa.selenium.By;
 
 /**
  * Represents the page to link repositories to projects
@@ -34,47 +33,10 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
     public String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername,
                                                           String adminPassword)
     {
-        linkRepositoryButton.click();
-        waitFormBecomeVisible();
-        projectSelect.select(Options.value(projectKey));
-        urlTextbox.clear().type(url);
-        addRepositoryButton.click();
-        Poller.waitUntilTrue(username.timed().isVisible());
-        // postcommit hook
-        addPostCommitServiceCheckbox.click();
-        adminUsernameTextbox.clear().type(adminUsername);
-        adminPasswordTextbox.clear().type(adminPassword);
-        // add
-        addRepositoryButton.click();
-
-        checkSyncProcessSuccess();
-
+        addRepoToProjectSuccessfully(projectKey, url);
         return addedRepositoryIdSpan.timed().getValue().byDefaultTimeout();
     }
 
-    /**
-     * Links a public repository to the given JIRA project
-     *
-     * @param projectKey The JIRA project key
-     * @param url        The url to the bitucket public repo
-     * @return BitBucketConfigureRepositoriesPage
-     */
-    @Override
-    public BaseConfigureRepositoriesPage addPublicRepoToProjectSuccessfully(String projectKey, String url)
-    {
-        addPrivateRepoToProjectSuccessfully(projectKey, url);
-//        linkRepositoryButton.click();
-//        waitFormBecomeVisible();
-//        projectSelect.select(Options.value(projectKey));
-//        urlTextbox.clear().type(url);
-//        addRepositoryButton.click();
-//        Poller.waitUntil(addedRepositoryH2.timed().getText(), IsEqual.equalTo("New Bitbucket repository"));
-//        addRepositoryButton.click();
-//
-//        checkSyncProcessSuccess();
-//
-        return this;
-    }
 
     /**
      * Links a public repository to the given JIRA project
@@ -98,6 +60,12 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
     @Override
     public BaseConfigureRepositoriesPage addRepoToProjectFailingStep2(String projectKey, String url)
     {
+        linkRepositoryButton.click();
+        waitFormBecomeVisible();
+        projectSelect.select(Options.value(projectKey));
+        urlTextbox.clear().type(url);
+        addRepositoryButton.click();
+        Poller.waitUntilTrue("Expected form for bitbucket repository admin login/password!", Conditions.and(bbUsernameInput.timed().isVisible(), bbPasswordInput.timed().isVisible()));
         return this;
     }
 
@@ -117,14 +85,14 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
 
 
     @Override
-    public BitBucketConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url)
+    public BitBucketConfigureRepositoriesPage addRepoToProjectSuccessfully(String projectKey, String url)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntilTrue(username.timed().isVisible());
+        Poller.waitUntilTrue(bbUsernameInput.timed().isVisible());
         bbUsernameInput.type("jirabitbucketconnector");
         bbPasswordInput.type("jirabitbucketconnector");
         addRepositoryButton.click();

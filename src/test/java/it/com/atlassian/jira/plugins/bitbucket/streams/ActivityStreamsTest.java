@@ -32,7 +32,7 @@ public class ActivityStreamsTest
 
         BitBucketConfigureRepositoriesPage configureRepos = goToRepositoriesConfigPage();
         configureRepos.deleteAllRepositories();
-        configureRepos.addPublicRepoToProjectSuccessfully("QA", "https://bitbucket.org/farmas/testrepo-qa");
+        configureRepos.addRepoToProjectSuccessfully("QA", "https://bitbucket.org/farmas/testrepo-qa");
 
         goToDashboardPage();
     }

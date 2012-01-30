@@ -62,20 +62,6 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         return addedRepositoryIdSpan.timed().getValue().now();
     }
 
-    /**
-     * Links a public repository to the given JIRA project
-     *
-     * @param projectKey The JIRA project key
-     * @param url        The url to the bitucket public repo
-     * @return BitBucketConfigureRepositoriesPage
-     */
-    @Override
-    public BaseConfigureRepositoriesPage addPublicRepoToProjectSuccessfully(String projectKey, String url)
-    {
-        addRepoToProject(projectKey, url);
-        checkSyncProcessSuccess();
-        return this;
-    }
 
     /**
      * Links a public repository to the given JIRA project
@@ -169,7 +155,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
      * @return BitBucketConfigureRepositoriesPage
      */
     @Override
-    public GithubConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url)
+    public GithubConfigureRepositoriesPage addRepoToProjectSuccessfully(String projectKey, String url)
     {
         addRepoToProject(projectKey, url);
         checkSyncProcessSuccess();

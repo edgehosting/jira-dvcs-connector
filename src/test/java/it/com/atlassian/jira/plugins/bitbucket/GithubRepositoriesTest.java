@@ -100,7 +100,7 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     public void addRepoAppearsOnList()
     {
         configureRepos.deleteAllRepositories();
-        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
+        configureRepos.addRepoToProjectSuccessfully("QA", TEST_REPO_URL);
         assertThat(configureRepos.getRepositories().size(), equalTo(1));
     }
 
@@ -193,7 +193,7 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     public void testCommitStatistics()
     {
         configureRepos.deleteAllRepositories();
-        configureRepos.addPublicRepoToProjectSuccessfully("QA", TEST_REPO_URL);
+        configureRepos.addRepoToProjectSuccessfully("QA", TEST_REPO_URL);
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");

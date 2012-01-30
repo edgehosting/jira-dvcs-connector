@@ -4,14 +4,15 @@ import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketRepos
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.binder.WaitUntil;
-import com.atlassian.pageobjects.elements.CheckboxElement;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
+import com.atlassian.pageobjects.elements.query.TimedQuery;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
 import org.hamcrest.Matcher;
+import org.hamcrest.text.StringStartsWith;
 import org.openqa.selenium.By;
 
 import javax.inject.Inject;
@@ -40,16 +41,7 @@ public abstract class BaseConfigureRepositoriesPage implements Page
     @ElementBy(id = "url")
     PageElement urlTextbox;
 
-    @ElementBy(id = "adminUsername")
-    PageElement adminUsernameTextbox;
-
-    @ElementBy(id = "adminPassword")
-    PageElement adminPasswordTextbox;
-
-    @ElementBy(id = "addPostCommitService")
-    CheckboxElement addPostCommitServiceCheckbox;
-
-    @ElementBy(name = "sync_status_message")
+    @ElementBy(className = "gh_messages")
     PageElement syncStatusDiv;
 
     @ElementBy(className = "gh_table")
@@ -57,9 +49,6 @@ public abstract class BaseConfigureRepositoriesPage implements Page
 
     @ElementBy(id = "addedRepositoryId")
     PageElement addedRepositoryIdSpan;
-
-    @ElementBy(id = "bbUsername")
-    PageElement username;
 
     @ElementBy(id = "aui-message-bar")
     PageElement messageBarDiv;
@@ -163,15 +152,20 @@ public abstract class BaseConfigureRepositoriesPage implements Page
 
     protected void checkSyncProcessSuccess()
     {
-        final String statusXpath = "//div[@name='sync_status_message']/div[@class='content']/strong";
-        TimedCondition isMsgVisibleCond = syncStatusDiv.find(By.xpath(statusXpath)).timed().isVisible();
+        // isPresent = true => repositories list is shown
+        TimedCondition isMsgVisibleCond = syncStatusDiv.timed().isPresent();
         Poller.waitUntilTrue("Expected sync status message to appear.", isMsgVisibleCond);
 
-        TimedCondition syncFinishedCond = syncStatusDiv.find(By.xpath(statusXpath)).timed().hasText("Sync Finished:");
-        Poller.waitUntilTrue("Expected sync status message to be 'Sync Finished'", syncFinishedCond);
+        // isVisible = true => started sync => we will wait for result
+        if (syncStatusDiv.timed().isVisible().now())
+        {
+            TimedQuery<String> syncFinishedCond = syncStatusDiv.timed().getText();
+            Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncFinishedCond, new StringStartsWith("last commit"));
+        }
     }
 
-    protected void waitFormBecomeVisible(){
+    protected void waitFormBecomeVisible()
+    {
         try
         {
             Thread.sleep(2000);
@@ -192,15 +186,13 @@ public abstract class BaseConfigureRepositoriesPage implements Page
         return messageBarDiv.find(By.className("error")).timed().getText().now();
     }
 
-    public abstract BaseConfigureRepositoriesPage addPublicRepoToProjectSuccessfully(String projectKey, String url);
-
     public abstract BaseConfigureRepositoriesPage addRepoToProjectFailingStep1(String projectKey, String url);
 
     public abstract BaseConfigureRepositoriesPage addRepoToProjectFailingStep2(String projectKey, String url);
 
     public abstract BaseConfigureRepositoriesPage addRepoToProjectFailingPostcommitService(String projectKey, String url);
 
-    public abstract BaseConfigureRepositoriesPage addPrivateRepoToProjectSuccessfully(String projectKey, String url);
+    public abstract BaseConfigureRepositoriesPage addRepoToProjectSuccessfully(String projectKey, String url);
 
     public abstract String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername, String adminPassword);
 

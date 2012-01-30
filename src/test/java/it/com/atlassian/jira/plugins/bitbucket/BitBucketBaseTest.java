@@ -50,6 +50,7 @@ public abstract class BitBucketBaseTest
     {
         configureRepos = (BaseConfigureRepositoriesPage) jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(getPageClass());
         configureRepos.setJiraTestedProduct(jira);
+        configureRepos.deleteAllRepositories();
     }
 
     @SuppressWarnings("rawtypes")
@@ -65,7 +66,7 @@ public abstract class BitBucketBaseTest
     {
         if (!configureRepos.isRepositoryPresent(projectKey, repoUrl))
         {
-            configureRepos.addPublicRepoToProjectSuccessfully(projectKey, repoUrl);
+            configureRepos.addRepoToProjectSuccessfully(projectKey, repoUrl);
         }
     }
 
