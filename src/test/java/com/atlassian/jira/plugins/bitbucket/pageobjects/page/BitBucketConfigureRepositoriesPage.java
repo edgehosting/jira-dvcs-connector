@@ -13,11 +13,11 @@ import org.openqa.selenium.By;
 public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositoriesPage
 {
 
-    @ElementBy(id = "bbUsername")
-    PageElement bbUsernameInput;
+    @ElementBy(id = "adminUsername")
+    PageElement adminUsernameInput;
 
-    @ElementBy(id = "bbPassword")
-    PageElement bbPasswordInput;
+    @ElementBy(id = "adminPassword")
+    PageElement adminPasswordInput;
 
 
     /**
@@ -65,7 +65,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntilTrue("Expected form for bitbucket repository admin login/password!", Conditions.and(bbUsernameInput.timed().isVisible(), bbPasswordInput.timed().isVisible()));
+        Poller.waitUntilTrue("Expected form for bitbucket repository admin login/password!", Conditions.and(adminUsernameInput.timed().isVisible(), adminPasswordInput.timed().isVisible()));
         return this;
     }
 
@@ -92,9 +92,9 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
-        Poller.waitUntilTrue(bbUsernameInput.timed().isVisible());
-        bbUsernameInput.type("jirabitbucketconnector");
-        bbPasswordInput.type("jirabitbucketconnector");
+        Poller.waitUntilTrue(adminUsernameInput.timed().isVisible());
+        adminUsernameInput.type("jirabitbucketconnector");
+        adminPasswordInput.type("jirabitbucketconnector");
         addRepositoryButton.click();
 
         checkSyncProcessSuccess();

@@ -75,7 +75,7 @@ function forceSync(repositoryId) {
 
 function submitFunction() {
 	
-	if (AJS.$('#bbUsername').val()) {
+	if (AJS.$('#adminUsername').val()) {
 		AJS.$('#repoEntry').submit();
 		return;
 	}
@@ -127,11 +127,11 @@ function submitFunction() {
 			//show username / password
 			var credentialsHtml = ""
 				+ "<div class='field-group'>"
-				+ "<label for='bbUsername'>Username <span class='notbold'>(requires admin access to repo):</span></label>"
-				+ "<input type='text' name='bbUsername' id='bbUsername' value=''></div>"
+				+ "<label for='adminUsername'>Username <span class='notbold'>(requires admin access to repo):</span></label>"
+				+ "<input type='text' name='adminUsername' id='adminUsername' value=''></div>"
 				+ "<div class='field-group' style='margin-bottom: 10px;'>"
-				+ "<label for='bbPassword'>Password</label>"
-				+ "<input type='password' name='bbPassword' id='bbPassword' value=''></div>";
+				+ "<label for='adminPassword'>Password</label>"
+				+ "<input type='password' name='adminPassword' id='adminPassword' value=''></div>";
 			AJS.$("#bbCredentials").html(credentialsHtml);
 		}, 
 		"github":function(data) {

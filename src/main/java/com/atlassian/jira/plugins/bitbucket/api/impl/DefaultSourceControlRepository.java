@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.bitbucket.api.impl;
 
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -10,8 +9,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class DefaultSourceControlRepository implements SourceControlRepository
 {
 	private final int id;
-	private final String username;
-	private final String password;
 	private final String repositoryName;
     private final RepositoryUri repositoryUri;
     private final String projectKey;
@@ -20,15 +17,13 @@ public class DefaultSourceControlRepository implements SourceControlRepository
     private final String repositoryType;
     private final String accessToken;
 
-    public DefaultSourceControlRepository(int id, String repositoryName, String repositoryType, RepositoryUri repositoryUri, String projectKey, String username, String password,
-			String adminUsername, String adminPassword, String accessToken)
+    public DefaultSourceControlRepository(int id, String repositoryName, String repositoryType, RepositoryUri repositoryUri, String projectKey,
+                                          String adminUsername, String adminPassword, String accessToken)
 	{
 		this.id = id;
         this.repositoryName = repositoryName;
         this.repositoryUri = repositoryUri;
         this.projectKey = projectKey;
-		this.username = username;
-		this.password = password;
 		this.adminUsername = adminUsername;
 		this.adminPassword = adminPassword;
         this.repositoryType = repositoryType;
@@ -71,18 +66,6 @@ public class DefaultSourceControlRepository implements SourceControlRepository
 	
 
 	@Override
-    public String getUsername()
-	{
-		return username;
-	}
-	
-	@Override
-    public String getPassword()
-	{
-		return password;
-	}
-
-	@Override
     public String getAdminUsername()
 	{
 		return adminUsername;
@@ -108,8 +91,8 @@ public class DefaultSourceControlRepository implements SourceControlRepository
 		if (this.getClass()!=obj.getClass()) return false;
 		DefaultSourceControlRepository that = (DefaultSourceControlRepository) obj;
 		return new EqualsBuilder().append(id, that.id).append(repositoryUri, that.repositoryUri).append(repositoryName, that.repositoryName)
-			.append(projectKey, that.projectKey).append(username, that.username)
-			.append(password, that.password).append(adminUsername, that.adminUsername)
+			.append(projectKey, that.projectKey)
+			.append(adminUsername, that.adminUsername)
 			.append(adminPassword, that.adminPassword).append(accessToken, that.accessToken)
             .isEquals();
 	}
@@ -118,7 +101,7 @@ public class DefaultSourceControlRepository implements SourceControlRepository
     public int hashCode()
     {
         return new HashCodeBuilder(17, 37).append(id).append(repositoryUri).append(repositoryName).append(projectKey)
-            .append(username).append(password).append(adminUsername).append(adminPassword).append(accessToken)
+            .append(adminUsername).append(adminPassword).append(accessToken)
             .toHashCode();
     }
 }

@@ -51,7 +51,7 @@ public class RootResource
             final String relativePastDate = DateUtil.getRelativePastDate(new Date(), globalRepositoryManager.getLastCommitDate(from));
 
             Repository repo = new Repository(from.getId(), from.getRepositoryType(), from.getProjectKey(), from.getRepositoryUri().getRepositoryUrl(),
-                    from.getUsername(), null, from.getAdminUsername(), null, null, relativePastDate); // don't include password or accessToken
+                    from.getAdminUsername(), null, null, relativePastDate); // don't include password or accessToken
             Progress progress = synchronizer.getProgress(from);
             if (progress != null)
                 repo.setStatus(new SyncProgress(progress.isFinished(), progress.getChangesetCount(), progress
@@ -158,16 +158,14 @@ public class RootResource
             String url = repository.getUrl();
             String repositoryType = repository.getRepositoryType();
             String projectKey = repository.getProjectKey();
-            String username = repository.getUsername();
-            String password = repository.getPassword();
-            String adminUsername = repository.getUsername();
-            String adminPassword = repository.getPassword();
+            String adminUsername = repository.getAdminUsername();
+            String adminPassword = repository.getAdminPassword();
             String accessToken = repository.getAccessToken();
 
             SourceControlRepository repo;
             try
             {
-                repo = globalRepositoryManager.addRepository(repositoryType, projectKey, url, username, password,
+                repo = globalRepositoryManager.addRepository(repositoryType, projectKey, url,
                         adminUsername, adminPassword, accessToken);
             } catch (SourceControlException e)
             {

@@ -27,12 +27,12 @@
 
       <h3>Access credentials</h3>
       <div class="field-group">
-        <label for="bbUsername">Username</label>
-        <input type="text" name="bbUsername" id="bbUsername" value="$textutils.htmlEncode($action.getBbUsername())">
+        <label for="adminUsername">Username</label>
+        <input type="text" name="adminUsername" id="adminUsername" value="$textutils.htmlEncode($action.getAdminUsername())">
       </div>  
       <div class="field-group">
-        <label for="bbPassword">Password</label>
-        <input type="password" name="bbPassword" id="bbPassword" value="">
+        <label for="adminPassword">Password</label>
+        <input type="password" name="adminPassword" id="adminPassword" value="">
       </div>  
 
       <div id="aui-message-bar">

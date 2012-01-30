@@ -2,24 +2,13 @@ package com.atlassian.jira.plugins.bitbucket;
 
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Aggregated Repository Manager that handles all Repository Managers based on the repository url
@@ -77,13 +66,13 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
     @Override
-    public SourceControlRepository addRepository(String repositoryType, String projectKey, String url, String username, String password, String adminUsername, String adminPassword, String accessToken)
+    public SourceControlRepository addRepository(String repositoryType, String projectKey, String url, String adminUsername, String adminPassword, String accessToken)
     {
         for (RepositoryManager repositoryManager : repositoryManagers)
         {
             if (repositoryManager.getRepositoryType().equals(repositoryType))
             {
-                return repositoryManager.addRepository(repositoryType, projectKey, url, username, password, adminUsername, adminPassword, accessToken);
+                return repositoryManager.addRepository(repositoryType, projectKey, url, adminUsername, adminPassword, accessToken);
             }
         }
         throw new IllegalArgumentException("No repository manager found for given repository type [" + repositoryType + "]");

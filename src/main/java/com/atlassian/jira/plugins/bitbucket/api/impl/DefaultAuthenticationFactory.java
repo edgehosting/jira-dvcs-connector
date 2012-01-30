@@ -1,10 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import org.apache.commons.lang.StringUtils;
 
 public class DefaultAuthenticationFactory implements AuthenticationFactory
 {
@@ -18,9 +17,9 @@ public class DefaultAuthenticationFactory implements AuthenticationFactory
 	    }
 
 	    // basic
-	    if (StringUtils.isNotBlank(repository.getUsername()))
+	    if (StringUtils.isNotBlank(repository.getAdminUsername()))
 	    {
-	        return new BasicAuthentication(repository.getUsername(), repository.getPassword());
+	        return new BasicAuthentication(repository.getAdminUsername(), repository.getAdminPassword());
 	    }
 	        
 	    // none
