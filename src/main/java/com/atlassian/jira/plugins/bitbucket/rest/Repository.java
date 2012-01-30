@@ -22,12 +22,6 @@ public class Repository
     private SyncProgress sync;
 
     @XmlAttribute
-    private String username;
-
-    @XmlAttribute
-    private String password;
-    
-    @XmlAttribute
     private String adminUsername;
     
     @XmlAttribute
@@ -43,14 +37,12 @@ public class Repository
     {
     }
 
-    public Repository(int id, String repositoryType, String projectKey, String url, String username, String password, String adminUsername, String adminPassword, String accessToken, String lastCommitRelativeDate)
+    public Repository(int id, String repositoryType, String projectKey, String url, String adminUsername, String adminPassword, String accessToken, String lastCommitRelativeDate)
     {
         this.id = id;
         this.repositoryType = repositoryType;
         this.projectKey = projectKey;
         this.url = url;
-		this.username = username;
-		this.password = password;
 		this.adminUsername = adminUsername;
 		this.adminPassword = adminPassword;
         this.accessToken = accessToken;
@@ -96,25 +88,6 @@ public class Repository
     {
         this.sync = sync;
     }
-    public String getUsername()
-	{
-		return username;
-	}
-
-	public void setUsername(String username)
-	{
-		this.username = username;
-	}
-
-	public String getPassword()
-	{
-		return password;
-	}
-
-	public void setPassword(String password)
-	{
-		this.password = password;
-	}
 
     public String getAdminUsername()
 	{

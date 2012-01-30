@@ -1,9 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.webwork;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException.UnauthorisedException;
@@ -12,6 +8,9 @@ import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Webwork action used to configure the bitbucket repositories
@@ -23,8 +22,8 @@ public class AddBitbucketRepository extends JiraWebActionSupport
     private String repositoryUrl;
     private String projectKey;
     private String isPrivate;
-    private String bbUsername = "";
-    private String bbPassword = "";
+    private String adminUsername = "";
+    private String adminPassword = "";
 
     private final RepositoryManager globalRepositoryManager;
     private final Synchronizer synchronizer;
@@ -44,7 +43,7 @@ public class AddBitbucketRepository extends JiraWebActionSupport
         SourceControlRepository repository;
         try
         {
-            repository = globalRepositoryManager.addRepository(BitbucketRepositoryManager.BITBUCKET, projectKey, repositoryUrl, bbUsername, bbPassword,  bbUsername, bbPassword, "");
+            repository = globalRepositoryManager.addRepository(BitbucketRepositoryManager.BITBUCKET, projectKey, repositoryUrl, adminUsername, adminPassword, "");
             synchronizer.synchronize(repository);
         } catch (UnauthorisedException e)
         {
@@ -102,23 +101,19 @@ public class AddBitbucketRepository extends JiraWebActionSupport
         this.isPrivate = isPrivate;
     }
 
-    public String getBbUsername()
-    {
-        return bbUsername;
+    public String getAdminUsername() {
+        return adminUsername;
     }
 
-    public void setBbUsername(String bbUsername)
-    {
-        this.bbUsername = bbUsername;
+    public void setAdminUsername(String adminUsername) {
+        this.adminUsername = adminUsername;
     }
 
-    public String getBbPassword()
-    {
-        return bbPassword;
+    public String getAdminPassword() {
+        return adminPassword;
     }
 
-    public void setBbPassword(String bbPassword)
-    {
-        this.bbPassword = bbPassword;
+    public void setAdminPassword(String adminPassword) {
+        this.adminPassword = adminPassword;
     }
 }

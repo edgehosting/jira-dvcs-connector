@@ -53,7 +53,7 @@ public interface Communicator
      */
     public UrlInfo getUrlInfo(final RepositoryUri repositoryUri);
 
-    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
-        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException;
+    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
+        String adminUsername, String adminPassword, String accessToken) throws SourceControlException;
 
 }

@@ -109,7 +109,7 @@ public class AddGithubRepository extends JiraWebActionSupport
         SourceControlRepository repository;
         try
         {
-            repository = globalRepositoryManager.addRepository(GithubRepositoryManager.GITHUB, projectKey, repositoryUrl, "", "",
+            repository = globalRepositoryManager.addRepository(GithubRepositoryManager.GITHUB, projectKey, repositoryUrl,
                 "", "", accessToken);
             synchronizer.synchronize(repository);
 

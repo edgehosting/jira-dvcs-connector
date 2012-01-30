@@ -18,11 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,12 +43,10 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         @Override
         public SourceControlRepository apply(ProjectMapping pm)
         {
-            String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
             String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(),
                     pm.getRepositoryUrl());
             return new DefaultSourceControlRepository(pm.getID(), pm.getRepositoryName(), pm.getRepositoryType(), getRepositoryUri(pm.getRepositoryUrl()),
-                    pm.getProjectKey(), pm.getUsername(), decryptedPassword,
-                    pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken());
+                    pm.getProjectKey(), pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken());
         }
     };
 
@@ -72,16 +66,15 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         toChangesetTransformer = new ToChangesetTransformer(this);
     }
 
-    public String getRepositoryName(String repositoryType, String projectKey, String repositoryUrl, String username,
-                                    String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    public String getRepositoryName(String repositoryType, String projectKey, String repositoryUrl,
+                                    String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
         RepositoryUri repositoryUri = getRepositoryUri(repositoryUrl);
-        return getCommunicator().getRepositoryName(repositoryType, projectKey, repositoryUri, username, password, adminUsername, adminPassword, accessToken);
+        return getCommunicator().getRepositoryName(repositoryType, projectKey, repositoryUri, adminUsername, adminPassword, accessToken);
     }
 
     @Override
-    public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl, String username,
-                                                 String password, String adminUsername, String adminPassword, String accessToken)
+    public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl,  String adminUsername, String adminPassword, String accessToken)
     {
         // Remove trailing slashes from URL
         if (repositoryUrl.endsWith("/"))
@@ -94,12 +87,12 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         {
             repositoryUrl = repositoryUrl.replaceFirst("http:", "https:");
         }
-        String repositoryName = getRepositoryName(repositoryType, projectKey, repositoryUrl, username, password, adminUsername, adminPassword, accessToken);
+        String repositoryName = getRepositoryName(repositoryType, projectKey, repositoryUrl, adminUsername, adminPassword, accessToken);
 
-        String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
+//        String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
         String encryptedAdminPassword = encryptor.encrypt(adminPassword, projectKey, repositoryUrl);
         ProjectMapping pm = repositoryPersister.addRepository(repositoryName, repositoryType, projectKey, repositoryUrl,
-                username, encryptedPassword, adminUsername, encryptedAdminPassword, accessToken);
+                adminUsername, encryptedAdminPassword, accessToken);
         return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
     }
 

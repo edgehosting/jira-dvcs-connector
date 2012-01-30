@@ -162,9 +162,9 @@ public class CachingCommunicator implements Communicator
     }
 
     @Override
-    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
-        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
+        String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
-        return delegate.getRepositoryName(repositoryType, projectKey, repositoryUri, username, password, adminUsername, adminPassword, accessToken);
+        return delegate.getRepositoryName(repositoryType, projectKey, repositoryUri, adminUsername, adminPassword, accessToken);
     }
 }

@@ -56,7 +56,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
 
     @Override
     public ProjectMapping addRepository(String repositoryName, String repositoryType, String projectKey, String repositoryUrl,
-        String username, String password, String adminUsername, String adminPassword, String accessToken)
+        String adminUsername, String adminPassword, String accessToken)
     {
         final ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class, ProjectMapping.REPOSITORY_URL + " = ? and "
             + ProjectMapping.PROJECT_KEY + " = ?", repositoryUrl, projectKey);
@@ -69,11 +69,6 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         map.put(ProjectMapping.REPOSITORY_URL, repositoryUrl);
         map.put(ProjectMapping.PROJECT_KEY, projectKey);
         map.put(ProjectMapping.REPOSITORY_TYPE, repositoryType);
-        if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
-        {
-            map.put(ProjectMapping.USERNAME, username);
-            map.put(ProjectMapping.PASSWORD, password);
-        }
         if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminPassword))
         {
             map.put(ProjectMapping.ADMIN_USERNAME, adminUsername);

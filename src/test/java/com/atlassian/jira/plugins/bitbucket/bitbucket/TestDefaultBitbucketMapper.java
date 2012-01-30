@@ -109,7 +109,7 @@ public class TestDefaultBitbucketMapper
     public void testAddAnonymousRepositoryCreatesValidMap()
     {
         new DefaultRepositoryPersister(activeObjects).
-                addRepository("Pretty Name", "bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), null, null, null, null, null);
+                addRepository("Pretty Name", "bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(),  null, null, null);
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
@@ -128,8 +128,10 @@ public class TestDefaultBitbucketMapper
     @Test
     public void testAddAuthentictedRepositoryCreatesValidMap()
     {
+
+        // TODO: check test validity after removing username/passwd and using only adminusername/adminpswd
         new DefaultRepositoryPersister(activeObjects).
-                addRepository("Pretty Name", "bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), "user", "pass", null, null, null);
+                addRepository("Pretty Name", "bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), "user", "pass", null);
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
@@ -140,8 +142,8 @@ public class TestDefaultBitbucketMapper
                         Map<String, Object> map = (Map<String, Object>) o;
                         return map.get("REPOSITORY_URL").equals(URL) &&
                                 map.get("PROJECT_KEY").equals("JST") &&
-                                map.get("USERNAME").equals("user") &&
-                                map.containsKey("PASSWORD");
+                                map.get("ADMIN_USERNAME").equals("user") &&
+                                map.containsKey("ADMIN_PASSWORD");
                     }
                 }));
     }
@@ -149,8 +151,9 @@ public class TestDefaultBitbucketMapper
     @Test
     public void testPasswordNotStoredInPlainText()
     {
+        // TODO: check test validity after removing username/passwd and using only adminusername/adminpswd
     	new BitbucketRepositoryManager(new DefaultRepositoryPersister(activeObjects), bitbucket, encryptor, null, null, null, null)
-    		.addRepository("bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), "user", "pass", null, null, "");
+    		.addRepository("bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), "user", "pass", "");
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
@@ -159,7 +162,7 @@ public class TestDefaultBitbucketMapper
                     {
                         //noinspection unchecked
                         Map<String, Object> map = (Map<String, Object>) o;
-                        return !map.get("PASSWORD").equals("pass");
+                        return !map.get("ADMIN_PASSWORD").equals("pass");
                     }
                 }));
         verify(encryptor, times(1)).encrypt("pass", "JST", "https://bitbucket.org/owner/slug");
@@ -212,8 +215,9 @@ public class TestDefaultBitbucketMapper
                 .thenReturn(new IssueMapping[]{issueMapping});
         when(activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", "bitbucket"))
             .thenReturn(new ProjectMapping[] { projectMapping });
-        when(projectMapping.getUsername()).thenReturn("user");
-        when(projectMapping.getPassword()).thenReturn("ssap");
+        // TODO: check test validity after removing username/passwd and using only adminusername/adminpswd
+        when(projectMapping.getAdminPassword()).thenReturn("user");
+        when(projectMapping.getAdminPassword()).thenReturn("ssap");
         when(issueMapping.getNode()).thenReturn("1");
         when(issueMapping.getRepositoryId()).thenReturn(SOME_ID);
         List<IssueMapping> issueMappings = new DefaultRepositoryPersister(activeObjects).getIssueMappings("JST-1", "bitbucket");

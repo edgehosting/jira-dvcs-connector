@@ -41,7 +41,7 @@ public interface RepositoryPersister {
      *
      * @return
      */
-    ProjectMapping addRepository(String repositoryName, String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String repositoryType, String accessToken);
+    ProjectMapping addRepository(String repositoryName, String projectKey, String repositoryUrl, String adminUsername, String adminPassword, String repositoryType, String accessToken);
 
     /**
      * Remove the mapping of the bibucket repository from the specified jira project
