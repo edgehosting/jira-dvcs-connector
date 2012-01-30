@@ -32,13 +32,14 @@ import static org.hamcrest.Matchers.not;
 public class GithubRepositoriesTest extends BitBucketBaseTest
 {
 
-    private static final String TEST_REPO_URL = "https://github.com/jirabitbucketconnector/test-project";
+    private static final String TEST_PUBLIC_REPO_URL = "https://github.com/jirabitbucketconnector/test-project";
     private static final String TEST_PRIVATE_REPO_URL = "https://github.com/dusanhornik/my-private-github-repo";
     private static final String TEST_NOT_EXISTING_REPO_URL = "https://github.com/jirabitbucketconnector/repo-does-not-exist";
+    private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
+    private static final String REPO_ADMIN_PASSWORD = "jirabitbucketconnector1";
 
     private static String clientID;
     private static String clientSecret;
-    private static String oauthAppName;
     private static String oauthAppLink;
 
     @BeforeClass
@@ -50,7 +51,7 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
 
         jira.getTester().gotoUrl(GithubRegisterOAuthAppPage.PAGE_URL);
         GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
-        oauthAppName = "testApp" + System.currentTimeMillis();
+        String oauthAppName = "testApp" + System.currentTimeMillis();
         String baseUrl = jira.getProductInstance().getBaseUrl();
         registerAppPage.registerApp(oauthAppName, baseUrl, baseUrl);
 
@@ -99,15 +100,15 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     @Test
     public void addRepoAppearsOnList()
     {
-        configureRepos.deleteAllRepositories();
-        configureRepos.addRepoToProjectSuccessfully("QA", TEST_REPO_URL);
+        configureRepos.addRepoToProjectSuccessfully("QA", TEST_PUBLIC_REPO_URL);
         assertThat(configureRepos.getRepositories().size(), equalTo(1));
     }
 
     @Test
     public void addRepoCommitsAppearOnIssues()
     {
-        ensureRepositoryPresent("QA", TEST_REPO_URL);
+        ensureRepositoryPresent("QA", TEST_PUBLIC_REPO_URL);
+        ensureRepositoryPresent("QA", TEST_PUBLIC_REPO_URL);
 
         assertThat(getCommitsForIssue("QA-2"),
                 hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
@@ -118,8 +119,6 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     @Test
     public void addRepoThatDoesNotExist()
     {
-        configureRepos.deleteAllRepositories();
-
         configureRepos.addRepoToProjectFailingStep1("QA", TEST_NOT_EXISTING_REPO_URL);
 
         String errorMessage = configureRepos.getErrorStatusMessage();
@@ -129,22 +128,18 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     @Test
     public void addPrivateRepoWithInvalidOAuth()
     {
-        configureRepos.deleteAllRepositories();
-
         goToGithubOAuthConfigPage().setCredentials("xxx", "yyy");
 
         goToRepositoriesConfigPage();
 
         configureRepos.addRepoToProjectFailingStep2("QA", TEST_PRIVATE_REPO_URL);
+
+        goToGithubOAuthConfigPage().setCredentials(clientID, clientSecret);
     }
 
     @Test
     public void testPostCommitHookNotAdded()
     {
-        configureRepos.deleteAllRepositories();
-
-        goToGithubOAuthConfigPage().setCredentials(clientID, clientSecret);
-
         goToRepositoriesConfigPage();
 
         configureRepos.addRepoToProjectFailingPostcommitService("QA", TEST_PRIVATE_REPO_URL);
@@ -156,23 +151,20 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     {
         String baseUrl = jira.getProductInstance().getBaseUrl();
 
-        configureRepos.deleteAllRepositories();
         // add repository
         String repoId = configureRepos.addPublicRepoToProjectAndInstallService("QA",
-                TEST_REPO_URL, "jirabitbucketconnector",
-                "jirabitbucketconnector1");
-        // check that it created postcommit hook
+                TEST_PUBLIC_REPO_URL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
 
+        // check that it created postcommit hook
         String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/" + repoId + "/sync";
         String hooksURL = "https://github.com/jirabitbucketconnector/test-project/admin/hooks";
-        String hooksPage = getGithubServices(hooksURL, "jirabitbucketconnector", "jirabitbucketconnector1");
+        String hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
         assertThat(hooksPage, containsString(githubServiceConfigUrlPath));
         goToRepositoriesConfigPage();
         // delete repository
         configureRepos.deleteAllRepositories();
         // check that postcommit hook is removed
-        hooksPage = getGithubServices(hooksURL, "jirabitbucketconnector",
-                "jirabitbucketconnector1");
+        hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN,REPO_ADMIN_PASSWORD);
         assertThat(hooksPage, not(containsString(githubServiceConfigUrlPath)));
     }
 
@@ -193,10 +185,10 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     public void testCommitStatistics()
     {
         configureRepos.deleteAllRepositories();
-        configureRepos.addRepoToProjectSuccessfully("QA", TEST_REPO_URL);
+        configureRepos.addRepoToProjectSuccessfully("QA", TEST_PUBLIC_REPO_URL);
 
         // QA-2
-        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3");
         Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();

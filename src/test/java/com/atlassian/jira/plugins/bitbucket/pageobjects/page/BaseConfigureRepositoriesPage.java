@@ -62,11 +62,11 @@ public abstract class BaseConfigureRepositoriesPage implements Page
         return "/secure/admin/ConfigureBitbucketRepositories!default.jspa";
     }
 
-    @WaitUntil
-    public void waitUntilReady()
-    {
-        Poller.waitUntilTrue(addRepositoryButton.timed().isPresent());
-    }
+//    @WaitUntil
+//    public void waitUntilReady()
+//    {
+//        Poller.waitUntilTrue(addRepositoryButton.timed().isPresent());
+//    }
 
 
     /**
@@ -137,17 +137,22 @@ public abstract class BaseConfigureRepositoriesPage implements Page
      */
     public void assertThatSyncMessage(Matcher<String> matcher)
     {
-        Poller.waitUntil(syncStatusDiv.timed().getText(), matcher, by(30000));
+        Poller.waitUntil(syncStatusDiv.timed().getText(), matcher);
     }
 
     public void assertThatSuccessMessage(Matcher<String> matcher)
     {
-        Poller.waitUntil(messageBarDiv.find(By.className("success")).timed().getText(), matcher, by(30000));
+        Poller.waitUntil(messageBarDiv.find(By.className("success")).timed().getText(), matcher);
     }
 
     public void assertThatWarningMessage(Matcher<String> matcher)
     {
-        Poller.waitUntil(messageBarDiv.find(By.className("warning")).timed().getText(), matcher, by(30000));
+        Poller.waitUntil(messageBarDiv.find(By.className("warning")).timed().getText(), matcher);
+    }
+
+    public void assertThatErrorMessage(Matcher<String> matcher)
+    {
+        Poller.waitUntil(messageBarDiv.find(By.className("error")).timed().getText(), matcher);
     }
 
     protected void checkSyncProcessSuccess()

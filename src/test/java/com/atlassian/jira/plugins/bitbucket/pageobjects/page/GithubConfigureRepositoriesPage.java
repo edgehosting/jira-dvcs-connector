@@ -14,14 +14,6 @@ import static org.hamcrest.Matchers.containsString;
  */
 public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPage
 {
-    @ElementBy(id = "clientID")
-    PageElement ghClientID;
-
-    @ElementBy(id = "clientSecret")
-    PageElement ghClientSecret;
-
-    @ElementBy(id = "gh_messages")
-    PageElement ghMessagesDiv;
 
     @ElementBy(id = "login_field")
     PageElement githubWebLoginField;
@@ -142,8 +134,8 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
     public BaseConfigureRepositoriesPage addRepoToProjectFailingPostcommitService(String projectKey, String url)
     {
         addRepoToProject(projectKey, url);
-        assertThatSuccessMessage(containsString("Repository added"));
-        assertThatWarningMessage(containsString("Error adding postcommit service."));
+        assertThatErrorMessage(containsString("Error adding postcommit hook. Do you have admin rights to the repository?\n" +
+                "Repository was not added. [Could not add postcommit hook. ]"));
         return this;
     }
 
@@ -170,8 +162,8 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         urlTextbox.clear().type(url);
         addRepositoryButton.click();
 
-        String currentUrl = checkAndDoGithubLogin();
-        currentUrl = authorizeGithubAppIfRequired();
+        checkAndDoGithubLogin();
+        String currentUrl = authorizeGithubAppIfRequired();
         if (!currentUrl.contains("/jira/"))
         {
             Assert.fail("Expected was automatic continue to jira!");
