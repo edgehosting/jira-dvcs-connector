@@ -76,8 +76,7 @@ function forceSync(repositoryId) {
 function submitFunction() {
 	
 	if (AJS.$('#bbUsername').val()) {
-		AJS.$('#repoEntry').submit();
-		return;
+		return true; // submit form
 	}
 	
     AJS.$("#aui-message-bar").empty();

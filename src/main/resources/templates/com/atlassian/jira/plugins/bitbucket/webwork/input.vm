@@ -18,7 +18,7 @@
                 forceSync($action.getRepositoryId());
             #end
             retrieveSyncStatus();
-            AJS.$("#Submit").click(submitFunction);
+            AJS.$("#repoEntry").submit(submitFunction);
         }
      </script>
 
@@ -96,7 +96,7 @@
 
                 <div class="buttons-container">
                     <div class="buttons">
-                        <input class="button submit" type="button" name="Submit" id="Submit" value="Continue" />
+                        <input class="button submit" type="submit" name="Submit" id="Submit" value="Continue" />
                         <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>
                     </div>
                 </div>
