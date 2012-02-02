@@ -44,7 +44,9 @@ function retrieveSyncStatus() {
                     syncStatusHtml = "";
                     syncIcon = "error";
                     syncErrorDiv.html("<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>");
-                }
+                } else {
+                	syncErrorDiv.html("");
+            	}
             }
             else {
                 if (repo.lastCommitRelativeDate != "") syncIcon = "commits";
