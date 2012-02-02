@@ -56,7 +56,7 @@
                 </div>
             #end
 
-            <form class="aui top-label" id="repoEntry" method="post" action="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa">
+            <form class="aui top-label" id="repoEntry" method="post">
 
                 <input type="hidden" name="atl_token" id="atl_token" value="$atl_token">
                 <input type="hidden" name="isPrivate" id="isPrivate">

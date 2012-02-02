@@ -77,7 +77,7 @@ function forceSync(repositoryId) {
 
 function submitFunction() {
 	
-	if (AJS.$('#adminUsername').val()) {
+	if (AJS.$('#repoEntry').attr("action")) {
 		return true; // submit form
 	}
 	
