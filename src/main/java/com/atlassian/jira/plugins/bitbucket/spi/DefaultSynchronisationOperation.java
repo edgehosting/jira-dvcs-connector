@@ -78,7 +78,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                         detailChangeset = repositoryManager.getChangeset(key.getRepository(), changeset.getNode());
                     } catch (Exception e)
                     {
-                        log.warn("Unable to retrieve statistics for changeset " + changeset.getNode(), e);
+                        log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
                         synchroErrorCount++;
                     }
                     for (String extractedIssue : extractedIssues)
@@ -117,7 +117,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     matches.add(issueKey);
             }
         }
-
         return matches;
     }
 
