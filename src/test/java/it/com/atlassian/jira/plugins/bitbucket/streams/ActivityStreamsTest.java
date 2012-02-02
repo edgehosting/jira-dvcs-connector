@@ -21,6 +21,8 @@ import com.atlassian.webdriver.jira.page.DashboardPage;
  */
 public class ActivityStreamsTest
 {
+    private static final String TEST_PUBLIC_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/public-hg-repo";
+
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private DashboardActivityStreamsPage page;
 
@@ -32,7 +34,7 @@ public class ActivityStreamsTest
 
         BitBucketConfigureRepositoriesPage configureRepos = goToRepositoriesConfigPage();
         configureRepos.deleteAllRepositories();
-        configureRepos.addRepoToProjectSuccessfully("QA", "https://bitbucket.org/farmas/testrepo-qa");
+        configureRepos.addRepoToProjectSuccessfully("QA", TEST_PUBLIC_REPO_URL);
 
         goToDashboardPage();
     }
@@ -67,24 +69,24 @@ public class ActivityStreamsTest
         jira.getTester().gotoUrl(iframeSrc);
         bindPageAndSetJira();
 
-        page.checkIssueActivityPresentedForQA5();
+        page.checkIssueActivityPresentedForQA3();
 
         page.setIssueKeyFilter("qa-4");
         bindPageAndSetJira();
 
-        page.checkIssueActivityNotPresentedForQA5();
+        page.checkIssueActivityNotPresentedForQA3();
 
-        page.setIssueKeyFilter("qa-5");
+        page.setIssueKeyFilter("qa-3");
         bindPageAndSetJira();
 
-        page.checkIssueActivityPresentedForQA5();
+        page.checkIssueActivityPresentedForQA3();
 
         goToRepositoriesConfigPage().deleteAllRepositories();
 
         goToDashboardPage();
         bindPageAndSetJira();
 
-        page.checkIssueActivityNotPresentedForQA5();
+        page.checkIssueActivityNotPresentedForQA3();
     }
 
     private void bindPageAndSetJira()
