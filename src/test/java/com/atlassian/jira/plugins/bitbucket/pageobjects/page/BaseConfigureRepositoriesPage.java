@@ -206,4 +206,9 @@ public abstract class BaseConfigureRepositoriesPage implements Page
         this.jiraTestedProduct = jiraTestedProduct;
     }
 
+    public void clearForm()
+    {
+        urlTextbox.clear();
+    }
+
 }
