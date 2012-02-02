@@ -1,11 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 
 import java.util.Date;
@@ -16,27 +12,25 @@ public interface RepositoryManager
 {
 
     /**
-     * Mapps a repository to given project
-     *
-     * @param repositoryType
-     * @param projectKey
-     * @param repositoryUrl
-     * @param username
-     * @param password
-     * @param adminUsername  - used when (un)installing postcommit hook
-     * @param adminPassword  - used when (un)installing postcommit hook
-     * @param accessToken    - token for authenticating if this repository is accessed using OAuth
-     * @return
-     */
-    public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl, String username,
-                                                 String password, String adminUsername, String adminPassword, String accessToken);
-
-    /**
      * @param repositoryId
      * @return repository with given id
      *         throws IllegalArgumentException if repository with given id is not found
      */
     public SourceControlRepository getRepository(int repositoryId);
+
+    /**
+     * Mapps a repository to given project
+     *
+     * @param repositoryType
+     * @param projectKey
+     * @param repositoryUrl
+     * @param adminUsername  - used when (un)installing postcommit hook
+     * @param adminPassword  - used when (un)installing postcommit hook
+     * @param accessToken    - token for authenticating if this repository is accessed using OAuth
+     * @return
+     */
+    public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl,
+                                                 String adminUsername, String adminPassword, String accessToken);
 
     /**
      * @param projectKey

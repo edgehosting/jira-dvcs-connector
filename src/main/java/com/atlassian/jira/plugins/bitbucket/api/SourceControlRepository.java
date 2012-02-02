@@ -32,15 +32,6 @@ public interface SourceControlRepository
      */
     String getRepositoryType();
 
-	/**
-	 * @return username to use for authenticating
-	 */
-	String getUsername();
-
-	/**
-	 * @return password to use for authenticating
-	 */
-	String getPassword();
 
 	/**
 	 * Admin username - used when (un)installing postcommit hook
