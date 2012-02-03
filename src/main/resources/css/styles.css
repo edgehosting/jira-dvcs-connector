@@ -109,6 +109,15 @@
     border-radius: 6px;
 }
 
+form.aui.top-label {
+    margin-top: 16px;
+}
+
+.submit {
+    padding: 4px 8px !important;
+}
+
+
 .syncicon {
     width: 16px;
     /*background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.png);*/
@@ -445,7 +454,7 @@ a:hover.repositoryNameLink {
 
 .buttons-container {
 	margin-top: 20px;
-	border: none;	
+	border: none !important;
 }
 
 #addRepositoryDetails .field-group input {

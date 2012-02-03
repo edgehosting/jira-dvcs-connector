@@ -24,12 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
@@ -148,7 +143,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     private Set<Integer> getProjectMappingsForRepositoryType(final String repositoryType)
     {
         ProjectMapping[] myProjectMappings = activeObjects.find(ProjectMapping.class, ProjectMapping.REPOSITORY_TYPE + " = ?",
-            repositoryType);
+                repositoryType);
 
         final Set<Integer> projectMappingsIds = Sets.newHashSet();
         for (ProjectMapping myProjectMapping : myProjectMappings)
@@ -234,11 +229,9 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         {
             return Collections.emptyList();
         }
-        return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>()
-        {
+        return activeObjects.executeInTransaction(new TransactionCallback<List<IssueMapping>>() {
             @Override
-            public List<IssueMapping> doInTransaction()
-            {
+            public List<IssueMapping> doInTransaction() {
                 String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
                 String repositoryIdsFilteringWhereClause = getRepositoryIdsFilteringWhereClause(repositoryType);
                 Query query = Query.select().where(baseWhereClause + repositoryIdsFilteringWhereClause).limit(count).order(IssueMapping.DATE + " DESC");
@@ -254,7 +247,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         Set<Integer> ids = getProjectMappingsForRepositoryType(repositoryType);
         if (CollectionUtils.isNotEmpty(ids))
         {
-            sb.append(" AND " + IssueMapping.REPOSITORY_ID + " in (");
+            sb.append(" AND \"" + IssueMapping.REPOSITORY_ID + "\" in (");
             sb.append(StringUtils.join(ids, ","));
             sb.append(")");
         } else
