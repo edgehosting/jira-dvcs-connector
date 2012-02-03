@@ -89,9 +89,9 @@
                     <div><i>https://github.com/owner/repository</i></div>
                 </div>
 
-                <div class="field-group">
-                    <div id="bbCredentials"></div>
-                </div>
+                <div id="bbCredentials"></div>
+
+
                 <div id="aui-message-bar"></div>
 
                 <div class="buttons-container">
