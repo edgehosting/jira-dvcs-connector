@@ -1,14 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 
 public class CustomStringUtils
 {

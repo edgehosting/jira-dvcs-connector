@@ -1,11 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
+import static org.hamcrest.Matchers.*;
 import junit.framework.Assert;
 
-import org.hamcrest.Matchers;
-import org.hamcrest.core.IsEqual;
 import org.openqa.selenium.By;
-import static org.hamcrest.Matchers.containsString;
 
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.Options;
