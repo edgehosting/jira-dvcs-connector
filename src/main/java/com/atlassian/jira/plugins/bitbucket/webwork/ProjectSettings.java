@@ -10,12 +10,10 @@ import com.opensymphony.user.User;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 @SuppressWarnings("deprecation")
 public class ProjectSettings extends AbstractPluggableProjectOperation
 {
-    private static final Pattern BITBUCKET_NAME_PATTERN = Pattern.compile(".*bitbucket.org/([^/]+/[^/]+)(/default)?");
 	private final RepositoryManager globalRepositoryManager;
 	private final ApplicationProperties applicationProperties;
 

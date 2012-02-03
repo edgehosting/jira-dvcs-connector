@@ -1,5 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -12,13 +20,6 @@ import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Aggregated Repository Manager that handles all Repository Managers based on the repository url
@@ -76,13 +77,13 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
     @Override
-    public SourceControlRepository addRepository(String repositoryType, String projectKey, String url, String username, String password, String adminUsername, String adminPassword, String accessToken)
+    public SourceControlRepository addRepository(String repositoryType, String projectKey, String url, String adminUsername, String adminPassword, String accessToken)
     {
         for (RepositoryManager repositoryManager : repositoryManagers)
         {
             if (repositoryManager.getRepositoryType().equals(repositoryType))
             {
-                return repositoryManager.addRepository(repositoryType, projectKey, url, username, password, adminUsername, adminPassword, accessToken);
+                return repositoryManager.addRepository(repositoryType, projectKey, url, adminUsername, adminPassword, accessToken);
             }
         }
         throw new IllegalArgumentException("No repository manager found for given repository type [" + repositoryType + "]");
@@ -194,12 +195,12 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
     @Override
-    public UrlInfo getUrlInfo(String repositoryUrl)
+    public UrlInfo getUrlInfo(String repositoryUrl, String projectKey)
     {
         // TODO - multithread this for better user experience
         for (RepositoryManager repositoryManager : repositoryManagers)
         {
-            UrlInfo urlInfo = repositoryManager.getUrlInfo(repositoryUrl);
+            UrlInfo urlInfo = repositoryManager.getUrlInfo(repositoryUrl, projectKey);
             if (urlInfo != null)
             {
                 return urlInfo;
@@ -214,4 +215,16 @@ public class GlobalRepositoryManager implements RepositoryManager
         throw new UnsupportedOperationException("This implementation should never be called.");
     }
 
+    @Override
+    public Date getLastCommitDate(SourceControlRepository repo)
+    {
+        return getManagerByRepository(repo).getLastCommitDate(repo);
+    }
+
+    @Override
+    public void setLastCommitDate(SourceControlRepository repo, Date date)
+    {
+        getManagerByRepository(repo).setLastCommitDate(repo, date);
+    }
+    
 }

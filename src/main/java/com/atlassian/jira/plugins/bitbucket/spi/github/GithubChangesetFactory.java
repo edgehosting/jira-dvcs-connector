@@ -23,12 +23,29 @@ public class GithubChangesetFactory
 {
 
     /**
-     * Parse the json object as a bitbucket changeset
+     * Parse the json object from GitHub v2. API as a changeset. We need only minimal information from that.
+     *
+     * @param json  the json object describing the change
+     * @return the parsed {@link com.atlassian.jira.plugins.bitbucket.api.Changeset} with minimal fields
+     */
+    public static Changeset parseV2(int repositoryId, JSONObject commitJson) throws JSONException
+    {
+
+        String id = commitJson.getString("id");
+        String msg = commitJson.getString("message");
+        Date date = parseDate(commitJson.getString("committed_date"));
+
+        return new DefaultChangeset(repositoryId, id, msg, date);
+    }
+
+
+    /**
+     * Parse the json object from GitHub v3. API as a changeset
      *
      * @param json  the json object describing the change
      * @return the parsed {@link com.atlassian.jira.plugins.bitbucket.api.Changeset}
      */
-    public static Changeset parse(int repositoryId, String branch, JSONObject json)
+    public static Changeset parseV3(int repositoryId, String branch, JSONObject json)
     {
         try
         {
@@ -52,7 +69,7 @@ public class GithubChangesetFactory
                 login = author.has("login") ? author.getString("login") : "";
             }
 
-            List<ChangesetFile> changesetFiles = fileList(json.getJSONArray("files"), false);
+            List<ChangesetFile> changesetFiles = fileList(json.getJSONArray("files"));
 
             return new DefaultChangeset(
                     repositoryId,
@@ -96,7 +113,7 @@ public class GithubChangesetFactory
         return list;
     }
 
-    private static List<ChangesetFile> fileList(JSONArray files, boolean fromPostcommitHook) throws JSONException
+    private static List<ChangesetFile> fileList(JSONArray files) throws JSONException
     {
         List<ChangesetFile> list = new ArrayList<ChangesetFile>();
 

@@ -1,5 +1,15 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -10,20 +20,13 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
+import com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GithubRepositoryManager extends DvcsRepositoryManager
 {
@@ -31,11 +34,14 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
 
     public static final String GITHUB = "github";
 
+    private final GithubOAuth githubOAuth;
+
     public GithubRepositoryManager(RepositoryPersister repositoryPersister, @Qualifier("githubCommunicator") Communicator communicator,
-                                   Encryptor encryptor, ApplicationProperties applicationProperties, IssueLinker issueLinker,
-                                   TemplateRenderer templateRenderer, IssueManager issueManager)
+        Encryptor encryptor, ApplicationProperties applicationProperties, IssueLinker issueLinker,
+        TemplateRenderer templateRenderer, IssueManager issueManager, GithubOAuth githubOAuth)
     {
         super(communicator, repositoryPersister, encryptor, applicationProperties, issueLinker, templateRenderer, issueManager);
+        this.githubOAuth = githubOAuth;
     }
 
     @Override
@@ -67,6 +73,17 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
     public String getRepositoryType()
     {
         return GITHUB;
+    }
+
+    public UrlInfo validateUrlInfo(UrlInfo urlInfo)
+    {
+        urlInfo = super.validateUrlInfo(urlInfo);
+        if (StringUtils.isBlank(githubOAuth.getClientId()) || StringUtils.isBlank(githubOAuth.getClientSecret()))
+        {
+            String baseUrl = getApplicationProperties().getBaseUrl();
+            urlInfo.addValidationError("<a href='"+baseUrl+"/secure/admin/ConfigureGithubOAuth!default.jspa'>GitHub OAuth Settings</a> have to be configured before adding GitHub repository");
+        }
+        return urlInfo;
     }
 
     @Override

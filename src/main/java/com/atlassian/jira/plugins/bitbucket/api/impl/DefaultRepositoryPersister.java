@@ -36,8 +36,7 @@ import java.util.Set;
  */
 public class DefaultRepositoryPersister implements RepositoryPersister
 {
-    private final Logger logger = LoggerFactory.getLogger(DefaultRepositoryPersister.class);
-
+    private final Logger log = LoggerFactory.getLogger(DefaultRepositoryPersister.class);
     private final ActiveObjects activeObjects;
 
     public DefaultRepositoryPersister(ActiveObjects activeObjects)
@@ -53,40 +52,34 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             @Override
             public List<ProjectMapping> doInTransaction()
             {
-                ProjectMapping[] mappings = activeObjects.find(ProjectMapping.class, "PROJECT_KEY = ? AND REPOSITORY_TYPE = ?", projectKey, repositoryType);
+                ProjectMapping[] mappings = activeObjects.find(ProjectMapping.class, ProjectMapping.PROJECT_KEY + " = ? AND "
+                    + ProjectMapping.REPOSITORY_TYPE + " = ?", projectKey, repositoryType);
                 return Lists.newArrayList(mappings);
             }
         });
     }
 
     @Override
-    public ProjectMapping addRepository(String repositoryName, String repositoryType, String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String accessToken)
+    public ProjectMapping addRepository(String repositoryName, String repositoryType, String projectKey, String repositoryUrl, 
+        String adminUsername, String adminPassword, String accessToken)
     {
-
-        final ProjectMapping[] projectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_URL = ? and PROJECT_KEY = ?", repositoryUrl, projectKey);
-        if (projectMappings.length > 0)
+        if (findRepositories(projectKey, repositoryUrl).length > 0)
         {
             throw new SourceControlException("Repository [" + repositoryUrl + "] is already linked to project [" + projectKey + "]");
         }
         final Map<String, Object> map = new HashMap<String, Object>();
-        // TODO make constants in ProjectMappings.java
-        map.put("REPOSITORY_NAME", repositoryName);
-        map.put("REPOSITORY_URL", repositoryUrl);
-        map.put("PROJECT_KEY", projectKey);
-        map.put("REPOSITORY_TYPE", repositoryType);
-        if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
-        {
-            map.put("USERNAME", username);
-            map.put("PASSWORD", password);
-        }
+        map.put(ProjectMapping.REPOSITORY_NAME, repositoryName);
+        map.put(ProjectMapping.REPOSITORY_URL, repositoryUrl);
+        map.put(ProjectMapping.PROJECT_KEY, projectKey);
+        map.put(ProjectMapping.REPOSITORY_TYPE, repositoryType);
         if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminPassword))
         {
-            map.put("ADMIN_USERNAME", adminUsername);
-            map.put("ADMIN_PASSWORD", adminPassword);
+            map.put(ProjectMapping.ADMIN_USERNAME, adminUsername);
+            map.put(ProjectMapping.ADMIN_PASSWORD, adminPassword);
         }
         if (StringUtils.isNotBlank(accessToken))
         {
-            map.put("ACCESS_TOKEN", accessToken);
+            map.put(ProjectMapping.ACCESS_TOKEN, accessToken);
         }
         return activeObjects.executeInTransaction(new TransactionCallback<ProjectMapping>()
         {
@@ -99,6 +92,13 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     }
 
     @Override
+    public ProjectMapping[] findRepositories(String projectKey, String repositoryUrl)
+    {
+        return activeObjects.find(ProjectMapping.class, ProjectMapping.REPOSITORY_URL + " = ? and "
+            + ProjectMapping.PROJECT_KEY + " = ?", repositoryUrl, projectKey);
+    }
+
+    @Override
     public void removeRepository(final int id)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
@@ -107,10 +107,10 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             public Object doInTransaction()
             {
                 final ProjectMapping projectMapping = activeObjects.get(ProjectMapping.class, id);
-                final IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class, "REPOSITORY_ID = ?", id);
+                final IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class, IssueMapping.REPOSITORY_ID+" = ?", id);
 
-                logger.debug("deleting project mapping [ {} ]", String.valueOf(id));
-                logger.debug("deleting [ {} ] issue mappings [ {} ]", new String[]{String.valueOf(issueMappings.length), String.valueOf(id)});
+                log.debug("deleting project mapping [ {} ]", String.valueOf(id));
+                log.debug("deleting [ {} ] issue mappings [ {} ]", new String[]{String.valueOf(issueMappings.length), String.valueOf(id)});
 
                 activeObjects.delete(projectMapping);
                 activeObjects.delete(issueMappings);
@@ -127,7 +127,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             @Override
             public List<IssueMapping> doInTransaction()
             {
-                String baseWhereClause = "ISSUE_ID = '" + issueId + "'";
+                String baseWhereClause = IssueMapping.ISSUE_ID + " = '" + issueId + "'";
                 String repositoryIdsFilteringWhereClause = getRepositoryIdsFilteringWhereClause(repositoryType);
                 Query query = Query.select().where(baseWhereClause + repositoryIdsFilteringWhereClause);
 
@@ -147,7 +147,8 @@ public class DefaultRepositoryPersister implements RepositoryPersister
      */
     private Set<Integer> getProjectMappingsForRepositoryType(final String repositoryType)
     {
-        ProjectMapping[] myProjectMappings = activeObjects.find(ProjectMapping.class, "REPOSITORY_TYPE = ?", repositoryType);
+        ProjectMapping[] myProjectMappings = activeObjects.find(ProjectMapping.class, ProjectMapping.REPOSITORY_TYPE + " = ?",
+            repositoryType);
 
         final Set<Integer> projectMappingsIds = Sets.newHashSet();
         for (ProjectMapping myProjectMapping : myProjectMappings)
@@ -168,31 +169,32 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             @Override
             public Object doInTransaction()
             {
-                logger.debug("create issue mapping [ {} ] [ {} - {} ] ", new String[]{issueId, String.valueOf(repositoryId), node});
+                log.debug("create issue mapping [ {} ] [ {} - {} ] ", new String[]{issueId, String.valueOf(repositoryId), node});
                 // delete existing
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, "ISSUE_ID = ? and NODE = ?", issueId, node);
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, IssueMapping.ISSUE_ID + " = ? and "
+                    + IssueMapping.NODE + " = ?", issueId, node);
                 if (ArrayUtils.isNotEmpty(mappings))
                 {
                     activeObjects.delete(mappings);
                 }
                 // add new
                 Map<String, Object> map = Maps.newHashMap();
-                map.put(IssueMapping.COLUMN_REPOSITORY_ID, repositoryId);
-                map.put(IssueMapping.COLUMN_ISSUE_ID, issueId);
-                map.put(IssueMapping.COLUMN_NODE, node);
-                map.put(IssueMapping.COLUMN_RAW_AUTHOR, changeset.getRawAuthor());
-                map.put(IssueMapping.COLUMN_AUTHOR, changeset.getAuthor());
-                map.put(IssueMapping.COLUMN_DATE, changeset.getTimestamp());
-                map.put(IssueMapping.COLUMN_RAW_NODE, changeset.getRawNode());
-                map.put(IssueMapping.COLUMN_BRANCH, changeset.getBranch());
-                map.put(IssueMapping.COLUMN_MESSAGE, changeset.getMessage());
+                map.put(IssueMapping.REPOSITORY_ID, repositoryId);
+                map.put(IssueMapping.ISSUE_ID, issueId);
+                map.put(IssueMapping.NODE, node);
+                map.put(IssueMapping.RAW_AUTHOR, changeset.getRawAuthor());
+                map.put(IssueMapping.AUTHOR, changeset.getAuthor());
+                map.put(IssueMapping.DATE, changeset.getTimestamp());
+                map.put(IssueMapping.RAW_NODE, changeset.getRawNode());
+                map.put(IssueMapping.BRANCH, changeset.getBranch());
+                map.put(IssueMapping.MESSAGE, changeset.getMessage());
 
                 JSONArray parentsJson = new JSONArray();
                 for (String parent : changeset.getParents())
                 {
                     parentsJson.put(parent);
                 }
-                map.put(IssueMapping.COLUMN_PARENTS_DATA, parentsJson.toString());
+                map.put(IssueMapping.PARENTS_DATA, parentsJson.toString());
 
                 JSONObject filesDataJson = new JSONObject();
                 JSONArray filesJson = new JSONArray();
@@ -213,13 +215,11 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                         filesJson.put(fileJson);
                     }
                     filesDataJson.put("files", filesJson);
-
-                    map.put(IssueMapping.COLUMN_FILES_DATA, filesDataJson.toString());
-
-                    map.put(IssueMapping.COLUMN_VERSION, IssueMapping.LATEST_VERSION);
+                    map.put(IssueMapping.FILES_DATA, filesDataJson.toString());
+                    map.put(IssueMapping.VERSION, IssueMapping.LATEST_VERSION);
                 } catch (JSONException e)
                 {
-                    logger.error("Creating files JSON failed!", e);
+                    log.error("Creating files JSON failed!", e);
                 }
 
                 return activeObjects.create(IssueMapping.class, map);
@@ -241,7 +241,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             {
                 String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
                 String repositoryIdsFilteringWhereClause = getRepositoryIdsFilteringWhereClause(repositoryType);
-                Query query = Query.select().where(baseWhereClause + repositoryIdsFilteringWhereClause).limit(count).order("DATE DESC");
+                Query query = Query.select().where(baseWhereClause + repositoryIdsFilteringWhereClause).limit(count).order(IssueMapping.DATE + " DESC");
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class, query);
                 return Arrays.asList(mappings);
             }
@@ -254,7 +254,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         Set<Integer> ids = getProjectMappingsForRepositoryType(repositoryType);
         if (CollectionUtils.isNotEmpty(ids))
         {
-            sb.append(" AND REPOSITORY_ID in (");
+            sb.append(" AND " + IssueMapping.REPOSITORY_ID + " in (");
             sb.append(StringUtils.join(ids, ","));
             sb.append(")");
         } else

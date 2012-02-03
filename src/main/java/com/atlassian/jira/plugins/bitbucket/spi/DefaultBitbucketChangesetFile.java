@@ -9,8 +9,8 @@ public class DefaultBitbucketChangesetFile implements ChangesetFile
 {
     private final ChangesetFileAction type;
     private final String file;
-    private int additions;
-    private int deletions;
+    private final int additions;
+    private final int deletions;
 
     public DefaultBitbucketChangesetFile(ChangesetFileAction type, String file, int additions, int deletions)
     {

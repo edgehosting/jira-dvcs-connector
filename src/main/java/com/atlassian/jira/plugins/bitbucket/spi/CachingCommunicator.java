@@ -20,37 +20,6 @@ public class CachingCommunicator implements Communicator
 {
     private final Communicator delegate;
 
-//    private class ChangesetKey
-//    {
-//        final String id;
-//        private final SourceControlRepository repository;
-//
-//        public ChangesetKey(SourceControlRepository repository, String id)
-//        {
-//            this.repository = repository;
-//            this.id = id;
-//        }
-//
-//        @Override
-//        public boolean equals(Object o)
-//        {
-//            if (this == o) return true;
-//            if (o == null || getClass() != o.getClass()) return false;
-//            ChangesetKey that = (ChangesetKey) o;
-//            if (!repository.equals(that.repository)) return false;
-//            if (!id.equals(that.id)) return false;
-//            return true;
-//        }
-//
-//        @Override
-//        public int hashCode()
-//        {
-//            int result = repository.hashCode();
-//            result = 31 * result + id.hashCode();
-//            return result;
-//        }
-//    }
-
     private class UserKey
     {
         SourceControlRepository repository;
@@ -90,16 +59,6 @@ public class CachingCommunicator implements Communicator
             }
         });
 
-//    private final Map<ChangesetKey, Changeset> changesetMap = new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(
-//        new Function<ChangesetKey, Changeset>()
-//        {
-//            @Override
-//            public Changeset apply(ChangesetKey key)
-//            {
-//                return delegate.getChangeset(key.repository, key.id);
-//            }
-//        });
-
     public CachingCommunicator(Communicator delegate)
     {
         this.delegate = delegate;
@@ -121,14 +80,6 @@ public class CachingCommunicator implements Communicator
     public Changeset getChangeset(SourceControlRepository repository, String id)
     {
         return delegate.getChangeset(repository, id);
-
-//        try
-//        {
-//            return changesetMap.get(new ChangesetKey(repository, id));
-//        } catch (ComputationException e)
-//        {
-//            throw unrollException(e);
-//        }
     }
 
     private SourceControlException unrollException(ComputationException e)
@@ -156,15 +107,15 @@ public class CachingCommunicator implements Communicator
     }
 
     @Override
-    public UrlInfo getUrlInfo(RepositoryUri repositoryUri)
+    public UrlInfo getUrlInfo(RepositoryUri repositoryUri, String projectKey)
     {
-        return delegate.getUrlInfo(repositoryUri);
+        return delegate.getUrlInfo(repositoryUri, projectKey);
     }
 
     @Override
-    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
-        String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
+        String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
-        return delegate.getRepositoryName(repositoryType, projectKey, repositoryUri, username, password, adminUsername, adminPassword, accessToken);
+        return delegate.getRepositoryName(repositoryType, projectKey, repositoryUri, adminUsername, adminPassword, accessToken);
     }
 }

@@ -78,7 +78,6 @@ class PagesIterator implements Iterator<ListIterator<Changeset>>
         currentPageNumber++;
         changesets = githubCommunicator.getChangesets(repository, branch, currentPageNumber);
         return containsChangesets();
-
     }
 
     private boolean containsChangesets() {
@@ -107,7 +106,6 @@ class PagesIterator implements Iterator<ListIterator<Changeset>>
 
 class BranchesIterator implements Iterator<PagesIterator>
 {
-
 
     private ListIterator<String> branchNamesIterator = Collections.<String>emptyList().listIterator();
     private GithubCommunicator githubCommunicator;

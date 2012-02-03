@@ -1,19 +1,21 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
@@ -40,6 +42,16 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     public void synchronise()
     {
         Iterable<Changeset> changesets = getChangsetsIterator();
+        Date lastCommitDate = null;
+        if (key.getChangesets() == null)
+        {
+            // we are doing full synchronisation (maybe we should delete all
+            // issueMappings)
+            repositoryManager.setLastCommitDate(key.getRepository(), null);
+        } else
+        {
+            lastCommitDate = repositoryManager.getLastCommitDate(key.getRepository());
+        }
 
         int changesetCount = 0;
         int jiraCount = 0;
@@ -47,13 +59,18 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
         for (Changeset changeset : changesets)
         {
+            if (lastCommitDate == null || lastCommitDate.before(changeset.getTimestamp()))
+            {
+                lastCommitDate = changeset.getTimestamp();
+                repositoryManager.setLastCommitDate(key.getRepository(), lastCommitDate);
+            }
             changesetCount++;
             String message = changeset.getMessage();
             log.debug("syncing changeset [{}] [{}]", changeset.getNode(), changeset.getMessage());
             if (message.contains(key.getRepository().getProjectKey()))
             {
                 Set<String> extractedIssues = extractProjectKey(key.getRepository().getProjectKey(), message);
-                // get detial changeset because in this response is not information about files
+                // get detail changeset because in this response is not information about files
                 Changeset detailChangeset = null;
                 if (CollectionUtils.isNotEmpty(extractedIssues))
                 {
@@ -62,7 +79,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                         detailChangeset = repositoryManager.getChangeset(key.getRepository(), changeset.getNode());
                     } catch (SourceControlException e)
                     {
-                        log.warn("Unable to retrieve statistics for changeset " + changeset.getNode(), e);
+                        log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
                         synchroErrorCount++;
                     }
                 }

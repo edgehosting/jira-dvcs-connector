@@ -83,7 +83,7 @@ public class GithubCommunicator implements Communicator
                     CustomStringUtils.encode(slug) + "/commits/" + CustomStringUtils.encode(id), null,
                     apiUrl);
 
-            return GithubChangesetFactory.parse(repository.getId(), "master", new JSONObject(responseString));
+            return GithubChangesetFactory.parseV3(repository.getId(), "master", new JSONObject(responseString));
         } catch (ResponseException e)
         {
             throw new SourceControlException("could not get result", e);
@@ -129,10 +129,7 @@ public class GithubCommunicator implements Communicator
                 for (int i = 0; i < list.length(); i++)
                 {
                     JSONObject commitJson = list.getJSONObject(i);
-                    String id = commitJson.getString("id");
-                    String msg = commitJson.getString("message");
-
-                    changesets.add(new DefaultChangeset(repository.getId(), id, msg));
+                    changesets.add(GithubChangesetFactory.parseV2(repository.getId(), commitJson));
                 }
             } else
             {
@@ -222,12 +219,12 @@ public class GithubCommunicator implements Communicator
     }
 
     @Override
-    public UrlInfo getUrlInfo(final RepositoryUri repositoryUri)
+    public UrlInfo getUrlInfo(final RepositoryUri repositoryUri, String projectKey)
     {
         log.debug("get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
         Boolean repositoryPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
         if (repositoryPrivate == null) return null;
-        return new UrlInfo(GithubRepositoryManager.GITHUB, repositoryPrivate.booleanValue());
+        return new UrlInfo(GithubRepositoryManager.GITHUB, repositoryPrivate.booleanValue(), repositoryUri.getRepositoryUrl(), projectKey);
     }
 
     private List<String> getBranches(SourceControlRepository repository)
@@ -262,8 +259,8 @@ public class GithubCommunicator implements Communicator
     }
 
     @Override
-    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username,
-                                    String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
+        String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
 
         Authentication auth;

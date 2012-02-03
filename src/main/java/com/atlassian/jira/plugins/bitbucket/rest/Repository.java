@@ -1,10 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.rest;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 
 @XmlRootElement(name = "repository")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -26,12 +22,6 @@ public class Repository
     private SyncProgress sync;
 
     @XmlAttribute
-    private String username;
-
-    @XmlAttribute
-    private String password;
-    
-    @XmlAttribute
     private String adminUsername;
     
     @XmlAttribute
@@ -40,21 +30,23 @@ public class Repository
 	@XmlAttribute
     private String accessToken;
 
+    @XmlAttribute
+    private String lastCommitRelativeDate;
+
 	public Repository()
     {
     }
 
-    public Repository(int id, String repositoryType, String projectKey, String url, String username, String password, String adminUsername, String adminPassword, String accessToken)
+    public Repository(int id, String repositoryType, String projectKey, String url, String adminUsername, String adminPassword, String accessToken, String lastCommitRelativeDate)
     {
         this.id = id;
         this.repositoryType = repositoryType;
         this.projectKey = projectKey;
         this.url = url;
-		this.username = username;
-		this.password = password;
 		this.adminUsername = adminUsername;
 		this.adminPassword = adminPassword;
         this.accessToken = accessToken;
+        this.lastCommitRelativeDate = lastCommitRelativeDate;
     }
 
     public int getId()
@@ -96,25 +88,6 @@ public class Repository
     {
         this.sync = sync;
     }
-    public String getUsername()
-	{
-		return username;
-	}
-
-	public void setUsername(String username)
-	{
-		this.username = username;
-	}
-
-	public String getPassword()
-	{
-		return password;
-	}
-
-	public void setPassword(String password)
-	{
-		this.password = password;
-	}
 
     public String getAdminUsername()
 	{
@@ -154,5 +127,13 @@ public class Repository
     public void setAccessToken(String accessToken)
     {
         this.accessToken = accessToken;
+    }
+
+    public String getLastCommitRelativeDate() {
+        return lastCommitRelativeDate;
+    }
+
+    public void setLastCommitRelativeDate(String lastCommitRelativeDate) {
+        this.lastCommitRelativeDate = lastCommitRelativeDate;
     }
 }

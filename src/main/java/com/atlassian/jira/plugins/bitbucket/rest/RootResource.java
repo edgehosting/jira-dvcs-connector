@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.bitbucket.rest;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.DELETE;
@@ -35,6 +36,7 @@ import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
+import com.atlassian.theplugin.commons.util.DateUtil;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
@@ -58,8 +60,11 @@ public class RootResource
         @Override
         public Repository apply(SourceControlRepository from)
         {
+
+            final String relativePastDate = DateUtil.getRelativePastDate(new Date(), globalRepositoryManager.getLastCommitDate(from));
+
             Repository repo = new Repository(from.getId(), from.getRepositoryType(), from.getProjectKey(), from.getRepositoryUri().getRepositoryUrl(),
-                    from.getUsername(), null, from.getAdminUsername(), null, null); // don't include password or accessToken
+                    from.getAdminUsername(), null, null, relativePastDate); // don't include password or accessToken
             Progress progress = synchronizer.getProgress(from);
             if (progress != null)
                 repo.setStatus(new SyncProgress(progress.isFinished(), progress.getChangesetCount(), progress
@@ -166,16 +171,14 @@ public class RootResource
             String url = repository.getUrl();
             String repositoryType = repository.getRepositoryType();
             String projectKey = repository.getProjectKey();
-            String username = repository.getUsername();
-            String password = repository.getPassword();
-            String adminUsername = repository.getUsername();
-            String adminPassword = repository.getPassword();
+            String adminUsername = repository.getAdminUsername();
+            String adminPassword = repository.getAdminPassword();
             String accessToken = repository.getAccessToken();
 
             SourceControlRepository repo;
             try
             {
-                repo = globalRepositoryManager.addRepository(repositoryType, projectKey, url, username, password,
+                repo = globalRepositoryManager.addRepository(repositoryType, projectKey, url,
                         adminUsername, adminPassword, accessToken);
             } catch (SourceControlException e)
             {
@@ -206,9 +209,9 @@ public class RootResource
     @GET
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/urlinfo")
-    public Response urlInfo(@QueryParam("repositoryUrl") String repositoryUrl)
+    public Response urlInfo(@QueryParam("repositoryUrl") String repositoryUrl, @QueryParam("projectKey") String projectKey)
     {
-        UrlInfo urlInfo = globalRepositoryManager.getUrlInfo(repositoryUrl);
+        UrlInfo urlInfo = globalRepositoryManager.getUrlInfo(repositoryUrl.trim(), projectKey);
         if (urlInfo!=null)
             return Response.ok(urlInfo).build();
         else 

@@ -62,7 +62,7 @@ public class TestBitbucketPostCommit
         String projectKey = "PRJ";
         String repositoryUrl = "https://bitbucket.org/mjensen/test";
         String payload = resource("TestBitbucketPostCommit-payload.json");
-        SourceControlRepository repo = new DefaultSourceControlRepository(0, "Pretty Name", "bitbucket", repositoryUri, projectKey, null, null, null, null, null);
+        SourceControlRepository repo = new DefaultSourceControlRepository(0, "Pretty Name", "bitbucket", repositoryUri, projectKey, null, null, null);
 
         when(repositoryManager.getRepositories(projectKey)).thenReturn(Arrays.asList(repo));
         when(repositoryUri.getRepositoryUrl()).thenReturn(repositoryUrl);
@@ -73,14 +73,15 @@ public class TestBitbucketPostCommit
         bitbucketPostCommit.execute();
         verify(repositoryManager).parsePayload(repo, payload);
     }
-
+   
+    
     @Test
     public void testParsePayload() throws Exception
     {
         final String projectKey = "PRJ";
         final String payload = resource("TestBitbucketPostCommit-payload.json");
         final String node = "f2851c9f1db8";
-        final DefaultSourceControlRepository repo = new DefaultSourceControlRepository(0, "Pretty Name", "bitbucket", repositoryUri, projectKey, null, null, null, null, null);
+        final DefaultSourceControlRepository repo = new DefaultSourceControlRepository(0, "Pretty Name", "bitbucket", repositoryUri, projectKey, null, null, null);
 
         BitbucketRepositoryManager brm = new BitbucketRepositoryManager(null, communicator, null, null, null, null, null);
 
@@ -89,7 +90,7 @@ public class TestBitbucketPostCommit
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable
             {
-                return new DefaultChangeset(0, (String) invocation.getArguments()[1], "");
+                return new DefaultChangeset(0, (String) invocation.getArguments()[1], "", null);
             }
         });
 
@@ -110,5 +111,6 @@ public class TestBitbucketPostCommit
         Assert.assertTrue(matcher.matches(changesets));
         verify(communicator).getChangeset(repo, node);
     }
+
 
 }

@@ -44,14 +44,22 @@
 }
 
 .gh_table {
-    margin-left: 16px;
-    width: 100%
+    margin-left: 15px;
+    margin-bottom: 30px;
+    width: 96%
 }
 
 .gh_table_project_name {
-    font-size: 1em;
-    color: #5F6262;
-    padding-top: 14px;
+    font-size: 1.18em;
+    /*color: #5F6262;*/
+    color: #939393;
+    font-weight: bold;
+}
+
+.gh_table_project_key{
+    font-size: 1.18em;
+    color: #707070;
+    padding-left: 10px;
 }
 
 .gh_table th {
@@ -73,21 +81,26 @@
 
 .gh_table td {
     font-size: 1em;
+    vertical-align: middle;
+    padding-bottom: 0;
 }
 
 .gh_table_td_pname {
-    border-bottom: none !important;
+    /*border-bottom: none !important;*/
+    padding-top: 20px;
+    border-bottom: 1px solid #cccccc;
 }
 
 .gh_messages {
     font-size: 1em;
-    color: #666;
+    color: #959595;
     font-style: italic;
 }
 
 .form {
     margin: 20px;
-    background-color: #B9E6F0;
+    background: #F0F0F0;
+    border: 1px solid #BBB;
     padding: 20px;
 
     -moz-border-radius: 6px;
@@ -97,31 +110,51 @@
 }
 
 .syncicon {
-    cursor: pointer;
     width: 16px;
-    display: inline-block;
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.png)
+    /*background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.png);*/
+    background-repeat: no-repeat;
+    display: none;
 }
 
 .syncicon.error {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png)
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png);
+    display:inline-block;
 }
 
 .syncicon.running {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif)
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
+    display:inline-block;
 }
 
 .syncicon.finished {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/status-ok.png)
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/status-ok.png);
+    display:inline-block;
 }
 
-.synchroErrorCount {
-    color: #E16161;
+.syncicon.commits {
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/clock.png);
+    display:inline-block;
+    background-position: 0 2px;
+}
+
+.bitbucketLogo {
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png);
+    background-repeat: no-repeat;
+    padding: 20px 17px;
+    background-position: 10px 17px;
+}
+
+.githubLogo {
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_logo.png);
+    background-repeat: no-repeat;
+    padding: 20px 17px;
+    background-position: 8px 15px;
 }
 
 #postCommitServiceDetails {
     margin-bottom: 20px;
 }
+
 
 /* Commit tabs styles */
 .CommitContainer {
@@ -354,4 +387,71 @@
     padding-bottom: 1.5em;
     width: 100%;
     border: none !important;
+}
+
+.customClose {
+    cursor: pointer;
+    left: auto !important;
+    position: absolute;
+    right: 6px !important;
+    top: 6px !important;
+}
+
+.repositoryName {
+    font-size: 1.18em;
+    font-weight: bold;
+    color: #777;
+}
+
+a:hover.repositoryNameLink {
+    text-decoration: none;
+}
+
+.aui-item-column1 {
+    display: inline;
+    float: left;
+    margin-bottom:12px;
+    
+}
+
+.aui-item-column2 {
+    display: inline;
+    float: left;
+    padding-left: 35px;
+}
+
+#addRepositoryContent {
+    margin: 0 20px 0 0;
+    color: #555 !important;
+}
+
+#addRepositoryDetails {
+    padding: 10px; 
+    display: none;	
+}
+
+#addRepositoryContent label {
+    color: #555 !important;
+    font-weight: bold;
+    padding-bottom: 6px;
+}
+#addRepositoryContent h4 {
+    color: #666 !important;
+}
+
+#addRepositoryContent div,  #addRepositoryContent input {
+    color: #555 !important;
+}
+
+.buttons-container {
+	margin-top: 20px;
+	border: none;	
+}
+
+#addRepositoryDetails .field-group input {
+    width: 380px	
+}
+
+.notbold {
+	font-weight: normal;
 }

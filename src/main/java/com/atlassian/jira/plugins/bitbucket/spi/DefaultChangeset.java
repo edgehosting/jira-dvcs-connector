@@ -28,9 +28,9 @@ public class DefaultChangeset implements Changeset
 
     private final int repositoryId;
 
-    public DefaultChangeset(int repositoryId, String node, String message)
+    public DefaultChangeset(int repositoryId, String node, String message, Date timestamp)
     {
-        this(repositoryId, node, "", "", new Date(), "", "", message, Collections.<String>emptyList(), Collections.<ChangesetFile>emptyList(), 0);
+        this(repositoryId, node, "", "", timestamp, "", "", message, Collections.<String>emptyList(), Collections.<ChangesetFile>emptyList(), 0);
     }
 
     public DefaultChangeset(int repositoryId,

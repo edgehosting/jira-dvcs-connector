@@ -6,8 +6,6 @@ import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 
-import java.util.List;
-import java.util.Set;
 
 /**
  * Maps bitbucket repositories and commits to jira projects and issues.
@@ -44,7 +42,7 @@ public interface RepositoryPersister {
      *
      * @return
      */
-    ProjectMapping addRepository(String repositoryName, String projectKey, String repositoryUrl, String username, String password, String adminUsername, String adminPassword, String repositoryType, String accessToken);
+    ProjectMapping addRepository(String repositoryName, String projectKey, String repositoryUrl, String adminUsername, String adminPassword, String repositoryType, String accessToken);
 
     /**
      * Remove the mapping of the bibucket repository from the specified jira project
@@ -84,4 +82,7 @@ public interface RepositoryPersister {
      * @return changeset by node
      */
     public IssueMapping getIssueMapping(String node);
+
+    public ProjectMapping[] findRepositories(String projectKey, String repositoryUrl);
+
 }

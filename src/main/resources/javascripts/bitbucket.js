@@ -1,115 +1,181 @@
-function deleteRepository(repositoryId, repositoryUrl)
-{
+function deleteRepository(repositoryId, repositoryUrl) {
     var answer = confirm("Are you sure you want to remove this repository? \n " + repositoryUrl)
-    if (answer)
-    {
+    if (answer) {
         AJS.$.ajax({
             url: BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId,
             type: 'DELETE',
-            success: function(result)
-            {
+            success: function(result) {
                 window.location.reload();
             }
         });
     }
 }
 
-function toggleMoreFiles(target_div)
-{
+function toggleMoreFiles(target_div) {
     AJS.$('#' + target_div).toggle();
     AJS.$('#see_more_' + target_div).toggle();
     AJS.$('#hide_more_' + target_div).toggle();
 }
 
+function retrieveSyncStatus() {
+    AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/repositories", function (data) {
+        AJS.$.each(data.repositories, function(a, repo) {
+            var syncStatusDiv = AJS.$('#sync_status_message_' + repo.id);
+            var syncErrorDiv = AJS.$('#sync_error_message_' + repo.id);
+            var syncIconElement = AJS.$('#syncicon_' + repo.id);
 
-function retrieveSyncStatus()
-{
-    AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/repositories", function (data)
-    {
-        AJS.$.each(data.repositories, function(a, repo)
-        {
-            var syncStatusDiv = AJS.$('.gh_messages.repository' + repo.id + " .content");
-            var syncIconElement = AJS.$('.syncicon.repository' + repo.id);
-            var syncHtml;
+            var syncStatusHtml = "";
             var syncIcon;
-            if (repo.sync)
-            {
-                if (repo.sync.isFinished)
-                {
-                    syncIcon = "finished";
-                    syncHtml = "<strong>Sync Finished:</strong>"
-                } else
-                {
+
+            if (repo.sync) {
+
+                if (repo.sync.isFinished) {
+                    if (repo.lastCommitRelativeDate != "") syncIcon = "commits";
+                    syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitRelativeDate);
+
+                } else {
                     syncIcon = "running";
-                    syncHtml = "<strong>Sync Running:</strong>"
+                    syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong>" + repo.sync.jiraCount + "</strong> issues found";
+                    if (repo.sync.synchroErrorCount > 0)
+                        syncStatusHtml += ", <span style='color:#e16161;'><strong>" + repo.sync.synchroErrorCount + "</strong> changesets incomplete</span>";
+
                 }
-                syncHtml = syncHtml + " Synchronized <strong>" + repo.sync.changesetCount + "</strong> changesets, found <strong>" + repo.sync.jiraCount + "</strong> matching JIRA issues";
-                if (repo.sync.synchroErrorCount > 0)
-                {
-                    var moreDetailsTitle = "See the setup log files for more information";
-                    syncHtml = syncHtml + ", <span class='synchroErrorCount' title='" + moreDetailsTitle + "'>(Unable to load details about " + repo.sync.synchroErrorCount + " changesets)</span>";
-                }
-                if (repo.sync.error)
-                {
+                if (repo.sync.error) {
+                    syncStatusHtml = "";
                     syncIcon = "error";
-                    syncHtml = syncHtml + "<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>";
-                }
-            } else
-            {
-                syncIcon = "";
-                syncHtml = "No information about sync available"
+                    syncErrorDiv.html("<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>");
+                } else {
+                	syncErrorDiv.html("");
+            	}
             }
-            syncIconElement.removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
-            syncStatusDiv.html(syncHtml);
+            else {
+                if (repo.lastCommitRelativeDate != "") syncIcon = "commits";
+                syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitRelativeDate);
+            }
+            syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
+
+            if (syncStatusHtml != "") syncStatusHtml += " <span style='color:#000;'>|</span>";
+            syncStatusDiv.html(syncStatusHtml);
 
         });
         window.setTimeout(retrieveSyncStatus, 4000)
     })
 }
 
-function forceSync(repositoryId)
-{
+function getLastCommitRelativeDateHtml(daysAgo) {
+    var html = "";
+    if (daysAgo != "") {
+        html = "last commit " + daysAgo;
+    }
+    return html;
+}
+
+function forceSync(repositoryId) {
     AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync");
     retrieveSyncStatus();
 }
 
-function submitFunction(a)
-{
-    var repositoryUrl = AJS.$("#url").val();
-    var requestUrl = BASE_URL + "/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl)
-
+function submitFunction() {
+	
+	if (AJS.$('#repoEntry').attr("action")) {
+		return true; // submit form
+	}
+	
     AJS.$("#aui-message-bar").empty();
-    AJS.messages.generic({
-        title: "Working...",
-        body: "Trying to connect to the repository."
-    });
+    AJS.messages.hint({ title: "Connecting...", body: "Trying to connect to the repository."});
+
+    var repositoryUrl = AJS.$("#url").val().trim();
+    var requestUrl = BASE_URL + "/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl) + "&projectKey="+AJS.$("#projectKey").val();
 
     AJS.$.getJSON(requestUrl,
-        function(data)
-        {
-            if (data.repositoryType == "github")
-                AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubRepository!default.jspa");
-            else if (data.repositoryType == "bitbucket")
-                AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketRepository!default.jspa");
-            AJS.$("#isPrivate").val(data.isPrivate);
-            AJS.$('#repoEntry').submit();
-        }).error(function(a)
-        {
+        function(data) {
             AJS.$("#aui-message-bar").empty();
-            AJS.messages.error({
-                title: "Error!",
-                body: "The repository url [<b>" + AJS.$("#url").val() + "</b>] is incorrect or the repository is not responding."
+            AJS.$("#isPrivate").val(data.isPrivate);
+
+            if (data.validationErrors.length>0) {
+            	AJS.$.each(data.validationErrors, function(i, msg){
+            		AJS.messages.error({title : "Error!", body : msg});
+            	})
+            } else{
+            	handler[data.repositoryType].apply(this, arguments);
+        	}
+    	}).error(function(a) {
+            AJS.$("#aui-message-bar").empty();
+            AJS.messages.error({ title: "Error!", 
+            	body: "The repository url [<b>" + AJS.$("#url").val() + "</b>] is incorrect or the repository is not responding." 
             });
         });
     return false;
 }
 
-AJS.$(document).ready(function()
-{
-    if (typeof init_repositories == 'function')
-    {
+	var handler = {
+		"bitbucket": function(data){
+			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketRepository.jspa");
+
+			// hide url input box
+			AJS.$('#urlReadOnly').html(AJS.$('#url').val());
+			AJS.$('#url').hide(); 
+			AJS.$('#urlReadOnly').show();
+			
+			// hide project selector
+			AJS.$('#projectKeyReadOnly').html(AJS.$('#projectKey').val());
+	        AJS.$('#projectKey').hide();
+			AJS.$('#projectKeyReadOnly').show();
+				
+			// hide examples
+			AJS.$('#examples').hide();
+
+			//show username / password
+			var credentialsHtml = ""
+				+ "<div class='field-group'>"
+				+ "<label for='adminUsername'>Username <span class='notbold'>(requires admin access to repo):</span></label>"
+				+ "<input type='text' name='adminUsername' id='adminUsername' value=''></div>"
+				+ "<div class='field-group' style='margin-bottom: 10px;'>"
+				+ "<label for='adminPassword'>Password</label>"
+				+ "<input type='password' name='adminPassword' id='adminPassword' value=''></div>";
+			AJS.$("#bbCredentials").html(credentialsHtml);
+		}, 
+		"github":function(data) {
+			AJS.$("#repoEntry").attr("action",BASE_URL + "/secure/admin/AddGithubRepository.jspa");
+			AJS.$('#repoEntry').submit();
+		}
+	}
+
+function showAddRepoDetails(show) {
+    if (show) {
+
+    	// Reset to default view:
+    	
+    	// - hide username/password
+        AJS.$("#bbCredentials").html("");
+        
+        // - show url field
+        AJS.$('#url').show();
+		AJS.$('#urlReadOnly').hide();
+		
+		// - show projectKey field
+        AJS.$('#projectKey').show();
+		AJS.$('#projectKeyReadOnly').hide();
+		
+		// show examples
+		AJS.$('#examples').show();
+		
+
+		AJS.$('#linkRepositoryButton').fadeOut(function() {
+            AJS.$('#addRepositoryDetails').slideDown();
+        });
+    } else {
+        AJS.$('#addRepositoryDetails').slideUp(function() {
+            AJS.$('#linkRepositoryButton').fadeIn();
+        });
+    }
+}
+
+AJS.$(document).ready(function() {
+    if (typeof init_repositories == 'function') {
         init_repositories();
     }
+
 })
 
 

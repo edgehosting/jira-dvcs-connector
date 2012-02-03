@@ -217,23 +217,23 @@ public class BitbucketCommunicator implements Communicator
     }
 
     @Override
-    public UrlInfo getUrlInfo(final RepositoryUri repositoryUri)
+    public UrlInfo getUrlInfo(final RepositoryUri repositoryUri, String projectKey)
     {
         logger.debug("Get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
         Boolean repositoryPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
         if (repositoryPrivate == null) return null;
-        return new UrlInfo(BitbucketRepositoryManager.BITBUCKET, repositoryPrivate.booleanValue());
+        return new UrlInfo(BitbucketRepositoryManager.BITBUCKET, repositoryPrivate.booleanValue(), repositoryUri.getRepositoryUrl(), projectKey);
     }
 
     @Override
-    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri, String username, String password,
+    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
                                     String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
 
         Authentication auth;
-        if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
+        if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminUsername))
         {
-            auth = new BasicAuthentication(username, password);
+            auth = new BasicAuthentication(adminUsername, adminUsername);
         } else
         {
             auth = Authentication.ANONYMOUS;

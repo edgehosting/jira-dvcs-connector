@@ -56,12 +56,10 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         @Override
         public SourceControlRepository apply(ProjectMapping pm)
         {
-            String decryptedPassword = encryptor.decrypt(pm.getPassword(), pm.getProjectKey(), pm.getRepositoryUrl());
             String decryptedAdminPassword = encryptor.decrypt(pm.getAdminPassword(), pm.getProjectKey(),
                     pm.getRepositoryUrl());
             return new DefaultSourceControlRepository(pm.getID(), pm.getRepositoryName(), pm.getRepositoryType(), getRepositoryUri(pm.getRepositoryUrl()),
-                    pm.getProjectKey(), pm.getUsername(), decryptedPassword,
-                    pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken());
+                pm.getProjectKey(), pm.getAdminUsername(), decryptedAdminPassword, pm.getAccessToken());
         }
     };
 
@@ -81,16 +79,15 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         toChangesetTransformer = new ToChangesetTransformer(this);
     }
 
-    public String getRepositoryName(String repositoryType, String projectKey, String repositoryUrl, String username,
-                                    String password, String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    public String getRepositoryName(String repositoryType, String projectKey, String repositoryUrl,
+        String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
         RepositoryUri repositoryUri = getRepositoryUri(repositoryUrl);
-        return getCommunicator().getRepositoryName(repositoryType, projectKey, repositoryUri, username, password, adminUsername, adminPassword, accessToken);
+        return getCommunicator().getRepositoryName(repositoryType, projectKey, repositoryUri, adminUsername, adminPassword, accessToken);
     }
 
     @Override
-    public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl, String username,
-                                                 String password, String adminUsername, String adminPassword, String accessToken)
+    public SourceControlRepository addRepository(String repositoryType, String projectKey, String repositoryUrl,  String adminUsername, String adminPassword, String accessToken)
     {
         // Remove trailing slashes from URL
         if (repositoryUrl.endsWith("/"))
@@ -103,12 +100,11 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         {
             repositoryUrl = repositoryUrl.replaceFirst("http:", "https:");
         }
-        String repositoryName = getRepositoryName(repositoryType, projectKey, repositoryUrl, username, password, adminUsername, adminPassword, accessToken);
+        String repositoryName = getRepositoryName(repositoryType, projectKey, repositoryUrl, adminUsername, adminPassword, accessToken);
 
-        String encryptedPassword = encryptor.encrypt(password, projectKey, repositoryUrl);
         String encryptedAdminPassword = encryptor.encrypt(adminPassword, projectKey, repositoryUrl);
         ProjectMapping pm = repositoryPersister.addRepository(repositoryName, repositoryType, projectKey, repositoryUrl,
-                username, encryptedPassword, adminUsername, encryptedAdminPassword, accessToken);
+            adminUsername, encryptedAdminPassword, accessToken);
         return TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
     }
 
@@ -137,7 +133,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     public Changeset getChangeset(SourceControlRepository repository, String node)
     {
         return getCommunicator().getChangeset(repository, node);
-
     }
 
     @Override
@@ -183,8 +178,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         templateMap.put("login", login);
         templateMap.put("user_name", authorName);
         templateMap.put("commit_message", commitMessage);
-        templateMap.put("formatted_commit_time", getDateString(changeset.getTimestamp()));
-        templateMap.put("formatted_commit_date", getDateString(changeset.getTimestamp()));
         templateMap.put("commit_url", commitURL);
         templateMap.put("commit_hash", changeset.getNode());
 
@@ -200,13 +193,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         return sw.toString();
     }
 
-    public String getDateString(Date datetime)
-    {
-        // example:    2011-05-26 10:54:41
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-        return df.format(datetime);
-    }
 
     @Override
     public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progressProvider)
@@ -236,10 +222,23 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
     @Override
-    public UrlInfo getUrlInfo(String repositoryUrl)
+    public UrlInfo getUrlInfo(String repositoryUrl, String projectKey)
     {
         if (!hasValidFormat(repositoryUrl)) return null;
-        return getCommunicator().getUrlInfo(getRepositoryUri(repositoryUrl));
+        UrlInfo urlInfo = getCommunicator().getUrlInfo(getRepositoryUri(repositoryUrl), projectKey);
+        if (urlInfo==null) return null;
+        return validateUrlInfo(urlInfo);
+    }
+
+    public UrlInfo validateUrlInfo(UrlInfo urlInfo)
+    {
+        ProjectMapping[] repos = repositoryPersister.findRepositories(urlInfo.getProjectKey(), urlInfo.getRepositoryUrl());
+        if (repos.length>0)
+        {
+            urlInfo.addValidationError("Repository " + urlInfo.getRepositoryUrl() + " is already linked to project "
+                + urlInfo.getProjectKey());
+        }
+        return urlInfo; 
     }
 
     @Override
@@ -275,5 +274,23 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         List<IssueMapping> latestIssueMappings = repositoryPersister.getLatestIssueMappings(count, gf, getRepositoryType());
         List<Changeset> changesets = Lists.transform(latestIssueMappings, toChangesetTransformer);
         return Sets.newHashSet(changesets);
+    }
+    
+    
+    @Override
+    public Date getLastCommitDate(SourceControlRepository repo)
+    {
+        ProjectMapping projectMapping = repositoryPersister.getRepository(repo.getId());
+        return projectMapping.getLastCommitDate();
+    }
+
+    @Override
+    public void setLastCommitDate(SourceControlRepository repo, Date date)
+    {
+        ProjectMapping projectMapping = repositoryPersister.getRepository(repo.getId());
+        
+        //!!! NPE ???
+        projectMapping.setLastCommitDate(date);
+        projectMapping.save();
     }
 }
