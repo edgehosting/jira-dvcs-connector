@@ -64,7 +64,9 @@ public class AddBitbucketRepository extends JiraWebActionSupport
         {
             log.debug("Failed adding postcommit hook: ["+e.getMessage()+"]");
             globalRepositoryManager.removeRepository(repository.getId());
-            addErrorMessage("Error adding postcommit hook. Do you have admin rights to the repository? <br/> Repository was not added. ["+e.getMessage()+"]");
+            addErrorMessage("The username/password you provided are invalid. Make sure you entered the correct username/password and that the username has admin rights on "
+                + repositoryUrl + ".<br/>" + "<br/>Then, try again.<br/><br/> [" + e.getMessage() + "]");
+            
             return INPUT;
         }
 
