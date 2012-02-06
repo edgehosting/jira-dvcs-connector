@@ -1,10 +1,20 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
-import com.atlassian.jira.plugins.bitbucket.api.*;
+import com.atlassian.jira.plugins.bitbucket.api.Authentication;
+import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException.UnauthorisedException;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
-import com.atlassian.jira.plugins.bitbucket.spi.*;
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
+import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
+import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
+import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketUserFactory;
 import com.atlassian.jira.util.json.JSONArray;
@@ -16,7 +26,12 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
@@ -69,8 +84,8 @@ public class BitbucketCommunicator implements Communicator
             final String urlPath = "/repositories/" + CustomStringUtils.encode(owner) + "/" +
                     CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(node);
             String responseString = requestHelper.get(auth, urlPath, null, uri.getApiUrl());
-            String responseFilesString = requestHelper.get(auth, urlPath + "/diffstat", null, uri.getApiUrl());
-            return BitbucketChangesetFactory.parse(repository.getId(), new JSONObject(responseString), new JSONArray(responseFilesString));
+            String responseFilesString = requestHelper.get(auth, urlPath + "/diffstat?limit=" + DvcsRepositoryManager.MAX_VISIBLE_FILES, null, uri.getApiUrl());
+            return BitbucketChangesetFactory.getChangesetWithStatistics(BitbucketChangesetFactory.parse(repository.getId(), new JSONObject(responseString)), responseFilesString);
 
         } catch (ResponseException e)
         {
@@ -78,6 +93,28 @@ public class BitbucketCommunicator implements Communicator
         } catch (JSONException e)
         {
             throw new SourceControlException("Could not parse json result", e);
+        }
+    }
+
+    @Override
+    public Changeset getChangeset(SourceControlRepository repository, Changeset changeset)
+    {
+        try
+        {
+            RepositoryUri uri = repository.getRepositoryUri();
+            String owner = uri.getOwner();
+            String slug = uri.getSlug();
+            String node = changeset.getNode();
+            Authentication auth = authenticationFactory.getAuthentication(repository);
+
+            logger.debug("Parse changeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, node});
+            final String urlPath = "/repositories/" + CustomStringUtils.encode(owner) + "/" +
+                    CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(node);
+            String responseFilesString = requestHelper.get(auth, urlPath + "/diffstat?limit=" + DvcsRepositoryManager.MAX_VISIBLE_FILES, null, uri.getApiUrl());
+            return BitbucketChangesetFactory.getChangesetWithStatistics(changeset, responseFilesString);
+        } catch (ResponseException e)
+        {
+            throw new SourceControlException("Could not get result", e);
         }
     }
 
@@ -118,7 +155,7 @@ public class BitbucketCommunicator implements Communicator
                 for (int i = 0; i < list.length(); i++)
                 {
                     JSONObject json = list.getJSONObject(i);
-                    changesets.add(BitbucketChangesetFactory.parse(repository.getId(), json, new JSONArray()));
+                    changesets.add(BitbucketChangesetFactory.parse(repository.getId(), json));
                 }
             } else
             {

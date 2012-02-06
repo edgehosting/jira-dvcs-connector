@@ -75,7 +75,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                 {
                     try
                     {
-                        detailChangeset = repositoryManager.getChangeset(key.getRepository(), changeset.getNode());
+                        detailChangeset = repositoryManager.getChangeset(key.getRepository(), changeset);
                     } catch (Exception e)
                     {
                         log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
