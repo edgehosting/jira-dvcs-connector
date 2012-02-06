@@ -7,6 +7,11 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.velocity.VelocityUtils;
+import com.atlassian.jira.project.Project;
+import com.atlassian.jira.project.ProjectManager;
+import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.atlassian.jira.security.PermissionManager;
+import com.atlassian.jira.security.Permissions;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.streams.api.ActivityObjectTypes;
@@ -23,8 +28,11 @@ import com.atlassian.streams.spi.StandardStreamsFilterOption;
 import com.atlassian.streams.spi.StreamsActivityProvider;
 import com.atlassian.streams.spi.UserProfileAccessor;
 import com.atlassian.templaterenderer.TemplateRenderer;
+import com.atlassian.util.concurrent.Nullable;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +41,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 {
@@ -47,11 +54,12 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
     private static final Logger log = LoggerFactory.getLogger(BitbucketStreamsActivityProvider.class);
     private final IssueLinker issueLinker;
     private final TemplateRenderer templateRenderer;
-
+    private final PermissionManager permissionManager;
+    private final JiraAuthenticationContext jiraAuthenticationContext;
+    private final ProjectManager projectManager;
 
     public BitbucketStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties,
-                                            UserProfileAccessor userProfileAccessor, @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager,
-                                            IssueLinker issueLinker, TemplateRenderer templateRenderer)
+                                            UserProfileAccessor userProfileAccessor, @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, IssueLinker issueLinker, TemplateRenderer templateRenderer, PermissionManager permissionManager, JiraAuthenticationContext jiraAuthenticationContext, ProjectManager projectManager)
     {
         this.applicationProperties = applicationProperties;
         this.i18nResolver = i18nResolver;
@@ -59,6 +67,9 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         this.globalRepositoryManager = globalRepositoryManager;
         this.issueLinker = issueLinker;
         this.templateRenderer = templateRenderer;
+        this.permissionManager = permissionManager;
+        this.jiraAuthenticationContext = jiraAuthenticationContext;
+        this.projectManager = projectManager;
     }
 
     public Iterable<StreamsEntry> transformEntries(Iterable<Changeset> changesetEntries) throws StreamsException
@@ -154,7 +165,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
     {
         GlobalFilter gf = new GlobalFilter();
         //get all changeset entries that match the specified activity filters
-        gf.setInProjects(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)));
+        gf.setInProjects(getInProjectsByPermission(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY))));
         gf.setNotInProjects(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)));
         gf.setInUsers(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.USER.getKey())));
         gf.setNotInUsers(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.USER.getKey())));
@@ -167,4 +178,39 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
         return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
     }
+
+    private List<String> getInProjectsByPermission(Set<String> inProjectsList)
+    {
+        List<Project> projectsToCheckPermission = new ArrayList<Project>();
+        List<String> projectsWithPermission = new ArrayList<String>();
+
+        if (!CollectionUtils.isEmpty(inProjectsList))
+        {
+            for (String projectKey : inProjectsList)
+            {
+                projectsToCheckPermission.add(projectManager.getProjectObjByKey(projectKey));
+            }
+        } else
+        {
+            projectsToCheckPermission = projectManager.getProjectObjects();
+        }
+        for (Project project : projectsToCheckPermission)
+        {
+            if (hasViewSourcePermissionForProject.apply(project))
+            {
+                projectsWithPermission.add(project.getKey());
+            }
+        }
+
+        return projectsWithPermission;
+    }
+
+    private final Predicate<Project> hasViewSourcePermissionForProject = new Predicate<Project>()
+    {
+        @Override
+        public boolean apply(@Nullable Project project)
+        {
+            return project != null && permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, project, jiraAuthenticationContext.getLoggedInUser());
+        }
+    };
 }
