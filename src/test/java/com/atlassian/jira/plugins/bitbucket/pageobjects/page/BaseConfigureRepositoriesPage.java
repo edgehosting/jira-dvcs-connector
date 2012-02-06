@@ -1,9 +1,17 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.hamcrest.Matcher;
+import org.hamcrest.text.StringStartsWith;
+import org.openqa.selenium.By;
+
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketRepository;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
-import com.atlassian.pageobjects.binder.WaitUntil;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.SelectElement;
@@ -11,15 +19,6 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
 import com.atlassian.pageobjects.elements.query.TimedQuery;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
-import org.hamcrest.Matcher;
-import org.hamcrest.text.StringStartsWith;
-import org.openqa.selenium.By;
-
-import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.atlassian.pageobjects.elements.query.Poller.by;
 
 /**
  * Represents the page to link repositories to projects
