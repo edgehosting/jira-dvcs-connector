@@ -53,6 +53,8 @@ public interface RepositoryManager
      */
     public Changeset getChangeset(SourceControlRepository repository, String node);
 
+    public Changeset getChangeset(SourceControlRepository repository, Changeset changeset);
+
     /**
      * Removes the repository with given id and all the issue mappings for this repository
      *

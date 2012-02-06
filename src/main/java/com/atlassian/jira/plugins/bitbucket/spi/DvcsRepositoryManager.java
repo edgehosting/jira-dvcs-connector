@@ -135,6 +135,12 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
     @Override
+    public Changeset getChangeset(SourceControlRepository repository, Changeset changeset)
+    {
+        return getCommunicator().getChangeset(repository, changeset);
+    }
+
+    @Override
     public void removeRepository(int id)
     {
         repositoryPersister.removeRepository(id);

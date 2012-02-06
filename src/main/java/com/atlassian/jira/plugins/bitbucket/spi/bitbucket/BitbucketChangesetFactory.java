@@ -35,11 +35,11 @@ public class BitbucketChangesetFactory
      * @param json  the json object describing the change
      * @return the parsed {@link Changeset}
      */
-    public static Changeset parse(int repositoryId, JSONObject baseJson, JSONArray filesJson)
+    public static Changeset parse(int repositoryId, JSONObject baseJson)
     {
         try
         {
-            List<ChangesetFile> files = fileList(baseJson, filesJson);
+            List<ChangesetFile> files = fileListFromBaseJson(baseJson);
             return new DefaultChangeset(
                     repositoryId,
                     baseJson.getString("node"),
@@ -85,22 +85,35 @@ public class BitbucketChangesetFactory
         return list;
     }
 
-    private static List<ChangesetFile> fileList(JSONObject baseJson, JSONArray diffstatJson) throws JSONException
+    public static List<ChangesetFile> fileListFromBaseJson(JSONObject baseJson) throws JSONException
     {
         List<ChangesetFile> list = new ArrayList<ChangesetFile>();
-        JSONArray parents;
-        if (diffstatJson == null || diffstatJson.length() == 0)
-        {
-            parents = baseJson.getJSONArray("files");
-            for (int i = 0; i < parents.length(); i++)
-                list.add(BitbucketChangesetFileFactory.parseFromBaseJson((JSONObject) parents.get(i)));
-        } else
-        {
-            parents = diffstatJson;
-            for (int i = 0; i < parents.length(); i++)
-                list.add(BitbucketChangesetFileFactory.parseFromDiffstatJson((JSONObject) parents.get(i)));
-        }
+        JSONArray parents = baseJson.getJSONArray("files");
+        for (int i = 0; i < parents.length(); i++)
+            list.add(BitbucketChangesetFileFactory.parseFromBaseJson((JSONObject) parents.get(i)));
         return list;
+    }
+
+    public static List<ChangesetFile> fileListFromDiffstatJson(JSONArray diffstatJson) throws JSONException
+    {
+        List<ChangesetFile> list = new ArrayList<ChangesetFile>();
+        JSONArray parents = diffstatJson;
+        for (int i = 0; i < parents.length(); i++)
+            list.add(BitbucketChangesetFileFactory.parseFromDiffstatJson((JSONObject) parents.get(i)));
+
+        return list;
+    }
+
+    public static Changeset getChangesetWithStatistics(Changeset changeset, String responseFilesString)
+    {
+        try
+        {
+            List<ChangesetFile> files = fileListFromDiffstatJson(new JSONArray(responseFilesString));
+            return new DefaultChangeset(changeset.getRepositoryId(), changeset.getNode(), changeset.getRawAuthor(), changeset.getAuthor(), changeset.getTimestamp(), changeset.getRawNode(), changeset.getBranch(), changeset.getMessage(), changeset.getParents(), files, changeset.getAllFileCount());
+        } catch (JSONException e)
+        {
+            throw new SourceControlException("Invalid diffstat json object: " + responseFilesString, e);
+        }
     }
 
     private BitbucketChangesetFactory()

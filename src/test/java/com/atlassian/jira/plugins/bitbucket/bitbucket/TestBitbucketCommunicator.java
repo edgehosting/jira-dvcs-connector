@@ -101,7 +101,7 @@ public class TestBitbucketCommunicator
         when(request.execute()).thenReturn("{I am invalid json}");
         when(
             requestFactory.createRequest(Request.MethodType.GET,
-                "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/changesets/aaaaa/diffstat")).thenReturn(request);
+                "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/changesets/aaaaa/diffstat?limit=5")).thenReturn(request);
         when(request.execute()).thenReturn("{I am invalid json}");
 
         BitbucketCommunicator communicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, responseHandlerFactory));

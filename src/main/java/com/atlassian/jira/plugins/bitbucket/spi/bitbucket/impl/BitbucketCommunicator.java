@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
+import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
@@ -83,8 +84,8 @@ public class BitbucketCommunicator implements Communicator
             final String urlPath = "/repositories/" + CustomStringUtils.encode(owner) + "/" +
                     CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(node);
             String responseString = requestHelper.get(auth, urlPath, null, uri.getApiUrl());
-            String responseFilesString = requestHelper.get(auth, urlPath + "/diffstat", null, uri.getApiUrl());
-            return BitbucketChangesetFactory.parse(repository.getId(), new JSONObject(responseString), new JSONArray(responseFilesString));
+            String responseFilesString = requestHelper.get(auth, urlPath + "/diffstat?limit=" + DvcsRepositoryManager.MAX_VISIBLE_FILES, null, uri.getApiUrl());
+            return BitbucketChangesetFactory.getChangesetWithStatistics(BitbucketChangesetFactory.parse(repository.getId(), new JSONObject(responseString)), responseFilesString);
 
         } catch (ResponseException e)
         {
@@ -92,6 +93,28 @@ public class BitbucketCommunicator implements Communicator
         } catch (JSONException e)
         {
             throw new SourceControlException("Could not parse json result", e);
+        }
+    }
+
+    @Override
+    public Changeset getChangeset(SourceControlRepository repository, Changeset changeset)
+    {
+        try
+        {
+            RepositoryUri uri = repository.getRepositoryUri();
+            String owner = uri.getOwner();
+            String slug = uri.getSlug();
+            String node = changeset.getNode();
+            Authentication auth = authenticationFactory.getAuthentication(repository);
+
+            logger.debug("Parse changeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, node});
+            final String urlPath = "/repositories/" + CustomStringUtils.encode(owner) + "/" +
+                    CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(node);
+            String responseFilesString = requestHelper.get(auth, urlPath + "/diffstat?limit=" + DvcsRepositoryManager.MAX_VISIBLE_FILES, null, uri.getApiUrl());
+            return BitbucketChangesetFactory.getChangesetWithStatistics(changeset, responseFilesString);
+        } catch (ResponseException e)
+        {
+            throw new SourceControlException("Could not get result", e);
         }
     }
 
@@ -132,7 +155,7 @@ public class BitbucketCommunicator implements Communicator
                 for (int i = 0; i < list.length(); i++)
                 {
                     JSONObject json = list.getJSONObject(i);
-                    changesets.add(BitbucketChangesetFactory.parse(repository.getId(), json, new JSONArray()));
+                    changesets.add(BitbucketChangesetFactory.parse(repository.getId(), json));
                 }
             } else
             {

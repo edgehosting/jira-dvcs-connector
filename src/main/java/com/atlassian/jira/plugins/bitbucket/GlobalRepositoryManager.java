@@ -127,6 +127,12 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
     @Override
+    public Changeset getChangeset(SourceControlRepository repository, Changeset changeset)
+    {
+        return getManagerByRepository(repository).getChangeset(repository, changeset);
+    }
+
+    @Override
     public void removeRepository(int id)
     {
         getManagerByRepoId(id).removeRepository(id);
@@ -226,5 +232,5 @@ public class GlobalRepositoryManager implements RepositoryManager
     {
         getManagerByRepository(repo).setLastCommitDate(repo, date);
     }
-    
+
 }

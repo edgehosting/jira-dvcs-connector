@@ -93,6 +93,12 @@ public class GithubCommunicator implements Communicator
         }
     }
 
+    @Override
+    public Changeset getChangeset(SourceControlRepository repository, Changeset changeset)
+    {
+        return getChangeset(repository, changeset.getNode());
+    }
+
     public List<Changeset> getChangesets(SourceControlRepository repository, String branch, int pageNumber)
     {
         RepositoryUri uri = repository.getRepositoryUri();

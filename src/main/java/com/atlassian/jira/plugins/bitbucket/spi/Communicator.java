@@ -28,6 +28,8 @@ public interface Communicator
      */
     public Changeset getChangeset(SourceControlRepository repository, String id);
 
+    public Changeset getChangeset(SourceControlRepository repository, Changeset changeset);
+
 
     /**
      * @param repo
@@ -57,6 +59,5 @@ public interface Communicator
 
     public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
         String adminUsername, String adminPassword, String accessToken) throws SourceControlException;
-
 
 }
