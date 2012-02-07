@@ -61,7 +61,7 @@ public class DefaultSynchronizer implements Synchronizer
 							{
                                 String errorMessage = e.getMessage() == null ? e.toString() : e.getMessage();
                                 progress.setError(errorMessage);
-                                log.debug(e.getMessage(), e);
+                                log.warn(e.getMessage(), e);
 							} finally
 							{
 								progress.finish();
