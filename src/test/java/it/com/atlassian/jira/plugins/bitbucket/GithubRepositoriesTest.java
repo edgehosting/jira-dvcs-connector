@@ -108,7 +108,6 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     public void addRepoCommitsAppearOnIssues()
     {
         ensureRepositoryPresent("QA", TEST_PUBLIC_REPO_URL);
-        ensureRepositoryPresent("QA", TEST_PUBLIC_REPO_URL);
 
         assertThat(getCommitsForIssue("QA-2"),
                 hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
