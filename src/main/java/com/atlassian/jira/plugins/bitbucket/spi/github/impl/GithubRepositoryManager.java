@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
@@ -47,6 +48,14 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         try
         {
             JSONObject jsonPayload = new JSONObject(payload);
+
+            String branch = "master";
+            String reference = jsonPayload.getString("ref");
+            if (StringUtils.isNotBlank(reference) && reference.startsWith("refs/heads"))
+            {
+                branch = StringUtils.substringAfterLast(reference, "/");
+            }
+
             JSONArray commits = jsonPayload.getJSONArray("commits");
 
             for (int i = 0; i < commits.length(); ++i)
@@ -55,6 +64,7 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
                 JSONObject commitJson = commits.getJSONObject(i);
                 String commitId = commitJson.getString("id");
                 Changeset changeset = getCommunicator().getChangeset(repository, commitId);
+                changeset.setBranch(branch);
                 changesets.add(changeset);
             }
         } catch (JSONException e)
@@ -63,6 +73,20 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         }
         return changesets;
     }
+
+
+    @Override
+    public Changeset reloadChangeset(IssueMapping issueMapping)
+    {
+        Changeset reloadedChangeset = super.reloadChangeset(issueMapping);
+        if (StringUtils.isNotBlank(issueMapping.getBranch()))
+        {
+            reloadedChangeset.setBranch(issueMapping.getBranch());
+        }
+
+        return reloadedChangeset;
+    }
+
 
     @Override
     public String getRepositoryType()
@@ -102,5 +126,10 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         {
             throw new SourceControlException("Invalid url [" + urlString + "]");
         }
+    }
+
+    public boolean wasChangesetAlreadySynchronized(String node) {
+        final IssueMapping issueMapping = repositoryPersister.getIssueMapping(node);
+        return issueMapping != null;
     }
 }

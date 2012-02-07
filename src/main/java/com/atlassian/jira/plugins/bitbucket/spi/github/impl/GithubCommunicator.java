@@ -21,6 +21,7 @@ public class GithubCommunicator implements Communicator
 {
     private final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
 
+    private GithubRepositoryManager githubRepositoryManager;
     private final AuthenticationFactory authenticationFactory;
     private final RequestHelper requestHelper;
 
@@ -80,7 +81,12 @@ public class GithubCommunicator implements Communicator
     @Override
     public Changeset getChangeset(SourceControlRepository repository, Changeset changeset)
     {
-        return getChangeset(repository, changeset.getNode());
+        final Changeset reloadedChangeset = getChangeset(repository, changeset.getNode());
+        if (StringUtils.isNotBlank(changeset.getBranch()))
+        {
+            reloadedChangeset.setBranch(changeset.getBranch());
+        }
+        return reloadedChangeset;
     }
 
     public List<Changeset> getChangesets(SourceControlRepository repository, String branch, int pageNumber)
@@ -119,7 +125,9 @@ public class GithubCommunicator implements Communicator
                 for (int i = 0; i < list.length(); i++)
                 {
                     JSONObject commitJson = list.getJSONObject(i);
-                    changesets.add(GithubChangesetFactory.parseV2(repository.getId(), commitJson));
+                    final Changeset changeset = GithubChangesetFactory.parseV2(repository.getId(), commitJson);
+                    changeset.setBranch(branch);
+                    changesets.add(changeset);
                 }
             } else
             {
@@ -195,7 +203,7 @@ public class GithubCommunicator implements Communicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(final SourceControlRepository repository)
+    public Iterable<Changeset> getChangesets(final RepositoryManager repositoryManager, final SourceControlRepository repository)
     {
         return new Iterable<Changeset>()
         {
@@ -203,7 +211,7 @@ public class GithubCommunicator implements Communicator
             public Iterator<Changeset> iterator()
             {
                 List<String> branches = getBranches(repository);
-                return new GithubChangesetIterator(GithubCommunicator.this, repository, branches);
+                return new GithubChangesetIterator((GithubRepositoryManager) repositoryManager, GithubCommunicator.this, repository, branches);
             }
         };
     }
@@ -235,7 +243,14 @@ public class GithubCommunicator implements Communicator
             JSONArray list = new JSONObject(responseString).getJSONObject("branches").names();
             for (int i = 0; i < list.length(); i++)
             {
-                branches.add(list.getString(i));
+                final String branchName = list.getString(i);
+                if (branchName.equalsIgnoreCase("master"))
+                {
+                    branches.add(0,branchName);
+                } else
+                {
+                    branches.add(branchName);
+                }
             }
         } catch (Exception e)
         {

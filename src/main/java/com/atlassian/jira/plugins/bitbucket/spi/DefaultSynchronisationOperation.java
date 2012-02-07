@@ -40,6 +40,8 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     @Override
     public void synchronise()
     {
+        repositoryManager.removeAllChangesets(key.getRepository().getId());
+
         Iterable<Changeset> changesets = getChangsetsIterator();
         Date lastCommitDate = null;
         if (key.getChangesets() == null)
@@ -125,7 +127,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         log.debug("synchronize [ {} ] with [ {} ]", key.getRepository().getProjectKey(),
                 key.getRepository().getRepositoryUri().getRepositoryUrl());
 
-        Iterable<Changeset> changesets = key.getChangesets() == null ? communicator.getChangesets(key.getRepository()) : key.getChangesets();
+        Iterable<Changeset> changesets = key.getChangesets() == null ? communicator.getChangesets(repositoryManager, key.getRepository()) : key.getChangesets();
         return changesets;
     }
 

@@ -107,9 +107,9 @@ public class CachingCommunicator implements Communicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(SourceControlRepository repository)
+    public Iterable<Changeset> getChangesets(RepositoryManager repositoryManager, SourceControlRepository repository)
     {
-        return delegate.getChangesets(repository);
+        return delegate.getChangesets(repositoryManager, repository);
     }
 
     @Override

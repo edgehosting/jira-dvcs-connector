@@ -3,11 +3,7 @@ package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class GithubChangesetIterator implements Iterator<Changeset>
 {
@@ -15,10 +11,11 @@ public class GithubChangesetIterator implements Iterator<Changeset>
     private PagesIterator pagesIterator;
 
     private BranchesIterator branchesIterator;
+    private GithubRepositoryManager githubRepositoryManager;
 
-
-    public GithubChangesetIterator(GithubCommunicator githubCommunicator, SourceControlRepository repository, List<String> branches)
+    public GithubChangesetIterator(GithubRepositoryManager repositoryManager, GithubCommunicator githubCommunicator, SourceControlRepository repository, List<String> branches)
     {
+        this.githubRepositoryManager = repositoryManager;
         branchesIterator = new BranchesIterator(branches, githubCommunicator, repository);
         pagesIterator = branchesIterator.next();
     }
@@ -28,16 +25,28 @@ public class GithubChangesetIterator implements Iterator<Changeset>
         return inPageChangesetsIterator.hasNext() || (pagesIterator != null && pagesIterator.hasNext()) || branchesIterator.hasNext() ;
     }
 
+    int i=0;
+
     public Changeset next()
     {
         if (inPageChangesetsIterator.hasNext())
         {
-            return inPageChangesetsIterator.next();
+            i++;
+            final Changeset nextChangeset = inPageChangesetsIterator.next();
+
+            if (githubRepositoryManager.wasChangesetAlreadySynchronized(nextChangeset.getNode()))
+            {
+                inPageChangesetsIterator = Collections.<Changeset>emptyList().listIterator();
+                pagesIterator.stop();
+            }
+            return nextChangeset;
         } else if (pagesIterator.hasNext())
         {
             inPageChangesetsIterator = pagesIterator.next();
             return next();
-        } else if (branchesIterator.hasNext()) {
+        } else if (branchesIterator.hasNext())
+        {
+            i = 0;
             pagesIterator = branchesIterator.next();
             return next();
         }
@@ -61,6 +70,7 @@ class PagesIterator implements Iterator<ListIterator<Changeset>>
     private int currentPageNumber = 0;   // github gives us pages indexed from 1 (zero is one before)
     private String branch;
     private List<Changeset> changesets;
+    private boolean stoped = false;
 
     PagesIterator(String branch, GithubCommunicator githubCommunicator, SourceControlRepository repository)
     {
@@ -72,6 +82,9 @@ class PagesIterator implements Iterator<ListIterator<Changeset>>
     @Override
     public boolean hasNext()
     {
+        if (stoped) {
+            return false;
+        }
         if (index < currentPageNumber) {
             return containsChangesets();
         }
@@ -101,6 +114,10 @@ class PagesIterator implements Iterator<ListIterator<Changeset>>
     public void remove()
     {
         throw new UnsupportedOperationException();
+    }
+
+    public void stop() {
+        this.stoped = true;
     }
 }
 

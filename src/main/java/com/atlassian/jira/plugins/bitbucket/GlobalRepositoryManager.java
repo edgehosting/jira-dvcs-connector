@@ -221,4 +221,9 @@ public class GlobalRepositoryManager implements RepositoryManager
         getManagerByRepository(repo).setLastCommitDate(repo, date);
     }
 
+    @Override
+    public void removeAllChangesets(int repositoryId) {
+        getManagerByRepoId(repositoryId).removeAllChangesets(repositoryId);
+    }
+
 }

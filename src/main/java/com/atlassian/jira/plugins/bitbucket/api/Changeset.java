@@ -23,6 +23,8 @@ public interface Changeset {
 
     public String getBranch();
 
+    void setBranch(String branch);
+
     public String getMessage();
 
     public List<String> getParents();

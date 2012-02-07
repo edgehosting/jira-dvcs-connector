@@ -1,20 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
-import com.atlassian.jira.plugins.bitbucket.api.Authentication;
-import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException.UnauthorisedException;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
-import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
-import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
-import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.*;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
-import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketUserFactory;
 import com.atlassian.jira.util.json.JSONArray;
@@ -26,12 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
@@ -227,7 +212,7 @@ public class BitbucketCommunicator implements Communicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(final SourceControlRepository repository)
+    public Iterable<Changeset> getChangesets(RepositoryManager repositoryManager, final SourceControlRepository repository)
     {
         return new Iterable<Changeset>()
         {
