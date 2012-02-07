@@ -109,6 +109,7 @@
         <description>Show Bitbucket changesets related to an issue in an issue tab panel.</description>
         <label>Commits</label>
         <resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>
+        <supports-ajax-load>true</supports-ajax-load>
     </issue-tabpanel>
 
     <!-- The webwork1 plugin element is how you add new actions to JIRA -->
