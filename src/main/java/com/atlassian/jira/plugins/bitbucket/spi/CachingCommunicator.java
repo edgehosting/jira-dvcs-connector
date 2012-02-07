@@ -82,6 +82,12 @@ public class CachingCommunicator implements Communicator
         return delegate.getChangeset(repository, id);
     }
 
+    @Override
+    public Changeset getChangeset(SourceControlRepository repository, Changeset changeset)
+    {
+        return delegate.getChangeset(repository, changeset);
+    }
+
     private SourceControlException unrollException(ComputationException e)
     {
         return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause() : new SourceControlException(e
