@@ -293,8 +293,6 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     public void setLastCommitDate(SourceControlRepository repo, Date date)
     {
         ProjectMapping projectMapping = repositoryPersister.getRepository(repo.getId());
-        
-        //!!! NPE ???
         projectMapping.setLastCommitDate(date);
         projectMapping.save();
     }
