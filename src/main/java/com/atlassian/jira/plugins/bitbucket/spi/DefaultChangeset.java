@@ -20,7 +20,7 @@ public class DefaultChangeset implements Changeset
     private final String author;
     private final Date timestamp;
     private final String rawNode;
-    private final String branch;
+    private String branch;
     private final String message;
     private final List<String> parents;
     private final List<ChangesetFile> files;
@@ -84,6 +84,10 @@ public class DefaultChangeset implements Changeset
     public String getBranch()
     {
         return branch;
+    }
+
+    public void setBranch(String branch) {
+        this.branch = branch;
     }
 
     public String getMessage()

@@ -1,22 +1,11 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.api.*;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
@@ -27,6 +16,14 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GithubRepositoryManager extends DvcsRepositoryManager
 {
@@ -52,6 +49,14 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         try
         {
             JSONObject jsonPayload = new JSONObject(payload);
+
+            String branch = "master";
+            String reference = jsonPayload.getString("ref");
+            if (StringUtils.isNotBlank(reference) && reference.startsWith("refs/heads"))
+            {
+                branch = StringUtils.substringAfterLast(reference, "/");
+            }
+
             JSONArray commits = jsonPayload.getJSONArray("commits");
 
             for (int i = 0; i < commits.length(); ++i)
@@ -60,6 +65,7 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
                 JSONObject commitJson = commits.getJSONObject(i);
                 String commitId = commitJson.getString("id");
                 Changeset changeset = getCommunicator().getChangeset(repository, commitId);
+                changeset.setBranch(branch);
                 changesets.add(changeset);
             }
         } catch (JSONException e)
@@ -68,6 +74,20 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         }
         return changesets;
     }
+
+
+    @Override
+    public Changeset reloadChangeset(IssueMapping issueMapping)
+    {
+        Changeset reloadedChangeset = super.reloadChangeset(issueMapping);
+        if (StringUtils.isNotBlank(issueMapping.getBranch()))
+        {
+            reloadedChangeset.setBranch(issueMapping.getBranch());
+        }
+
+        return reloadedChangeset;
+    }
+
 
     @Override
     public String getRepositoryType()
@@ -107,5 +127,10 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         {
             throw new SourceControlException("Invalid url [" + urlString + "]");
         }
+    }
+
+    public boolean wasChangesetAlreadySynchronized(String node) {
+        final IssueMapping issueMapping = repositoryPersister.getIssueMapping(node);
+        return issueMapping != null;
     }
 }

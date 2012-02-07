@@ -56,7 +56,7 @@ public class TestDefaultSynchronizer
         SynchronisationOperation synchronisation = new DefaultSynchronisationOperation(key, repositoryManager, bitbucket, progressProvider, issueManager);
         when(repositoryManager.getSynchronisationOperation(any(SynchronizationKey.class), any(ProgressWriter.class))).thenReturn(
             synchronisation);
-        when(bitbucket.getChangesets(repository)).thenReturn(Arrays.asList(changeset));
+        when(bitbucket.getChangesets(repositoryManager, repository)).thenReturn(Arrays.asList(changeset));
         when(changeset.getMessage()).thenReturn("PRJ-1 Message");
         when(issueManager.getIssueObject(anyString())).thenReturn(someIssue);
 

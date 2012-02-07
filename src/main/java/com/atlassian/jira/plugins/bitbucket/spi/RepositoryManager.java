@@ -154,4 +154,6 @@ public interface RepositoryManager
 
     public void setLastCommitDate(SourceControlRepository repo, Date date);
 
+    public void removeAllChangesets(int repositoryId);
+
 }

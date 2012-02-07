@@ -85,4 +85,6 @@ public interface RepositoryPersister {
 
     public ProjectMapping[] findRepositories(String projectKey, String repositoryUrl);
 
+    public void removeAllIssueMappings(int repositoryId);
+
 }

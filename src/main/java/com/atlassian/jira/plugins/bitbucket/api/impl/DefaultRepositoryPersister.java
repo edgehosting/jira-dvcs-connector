@@ -94,6 +94,24 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     }
 
     @Override
+    public void removeAllIssueMappings(final int repositoryId) {
+        activeObjects.executeInTransaction(new TransactionCallback<Object>()
+        {
+            @Override
+            public Object doInTransaction()
+            {
+                final IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class, IssueMapping.REPOSITORY_ID+" = ?", repositoryId);
+
+                log.debug("deleting [ {} ] issue mappings [ {} ]", new String[]{String.valueOf(issueMappings.length), String.valueOf(repositoryId)});
+
+                activeObjects.delete(issueMappings);
+                return null;
+            }
+        });
+
+    }
+
+    @Override
     public void removeRepository(final int id)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
