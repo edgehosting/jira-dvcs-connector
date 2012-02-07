@@ -289,6 +289,9 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     public void setLastCommitDate(SourceControlRepository repo, Date date)
     {
         ProjectMapping projectMapping = repositoryPersister.getRepository(repo.getId());
+        if (projectMapping == null)
+            throw new SourceControlException("Repository " + repo.getRepositoryUri().getRepositoryUrl() + " ("+ repo.getId() + ") does not exists!" );
+       
         projectMapping.setLastCommitDate(date);
         projectMapping.save();
     }
