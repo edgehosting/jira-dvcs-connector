@@ -54,13 +54,7 @@ public class ActivityStreamsTest
     {
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + "/secure/admin/EditPermissions!default.jspa?schemeId=0");
         jira.getTester().getDriver().findElement(By.id("del_perm_10_")).click();
-        try
-        {
-            Thread.sleep(6000);
-        } catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
+        jira.getTester().getDriver().waitUntilElementIsVisible(By.id("delete_submit"));
         jira.getTester().getDriver().findElement(By.id("delete_submit")).click();
     }
 
