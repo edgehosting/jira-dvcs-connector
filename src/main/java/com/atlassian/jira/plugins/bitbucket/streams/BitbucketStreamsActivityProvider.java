@@ -32,7 +32,9 @@ import com.atlassian.streams.spi.StreamsActivityProvider;
 import com.atlassian.streams.spi.UserProfileAccessor;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.atlassian.util.concurrent.Nullable;
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -208,30 +210,19 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         };
     }
 
-    private List<String> getInProjectsByPermission(Set<String> inProjectsList)
+    private Iterable<String> getInProjectsByPermission(Set<String> inProjectsList)
     {
-        List<Project> projectsToCheckPermission = new ArrayList<Project>();
-        List<String> projectsWithPermission = new ArrayList<String>();
+        Iterable<Project> projectsToCheckPermission;
 
-        if (!CollectionUtils.isEmpty(inProjectsList))
-        {
-            for (String projectKey : inProjectsList)
-            {
-                projectsToCheckPermission.add(projectManager.getProjectObjByKey(projectKey));
-            }
-        } else
+        if (CollectionUtils.isEmpty(inProjectsList))
         {
             projectsToCheckPermission = projectManager.getProjectObjects();
-        }
-        for (Project project : projectsToCheckPermission)
+        } else
         {
-            if (hasViewSourcePermissionForProject.apply(project))
-            {
-                projectsWithPermission.add(project.getKey());
-            }
+            projectsToCheckPermission = Iterables.transform(inProjectsList, projectKeyToProject);
         }
 
-        return projectsWithPermission;
+        return Iterables.transform(Iterables.filter(projectsToCheckPermission, hasViewSourcePermissionForProject), projectToProjectKey);
     }
 
     private final Predicate<Project> hasViewSourcePermissionForProject = new Predicate<Project>()
@@ -240,6 +231,24 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         public boolean apply(@Nullable Project project)
         {
             return project != null && permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, project, jiraAuthenticationContext.getLoggedInUser());
+        }
+    };
+
+    private Function<Project, String> projectToProjectKey = new Function<Project, String>()
+    {
+        @Override
+        public String apply(@Nullable Project from)
+        {
+            return from.getKey();
+        }
+    };
+
+    private Function<String, Project> projectKeyToProject = new Function<String, Project>()
+    {
+        @Override
+        public Project apply(@Nullable String from)
+        {
+            return projectManager.getProjectObjByKey(from);
         }
     };
 }
