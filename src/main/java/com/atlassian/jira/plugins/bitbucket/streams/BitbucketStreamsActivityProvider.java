@@ -179,30 +179,19 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
     }
 
-    private List<String> getInProjectsByPermission(Set<String> inProjectsList)
+    private Iterable<String> getInProjectsByPermission(Set<String> inProjectsList)
     {
-        List<Project> projectsToCheckPermission = new ArrayList<Project>();
-        List<String> projectsWithPermission = new ArrayList<String>();
+        Iterable<Project> projectsToCheckPermission;
 
-        if (!CollectionUtils.isEmpty(inProjectsList))
-        {
-            for (String projectKey : inProjectsList)
-            {
-                projectsToCheckPermission.add(projectManager.getProjectObjByKey(projectKey));
-            }
-        } else
+        if (CollectionUtils.isEmpty(inProjectsList))
         {
             projectsToCheckPermission = projectManager.getProjectObjects();
-        }
-        for (Project project : projectsToCheckPermission)
+        } else
         {
-            if (hasViewSourcePermissionForProject.apply(project))
-            {
-                projectsWithPermission.add(project.getKey());
-            }
+            projectsToCheckPermission = Iterables.transform(inProjectsList, projectKeyToProject);
         }
 
-        return projectsWithPermission;
+        return Iterables.transform(Iterables.filter(projectsToCheckPermission, hasViewSourcePermissionForProject), projectToProjectKey);
     }
 
     private final Predicate<Project> hasViewSourcePermissionForProject = new Predicate<Project>()
@@ -211,6 +200,24 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         public boolean apply(@Nullable Project project)
         {
             return project != null && permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, project, jiraAuthenticationContext.getLoggedInUser());
+        }
+    };
+
+    private Function<Project, String> projectToProjectKey = new Function<Project, String>()
+    {
+        @Override
+        public String apply(@Nullable Project from)
+        {
+            return from.getKey();
+        }
+    };
+
+    private Function<String, Project> projectKeyToProject = new Function<String, Project>()
+    {
+        @Override
+        public Project apply(@Nullable String from)
+        {
+            return projectManager.getProjectObjByKey(from);
         }
     };
 }
