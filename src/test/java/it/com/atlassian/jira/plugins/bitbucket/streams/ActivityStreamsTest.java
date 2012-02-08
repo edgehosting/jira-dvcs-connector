@@ -33,7 +33,7 @@ public class ActivityStreamsTest
 
         BitBucketConfigureRepositoriesPage configureRepos = goToRepositoriesConfigPage();
         configureRepos.deleteAllRepositories();
-        configureRepos.addPublicRepoToProjectSuccessfully("QA", "https://bitbucket.org/farmas/testrepo-qa");
+        configureRepos.addPublicRepoToProjectSuccessfully("QA", "https://bitbucket.org/jirabitbucketconnector/public-hg-repo");
     }
 
     private void logout()
