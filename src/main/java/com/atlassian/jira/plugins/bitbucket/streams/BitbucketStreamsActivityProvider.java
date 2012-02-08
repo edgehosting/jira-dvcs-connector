@@ -4,6 +4,7 @@ import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.velocity.VelocityUtils;
@@ -14,28 +15,17 @@ import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.message.I18nResolver;
-import com.atlassian.streams.api.ActivityObjectTypes;
-import com.atlassian.streams.api.ActivityRequest;
-import com.atlassian.streams.api.ActivityVerbs;
-import com.atlassian.streams.api.Html;
-import com.atlassian.streams.api.StreamsEntry;
-import com.atlassian.streams.api.StreamsException;
-import com.atlassian.streams.api.StreamsFeed;
-import com.atlassian.streams.api.UserProfile;
+import com.atlassian.streams.api.*;
 import com.atlassian.streams.api.common.ImmutableNonEmptyList;
 import com.atlassian.streams.api.common.Option;
-import com.atlassian.streams.spi.CancellableTask;
-import com.atlassian.streams.spi.CancelledException;
-import com.atlassian.streams.spi.Filters;
-import com.atlassian.streams.spi.StandardStreamsFilterOption;
-import com.atlassian.streams.spi.StreamsActivityProvider;
-import com.atlassian.streams.spi.UserProfileAccessor;
+import com.atlassian.streams.spi.*;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.atlassian.util.concurrent.Nullable;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,11 +34,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.net.URISyntaxException;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
@@ -105,13 +92,12 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 .activityObjectType(ActivityObjectTypes.status()));
 
         final String author = changeset.getAuthor();
-        final UserProfile userProfile = userProfileAccessor.getAnonymousUserProfile();
+        final SourceControlRepository repo = globalRepositoryManager.getRepository(changeset.getRepositoryId());
 
         StreamsEntry.Renderer renderer = new StreamsEntry.Renderer()
         {
             public Html renderTitleAsHtml(StreamsEntry entry)
             {
-                SourceControlRepository repo = globalRepositoryManager.getRepository(changeset.getRepositoryId());
 
                 Map<String, Object> templateMap = new HashMap<String, Object>();
                 templateMap.put("changeset", changeset);
@@ -157,6 +143,21 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
             }
 
         };
+
+        UserProfile userProfile = userProfileAccessor.getAnonymousUserProfile();
+
+        SourceControlUser user = globalRepositoryManager.getUser(repo, changeset.getAuthor());
+        if (user != null && StringUtils.isNotBlank(user.getAvatar()))
+        {
+            try {
+                URI uri = new URI(user.getAvatar());
+                userProfile = new UserProfile.Builder("").profilePictureUri(Option.option(uri)).build();
+            } catch (URISyntaxException e) {
+                // do nothing. we use anonymous gravatar
+            }
+        }
+
+
 
         return new StreamsEntry(StreamsEntry.params()
                 .id(URI.create(""))
