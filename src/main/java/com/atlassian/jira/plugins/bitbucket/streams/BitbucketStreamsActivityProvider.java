@@ -25,7 +25,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,7 +146,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         UserProfile userProfile = userProfileAccessor.getAnonymousUserProfile();
 
         SourceControlUser user = globalRepositoryManager.getUser(repo, changeset.getAuthor());
-        if (user != null && StringUtils.isNotBlank(user.getAvatar()))
+        if (user != null && user.getAvatar() != null && user.getAvatar().startsWith("https"))
         {
             try {
                 URI uri = new URI(user.getAvatar());
