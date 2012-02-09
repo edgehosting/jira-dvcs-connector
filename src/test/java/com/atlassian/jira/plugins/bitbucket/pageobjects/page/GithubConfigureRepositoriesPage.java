@@ -44,6 +44,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         waitFormBecomeVisible();
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
+        setPageAsOld();
         addRepositoryButton.click();
 
         checkAndDoGithubLogin();
@@ -70,6 +71,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         waitFormBecomeVisible();
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
+        setPageAsOld();
         addRepositoryButton.click();
 
         Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed()
@@ -84,6 +86,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         waitFormBecomeVisible();
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
+        setPageAsOld();
         addRepositoryButton.click();
 
         String currentUrl = checkAndDoGithubLogin();
@@ -98,31 +101,37 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
 
     private String checkAndDoGithubLogin()
     {
-        waitWhilePageLaoded();
+        waitWhileNewPageLaoded();
         String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
         if (currentUrl.contains("https://github.com/login?"))
         {
             githubWebLoginField.type("jirabitbucketconnector");
             githubWebPasswordField.type("jirabitbucketconnector1");
+            setPageAsOld();
             githubWebSubmitButton.click();
         }
         return jiraTestedProduct.getTester().getDriver().getCurrentUrl();
     }
 
-    private void waitWhilePageLaoded()
+    private void waitWhileNewPageLaoded()
     {
-        try
-        {
-            Thread.sleep(5000);
-        } catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
+        jiraTestedProduct.getTester().getDriver().waitUntilElementIsNotLocated(By.id("old-page"));
+    }
+
+    protected void setPageAsOld()
+    {
+        StringBuilder script = new StringBuilder();
+        script.append("var bodyElm = document.getElementsByTagName('body')[0];");
+        script.append("var oldPageHiddenElm = document.createElement('input');");
+        script.append("oldPageHiddenElm.setAttribute('id','old-page');");
+        script.append("oldPageHiddenElm.setAttribute('type','hidden');");
+        script.append("bodyElm.appendChild(oldPageHiddenElm);");
+        jiraTestedProduct.getTester().getDriver().executeScript(script.toString());
     }
 
     private String authorizeGithubAppIfRequired()
     {
-        waitWhilePageLaoded();
+        waitWhileNewPageLaoded();
         String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
         if (currentUrl.contains("/github.com/login/oauth"))
         {
@@ -161,6 +170,7 @@ public class GithubConfigureRepositoriesPage extends BaseConfigureRepositoriesPa
         waitFormBecomeVisible();
         projectSelect.select(Options.value(projectKey));
         urlTextbox.clear().type(url);
+        setPageAsOld();
         addRepositoryButton.click();
 
         checkAndDoGithubLogin();

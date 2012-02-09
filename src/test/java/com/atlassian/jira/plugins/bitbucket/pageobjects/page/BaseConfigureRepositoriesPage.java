@@ -164,13 +164,7 @@ public abstract class BaseConfigureRepositoriesPage implements Page
 
     protected void waitFormBecomeVisible()
     {
-        try
-        {
-            Thread.sleep(2000);
-        } catch (InterruptedException e)
-        {
-            // not important state
-        }
+        jiraTestedProduct.getTester().getDriver().waitUntilElementIsVisible(By.id("repoEntry"));
     }
 
     /**
