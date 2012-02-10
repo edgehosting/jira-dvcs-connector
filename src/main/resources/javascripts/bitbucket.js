@@ -80,7 +80,7 @@ function submitFunction() {
     if (!AJS.$('#projectKey').val()) {
         AJS.$("#aui-message-bar").empty();
         AJS.messages.error({ title: "Error!",
-            body: "The project has to be selected! If you have no project configure any <a href='" + BASE_URL + "/secure/project/ViewProjects.jspa' target='_blank'>here</a>."
+            body: "The project has to be selected! There are no projects configured. Please create a project <a href='" + BASE_URL + "/secure/project/ViewProjects.jspa' target='_blank'>first</a>."
         });
         return false; // project-key has to be selected
     }
