@@ -76,7 +76,15 @@ function forceSync(repositoryId) {
 }
 
 function submitFunction() {
-	
+
+    if (!AJS.$('#projectKey').val()) {
+        AJS.$("#aui-message-bar").empty();
+        AJS.messages.error({ title: "Error!",
+            body: "The project has to be selected! If you have no project configure any <a href='" + BASE_URL + "/secure/project/ViewProjects.jspa' target='_blank'>here</a>."
+        });
+        return false; // project-key has to be selected
+    }
+
 	if (AJS.$('#repoEntry').attr("action")) {
 		return true; // submit form
 	}
