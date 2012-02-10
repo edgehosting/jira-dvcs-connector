@@ -31,10 +31,7 @@
 
  		<h3>Manage Linked Repositories</h3>
 
-        <p>Here you can link repositories from your bitbucket or GitHub accounts.
-        You will need admin access to the repositories you wish to link. Once connected, Jira will query the repository commits searching for the  associated project ID.
-        When the repository is synced, you can see the commits integrated into tickets under the commits tab.
-        Set up OAuth for GitHub, or a post commit hook for bitbucket.</p>
+        <p>Connect your <a href="http://confluence.atlassian.com/display/AOD/Linking+a+bitbucket+or+GitHub+repository+with+JIRA+OnDemand" target="_blank">Bitbucket and GitHub repo to JIRA</a> and link every commit with a bug or development tasks. Once configured, JIRA will query the repository commits searching for issue keys.</p>
 
         <br/>
 
