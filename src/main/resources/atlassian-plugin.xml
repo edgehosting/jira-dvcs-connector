@@ -26,6 +26,7 @@
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_04_ActiveObjectsV2Migrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_05_RepositoryTypeMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_06_GithubRepositories</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.CleanupPluginSettings</upgradeTask>
     </ao>
 
     <component key="executorService" name="Executor Service Factory Component"
