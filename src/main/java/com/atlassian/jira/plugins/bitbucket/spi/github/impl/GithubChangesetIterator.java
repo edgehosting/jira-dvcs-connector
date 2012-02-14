@@ -3,7 +3,11 @@ package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 public class GithubChangesetIterator implements Iterator<Changeset>
 {
@@ -12,6 +16,8 @@ public class GithubChangesetIterator implements Iterator<Changeset>
 
     private BranchesIterator branchesIterator;
     private GithubRepositoryManager githubRepositoryManager;
+
+    private Changeset nextChangeset = null;
 
     public GithubChangesetIterator(GithubRepositoryManager repositoryManager, GithubCommunicator githubCommunicator, SourceControlRepository repository, List<String> branches)
     {
@@ -22,36 +28,49 @@ public class GithubChangesetIterator implements Iterator<Changeset>
 
     public boolean hasNext()
     {
-        return inPageChangesetsIterator.hasNext() || (pagesIterator != null && pagesIterator.hasNext()) || branchesIterator.hasNext() ;
-    }
-
-    int i=0;
-
-    public Changeset next()
-    {
-        if (inPageChangesetsIterator.hasNext())
+        final boolean hasNext = inPageChangesetsIterator.hasNext() || (pagesIterator != null && pagesIterator.hasNext()) || branchesIterator.hasNext();
+        if (hasNext)
         {
-            i++;
-            final Changeset nextChangeset = inPageChangesetsIterator.next();
-
+            nextChangeset = internalNext();
             if (githubRepositoryManager.wasChangesetAlreadySynchronized(nextChangeset.getNode()))
             {
                 inPageChangesetsIterator = Collections.<Changeset>emptyList().listIterator();
                 pagesIterator.stop();
+                return hasNext();
             }
-            return nextChangeset;
+
+        }
+        return hasNext;
+    }
+
+    private Changeset internalNext() {
+        if (inPageChangesetsIterator.hasNext())
+        {
+            return inPageChangesetsIterator.next();
         } else if (pagesIterator.hasNext())
         {
             inPageChangesetsIterator = pagesIterator.next();
-            return next();
+            return internalNext();
         } else if (branchesIterator.hasNext())
         {
-            i = 0;
             pagesIterator = branchesIterator.next();
-            return next();
+            return internalNext();
         }
 
         throw new NoSuchElementException();
+
+    }
+
+    public Changeset next()
+    {
+        if (nextChangeset == null)
+        {
+            nextChangeset = internalNext();
+        }
+
+        Changeset changeset = nextChangeset;
+        nextChangeset = null;
+        return changeset;
     }
 
     public void remove()
