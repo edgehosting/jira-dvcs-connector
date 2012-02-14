@@ -67,19 +67,23 @@ public class To_06_GithubRepositories implements ActiveObjectsUpgradeTask
         {
             for (String issueId : issueIds)
             {
-                ArrayList<String> commitArray = (ArrayList<String>) pluginSettingsFactory.createSettingsForKey(projectKey).get("githubIssueCommitArray" + issueId);
-                for (String commit : commitArray)
+                ArrayList<String> commitArray = (ArrayList<String>) pluginSettingsFactory.createSettingsForKey(projectKey).get(
+                    "githubIssueCommitArray" + issueId);
+                if (commitArray != null)
                 {
-                    String node = extractNode(commit);
-                    log.debug("migrating commit mapping node:[{}], issueId:[{}]", node, issueId);
-                    
-                    
-                    final Map<String, Object> map = Maps.newHashMap();
-                    map.put("REPOSITORY_ID", pm.getID());
-                    map.put("NODE", node);
-                    map.put("ISSUE_ID", issueId);
-                    activeObjects.create(IssueMapping.class, map);
+                    for (String commit : commitArray)
+                    {
+                        String node = extractNode(commit);
+                        log.debug("migrating commit mapping node:[{}], issueId:[{}]", node, issueId);
+
+                        final Map<String, Object> map = Maps.newHashMap();
+                        map.put("REPOSITORY_ID", pm.getID());
+                        map.put("NODE", node);
+                        map.put("ISSUE_ID", issueId);
+                        activeObjects.create(IssueMapping.class, map);
+                    }
                 }
+
             }
         }
     }
