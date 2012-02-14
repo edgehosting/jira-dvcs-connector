@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
+import com.atlassian.jira.config.CoreFeatures;
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
@@ -27,19 +29,21 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     private String postCommitUrl = "";
     private String projectKey = "";
     private String nextAction = "";
-    private String addedRepositoryId="";
+    private String addedRepositoryId = "";
     private int repositoryId;
     private final String baseUrl;
 
     private final RepositoryManager globalRepositoryManager;
     private String postCommitRepositoryType;
+    private FeatureManager featureManager;
 
     public ConfigureBitbucketRepositories(
             @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager,
-            ApplicationProperties applicationProperties)
+            ApplicationProperties applicationProperties, FeatureManager featureManager)
     {
         this.globalRepositoryManager = globalRepositoryManager;
         this.baseUrl = applicationProperties.getBaseUrl();
+        this.featureManager = featureManager;
     }
 
     @Override
@@ -114,6 +118,7 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     {
         return mode;
     }
+
     public void setRepositoryUrl(String value)
     {
         this.repositoryUrl = value;
@@ -183,5 +188,9 @@ public class ConfigureBitbucketRepositories extends JiraWebActionSupport
     {
         this.postCommitRepositoryType = postCommitRepositoryType;
     }
-    
+
+    public boolean isOnDemandLicense()
+    {
+        return featureManager.isEnabled(CoreFeatures.ON_DEMAND);
+    }
 }
