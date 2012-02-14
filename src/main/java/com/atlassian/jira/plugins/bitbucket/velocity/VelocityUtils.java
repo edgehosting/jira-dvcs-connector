@@ -1,7 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.velocity;
 
+import com.atlassian.jira.ComponentManager;
+import com.atlassian.jira.datetime.DateTimeFormatter;
+import com.atlassian.jira.datetime.DateTimeFormatterFactory;
+import com.atlassian.jira.datetime.DateTimeStyle;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
-import com.atlassian.theplugin.commons.util.DateUtil;
 
 import java.util.Date;
 
@@ -10,6 +13,13 @@ import java.util.Date;
  */
 public class VelocityUtils
 {
+    private final DateTimeFormatter dateTimeFormatter;
+
+    public VelocityUtils()
+    {
+        dateTimeFormatter = ComponentManager.getComponent(DateTimeFormatterFactory.class).formatter();
+    }
+
     public String encodeUriPath(String str)
     {
         return CustomStringUtils.encodeUriPath(str);
@@ -17,6 +27,6 @@ public class VelocityUtils
 
     public String getRelativePastDate(Date dateInPast)
     {
-        return DateUtil.getRelativePastDate(new Date(), dateInPast);
+        return dateTimeFormatter.forLoggedInUser().withStyle(DateTimeStyle.RELATIVE).format(dateInPast);
     }
 }
