@@ -12,6 +12,7 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -90,6 +91,13 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
         jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
     }
 
+    @After
+    public void deleteRepositoriesAfterTest()
+    {
+        goToRepositoriesConfigPage();
+        configureRepos.deleteAllRepositories();
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     protected Class getPageClass()
@@ -165,7 +173,7 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
         // delete repository
         configureRepos.deleteAllRepositories();
         // check that postcommit hook is removed
-        hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN,REPO_ADMIN_PASSWORD);
+        hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
         assertThat(hooksPage, not(containsString(githubServiceConfigUrlPath)));
     }
     
