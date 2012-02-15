@@ -94,24 +94,24 @@ public class ActivityStreamsTest
         jira.getTester().gotoUrl(iframeSrc);
         bindPageAndSetJira();
 
-        page.checkIssueActivityPresentedForQA3();
+        page.checkIssueActivityPresentedForQA5();
 
         page.setIssueKeyFilter("qa-4");
         bindPageAndSetJira();
 
-        page.checkIssueActivityNotPresentedForQA3();
+        page.checkIssueActivityNotPresentedForQA5();
 
-        page.setIssueKeyFilter("qa-3");
+        page.setIssueKeyFilter("qa-5");
         bindPageAndSetJira();
 
-        page.checkIssueActivityPresentedForQA3();
+        page.checkIssueActivityPresentedForQA5();
 
         goToRepositoriesConfigPage().deleteAllRepositories();
 
         goToDashboardPage();
         bindPageAndSetJira();
 
-        page.checkIssueActivityNotPresentedForQA3();
+        page.checkIssueActivityNotPresentedForQA5();
 
         logout();
     }
@@ -131,7 +131,7 @@ public class ActivityStreamsTest
         jira.getTester().gotoUrl(iframeSrc);
         bindPageAndSetJira();
 
-        page.checkIssueActivityPresentedForQA3();
+        page.checkIssueActivityPresentedForQA5();
 
         logout();
         jira.getPageBinder().navigateToAndBind(DashboardPage.class);
@@ -141,7 +141,7 @@ public class ActivityStreamsTest
         jira.getTester().gotoUrl(iframeSrc);
         bindPageAndSetJira();
 
-        page.checkIssueActivityNotPresentedForQA3();
+        page.checkIssueActivityNotPresentedForQA5();
 
         loginToJira();
         setupAnonymousAccessForbidden();
