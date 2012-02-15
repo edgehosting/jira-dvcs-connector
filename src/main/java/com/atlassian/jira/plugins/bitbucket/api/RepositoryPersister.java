@@ -78,10 +78,12 @@ public interface RepositoryPersister {
     public List<IssueMapping> getLatestIssueMappings(int count, GlobalFilter gf, String repositoryType);
 
     /**
+     *
+     * @param repositoryId
      * @param node
      * @return changeset by node
      */
-    public IssueMapping getIssueMapping(String node);
+    public IssueMapping getIssueMapping(int repositoryId, String node);
 
     public ProjectMapping[] findRepositories(String projectKey, String repositoryUrl);
 
