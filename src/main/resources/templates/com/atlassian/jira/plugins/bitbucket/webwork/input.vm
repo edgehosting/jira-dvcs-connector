@@ -62,7 +62,7 @@
                 <input type="hidden" name="isPrivate" id="isPrivate">
 
                 #if ($action.getMode() == 'single')
-                    <input type='hidden' name='projectKey' value='$action.getProjectKey()'>
+                    <input type='hidden' name='projectKey' id='projectKey' value='$action.getProjectKey()'>
                     <input type='hidden' name='mode' value='single'>
                 #else
                     <div class="field-group">
