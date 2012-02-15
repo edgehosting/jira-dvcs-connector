@@ -214,7 +214,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
                 try
                 {
                     List<ChangesetFile> files = changeset.getFiles();
-                    int count = files.size();
+                    int count = changeset.getAllFileCount();
                     filesDataJson.put("count", count);
                     for (int i = 0; i < Math.min(count, DvcsRepositoryManager.MAX_VISIBLE_FILES); i++)
                     {
