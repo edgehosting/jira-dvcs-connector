@@ -20,8 +20,8 @@ public class DashboardActivityStreamsPage implements Page
     @ElementBy(xpath = "//h3[text() = 'Activity Stream']")
     private PageElement activityStreamsGadgetTitleElm;
 
-    @ElementBy(linkText = "QA-3")
-    private PageElement linkIssueQA3Elm;
+    @ElementBy(linkText = "QA-5")
+    private PageElement linkIssueQAElm;
 
     @ElementBy(id = "filter-icon")
     private PageElement filterIconElm;
@@ -43,14 +43,14 @@ public class DashboardActivityStreamsPage implements Page
         return activityStreamsGadgetTitleElm.isVisible();
     }
 
-    public void checkIssueActivityPresentedForQA3()
+    public void checkIssueActivityPresentedForQA5()
     {
-        Poller.waitUntilTrue("Expected acitivity from user farmas at issue QA-5", linkIssueQA3Elm.timed().isVisible());
+        Poller.waitUntilTrue("Expected acitivity at issue QA-5", linkIssueQAElm.timed().isVisible());
     }
 
-    public void checkIssueActivityNotPresentedForQA3()
+    public void checkIssueActivityNotPresentedForQA5()
     {
-        Poller.waitUntilFalse("Expected acitivity from user farmas at issue QA-5", linkIssueQA3Elm.timed().isVisible());
+        Poller.waitUntilFalse("Expected acitivity at issue QA-5", linkIssueQAElm.timed().isVisible());
     }
 
     private void showFilter(){
