@@ -3,7 +3,11 @@ package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.api.*;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
@@ -128,8 +132,8 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         }
     }
 
-    public boolean wasChangesetAlreadySynchronized(String node) {
-        final IssueMapping issueMapping = repositoryPersister.getIssueMapping(node);
+    public boolean wasChangesetAlreadySynchronized(int repositoryId, String node) {
+        final IssueMapping issueMapping = repositoryPersister.getIssueMapping(repositoryId, node);
         return issueMapping != null;
     }
 }

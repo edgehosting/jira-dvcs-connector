@@ -16,12 +16,15 @@ public class GithubChangesetIterator implements Iterator<Changeset>
 
     private BranchesIterator branchesIterator;
     private GithubRepositoryManager githubRepositoryManager;
+    private SourceControlRepository repository;
 
     private Changeset nextChangeset = null;
 
     public GithubChangesetIterator(GithubRepositoryManager repositoryManager, GithubCommunicator githubCommunicator, SourceControlRepository repository, List<String> branches)
     {
         this.githubRepositoryManager = repositoryManager;
+        this.repository = repository;
+
         branchesIterator = new BranchesIterator(branches, githubCommunicator, repository);
         pagesIterator = branchesIterator.next();
     }
@@ -32,7 +35,7 @@ public class GithubChangesetIterator implements Iterator<Changeset>
         if (hasNext)
         {
             nextChangeset = internalNext();
-            if (githubRepositoryManager.wasChangesetAlreadySynchronized(nextChangeset.getNode()))
+            if (githubRepositoryManager.wasChangesetAlreadySynchronized(repository.getId(), nextChangeset.getNode()))
             {
                 inPageChangesetsIterator = Collections.<Changeset>emptyList().listIterator();
                 pagesIterator.stop();

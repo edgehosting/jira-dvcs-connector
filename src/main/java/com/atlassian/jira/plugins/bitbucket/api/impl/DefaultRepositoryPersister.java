@@ -24,7 +24,12 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
@@ -291,14 +296,14 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     }
 
     @Override
-    public IssueMapping getIssueMapping(final String node)
+    public IssueMapping getIssueMapping(final int repositoryId, final String node)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<IssueMapping>()
         {
             @Override
             public IssueMapping doInTransaction()
             {
-                IssueMapping[] mappings = activeObjects.find(IssueMapping.class, IssueMapping.NODE + " = ?", node);
+                IssueMapping[] mappings = activeObjects.find(IssueMapping.class,IssueMapping.REPOSITORY_ID + " = ? AND " + IssueMapping.NODE + " = ?", repositoryId, node);
                 return mappings.length != 0 ? mappings[0] : null;
             }
         });
