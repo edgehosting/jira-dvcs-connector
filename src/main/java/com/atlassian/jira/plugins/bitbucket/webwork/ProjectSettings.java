@@ -72,7 +72,6 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
         StringBuffer repoRowContent = new StringBuffer();
         RepositoryUri repositoryUri = repository.getRepositoryUri();
 
-        repoRowContent.append("&nbsp;&nbsp;&nbsp;&nbsp;");
         repoRowContent.append(repository.getRepositoryType());
         repoRowContent.append(": ");
 
@@ -90,6 +89,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
     private void appendRow(StringBuilder result, String rowText)
     {
         result.append("<div>");
+        result.append("&nbsp;&nbsp;&nbsp;&nbsp;");
         result.append("<span class=\"project-config-list-label\">");
         result.append(rowText);
         result.append("</span>");
