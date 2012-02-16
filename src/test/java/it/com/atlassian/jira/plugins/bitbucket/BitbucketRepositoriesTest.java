@@ -30,7 +30,7 @@ public class BitbucketRepositoriesTest extends BitBucketBaseTest
     private static final String TEST_PRIVATE_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/private-hg-repo";
     private static final String TEST_NOT_EXISTING_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/repo-does-not-exist";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
-    private static final String REPO_ADMIN_PASSWORD = "jirabitbucketconnector";
+    private static final String REPO_ADMIN_PASSWORD = "jirabitbucketconnector1";
 
     @Override
     protected Class<BitBucketConfigureRepositoriesPage> getPageClass()
