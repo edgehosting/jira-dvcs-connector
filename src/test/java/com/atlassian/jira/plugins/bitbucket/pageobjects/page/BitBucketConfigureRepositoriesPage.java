@@ -94,7 +94,7 @@ public class BitBucketConfigureRepositoriesPage extends BaseConfigureRepositorie
         addRepositoryButton.click();
         Poller.waitUntilTrue(adminUsernameInput.timed().isVisible());
         adminUsernameInput.type("jirabitbucketconnector");
-        adminPasswordInput.type("jirabitbucketconnector");
+        adminPasswordInput.type("jirabitbucketconnector1");
         addRepositoryButton.click();
 
         checkSyncProcessSuccess();
