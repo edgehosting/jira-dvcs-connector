@@ -3,9 +3,9 @@
   <head>
     <title>
         #if ($action.getMode() == 'single')
-            Configure Repositories
+            Manage DVCS Repositories for $action.getProjectKey()
         #else
-            Bulk Configure Repositories
+            Manage DVCS Repositories
         #end
     </title>
 
@@ -29,7 +29,7 @@
   <body>
         <input type="hidden" id="addedRepositoryId" value="$action.getAddedRepositoryId()">
 
- 		<h3>Manage Linked Repositories</h3>
+ 		<h3>Manage DVCS Repositories</h3>
 
         #if ($action.isOnDemandLicense())
             <p>Connect your <a href="http://confluence.atlassian.com/display/AOD/Linking+a+bitbucket+or+GitHub+repository+with+JIRA+OnDemand" target="_blank">Bitbucket and GitHub repo to JIRA OnDemand</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
