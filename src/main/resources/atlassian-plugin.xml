@@ -156,9 +156,9 @@
     </project-operation>
 
     <web-item key="bitbucket_bulk_repo" name="Bitbucket Bulk Repository" section="admin_plugins_menu/source_control" weight="10">
-        <description>Bulk Configure Bitbucket and GitHub Repositories</description>
-        <label>Bitbucket and GitHub Repositories</label>
-        <name>Bitbucket Name Item</name>
+        <description>Manage DVCS Repositories</description>
+        <label>DVCS Repositories</label>
+        <name>DVCS Name Item</name>
 
         <link>/secure/admin/ConfigureBitbucketRepositories!default.jspa</link>
         <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>

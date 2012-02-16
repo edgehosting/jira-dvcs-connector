@@ -33,7 +33,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
         StringBuilder result = new StringBuilder();
         result.append("<div style=\"padding-bottom:5px; \">");
         result.append("<span class=\"project-config-list-label\">");
-        result.append("Bitbucket and GitHub Repositories:");
+        result.append("DVCS Repositories:");
         result.append("</span>\n");
         result.append("<span class=\"project-config-list-value\">");
         result.append(" (<a href='")
@@ -72,12 +72,15 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
         StringBuffer repoRowContent = new StringBuffer();
         RepositoryUri repositoryUri = repository.getRepositoryUri();
 
+        repoRowContent.append("&nbsp;&nbsp;&nbsp;&nbsp;");
         repoRowContent.append(repository.getRepositoryType());
         repoRowContent.append(": ");
 
         repoRowContent.append("<a href=\"");
         repoRowContent.append(repositoryUri.getRepositoryUrl());
         repoRowContent.append("\" target=\"_new\">");
+        repoRowContent.append(repositoryUri.getOwner());
+        repoRowContent.append("/");
         repoRowContent.append(repositoryUri.getSlug());
         repoRowContent.append("</a>");
 

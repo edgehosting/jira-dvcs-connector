@@ -3,9 +3,9 @@
   <head>
     <title>
         #if ($action.getMode() == 'single')
-            Configure Repositories
+            Manage DVCS Repositories for $action.getProjectKey()
         #else
-            Bulk Configure Repositories
+            Manage DVCS Repositories
         #end
     </title>
 
@@ -29,7 +29,7 @@
   <body>
         <input type="hidden" id="addedRepositoryId" value="$action.getAddedRepositoryId()">
 
- 		<h3>Manage Linked Repositories</h3>
+ 		<h3>Manage DVCS Repositories</h3>
 
          #if ($action.isOnDemandLicense())
             <p style="margin: 16px 0 0;">
