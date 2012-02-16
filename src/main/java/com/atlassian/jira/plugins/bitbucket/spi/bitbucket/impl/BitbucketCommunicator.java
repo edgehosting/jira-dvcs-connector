@@ -239,9 +239,9 @@ public class BitbucketCommunicator implements Communicator
     {
 
         Authentication auth;
-        if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminUsername))
+        if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminPassword))
         {
-            auth = new BasicAuthentication(adminUsername, adminUsername);
+            auth = new BasicAuthentication(adminUsername, adminPassword);
         } else
         {
             auth = Authentication.ANONYMOUS;
