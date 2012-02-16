@@ -85,10 +85,12 @@ function submitFunction() {
         return false; // project-key has to be selected
     }
 
-	if (AJS.$('#repoEntry').attr("action")) {
+    AJS.$('#Submit').attr("disabled", "disabled");
+    if (AJS.$('#repoEntry').attr("action")) {
+        AJS.messages.hint({ title: "Linking...", body: "Trying to link repository to the project."});
 		return true; // submit form
 	}
-	
+
     AJS.$("#aui-message-bar").empty();
     AJS.messages.hint({ title: "Connecting...", body: "Trying to connect to the repository."});
 
@@ -100,6 +102,7 @@ function submitFunction() {
             AJS.$("#aui-message-bar").empty();
             AJS.$("#isPrivate").val(data.isPrivate);
 
+            AJS.$('#Submit').attr("disabled", "");
             if (data.validationErrors.length>0) {
             	AJS.$.each(data.validationErrors, function(i, msg){
             		AJS.messages.error({title : "Error!", body : msg});
@@ -112,6 +115,7 @@ function submitFunction() {
             AJS.messages.error({ title: "Error!", 
             	body: "The repository url [<b>" + AJS.$("#url").val() + "</b>] is incorrect or the repository is not responding." 
             });
+            AJS.$('#Submit').attr("disabled", "");
         });
     return false;
 }
