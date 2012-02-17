@@ -10,6 +10,7 @@ import com.google.common.collect.MapMaker;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -107,9 +108,9 @@ public class CachingCommunicator implements Communicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(RepositoryManager repositoryManager, SourceControlRepository repository)
+    public Iterable<Changeset> getChangesets(RepositoryManager repositoryManager, SourceControlRepository repository, Date lastCommitDate)
     {
-        return delegate.getChangesets(repositoryManager, repository);
+        return delegate.getChangesets(repositoryManager, repository, lastCommitDate);
     }
 
     @Override

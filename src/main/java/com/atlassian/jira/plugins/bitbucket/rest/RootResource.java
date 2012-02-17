@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.rest;
 
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
@@ -20,8 +19,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -139,8 +149,7 @@ public class RootResource
             synchronizer.synchronize(repository);
         } else
         {
-            List<Changeset> changesets = globalRepositoryManager.parsePayload(repository, payload);
-            synchronizer.synchronize(repository, changesets);
+            synchronizer.synchronize(repository, true);
         }
         // redirect to Repository resource - that will contain sync message/status
         UriBuilder ub = uriInfo.getBaseUriBuilder();

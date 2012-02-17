@@ -1,8 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket;
 
-import java.util.List;
 
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 
@@ -25,7 +23,7 @@ public interface Synchronizer
      * @param repositoryUrl the uri of the repository to synchronize
      * @param changesets the changesets to synchronize
      */
-    public void synchronize(SourceControlRepository repository, List<Changeset> changesets);
+    public void synchronize(SourceControlRepository repository, boolean softSync);
     
     /**
      * Get the progress of a sync being executed for given repository

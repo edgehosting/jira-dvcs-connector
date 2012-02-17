@@ -3,8 +3,16 @@ package com.atlassian.jira.plugins.bitbucket.bitbucket;
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
-import com.atlassian.jira.plugins.bitbucket.api.*;
-import com.atlassian.jira.plugins.bitbucket.spi.*;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.Progress;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
+import com.atlassian.jira.plugins.bitbucket.spi.DefaultSynchronisationOperation;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryUri;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +64,7 @@ public class TestDefaultSynchronizer
         SynchronisationOperation synchronisation = new DefaultSynchronisationOperation(key, repositoryManager, bitbucket, progressProvider, issueManager);
         when(repositoryManager.getSynchronisationOperation(any(SynchronizationKey.class), any(ProgressWriter.class))).thenReturn(
             synchronisation);
-        when(bitbucket.getChangesets(repositoryManager, repository)).thenReturn(Arrays.asList(changeset));
+        when(bitbucket.getChangesets(repositoryManager, repository, null)).thenReturn(Arrays.asList(changeset));
         when(changeset.getMessage()).thenReturn("PRJ-1 Message");
         when(issueManager.getIssueObject(anyString())).thenReturn(someIssue);
 

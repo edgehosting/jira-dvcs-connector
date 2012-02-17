@@ -1,19 +1,17 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.rest.RootResource;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.List;
 
 /**
  * Webwork action used to recieve the callback hook from github
@@ -68,8 +66,7 @@ public class GithubPostCommit extends JiraWebActionSupport
             {
                 if (repo.getRepositoryUri().getRepositoryUrl().equals(baseRepositoryURL))
                 {
-                    List<Changeset> changesets = globalRepositoryManager.parsePayload(repo, payload);
-                    synchronizer.synchronize(repo, changesets);
+                    synchronizer.synchronize(repo, true);
                 }
             }
         }        
