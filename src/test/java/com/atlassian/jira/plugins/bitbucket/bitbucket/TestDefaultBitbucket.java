@@ -1,21 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
@@ -31,6 +15,21 @@ import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.ResponseException;
 import com.google.common.collect.Iterables;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.IOUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link com.atlassian.jira.plugins.bitbucket.spi.Communicator}
@@ -93,7 +92,7 @@ public class TestDefaultBitbucket
         
         BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory));
 
-        final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator, repository);
+        final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator, repository, null);
         Iterable<Changeset> iterable = new Iterable<Changeset>()
         {
             @Override
@@ -117,7 +116,7 @@ public class TestDefaultBitbucket
         
         BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory));
         final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator,
-                repository);
+                repository, null);
 
         for (int i = 0; i < 15; i++)
         {

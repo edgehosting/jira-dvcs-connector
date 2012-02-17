@@ -32,6 +32,6 @@ public interface ProjectMapping extends Entity
     void setAdminPassword(String pasword);
     void setAdminUsername(String username);
     void setAccessToken(String accessToken);
-    void setLastCommitDate(Date lastSyncDate);
+    void setLastCommitDate(Date lastCommitDate);
 
 }

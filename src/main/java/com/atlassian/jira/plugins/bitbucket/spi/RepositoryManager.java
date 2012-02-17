@@ -1,7 +1,11 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.api.*;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 
 import java.util.Date;
@@ -87,15 +91,6 @@ public interface RepositoryManager
      * @return
      */
     public SynchronisationOperation getSynchronisationOperation(SynchronizationKey key, ProgressWriter progress);
-
-    /**
-     * Parses the given json string into changesets
-     *
-     * @param repository
-     * @param payload
-     * @return
-     */
-    public List<Changeset> parsePayload(SourceControlRepository repository, String payload);
 
     /**
      * @param repository

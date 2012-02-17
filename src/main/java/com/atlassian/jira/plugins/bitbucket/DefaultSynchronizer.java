@@ -1,14 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket;
 
-import java.util.List;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
@@ -16,6 +7,12 @@ import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
 import com.google.common.base.Function;
 import com.google.common.collect.MapMaker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Synchronization services
@@ -83,9 +80,9 @@ public class DefaultSynchronizer implements Synchronizer
     }
 
     @Override
-    public void synchronize(SourceControlRepository repository, List<Changeset> changesets)
+    public void synchronize(SourceControlRepository repository, boolean softSync)
     {
-        operations.get(new SynchronizationKey(repository, changesets));
+        operations.get(new SynchronizationKey(repository, softSync));
     }
 
     @Override

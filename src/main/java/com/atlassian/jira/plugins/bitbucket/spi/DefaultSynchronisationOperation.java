@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -40,48 +41,44 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     @Override
     public void synchronise()
     {
-        if (key.getChangesets() == null)
-        {
-            // we are doing full sync, lets delete all existing changesets
-            repositoryManager.removeAllChangesets(key.getRepository().getId());
-        }
 
-        Iterable<Changeset> changesets = getChangsetsIterator();
+        final SourceControlRepository repository = key.getRepository();
+
         Date lastCommitDate = null;
-        if (key.getChangesets() == null)
+        if (key.isSoftSync())
         {
-            // we are doing full synchronisation (maybe we should delete all
-            // issueMappings)
-            repositoryManager.setLastCommitDate(key.getRepository(), null);
+            lastCommitDate = repositoryManager.getLastCommitDate(repository);
         } else
         {
-            lastCommitDate = repositoryManager.getLastCommitDate(key.getRepository());
+            // we are doing full sync, lets delete all existing changesets
+            repositoryManager.removeAllChangesets(repository.getId());
+            repositoryManager.setLastCommitDate(repository, null);
         }
 
         int changesetCount = 0;
         int jiraCount = 0;
         int synchroErrorCount = 0;
 
-        for (Changeset changeset : changesets)
+        for (Changeset changeset : communicator.getChangesets(repositoryManager, repository, lastCommitDate))
         {
             if (lastCommitDate == null || lastCommitDate.before(changeset.getTimestamp()))
             {
                 lastCommitDate = changeset.getTimestamp();
-                repositoryManager.setLastCommitDate(key.getRepository(), lastCommitDate);
+                repositoryManager.setLastCommitDate(repository, lastCommitDate);
             }
             changesetCount++;
             String message = changeset.getMessage();
             log.debug("syncing changeset [{}] [{}]", changeset.getNode(), changeset.getMessage());
-            if (message.contains(key.getRepository().getProjectKey()))
+            if (message.contains(repository.getProjectKey()))
             {
-                Set<String> extractedIssues = extractProjectKey(key.getRepository().getProjectKey(), message);
+                Set<String> extractedIssues = extractProjectKey(repository.getProjectKey(), message);
                 // get detial changeset because in this response is not information about files
                 Changeset detailChangeset = null;
                 if (CollectionUtils.isNotEmpty(extractedIssues))
                 {
                     try
                     {
-                        detailChangeset = repositoryManager.getChangeset(key.getRepository(), changeset);
+                        detailChangeset = repositoryManager.getChangeset(repository, changeset);
                     } catch (Exception e)
                     {
                         log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
@@ -93,7 +90,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                         String issueId = extractedIssue.toUpperCase();
                         try
                         {
-                            repositoryManager.addChangeset(key.getRepository(), issueId, detailChangeset == null ? changeset : detailChangeset);
+                            repositoryManager.addChangeset(repository, issueId, detailChangeset == null ? changeset : detailChangeset);
                         } catch (SourceControlException e)
                         {
                             log.error("Error adding changeset " + changeset, e);
@@ -124,16 +121,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             }
         }
         return matches;
-    }
-
-    public Iterable<Changeset> getChangsetsIterator()
-    {
-        log.debug("synchronize [ {} ] with [ {} ]", key.getRepository().getProjectKey(),
-                key.getRepository().getRepositoryUri().getRepositoryUrl());
-
-        
-        Iterable<Changeset> changesets = key.getChangesets() == null ? communicator.getChangesets(repositoryManager, key.getRepository()) : key.getChangesets();
-        return changesets;
     }
 
 }
