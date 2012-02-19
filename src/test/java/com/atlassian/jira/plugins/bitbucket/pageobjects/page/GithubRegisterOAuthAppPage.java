@@ -45,7 +45,7 @@ public class GithubRegisterOAuthAppPage implements Page
     {
         PageElement showPopupBtn = bodyElm.find(By.className("minibutton"));
         showPopupBtn.click();
-        PageElement confirmBtn = bodyElm.find(By.id("facebox")).find(By.name("commit"));
+        PageElement confirmBtn = bodyElm.find(By.id("facebox")).find(By.className("danger"));
         confirmBtn.click();
     }
 }
