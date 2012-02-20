@@ -1,39 +1,47 @@
 package com.atlassian.jira.plugins.bitbucket.api;
 
-import java.util.List;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  * Uniquely identify a synchronization operation
  */
 public class SynchronizationKey
 {
-    private final List<Changeset> changesets;
 	private final SourceControlRepository repository;
-
-    public SynchronizationKey(SourceControlRepository repository, List<Changeset> changesets)
-    {
-        this.repository = repository;
-        this.changesets = changesets;
-    }
+	private final boolean softSync; // only sync commits since last sync date
 
     public SynchronizationKey(SourceControlRepository repository)
     {
         this.repository = repository;
-        changesets = null;
+        this.softSync = false;
+    }
+
+    public SynchronizationKey(SourceControlRepository repository, boolean softSync)
+    {
+        this.repository = repository;
+        this.softSync = softSync;
     }
 
     public SourceControlRepository getRepository()
 	{
 		return repository;
 	}
+    public boolean isSoftSync()
+    {
+        return softSync;
+    }
 
+    public boolean matches(SourceControlRepository repository)
+    {
+        return this.repository.equals(repository);
+    }
 	@Override
     public boolean equals(Object o)
     {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SynchronizationKey that = (SynchronizationKey) o;
-        if (changesets != null ? !changesets.equals(that.changesets) : that.changesets != null) return false;
+        if (softSync != that.softSync) return false;
         if (!repository.equals(that.repository)) return false;
         return true;
     }
@@ -41,18 +49,8 @@ public class SynchronizationKey
     @Override
     public int hashCode()
     {
-        int result = repository.hashCode();
-        result = 31 * result + (changesets != null ? changesets.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder().append(softSync).append(repository).hashCode();
     }
 
-    public List<Changeset> getChangesets()
-    {
-        return changesets;
-    }
 
-    public boolean matches(SourceControlRepository repository)
-    {
-        return this.repository.equals(repository);
-    }
 }

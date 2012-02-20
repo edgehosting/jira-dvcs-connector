@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
@@ -93,7 +92,7 @@ public class TestDefaultBitbucket
         
         BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory));
 
-        final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator, repository);
+        final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator, repository, null);
         Iterable<Changeset> iterable = new Iterable<Changeset>()
         {
             @Override
@@ -117,7 +116,7 @@ public class TestDefaultBitbucket
         
         BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory));
         final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator,
-                repository);
+                repository, null);
 
         for (int i = 0; i < 15; i++)
         {

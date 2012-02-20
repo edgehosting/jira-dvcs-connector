@@ -4,6 +4,7 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -19,11 +20,13 @@ public class GithubChangesetIterator implements Iterator<Changeset>
     private SourceControlRepository repository;
 
     private Changeset nextChangeset = null;
+    private Date lastCommitDate;
 
-    public GithubChangesetIterator(GithubRepositoryManager repositoryManager, GithubCommunicator githubCommunicator, SourceControlRepository repository, List<String> branches)
+    public GithubChangesetIterator(GithubRepositoryManager repositoryManager, GithubCommunicator githubCommunicator, SourceControlRepository repository, List<String> branches, Date lastCommitDate)
     {
         this.githubRepositoryManager = repositoryManager;
         this.repository = repository;
+		this.lastCommitDate = lastCommitDate;
 
         branchesIterator = new BranchesIterator(branches, githubCommunicator, repository);
         pagesIterator = branchesIterator.next();
@@ -35,7 +38,7 @@ public class GithubChangesetIterator implements Iterator<Changeset>
         if (hasNext)
         {
             nextChangeset = internalNext();
-            if (githubRepositoryManager.wasChangesetAlreadySynchronized(repository.getId(), nextChangeset.getNode()))
+            if (shoudStopBranchIteration())
             {
                 inPageChangesetsIterator = Collections.<Changeset>emptyList().listIterator();
                 pagesIterator.stop();
@@ -44,6 +47,13 @@ public class GithubChangesetIterator implements Iterator<Changeset>
 
         }
         return hasNext;
+    }
+
+    private boolean shoudStopBranchIteration()
+    {
+        boolean changesetOlderThanLastCommitDate = lastCommitDate != null && lastCommitDate.after(nextChangeset.getTimestamp());
+        boolean changesetAlreadySynchronized = githubRepositoryManager.wasChangesetAlreadySynchronized(repository.getId(), nextChangeset.getNode());
+        return changesetOlderThanLastCommitDate || changesetAlreadySynchronized;
     }
 
     private Changeset internalNext() {
@@ -104,10 +114,12 @@ class PagesIterator implements Iterator<ListIterator<Changeset>>
     @Override
     public boolean hasNext()
     {
-        if (stoped) {
+        if (stoped) 
+		{
             return false;
         }
-        if (index < currentPageNumber) {
+        if (index < currentPageNumber) 
+		{
             return containsChangesets();
         }
         currentPageNumber++;
@@ -115,7 +127,8 @@ class PagesIterator implements Iterator<ListIterator<Changeset>>
         return containsChangesets();
     }
 
-    private boolean containsChangesets() {
+    private boolean containsChangesets() 
+	{
         return changesets != null && !changesets.isEmpty();
     }
 
@@ -138,7 +151,8 @@ class PagesIterator implements Iterator<ListIterator<Changeset>>
         throw new UnsupportedOperationException();
     }
 
-    public void stop() {
+    public void stop() 
+	{
         this.stoped = true;
     }
 }
