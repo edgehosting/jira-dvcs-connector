@@ -15,3 +15,10 @@ Changes:<br>
         </li>
     #end
 </ul>
+
+ #if ( $changeset.getAllFileCount() gt $max_visible_files )
+ #set ( $rest = $changeset.getAllFileCount() - $max_visible_files )
+	<a href="$commit_url" target="_new" class="CommitRowsMore">
+		<div class="CommitRows">... $rest more files not shown</div>
+	</a>
+ #end

@@ -26,6 +26,9 @@ public class DashboardActivityStreamsPage implements Page
     @ElementBy(id = "filter-icon")
     private PageElement filterIconElm;
 
+    @ElementBy(className = "CommitRowsMore")
+    private PageElement moreFilesLink;
+
     @Override
     public String getUrl()
     {
@@ -41,6 +44,11 @@ public class DashboardActivityStreamsPage implements Page
     public boolean isActivityStreamsGadgetVisible()
     {
         return activityStreamsGadgetTitleElm.isVisible();
+    }
+
+    public boolean isMoreFilesLinkVisible()
+    {
+    	return moreFilesLink.isVisible();
     }
 
     public void checkIssueActivityPresentedForQA5()

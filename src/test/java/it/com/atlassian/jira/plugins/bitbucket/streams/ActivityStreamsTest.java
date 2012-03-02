@@ -46,6 +46,8 @@ public class ActivityStreamsTest
     private void setupAnonymousAccessAllowed()
     {
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + "/secure/admin/AddPermission!default.jspa?schemeId=0&permissions=10");
+        jira.getTester().getDriver().waitUntilElementIsVisible(By.id("type_group"));
+        jira.getTester().getDriver().waitUntilElementIsVisible(By.id("add_submit"));
         jira.getTester().getDriver().findElement(By.id("type_group")).setSelected();
         jira.getTester().getDriver().findElement(By.id("add_submit")).click();
     }
@@ -54,6 +56,7 @@ public class ActivityStreamsTest
     private void setupAnonymousAccessForbidden()
     {
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + "/secure/admin/EditPermissions!default.jspa?schemeId=0");
+        jira.getTester().getDriver().waitUntilElementIsVisible(By.id("del_perm_10_"));
         jira.getTester().getDriver().findElement(By.id("del_perm_10_")).click();
         jira.getTester().getDriver().waitUntilElementIsVisible(By.id("delete_submit"));
         jira.getTester().getDriver().findElement(By.id("delete_submit")).click();
@@ -94,12 +97,14 @@ public class ActivityStreamsTest
         jira.getTester().gotoUrl(iframeSrc);
         bindPageAndSetJira();
 
+        Assert.assertTrue("Activity streams should contain at least one changeset with 'more files' link.", page.isMoreFilesLinkVisible());
         page.checkIssueActivityPresentedForQA5();
 
         page.setIssueKeyFilter("qa-4");
         bindPageAndSetJira();
 
-        page.checkIssueActivityNotPresentedForQA5();
+        // because commit contains both keys QA-4 and QA-5, so should be present on both issues' commit tabs
+        page.checkIssueActivityPresentedForQA5();
 
         page.setIssueKeyFilter("qa-5");
         bindPageAndSetJira();
