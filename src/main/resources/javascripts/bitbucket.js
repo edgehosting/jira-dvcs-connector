@@ -113,7 +113,7 @@ function submitFunction() {
     	}).error(function(a) {
             AJS.$("#aui-message-bar").empty();
             AJS.messages.error({ title: "Error!", 
-            	body: "The repository url [<b>" + AJS.$("#url").val() + "</b>] is incorrect or the repository is not responding." 
+            	body: "The repository url [<b>" + AJS.escapeHtml(AJS.$("#url").val()) + "</b>] is incorrect or the repository is not responding." 
             });
             AJS.$('#Submit').attr("disabled", "");
         });
