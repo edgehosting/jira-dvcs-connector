@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
+import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.velocity.VelocityUtils;
 import com.atlassian.jira.project.Project;
@@ -92,6 +93,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
         final String author = changeset.getAuthor();
         final SourceControlRepository repo = globalRepositoryManager.getRepository(changeset.getRepositoryId());
+        final String changeSetCommitUrl = repo.getRepositoryUri().getCommitUrl(changeset.getNode());
 
         StreamsEntry.Renderer renderer = new StreamsEntry.Renderer()
         {
@@ -103,7 +105,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 templateMap.put("user_name", changeset.getRawAuthor());
                 templateMap.put("login", author);
                 templateMap.put("user_url", repo.getRepositoryUri().getUserUrl(CustomStringUtils.encodeUriPath(author)));
-                templateMap.put("commit_url", repo.getRepositoryUri().getCommitUrl(changeset.getNode()));
+				templateMap.put("commit_url", changeSetCommitUrl);
 
                 StringWriter sw = new StringWriter();
                 try
@@ -129,6 +131,8 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 templateMap.put("issue_linker", issueLinker);
                 templateMap.put("changeset", changeset);
                 templateMap.put("repository", globalRepositoryManager.getRepository(changeset.getRepositoryId()));
+                templateMap.put("commit_url", changeSetCommitUrl);
+                templateMap.put("max_visible_files", DvcsRepositoryManager.MAX_VISIBLE_FILES);
 
                 StringWriter sw = new StringWriter();
                 try
