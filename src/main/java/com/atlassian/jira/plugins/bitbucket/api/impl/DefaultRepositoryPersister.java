@@ -277,7 +277,8 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             sb.append(")");
         } else
         {
-            sb.append(" AND FALSE ");
+        	// disable result data if project has no repository assigned
+            sb.append(" AND 1 = 2 "); 
         }
         return sb.toString();
     }
