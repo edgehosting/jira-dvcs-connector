@@ -185,9 +185,13 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         gf.setNotInIssues(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey())));
         log.debug("GlobalFilter: " + gf);
 
-        Iterable<Changeset> changesetEntries = globalRepositoryManager.getLatestChangesets(activityRequest.getMaxResults(), gf);
-        log.debug("Found changeset entries: " + changesetEntries);
-        Iterable<StreamsEntry> streamEntries = transformEntries(changesetEntries);
+        Iterable<StreamsEntry> streamEntries = new ArrayList<StreamsEntry>();
+        if (gf.getInProjects() != null && gf.getInProjects().iterator().hasNext())
+        {
+	        Iterable<Changeset> changesetEntries = globalRepositoryManager.getLatestChangesets(activityRequest.getMaxResults(), gf);
+	        log.debug("Found changeset entries: " + changesetEntries);
+	        streamEntries = transformEntries(changesetEntries);
+        }
         return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
     }
 
