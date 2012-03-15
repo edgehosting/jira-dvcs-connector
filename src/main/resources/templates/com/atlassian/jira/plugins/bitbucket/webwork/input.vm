@@ -37,7 +37,7 @@
             </p>
         #else
             <p style="margin: 16px 0 0;">
-                Connect your <a href="http://confluence.atlassian.com/display/BITBUCKET/Using+the+DVCS+Connector+Plugin" target="_blank">Bitbucket and GitHub repo to JIRA</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.
+                Connect your <a href="http://confluence.atlassian.com/display/BITBUCKET/Using+the+JIRA+DVCS+Connector+Plugin" target="_blank">Bitbucket and GitHub repo to JIRA</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.
             </p>
         #end
         <br/>
