@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-plugin</artifactId>
-    <version>0.15.8</version>
+    <version>0.15.9-SNAPSHOT</version>
 
     <organization>
         <name>Atlassian</name>
