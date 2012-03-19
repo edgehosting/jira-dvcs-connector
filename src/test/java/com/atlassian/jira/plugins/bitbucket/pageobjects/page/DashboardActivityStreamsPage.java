@@ -70,7 +70,8 @@ public class DashboardActivityStreamsPage implements Page
     {
         showFilter();
 
-        WebElement addFilterLinkElm = this. jira.getTester().getDriver().findElement(By.className("add-filter-link"));
+        WebElement addFilterLinkElm = jira.getTester().getDriver().findElement(By.className("add-filter-link"));
+        jira.getTester().getDriver().waitUntilElementIsVisible(By.className("add-filter-link"));
         addFilterLinkElm.click();
 
         WebElement ruleSelectkElm = jira.getTester().getDriver().findElement(By.className("rule"));
