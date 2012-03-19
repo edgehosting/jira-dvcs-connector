@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.component;
 
+import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.components.ActivatedComponent;
 import com.atlassian.pageobjects.elements.ElementBy;
@@ -15,9 +16,9 @@ import java.util.List;
 /**
  * Represents the BitBucket panel in the view issue page
  */
-public class BitBucketIssuePanel implements ActivatedComponent<BitBucketIssuePanel>
+public class BitBucketIssuePanel implements ActivatedComponent<BitBucketIssuePanel>, Page
 {
-    @Inject
+	@Inject
     PageBinder pageBinder;
 
     @ElementBy(id="bitbucket-commits-tabpanel")
@@ -26,6 +27,13 @@ public class BitBucketIssuePanel implements ActivatedComponent<BitBucketIssuePan
     @ElementBy(id="issue_actions_container")
     PageElement view;
 
+	private final String commitsUrl;
+
+    public BitBucketIssuePanel(String commitsUrl)
+	{
+		this.commitsUrl = commitsUrl;
+	}
+    
     public PageElement getTrigger()
     {
         return trigger;
@@ -69,4 +77,10 @@ public class BitBucketIssuePanel implements ActivatedComponent<BitBucketIssuePan
 
         return commitMessageList;
     }
+    @Override
+   	public String getUrl()
+   	{
+   		// TODO Auto-generated method stub
+   		return commitsUrl;
+   	}
 }

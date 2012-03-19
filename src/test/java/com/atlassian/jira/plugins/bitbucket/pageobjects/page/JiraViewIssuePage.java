@@ -1,10 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.page;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketIssuePanel;
+import javax.inject.Inject;
+
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
-
-import javax.inject.Inject;
+import com.atlassian.pageobjects.elements.ElementBy;
+import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.query.Poller;
 
 /**
  * Represents the JIRA view issue page
@@ -13,6 +15,9 @@ public class JiraViewIssuePage implements Page
 {
     @Inject
     PageBinder pageBinder;
+    
+    @ElementBy(id="bitbucket-commits-tabpanel")
+    PageElement trigger;
 
     private final String issueKey;
 
@@ -26,12 +31,14 @@ public class JiraViewIssuePage implements Page
         return "/browse/" + issueKey;
     }
 
-    /**
-     * Opens the bitbucket panel
-     * @return BitBucketIssuePanel
-     */
-    public BitBucketIssuePanel openBitBucketPanel()
+    public String getBitBucketPanelUrl()
     {
-        return pageBinder.bind(BitBucketIssuePanel.class).open();
+    	Poller.waitUntilTrue(trigger.timed().isVisible());
+    	String attributeHref = trigger.getAttribute("href");
+    	String url = null;
+    	if(attributeHref != null) {
+    		url = attributeHref.replaceAll("/jira", "");
+    	}
+    	return url;
     }
 }

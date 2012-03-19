@@ -1,6 +1,7 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketIssuePanel;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BaseConfigureRepositoriesPage;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.JiraViewIssuePage;
@@ -73,9 +74,12 @@ public abstract class BitBucketBaseTest
 
     protected List<BitBucketCommitEntry> getCommitsForIssue(String issueKey)
     {
-        return jira.visit(JiraViewIssuePage.class, issueKey)
-                .openBitBucketPanel()
-                .waitForMessages();
+        String bitBucketPanelUrl = jira.visit(JiraViewIssuePage.class, issueKey).getBitBucketPanelUrl();
+        if (bitBucketPanelUrl != null) {
+        	return jira.visit(BitBucketIssuePanel.class, bitBucketPanelUrl).waitForMessages();
+        } else {
+        	return jira.getPageBinder().bind(BitBucketIssuePanel.class, bitBucketPanelUrl).waitForMessages();
+        }
     }
 
     protected GithubOAuthConfigPage goToGithubOAuthConfigPage()
