@@ -50,20 +50,21 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
         GithubLoginPage ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
         ghLoginPage.doLogin();
 
+        // find out secrets
         jira.getTester().gotoUrl(GithubRegisterOAuthAppPage.PAGE_URL);
         GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
         String oauthAppName = "testApp" + System.currentTimeMillis();
         String baseUrl = jira.getProductInstance().getBaseUrl();
         registerAppPage.registerApp(oauthAppName, baseUrl, baseUrl);
+        clientID = registerAppPage.getClientId().getText();
+        clientSecret = registerAppPage.getClientSecret().getText();
 
+        // find out app URL
         jira.getTester().gotoUrl(GithubRegisteredOAuthAppsPage.PAGE_URL);
         GithubRegisteredOAuthAppsPage registeredOAuthAppsPage = jira.getPageBinder().bind(GithubRegisteredOAuthAppsPage.class);
         registeredOAuthAppsPage.parseClientIdAndSecret(oauthAppName);
-        clientID = registeredOAuthAppsPage.getClientID();
-        clientSecret = registeredOAuthAppsPage.getClientSecret();
         oauthAppLink = registeredOAuthAppsPage.getOauthAppUrl();
         jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
-
         jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
 
 
@@ -77,12 +78,12 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
     @AfterClass
     public static void deregisterAppToGithub()
     {
-        jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
+       /* jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
 
         jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
         GithubLoginPage ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
         ghLoginPage.doLogin();
-
+*/
 
         jira.getTester().gotoUrl(oauthAppLink);
         GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
