@@ -1,5 +1,21 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import net.java.ao.Query;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -17,19 +33,6 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import net.java.ao.Query;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
@@ -60,7 +63,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister
     }
 
     @Override
-    public ProjectMapping addRepository(String repositoryName, String repositoryType, String projectKey, String repositoryUrl, 
+    public ProjectMapping addRepository(String repositoryName, String repositoryType, String projectKey, String repositoryUrl,
         String adminUsername, String adminPassword, String accessToken)
     {
         if (findRepositories(projectKey, repositoryUrl).length > 0)
@@ -145,8 +148,13 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             @Override
             public List<IssueMapping> doInTransaction()
             {
+            	Set<Integer> projectMappings = getProjectMappingsForRepositoryType(repositoryType);
+            	if (CollectionUtils.isEmpty(projectMappings)) {
+            		return new ArrayList<IssueMapping>();
+            	}
+
                 String baseWhereClause = IssueMapping.ISSUE_ID + " = '" + issueId + "'";
-                String repositoryIdsFilteringWhereClause = getRepositoryIdsFilteringWhereClause(repositoryType);
+                String repositoryIdsFilteringWhereClause = getRepositoryIdsFilteringWhereClause(projectMappings);
                 Query query = Query.select().where(baseWhereClause + repositoryIdsFilteringWhereClause);
 
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class, query);
@@ -257,8 +265,13 @@ public class DefaultRepositoryPersister implements RepositoryPersister
             @Override
             public List<IssueMapping> doInTransaction()
             {
+            	Set<Integer> projectMappings = getProjectMappingsForRepositoryType(repositoryType);
+            	if (CollectionUtils.isEmpty(projectMappings)) {
+            		return new ArrayList<IssueMapping>();
+            	}
+
                 String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
-                String repositoryIdsFilteringWhereClause = getRepositoryIdsFilteringWhereClause(repositoryType);
+                String repositoryIdsFilteringWhereClause = getRepositoryIdsFilteringWhereClause(projectMappings);
                 Query query = Query.select().where(baseWhereClause + repositoryIdsFilteringWhereClause).limit(count).order(IssueMapping.DATE + " DESC");
                 IssueMapping[] mappings = activeObjects.find(IssueMapping.class, query);
                 return Arrays.asList(mappings);
@@ -266,21 +279,13 @@ public class DefaultRepositoryPersister implements RepositoryPersister
         });
     }
 
-    private String getRepositoryIdsFilteringWhereClause(String repositoryType)
+    private String getRepositoryIdsFilteringWhereClause(Set<Integer> projectMappings)
     {
-        StringBuilder sb = new StringBuilder();
-        Set<Integer> ids = getProjectMappingsForRepositoryType(repositoryType);
-        if (CollectionUtils.isNotEmpty(ids))
-        {
-            sb.append(" AND \"" + IssueMapping.REPOSITORY_ID + "\" in (");
-            sb.append(StringUtils.join(ids, ","));
-            sb.append(")");
-        } else
-        {
-        	// disable result data if project has no repository assigned
-            sb.append(" AND 1 = 2 "); 
-        }
-        return sb.toString();
+		StringBuilder sb = new StringBuilder();
+		sb.append(" AND \"" + IssueMapping.REPOSITORY_ID + "\" in (");
+		sb.append(StringUtils.join(projectMappings, ","));
+		sb.append(")");
+		return sb.toString();
     }
 
     @Override
