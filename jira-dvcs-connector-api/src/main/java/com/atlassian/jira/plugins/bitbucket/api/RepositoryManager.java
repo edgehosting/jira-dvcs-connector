@@ -1,17 +1,10 @@
-package com.atlassian.jira.plugins.bitbucket.spi;
-
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import com.atlassian.jira.plugins.bitbucket.api.UrlInfo;
-import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
+package com.atlassian.jira.plugins.bitbucket.api;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+
+import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
 
 public interface RepositoryManager
 {
@@ -141,10 +134,13 @@ public interface RepositoryManager
      * Now we keep more columns (date, message, author, etc) but instead of resyncing all repositories again we use
      * lazy loading to reload old changesets only when required.
      *
-     * @param issueMapping
+     * @param repositoryId
+     * @param node
+     * @param issueId
+     * @param branch
      * @return
      */
-    public Changeset reloadChangeset(IssueMapping issueMapping);
+    public Changeset reloadChangeset(int repositoryId, String node, String issueId, String branch);
 
     public Date getLastCommitDate(SourceControlRepository repo);
 

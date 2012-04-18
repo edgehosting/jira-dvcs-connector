@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
+import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
 
 /**
  * Maps bitbucket repositories and commits to jira projects and issues.

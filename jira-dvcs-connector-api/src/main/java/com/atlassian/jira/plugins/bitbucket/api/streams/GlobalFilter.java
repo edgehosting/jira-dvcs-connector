@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.streams;
+package com.atlassian.jira.plugins.bitbucket.api.streams;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 

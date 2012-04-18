@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.bitbucket.streams;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
+
 /**
  *
  */

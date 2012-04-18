@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
+import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilterQueryWhereClauseBuilder;
 import org.junit.Assert;
 import org.junit.Test;

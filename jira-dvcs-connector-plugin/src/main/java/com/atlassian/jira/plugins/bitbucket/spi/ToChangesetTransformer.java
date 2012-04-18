@@ -1,18 +1,20 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
-import com.google.common.base.Function;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
+import com.google.common.base.Function;
 
 public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
 {
@@ -29,7 +31,7 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
     {
         if (!isLatestVersion(issueMapping))
         {
-            return repositoryManager.reloadChangeset(issueMapping);
+            return repositoryManager.reloadChangeset(issueMapping.getRepositoryId(), issueMapping.getNode(), issueMapping.getIssueId(), issueMapping.getBranch());
         }
 
         FileData fileData = parseFilesData(issueMapping.getFilesData());
@@ -112,8 +114,8 @@ public class ToChangesetTransformer implements Function<IssueMapping, Changeset>
 
     private static class FileData
     {
-        private List<ChangesetFile> files;
-        private int fileCount;
+        private final List<ChangesetFile> files;
+        private final int fileCount;
 
         FileData(List<ChangesetFile> files, int fileCount)
         {

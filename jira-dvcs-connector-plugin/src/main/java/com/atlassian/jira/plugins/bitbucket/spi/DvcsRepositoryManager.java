@@ -21,15 +21,17 @@ import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Communicator;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
+import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
 import com.atlassian.jira.plugins.bitbucket.velocity.VelocityUtils;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
@@ -250,12 +252,12 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
     @Override
-    public Changeset reloadChangeset(IssueMapping issueMapping)
+    public Changeset reloadChangeset(int repositoryId, String node, String issueId, String branch)
     {
-        ProjectMapping pm = repositoryPersister.getRepository(issueMapping.getRepositoryId());
+        ProjectMapping pm = repositoryPersister.getRepository(repositoryId);
         SourceControlRepository repository = TO_SOURCE_CONTROL_REPOSITORY.apply(pm);
-        Changeset changeset = getCommunicator().getChangeset(repository, issueMapping.getNode());
-        repositoryPersister.addChangeset(issueMapping.getIssueId(), changeset);
+        Changeset changeset = getCommunicator().getChangeset(repository, node);
+        repositoryPersister.addChangeset(issueId, changeset);
         return changeset;
     }
 

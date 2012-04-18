@@ -15,8 +15,10 @@ import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Communicator;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation

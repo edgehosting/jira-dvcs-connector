@@ -1,18 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import com.atlassian.jira.plugins.bitbucket.api.UrlInfo;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.SynchronisationOperation;
-import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,6 +7,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronisationOperation;
+import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.UrlInfo;
+import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
 
 /**
  * Aggregated Repository Manager that handles all Repository Managers based on the repository url
@@ -209,7 +208,7 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
     @Override
-    public Changeset reloadChangeset(IssueMapping issueMapping)
+    public Changeset reloadChangeset(int repositoryId, String node, String issueId, String branch)
     {
         throw new UnsupportedOperationException("This implementation should never be called.");
     }

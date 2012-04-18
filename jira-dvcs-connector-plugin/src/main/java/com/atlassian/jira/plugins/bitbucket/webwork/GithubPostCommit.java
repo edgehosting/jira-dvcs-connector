@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.rest.RootResource;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import org.apache.commons.lang.StringUtils;

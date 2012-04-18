@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Communicator;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
@@ -41,12 +40,12 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
 
 
     @Override
-    public Changeset reloadChangeset(IssueMapping issueMapping)
+    public Changeset reloadChangeset(int repositoryId, String node, String issueId, String branch)
     {
-        Changeset reloadedChangeset = super.reloadChangeset(issueMapping);
-        if (StringUtils.isNotBlank(issueMapping.getBranch()))
+        Changeset reloadedChangeset = super.reloadChangeset(repositoryId, node, issueId, branch);
+        if (StringUtils.isNotBlank(branch))
         {
-            reloadedChangeset.setBranch(issueMapping.getBranch());
+            reloadedChangeset.setBranch(branch);
         }
 
         return reloadedChangeset;
