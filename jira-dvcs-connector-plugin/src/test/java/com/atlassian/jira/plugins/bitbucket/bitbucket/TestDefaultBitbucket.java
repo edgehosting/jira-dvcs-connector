@@ -32,7 +32,7 @@ import com.atlassian.sal.api.net.ResponseException;
 import com.google.common.collect.Iterables;
 
 /**
- * Unit tests for {@link com.atlassian.jira.plugins.bitbucket.spi.Communicator}
+ * Unit tests for {@link com.atlassian.jira.plugins.bitbucket.api.Communicator}
  */
 public class TestDefaultBitbucket
 {

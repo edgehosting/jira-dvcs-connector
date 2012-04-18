@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 
 import java.util.Date;

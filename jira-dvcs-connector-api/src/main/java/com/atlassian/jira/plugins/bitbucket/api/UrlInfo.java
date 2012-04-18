@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi;
+package com.atlassian.jira.plugins.bitbucket.api;
 
 import java.util.ArrayList;
 import java.util.List;
