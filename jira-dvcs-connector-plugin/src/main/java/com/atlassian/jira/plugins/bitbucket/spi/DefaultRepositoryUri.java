@@ -3,6 +3,8 @@ package com.atlassian.jira.plugins.bitbucket.spi;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
+
 import java.text.MessageFormat;
 
 public abstract class DefaultRepositoryUri implements RepositoryUri

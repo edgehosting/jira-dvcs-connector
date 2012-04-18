@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.api;
 
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
 
 /**
  * Interface describing the repository

@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.bitbucket.spi;
 import java.util.Map;
 
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.sal.api.net.ResponseException;
 
