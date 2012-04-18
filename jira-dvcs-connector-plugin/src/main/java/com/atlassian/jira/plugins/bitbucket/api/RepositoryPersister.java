@@ -1,15 +1,16 @@
 package com.atlassian.jira.plugins.bitbucket.api;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilter;
 
-import java.util.List;
-
 /**
  * Maps bitbucket repositories and commits to jira projects and issues.
  */
-public interface RepositoryPersister {
+public interface RepositoryPersister 
+{
     /**
      * Return a list of all repository uris for the given project
      *
@@ -29,19 +30,19 @@ public interface RepositoryPersister {
 
     /**
      * Map a repository to the specified jira project
+     * 
      * @param repositoryName the name of the repository
      * @param projectKey     the jira project
      * @param repositoryUrl  the uri of the repository to map to
-     * @param username       the username to use to connect to this bitbucket repository
-     * @param password       the password to use to connect to this bitbucket repository
      * @param adminUsername  the username of repository admin - used to create/delete postcommit hook
      * @param adminPassword  the password of repository admin - used to create/delete postcommit hook
      * @param repositoryType which type of repository is it (bitbucket, github, ... )
      * @param accessToken accessToken for github OAuth
-     *
+
      * @return
      */
-    ProjectMapping addRepository(String repositoryName, String projectKey, String repositoryUrl, String adminUsername, String adminPassword, String repositoryType, String accessToken);
+    ProjectMapping addRepository(String repositoryName, String projectKey, String repositoryUrl, String adminUsername,
+        String adminPassword, String repositoryType, String accessToken);
 
     /**
      * Remove the mapping of the bibucket repository from the specified jira project
@@ -84,8 +85,16 @@ public interface RepositoryPersister {
      */
     public IssueMapping getIssueMapping(int repositoryId, String node);
 
+    /**
+     * @param projectKey
+     * @param repositoryUrl
+     * @return
+     */
     public ProjectMapping[] findRepositories(String projectKey, String repositoryUrl);
 
+    /**
+     * @param repositoryId
+     */
     public void removeAllIssueMappings(int repositoryId);
 
 }

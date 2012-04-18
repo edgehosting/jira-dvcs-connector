@@ -1,30 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import com.atlassian.jira.plugins.bitbucket.api.Authentication;
-import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
-import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
-import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
-import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
-import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
-import com.atlassian.jira.plugins.bitbucket.spi.github.GithubChangesetFactory;
-import com.atlassian.jira.plugins.bitbucket.spi.github.GithubUserFactory;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
-import com.atlassian.sal.api.net.ResponseException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,18 +9,46 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.bitbucket.api.Authentication;
+import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetCache;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
+import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
+import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
+import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
+import com.atlassian.jira.plugins.bitbucket.spi.github.GithubChangesetFactory;
+import com.atlassian.jira.plugins.bitbucket.spi.github.GithubUserFactory;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
+import com.atlassian.sal.api.net.ResponseException;
+
 public class GithubCommunicator implements Communicator
 {
     private final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
 
-    private GithubRepositoryManager githubRepositoryManager;
     private final AuthenticationFactory authenticationFactory;
     private final RequestHelper requestHelper;
 
-    public GithubCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper)
+    private final ChangesetCache changesetCache;
+
+    public GithubCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper, ChangesetCache changesetCache )
     {
         this.authenticationFactory = authenticationFactory;
         this.requestHelper = requestHelper;
+        this.changesetCache = changesetCache;
     }
 
     @Override
@@ -220,7 +223,7 @@ public class GithubCommunicator implements Communicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(final RepositoryManager repositoryManager, final SourceControlRepository repository, final Date lastCommitDate)
+    public Iterable<Changeset> getChangesets(final SourceControlRepository repository, final Date lastCommitDate)
     {
         return new Iterable<Changeset>()
         {
@@ -228,7 +231,7 @@ public class GithubCommunicator implements Communicator
             public Iterator<Changeset> iterator()
             {
                 List<String> branches = getBranches(repository);
-                return new GithubChangesetIterator((GithubRepositoryManager) repositoryManager, GithubCommunicator.this, repository, branches, lastCommitDate);
+                return new GithubChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches, lastCommitDate);
             }
         };
     }
@@ -284,7 +287,6 @@ public class GithubCommunicator implements Communicator
     public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
                                     String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
-
         Authentication auth;
         if (StringUtils.isNotBlank(accessToken))
         {

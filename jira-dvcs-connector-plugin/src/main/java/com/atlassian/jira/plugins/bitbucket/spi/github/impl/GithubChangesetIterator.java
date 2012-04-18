@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -10,28 +7,34 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ChangesetCache;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+
 public class GithubChangesetIterator implements Iterator<Changeset>
 {
     private ListIterator<Changeset> inPageChangesetsIterator = Collections.<Changeset>emptyList().listIterator();
     private PagesIterator pagesIterator;
 
-    private BranchesIterator branchesIterator;
-    private GithubRepositoryManager githubRepositoryManager;
-    private SourceControlRepository repository;
+    private final BranchesIterator branchesIterator;
+    private final SourceControlRepository repository;
 
     private Changeset nextChangeset = null;
-    private Date lastCommitDate;
+    private final Date lastCommitDate;
+    private final ChangesetCache changesetCache;
 
-    public GithubChangesetIterator(GithubRepositoryManager repositoryManager, GithubCommunicator githubCommunicator, SourceControlRepository repository, List<String> branches, Date lastCommitDate)
+    public GithubChangesetIterator(ChangesetCache changesetCache, GithubCommunicator githubCommunicator,
+        SourceControlRepository repository, List<String> branches, Date lastCommitDate)
     {
-        this.githubRepositoryManager = repositoryManager;
+        this.changesetCache = changesetCache;
         this.repository = repository;
-		this.lastCommitDate = lastCommitDate;
+        this.lastCommitDate = lastCommitDate;
 
         branchesIterator = new BranchesIterator(branches, githubCommunicator, repository);
         pagesIterator = branchesIterator.next();
     }
 
+    @Override
     public boolean hasNext()
     {
         final boolean hasNext = inPageChangesetsIterator.hasNext() || (pagesIterator != null && pagesIterator.hasNext()) || branchesIterator.hasNext();
@@ -52,10 +55,10 @@ public class GithubChangesetIterator implements Iterator<Changeset>
     private boolean shoudStopBranchIteration()
     {
         boolean changesetOlderThanLastCommitDate = lastCommitDate != null && lastCommitDate.after(nextChangeset.getTimestamp());
-        boolean changesetAlreadySynchronized = githubRepositoryManager.wasChangesetAlreadySynchronized(repository.getId(), nextChangeset.getNode());
+        boolean changesetAlreadySynchronized = changesetCache.isChangesetInDB(repository.getId(), nextChangeset.getNode());
         return changesetOlderThanLastCommitDate || changesetAlreadySynchronized;
     }
-
+ 
     private Changeset internalNext() {
         if (inPageChangesetsIterator.hasNext())
         {
@@ -74,6 +77,7 @@ public class GithubChangesetIterator implements Iterator<Changeset>
 
     }
 
+    @Override
     public Changeset next()
     {
         if (nextChangeset == null)
@@ -86,6 +90,7 @@ public class GithubChangesetIterator implements Iterator<Changeset>
         return changeset;
     }
 
+    @Override
     public void remove()
     {
         throw new UnsupportedOperationException();
@@ -95,12 +100,12 @@ public class GithubChangesetIterator implements Iterator<Changeset>
 class PagesIterator implements Iterator<ListIterator<Changeset>>
 {
 
-    private GithubCommunicator githubCommunicator;
-    private SourceControlRepository repository;
+    private final GithubCommunicator githubCommunicator;
+    private final SourceControlRepository repository;
 
     private int index = 0;
     private int currentPageNumber = 0;   // github gives us pages indexed from 1 (zero is one before)
-    private String branch;
+    private final String branch;
     private List<Changeset> changesets;
     private boolean stoped = false;
 
@@ -161,8 +166,8 @@ class BranchesIterator implements Iterator<PagesIterator>
 {
 
     private ListIterator<String> branchNamesIterator = Collections.<String>emptyList().listIterator();
-    private GithubCommunicator githubCommunicator;
-    private SourceControlRepository repository;
+    private final GithubCommunicator githubCommunicator;
+    private final SourceControlRepository repository;
 
     BranchesIterator(List<String> branches, GithubCommunicator githubCommunicator, SourceControlRepository repository)
     {

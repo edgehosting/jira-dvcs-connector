@@ -17,6 +17,7 @@
             <bean class="com.atlassian.jira.plugins.bitbucket.spi.github.impl.GithubCommunicator">
                 <constructor-arg ref="authenticationFactory"/>
                 <constructor-arg ref="requestHelper"/>
+                <constructor-arg ref="repositoryPersister"/>
             </bean>
         </constructor-arg>
     </bean>

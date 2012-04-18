@@ -1,5 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
@@ -8,12 +15,6 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A {@link com.atlassian.jira.plugins.bitbucket.spi.Communicator} implementation that caches results for quicker subsequent lookup times
@@ -109,9 +110,9 @@ public class CachingCommunicator implements Communicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(RepositoryManager repositoryManager, SourceControlRepository repository, Date lastCommitDate)
+    public Iterable<Changeset> getChangesets(SourceControlRepository repository, Date lastCommitDate)
     {
-        return delegate.getChangesets(repositoryManager, repository, lastCommitDate);
+        return delegate.getChangesets(repository, lastCommitDate);
     }
 
     @Override

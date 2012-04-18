@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import java.util.Date;
+
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
-
-import java.util.Date;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
@@ -48,12 +48,11 @@ public interface Communicator
 
     /**
      *
-     * @param repositoryManager
      * @param repository
 	 * @param lastCommitDate
      * @return
      */
-    public Iterable<Changeset> getChangesets(RepositoryManager repositoryManager, SourceControlRepository repository, Date lastCommitDate);
+    public Iterable<Changeset> getChangesets(SourceControlRepository repository, Date lastCommitDate);
 
     /**
      * @param repositoryUri

@@ -52,6 +52,7 @@
     <component key="repositoryPersister" name="Repository Persister"
                class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister">
         <description>A Service for storing data in ActiveObjects</description>
+        <interface>com.atlassian.jira.plugins.bitbucket.api.ChangesetCache</interface>
         <interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister</interface>
     </component>
 

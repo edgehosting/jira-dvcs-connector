@@ -1,5 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
@@ -14,17 +22,10 @@ import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 public class GithubRepositoryManager extends DvcsRepositoryManager
 {
-    private static final Logger LOG = LoggerFactory.getLogger(GithubRepositoryManager.class);
+    private static final Logger log = LoggerFactory.getLogger(GithubRepositoryManager.class);
 
     public static final String GITHUB = "github";
 
@@ -58,6 +59,7 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         return GITHUB;
     }
     
+    @Override
     public UrlInfo validateUrlInfo(UrlInfo urlInfo)
     {
         urlInfo = super.validateUrlInfo(urlInfo);
@@ -90,10 +92,5 @@ public class GithubRepositoryManager extends DvcsRepositoryManager
         {
             throw new SourceControlException("Invalid url [" + urlString + "]");
         }
-    }
-
-    public boolean wasChangesetAlreadySynchronized(int repositoryId, String node) {
-        final IssueMapping issueMapping = repositoryPersister.getIssueMapping(repositoryId, node);
-        return issueMapping != null;
     }
 }

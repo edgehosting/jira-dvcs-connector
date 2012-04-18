@@ -1,5 +1,15 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -7,15 +17,6 @@ import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
@@ -59,7 +60,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         int jiraCount = 0;
         int synchroErrorCount = 0;
 
-        for (Changeset changeset : communicator.getChangesets(repositoryManager, repository, lastCommitDate))
+        for (Changeset changeset : communicator.getChangesets(repository, lastCommitDate))
         {
             if (lastCommitDate == null || lastCommitDate.before(changeset.getTimestamp()))
             {

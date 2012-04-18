@@ -1,5 +1,18 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -13,7 +26,6 @@ import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
 import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
-import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
@@ -22,18 +34,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
@@ -234,7 +234,7 @@ public class BitbucketCommunicator implements Communicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(RepositoryManager repositoryManager, final SourceControlRepository repository, final Date lastCommitDate)
+    public Iterable<Changeset> getChangesets(final SourceControlRepository repository, final Date lastCommitDate)
     {
         return new Iterable<Changeset>()
         {
