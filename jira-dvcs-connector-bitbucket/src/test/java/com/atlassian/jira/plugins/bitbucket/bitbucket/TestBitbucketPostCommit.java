@@ -1,17 +1,17 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.api.Communicator;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.api.Synchronizer;
-import com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit;
+import java.io.IOException;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.io.IOException;
+import com.atlassian.jira.plugins.bitbucket.api.Communicator;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.api.Synchronizer;
 
 /**
  * Unit test for {@link BitbucketPostCommit}

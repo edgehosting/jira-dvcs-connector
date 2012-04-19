@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
@@ -17,18 +18,17 @@ import org.mockito.MockitoAnnotations;
 
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler.ExtendedResponse;
-import com.atlassian.jira.plugins.bitbucket.spi.DefaultRequestHelper;
-import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetIterator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryUri;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
-import com.atlassian.sal.api.net.ResponseException;
 import com.google.common.collect.Iterables;
 
 /**
@@ -43,7 +43,7 @@ public class TestDefaultBitbucket
     @Mock
     private AuthenticationFactory authenticationFactory;
     @Mock
-    SourceControlRepository repository;
+    private SourceControlRepository repository;
     @Mock
     private Request<?, ?> request;
     @Mock
@@ -62,7 +62,7 @@ public class TestDefaultBitbucket
         return IOUtils.toString(getClass().getClassLoader().getResourceAsStream(name));
     }
 
-    private void setupBitbucketConnection() throws IOException, ResponseException
+    private void setupBitbucketConnection() throws IOException
     {
         when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
         RepositoryUri repositoryUri = new BitbucketRepositoryUri("https", "bitbucket.org","atlassian","jira-bitbucket-connector");

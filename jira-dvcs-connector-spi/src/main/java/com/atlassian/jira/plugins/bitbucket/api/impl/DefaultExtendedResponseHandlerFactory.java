@@ -1,5 +1,6 @@
-package com.atlassian.jira.plugins.bitbucket.spi;
+package com.atlassian.jira.plugins.bitbucket.api.impl;
 
+import com.atlassian.jira.plugins.bitbucket.api.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler;
 
 

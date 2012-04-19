@@ -20,6 +20,7 @@ public class GithubOAuthAuthentication implements Authentication
         
         String separator = url.contains("?") ? "&" : "?";
         url += separator + "access_token=" + getAccessToken();
+        request.setUrl(url);
     }
 
     public String getAccessToken()

@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi;
+package com.atlassian.jira.plugins.bitbucket.api.impl;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -8,9 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
+import com.atlassian.jira.plugins.bitbucket.api.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.RequestHelper;
-import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONException;

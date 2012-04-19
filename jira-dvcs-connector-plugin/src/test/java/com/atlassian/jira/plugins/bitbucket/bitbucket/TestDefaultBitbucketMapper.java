@@ -1,17 +1,14 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.Communicator;
-import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryUri;
-import com.atlassian.sal.api.transaction.TransactionCallback;
+import static junit.framework.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+import java.util.Map;
+
 import net.java.ao.Query;
+
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,17 +19,13 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.util.List;
-import java.util.Map;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
  * Unit tests for {@link DefaultRepositoryPersister}
@@ -41,20 +34,18 @@ import static org.mockito.Mockito.*;
 public class TestDefaultBitbucketMapper
 {
     private static final String URL = "https://bitbucket.org/owner/slug";
-    private static final RepositoryUri REPOSITORY_URI = new BitbucketRepositoryUri("https","bitbucket.org","owner","slug");
 	private static final int SOME_ID = 123;
+
 	@Mock
-    ActiveObjects activeObjects;
+	private ActiveObjects activeObjects;
     @Mock
-    Communicator bitbucket;
+    private ProjectMapping projectMapping;
     @Mock
-    ProjectMapping projectMapping;
+    private IssueMapping issueMapping;
     @Mock
-    IssueMapping issueMapping;
+    private Changeset changeset;
     @Mock
-    Changeset changeset;
-    @Mock
-    Encryptor encryptor;
+    private Encryptor encryptor;
 
     @Mock
     Query query;
@@ -109,7 +100,7 @@ public class TestDefaultBitbucketMapper
     public void testAddAnonymousRepositoryCreatesValidMap()
     {
         new DefaultRepositoryPersister(activeObjects).
-                addRepository("Pretty Name", "bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(),  null, null, null);
+                addRepository("Pretty Name", "bitbucket", "JST", URL,  null, null, null);
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
@@ -131,7 +122,7 @@ public class TestDefaultBitbucketMapper
 
         // TODO: check test validity after removing username/passwd and using only adminusername/adminpswd
         new DefaultRepositoryPersister(activeObjects).
-                addRepository("Pretty Name", "bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), "user", "pass", null);
+                addRepository("Pretty Name", "bitbucket", "JST", URL, "user", "pass", null);
         verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
                 argThat(new ArgumentMatcher<Map<String, Object>>()
                 {
@@ -148,25 +139,6 @@ public class TestDefaultBitbucketMapper
                 }));
     }
 
-    @Test
-    public void testPasswordNotStoredInPlainText()
-    {
-        // TODO: check test validity after removing username/passwd and using only adminusername/adminpswd
-    	new BitbucketRepositoryManager(new DefaultRepositoryPersister(activeObjects), bitbucket, encryptor, null, null, null, null)
-    		.addRepository("bitbucket", "JST", REPOSITORY_URI.getRepositoryUrl(), "user", "pass", "");
-        verify(activeObjects, times(1)).create(eq(ProjectMapping.class),
-                argThat(new ArgumentMatcher<Map<String, Object>>()
-                {
-                    @Override
-					public boolean matches(Object o)
-                    {
-                        //noinspection unchecked
-                        Map<String, Object> map = (Map<String, Object>) o;
-                        return !map.get("ADMIN_PASSWORD").equals("pass");
-                    }
-                }));
-        verify(encryptor, times(1)).encrypt("pass", "JST", "https://bitbucket.org/owner/slug");
-    }
 
     @Test
     public void testRemoveRepositoryAlsoRemovesIssues()

@@ -20,12 +20,10 @@ import com.atlassian.jira.plugins.bitbucket.api.Communicator;
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSynchronisationOperation;
-import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryUri;
 
 /**
  * Unit tests for {@link DefaultSynchronizer}
@@ -46,7 +44,7 @@ public class TestDefaultSynchronizer
     private IssueManager issueManager;
     @Mock
     private MutableIssue someIssue;
-
+    
     @Before
     public void setup()
     {
@@ -56,9 +54,6 @@ public class TestDefaultSynchronizer
     @Test
     public void testSynchronizeAddsSingleMapping() throws InterruptedException
     {
-        RepositoryUri repositoryUri = new BitbucketRepositoryUri("https", "bitbucket.org","owner","slug");
-        when(repository.getRepositoryUri()).thenReturn(repositoryUri);
-
         when(repository.getProjectKey()).thenReturn("PRJ");
         SynchronizationKey key = new SynchronizationKey(repository);
         SynchronisationOperation synchronisation = new DefaultSynchronisationOperation(key, repositoryManager, bitbucket, progressProvider, issueManager);

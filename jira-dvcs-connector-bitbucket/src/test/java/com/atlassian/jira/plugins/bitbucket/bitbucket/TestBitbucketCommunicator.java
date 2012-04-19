@@ -7,23 +7,23 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
+import com.atlassian.jira.plugins.bitbucket.api.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
+import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler.ExtendedResponse;
-import com.atlassian.jira.plugins.bitbucket.spi.DefaultRequestHelper;
-import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryUri;
 import com.atlassian.sal.api.net.Request;

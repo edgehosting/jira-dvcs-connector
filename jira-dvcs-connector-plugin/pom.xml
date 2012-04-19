@@ -36,11 +36,6 @@
 			<artifactId>jira-dvcs-connector-spi</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.atlassian.jira.plugins</groupId>
-			<artifactId>jira-dvcs-connector-bitbucket</artifactId>
-			<version>${project.version}</version>
-		</dependency>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>atlassian-jira</artifactId>
@@ -87,6 +82,7 @@
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.5</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
@@ -144,57 +140,84 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.atlassian.maven.plugins</groupId>
-                <artifactId>maven-jira-plugin</artifactId>
-                <version>3.5.2</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <systemPropertyVariables>
-                        <jira.websudo.is.disabled>true</jira.websudo.is.disabled>
-                        <baseurl.jira>http://localhost:2990/jira</baseurl.jira>
-                        <http.jira.port>2990</http.jira.port>
-                        <context.jira.path>jira</context.jira.path>
-                    </systemPropertyVariables>
-
-                    <libArtifacts>
-                                                   <libArtifact>
-                                                       <groupId>com.atlassian.activeobjects</groupId>
-                                                       <artifactId>activeobjects-spi</artifactId>
-                                                       <version>${ao.version}</version>
-                                                   </libArtifact>
-                                               </libArtifacts>
-                    <bundledArtifacts><bundledArtifact>
-                                                       <groupId>com.atlassian.activeobjects</groupId>
-                                                       <artifactId>activeobjects-jira-spi</artifactId>
-                                                       <version>${ao.version}</version>
-                                                   </bundledArtifact>
-                                                   <bundledArtifact>
-                                                           <groupId>com.atlassian.activeobjects</groupId>
-                                                           <artifactId>activeobjects-plugin</artifactId>
-                                                           <version>${ao.version}</version>
-                                                       </bundledArtifact>
-                                               </bundledArtifacts>
-
-                    <productVersion>${jira.version}</productVersion>
-                    <testResourcesVersion>${jira.data.version}</testResourcesVersion>
-                    <productDataPath>${basedir}/src/test/resources/generated-test-resources.zip</productDataPath>
-                    <log4jProperties>src/aps/log4j.properties</log4jProperties>
-                </configuration>
-            </plugin>
-            <plugin>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.atlassian.maven.plugins</groupId>
+				<artifactId>maven-jira-plugin</artifactId>
+				<version>3.5.2</version>
+				<extensions>true</extensions>
+				<configuration>
+					<systemPropertyVariables>
+						<jira.websudo.is.disabled>true</jira.websudo.is.disabled>
+						<baseurl.jira>http://localhost:2990/jira</baseurl.jira>
+						<http.jira.port>2990</http.jira.port>
+						<context.jira.path>jira</context.jira.path>
+					</systemPropertyVariables>
+					<libArtifacts>
+						<libArtifact>
+							<groupId>com.atlassian.activeobjects</groupId>
+							<artifactId>activeobjects-spi</artifactId>
+							<version>${ao.version}</version>
+						</libArtifact>
+					</libArtifacts>
+					<bundledArtifacts>
+						<bundledArtifact>
+							<groupId>com.atlassian.activeobjects</groupId>
+							<artifactId>activeobjects-jira-spi</artifactId>
+							<version>${ao.version}</version>
+						</bundledArtifact>
+						<bundledArtifact>
+							<groupId>com.atlassian.activeobjects</groupId>
+							<artifactId>activeobjects-plugin</artifactId>
+							<version>${ao.version}</version>
+						</bundledArtifact>
+					</bundledArtifacts>
+					<productVersion>${jira.version}</productVersion>
+					<testResourcesVersion>${jira.data.version}</testResourcesVersion>
+					<productDataPath>${basedir}/src/test/resources/generated-test-resources.zip</productDataPath>
+					<log4jProperties>src/aps/log4j.properties</log4jProperties>
+				</configuration>
+			</plugin>
+			<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+						            <groupId>com.atlassian.jira.plugins</groupId>
+						            <artifactId>jira-dvcs-connector-api</artifactId>
+						            <version>${project.version}</version>
+                                </artifactItem>
+                                <artifactItem>
+						            <groupId>com.atlassian.jira.plugins</groupId>
+						            <artifactId>jira-dvcs-connector-bitbucket</artifactId>
+						            <version>${project.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
-        </plugins>
-    </build>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
     <properties>
         <jira.version>5.0-rc2</jira.version>
