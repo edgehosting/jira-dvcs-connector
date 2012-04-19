@@ -59,7 +59,7 @@
     <component key="synchronizer" name="Bitbucket Synchronization Service"
                class="com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer">
         <description>A Service for migrating from the property set storage to ActiveObjects</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.Synchronizer</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.api.Synchronizer</interface>
     </component>
 
     <component key="encryptor" name="Encryption Service"

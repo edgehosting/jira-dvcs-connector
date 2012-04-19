@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.Synchronizer;
 import com.google.common.base.Function;
 import com.google.common.collect.MapMaker;
 import org.slf4j.Logger;

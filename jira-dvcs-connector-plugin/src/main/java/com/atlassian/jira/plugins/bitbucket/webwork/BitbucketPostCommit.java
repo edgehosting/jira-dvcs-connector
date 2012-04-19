@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.bitbucket.webwork;
 
-import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.api.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.rest.RootResource;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
