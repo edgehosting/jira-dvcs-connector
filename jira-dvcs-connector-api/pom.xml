@@ -27,6 +27,17 @@
             <artifactId>commons-lang</artifactId>
             <version>2.5</version>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.theplugin</groupId>
+            <artifactId>atlassian-plugin-commons</artifactId>
+            <version>1.8.0</version>
+        </dependency>
+	        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>atlassian-jira</artifactId>
+            <version>${jira.version}</version>
+            <scope>provided</scope>
+        </dependency>
 	</dependencies>
 
 </project>	

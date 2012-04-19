@@ -1,22 +1,23 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
+package com.atlassian.jira.plugins.bitbucket.spi.impl;
 
-import com.atlassian.jira.issue.IssueManager;
-import com.atlassian.jira.plugins.bitbucket.IssueLinker;
-import com.atlassian.jira.plugins.bitbucket.api.Communicator;
-import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
-import com.atlassian.sal.api.ApplicationProperties;
-import com.atlassian.templaterenderer.TemplateRenderer;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import com.atlassian.jira.issue.IssueManager;
+import com.atlassian.jira.plugins.bitbucket.DvcsRepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.api.Communicator;
+import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.api.IssueLinker;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.templaterenderer.TemplateRenderer;
 
 public class BitbucketRepositoryManager extends DvcsRepositoryManager
 {

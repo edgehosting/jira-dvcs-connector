@@ -9,8 +9,11 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.api.RequestHelper;
+import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
-import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.Request;

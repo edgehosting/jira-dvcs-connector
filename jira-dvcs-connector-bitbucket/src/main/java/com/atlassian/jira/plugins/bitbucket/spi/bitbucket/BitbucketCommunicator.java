@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
+package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,23 +13,22 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.bitbucket.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Communicator;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.api.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException.UnauthorisedException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
+import com.atlassian.jira.plugins.bitbucket.api.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
-import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
-import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
-import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetFactory;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketUserFactory;
+import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
+import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryManager;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;

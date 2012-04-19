@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.bitbucket.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
@@ -25,7 +26,6 @@ import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
-import com.atlassian.jira.plugins.bitbucket.spi.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilterQueryWhereClauseBuilder;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
@@ -168,7 +168,7 @@ public class DefaultRepositoryPersister implements RepositoryPersister, Changese
     /**
      * INFO: AO has problem to do join(), distinct() and limit() in 1 query - AOSqlException on HSQLDB. It is working fine without limit() clause but we need to use limit() in 1 case.
      *
-     * @param repositoryType repository type constant {@link com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager#BITBUCKET} or
+     * @param repositoryType repository type constant {@link com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryManager#BITBUCKET} or
      *                       {@link com.atlassian.jira.plugins.bitbucket.spi.github.impl.GithubRepositoryManager#GITHUB}.
      * @return set of repository ids
      */

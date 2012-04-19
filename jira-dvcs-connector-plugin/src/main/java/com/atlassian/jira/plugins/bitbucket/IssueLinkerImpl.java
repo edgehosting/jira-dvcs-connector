@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.atlassian.jira.plugins.bitbucket.api.IssueLinker;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.opensymphony.util.TextUtils;
 import com.atlassian.templaterenderer.annotations.HtmlSafe;

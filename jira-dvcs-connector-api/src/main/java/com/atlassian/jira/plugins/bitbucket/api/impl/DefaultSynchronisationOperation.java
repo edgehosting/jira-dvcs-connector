@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi;
+package com.atlassian.jira.plugins.bitbucket.api.impl;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.IssueManager;
-import com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Communicator;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
@@ -23,7 +22,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
-    private static final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultSynchronisationOperation.class);
 
     protected final SynchronizationKey key;
     protected final RepositoryManager repositoryManager;

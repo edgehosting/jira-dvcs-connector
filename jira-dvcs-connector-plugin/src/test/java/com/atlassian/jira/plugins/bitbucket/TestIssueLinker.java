@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.atlassian.jira.plugins.bitbucket.api.IssueLinker;
 import com.atlassian.sal.api.ApplicationProperties;
 
 public class TestIssueLinker

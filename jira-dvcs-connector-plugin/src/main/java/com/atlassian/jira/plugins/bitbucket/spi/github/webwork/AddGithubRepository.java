@@ -4,7 +4,7 @@ import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
+import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.bitbucket.spi.github.impl.GithubRepositoryManager;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;

@@ -1,9 +1,9 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl;
-
-import com.atlassian.jira.plugins.bitbucket.spi.CustomStringUtils;
-import com.atlassian.jira.plugins.bitbucket.spi.DefaultRepositoryUri;
+package com.atlassian.jira.plugins.bitbucket.spi.impl;
 
 import java.text.MessageFormat;
+
+import com.atlassian.jira.plugins.bitbucket.api.DefaultRepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 
 /**
  * Used to identify a repository, contains an owner, and a slug 

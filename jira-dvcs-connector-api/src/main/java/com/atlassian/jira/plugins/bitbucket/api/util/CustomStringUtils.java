@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi;
+package com.atlassian.jira.plugins.bitbucket.api.util;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

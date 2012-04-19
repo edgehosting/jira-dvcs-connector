@@ -36,12 +36,12 @@
 
     <component key="issueLinker" name="issueLinker"
             class="com.atlassian.jira.plugins.bitbucket.IssueLinkerImpl">
-        <interface>com.atlassian.jira.plugins.bitbucket.IssueLinker</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.api.IssueLinker</interface>
     </component>
     
     <component key="requestHelper" name="requestHelper"
             class="com.atlassian.jira.plugins.bitbucket.spi.DefaultRequestHelper">
-        <interface>com.atlassian.jira.plugins.bitbucket.spi.RequestHelper</interface>
+        <interface>com.atlassian.jira.plugins.bitbucket.api.RequestHelper</interface>
     </component>
 
     <component key="responseHandlerFactory" name="responseHandlerFactory"
@@ -81,7 +81,7 @@
     </component>
 
     <component key="bitbucketRepositoryManager" name="bitbucketRepositoryManager"
-               class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryManager">
+               class="com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryManager">
         <description>bitbucketRepositoryManager</description>
         <interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryManager</interface>
     </component>
@@ -129,7 +129,7 @@
 	            <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/addgithubrepository.vm</view>
 	        </action>
 
-	        <action name="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.webwork.AddBitbucketRepository" alias="AddBitbucketRepository">
+	        <action name="com.atlassian.jira.plugins.bitbucket.webwork.AddBitbucketRepository" alias="AddBitbucketRepository">
 	            <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/addbitbucketrepository.vm</view>
 	        </action>
 

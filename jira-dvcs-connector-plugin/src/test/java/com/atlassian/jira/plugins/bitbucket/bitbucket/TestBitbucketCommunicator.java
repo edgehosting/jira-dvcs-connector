@@ -20,12 +20,12 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
+import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler;
+import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.DefaultRequestHelper;
-import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler;
-import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandlerFactory;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketRepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryUri;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
 

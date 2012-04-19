@@ -1,8 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.webwork;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
+package com.atlassian.jira.plugins.bitbucket.webwork;
 
 import com.atlassian.jira.plugins.bitbucket.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
@@ -12,6 +8,9 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryManager;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Webwork action used to configure the bitbucket repositories

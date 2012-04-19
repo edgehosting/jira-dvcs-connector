@@ -5,7 +5,7 @@
 
     <bean id="bitbucketCommunicator" class="com.atlassian.jira.plugins.bitbucket.spi.CachingCommunicator">
         <constructor-arg>
-            <bean class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.impl.BitbucketCommunicator">
+            <bean class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator">
                 <constructor-arg ref="authenticationFactory"/>
                 <constructor-arg ref="requestHelper"/>
             </bean>
