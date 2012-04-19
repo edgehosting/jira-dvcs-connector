@@ -17,6 +17,9 @@ public class GithubOAuthAuthentication implements Authentication
     public void addAuthentication(Request<?, ?> request, String url)
     {
         request.addHeader("Authorization", "token "+accessToken);
+        
+        String separator = url.contains("?") ? "&" : "?";
+        url += separator + "access_token=" + getAccessToken();
     }
 
     public String getAccessToken()

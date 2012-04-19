@@ -11,7 +11,6 @@ import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler;
-import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
 import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONException;
@@ -85,11 +84,6 @@ public class DefaultRequestHelper implements RequestHelper
     {
         String url = apiBaseUrl + urlPath + buildQueryString(params);
         log.debug("get [ " + url + " ]");
-        if (auth instanceof GithubOAuthAuthentication)
-        {
-            String separator = (params == null || params.isEmpty()) ? "?" : "&";
-            url += separator + "access_token=" + ((GithubOAuthAuthentication) auth).getAccessToken();
-        }
         Request<?, ?> request = requestFactory.createRequest(methodType, url);
              
         if (auth != null) auth.addAuthentication(request, url);
