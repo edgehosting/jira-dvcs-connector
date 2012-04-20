@@ -1,10 +1,9 @@
-package com.atlassian.jira.plugins.bitbucket.velocity;
+package com.atlassian.jira.plugins.bitbucket.api.util;
 
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.datetime.DateTimeFormatter;
 import com.atlassian.jira.datetime.DateTimeFormatterFactory;
 import com.atlassian.jira.datetime.DateTimeStyle;
-import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 
 import java.util.Date;
 

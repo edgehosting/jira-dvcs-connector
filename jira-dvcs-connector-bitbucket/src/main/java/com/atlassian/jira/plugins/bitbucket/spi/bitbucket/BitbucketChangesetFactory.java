@@ -9,7 +9,7 @@ import java.util.TimeZone;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultChangeset;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;

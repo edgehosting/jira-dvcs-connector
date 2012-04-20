@@ -2,10 +2,10 @@ package com.atlassian.jira.plugins.bitbucket.rest;
 
 import com.atlassian.jira.plugins.bitbucket.api.Progress;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.Synchronizer;
-import com.atlassian.jira.plugins.bitbucket.api.UrlInfo;
+import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;

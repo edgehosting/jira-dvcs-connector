@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github;
 
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlUser;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;

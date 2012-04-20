@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.api;
+package com.atlassian.jira.plugins.bitbucket.api.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +11,6 @@ import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultBitbucketChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultChangeset;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;

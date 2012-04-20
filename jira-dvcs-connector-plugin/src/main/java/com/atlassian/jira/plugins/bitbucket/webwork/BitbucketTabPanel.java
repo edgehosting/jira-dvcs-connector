@@ -44,7 +44,7 @@ public class BitbucketTabPanel extends AbstractIssueTabPanel
                 String changesetAsHtml = globalRepositoryManager.getHtmlForChangeset(repository, changeset);
                 bitbucketActions.add(new CommitsIssueAction(changesetAsHtml, changeset.getTimestamp()));
             }
-        } catch (com.atlassian.jira.plugins.bitbucket.api.SourceControlException e)
+        } catch (com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException e)
         {
             logger.debug("Could not retrieve changeset for [ " + issueId + " ]: " + e, e);
         }

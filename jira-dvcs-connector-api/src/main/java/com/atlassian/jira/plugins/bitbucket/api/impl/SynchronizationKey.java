@@ -1,6 +1,8 @@
-package com.atlassian.jira.plugins.bitbucket.api;
+package com.atlassian.jira.plugins.bitbucket.api.impl;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 
 /**
  * Uniquely identify a synchronization operation

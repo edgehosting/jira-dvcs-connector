@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.api.impl;
+package com.atlassian.jira.plugins.bitbucket.api.net;
 
 import java.text.MessageFormat;
 import java.util.concurrent.atomic.AtomicReference;

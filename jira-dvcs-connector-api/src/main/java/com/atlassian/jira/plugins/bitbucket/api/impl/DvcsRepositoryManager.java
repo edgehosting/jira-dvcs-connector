@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket;
+package com.atlassian.jira.plugins.bitbucket.api.impl;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -25,18 +25,14 @@ import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUriFactory;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronisationOperation;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import com.atlassian.jira.plugins.bitbucket.api.ToChangesetTransformer;
-import com.atlassian.jira.plugins.bitbucket.api.UrlInfo;
-import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSynchronisationOperation;
+import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
-import com.atlassian.jira.plugins.bitbucket.velocity.VelocityUtils;
+import com.atlassian.jira.plugins.bitbucket.api.util.VelocityUtils;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;

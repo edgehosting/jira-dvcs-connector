@@ -2,6 +2,9 @@ package com.atlassian.jira.plugins.bitbucket.api;
 
 import java.util.Date;
 
+import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
+
 
 /**
  * Starting point for remote API calls to the bitbucket remote API

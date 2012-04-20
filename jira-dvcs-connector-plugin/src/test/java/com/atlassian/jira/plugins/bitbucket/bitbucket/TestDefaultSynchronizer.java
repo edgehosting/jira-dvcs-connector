@@ -22,8 +22,8 @@ import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronisationOperation;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSynchronisationOperation;
+import com.atlassian.jira.plugins.bitbucket.api.impl.SynchronizationKey;
 
 /**
  * Unit tests for {@link DefaultSynchronizer}

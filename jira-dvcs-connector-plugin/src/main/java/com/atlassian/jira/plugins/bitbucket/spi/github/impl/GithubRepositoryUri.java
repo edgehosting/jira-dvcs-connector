@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import com.atlassian.jira.plugins.bitbucket.api.DefaultRepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryUri;
 
 import java.text.MessageFormat;
 

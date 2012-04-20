@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.api;
+package com.atlassian.jira.plugins.bitbucket.api.exception;
 
 /**
  * Indicates an unhandled exceptional condition within the bitbucket client

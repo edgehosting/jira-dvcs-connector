@@ -1,8 +1,10 @@
-package com.atlassian.jira.plugins.bitbucket.api;
+package com.atlassian.jira.plugins.bitbucket.api.net;
 
 import java.util.Map;
 
-import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.api.Authentication;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.sal.api.net.ResponseException;
 
 public interface RequestHelper

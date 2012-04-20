@@ -34,6 +34,19 @@
 			<version>${jira.version}</version>
 			<scope>provided</scope>
 		</dependency>
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-plugin</artifactId>
+            <version>${ao.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.templaterenderer</groupId>
+            <artifactId>atlassian-template-renderer-api</artifactId>
+            <version>1.2.3</version>
+            <scope>provided</scope>
+        </dependency>
 	</dependencies>
+
 
 </project>	

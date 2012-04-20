@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.bitbucket.spi.github;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultBitbucketChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultChangeset;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;

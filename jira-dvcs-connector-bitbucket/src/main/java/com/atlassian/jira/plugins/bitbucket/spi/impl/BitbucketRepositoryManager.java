@@ -9,13 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.issue.IssueManager;
-import com.atlassian.jira.plugins.bitbucket.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.Communicator;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.IssueLinker;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.impl.DvcsRepositoryManager;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 

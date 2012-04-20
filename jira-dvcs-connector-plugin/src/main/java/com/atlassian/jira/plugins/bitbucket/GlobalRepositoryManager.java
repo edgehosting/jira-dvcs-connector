@@ -16,8 +16,8 @@ import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronisationOperation;
-import com.atlassian.jira.plugins.bitbucket.api.SynchronizationKey;
-import com.atlassian.jira.plugins.bitbucket.api.UrlInfo;
+import com.atlassian.jira.plugins.bitbucket.api.impl.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
 
 /**

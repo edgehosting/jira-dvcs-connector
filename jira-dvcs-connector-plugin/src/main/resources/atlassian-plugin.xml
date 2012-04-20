@@ -40,13 +40,13 @@
     </component>
     
     <component key="requestHelper" name="requestHelper"
-            class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRequestHelper">
-        <interface>com.atlassian.jira.plugins.bitbucket.api.RequestHelper</interface>
+            class="com.atlassian.jira.plugins.bitbucket.api.net.DefaultRequestHelper">
+        <interface>com.atlassian.jira.plugins.bitbucket.api.net.RequestHelper</interface>
     </component>
 
     <component key="responseHandlerFactory" name="responseHandlerFactory"
-            class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultExtendedResponseHandlerFactory">
-        <interface>com.atlassian.jira.plugins.bitbucket.api.ExtendedResponseHandlerFactory</interface>
+            class="com.atlassian.jira.plugins.bitbucket.api.net.DefaultExtendedResponseHandlerFactory">
+        <interface>com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandlerFactory</interface>
     </component>
 
     <component key="repositoryPersister" name="Repository Persister"

@@ -1,7 +1,5 @@
-package com.atlassian.jira.plugins.bitbucket.api.impl;
+package com.atlassian.jira.plugins.bitbucket.api.net;
 
-import com.atlassian.jira.plugins.bitbucket.api.ExtendedResponseHandlerFactory;
-import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler;
 
 
 public class DefaultExtendedResponseHandlerFactory implements ExtendedResponseHandlerFactory

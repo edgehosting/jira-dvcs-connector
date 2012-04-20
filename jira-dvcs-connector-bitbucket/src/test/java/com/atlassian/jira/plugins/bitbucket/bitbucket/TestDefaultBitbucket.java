@@ -18,12 +18,12 @@ import org.mockito.MockitoAnnotations;
 
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRequestHelper;
-import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler;
-import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.api.net.DefaultRequestHelper;
+import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler;
+import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandlerFactory;
+import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketChangesetIterator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryUri;

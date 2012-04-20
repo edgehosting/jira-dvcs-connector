@@ -7,7 +7,7 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 
 public class CustomStringUtils
 {

@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import com.atlassian.jira.plugins.bitbucket.api.impl.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
 
 public interface RepositoryManager
