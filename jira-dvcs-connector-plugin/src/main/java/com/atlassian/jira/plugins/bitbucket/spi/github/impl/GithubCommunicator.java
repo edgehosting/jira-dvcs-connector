@@ -17,16 +17,16 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetCache;
 import com.atlassian.jira.plugins.bitbucket.api.Communicator;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.UrlInfo;
-import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
 import com.atlassian.jira.plugins.bitbucket.api.impl.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubUserFactory;
@@ -42,13 +42,13 @@ public class GithubCommunicator implements Communicator
     private final AuthenticationFactory authenticationFactory;
     private final RequestHelper requestHelper;
 
-    private final ChangesetCache changesetCache;
+    private final RepositoryPersister repositoryPersister;
 
-    public GithubCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper, ChangesetCache changesetCache )
+    public GithubCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper, RepositoryPersister repositoryPersister)
     {
         this.authenticationFactory = authenticationFactory;
         this.requestHelper = requestHelper;
-        this.changesetCache = changesetCache;
+        this.repositoryPersister = repositoryPersister;
     }
 
     @Override
@@ -231,7 +231,7 @@ public class GithubCommunicator implements Communicator
             public Iterator<Changeset> iterator()
             {
                 List<String> branches = getBranches(repository);
-                return new GithubChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches, lastCommitDate);
+                return new GithubChangesetIterator(repositoryPersister, GithubCommunicator.this, repository, branches, lastCommitDate);
             }
         };
     }

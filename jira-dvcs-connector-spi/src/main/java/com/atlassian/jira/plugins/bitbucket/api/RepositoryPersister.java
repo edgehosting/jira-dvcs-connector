@@ -96,5 +96,14 @@ public interface RepositoryPersister
      * @param repositoryId
      */
     public void removeAllIssueMappings(int repositoryId);
+    
+    /**
+     * Returns true if the changeset with give nodeId has been already synchronised.
+     * 
+     * @param repositoryId
+     * @param node
+     * @return
+     */
+    boolean isChangesetInDB(int repositoryId, String node);
 
 }

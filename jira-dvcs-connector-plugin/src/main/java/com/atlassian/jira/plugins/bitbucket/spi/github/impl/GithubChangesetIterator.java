@@ -8,7 +8,7 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetCache;
+import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 
 public class GithubChangesetIterator implements Iterator<Changeset>
@@ -21,12 +21,12 @@ public class GithubChangesetIterator implements Iterator<Changeset>
 
     private Changeset nextChangeset = null;
     private final Date lastCommitDate;
-    private final ChangesetCache changesetCache;
+    private final RepositoryPersister repositoryPersister;
 
-    public GithubChangesetIterator(ChangesetCache changesetCache, GithubCommunicator githubCommunicator,
+    public GithubChangesetIterator(RepositoryPersister repositoryPersister, GithubCommunicator githubCommunicator,
         SourceControlRepository repository, List<String> branches, Date lastCommitDate)
     {
-        this.changesetCache = changesetCache;
+        this.repositoryPersister = repositoryPersister;
         this.repository = repository;
         this.lastCommitDate = lastCommitDate;
 
@@ -55,7 +55,7 @@ public class GithubChangesetIterator implements Iterator<Changeset>
     private boolean shoudStopBranchIteration()
     {
         boolean changesetOlderThanLastCommitDate = lastCommitDate != null && lastCommitDate.after(nextChangeset.getTimestamp());
-        boolean changesetAlreadySynchronized = changesetCache.isChangesetInDB(repository.getId(), nextChangeset.getNode());
+        boolean changesetAlreadySynchronized = repositoryPersister.isChangesetInDB(repository.getId(), nextChangeset.getNode());
         return changesetOlderThanLastCommitDate || changesetAlreadySynchronized;
     }
  

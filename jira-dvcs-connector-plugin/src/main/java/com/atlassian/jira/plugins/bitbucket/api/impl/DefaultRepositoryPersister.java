@@ -21,7 +21,6 @@ import com.atlassian.jira.plugins.bitbucket.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetCache;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
@@ -38,7 +37,7 @@ import com.google.common.collect.Sets;
 /**
  * A simple mapper that uses ActiveObjects to store the mapping details
  */
-public class DefaultRepositoryPersister implements RepositoryPersister, ChangesetCache
+public class DefaultRepositoryPersister implements RepositoryPersister
 {
     private final Logger log = LoggerFactory.getLogger(DefaultRepositoryPersister.class);
     private final ActiveObjects activeObjects;
