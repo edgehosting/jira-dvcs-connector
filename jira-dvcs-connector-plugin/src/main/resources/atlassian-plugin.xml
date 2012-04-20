@@ -81,13 +81,13 @@
     </component>
 
     <component key="bitbucketRepositoryManager" name="bitbucketRepositoryManager"
-               class="com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryManager">
+               class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketRepositoryManager">
         <description>bitbucketRepositoryManager</description>
         <interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryManager</interface>
     </component>
 
     <component key="githubRepositoryManager" name="githubRepositoryManager" 
-               class="com.atlassian.jira.plugins.bitbucket.spi.github.impl.GithubRepositoryManager">
+               class="com.atlassian.jira.plugins.bitbucket.spi.github.GithubRepositoryManager">
         <description>githubRepositoryManager</description>
         <interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryManager</interface>
     </component>
@@ -99,7 +99,7 @@
     </component>
 
     <component key="githubOAuth" name="githubOAuth"
-               class="com.atlassian.jira.plugins.bitbucket.spi.github.impl.DefaultGithubOAuth">
+               class="com.atlassian.jira.plugins.bitbucket.spi.github.DefaultGithubOAuth">
         <description>githubOAuth</description>
         <interface>com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth</interface>
     </component>

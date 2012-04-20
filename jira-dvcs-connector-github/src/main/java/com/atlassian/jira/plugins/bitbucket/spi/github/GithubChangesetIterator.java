@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
+package com.atlassian.jira.plugins.bitbucket.spi.github;
 
 import java.util.Collections;
 import java.util.Date;

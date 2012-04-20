@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
+package com.atlassian.jira.plugins.bitbucket.spi.github;
 
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryUri;
 

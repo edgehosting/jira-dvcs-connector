@@ -1,9 +1,10 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import org.apache.commons.lang.StringUtils;
 
 public class DefaultAuthenticationFactory implements AuthenticationFactory
 {

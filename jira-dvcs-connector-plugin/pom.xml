@@ -196,6 +196,11 @@
 						            <artifactId>jira-dvcs-connector-bitbucket</artifactId>
 						            <version>${project.version}</version>
                                 </artifactItem>
+                                <artifactItem>
+						            <groupId>com.atlassian.jira.plugins</groupId>
+						            <artifactId>jira-dvcs-connector-github</artifactId>
+						            <version>${project.version}</version>
+                                </artifactItem>
                             </artifactItems>
                             <outputDirectory>${project.build.directory}/classes</outputDirectory>
                         </configuration>

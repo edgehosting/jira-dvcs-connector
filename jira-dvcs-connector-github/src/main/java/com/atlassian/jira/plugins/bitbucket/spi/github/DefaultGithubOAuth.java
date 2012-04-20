@@ -1,8 +1,7 @@
-package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
+package com.atlassian.jira.plugins.bitbucket.spi.github;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 public class DefaultGithubOAuth implements GithubOAuth

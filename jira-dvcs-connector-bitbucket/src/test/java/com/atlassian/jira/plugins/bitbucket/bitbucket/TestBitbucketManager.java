@@ -16,8 +16,8 @@ import com.atlassian.jira.plugins.bitbucket.api.Communicator;
 import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketRepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketRepositoryUri;
 
 public class TestBitbucketManager
 {

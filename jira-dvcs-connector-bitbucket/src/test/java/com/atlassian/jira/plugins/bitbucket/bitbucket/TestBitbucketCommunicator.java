@@ -25,7 +25,7 @@ import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
-import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketRepositoryUri;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
 

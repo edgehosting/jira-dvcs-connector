@@ -28,7 +28,6 @@ import com.atlassian.jira.plugins.bitbucket.api.net.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
-import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryManager;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;

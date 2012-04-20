@@ -1,15 +1,15 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
-import com.atlassian.jira.plugins.bitbucket.api.Authentication;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import static junit.framework.Assert.*;
+import static org.mockito.Mockito.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+import com.atlassian.jira.plugins.bitbucket.api.Authentication;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 
 public class TestDefaultAuthenticationFactory
 {

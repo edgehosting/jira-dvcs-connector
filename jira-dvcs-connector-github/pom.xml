@@ -5,9 +5,9 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-   		<groupId>com.atlassian.jira.plugins</groupId>
-    	<artifactId>jira-dvcs-connector-parent</artifactId>
-    	<version>0.26-SNAPSHOT</version>
+		<groupId>com.atlassian.jira.plugins</groupId>
+		<artifactId>jira-dvcs-connector-parent</artifactId>
+		<version>0.26-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>jira-dvcs-connector-github</artifactId>
@@ -16,6 +16,23 @@
 	<description>Jira DVCS Connector GitHub module</description>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.atlassian.jira.plugins</groupId>
+			<artifactId>jira-dvcs-connector-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.atlassian.jira</groupId>
+			<artifactId>atlassian-jira</artifactId>
+			<version>${jira.version}</version>
+			<scope>provided</scope>
+		</dependency>
+        <dependency>
+            <groupId>com.atlassian.templaterenderer</groupId>
+            <artifactId>atlassian-template-renderer-api</artifactId>
+            <version>1.2.3</version>
+            <scope>provided</scope>
+        </dependency>
 	</dependencies>
 
 </project>	

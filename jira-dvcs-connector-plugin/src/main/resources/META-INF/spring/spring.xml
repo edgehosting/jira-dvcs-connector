@@ -14,7 +14,7 @@
 
     <bean id="githubCommunicator" class="com.atlassian.jira.plugins.bitbucket.spi.CachingCommunicator">
         <constructor-arg>
-            <bean class="com.atlassian.jira.plugins.bitbucket.spi.github.impl.GithubCommunicator">
+            <bean class="com.atlassian.jira.plugins.bitbucket.spi.github.GithubCommunicator">
                 <constructor-arg ref="authenticationFactory"/>
                 <constructor-arg ref="requestHelper"/>
                 <constructor-arg ref="repositoryPersister"/>

@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
+package com.atlassian.jira.plugins.bitbucket.spi.github;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,7 +18,6 @@ import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
-import com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 

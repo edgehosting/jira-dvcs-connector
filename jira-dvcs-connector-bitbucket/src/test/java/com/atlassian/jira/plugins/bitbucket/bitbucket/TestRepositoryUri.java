@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.spi.impl.BitbucketRepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketRepositoryManager;
 
 import org.junit.Test;
 

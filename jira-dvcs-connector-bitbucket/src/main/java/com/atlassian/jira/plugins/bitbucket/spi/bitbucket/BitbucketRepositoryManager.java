@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.impl;
+package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
 import java.net.MalformedURLException;
 import java.net.URL;
