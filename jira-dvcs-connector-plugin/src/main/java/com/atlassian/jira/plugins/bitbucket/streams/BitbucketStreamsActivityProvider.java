@@ -1,5 +1,22 @@
 package com.atlassian.jira.plugins.bitbucket.streams;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.IssueLinker;
@@ -17,35 +34,35 @@ import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.message.I18nResolver;
-import com.atlassian.streams.api.*;
+import com.atlassian.streams.api.ActivityObjectTypes;
+import com.atlassian.streams.api.ActivityRequest;
+import com.atlassian.streams.api.ActivityVerbs;
+import com.atlassian.streams.api.Html;
+import com.atlassian.streams.api.StreamsEntry;
+import com.atlassian.streams.api.StreamsException;
+import com.atlassian.streams.api.StreamsFeed;
+import com.atlassian.streams.api.UserProfile;
 import com.atlassian.streams.api.common.ImmutableNonEmptyList;
 import com.atlassian.streams.api.common.Option;
-import com.atlassian.streams.spi.*;
+import com.atlassian.streams.spi.CancellableTask;
+import com.atlassian.streams.spi.CancelledException;
+import com.atlassian.streams.spi.Filters;
+import com.atlassian.streams.spi.StandardStreamsFilterOption;
+import com.atlassian.streams.spi.StreamsActivityProvider;
+import com.atlassian.streams.spi.UserProfileAccessor;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.atlassian.util.concurrent.Nullable;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import org.apache.commons.collections.CollectionUtils;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 {
 
-    private I18nResolver i18nResolver;
-    private ApplicationProperties applicationProperties;
-    private UserProfileAccessor userProfileAccessor;
-    private RepositoryManager globalRepositoryManager;
+    private final I18nResolver i18nResolver;
+    private final ApplicationProperties applicationProperties;
+    private final UserProfileAccessor userProfileAccessor;
+    private final RepositoryManager globalRepositoryManager;
 
     private static final Logger log = LoggerFactory.getLogger(BitbucketStreamsActivityProvider.class);
     private final IssueLinker issueLinker;
@@ -98,6 +115,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
         StreamsEntry.Renderer renderer = new StreamsEntry.Renderer()
         {
+            @Override
             public Html renderTitleAsHtml(StreamsEntry entry)
             {
 
@@ -111,7 +129,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 StringWriter sw = new StringWriter();
                 try
                 {
-                    templateRenderer.render("/templates/com/atlassian/jira/plugins/bitbucket/streams/activityentry-title.vm", templateMap, sw);
+                    templateRenderer.render("/templates/activityentry-title.vm", templateMap, sw);
                 } catch (IOException e)
                 {
                     log.warn(e.getMessage(), e);
@@ -120,11 +138,13 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 return new Html(sw.toString());
             }
 
+            @Override
             public Option<Html> renderSummaryAsHtml(StreamsEntry entry)
             {
                 return Option.none();
             }
 
+            @Override
             public Option<Html> renderContentAsHtml(StreamsEntry entry)
             {
                 Map<String, Object> templateMap = new HashMap<String, Object>();
@@ -138,7 +158,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
                 StringWriter sw = new StringWriter();
                 try
                 {
-                    templateRenderer.render("/templates/com/atlassian/jira/plugins/bitbucket/streams/activityentry-summary.vm", templateMap, sw);
+                    templateRenderer.render("/templates/activityentry-summary.vm", templateMap, sw);
                 } catch (IOException e)
                 {
                     log.warn(e.getMessage(), e);
@@ -175,6 +195,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
     }
 
 
+    @Override
     public CancellableTask<StreamsFeed> getActivityFeed(final ActivityRequest activityRequest) throws StreamsException
     {
         final GlobalFilter gf = new GlobalFilter();
@@ -189,7 +210,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
 
         return new CancellableTask<StreamsFeed>()
         {
-            private AtomicBoolean cancelled = new AtomicBoolean(false);
+            private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
             @Override
             public StreamsFeed call() throws Exception
@@ -239,7 +260,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         }
     };
 
-    private Function<Project, String> projectToProjectKey = new Function<Project, String>()
+    private final Function<Project, String> projectToProjectKey = new Function<Project, String>()
     {
         @Override
         public String apply(@Nullable Project from)
@@ -248,7 +269,7 @@ public class BitbucketStreamsActivityProvider implements StreamsActivityProvider
         }
     };
 
-    private Function<String, Project> projectKeyToProject = new Function<String, Project>()
+    private final Function<String, Project> projectKeyToProject = new Function<String, Project>()
     {
         @Override
         public Project apply(@Nullable String from)

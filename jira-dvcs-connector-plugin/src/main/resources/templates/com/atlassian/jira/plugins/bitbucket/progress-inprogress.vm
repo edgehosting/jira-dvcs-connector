@@ -1,3 +1,0 @@
-#* @vtlvariable name="key" type="com.atlassian.jira.plugins.bitbucket.mapper.SynchronizationKey" *#
-<p>Synchronizing <strong>$key.repository.projectKey</strong> at revision <strong>$revision</strong></p>
-<p><em>Found <strong>$jiraCount</strong> matching JIRA issues</em></p>

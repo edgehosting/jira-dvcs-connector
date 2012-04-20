@@ -196,7 +196,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         StringWriter sw = new StringWriter();
         try
         {
-            templateRenderer.render("/templates/com/atlassian/jira/plugins/bitbucket/issuetabpanels/commits-view.vm", templateMap, sw);
+            templateRenderer.render("/templates/commits-view.vm", templateMap, sw);
         } catch (IOException e)
         {
             log.warn(e.getMessage(), e);

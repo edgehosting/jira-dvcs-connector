@@ -122,30 +122,30 @@
 
             <action name="com.atlassian.jira.plugins.bitbucket.webwork.ConfigureBitbucketRepositories"
                     alias="ConfigureBitbucketRepositories" roles-required="admin">
-                <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/input.vm</view>
+                <view name="input">/templates/configurerepositories.vm</view>
             </action>
 
 	        <action name="com.atlassian.jira.plugins.bitbucket.spi.github.webwork.AddGithubRepository" alias="AddGithubRepository">
-	            <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/addgithubrepository.vm</view>
+	            <view name="input">/templates/addgithubrepository.vm</view>
 	        </action>
 
 	        <action name="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.webwork.AddBitbucketRepository" alias="AddBitbucketRepository">
-	            <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/addbitbucketrepository.vm</view>
+	            <view name="input">/templates/addbitbucketrepository.vm</view>
 	        </action>
 
             <action name="com.atlassian.jira.plugins.bitbucket.spi.github.webwork.ConfigureGithubOAuth" alias="ConfigureGithubOAuth">
-                <view name="input">/templates/com/atlassian/jira/plugins/bitbucket/webwork/configuregithuboauth.vm</view>
+                <view name="input">/templates/configuregithuboauth.vm</view>
             </action>
 
             <!-- these actions are  here for backward compatibility -->
             <action name="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit" alias="BitbucketPostCommit">
-                <view name="postcommit">/templates/com/atlassian/jira/plugins/bitbucket/webwork/postcommit.vm</view>
+                <view name="postcommit">/templates/postcommit.vm</view>
             </action>
 	        <action name="com.atlassian.jira.plugins.bitbucket.webwork.GithubPostCommit" alias="GitHubPostCommit">
-                <view name="postcommit">/templates/com/atlassian/jira/plugins/bitbucket/webwork/postcommit.vm</view>
+                <view name="postcommit">/templates/postcommit.vm</view>
             </action>
             <action name="com.atlassian.jira.plugins.bitbucket.webwork.GitHubOAuth2" alias="GitHubOAuth2">
-                <view name="success">/templates/com/atlassian/jira/plugins/bitbucket/webwork/githuboauth2.vm</view>
+                <view name="success">/templates/githuboauth2.vm</view>
             </action>
 
         </actions>
