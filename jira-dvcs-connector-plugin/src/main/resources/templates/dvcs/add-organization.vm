@@ -38,13 +38,13 @@
         #end
         <br/>
 
-        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link a Repository" onclick="showAddRepoDetails(true)" value="Link a Repository" />
+        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link a Bitbucket or GitHub organization &gt;&gt;" onclick="showAddRepoDetails(true)" value="Link a Bitbucket or GitHub organization &gt;&gt;" />
 
         <div id="addRepositoryContent">
             <div id="addRepositoryDetails" class="aui-message">
             <span class="svg-icon close size-16 customClose" onclick="showAddRepoDetails(false);"></span>
 
-            <h4 style="margin: 0px;">Link a new repository</h4>
+            <h4 style="margin: 0px;">Add new Organization</h4>
 
             #foreach ($errorMessage in $action.getErrorMessages())
                 <div class="aui-message error shadowed">
@@ -60,35 +60,48 @@
 
                 <input type="hidden" name="atl_token" id="atl_token" value="$atl_token">
                 <input type="hidden" name="isPrivate" id="isPrivate">
+                
+                <div class="field-group">
+                   <label for="organizationType">Type:</label>
+	               <select id="organizationType" name="organizationType" class="select" onchange="switchDvcsDetails(this)">
+	               		<option vlaue="B">BitBucket</option>
+	                	<option vlaue="G">GitHub</option>
+	               </select>
+	            </div>
+				
+				<div id="bitbucket-form-section">
+	                <div class="field-group">
+	                   <label for="organization">BB Organization:</label>
+	                   <input type="text" id="organization" name="organization" value=""/>
+	                </div>
+	                
+	                <div class="field-group">
+	                   <label for="organization">Secret:</label>
+	                   <input type="text" id="secret" name="secret" value=""/>
+	                </div>
+	                
+	            </div>
 
-                #if ($action.getMode() == 'single')
-                    <input type='hidden' name='projectKey' id='projectKey' value='$action.getProjectKey()'>
-                    <input type='hidden' name='mode' value='single'>
-                #else
-                    <div class="field-group">
-                        <label for="projectKey">Project:</label>
-                        <select name="projectKey" id="projectKey">
-                            #foreach ($project in $action.getProjects())
-                                <option value="${project.key}"#if ($action.getProjectKey() == $project.key) selected #end>$textutils.htmlEncode(${project.name})</option>
-                            #end
-                        </select>
-                        <div class="fieldValue" id="projectKeyReadOnly"></div>
-                     </div>
-                #end
-
-                <div class="aui-item-column1">
-                    <div class="field-group" >
-                      <label for="url">Repository Url:</label>
-                      <input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())"/>
-                      <div class="fieldValue" id="urlReadOnly"></div>
-                    </div>
-                </div>
-                <div class="aui-item-column2" id="examples">
-                    <label>Examples:</label>
-                    <div style="padding-top: 3px;"><i>https://bitbucket.org/atlassianguy/my-repository</i></div>
-                    <div><i>https://github.com/owner/repository</i></div>
-                </div>
-
+				<div id="github-form-section" style="display:none">
+	                <div class="field-group">
+	                   <label for="organization">GH Organization:</label>
+	                   <input type="text" id="organization" name="organization" value=""/>
+	                </div>
+	                
+	                <div class="field-group">
+	                   <label for="organization">Secret:</label>
+	                   <input type="text" id="secret" name="secret" value=""/>
+	                </div>
+	            </div>
+	            
+	            <div style="margin-top: 10px;">
+	                <input type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value=""/>
+	                <label for="autoLinking">Auto link new repositories</label>
+	                <div>
+	                	Configure new repos to automatically link issue keys and commit messages on Bitbucket.
+	            	</div>
+	            </div>
+     
                 <div id="bbCredentials"></div>
 
 
@@ -96,7 +109,7 @@
 
                 <div class="buttons-container">
                     <div class="buttons">
-                        <input class="button submit" type="submit" name="Submit" id="Submit" value="Continue" />
+                        <input class="button submit" type="submit" name="Submit" id="Submit" value="Add Organization" />
                         <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>
                     </div>
                 </div>

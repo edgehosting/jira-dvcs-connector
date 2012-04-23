@@ -182,6 +182,17 @@ function showAddRepoDetails(show) {
         });
     }
 }
+	
+function switchDvcsDetails(selectSwitch) {
+	var dvcsType = selectSwitch.selectedIndex;
+	if (dvcsType == 0) {
+		AJS.$('#github-form-section').hide();
+		AJS.$('#bitbucket-form-section').fadeIn();
+	} else if (dvcsType == 1) {
+		AJS.$('#bitbucket-form-section').hide();
+		AJS.$('#github-form-section').fadeIn();
+	}  
+}
 
 AJS.$(document).ready(function() {
     if (typeof init_repositories == 'function') {

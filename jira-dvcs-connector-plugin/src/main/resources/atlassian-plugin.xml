@@ -119,6 +119,11 @@
         <description>
         </description>
         <actions>
+        
+        	<action name="com.atlassian.jira.plugins.bitbucket.webwork.ConfigureDvcsOrganizations"
+                    alias="ConfigureDvcsOrganizations" roles-required="admin">
+                <view name="input">/templates/dvcs/add-organization.vm</view>
+            </action>
 
             <action name="com.atlassian.jira.plugins.bitbucket.webwork.ConfigureBitbucketRepositories"
                     alias="ConfigureBitbucketRepositories" roles-required="admin">
