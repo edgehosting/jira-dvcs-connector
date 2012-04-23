@@ -464,6 +464,14 @@ a:hover.repositoryNameLink {
 	font-weight: normal;
 }
 
+.vert-space {
+	margin-top: 7px;
+	margin-bottom: 7px;
+}
 #aui-message-bar {
     clear: both;
+}
+.dvcs-organization-controls {
+	text-align: right;
+	border-bottom: 1px solid #f1f2f3;
 }

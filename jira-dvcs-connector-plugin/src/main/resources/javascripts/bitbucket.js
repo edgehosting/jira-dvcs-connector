@@ -186,9 +186,11 @@ function showAddRepoDetails(show) {
 function switchDvcsDetails(selectSwitch) {
 	var dvcsType = selectSwitch.selectedIndex;
 	if (dvcsType == 0) {
+		AJS.$('#repoEntry').attr('action', '/secure/admin/AddBitbucketOrganization.jspa');
 		AJS.$('#github-form-section').hide();
 		AJS.$('#bitbucket-form-section').fadeIn();
 	} else if (dvcsType == 1) {
+		AJS.$('#repoEntry').attr('action', '/secure/admin/AddGithubOrganization.jspa');
 		AJS.$('#bitbucket-form-section').hide();
 		AJS.$('#github-form-section').fadeIn();
 	}  
