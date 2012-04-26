@@ -311,10 +311,10 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
     
     @Override
-    public List<String> retrieveRepositories(SourceControlRepository repository)
+    public List<String> getRepositoryNamesForAccount(SourceControlRepository repository)
     {
         // TODO
-        return communicator.getRepositoriesForAccount(null, repository.getRepositoryUri().getOwner(), repository.getAdminUsername(), repository.getAdminPassword(), repository.getAccessToken());
+        return communicator.getRepositoryNamesForAccount(null, repository.getRepositoryUri().getOwner(), repository.getAdminUsername(), repository.getAdminPassword(), repository.getAccessToken());
     }
 
 

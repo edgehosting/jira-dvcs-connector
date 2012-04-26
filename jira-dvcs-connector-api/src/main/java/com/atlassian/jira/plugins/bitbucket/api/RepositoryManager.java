@@ -156,6 +156,6 @@ public interface RepositoryManager
      * @param repository
      * @return
      */
-    public List<String> retrieveRepositories(SourceControlRepository repository);
+    public List<String> getRepositoryNamesForAccount(SourceControlRepository repository);
 
 }

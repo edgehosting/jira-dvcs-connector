@@ -231,9 +231,9 @@ public class GlobalRepositoryManager implements RepositoryManager
     }
 
     @Override
-    public List<String> retrieveRepositories(SourceControlRepository repository)
+    public List<String> getRepositoryNamesForAccount(SourceControlRepository repository)
     {
-        return getManagerByRepository(repository).retrieveRepositories(repository);
+        return getManagerByRepository(repository).getRepositoryNamesForAccount(repository);
     }
 
 }

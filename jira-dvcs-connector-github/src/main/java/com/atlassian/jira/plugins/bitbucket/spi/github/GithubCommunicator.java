@@ -331,7 +331,7 @@ public class GithubCommunicator implements Communicator
     }
 
     @Override
-    public List<String> getRepositoriesForAccount(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
+    public List<String> getRepositoryNamesForAccount(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
     {
         RepositoryService repositoryService = new RepositoryService(GitHubClient.createClient("https://github.com"));
         repositoryService.getClient().setOAuth2Token(accessToken);

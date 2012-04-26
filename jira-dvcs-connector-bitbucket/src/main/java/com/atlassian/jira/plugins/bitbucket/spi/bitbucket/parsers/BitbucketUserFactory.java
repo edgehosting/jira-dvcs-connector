@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
+package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.parsers;
 
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlUser;

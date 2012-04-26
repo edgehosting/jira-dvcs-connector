@@ -28,6 +28,9 @@ import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler.Exte
 import com.atlassian.jira.plugins.bitbucket.api.net.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.parsers.BitbucketChangesetFactory;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.parsers.BitbucketRepositoriesParser;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.parsers.BitbucketUserFactory;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -298,7 +301,7 @@ public class BitbucketCommunicator implements Communicator
     }
 
     @Override
-    public List<String> getRepositoriesForAccount(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
+    public List<String> getRepositoryNamesForAccount(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
     {
         try
         {
@@ -312,12 +315,16 @@ public class BitbucketCommunicator implements Communicator
             if (extendedResponse.isSuccessful())
             {
                 String responseString = extendedResponse.getResponseString();
-                return null;
+                return BitbucketRepositoriesParser.parseRepositoryNames(new JSONObject(responseString));
             } else
             {
                 throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
             }
         } catch (ResponseException e)
+        {
+            logger.debug(e.getMessage(), e);
+            throw new SourceControlException(e.getMessage());
+        } catch (JSONException e)
         {
             logger.debug(e.getMessage(), e);
             throw new SourceControlException(e.getMessage());

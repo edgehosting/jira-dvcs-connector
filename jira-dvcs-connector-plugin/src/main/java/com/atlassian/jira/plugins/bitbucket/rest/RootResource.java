@@ -222,8 +222,8 @@ public class RootResource
     public Response listRepositories(@PathParam("id") int id)
     {
         SourceControlRepository repository = globalRepositoryManager.getRepository(id);
-        globalRepositoryManager.retrieveRepositories(repository);
-        return Response.ok().build();
+        List<String> repositoryNames = globalRepositoryManager.getRepositoryNamesForAccount(repository);
+        return Response.ok(new JaxbList<String>(repositoryNames)).build();
     }
 
 }
