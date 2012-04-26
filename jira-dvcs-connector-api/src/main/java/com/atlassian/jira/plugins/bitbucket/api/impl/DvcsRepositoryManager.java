@@ -309,4 +309,13 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     public void removeAllChangesets(int repositoryId) {
         repositoryPersister.removeAllIssueMappings(repositoryId);
     }
+    
+    @Override
+    public List<String> retrieveRepositories(SourceControlRepository repository)
+    {
+        // TODO
+        return communicator.getRepositories(null, repository.getRepositoryUri().getOwner(), repository.getAdminUsername(), repository.getAdminPassword(), repository.getAccessToken());
+    }
+
+
 }

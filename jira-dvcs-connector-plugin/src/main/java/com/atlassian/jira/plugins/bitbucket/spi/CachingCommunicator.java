@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -128,5 +129,11 @@ public class CachingCommunicator implements Communicator
         throws SourceControlException
     {
         return delegate.getRepositoryName(repositoryUri, adminUsername, adminPassword, accessToken);
+    }
+
+    @Override
+    public List<String> getRepositories(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
+    {
+        return delegate.getRepositories(server, accountName, adminUsername, adminPassword, accessToken);
     }
 }

@@ -258,18 +258,9 @@ public class BitbucketCommunicator implements Communicator
         throws SourceControlException
     {
 
-        Authentication auth;
-        if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminPassword))
-        {
-            auth = new BasicAuthentication(adminUsername, adminPassword);
-        } else
-        {
-            auth = Authentication.ANONYMOUS;
-        }
-
         try
         {
-            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl());
+            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(getAuthentication(adminUsername, adminPassword), repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl());
             if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
                 throw new UnauthorisedException("Invalid credentials");
@@ -287,6 +278,46 @@ public class BitbucketCommunicator implements Communicator
             logger.debug(e.getMessage(), e);
             throw new SourceControlException(e.getMessage());
         } catch (JSONException e)
+        {
+            logger.debug(e.getMessage(), e);
+            throw new SourceControlException(e.getMessage());
+        }
+    }
+
+    private Authentication getAuthentication(String adminUsername, String adminPassword)
+    {
+        Authentication auth;
+        if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminPassword))
+        {
+            auth = new BasicAuthentication(adminUsername, adminPassword);
+        } else
+        {
+            auth = Authentication.ANONYMOUS;
+        }
+        return auth;
+    }
+
+    @Override
+    public List<String> getRepositories(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
+    {
+        try
+        {
+            String apiUrl = "https://bitbucket.org/!api/1.0";
+            String listReposUrl = "/users/"+accountName;
+            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(getAuthentication(adminUsername, adminPassword), listReposUrl, null, apiUrl);
+            if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+            {
+                throw new UnauthorisedException("Invalid credentials");
+            }
+            if (extendedResponse.isSuccessful())
+            {
+                String responseString = extendedResponse.getResponseString();
+                return null;
+            } else
+            {
+                throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
+            }
+        } catch (ResponseException e)
         {
             logger.debug(e.getMessage(), e);
             throw new SourceControlException(e.getMessage());

@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.bitbucket.api;
 
 import java.util.Date;
+import java.util.List;
 
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
@@ -74,4 +75,17 @@ public interface Communicator
     public String getRepositoryName(RepositoryUri repositoryUri, String adminUsername, String adminPassword, String accessToken)
         throws SourceControlException;
 
+    
+    /**
+     * Retrieves list of repositories for given organisation (user/account)
+     * 
+     * @param server
+     * @param accountName
+     * @param adminUsername
+     * @param adminPassword
+     * @param accessToken
+     * @return
+     */
+    public List<String> getRepositories(String server, String accountName, String adminUsername, String adminPassword, String accessToken);
+    
 }

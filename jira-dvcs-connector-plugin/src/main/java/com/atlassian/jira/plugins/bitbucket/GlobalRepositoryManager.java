@@ -230,4 +230,10 @@ public class GlobalRepositoryManager implements RepositoryManager
         getManagerByRepoId(repositoryId).removeAllChangesets(repositoryId);
     }
 
+    @Override
+    public List<String> retrieveRepositories(SourceControlRepository repository)
+    {
+        return getManagerByRepository(repository).retrieveRepositories(repository);
+    }
+
 }
