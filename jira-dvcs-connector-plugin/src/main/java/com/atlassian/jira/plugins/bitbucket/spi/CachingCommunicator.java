@@ -132,8 +132,8 @@ public class CachingCommunicator implements Communicator
     }
 
     @Override
-    public List<String> getRepositories(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
+    public List<String> getRepositoriesForAccount(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
     {
-        return delegate.getRepositories(server, accountName, adminUsername, adminPassword, accessToken);
+        return delegate.getRepositoriesForAccount(server, accountName, adminUsername, adminPassword, accessToken);
     }
 }

@@ -314,7 +314,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     public List<String> retrieveRepositories(SourceControlRepository repository)
     {
         // TODO
-        return communicator.getRepositories(null, repository.getRepositoryUri().getOwner(), repository.getAdminUsername(), repository.getAdminPassword(), repository.getAccessToken());
+        return communicator.getRepositoriesForAccount(null, repository.getRepositoryUri().getOwner(), repository.getAdminUsername(), repository.getAdminPassword(), repository.getAccessToken());
     }
 
 

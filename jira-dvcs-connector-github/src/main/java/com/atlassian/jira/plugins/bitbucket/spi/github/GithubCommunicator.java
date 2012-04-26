@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,6 +12,9 @@ import java.util.Map;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.RepositoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -327,36 +331,23 @@ public class GithubCommunicator implements Communicator
     }
 
     @Override
-    public List<String> getRepositories(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
+    public List<String> getRepositoriesForAccount(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
     {
-        getRepositoriesInternal(accountName, accessToken, "/orgs/"+accountName+"/repos"); 
-        return getRepositoriesInternal(accountName, accessToken, "/users/"+accountName+"/repos"); 
-    }
-
-    private List<String> getRepositoriesInternal(String accountName, String accessToken, String listReposUrl)
-    {
+        RepositoryService repositoryService = new RepositoryService(GitHubClient.createClient("https://github.com"));
+        repositoryService.getClient().setOAuth2Token(accessToken);
         try
         {
-            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(getAuthentication(accessToken), listReposUrl, null,
-                API_URL_V3);
-
-            if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+            List<Repository> repositories = repositoryService.getRepositories(accountName);
+            List<String> repositoryNames = new ArrayList<String>();
+            for (Repository repository : repositories)
             {
-                throw new SourceControlException.UnauthorisedException("You don't have access to the account.");
+                repositoryNames.add(repository.getName());
             }
-            if (extendedResponse.isSuccessful())
-            {
-                String responseString = extendedResponse.getResponseString();
-                log.debug(responseString);
-                return null;
-            } else
-            {
-                throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
-            }
-        } catch (ResponseException e)
+            log.debug("Found repositories: " + repositoryNames);
+            return repositoryNames;
+        } catch (IOException e)
         {
-            log.debug(e.getMessage(), e);
-            throw new SourceControlException(e.getMessage());
+            throw new SourceControlException("Error retrieving list of repositories", e);
         }
     }
 }

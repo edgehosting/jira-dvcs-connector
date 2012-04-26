@@ -86,6 +86,6 @@ public interface Communicator
      * @param accessToken
      * @return
      */
-    public List<String> getRepositories(String server, String accountName, String adminUsername, String adminPassword, String accessToken);
+    public List<String> getRepositoriesForAccount(String server, String accountName, String adminUsername, String adminPassword, String accessToken);
     
 }
