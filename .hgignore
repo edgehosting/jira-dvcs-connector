@@ -1,5 +1,5 @@
 syntax: regexp
-^target/
+target/
 ^.idea/
 jira-bitbucket-connector-plugin.iml
 jira-bitbucket-connector-plugin.ipr
