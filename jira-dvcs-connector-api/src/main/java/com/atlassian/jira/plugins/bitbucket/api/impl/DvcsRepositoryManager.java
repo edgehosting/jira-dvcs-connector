@@ -87,7 +87,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
                                     String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
         RepositoryUri repositoryUri = getRepositoryUri(repositoryUrl);
-        return getCommunicator().getRepositoryName(repositoryType, projectKey, repositoryUri, adminUsername, adminPassword, accessToken);
+        return getCommunicator().getRepositoryName(repositoryUri, adminUsername, adminPassword, accessToken);
     }
 
     @Override

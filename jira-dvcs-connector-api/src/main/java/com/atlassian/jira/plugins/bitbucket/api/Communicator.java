@@ -60,7 +60,18 @@ public interface Communicator
     public UrlInfo getUrlInfo(RepositoryUri repositoryUri, String projectKey);
 
 
-    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
-        String adminUsername, String adminPassword, String accessToken) throws SourceControlException;
+
+    /**
+     * Retrieves pretty name of the repository from the server 
+     * 
+     * @param repositoryUri
+     * @param adminUsername
+     * @param adminPassword
+     * @param accessToken
+     * @return
+     * @throws SourceControlException
+     */
+    public String getRepositoryName(RepositoryUri repositoryUri, String adminUsername, String adminPassword, String accessToken)
+        throws SourceControlException;
 
 }

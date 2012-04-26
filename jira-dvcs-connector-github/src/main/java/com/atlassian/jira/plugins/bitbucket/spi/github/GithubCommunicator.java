@@ -282,7 +282,7 @@ public class GithubCommunicator implements Communicator
     }
 
     @Override
-    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
+    public String getRepositoryName(RepositoryUri repositoryUri,
                                     String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
         Authentication auth;

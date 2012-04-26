@@ -24,8 +24,8 @@ import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException.UnauthorisedException;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DvcsRepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.api.net.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.api.net.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONArray;
@@ -254,8 +254,8 @@ public class BitbucketCommunicator implements Communicator
     }
 
     @Override
-    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
-                                    String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    public String getRepositoryName(RepositoryUri repositoryUri, String adminUsername, String adminPassword, String accessToken)
+        throws SourceControlException
     {
 
         Authentication auth;
