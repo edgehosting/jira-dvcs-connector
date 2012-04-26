@@ -19,7 +19,7 @@ import java.util.List;
 
 public class BitbucketTabPanel extends AbstractIssueTabPanel
 {
-    private static final GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction("");
+    private static final GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction("No commits found.");
     private final PermissionManager permissionManager;
     private final Logger logger = LoggerFactory.getLogger(BitbucketTabPanel.class);
     private final RepositoryManager globalRepositoryManager;

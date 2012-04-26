@@ -1,9 +1,9 @@
 syntax: regexp
 target/
 ^.idea/
-jira-bitbucket-connector-plugin.iml
-jira-bitbucket-connector-plugin.ipr
-jira-bitbucket-connector-plugin.iws
 .project
 .classpath
 .settings
+\.iml$
+\.ipr$
+\.iws$
