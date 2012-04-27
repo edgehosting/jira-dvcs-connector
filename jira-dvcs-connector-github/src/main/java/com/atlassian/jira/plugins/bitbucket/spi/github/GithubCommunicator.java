@@ -364,7 +364,7 @@ public class GithubCommunicator implements Communicator
             return new AccountInfo(server, accountName, user.getAvatarUrl(), GithubRepositoryManager.GITHUB);
         } catch (IOException e)
         {
-            log.error("Unable to retrieve account information ", e);
+            log.debug("Unable to retrieve account information ", e);
         }
         return null;
     }
