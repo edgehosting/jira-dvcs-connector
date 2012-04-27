@@ -29,6 +29,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.rest.AccountInfo;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
@@ -313,9 +314,14 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     @Override
     public List<String> getRepositoryNamesForAccount(SourceControlRepository repository)
     {
-        // TODO
+        // TODO missing servername
         return communicator.getRepositoryNamesForAccount(null, repository.getRepositoryUri().getOwner(), repository.getAdminUsername(), repository.getAdminPassword(), repository.getAccessToken());
     }
-
+    
+    @Override
+    public AccountInfo getAccountInfo(String server, String accountName)
+    {
+        return communicator.getAccountInfo(server, accountName);
+    }
 
 }

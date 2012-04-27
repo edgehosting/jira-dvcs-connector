@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.rest.AccountInfo;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
@@ -135,5 +136,11 @@ public class CachingCommunicator implements Communicator
     public List<String> getRepositoryNamesForAccount(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
     {
         return delegate.getRepositoryNamesForAccount(server, accountName, adminUsername, adminPassword, accessToken);
+    }
+
+    @Override
+    public AccountInfo getAccountInfo(String server, String accountName)
+    {
+        return delegate.getAccountInfo(server, accountName);
     }
 }
