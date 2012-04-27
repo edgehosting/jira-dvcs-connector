@@ -7,12 +7,3 @@ jira-bitbucket-connector-plugin.iws
 .project
 .classpath
 .settings
-
-syntax: regexp
-^jira-dvcs-connector-api/target$
-syntax: regexp
-^jira-dvcs-connector-bitbucket/target$
-syntax: regexp
-^jira-dvcs-connector-github/target$
-syntax: regexp
-^jira-dvcs-connector-plugin/target$
