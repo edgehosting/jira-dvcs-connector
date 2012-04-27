@@ -286,7 +286,8 @@ function changePassword() {
 	 
 	 popup.addHeader("Update account credentials");
 	 // TODO tmp for demonstration, create such form in DOM
-	 popup.addPanel("", "<div ><form class='aui'>" + AJS.$("#bitbucket-form-section").html() + "</form></div>", "dvcs-update-cred-dialog");
+	 var dialogContent = AJS.$(".update-credentials").clone();
+	 popup.addPanel("", dialogContent.html(), "dvcs-update-cred-dialog");
 	 popup.show();
 }
 
