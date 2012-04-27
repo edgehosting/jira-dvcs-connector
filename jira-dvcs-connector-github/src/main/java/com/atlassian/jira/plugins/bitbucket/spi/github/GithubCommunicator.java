@@ -13,8 +13,10 @@ import java.util.Map;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +32,7 @@ import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException
 import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
 import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.api.net.RequestHelper;
+import com.atlassian.jira.plugins.bitbucket.api.rest.AccountInfo;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONArray;
@@ -349,5 +352,20 @@ public class GithubCommunicator implements Communicator
         {
             throw new SourceControlException("Error retrieving list of repositories", e);
         }
+    }
+
+    @Override
+    public AccountInfo getAccountInfo(String server, String accountName)
+    {
+        UserService userService = new UserService(GitHubClient.createClient(server));
+        try
+        {
+            User user = userService.getUser(accountName);
+            return new AccountInfo(server, accountName, user.getAvatarUrl(), GithubRepositoryManager.GITHUB);
+        } catch (IOException e)
+        {
+            log.error("Unable to retrieve account information ", e);
+        }
+        return null;
     }
 }

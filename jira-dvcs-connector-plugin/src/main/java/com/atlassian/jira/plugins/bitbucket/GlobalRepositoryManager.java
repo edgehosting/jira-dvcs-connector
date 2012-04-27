@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.api.impl.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.rest.AccountInfo;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
 
@@ -235,5 +236,19 @@ public class GlobalRepositoryManager implements RepositoryManager
     {
         return getManagerByRepository(repository).getRepositoryNamesForAccount(repository);
     }
+
+    @Override
+    public AccountInfo getAccountInfo(String server, String accountName)
+    {
+        for (RepositoryManager repositoryManager : repositoryManagers)
+        {
+            AccountInfo accountInfo = repositoryManager.getAccountInfo(server, accountName);
+            if (accountInfo != null)
+            {
+                return accountInfo;
+            }
+        }
+        return null;
+   }
 
 }

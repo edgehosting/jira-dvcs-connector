@@ -26,6 +26,7 @@ import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DvcsRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.api.net.RequestHelper;
+import com.atlassian.jira.plugins.bitbucket.api.rest.AccountInfo;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.parsers.BitbucketChangesetFactory;
@@ -331,4 +332,34 @@ public class BitbucketCommunicator implements Communicator
         }
     }
 
+    @Override
+    public AccountInfo getAccountInfo(String server, String accountName)
+    {
+        String responseString = null;
+        try
+        {
+            String apiUrl = server+"/!api/1.0";
+            String accountUrl = "/users/"+accountName;
+            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(null, accountUrl, null, apiUrl);
+            if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
+            {
+                return null; //user with that name doesn't exists
+            }
+            if (extendedResponse.isSuccessful())
+            {
+                responseString = extendedResponse.getResponseString();
+                return BitbucketRepositoriesParser.parseAccount(server, new JSONObject(responseString));
+            } else
+            {
+                logger.error("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
+            }
+        } catch (ResponseException e)
+        {
+            logger.error(e.getMessage(), e);
+        } catch (JSONException e)
+        {
+            logger.error("Error parsing json response: " + responseString, e);
+        }
+        return null;    // something went wrong, we don't have any account info.
+    }
 }

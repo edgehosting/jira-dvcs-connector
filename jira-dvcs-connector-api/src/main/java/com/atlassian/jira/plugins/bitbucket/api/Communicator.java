@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.rest.AccountInfo;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 
 
@@ -87,5 +88,14 @@ public interface Communicator
      * @return
      */
     public List<String> getRepositoryNamesForAccount(String server, String accountName, String adminUsername, String adminPassword, String accessToken);
+
+    /**
+     * Returns information about the given account
+     * 
+     * @param server
+     * @param accountName
+     * @return
+     */
+    public AccountInfo getAccountInfo(String server, String accountName);
     
 }

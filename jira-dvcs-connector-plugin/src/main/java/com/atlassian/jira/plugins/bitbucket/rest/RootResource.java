@@ -28,6 +28,7 @@ import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.rest.AccountInfo;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
@@ -219,11 +220,25 @@ public class RootResource
     @GET
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/listRepositories/{id}")
-    public Response listRepositories(@PathParam("id") int id)
+    public Response getRepositoryNamesForAccount(@PathParam("id") int id)
     {
         SourceControlRepository repository = globalRepositoryManager.getRepository(id);
         List<String> repositoryNames = globalRepositoryManager.getRepositoryNamesForAccount(repository);
         return Response.ok(new JaxbList<String>(repositoryNames)).build();
     }
+    
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/accountInfo")
+    public Response accountInfo(@QueryParam("server") String server, @QueryParam("account") String account)
+    {
+        AccountInfo accountInfo = globalRepositoryManager.getAccountInfo(server, account);
+        if (accountInfo!=null)
+            return Response.ok(accountInfo).build();
+        else 
+            return Response.status(Response.Status.NOT_FOUND).build();
+    }
+    
+    
 
 }

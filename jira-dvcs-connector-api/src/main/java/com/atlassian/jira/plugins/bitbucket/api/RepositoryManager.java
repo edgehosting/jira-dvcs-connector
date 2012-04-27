@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.atlassian.jira.plugins.bitbucket.api.impl.SynchronizationKey;
+import com.atlassian.jira.plugins.bitbucket.api.rest.AccountInfo;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
 
@@ -157,5 +158,12 @@ public interface RepositoryManager
      * @return
      */
     public List<String> getRepositoryNamesForAccount(SourceControlRepository repository);
+    
+    /**
+     * @param server
+     * @param accountName
+     * @return
+     */
+    public AccountInfo getAccountInfo(String server, String accountName);
 
 }
