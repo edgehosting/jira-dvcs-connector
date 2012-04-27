@@ -2,11 +2,7 @@
 <html>
   <head>
     <title>
-        #if ($action.getMode() == 'single')
-            Manage DVCS Repositories for $action.getProjectKey()
-        #else
-            Manage DVCS Repositories
-        #end
+           Manage DVCS Repositories
     </title>
 
     <script type="text/javascript">
@@ -18,7 +14,7 @@
                 forceSync($action.getRepositoryId());
             #end
             retrieveSyncStatus();
-            AJS.$("#repoEntry").submit(submitFunction);
+            AJS.$("#repoEntry").submit(submitFormHandler);
         }
      </script>
 
@@ -56,45 +52,42 @@
                 </div>
             #end
 
-            <form class="aui top-label" id="repoEntry" method="post" action="/secure/admin/AddBitbucketOrganization.jspa" ## BB by default>
+            <form class="aui top-label" id="repoEntry" method="post"  >
 
                 <input type="hidden" name="atl_token" id="atl_token" value="$atl_token">
                 <input type="hidden" name="isPrivate" id="isPrivate">
-                
-                <div class="field-group">
-                   <label for="organizationType">Type:</label>
-	               <select id="organizationType" name="organizationType" class="select" onchange="switchDvcsDetails(this)">
-	               		<option vlaue="B">BitBucket</option>
-	                	<option vlaue="G">GitHub</option>
-	               </select>
-	            </div>
+              
+	            
+	            <div class="aui-item-column1">
+                    <div class="field-group" >
+                      <label for="url">Url:</label>
+                      <input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())"/>
+                      <div class="fieldValue" id="urlReadOnly"></div>
+                    </div>
+                </div>
+                <div class="aui-item-column2" id="examples">
+                    <label>Examples:</label>
+                    <div style="padding-top: 3px;"><i>https://bitbucket.org/atlassianguy/my-repository</i></div>
+                    <div><i>https://github.com/owner/repository</i></div>
+                </div>
 				
-				<div id="bitbucket-form-section">
+				<div id="bitbucket-form-section" style="display:none">
 	                <div class="field-group">
-	                   <label for="organization">BB Organization:</label>
-	                   <input type="text" id="organization" name="organization" value=""/>
+	                   <label for="adminUsername">Username:</label>
+	                   <input type="text" id="adminUsername" name="adminUsername" value=""/>
 	                </div>
 	                
 	                <div class="field-group">
-	                   <label for="secret">Secret:</label>
-	                   <input type="text" id="secret" name="secret" value=""/>
+	                   <label for="adminPassword">Password:</label>
+	                   <input type="text" id="adminPassword" name="adminPassword" value=""/>
 	                </div>
-	                
 	            </div>
 
 				<div id="github-form-section" style="display:none">
-	                <div class="field-group">
-	                   <label for="organization">GH Organization:</label>
-	                   <input type="text" id="organization" name="organization" value=""/>
-	                </div>
 	                
-	                <div class="field-group">
-	                   <label for="secret">Secret:</label>
-	                   <input type="text" id="secret" name="secret" value=""/>
-	                </div>
 	            </div>
 	            
-	            <div style="margin-top: 10px;">
+	            <div style="margin-top: 10px; clear: both" >
 	                <input type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value=""/>
 	                <label for="autoLinking">Auto link new repositories</label>
 	                <div>
@@ -190,7 +183,10 @@
 <h4 class="aui">Organization: sample-org (BibBucket)</h4>
 	
 	<div class="dvcs-organization-controls"><input class="aui" type="checkbox" name="autolink-quick" /><label> Autolink new repositories</label>
-	 | <a href="javascript:;">Delete organization</a></div>
+	 | <a href="javascript:;">Sync Repository List</a>
+	 | <a href="javascript:changePassword();">Change Password</a>
+	 | <a href="javascript:;">Delete organization</a>
+	</div>
 	<div class="vert-space">&nbsp;</div>
 
    <div>

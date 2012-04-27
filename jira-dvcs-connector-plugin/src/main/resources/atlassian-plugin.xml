@@ -167,7 +167,7 @@
         <label>DVCS Repositories</label>
         <name>DVCS Name Item</name>
 
-        <link>/secure/admin/ConfigureBitbucketRepositories!default.jspa</link>
+        <link>/secure/admin/ConfigureDvcsOrganizations!default.jspa</link>
         <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
     </web-item>
 
