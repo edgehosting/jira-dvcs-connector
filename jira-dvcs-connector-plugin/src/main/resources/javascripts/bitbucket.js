@@ -220,20 +220,21 @@ function submitFormHandler() {
     AJS.messages.hint({ title: "Identifying...", body: "Trying to identify repository type."});
 
     var repositoryUrl = AJS.$("#url").val().trim();
+    var organizationName = AJS.$("#organization").val().trim();
     
-    var requestUrl = BASE_URL + "/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl);
+    var requestUrl = BASE_URL + "/rest/bitbucket/1.0/accountInfo?server=" + encodeURIComponent(repositoryUrl) + "&account=" + encodeURIComponent(organizationName);
 
     AJS.$.getJSON(requestUrl,
         function(data) {
             AJS.$("#aui-message-bar").empty();
 
             AJS.$('#Submit').attr("disabled", "");
-            if (data.validationErrors.length>0) {
+            if (data.validationErrors && data.validationErrors.length > 0) {
             	AJS.$.each(data.validationErrors, function(i, msg){
             		AJS.messages.error({title : "Error!", body : msg});
             	})
             } else{
-            	submitFormAjaxHandler[data.repositoryType].apply(this, arguments);
+            	submitFormAjaxHandler[data.accountType].apply(this, arguments);
         	}
     	}).error(function(a) {
             AJS.$("#aui-message-bar").empty();

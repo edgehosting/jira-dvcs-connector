@@ -66,16 +66,18 @@
                 </div>
                 <div class="aui-item-column2" id="examples">
                     <label>Examples:</label>
-                    <div style="padding-top: 3px;"><i>https://bitbucket.org/atlassianguy/my-repository</i></div>
-                    <div><i>https://github.com/owner/repository</i></div>
+                    <div style="padding-top: 3px;"><i>https://bitbucket.org</i></div>
+                    <div><i>https://github.com</i></div>
+                </div>
+                 <div >
+                    <div class="field-group" >
+                      <label for="organization">Organization:</label>
+                      <input type="text" id="organization" name="organization" value=""/>
+                      <div class="fieldValue" id="urlReadOnly"></div>
+                    </div>
                 </div>
 				
 				<div id="bitbucket-form-section" style="display:none">
-	                <div class="field-group">
-	                   <label for="adminUsername">Username:</label>
-	                   <input type="text" id="adminUsername" name="adminUsername" value=""/>
-	                </div>
-	                
 	                <div class="field-group">
 	                   <label for="adminPassword">Password:</label>
 	                   <input type="text" id="adminPassword" name="adminPassword" value=""/>
