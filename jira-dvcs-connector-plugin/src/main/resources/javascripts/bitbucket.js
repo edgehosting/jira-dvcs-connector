@@ -153,35 +153,7 @@ function submitFunction() {
 		}
 	}
 
-function showAddRepoDetails(show) {
-    if (show) {
 
-    	// Reset to default view:
-    	
-    	// - hide username/password
-        AJS.$("#bbCredentials").html("");
-        
-        // - show url field
-        AJS.$('#url').show();
-		AJS.$('#urlReadOnly').hide();
-		
-		// - show projectKey field
-        AJS.$('#projectKey').show();
-		AJS.$('#projectKeyReadOnly').hide();
-		
-		// show examples
-		AJS.$('#examples').show();
-		
-
-		AJS.$('#linkRepositoryButton').fadeOut(function() {
-            AJS.$('#addRepositoryDetails').slideDown();
-        });
-    } else {
-        AJS.$('#addRepositoryDetails').slideUp(function() {
-            AJS.$('#linkRepositoryButton').fadeIn();
-        });
-    }
-}
 	
 function switchDvcsDetails(selectSwitch) {
 	var dvcsType = selectSwitch.selectedIndex;
@@ -195,6 +167,139 @@ function switchDvcsDetails(selectSwitch) {
 		AJS.$('#github-form-section').fadeIn();
 	}  
 }
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+	
+
+function showAddRepoDetails(show) {
+
+	if (show) {
+
+		// Reset to default view:
+
+		AJS.$('#repoEntry').attr("action", "");
+		
+		// - hide username/password
+		AJS.$("#bitbucket-form-section").hide();
+
+		// - show url field
+		AJS.$('#url').show();
+		AJS.$('#urlReadOnly').hide();
+
+		// - show projectKey field
+		AJS.$('#projectKey').show();
+		AJS.$('#projectKeyReadOnly').hide();
+
+		// show examples
+		AJS.$('#examples').show();
+
+		AJS.$('#linkRepositoryButton').fadeOut(function() {
+			AJS.$('#addRepositoryDetails').slideDown();
+		});
+
+	} else {
+
+		AJS.$('#addRepositoryDetails').slideUp(function() {
+			AJS.$('#linkRepositoryButton').fadeIn();
+		});
+
+	}
+}
+function submitFormHandler() {
+
+    AJS.$('#Submit').attr("disabled", "disabled");
+
+    if (AJS.$('#repoEntry').attr("action")) {
+        AJS.messages.hint({ title: "Obtaining information...", body: "Trying to obtain repositories information."});
+		return true; // submit form
+	}
+
+    AJS.$("#aui-message-bar").empty();
+    
+    AJS.messages.hint({ title: "Identifying...", body: "Trying to identify repository type."});
+
+    var repositoryUrl = AJS.$("#url").val().trim();
+    
+    var requestUrl = BASE_URL + "/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl);
+
+    AJS.$.getJSON(requestUrl,
+        function(data) {
+            AJS.$("#aui-message-bar").empty();
+
+            AJS.$('#Submit').attr("disabled", "");
+            if (data.validationErrors.length>0) {
+            	AJS.$.each(data.validationErrors, function(i, msg){
+            		AJS.messages.error({title : "Error!", body : msg});
+            	})
+            } else{
+            	submitFormAjaxHandler[data.repositoryType].apply(this, arguments);
+        	}
+    	}).error(function(a) {
+            AJS.$("#aui-message-bar").empty();
+            AJS.messages.error({ title: "Error!", 
+            	body: "The repository url [<b>" + AJS.escapeHtml(AJS.$("#url").val()) + "</b>] is incorrect or the repository is not responding." 
+            });
+            AJS.$('#Submit').attr("disabled", "");
+        });
+    return false;
+}
+
+var submitFormAjaxHandler = {
+
+		"bitbucket": function(data){
+			
+			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
+
+			// hide url input box
+			AJS.$('#urlReadOnly').html(AJS.$('#url').val());
+			AJS.$('#url').hide(); 
+			AJS.$('#urlReadOnly').show();
+			
+			// hide project selector
+			AJS.$('#projectKeyReadOnly').html(AJS.$('#projectKey').val());
+	        AJS.$('#projectKey').hide();
+			AJS.$('#projectKeyReadOnly').show();
+				
+			// hide examples
+			AJS.$('#examples').hide();
+
+			//show username / password
+			AJS.$("#bitbucket-form-section").fadeIn();
+		}, 
+		"github":function(data) {
+			AJS.$("#repoEntry").attr("action",BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
+			AJS.$('#repoEntry').submit();
+		}
+}
+
+function deleteOrg() {
+	
+}
+
+function changePassword() {
+	 var popup = new AJS.Dialog({
+		 		width: 400, 
+		 		height: 300, 
+		 		id: "dvcs-change-pass-dialog"
+	 });
+	 
+	 popup.addHeader("Update account credentials");
+	 // TODO tmp for demonstration, create such form in DOM
+	 popup.addPanel("", "<div ><form class='aui'>" + AJS.$("#bitbucket-form-section").html() + "</form></div>", "dvcs-update-cred-dialog");
+	 popup.show();
+}
+
+function syncRepoList() {
+	
+}
+
+function autoLinkIssuesOrg() {
+	
+}
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 AJS.$(document).ready(function() {
     if (typeof init_repositories == 'function') {
