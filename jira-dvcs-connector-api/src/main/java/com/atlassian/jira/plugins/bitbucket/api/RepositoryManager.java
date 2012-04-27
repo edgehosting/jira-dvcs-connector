@@ -150,4 +150,12 @@ public interface RepositoryManager
 
     public void removeAllChangesets(int repositoryId);
 
+    /**
+     * Retrieves list of all repositories for given user
+     * 
+     * @param repository
+     * @return
+     */
+    public List<String> getRepositoryNamesForAccount(SourceControlRepository repository);
+
 }

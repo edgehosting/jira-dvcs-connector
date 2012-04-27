@@ -87,7 +87,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
                                     String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
         RepositoryUri repositoryUri = getRepositoryUri(repositoryUrl);
-        return getCommunicator().getRepositoryName(repositoryType, projectKey, repositoryUri, adminUsername, adminPassword, accessToken);
+        return getCommunicator().getRepositoryName(repositoryUri, adminUsername, adminPassword, accessToken);
     }
 
     @Override
@@ -309,4 +309,13 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     public void removeAllChangesets(int repositoryId) {
         repositoryPersister.removeAllIssueMappings(repositoryId);
     }
+    
+    @Override
+    public List<String> getRepositoryNamesForAccount(SourceControlRepository repository)
+    {
+        // TODO
+        return communicator.getRepositoryNamesForAccount(null, repository.getRepositoryUri().getOwner(), repository.getAdminUsername(), repository.getAdminPassword(), repository.getAccessToken());
+    }
+
+
 }

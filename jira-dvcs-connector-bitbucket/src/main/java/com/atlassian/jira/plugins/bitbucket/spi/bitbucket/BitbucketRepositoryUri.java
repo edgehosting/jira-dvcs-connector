@@ -18,7 +18,7 @@ public class BitbucketRepositoryUri extends DefaultRepositoryUri
     @Override
     public String getApiUrl()
     {
-    	return MessageFormat.format("{0}://api.{1}/1.0", getProtocol(), getHostname());
+    	return MessageFormat.format("{0}://{1}/!api/1.0", getProtocol(), getHostname());
     }
     
     @Override

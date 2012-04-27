@@ -38,7 +38,7 @@
         #end
         <br/>
 
-        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link a Repository" onclick="showAddRepoDetails(true)" value="Link a Repository" />
+        <input class="aui-button dvcs-submit" id="linkRepositoryButton" type="button" title="Link a Repository" onclick="showAddRepoDetails(true)" value="Link a Repository" />
 
         <div id="addRepositoryContent">
             <div id="addRepositoryDetails" class="aui-message">
@@ -96,7 +96,7 @@
 
                 <div class="buttons-container">
                     <div class="buttons">
-                        <input class="button submit" type="submit" name="Submit" id="Submit" value="Continue" />
+                        <input class="button dvcs-submit" type="submit" name="Submit" id="Submit" value="Continue" />
                         <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>
                     </div>
                 </div>

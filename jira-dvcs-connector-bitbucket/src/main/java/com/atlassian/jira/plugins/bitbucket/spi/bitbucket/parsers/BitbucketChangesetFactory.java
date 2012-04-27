@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
+package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.parsers;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

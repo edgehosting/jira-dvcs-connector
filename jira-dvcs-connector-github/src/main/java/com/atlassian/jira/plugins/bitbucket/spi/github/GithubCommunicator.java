@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,6 +12,9 @@ import java.util.Map;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.RepositoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +39,8 @@ import com.atlassian.sal.api.net.ResponseException;
 
 public class GithubCommunicator implements Communicator
 {
-    private final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
+    private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
+    private static final String API_URL_V3 = "https://api.github.com";
 
     private final AuthenticationFactory authenticationFactory;
     private final RequestHelper requestHelper;
@@ -75,7 +80,6 @@ public class GithubCommunicator implements Communicator
     {
         try
         {
-            String apiUrl = "https://api.github.com"; // we have to use API v3
             RepositoryUri uri = repository.getRepositoryUri();
             String owner = uri.getOwner();
             String slug = uri.getSlug();
@@ -84,7 +88,7 @@ public class GithubCommunicator implements Communicator
             log.debug("parse gihchangeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, id});
             String responseString = requestHelper.get(authentication, "/repos/" + CustomStringUtils.encode(owner) + "/" +
                     CustomStringUtils.encode(slug) + "/commits/" + CustomStringUtils.encode(id), null,
-                    apiUrl);
+                    API_URL_V3);
 
             return GithubChangesetFactory.parseV3(repository.getId(), "master", new JSONObject(responseString));
         } catch (ResponseException e)
@@ -171,13 +175,12 @@ public class GithubCommunicator implements Communicator
         Authentication auth = authenticationFactory.getAuthentication(repo);
 
         String urlPath = "/repos/" + uri.getOwner() + "/" + uri.getSlug() + "/hooks";
-        String apiUrl = "https://api.github.com"; // we have to use API v3
 
         try
         {
             JSONObject configJson = new JSONObject().put("url", postCommitUrl);
             JSONObject postDataJson = new JSONObject().put("name", "web").put("active", true).put("config", configJson);
-            requestHelper.post(auth, urlPath, postDataJson.toString(), apiUrl);
+            requestHelper.post(auth, urlPath, postDataJson.toString(), API_URL_V3);
         } catch (JSONException e)
         {
             throw new SourceControlException("Could not create relevant POST data for postcommit hook.", e);
@@ -193,11 +196,10 @@ public class GithubCommunicator implements Communicator
         RepositoryUri uri = repo.getRepositoryUri();
         Authentication auth = authenticationFactory.getAuthentication(repo);
         String urlPath = "/repos/" + uri.getOwner() + "/" + uri.getSlug() + "/hooks";
-        String apiUrl = "https://api.github.com"; // hardcoded url because we have to use API v3
         // Find the hook
         try
         {
-            String responseString = requestHelper.get(auth, urlPath, null, apiUrl);
+            String responseString = requestHelper.get(auth, urlPath, null, API_URL_V3);
             JSONArray jsonArray = new JSONArray(responseString);
             for (int i = 0; i < jsonArray.length(); i++)
             {
@@ -208,7 +210,7 @@ public class GithubCommunicator implements Communicator
                 if (postCommitUrl.equals(url))
                 {
                     // We have the hook, lets remove it
-                    requestHelper.delete(auth, apiUrl, urlPath + "/" + id);
+                    requestHelper.delete(auth, API_URL_V3, urlPath + "/" + id);
                 }
             }
         } catch (ResponseException e)
@@ -282,21 +284,12 @@ public class GithubCommunicator implements Communicator
     }
 
     @Override
-    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
+    public String getRepositoryName(RepositoryUri repositoryUri,
                                     String adminUsername, String adminPassword, String accessToken) throws SourceControlException
     {
-        Authentication auth;
-        if (StringUtils.isNotBlank(accessToken))
-        {
-            auth = new GithubOAuthAuthentication(accessToken);
-        } else
-        {
-            auth = Authentication.ANONYMOUS;
-        }
-
         try
         {
-            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null,
+            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(getAuthentication(accessToken), repositoryUri.getRepositoryInfoUrl(), null,
                     repositoryUri.getApiUrl());
             // in case we have valid access_token but for other account github
             // returns HttpStatus.SC_NOT_FOUND response
@@ -322,5 +315,39 @@ public class GithubCommunicator implements Communicator
             throw new SourceControlException(e.getMessage());
         }
 
+    }
+
+    private Authentication getAuthentication(String accessToken)
+    {
+        Authentication auth;
+        if (StringUtils.isNotBlank(accessToken))
+        {
+            auth = new GithubOAuthAuthentication(accessToken);
+        } else
+        {
+            auth = Authentication.ANONYMOUS;
+        }
+        return auth;
+    }
+
+    @Override
+    public List<String> getRepositoryNamesForAccount(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
+    {
+        RepositoryService repositoryService = new RepositoryService(GitHubClient.createClient("https://github.com"));
+        repositoryService.getClient().setOAuth2Token(accessToken);
+        try
+        {
+            List<Repository> repositories = repositoryService.getRepositories(accountName);
+            List<String> repositoryNames = new ArrayList<String>();
+            for (Repository repository : repositories)
+            {
+                repositoryNames.add(repository.getName());
+            }
+            log.debug("Found repositories: " + repositoryNames);
+            return repositoryNames;
+        } catch (IOException e)
+        {
+            throw new SourceControlException("Error retrieving list of repositories", e);
+        }
     }
 }

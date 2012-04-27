@@ -24,10 +24,13 @@ import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException.UnauthorisedException;
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DvcsRepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.api.net.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.api.net.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.parsers.BitbucketChangesetFactory;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.parsers.BitbucketRepositoriesParser;
+import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.parsers.BitbucketUserFactory;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -254,22 +257,13 @@ public class BitbucketCommunicator implements Communicator
     }
 
     @Override
-    public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
-                                    String adminUsername, String adminPassword, String accessToken) throws SourceControlException
+    public String getRepositoryName(RepositoryUri repositoryUri, String adminUsername, String adminPassword, String accessToken)
+        throws SourceControlException
     {
-
-        Authentication auth;
-        if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminPassword))
-        {
-            auth = new BasicAuthentication(adminUsername, adminPassword);
-        } else
-        {
-            auth = Authentication.ANONYMOUS;
-        }
 
         try
         {
-            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl());
+            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(getAuthentication(adminUsername, adminPassword), repositoryUri.getRepositoryInfoUrl(), null, repositoryUri.getApiUrl());
             if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
                 throw new UnauthorisedException("Invalid credentials");
@@ -278,6 +272,50 @@ public class BitbucketCommunicator implements Communicator
             {
                 String responseString = extendedResponse.getResponseString();
                 return new JSONObject(responseString).getString("name");
+            } else
+            {
+                throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
+            }
+        } catch (ResponseException e)
+        {
+            logger.debug(e.getMessage(), e);
+            throw new SourceControlException(e.getMessage());
+        } catch (JSONException e)
+        {
+            logger.debug(e.getMessage(), e);
+            throw new SourceControlException(e.getMessage());
+        }
+    }
+
+    private Authentication getAuthentication(String adminUsername, String adminPassword)
+    {
+        Authentication auth;
+        if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminPassword))
+        {
+            auth = new BasicAuthentication(adminUsername, adminPassword);
+        } else
+        {
+            auth = Authentication.ANONYMOUS;
+        }
+        return auth;
+    }
+
+    @Override
+    public List<String> getRepositoryNamesForAccount(String server, String accountName, String adminUsername, String adminPassword, String accessToken)
+    {
+        try
+        {
+            String apiUrl = "https://bitbucket.org/!api/1.0";
+            String listReposUrl = "/users/"+accountName;
+            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(getAuthentication(adminUsername, adminPassword), listReposUrl, null, apiUrl);
+            if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+            {
+                throw new UnauthorisedException("Invalid credentials");
+            }
+            if (extendedResponse.isSuccessful())
+            {
+                String responseString = extendedResponse.getResponseString();
+                return BitbucketRepositoriesParser.parseRepositoryNames(new JSONObject(responseString));
             } else
             {
                 throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
