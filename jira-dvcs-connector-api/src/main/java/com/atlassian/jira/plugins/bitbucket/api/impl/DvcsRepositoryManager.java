@@ -1,5 +1,21 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -26,18 +42,6 @@ import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
@@ -305,6 +309,30 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         projectMapping.save();
     }
 
+    
+    public static DefaultRepositoryUri parseRepositoryUri(String urlString)
+    {
+        try
+        {
+            URL url = new URL(urlString);
+            String protocol = url.getProtocol();
+            String hostname = url.getHost();
+            String path = url.getPath();
+            String[] split = StringUtils.split(path, "/");
+            if (split.length < 2)
+            {
+                throw new SourceControlException("Expected url is https://domainname.com/username/repository");
+            }
+            String owner = split[0];
+            String slug = split[1];
+            return new DefaultRepositoryUri(protocol, hostname, owner, slug);
+        } catch (MalformedURLException e)
+        {
+            throw new SourceControlException("Invalid url [" + urlString + "]");
+        }
+    }
+
+    
     @Override
     public void removeAllChangesets(int repositoryId) {
         repositoryPersister.removeAllIssueMappings(repositoryId);
