@@ -475,3 +475,6 @@ a:hover.repositoryNameLink {
 	text-align: right;
 	border-bottom: 1px solid #f1f2f3;
 }
+.dvcs-update-cred-dialog {
+	margin-top: 30px;
+}
