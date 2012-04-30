@@ -120,7 +120,7 @@
         </description>
         <actions>
         
-        	<action name="com.atlassian.jira.plugins.bitbucket.webwork.ConfigureDvcsOrganizations"
+        	<action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
                     alias="ConfigureDvcsOrganizations" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
@@ -196,6 +196,9 @@
     <activity-streams-provider key="bitbucket-streams-provider" name="Bitbucket Streams Provider" i18n-name-key="Bitbucket Connector"
                        class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsActivityProvider">
     </activity-streams-provider>
+
+	<!-- Web Panels -->
+	<web-panel key="add-user-dvcs-extension" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />
 
  
 </atlassian-plugin>

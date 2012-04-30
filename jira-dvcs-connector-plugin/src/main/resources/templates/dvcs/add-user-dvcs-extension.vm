@@ -1,0 +1,16 @@
+## todo check wheter is there at least one org to render this
+
+<fieldset class="field-group" style="max-height: 300px; overflow: scroll">
+  
+  <label>Bitbucket orgs</label>
+  
+  <div class="" style="font-size: 0.9em;">
+  	(Invite users to develop on Bitbucket ?)
+  </div>
+  
+  <div class="checkbox" style="padding-left: 0px">
+    <input class="checkbox" type="checkbox" id="cbOned" name="org_selector" />
+    <label for="org_selector">Checkbox One</label>
+  </div>
+ 
+</fieldset>
