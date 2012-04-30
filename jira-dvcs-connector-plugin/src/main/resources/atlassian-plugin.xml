@@ -15,6 +15,7 @@
     <component-import key="webResourceManager" interface="com.atlassian.plugin.webresource.WebResourceManager" />
     <component-import key="userProfileAccessor" interface="com.atlassian.streams.spi.UserProfileAccessor" />
     <component-import key="featureManager" interface="com.atlassian.jira.config.FeatureManager" system="true" />
+    <component-import key="eventPublisher" interface="com.atlassian.event.api.EventPublisher" />
 
 
     <ao key="ao-module" name="Active Objects Module">
@@ -103,6 +104,9 @@
         <description>githubOAuth</description>
         <interface>com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth</interface>
     </component>
+    
+    <!-- Listener -->
+    <component key="dvcsAddUserListener" class="com.atlassian.jira.plugins.dvcs.webwork.DvcsAddUserListener" />
 
     <issue-tabpanel key="bitbucket-commits-tabpanel" name="BitBucket Changesets Tab Panel"
                     class="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketTabPanel">
