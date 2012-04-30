@@ -10,7 +10,7 @@
 		<version>0.26-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>jira-dvcs-connector-common</artifactId>
+	<artifactId>jira-dvcs-connector-api</artifactId>
 	<packaging>jar</packaging>
 	<name>Jira DVCS Connector Common</name>
 	<description>Jira DVCS Connector Common</description>
