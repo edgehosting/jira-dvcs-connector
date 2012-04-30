@@ -26,12 +26,12 @@
     <packaging>atlassian-plugin</packaging>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.atlassian.jira.plugins</groupId>
-			<artifactId>jira-dvcs-connector-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-  <!-- 
+		<!--<dependency>-->
+			<!--<groupId>com.atlassian.jira.plugins</groupId>-->
+			<!--<artifactId>jira-dvcs-connector-api</artifactId>-->
+			<!--<version>${project.version}</version>-->
+		<!--</dependency>-->
+
         <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-dvcs-connector-bitbucket</artifactId>
@@ -44,7 +44,7 @@
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
-   -->
+
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>atlassian-jira</artifactId>

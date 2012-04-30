@@ -13,7 +13,7 @@
     </organization>
 	
     <modules>
-        <module>jira-dvcs-connector-common</module>
+        <module>jira-dvcs-connector-api</module>
         <module>jira-dvcs-connector-github</module>
         <module>jira-dvcs-connector-bitbucket</module>
         <module>jira-dvcs-connector-plugin</module>
