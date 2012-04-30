@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.webwork;
+package com.atlassian.jira.plugins.bitbucket.spi.dvcs.webwork;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,20 +22,14 @@ public class AddBitbucketOrganization extends JiraWebActionSupport
 
 	private final Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
 
-    private String repositoryUrl;
-    private String projectKey;
-    private String isPrivate;
+    private String url;
     private String adminUsername = "";
     private String adminPassword = "";
 
-    private final RepositoryManager globalRepositoryManager;
     private final Synchronizer synchronizer;
 
-
-    public AddBitbucketOrganization(@Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager, 
-        Synchronizer synchronizer)
+    public AddBitbucketOrganization(Synchronizer synchronizer)
     {
-        this.globalRepositoryManager = globalRepositoryManager;
         this.synchronizer = synchronizer;
     }
 
@@ -43,12 +37,11 @@ public class AddBitbucketOrganization extends JiraWebActionSupport
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        SourceControlRepository repository;
+        /*SourceControlRepository repository;
         try
-        {
-            repository = globalRepositoryManager.addRepository(BitbucketRepositoryManager.BITBUCKET, projectKey, repositoryUrl, adminUsername, adminPassword, "");
-            synchronizer.synchronize(repository);
-        } catch (UnauthorisedException e)
+        {*/
+       
+       /* } catch (UnauthorisedException e)
         {
             addErrorMessage("Failed adding the repository: ["+e.getMessage()+"]");
             log.debug("Failed adding the repository: ["+e.getMessage()+"]");
@@ -58,54 +51,26 @@ public class AddBitbucketOrganization extends JiraWebActionSupport
             addErrorMessage("Failed adding the repository: ["+e.getMessage()+"]");
             log.debug("Failed adding the repository: ["+e.getMessage()+"]");
             return INPUT;
-        }
+        }*/
         
         try
         {
-            globalRepositoryManager.setupPostcommitHook(repository);
+             //globalRepositoryManager.setupPostcommitHook(repository);
         } catch (SourceControlException e)
         {
-            log.debug("Failed adding postcommit hook: ["+e.getMessage()+"]");
+          /*  log.debug("Failed adding postcommit hook: ["+e.getMessage()+"]");
             globalRepositoryManager.removeRepository(repository.getId());
             addErrorMessage("The username/password you provided are invalid. Make sure you entered the correct username/password and that the username has admin rights on "
-                + repositoryUrl + ".<br/>" + "<br/>Then, try again.<br/><br/> [" + e.getMessage() + "]");
+                + url + ".<br/>" + "<br/>Then, try again.<br/><br/> [" + e.getMessage() + "]");*/
             
             return INPUT;
         }
 
-        return getRedirect("ConfigureBitbucketRepositories.jspa?addedRepositoryId="+repository.getId()+"&atl_token=" + getXsrfToken());
+        return INPUT;
+
+        //return getRedirect("ConfigureBitbucketRepositories.jspa?addedRepositoryId="+repository.getId()+"&atl_token=" + getXsrfToken());
     }
     
-    public String getRepositoryUrl()
-    {
-        return repositoryUrl;
-    }
-
-    public void setRepositoryUrl(String repositoryUrl)
-    {
-        this.repositoryUrl = repositoryUrl;
-    }
-
-    public String getProjectKey()
-    {
-        return projectKey;
-    }
-
-    public void setProjectKey(String projectKey)
-    {
-        this.projectKey = projectKey;
-    }
-
-    public boolean isPrivate()
-    {
-        return Boolean.parseBoolean(isPrivate);
-    }
-
-    public void setIsPrivate(String isPrivate)
-    {
-        this.isPrivate = isPrivate;
-    }
-
     public String getAdminUsername() {
         return adminUsername;
     }
@@ -121,4 +86,12 @@ public class AddBitbucketOrganization extends JiraWebActionSupport
     public void setAdminPassword(String adminPassword) {
         this.adminPassword = adminPassword;
     }
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
 }

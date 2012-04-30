@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.webwork;
+package com.atlassian.jira.plugins.dvcs.webwork;
 
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
@@ -17,12 +17,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import java.util.List;
 
 /**
- * Webwork action used to configure the bitbucket repositories
- * TODO test this on project page (mode='single')
+ * Webwork action used to configure the bitbucket organizations
  */
 public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 {
-    private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
+	private static final long serialVersionUID = 8695500426304238626L;
+
+	private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
     private String mode = "";
     private String repositoryUrl = "";

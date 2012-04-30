@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.github.webwork;
+package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
