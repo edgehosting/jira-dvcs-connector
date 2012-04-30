@@ -17,7 +17,7 @@ public class TestAccountInfoDetection
     @Test
     public void testAccountInfoBitbucket()
     {
-        String url = new RestUrlBuilder("/rest/bitbucket/1.0/accountInfo?")
+        String url = new RestUrlBuilder("/rest/bitbucket/1.0/accountInfo")
             .add("server", "https://bitbucket.org")
             .add("account", "dusanhornik")
             .toString();
@@ -34,7 +34,7 @@ public class TestAccountInfoDetection
     @Test
     public void testAccountInfoBitbucketInvalid()
     {
-        String url = new RestUrlBuilder("/rest/bitbucket/1.0/accountInfo?")
+        String url = new RestUrlBuilder("/rest/bitbucket/1.0/accountInfo")
             .add("server", "https://bitbucket.org")
             .add("account", "invalidAccount")
             .toString();
@@ -57,15 +57,15 @@ public class TestAccountInfoDetection
     @Test
     public void testAccountInfoGithub()
     {
-        String url = new RestUrlBuilder("/rest/bitbucket/1.0/accountInfo?")
+        String url = new RestUrlBuilder("/rest/bitbucket/1.0/accountInfo")
             .add("server", "https://github.com")
             .add("account", "dusanhornik")
             .toString();
         
         AccountInfo accountInfo = new Client()
-        .resource(url)
-        .accept(MediaType.APPLICATION_XML_TYPE)
-        .get(AccountInfo.class);
+            .resource(url)
+            .accept(MediaType.APPLICATION_XML_TYPE)
+            .get(AccountInfo.class);
 
         assertEquals(
             "https://secure.gravatar.com/avatar/e8209d16f7811a9919f80cc141f4e2eb?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
@@ -76,7 +76,7 @@ public class TestAccountInfoDetection
     @Test
     public void testAccountInfoGithubInvalid()
     {
-        String url = new RestUrlBuilder("/rest/bitbucket/1.0/accountInfo?")
+        String url = new RestUrlBuilder("/rest/bitbucket/1.0/accountInfo")
             .add("server", "https://github.com")
             .add("account", "invalidAccount")
             .toString();
