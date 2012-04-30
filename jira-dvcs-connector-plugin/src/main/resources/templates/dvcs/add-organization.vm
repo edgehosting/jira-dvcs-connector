@@ -69,13 +69,13 @@
                     <div style="padding-top: 3px;"><i>https://bitbucket.org</i></div>
                     <div><i>https://github.com</i></div>
                 </div>
-                 <div >
+                 <div>
                     <div class="field-group" >
                       <label for="organization">Organization:</label>
                       <input type="text" id="organization" name="organization" value=""/>
                       <div class="fieldValue" id="urlReadOnly"></div>
                     </div>
-                </div>
+                 </div>
 				
 				<div id="bitbucket-form-section" style="display:none">
 	                <div class="field-group">
@@ -85,7 +85,11 @@
 	            </div>
 
 				<div id="github-form-section" style="display:none">
-	                
+                    <div class="field-group" >
+                      <label for="organization">Organization:</label>
+                      <input type="text" id="organization" name="organization" value=""/>
+                      <div class="fieldValue" id="urlReadOnly"></div>
+                    </div>
 	            </div>
 	            
 	            <div style="margin-top: 10px; clear: both" >
@@ -241,8 +245,8 @@
 	<div class="update-credentials" style="display:none">
 		<form class="aui" method="post">
 			 <div class="field-group">
-		           <label for="adminUsernameUp">Username:</label>
-		           <input type="text" id="adminUsernameUp" name="adminUsernameUp" value=""/>
+		           <label for="organization">Organization:</label>
+		           <input type="text" id="organizationUp" name="organizationUp" value=""/>
 		     </div>
 		                
 		     <div class="field-group">

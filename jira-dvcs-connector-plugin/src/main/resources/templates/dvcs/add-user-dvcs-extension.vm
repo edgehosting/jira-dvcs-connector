@@ -9,7 +9,17 @@
   </div>
   
   <div class="checkbox" style="padding-left: 0px">
-    <input class="checkbox" type="checkbox" id="cbOned" name="org_selector" />
+    <input class="checkbox" type="checkbox" id="dvcs_org_selector_1" value="MOCK_ID_1234" name="dvcs_org_selector" />
+    <label for="org_selector">Checkbox One</label>
+  </div>
+
+  <div class="checkbox" style="padding-left: 0px">
+    <input class="checkbox" type="checkbox" id="dvcs_org_selector_2" value="MOCK_ID_5678" name="dvcs_org_selector" />
+    <label for="org_selector">Checkbox One</label>
+  </div>
+
+  <div class="checkbox" style="padding-left: 0px">
+    <input class="checkbox" type="checkbox" id="dvcs_org_selector_2" value="MOCK_ID_90210" name="dvcs_org_selector" />
     <label for="org_selector">Checkbox One</label>
   </div>
  

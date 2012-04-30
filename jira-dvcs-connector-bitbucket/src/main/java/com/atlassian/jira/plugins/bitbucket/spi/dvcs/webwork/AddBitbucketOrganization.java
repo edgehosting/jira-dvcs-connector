@@ -23,7 +23,7 @@ public class AddBitbucketOrganization extends JiraWebActionSupport
 	private final Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
 
     private String url;
-    private String adminUsername = "";
+    private String organization = "";
     private String adminPassword = "";
 
     private final Synchronizer synchronizer;
@@ -71,14 +71,6 @@ public class AddBitbucketOrganization extends JiraWebActionSupport
         //return getRedirect("ConfigureBitbucketRepositories.jspa?addedRepositoryId="+repository.getId()+"&atl_token=" + getXsrfToken());
     }
     
-    public String getAdminUsername() {
-        return adminUsername;
-    }
-
-    public void setAdminUsername(String adminUsername) {
-        this.adminUsername = adminUsername;
-    }
-
     public String getAdminPassword() {
         return adminPassword;
     }
@@ -93,5 +85,13 @@ public class AddBitbucketOrganization extends JiraWebActionSupport
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	public String getOrganization() {
+		return organization;
+	}
+
+	public void setOrganization(String organization) {
+		this.organization = organization;
 	}
 }
