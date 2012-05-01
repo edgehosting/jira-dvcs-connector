@@ -19,11 +19,12 @@ import com.google.common.collect.Maps;
 
 /**
  *  Data migration from jira-github-connector plugin to jira-bitbucket-connector plugin
+ *  
  */
 @SuppressWarnings("unchecked")
-public class To_07_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
+public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
 {
-    private static final Logger log = LoggerFactory.getLogger(To_07_ActiveObjectsV3Migrator.class);
+    private static final Logger log = LoggerFactory.getLogger(To_08_ActiveObjectsV3Migrator.class);
   
     @Override
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
@@ -44,7 +45,7 @@ public class To_07_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         ProjectMapping[] ProjectMappings = activeObjects.find(ProjectMapping.class);
         for (ProjectMapping projectMapping : ProjectMappings)
         {
-            try
+            try 
             {
                 // add organisation
                 Map<String, Object> organisationData = createOrganisationMap(projectMapping);
@@ -107,7 +108,7 @@ public class To_07_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         {
             return existing[0];
         }
-        
+        log.debug("Adding new organisation: " + organisationMap);
         return activeObjects.create(OrganizationMapping.class, organisationMap);
     }
 
@@ -128,6 +129,7 @@ public class To_07_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         repositoryMap.put(RepositoryMapping.NAME, projectMapping.getRepositoryName());
         repositoryMap.put(RepositoryMapping.LAST_COMMIT_DATE, projectMapping.getLastCommitDate());
         repositoryMap.put(RepositoryMapping.LINKED, true);
+        log.debug("Migrating repository : " + repositoryMap);
         return repositoryMap;
     }
 
@@ -166,6 +168,6 @@ public class To_07_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
     @Override
     public ModelVersion getModelVersion()
     {
-        return ModelVersion.valueOf("6");
+        return ModelVersion.valueOf("8");
     }
 }
