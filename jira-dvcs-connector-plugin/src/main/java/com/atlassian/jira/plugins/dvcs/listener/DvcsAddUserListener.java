@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.webwork;
+package com.atlassian.jira.plugins.dvcs.listener;
 
 import java.util.Map;
 
@@ -33,6 +33,7 @@ public class DvcsAddUserListener implements InitializingBean {
     @EventListener
     public void onUserAddViaCrowd(UserEvent event) {
     	
+    	
     }
 
 	@Override
@@ -40,21 +41,4 @@ public class DvcsAddUserListener implements InitializingBean {
 		eventPublisher.register(this);
 	}
     
-    /*
-    public IssueCreatedResolvedListener(EventPublisher eventPublisher) {
-        eventPublisher.register(this);    // Demonstration only -- don't do this in real code!
-    }
- 
-    @EventListener
-    public void onIssueEvent(IssueEvent issueEvent) {
-        Long eventTypeId = issueEvent.getEventTypeId();
-        Issue issue = issueEvent.getIssue();
- 
-        // if it's an event we're interested in, log it
-        if (eventTypeId.equals(EventType.ISSUE_CREATED_ID)) {
-            log.info("Issue {} has been created at {}.", issue.getKey(), issue.getCreated());
-        } else if (eventTypeId.equals(EventType.ISSUE_RESOLVED_ID)) {
-            log.info("Issue {} has been resolved at {}.", issue.getKey(), issue.getResolutionDate());
-        }
-    }*/
 }

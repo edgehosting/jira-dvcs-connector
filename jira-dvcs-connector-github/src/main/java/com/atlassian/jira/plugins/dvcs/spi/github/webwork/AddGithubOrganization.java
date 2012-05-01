@@ -15,12 +15,12 @@ import com.atlassian.jira.plugins.bitbucket.api.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth;
+import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
-import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
-public class AddGithubOrganization extends JiraWebActionSupport {
+public class AddGithubOrganization extends CommonDvcsConfigurationAction {
 	private static final long serialVersionUID = -2316358416248237835L;
 
 	private final Logger log = LoggerFactory
@@ -102,6 +102,12 @@ public class AddGithubOrganization extends JiraWebActionSupport {
 				githubAuthorizeUrl);
 		pluginSettingsFactory.createGlobalSettings().put(
 				"OAuthRedirectUrlParameters", parameters);
+	}
+	
+	@Override
+	protected void doValidation() {
+		// TODO Auto-generated method stub
+		super.doValidation();
 	}
 
 	public String doFinish() {

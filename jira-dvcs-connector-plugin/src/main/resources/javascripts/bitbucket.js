@@ -286,9 +286,17 @@ function changePassword() {
 	 });
 	 
 	 popup.addHeader("Update account credentials");
-	 // TODO tmp for demonstration, create such form in DOM
+
 	 var dialogContent = AJS.$(".update-credentials").clone();
 	 popup.addPanel("", dialogContent.html(), "dvcs-update-cred-dialog");
+	 
+	 popup.addButton("Update", function (dialog) {
+         dialog.nextPage();
+     });
+     popup.addButton("Cancel", function (dialog) {
+         dialog.hide();
+     });
+     
 	 popup.show();
 }
 

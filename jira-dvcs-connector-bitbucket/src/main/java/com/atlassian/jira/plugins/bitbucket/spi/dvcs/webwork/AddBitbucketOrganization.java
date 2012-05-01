@@ -2,21 +2,16 @@ package com.atlassian.jira.plugins.bitbucket.spi.dvcs.webwork;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException.UnauthorisedException;
-import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketRepositoryManager;
+import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
-import com.atlassian.jira.web.action.JiraWebActionSupport;
 
 /**
  * Webwork action used to configure the bitbucket repositories
  */
-public class AddBitbucketOrganization extends JiraWebActionSupport
+public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 {
 	private static final long serialVersionUID = 4366205447417138381L;
 
@@ -69,6 +64,12 @@ public class AddBitbucketOrganization extends JiraWebActionSupport
         return INPUT;
 
         //return getRedirect("ConfigureBitbucketRepositories.jspa?addedRepositoryId="+repository.getId()+"&atl_token=" + getXsrfToken());
+    }
+    
+    @Override
+    protected void doValidation() {
+    	// TODO Auto-generated method stub
+    	super.doValidation();
     }
     
     public String getAdminPassword() {
