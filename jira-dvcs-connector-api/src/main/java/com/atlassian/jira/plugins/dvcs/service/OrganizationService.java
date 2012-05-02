@@ -1,11 +1,21 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 
 import java.util.List;
 
 public interface OrganizationService
 {
+
+    /**
+     * check if account exists on given server.
+     * @param hostUrl server host name
+     * @param accountName name of account (organizationName)
+     * @return accoutnInfo
+     */
+    AccountInfo getAccountInfo(String hostUrl, String accountName);
+
     /**
      * returns all organizations
      * @return list of organizations

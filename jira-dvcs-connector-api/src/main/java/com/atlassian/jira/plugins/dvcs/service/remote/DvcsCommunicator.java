@@ -5,5 +5,5 @@ package com.atlassian.jira.plugins.dvcs.service.remote;
  */
 public interface DvcsCommunicator
 {
-
+    String getDvcsType();
 }

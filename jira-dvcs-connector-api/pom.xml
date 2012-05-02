@@ -12,8 +12,8 @@
 
 	<artifactId>jira-dvcs-connector-api</artifactId>
 	<packaging>jar</packaging>
-	<name>Jira DVCS Connector Common</name>
-	<description>Jira DVCS Connector Common</description>
+	<name>Jira DVCS Connector Api</name>
+	<description>Jira DVCS Connector Api</description>
 
 	<dependencies>
 		<dependency>
