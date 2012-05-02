@@ -112,7 +112,7 @@
     </component>
     
     <!-- Listener -->
-    <component key="dvcsAddUserListener" class="com.atlassian.jira.plugins.dvcs.webwork.DvcsAddUserListener" />
+    <component key="dvcsAddUserListener" class="com.atlassian.jira.plugins.dvcs.listener.DvcsAddUserListener" />
 
     <issue-tabpanel key="bitbucket-commits-tabpanel" name="BitBucket Changesets Tab Panel"
                     class="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketTabPanel">

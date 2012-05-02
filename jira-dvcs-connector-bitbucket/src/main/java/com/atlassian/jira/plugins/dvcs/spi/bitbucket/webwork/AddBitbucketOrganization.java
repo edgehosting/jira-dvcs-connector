@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.dvcs.webwork;
+package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

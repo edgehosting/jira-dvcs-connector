@@ -5,6 +5,7 @@
     </title>
 
     <script type="text/javascript">
+        
         var BASE_URL = "${baseurl}";
 
         function init_repositories()
@@ -12,7 +13,9 @@
             #if ($action.nextAction == 'ForceSync')
                 forceSync($action.getRepositoryId());
             #end
+            
             retrieveSyncStatus();
+            
             AJS.$("#repoEntry").submit(submitFormHandler);
         }
      </script>
