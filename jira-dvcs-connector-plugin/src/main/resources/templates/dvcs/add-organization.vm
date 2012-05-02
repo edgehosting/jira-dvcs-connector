@@ -76,11 +76,15 @@
                     <div class="field-group" >
                       <label for="organization">Organization:</label>
                       <input type="text" id="organization" name="organization" value=""/>
-                      <div class="fieldValue" id="urlReadOnly"></div>
+                      <div class="fieldValue" id="organizationReadOnly"></div>
                     </div>
                  </div>
 				
 				<div id="bitbucket-form-section" style="display:none">
+	                <div class="field-group">
+	                   <label for="adminUsername">Username:</label>
+	                   <input type="text" id="adminUsername" name="adminUsername" value=""/>
+	                </div>
 	                <div class="field-group">
 	                   <label for="adminPassword">Password:</label>
 	                   <input type="text" id="adminPassword" name="adminPassword" value=""/>
@@ -100,7 +104,7 @@
 	            </div>
 	            
 	            <div style="margin-top: 10px; clear: both" >
-	                <input type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value=""/>
+	                <input type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
 	                <label for="autoLinking">Auto link new repositories</label>
 	                <div>
 	                	Configure new repos to automatically link issue keys and commit messages on Bitbucket.

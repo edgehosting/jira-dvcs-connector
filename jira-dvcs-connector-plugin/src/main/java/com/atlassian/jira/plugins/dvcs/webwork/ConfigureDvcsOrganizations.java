@@ -1,20 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryManager;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
-import com.atlassian.jira.project.Project;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.util.List;
 
 /**
  * Webwork action used to configure the bitbucket organizations
@@ -25,173 +19,124 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
 	private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
-    private String mode = "";
-    private String repositoryUrl = "";
-    private String postCommitUrl = "";
-    private String projectKey = "";
-    private String nextAction = "";
-    private String addedRepositoryId = "";
-    private int repositoryId;
-    private final String baseUrl;
+	private String mode = "";
+	private String repositoryUrl = "";
+	private String postCommitUrl = "";
+	private String projectKey = "";
+	private String nextAction = "";
+	private String addedRepositoryId = "";
+	private int repositoryId;
+	private final String baseUrl;
 
-    private final RepositoryManager globalRepositoryManager;
-    private String postCommitRepositoryType;
-    private FeatureManager featureManager;
+	private String postCommitRepositoryType;
+	private final FeatureManager featureManager;
 
-    public ConfigureDvcsOrganizations(
-            @Qualifier("globalRepositoryManager") RepositoryManager globalRepositoryManager,
-            ApplicationProperties applicationProperties, FeatureManager featureManager)
-    {
-        this.globalRepositoryManager = globalRepositoryManager;
-        this.baseUrl = applicationProperties.getBaseUrl();
-        this.featureManager = featureManager;
-    }
+	private final OrganizationService organizationService;
 
-    @Override
-    protected void doValidation()
-    {
-    }
+	public ConfigureDvcsOrganizations(OrganizationService organizationService,
+			ApplicationProperties applicationProperties, FeatureManager featureManager)
+	{
+		this.organizationService = organizationService;
+		baseUrl = applicationProperties.getBaseUrl();
+		this.featureManager = featureManager;
+	}
 
-    @Override
-    @RequiresXsrfCheck
-    protected String doExecute() throws Exception
-    {
-        logger.debug("configure repository [ " + nextAction + " ]");
+	@Override
+	protected void doValidation()
+	{
+	}
 
-        try
-        {
-            if (getErrorMessages().isEmpty())
-            {
+	@Override
+	@RequiresXsrfCheck
+	protected String doExecute() throws Exception
+	{
+		logger.debug("configure orgazniation [ " + nextAction + " ]");
+		
+		return INPUT;
+	}
 
-                if (nextAction.equals("ShowPostCommitURL"))
-                {
-                    try
-                    {
-                        SourceControlRepository repo = globalRepositoryManager.getRepository(repositoryId);
-                        postCommitUrl = baseUrl + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync";
-                        postCommitRepositoryType = StringUtils.capitalize(repo.getRepositoryType());
-                    } catch (Exception e)
-                    {
-                        // do nothing. repository not found. it may be deleted
+	public void setMode(String value)
+	{
+		mode = value;
+	}
 
-                        // TODO instead of catching exception we should make sure this action is not
-                        // called on deleted repositories BBC-48
-                    }
-                }
+	public String getMode()
+	{
+		return mode;
+	}
 
-                if (nextAction.equals("DeleteRepository"))
-                {
-                    SourceControlRepository repo = globalRepositoryManager.getRepository(repositoryId);
-                    globalRepositoryManager.removeRepository(repositoryId);
-                    globalRepositoryManager.removePostcommitHook(repo);
-                }
-            }
-        } catch (SourceControlException e)
-        {
-            addErrorMessage(e.getMessage());
-        }
+	public void setRepositoryUrl(String value)
+	{
+		repositoryUrl = value;
+	}
 
-        return INPUT;
-    }
+	public String getRepositoryUrl()
+	{
+		return repositoryUrl;
+	}
 
-    public List<Project> getProjects()
-    {
-        return getProjectManager().getProjectObjects();
-    }
+	public void setPostCommitUrl(String value)
+	{
+		postCommitUrl = value;
+	}
 
-    // Stored Repository + JIRA Projects
-    public List<SourceControlRepository> getProjectRepositories(String projectKey)
-    {
-        return globalRepositoryManager.getRepositories(projectKey);
-    }
+	public String getPostCommitUrl()
+	{
+		return postCommitUrl;
+	}
 
-    public String getProjectName()
-    {
-        return getProjectManager().getProjectObjByKey(projectKey).getName();
-    }
+	public void setProjectKey(String value)
+	{
+		projectKey = value;
+	}
 
-    public void setMode(String value)
-    {
-        this.mode = value;
-    }
+	public String getProjectKey()
+	{
+		return projectKey;
+	}
 
-    public String getMode()
-    {
-        return mode;
-    }
+	public void setNextAction(String value)
+	{
+		nextAction = value;
+	}
 
-    public void setRepositoryUrl(String value)
-    {
-        this.repositoryUrl = value;
-    }
+	public String getNextAction()
+	{
+		return nextAction;
+	}
 
-    public String getRepositoryUrl()
-    {
-        return repositoryUrl;
-    }
+	public int getRepositoryId()
+	{
+		return repositoryId;
+	}
 
-    public void setPostCommitUrl(String value)
-    {
-        this.postCommitUrl = value;
-    }
+	public void setRepositoryId(int repositoryId)
+	{
+		this.repositoryId = repositoryId;
+	}
 
-    public String getPostCommitUrl()
-    {
-        return postCommitUrl;
-    }
+	public String getAddedRepositoryId()
+	{
+		return addedRepositoryId;
+	}
 
-    public void setProjectKey(String value)
-    {
-        this.projectKey = value;
-    }
+	public void setAddedRepositoryId(String addedRepositoryId)
+	{
+		this.addedRepositoryId = addedRepositoryId;
+	}
 
-    public String getProjectKey()
-    {
-        return projectKey;
-    }
+	public String getPostCommitRepositoryType()
+	{
+		return postCommitRepositoryType;
+	}
 
-    public void setNextAction(String value)
-    {
-        this.nextAction = value;
-    }
+	public void setPostCommitRepositoryType(String postCommitRepositoryType)
+	{
+		this.postCommitRepositoryType = postCommitRepositoryType;
+	}
 
-    public String getNextAction()
-    {
-        return this.nextAction;
-    }
-
-    public int getRepositoryId()
-    {
-        return repositoryId;
-    }
-
-    public void setRepositoryId(int repositoryId)
-    {
-        this.repositoryId = repositoryId;
-    }
-
-    public String getAddedRepositoryId()
-    {
-        return addedRepositoryId;
-    }
-
-    public void setAddedRepositoryId(String addedRepositoryId)
-    {
-        this.addedRepositoryId = addedRepositoryId;
-    }
-
-    public String getPostCommitRepositoryType()
-    {
-        return postCommitRepositoryType;
-    }
-
-    public void setPostCommitRepositoryType(String postCommitRepositoryType)
-    {
-        this.postCommitRepositoryType = postCommitRepositoryType;
-    }
-
-    public boolean isOnDemandLicense()
-    {
-        return featureManager.isEnabled(CoreFeatures.ON_DEMAND);
-    }
+	public boolean isOnDemandLicense()
+	{
+		return featureManager.isEnabled(CoreFeatures.ON_DEMAND);
+	}
 }

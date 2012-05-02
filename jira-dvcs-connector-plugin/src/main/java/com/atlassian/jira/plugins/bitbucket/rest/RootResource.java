@@ -40,7 +40,8 @@ import com.atlassian.theplugin.commons.util.DateUtil;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
-@Path("/")
+//@Path("/")
+@Deprecated
 public class RootResource
 {
 

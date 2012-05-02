@@ -124,10 +124,14 @@ function submitFunction() {
 		"bitbucket": function(data){
 			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketRepository.jspa");
 
-			// hide url input box
+			// hide url, organization input box
 			AJS.$('#urlReadOnly').html(AJS.$('#url').val());
 			AJS.$('#url').hide(); 
 			AJS.$('#urlReadOnly').show();
+
+			AJS.$('#organizationReadOnly').html(AJS.$('#organization').val());
+			AJS.$('#organization').hide(); 
+			AJS.$('#organizationReadOnly').show();
 			
 			// hide project selector
 			AJS.$('#projectKeyReadOnly').html(AJS.$('#projectKey').val());
@@ -184,9 +188,12 @@ function showAddRepoDetails(show) {
 		AJS.$("#bitbucket-form-section").hide();
 		AJS.$("#github-form-section").hide();
 
-		// - show url field
+		// - show url, organization field
 		AJS.$('#url').show();
 		AJS.$('#urlReadOnly').hide();
+
+		AJS.$('#organization').show();
+		AJS.$('#organizationReadOnly').hide();
 
 		//
 		AJS.$('#Submit').removeAttr("disabled");
@@ -235,7 +242,7 @@ function submitFormHandler() {
             		AJS.messages.error({title : "Error!", body : msg});
             	})
             } else{
-            	submitFormAjaxHandler[data.accountType].apply(this, arguments);
+            	submitFormAjaxHandler[data.dvcsType].apply(this, arguments);
         	}
     	}).error(function(a) {
             AJS.$("#aui-message-bar").empty();

@@ -1,17 +1,25 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+@XmlRootElement
 public class Organization
 {
-    private final int id;
-    private final String hostUrl;
-    private final String name;
-    private final String dvcsType;
-    private final boolean autolinkNewRepos;
-    private final Credential credential;
+    private int id;
+    private String hostUrl;
+    private String name;
+    private String dvcsType;
+    private boolean autolinkNewRepos;
+    private Credential credential;
 
+    public Organization()
+	{
+    	super();
+	}
+    
     public Organization(int id, String hostUrl, String name, String dvcsType, boolean autolinkNewRepos, Credential credential)
     {
         this.id = id;
@@ -51,6 +59,36 @@ public class Organization
     {
         return credential;
     }
+
+    public void setId(int id)
+	{
+		this.id = id;
+	}
+
+	public void setHostUrl(String hostUrl)
+	{
+		this.hostUrl = hostUrl;
+	}
+
+	public void setName(String name)
+	{
+		this.name = name;
+	}
+
+	public void setDvcsType(String dvcsType)
+	{
+		this.dvcsType = dvcsType;
+	}
+
+	public void setAutolinkNewRepos(boolean autolinkNewRepos)
+	{
+		this.autolinkNewRepos = autolinkNewRepos;
+	}
+
+	public void setCredential(Credential credential)
+	{
+		this.credential = credential;
+	}
 
     @Override
     public boolean equals(Object o)

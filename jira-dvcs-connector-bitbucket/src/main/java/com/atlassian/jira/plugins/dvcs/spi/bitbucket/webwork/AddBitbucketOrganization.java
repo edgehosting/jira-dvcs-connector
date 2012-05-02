@@ -3,13 +3,16 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.bitbucket.api.Synchronizer;
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
+import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException.UnauthorisedException;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 
 /**
- * Webwork action used to configure the bitbucket repositories
+ * Webwork action used to configure the bitbucket organization.
  */
 public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 {
@@ -17,82 +20,109 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
 	private final Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
 
-    private String url;
-    private String organization = "";
-    private String adminPassword = "";
+	private String url;
+	private String organization;
+	private String adminUsername;
+	private String adminPassword;
 
-    private final Synchronizer synchronizer;
+	private final OrganizationService organizationService;
 
-    public AddBitbucketOrganization(Synchronizer synchronizer)
-    {
-        this.synchronizer = synchronizer;
-    }
+	public AddBitbucketOrganization(OrganizationService organizationService)
+	{
+		this.organizationService = organizationService;
+	}
 
-    @Override
-    @RequiresXsrfCheck
-    protected String doExecute() throws Exception
-    {
-        /*SourceControlRepository repository;
-        try
-        {*/
-       
-       /* } catch (UnauthorisedException e)
-        {
-            addErrorMessage("Failed adding the repository: ["+e.getMessage()+"]");
-            log.debug("Failed adding the repository: ["+e.getMessage()+"]");
-            return INPUT;
-        } catch (SourceControlException e)
-        {
-            addErrorMessage("Failed adding the repository: ["+e.getMessage()+"]");
-            log.debug("Failed adding the repository: ["+e.getMessage()+"]");
-            return INPUT;
-        }*/
-        
-        try
-        {
-             //globalRepositoryManager.setupPostcommitHook(repository);
-        } catch (SourceControlException e)
-        {
-          /*  log.debug("Failed adding postcommit hook: ["+e.getMessage()+"]");
-            globalRepositoryManager.removeRepository(repository.getId());
-            addErrorMessage("The username/password you provided are invalid. Make sure you entered the correct username/password and that the username has admin rights on "
-                + url + ".<br/>" + "<br/>Then, try again.<br/><br/> [" + e.getMessage() + "]");*/
-            
-            return INPUT;
-        }
+	@Override
+	@RequiresXsrfCheck
+	protected String doExecute() throws Exception
+	{
+		try
+		{
+			Organization newOrganization = new Organization();
+			newOrganization.setName(organization);
+			newOrganization.setHostUrl(url);
+			newOrganization.setDvcsType("bitbucket");
+			newOrganization.setCredential(new Credential(adminUsername, adminPassword, null));
+			newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
 
-        return INPUT;
+			organizationService.save(newOrganization);
 
-        //return getRedirect("ConfigureBitbucketRepositories.jspa?addedRepositoryId="+repository.getId()+"&atl_token=" + getXsrfToken());
-    }
-    
-    @Override
-    protected void doValidation() {
-    	// TODO Auto-generated method stub
-    	super.doValidation();
-    }
-    
-    public String getAdminPassword() {
-        return adminPassword;
-    }
+		} catch (UnauthorisedException e)
+		{
+			addErrorMessage("Failed adding the organization: [" + e.getMessage() + "]");
+			log.debug("Failed adding the organization: [" + e.getMessage() + "]");
+			return INPUT;
+		} catch (SourceControlException e)
+		{
+			addErrorMessage("Failed adding the organization: [" + e.getMessage() + "]");
+			log.debug("Failed adding the organization: [" + e.getMessage() + "]");
+			return INPUT;
+		}
 
-    public void setAdminPassword(String adminPassword) {
-        this.adminPassword = adminPassword;
-    }
+		try
+		{
+			// globalRepositoryManager.setupPostcommitHook(repository);
+		} catch (SourceControlException e)
+		{
+			/*
+			 * log.debug("Failed adding postcommit hook: ["+e.getMessage()+"]");
+			 * globalRepositoryManager.removeRepository(repository.getId());
+			 * addErrorMessage(
+			 * "The username/password you provided are invalid. Make sure you entered the correct username/password and that the username has admin rights on "
+			 * + url + ".<br/>" + "<br/>Then, try again.<br/><br/> [" +
+			 * e.getMessage() + "]");
+			 */
 
-	public String getUrl() {
+			return INPUT;
+		}
+
+		// go back to main DVCS configuration page
+		return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + getXsrfToken());
+	}
+
+	@Override
+	protected void doValidation()
+	{
+		super.doValidation();
+	}
+
+	public String getAdminPassword()
+	{
+		return adminPassword;
+	}
+
+	public void setAdminPassword(String adminPassword)
+	{
+		this.adminPassword = adminPassword;
+	}
+
+	public String getUrl()
+	{
 		return url;
 	}
 
-	public void setUrl(String url) {
+	public void setUrl(String url)
+	{
 		this.url = url;
 	}
 
-	public String getOrganization() {
+	public String getOrganization()
+	{
 		return organization;
 	}
 
-	public void setOrganization(String organization) {
+	public void setOrganization(String organization)
+	{
 		this.organization = organization;
+	}
+
+	public String getAdminUsername()
+	{
+		return adminUsername;
+	}
+
+	public void setAdminUsername(String adminUsername)
+	{
+		this.adminUsername = adminUsername;
 	}
 }

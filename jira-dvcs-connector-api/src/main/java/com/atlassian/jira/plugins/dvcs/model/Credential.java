@@ -1,11 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class Credential
 {
-    private final String adminUsername;
-    private final String adminPassword;
-    private final String accessToken;
+    private String adminUsername;
+    private String adminPassword;
+    private String accessToken;
 
+    public Credential()
+	{
+    	super();
+	}
+    
     public Credential(String adminUsername, String adminPassword, String accessToken)
     {
         this.adminUsername = adminUsername;
@@ -27,4 +35,19 @@ public class Credential
     {
         return accessToken;
     }
+
+	public void setAdminUsername(String adminUsername)
+	{
+		this.adminUsername = adminUsername;
+	}
+
+	public void setAdminPassword(String adminPassword)
+	{
+		this.adminPassword = adminPassword;
+	}
+
+	public void setAccessToken(String accessToken)
+	{
+		this.accessToken = accessToken;
+	}
 }
