@@ -20,6 +20,9 @@ public class AccountInfo
 
     @XmlAttribute
     private String server;
+    
+    @XmlAttribute
+    private boolean requiresOauth;
 
     public AccountInfo()    {}
     
@@ -70,5 +73,15 @@ public class AccountInfo
     {
         this.server = server;
     }
+
+	public boolean isRequiresOauth()
+	{
+		return requiresOauth;
+	}
+
+	public void setRequiresOauth(boolean requiresOauth)
+	{
+		this.requiresOauth = requiresOauth;
+	}
 
 }

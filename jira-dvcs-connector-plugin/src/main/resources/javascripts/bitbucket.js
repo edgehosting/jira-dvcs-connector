@@ -187,9 +187,8 @@ function showAddRepoDetails(show) {
 		AJS.$('#url').show();
 		AJS.$('#urlReadOnly').hide();
 
-		// - show projectKey field
-		AJS.$('#projectKey').show();
-		AJS.$('#projectKeyReadOnly').hide();
+		//
+		AJS.$('#Submit').removeAttr("disabled");
 
 		// show examples
 		AJS.$('#examples').show();
@@ -257,20 +256,31 @@ var submitFormAjaxHandler = {
 			AJS.$('#url').hide(); 
 			AJS.$('#urlReadOnly').show();
 			
-			// hide project selector
-			AJS.$('#projectKeyReadOnly').html(AJS.$('#projectKey').val());
-	        AJS.$('#projectKey').hide();
-			AJS.$('#projectKeyReadOnly').show();
-				
 			// hide examples
 			AJS.$('#examples').hide();
 
 			//show username / password
 			AJS.$("#bitbucket-form-section").fadeIn();
 		}, 
+
 		"github":function(data) {
 			AJS.$("#repoEntry").attr("action",BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
-			AJS.$('#repoEntry').submit();
+			if (data.requiresOauth) {
+				
+				// we need oauth ...
+				
+				AJS.$('#urlReadOnly').html(AJS.$('#url').val());
+				AJS.$('#url').hide(); 
+				AJS.$('#urlReadOnly').show();
+				
+				// hide examples
+				AJS.$('#examples').hide();
+				
+				AJS.$("#github-form-section").fadeIn();
+
+			} else {
+				AJS.$('#repoEntry').submit();
+			}
 		}
 }
 
