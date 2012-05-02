@@ -88,6 +88,7 @@
 	            </div>
 
 				<div id="github-form-section" style="display:none">
+					<input type="hidden" name="oauthRequired" value="true" />
                     <div class="field-group">
 	                   <label for="oauthClientId">Key:</label>
 	                   <input type="text" id="oauthClientId" name="oauthClientId" value=""/>

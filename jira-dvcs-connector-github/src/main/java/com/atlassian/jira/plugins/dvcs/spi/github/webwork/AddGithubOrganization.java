@@ -29,6 +29,10 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction {
 	private String url;
 	private String organization;
 
+	private String oauthClientId;
+	private String oauthSecret;
+	private String oauthRequired;
+
 	private String code;
 
 	private final Synchronizer synchronizer;
@@ -42,7 +46,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction {
 			ApplicationProperties applicationProperties,
 			GithubOAuth githubOAuth, PluginSettingsFactory pluginSettingsFactory) {
 		this.synchronizer = synchronizer;
-		this.ap = applicationProperties;
+		ap = applicationProperties;
 		this.githubOAuth = githubOAuth;
 		this.pluginSettingsFactory = pluginSettingsFactory;
 	}
@@ -106,8 +110,13 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction {
 	
 	@Override
 	protected void doValidation() {
-		// TODO Auto-generated method stub
-		super.doValidation();
+		
+		if (StringUtils.isNotBlank(oauthRequired)) {
+			if (StringUtils.isBlank(oauthClientId) || StringUtils.isBlank(oauthSecret) ) {
+				addErrorMessage("Please provide credentials.");
+			}
+		}
+		
 	}
 
 	public String doFinish() {
@@ -242,5 +251,37 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction {
 	public void setOrganization(String organization) {
 		this.organization = organization;
 	}
+
+	public String getOauthClientId()
+	{
+		return oauthClientId;
+	}
+
+	public void setOauthClientId(String oauthClientId)
+	{
+		this.oauthClientId = oauthClientId;
+	}
+
+	public String getOauthSecret()
+	{
+		return oauthSecret;
+	}
+
+	public void setOauthSecret(String oauthSecret)
+	{
+		this.oauthSecret = oauthSecret;
+	}
+
+	public String getOauthRequired()
+	{
+		return oauthRequired;
+	}
+
+	public void setOauthRequired(String oauthRequired)
+	{
+		this.oauthRequired = oauthRequired;
+	}
+	
+	
 
 }

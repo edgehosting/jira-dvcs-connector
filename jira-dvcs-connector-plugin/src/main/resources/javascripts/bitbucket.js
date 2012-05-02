@@ -182,6 +182,7 @@ function showAddRepoDetails(show) {
 		
 		// - hide username/password
 		AJS.$("#bitbucket-form-section").hide();
+		AJS.$("#github-form-section").hide();
 
 		// - show url field
 		AJS.$('#url').show();
@@ -225,9 +226,10 @@ function submitFormHandler() {
 
     AJS.$.getJSON(requestUrl,
         function(data) {
-            AJS.$("#aui-message-bar").empty();
-
-            AJS.$('#Submit').attr("disabled", "");
+            
+    		AJS.$("#aui-message-bar").empty();
+            AJS.$('#Submit').removeAttr("disabled");
+           
             if (data.validationErrors && data.validationErrors.length > 0) {
             	AJS.$.each(data.validationErrors, function(i, msg){
             		AJS.messages.error({title : "Error!", body : msg});
@@ -264,7 +266,9 @@ var submitFormAjaxHandler = {
 		}, 
 
 		"github":function(data) {
+			
 			AJS.$("#repoEntry").attr("action",BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
+			
 			if (data.requiresOauth) {
 				
 				// we need oauth ...
