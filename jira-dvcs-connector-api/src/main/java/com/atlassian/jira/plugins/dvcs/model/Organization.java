@@ -10,20 +10,16 @@ public class Organization
     private final String name;
     private final String dvcsType;
     private final boolean autolinkNewRepos;
-    private final String adminUsername;
-    private final String adminPassword;
-    private final String accessToken;
+    private final Credential credential;
 
-    public Organization(int id, String hostUrl, String name, String dvcsType, boolean autolinkNewRepos, String adminUsername, String adminPassword, String accessToken)
+    public Organization(int id, String hostUrl, String name, String dvcsType, boolean autolinkNewRepos, Credential credential)
     {
         this.id = id;
         this.hostUrl = hostUrl;
         this.name = name;
         this.dvcsType = dvcsType;
         this.autolinkNewRepos = autolinkNewRepos;
-        this.adminUsername = adminUsername;
-        this.adminPassword = adminPassword;
-        this.accessToken = accessToken;
+        this.credential = credential;
     }
 
     public int getId()
@@ -51,19 +47,9 @@ public class Organization
         return autolinkNewRepos;
     }
 
-    public String getAdminUsername()
+    public Credential getCredential()
     {
-        return adminUsername;
-    }
-
-    public String getAdminPassword()
-    {
-        return adminPassword;
-    }
-
-    public String getAccessToken()
-    {
-        return accessToken;
+        return credential;
     }
 
     @Override
@@ -79,9 +65,7 @@ public class Organization
                 .append(hostUrl, that.hostUrl)
                 .append(name, that.name)
                 .append(dvcsType, that.dvcsType)
-                .append(adminUsername, that.adminUsername)
-                .append(adminPassword, that.adminPassword)
-                .append(accessToken, that.accessToken)
+                .append(credential, that.credential)
                 .isEquals();
     }
 
@@ -93,9 +77,7 @@ public class Organization
                 .append(hostUrl)
                 .append(name)
                 .append(dvcsType)
-                .append(adminUsername)
-                .append(adminPassword)
-                .append(accessToken)
+                .append(credential)
                 .hashCode();
     }
 

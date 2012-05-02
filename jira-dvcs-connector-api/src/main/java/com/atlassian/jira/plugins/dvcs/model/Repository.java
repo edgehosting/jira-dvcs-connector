@@ -10,20 +10,22 @@ public class Repository
     private final int id;
     private final int organizationId;
     private final String dvcsType;
+    private final String slug;
     private final String name;
-    private final String humanName;
     private final Date lastCommitDate;
     private final boolean linked;
+    private Credential credential;
 
-    public Repository(int id, int organizationId, String dvcsType, String name, String humanName, Date lastCommitDate, boolean linked)
+    public Repository(int id, int organizationId, String dvcsType, String slug, String name, Date lastCommitDate, boolean linked, Credential credential)
     {
         this.id = id;
         this.organizationId = organizationId;
         this.dvcsType = dvcsType;
+        this.slug = name;
         this.name = name;
-        this.humanName = humanName;
         this.lastCommitDate = lastCommitDate;
         this.linked = linked;
+        this.credential = credential;
     }
 
     public int getId()
@@ -41,14 +43,14 @@ public class Repository
         return dvcsType;
     }
 
+    public String getSlug()
+    {
+        return slug;
+    }
+
     public String getName()
     {
         return name;
-    }
-
-    public String getHumanName()
-    {
-        return humanName;
     }
 
     public Date getLastCommitDate()
@@ -61,6 +63,11 @@ public class Repository
         return linked;
     }
 
+    public Credential getCredential()
+    {
+        return credential;
+    }
+
     @Override
 	public boolean equals(Object obj)
 	{
@@ -71,10 +78,11 @@ public class Repository
 		return new EqualsBuilder()
                 .append(organizationId, this.organizationId)
                 .append(dvcsType, this.dvcsType)
+                .append(slug, this.slug)
                 .append(name, this.name)
-                .append(humanName, this.humanName)
                 .append(lastCommitDate, this.lastCommitDate)
                 .append(linked, this.linked)
+                .append(credential, this.credential)
                 .isEquals();
 	}
 
@@ -84,10 +92,11 @@ public class Repository
         return new HashCodeBuilder(17, 37)
                 .append(organizationId)
                 .append(dvcsType)
+                .append(slug)
                 .append(name)
-                .append(humanName)
                 .append(lastCommitDate)
                 .append(linked)
+                .append(credential)
                 .toHashCode();
     }
 
