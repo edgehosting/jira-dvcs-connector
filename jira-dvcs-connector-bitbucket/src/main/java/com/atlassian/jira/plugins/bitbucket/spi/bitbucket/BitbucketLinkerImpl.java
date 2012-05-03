@@ -7,14 +7,16 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.BitbucketClient;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.BitbucketClientException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.RepositoryLink;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.RepositoryLinksService;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -25,8 +27,11 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 
     private final String baseUrl;
 
-    public BitbucketLinkerImpl(ApplicationProperties applicationProperties)
+    private final RepositoryService repositoryService;
+
+    public BitbucketLinkerImpl(ApplicationProperties applicationProperties, RepositoryService repositoryService)
     {
+        this.repositoryService = repositoryService;
         this.baseUrl = applicationProperties.getBaseUrl();
     }
 
@@ -34,28 +39,28 @@ public class BitbucketLinkerImpl implements BitbucketLinker
      * @see com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketLinker#setConfiguration(com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping, java.util.Set)
      */
     @Override
-    public void setConfiguration(OrganizationMapping om, Set<String> projectsList)
+    public void setConfiguration(Organization organization, Set<String> projectsList)
     {
-        List<SourceControlRepository> repositories = getRepositories(om);
-        for (SourceControlRepository sourceControlRepository : repositories)
+        List<Repository> repositories = getRepositories(organization);
+        for (Repository repository : repositories)
         {
-            List<RepositoryLink> currentlyLinkedProjects = getCurrentlyLinkedProjects(sourceControlRepository);
+            List<RepositoryLink> currentlyLinkedProjects = getCurrentlyLinkedProjects(organization, repository);
             
             List<RepositoryLink> linksToRemove = calculateLinksToRemove(currentlyLinkedProjects, projectsList);
             List<String> linksToAdd = calculateLinksToAdd(currentlyLinkedProjects, projectsList);
             
-            removeLinks(sourceControlRepository, linksToRemove);
-            addLinks(sourceControlRepository, linksToAdd);
+            removeLinks(organization, repository, linksToRemove);
+            addLinks(organization, repository, linksToAdd);
         }
     }
     
-    public void addLinks(SourceControlRepository sourceControlRepository, List<String> linksToAdd)
+    public void addLinks(Organization organization, Repository repository, List<String> linksToAdd)
     {
-        RepositoryLinksService repositoryLinksService = getRepositoryLinksService(sourceControlRepository);
+        RepositoryLinksService repositoryLinksService = getRepositoryLinksService(organization);
         for (String key : linksToAdd)
         {
-            String owner = sourceControlRepository.getRepositoryUri().getOwner();
-            String slug = sourceControlRepository.getRepositoryUri().getSlug();
+            String owner = organization.getName();
+            String slug = repository.getSlug();
 
             try
             {
@@ -63,18 +68,18 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             } catch (BitbucketClientException e)
             {
                 log.error("Error adding Repository Link [" + baseUrl + ", " + key + "] to "
-                    + sourceControlRepository.getRepositoryUri().getRepositoryUrl() + ": " + e.getMessage());
+                    + getRepositoryUrl(organization, repository) + ": " + e.getMessage());
             }
         }
     }
 
-    public void removeLinks(SourceControlRepository sourceControlRepository, List<RepositoryLink> linksToRemove)
+    public void removeLinks(Organization organization, Repository repository, List<RepositoryLink> linksToRemove)
     {
-        RepositoryLinksService repositoryLinksService = getRepositoryLinksService(sourceControlRepository);
+        RepositoryLinksService repositoryLinksService = getRepositoryLinksService(organization);
         for (RepositoryLink repositoryLink : linksToRemove)
         {
-            String owner = sourceControlRepository.getRepositoryUri().getOwner();
-            String slug = sourceControlRepository.getRepositoryUri().getSlug();
+            String owner = organization.getName();
+            String slug = repository.getSlug();
 
             try
             {
@@ -82,7 +87,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             } catch (BitbucketClientException e)
             {
                 log.error("Error removing Repository Link [" + repositoryLink + "] from "
-                    + sourceControlRepository.getRepositoryUri().getRepositoryUrl() + ": " + e.getMessage());
+                    + getRepositoryUrl(organization, repository) + ": " + e.getMessage());
             }
             
         }
@@ -124,31 +129,52 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         return linksToAdd;
     }
 
-    private List<SourceControlRepository> getRepositories(OrganizationMapping om)
+    private List<Repository> getRepositories(Organization organization)
     {
-        // TODO Auto-generated method stub
-        // from local DB get list of repositories from this organisation. Use only LINKED repositories
-        return null;
+        List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+        
+        Collections2.filter(repositories, new Predicate<Repository>()
+        {
+            @Override
+            public boolean apply(Repository repository)
+            {
+                return repository.isLinked();
+            }
+        });
+        return repositories;
     }
 
-    private List<RepositoryLink> getCurrentlyLinkedProjects(SourceControlRepository sourceControlRepository)
+    private List<RepositoryLink> getCurrentlyLinkedProjects(Organization organization, Repository repository)
     {
-        RepositoryLinksService repositoryLinksService = getRepositoryLinksService(sourceControlRepository);
+        RepositoryLinksService repositoryLinksService = getRepositoryLinksService(organization);
         try
         {
-            String owner = sourceControlRepository.getRepositoryUri().getOwner();
-            RepositoryUri slug = sourceControlRepository.getRepositoryUri();
-            return repositoryLinksService.getRepositoryLinks(owner, slug.getSlug());
+            String owner = organization.getName();
+            String slug = repository.getSlug();
+            return repositoryLinksService.getRepositoryLinks(owner, slug);
         } catch (BitbucketClientException e)
         {
-            log.error("Error retrieving Repository links from " + sourceControlRepository.getRepositoryUri().getRepositoryUrl());
+            log.error("Error retrieving Repository links from " + getRepositoryUrl(organization, repository));
             return Collections.emptyList();
         }
     }
 
-    private RepositoryLinksService getRepositoryLinksService(SourceControlRepository sourceControlRepository)
+    
+    private RepositoryLinksService getRepositoryLinksService(Organization organization)
     {
-        return new RepositoryLinksService(new BitbucketClient(sourceControlRepository.getRepositoryUri().getApiUrl()));
+        // TODO get apiUrl properly
+        String apiUrl = organization.getHostUrl()+"/!api/1.0";
+        return new RepositoryLinksService(new BitbucketClient(apiUrl));
     }
 
+    /**
+     * @param organization
+     * @param repository
+     * @return
+     */
+    @Deprecated
+    private String getRepositoryUrl(Organization organization, Repository repository)
+    {
+        return organization.getHostUrl()+"/"+organization.getName()+"/"+repository.getSlug();
+    }
 }

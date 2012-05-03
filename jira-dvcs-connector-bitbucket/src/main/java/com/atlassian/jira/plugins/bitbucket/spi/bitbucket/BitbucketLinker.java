@@ -2,7 +2,8 @@ package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
 import java.util.Set;
 
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+
 
 public interface BitbucketLinker
 {
@@ -13,8 +14,8 @@ public interface BitbucketLinker
      * are 20 JIRA projects and 20 Bitbucket repositories this will result in 400 rest calls and it will 
      * take around 5 mins. 
      * 
-     * @param om
+     * @param organization
      * @param projectsToLink
      */
-    void setConfiguration(OrganizationMapping om, Set<String> projectsToLink);
+    void setConfiguration(Organization organization, Set<String> projectsToLink);
 }
