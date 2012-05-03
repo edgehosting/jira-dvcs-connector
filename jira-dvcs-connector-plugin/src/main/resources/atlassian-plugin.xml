@@ -221,8 +221,7 @@
         <resource type="download" name="javascripts/bitbucket.js" location="javascripts/bitbucket.js"/>
         <resource type="download" name="javascripts/validation.js" location="javascripts/validation.js"/>
 	    <resource type="download" name="css/styles.css" location="css/styles.css" />
-        <context>atl.general</context>
-        <context>atl.admin</context>
+        <context>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin</context>
     </web-resource>
 
     <rest key="bitbucket-rest-resources" path="/bitbucket" version="1.0">
