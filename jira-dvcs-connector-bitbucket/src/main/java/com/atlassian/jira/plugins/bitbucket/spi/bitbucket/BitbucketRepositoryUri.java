@@ -40,9 +40,9 @@ public class BitbucketRepositoryUri extends DefaultRepositoryUri
     }
 
     @Override
-    public String getFileCommitUrl(String node, String file)
+    public String getFileCommitUrl(String node, String file, int counter)
     {
-        return MessageFormat.format("{0}://{1}/{2}/{3}/src/{4}/{5}", getProtocol(), getHostname(), getOwner(), getSlug(), node, file);
+        return MessageFormat.format("{0}#chg-{1}", getCommitUrl(node), file);
     }
 
     @Override

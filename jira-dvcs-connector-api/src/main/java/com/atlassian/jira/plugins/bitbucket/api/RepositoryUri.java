@@ -19,7 +19,7 @@ public interface RepositoryUri
 
     String getRepositoryInfoUrl();
 
-    String getFileCommitUrl(String node, String file);
+    String getFileCommitUrl(String node, String file, int counter);
 
     String getParentUrl(String parentNode);
 }
