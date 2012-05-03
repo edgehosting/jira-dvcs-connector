@@ -206,52 +206,57 @@
 
 <div class="vert-space">&nbsp;</div>
 
-<h4 class="aui">Organization: sample-org (BibBucket)</h4>
-	
-	<div class="dvcs-organization-controls"><input class="aui" type="checkbox" name="autolink-quick" /><label> Autolink new repositories</label>
-	 | <a href="javascript:;">Sync Repository List</a>
-	 | <a href="javascript:changePassword();">Change Password</a>
-	 | <a href="javascript:;">Delete organization</a>
-	</div>
-	<div class="vert-space">&nbsp;</div>
+			#foreach( $org in $action.loadOrganizations() )
+			
+			#if($org.isAutolinkNewRepos())
+				#set( $orgAutolink = "checked='checked'")
+				
+				#else
+				#set( $orgAutolink = "")
+			#end
+		
+			<h4 class="aui">Organization: $org.name ($org.dvcsType)</h4>
+				
+				<div class="dvcs-organization-controls"><input class="aui" $!orgAutolink type="checkbox" name="autolink-quick" /><label> Autolink new repositories</label>
+				 | <a href="javascript:;">Sync Repository List</a>
+				 | <a href="javascript:changePassword();">Change Password</a>
+				 | <a href="javascript:;">Delete organization</a>
+				</div>
+				<div class="vert-space">&nbsp;</div>
+			
+			   <div>
+			     
+			   <table class="aui">
+			    <thead>
+			        <tr>
+			            <th>Repository</th>
+			            <th>Enable Linking</th>
+			            <th>Actions</th>
+			        </tr>
+			    </thead>
+			    <tbody>
+			    
+			    #foreach( $repo in $org.getRepositories() )
+			        
+			        <tr>
+			            <td class="dvcs-org-reponame">$repo.name</td>
+			            <td><input type="checkbox"></td>
+			            <td class="action" headers="action">
+			                <ul class="menu">
+			                    <li>
+			                        <a href="javascript:;">Sync Repo</a>
+			                    </li>
+			                </ul>
+			            </td>
+			        </tr>
+			       
+			    #end
+			       
+			    </tbody>
+			</table>
+			
+			#end
 
-   <div>
-     
-   <table class="aui">
-    <thead>
-        <tr>
-            <th>Repository</th>
-            <th>Enable Linking</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>some-repo</td>
-            <td><input type="checkbox"></td>
-            <td class="action" headers="action">
-                <ul class="menu">
-                    <li>
-                        <a href="javascript:;">Sync Repo</a>
-                    </li>
-                </ul>
-            </td>
-        </tr>
-       
-        <tr>
-            <td>some-repo-2</td>
-            <td><input type="checkbox"></td>
-            <td class="action" headers="action">
-                <ul class="menu">
-                    <li>
-                        <a href="#">Sync Repo</a>
-                    </li>
-                </ul>
-            </td>
-        </tr>
-       
-    </tbody>
-</table>
 #end
 
 #macro (printUpdateCredentialsFormHidden)

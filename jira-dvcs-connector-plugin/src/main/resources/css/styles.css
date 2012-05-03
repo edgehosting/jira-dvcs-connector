@@ -483,3 +483,6 @@ a:hover.repositoryNameLink {
 	color: red !important;
 	display: none;
 }
+.dvcs-org-reponame {
+	width: 600px;
+}

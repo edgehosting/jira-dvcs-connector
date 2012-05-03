@@ -1,10 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
+import java.util.Date;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
@@ -19,11 +23,6 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
 	private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
-	private String mode = "";
-	private String repositoryUrl = "";
-	private String postCommitUrl = "";
-	private String projectKey = "";
-	private String nextAction = "";
 	private String addedRepositoryId = "";
 	private int repositoryId;
 	private final String baseUrl;
@@ -50,59 +49,40 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	@RequiresXsrfCheck
 	protected String doExecute() throws Exception
 	{
-		logger.debug("configure orgazniation [ " + nextAction + " ]");
-		
+		logger.debug("Configure orgazniation default action.");
+
 		return INPUT;
 	}
 
-	public void setMode(String value)
+	public Organization[] loadOrganizations()
 	{
-		mode = value;
-	}
 
-	public String getMode()
-	{
-		return mode;
-	}
+		Repository mockRepo = new Repository(124, 12, "bitbucket", "sentinel-core-components",
+				"Sentinel Core Components", new Date(), true, null);
 
-	public void setRepositoryUrl(String value)
-	{
-		repositoryUrl = value;
-	}
+		Organization mockOrg = new Organization();
+		mockOrg.setId(12);
+		mockOrg.setHostUrl("https://bitbucket.com");
+		mockOrg.setDvcsType("bitbucket");
+		mockOrg.setName("sentinel");
+		mockOrg.setAutolinkNewRepos(true);
+		mockOrg.setRepositories(new Repository[] { mockRepo });
+		
+		Repository mockRepo2 = new Repository(124, 12, "github", "blogging-samples",
+				"Blogging Samples Repo", new Date(), false, null);
+		
+		Organization mockOrg2 = new Organization();
+		mockOrg2.setId(12);
+		mockOrg2.setHostUrl("https://github.com");
+		mockOrg2.setDvcsType("github");
+		mockOrg2.setName("samuel");
+		mockOrg2.setAutolinkNewRepos(false);
+		mockOrg2.setRepositories(new Repository[] { mockRepo2 });
 
-	public String getRepositoryUrl()
-	{
-		return repositoryUrl;
-	}
+		Organization[] mocks = new Organization[] { mockOrg, mockOrg2  };
 
-	public void setPostCommitUrl(String value)
-	{
-		postCommitUrl = value;
-	}
-
-	public String getPostCommitUrl()
-	{
-		return postCommitUrl;
-	}
-
-	public void setProjectKey(String value)
-	{
-		projectKey = value;
-	}
-
-	public String getProjectKey()
-	{
-		return projectKey;
-	}
-
-	public void setNextAction(String value)
-	{
-		nextAction = value;
-	}
-
-	public String getNextAction()
-	{
-		return nextAction;
+		return mocks;
+		// return organizationService.getAll().toArray(new Organization []{});
 	}
 
 	public int getRepositoryId()
