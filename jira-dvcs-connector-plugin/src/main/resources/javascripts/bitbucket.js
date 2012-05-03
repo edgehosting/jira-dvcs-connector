@@ -102,7 +102,7 @@ function submitFunction() {
             AJS.$("#aui-message-bar").empty();
             AJS.$("#isPrivate").val(data.isPrivate);
 
-            AJS.$('#Submit').attr("disabled", "");
+            AJS.$('#Submit').removeAttr("disabled");
             if (data.validationErrors.length>0) {
             	AJS.$.each(data.validationErrors, function(i, msg){
             		AJS.messages.error({title : "Error!", body : msg});
@@ -115,7 +115,7 @@ function submitFunction() {
             AJS.messages.error({ title: "Error!", 
             	body: "The repository url [<b>" + AJS.escapeHtml(AJS.$("#url").val()) + "</b>] is incorrect or the repository is not responding." 
             });
-            AJS.$('#Submit').attr("disabled", "");
+            AJS.$('#Submit').removeAttr("disabled");
         });
     return false;
 }
