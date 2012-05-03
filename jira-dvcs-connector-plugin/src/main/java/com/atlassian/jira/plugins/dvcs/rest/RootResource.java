@@ -79,7 +79,7 @@ public class RootResource
         return Response.seeOther(uri).build();
     }
 
-
+    @GET
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/accountInfo")
     public Response accountInfo(@QueryParam("server") String server, @QueryParam("account") String account)

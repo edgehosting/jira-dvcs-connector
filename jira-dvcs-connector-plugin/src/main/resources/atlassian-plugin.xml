@@ -65,12 +65,6 @@
         <!--<interface>com.atlassian.jira.plugins.bitbucket.api.Synchronizer</interface>-->
     <!--</component>-->
 
-    <component key="encryptor" name="Encryption Service"
-               class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultEncryptor">
-        <description>A service for encrypting and decrypting passwords</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.api.Encryptor</interface>
-    </component>
-
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
                class="com.atlassian.jira.plugins.bitbucket.activeobjects.DefaultBitbucketProjectSettings">
         <description>A facade for storing project settings</description>
@@ -91,6 +85,11 @@
 
 
 
+    <component key="encryptor" name="Encryption Service"
+               class="com.atlassian.jira.plugins.dvcs.crypto.DefaultEncryptor">
+        <description>A service for encrypting and decrypting passwords</description>
+        <interface>com.atlassian.jira.plugins.dvcs.crypto.Encryptor</interface>
+    </component>
 
 
     <component key="authenticationFactory" name="Authentication Factory"
@@ -126,7 +125,20 @@
         <description>githubOAuth</description>
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth</interface>
     </component>
-    
+
+    <component key="organizationDao" name="organizationDao"
+               class="com.atlassian.jira.plugins.dvcs.dao.impl.OrganizationDaoImpl">
+        <description>organizationDao</description>
+        <interface>com.atlassian.jira.plugins.dvcs.dao.OrganizationDao</interface>
+    </component>
+
+    <component key="repositoryDao" name="repositoryDao"
+               class="com.atlassian.jira.plugins.dvcs.dao.impl.RepositoryDaoImpl">
+        <description>repositoryDao</description>
+        <interface>com.atlassian.jira.plugins.dvcs.dao.RepositoryDao</interface>
+    </component>
+
+
     <component key="organizationService" name="organizationService"
                class="com.atlassian.jira.plugins.dvcs.service.OrganizationServiceImpl">
         <description>organizationService</description>
