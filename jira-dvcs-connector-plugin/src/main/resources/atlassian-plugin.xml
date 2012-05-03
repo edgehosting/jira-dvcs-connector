@@ -45,11 +45,6 @@
             class="com.atlassian.jira.plugins.bitbucket.IssueLinkerImpl">
         <interface>com.atlassian.jira.plugins.bitbucket.api.IssueLinker</interface>
     </component>
-    
-    <component key="requestHelper" name="requestHelper"
-            class="com.atlassian.jira.plugins.bitbucket.api.net.DefaultRequestHelper">
-        <interface>com.atlassian.jira.plugins.bitbucket.api.net.RequestHelper</interface>
-    </component>
 
     <component key="responseHandlerFactory" name="responseHandlerFactory"
             class="com.atlassian.jira.plugins.bitbucket.api.net.DefaultExtendedResponseHandlerFactory">
@@ -63,22 +58,17 @@
         <interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister</interface>
     </component>
 
-    <component key="synchronizer" name="Bitbucket Synchronization Service"
-               class="com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer">
-        <description>A Service for migrating from the property set storage to ActiveObjects</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.api.Synchronizer</interface>
-    </component>
+    <!--TODO refaktorovat zavyslost na RepoManager-->
+    <!--<component key="synchronizer" name="Bitbucket Synchronization Service"-->
+               <!--class="com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer">-->
+        <!--<description>A Service for migrating from the property set storage to ActiveObjects</description>-->
+        <!--<interface>com.atlassian.jira.plugins.bitbucket.api.Synchronizer</interface>-->
+    <!--</component>-->
 
     <component key="encryptor" name="Encryption Service"
                class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultEncryptor">
         <description>A service for encrypting and decrypting passwords</description>
         <interface>com.atlassian.jira.plugins.bitbucket.api.Encryptor</interface>
-    </component>
-
-    <component key="authenticationFactory" name="Authentication Factory"
-               class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultAuthenticationFactory">
-        <description>Creating authenticators</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory</interface>
     </component>
 
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
@@ -87,38 +77,74 @@
         <interface>com.atlassian.jira.plugins.bitbucket.activeobjects.BitbucketProjectSettings</interface>
     </component>
 
-    <component key="bitbucketRepositoryManager" name="bitbucketRepositoryManager"
-               class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketRepositoryManager">
-        <description>bitbucketRepositoryManager</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryManager</interface>
+    <!--<component key="globalRepositoryManager" name="globalRepositoryManager"-->
+               <!--class="com.atlassian.jira.plugins.bitbucket.GlobalRepositoryManager">-->
+        <!--<description>globalRepositoryManager</description>-->
+        <!--<interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryManager</interface>-->
+    <!--</component>-->
+
+    <!--<component key="githubRepositoryManager" name="githubRepositoryManager"-->
+               <!--class="com.atlassian.jira.plugins.bitbucket.spi.github.GithubRepositoryManager">-->
+        <!--<description>githubRepositoryManager</description>-->
+        <!--<interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryManager</interface>-->
+    <!--</component>-->
+
+
+
+
+
+    <component key="authenticationFactory" name="Authentication Factory"
+               class="com.atlassian.jira.plugins.dvcs.auth.DefaultAuthenticationFactory">
+        <description>Creating authenticators</description>
+        <interface>com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory</interface>
     </component>
 
-    <component key="githubRepositoryManager" name="githubRepositoryManager" 
-               class="com.atlassian.jira.plugins.bitbucket.spi.github.GithubRepositoryManager">
-        <description>githubRepositoryManager</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryManager</interface>
+    <component key="requestHelper" name="requestHelper"
+            class="com.atlassian.jira.plugins.dvcs.net.DefaultRequestHelper">
+        <interface>com.atlassian.jira.plugins.dvcs.net.RequestHelper</interface>
     </component>
 
-    <component key="globalRepositoryManager" name="globalRepositoryManager"
-               class="com.atlassian.jira.plugins.bitbucket.GlobalRepositoryManager">
-        <description>globalRepositoryManager</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryManager</interface>
+    <component key="bitbucketCommunicator" name="bitbucketCommunicator"
+               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator">
+        <description>bitbucketCommunicator</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
+    </component>
+
+    <component key="githubCommunicator" name="githubCommunicator"
+               class="com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator">
+        <description>githubCommunicator</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
+    </component>
+
+    <component key="dvcsCommunicatorProvider" name="dvcsCommunicatorProvider"
+               class="com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider">
+        <description>dvcsCommunicatorProvider</description>
     </component>
 
     <component key="githubOAuth" name="githubOAuth"
-               class="com.atlassian.jira.plugins.bitbucket.spi.github.DefaultGithubOAuth">
+               class="com.atlassian.jira.plugins.dvcs.spi.github.DefaultGithubOAuth">
         <description>githubOAuth</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth</interface>
+        <interface>com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth</interface>
     </component>
     
-    <component key="organizationService" class="com.atlassian.jira.plugins.dvcs.service.OrganizationServiceImpl">
+    <component key="organizationService" name="organizationService"
+               class="com.atlassian.jira.plugins.dvcs.service.OrganizationServiceImpl">
+        <description>organizationService</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.OrganizationService</interface>
     </component>
 
-    <component key="communicatorProvider" class="com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider">
+    <component key="repositoryService" name="repositoryService"
+               class="com.atlassian.jira.plugins.dvcs.service.RepositoryServiceImpl">
+        <description>repositoryService</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.RepositoryService</interface>
+    </component>
+
+    <component key="changesetService" name="changesetService"
+               class="com.atlassian.jira.plugins.dvcs.service.ChangesetServiceImpl">
+        <description>changesetService</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetService</interface>
     </component>
     
-    <component key="mockCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.MockCommunicator">
-    </component>
     
     <!-- Listener -->
     <component key="dvcsAddUserListener" class="com.atlassian.jira.plugins.dvcs.listener.DvcsAddUserListener" />
@@ -231,9 +257,11 @@
     <resource type="download" name="images/" location="images/"/>
  
     <resource type="i18n" name="bitbucket-i18n" location="i18n"/>
-    <activity-streams-provider key="bitbucket-streams-provider" name="Bitbucket Streams Provider" i18n-name-key="Bitbucket Connector"
-                       class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsActivityProvider">
-    </activity-streams-provider>
+
+    <!--TODO: refaktorovat zavyslost na RepoManager-->
+    <!--<activity-streams-provider key="bitbucket-streams-provider" name="Bitbucket Streams Provider" i18n-name-key="Bitbucket Connector"-->
+                       <!--class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsActivityProvider">-->
+    <!--</activity-streams-provider>-->
 
 	<!-- Web Panels -->
 	<web-panel key="add-user-dvcs-extension" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />

@@ -1,6 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
-import java.net.URI;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.atlassian.jira.security.PermissionManager;
+import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -14,19 +21,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import java.net.URI;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugins.bitbucket.api.Synchronizer;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.security.JiraAuthenticationContext;
-import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
-
-//@Path("/")
+@Path("/")
 public class RootResource
 {
 
@@ -41,19 +38,19 @@ public class RootResource
 
     private final PermissionManager permissionManager;
     private final JiraAuthenticationContext jiraAuthenticationContext;
-    private final Synchronizer synchronizer;
+//    private final Synchronizer synchronizer;
 
 	private final RepositoryService repositoryService;
 
 	public RootResource(PermissionManager permissionManager,
 						JiraAuthenticationContext jiraAuthenticationContext,
-						Synchronizer synchronizer,
+						//Synchronizer synchronizer,
 						OrganizationService organizationService,
 						RepositoryService repositoryService)
     {
         this.permissionManager = permissionManager;
         this.jiraAuthenticationContext = jiraAuthenticationContext;
-        this.synchronizer = synchronizer;
+//        this.synchronizer = synchronizer;
 		this.organizationService = organizationService;
 		this.repositoryService = repositoryService;
     }

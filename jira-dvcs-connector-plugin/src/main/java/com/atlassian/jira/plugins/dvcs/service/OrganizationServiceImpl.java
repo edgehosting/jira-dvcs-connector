@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrganizationServiceImpl implements OrganizationService
 {
@@ -20,7 +20,7 @@ public class OrganizationServiceImpl implements OrganizationService
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        return null;
+        return dvcsCommunicatorProvider.getAccountInfo(hostUrl, accountName);
     }
 
     @Override
