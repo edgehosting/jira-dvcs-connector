@@ -26,7 +26,7 @@ import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
-@Path("/")
+//@Path("/")
 public class RootResource
 {
 

@@ -63,7 +63,7 @@
 	            <div class="aui-item-column1">
                     <div class="field-group" >
                       <label for="url">Url:</label>
-                      <input type="text" id="url" name="repositoryUrl" value="$textutils.htmlEncode($action.getRepositoryUrl())"/>
+                      <input type="text" id="url" name="url" value="$textutils.htmlEncode($action.getRepositoryUrl())"/>
                       <div class="fieldValue" id="urlReadOnly"></div>
                     </div>
                 </div>
@@ -80,6 +80,7 @@
                     </div>
                  </div>
 				
+				## BB form section
 				<div id="bitbucket-form-section" style="display:none">
 	                <div class="field-group">
 	                   <label for="adminUsername">Username:</label>
@@ -90,9 +91,10 @@
 	                   <input type="text" id="adminPassword" name="adminPassword" value=""/>
 	                </div>
 	            </div>
-
+				
+				## GH form section
 				<div id="github-form-section" style="display:none">
-					<input type="hidden" name="oauthRequired" value="true" />
+					<input type="hidden" id="oauthRequired" name="oauthRequired" value="true" />
                     <div class="field-group">
 	                   <label for="oauthClientId">Key:</label>
 	                   <input type="text" id="oauthClientId" name="oauthClientId" value=""/>

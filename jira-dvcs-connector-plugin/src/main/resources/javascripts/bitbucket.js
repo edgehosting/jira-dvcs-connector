@@ -242,7 +242,7 @@ function submitFormHandler() {
             		AJS.messages.error({title : "Error!", body : msg});
             	})
             } else{
-            	submitFormAjaxHandler[data.dvcsType].apply(this, arguments);
+            	submitFormAjaxHandler[data.accountType].apply(this, arguments);
         	}
     	}).error(function(a) {
             AJS.$("#aui-message-bar").empty();
@@ -274,7 +274,7 @@ var submitFormAjaxHandler = {
 
 		"github":function(data) {
 			
-			AJS.$("#repoEntry").attr("action",BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
+			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
 			
 			if (data.requiresOauth) {
 				
@@ -290,7 +290,9 @@ var submitFormAjaxHandler = {
 				AJS.$("#github-form-section").fadeIn();
 
 			} else {
+
 				AJS.$('#repoEntry').submit();
+
 			}
 		}
 }

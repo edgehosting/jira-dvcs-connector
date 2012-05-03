@@ -40,7 +40,7 @@ import com.atlassian.theplugin.commons.util.DateUtil;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
-//@Path("/")
+@Path("/")
 @Deprecated
 public class RootResource
 {
@@ -234,6 +234,7 @@ public class RootResource
     public Response accountInfo(@QueryParam("server") String server, @QueryParam("account") String account)
     {
         AccountInfo accountInfo = globalRepositoryManager.getAccountInfo(server, account);
+        accountInfo.setRequiresOauth(true);
         if (accountInfo!=null)
             return Response.ok(accountInfo).build();
         else 

@@ -1,16 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class OrganizationServiceImpl implements OrganizationService
 {
 
-    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
     public OrganizationServiceImpl(DvcsCommunicatorProvider dvcsCommunicatorProvider)
     {

@@ -111,6 +111,15 @@
         <interface>com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth</interface>
     </component>
     
+    <component key="organizationService" class="com.atlassian.jira.plugins.dvcs.service.OrganizationServiceImpl">
+    </component>
+
+    <component key="communicatorProvider" class="com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider">
+    </component>
+    
+    <component key="mockCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.MockCommunicator">
+    </component>
+    
     <!-- Listener -->
     <component key="dvcsAddUserListener" class="com.atlassian.jira.plugins.dvcs.listener.DvcsAddUserListener" />
 
@@ -163,6 +172,25 @@
                 <view name="success">/templates/githuboauth2.vm</view>
             </action>
 
+
+			<!-- New organization driven actions -->
+			
+			<action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
+                    alias="ConfigureDvcsOrganizations" roles-required="admin">
+                <view name="input">/templates/dvcs/add-organization.vm</view>
+            </action>
+            
+            <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.AddGithubOrganization"
+                    alias="AddGithubOrganization" roles-required="admin">
+                <view name="input">/templates/dvcs/add-github-organization.vm</view>
+            </action>
+            
+            <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.AddBitbucketOrganization"
+                    alias="AddBitbucketOrganization" roles-required="admin">
+                <view name="input">/templates/dvcs/add-bitbucket-organization.vm</view>
+            </action>
+            
+			
         </actions>
     </webwork1>
 

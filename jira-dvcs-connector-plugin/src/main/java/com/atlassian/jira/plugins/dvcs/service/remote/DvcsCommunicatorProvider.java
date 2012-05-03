@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service.remote;
 public class DvcsCommunicatorProvider
 {
     private final DvcsCommunicator[] dvcsCommunicators;
-
+    
     public DvcsCommunicatorProvider(DvcsCommunicator... dvcsCommunicators)
     {
         this.dvcsCommunicators = dvcsCommunicators;
