@@ -15,6 +15,8 @@ public class Organization
     private boolean autolinkNewRepos;
     private Credential credential;
 
+    private Repository [] repositories;
+ 
     public Organization()
 	{
     	super();
@@ -118,5 +120,15 @@ public class Organization
                 .append(credential)
                 .hashCode();
     }
+
+	public Repository[] getRepositories()
+	{
+		return repositories;
+	}
+
+	public void setRepositories(Repository[] repositories)
+	{
+		this.repositories = repositories;
+	}
 
 }
