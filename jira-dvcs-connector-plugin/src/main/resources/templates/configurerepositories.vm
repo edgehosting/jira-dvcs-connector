@@ -94,7 +94,7 @@
 
                 <div id="aui-message-bar"></div>
 
-                <div class="buttons-container">
+                <div class="buttons-container dvcs-buttons-container">
                     <div class="buttons">
                         <input class="button dvcs-submit" type="submit" name="Submit" id="Submit" value="Continue" />
                         <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>

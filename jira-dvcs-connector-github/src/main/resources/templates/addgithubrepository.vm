@@ -37,7 +37,7 @@
         #end
       </div>
 
-      <div class="buttons-container">
+      <div class="buttons-container dvcs-buttons-container">
         <div class="buttons">
           <div>&nbsp;</div>
             <input type="submit" name="Submit" id="Submit" value="Try Again"/>

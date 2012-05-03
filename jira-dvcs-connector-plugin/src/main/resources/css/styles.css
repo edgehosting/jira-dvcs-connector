@@ -451,7 +451,7 @@ a:hover.repositoryNameLink {
     color: #555 !important;
 }
 
-.buttons-container {
+.dvcs-buttons-container.buttons-container {
 	margin-top: 20px;
 	border: none !important;
 }
