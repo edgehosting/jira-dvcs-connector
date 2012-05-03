@@ -13,25 +13,25 @@
 
       <fieldset>
          <div class="field-group">
-              <label for="repositoryUrl">Url:</label>
+              <label for="url">Url:</label>
               <span class="field-value">$textutils.htmlEncode($action.getUrl())</span>
-              <input type="hidden" id="repositoryUrl" name="repositoryUrl" value="$textutils.htmlEncode($action.getUrl())"/>
+              <input type="hidden" id="url" name="url" value="$textutils.htmlEncode($action.getUrl())"/>
           </div>
           
           <div class="field-group" >
           	<label for="organization">Organization:</label>
             <span class="field-value">$action.getOrganization()</span>
-            <input type="hidden" id="repositoryUrl" name="repositoryUrl" value="$action.getOrganization()"/>
+            <input type="hidden" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 		  </div>
       </fieldset>
 
       <h3>Access credentials</h3>
       <div class="field-group">
-        <label for="adminUsername">Username</label>
+        <label for="adminUsername">Username:</label>
         <input type="text" name="adminUsername" id="adminUsername" value="$textutils.htmlEncode($action.getAdminUsername())">
       </div>  
       <div class="field-group">
-        <label for="adminPassword">Password</label>
+        <label for="adminPassword">Password:</label>
         <input type="password" name="adminPassword" id="adminPassword" value="">
       </div>  
 

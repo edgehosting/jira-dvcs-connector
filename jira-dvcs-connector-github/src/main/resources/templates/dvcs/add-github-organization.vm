@@ -14,29 +14,29 @@
         <fieldset>
          
           <div class="field-group">
-              <label for="repositoryUrl">Url:</label>
+              <label for="url">Url:</label>
               <span class="field-value">$textutils.htmlEncode($action.getUrl())</span>
-              <input type="hidden" id="repositoryUrl" name="repositoryUrl" value="$textutils.htmlEncode($action.getUrl())"/>
+              <input type="hidden" id="url" name="url" value="$textutils.htmlEncode($action.getUrl())"/>
           </div>
           
           <div class="field-group" >
           	<label for="organization">Organization:</label>
             <span class="field-value">$action.getOrganization()</span>
-            <input type="hidden" id="repositoryUrl" name="repositoryUrl" value="$action.getOrganization()"/>
+            <input type="hidden" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 		  </div>
  			
           #if($action.getOauthRequired() == "true")
           	<input type="hidden" name="oauthRequired" value="true" />
           	<div class="field-group" >
-          		<label for="organization">Key:</label>
+          		<label for="oauthClientId">Key:</label>
             	<span class="field-value">$action.getOauthClientId()</span>
-            	<input type="hidden" id="oauthClientId" name="oauthClientId" value="$action.getOauthClientId()"/>
+            	<input type="text" id="oauthClientId" name="oauthClientId" value="$textutils.htmlEncode($action.getOauthClientId())"/>
 		    </div>
 		  
 		   <div class="field-group" >
-          		<label for="organization">Secret:</label>
+          		<label for="oauthSecret">Secret:</label>
             	<span class="field-value">$action.getOauthSecret()</span>
-            	<input type="hidden" id="oauthSecret" name="oauthSecret" value="$action.getOauthSecret()"/>
+            	<input type="text" id="oauthSecret" name="oauthSecret" value="$textutils.htmlEncode($action.getOauthSecret())"/>
 		   </div>
 		  
           #end

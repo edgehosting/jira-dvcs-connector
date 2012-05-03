@@ -234,9 +234,10 @@ public class RootResource
     public Response accountInfo(@QueryParam("server") String server, @QueryParam("account") String account)
     {
         AccountInfo accountInfo = globalRepositoryManager.getAccountInfo(server, account);
-        accountInfo.setRequiresOauth(true);
-        if (accountInfo!=null)
-            return Response.ok(accountInfo).build();
+        if (accountInfo!=null) {
+        	accountInfo.setRequiresOauth(true);
+        	return Response.ok(accountInfo).build();
+        }
         else 
             return Response.status(Response.Status.NOT_FOUND).build();
     }

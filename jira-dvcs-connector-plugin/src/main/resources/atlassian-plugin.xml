@@ -219,6 +219,7 @@
 
     <web-resource name="resources" key="resources">
         <resource type="download" name="javascripts/bitbucket.js" location="javascripts/bitbucket.js"/>
+        <resource type="download" name="javascripts/validation.js" location="javascripts/validation.js"/>
 	    <resource type="download" name="css/styles.css" location="css/styles.css" />
         <context>atl.general</context>
         <context>atl.admin</context>

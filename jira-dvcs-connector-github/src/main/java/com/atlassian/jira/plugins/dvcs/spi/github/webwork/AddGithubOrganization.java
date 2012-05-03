@@ -123,7 +123,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 		{
 			if (StringUtils.isBlank(oauthClientId) || StringUtils.isBlank(oauthSecret))
 			{
-				addErrorMessage("Invalid credentials.");
+				addErrorMessage("Missing credentials.");
 			}
 		}
 

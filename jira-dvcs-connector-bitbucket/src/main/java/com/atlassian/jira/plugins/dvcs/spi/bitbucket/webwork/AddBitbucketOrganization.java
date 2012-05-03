@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +84,10 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 	@Override
 	protected void doValidation()
 	{
-		super.doValidation();
+		if (StringUtils.isBlank(adminUsername) || StringUtils.isBlank(adminPassword))
+		{
+			addErrorMessage("Missing credentials.");
+		}
 	}
 
 	public String getAdminPassword()

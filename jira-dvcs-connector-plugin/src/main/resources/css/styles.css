@@ -448,7 +448,7 @@ a:hover.repositoryNameLink {
 }
 
 #addRepositoryContent div,  #addRepositoryContent input {
-    color: #555 !important;
+    color: #555;
 }
 
 .buttons-container {
@@ -477,4 +477,9 @@ a:hover.repositoryNameLink {
 }
 .dvcs-update-cred-dialog {
 	margin-top: 30px;
+}
+
+.dvcs-error {
+	color: red !important;
+	display: none;
 }

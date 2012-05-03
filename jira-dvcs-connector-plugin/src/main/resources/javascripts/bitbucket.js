@@ -217,10 +217,13 @@ function submitFormHandler() {
 
     AJS.$('#Submit').attr("disabled", "disabled");
 
+    // submit form
     if (AJS.$('#repoEntry').attr("action")) {
         AJS.messages.hint({ title: "Obtaining information...", body: "Trying to obtain repositories information."});
 		return true; // submit form
 	}
+
+    // account info
 
     AJS.$("#aui-message-bar").empty();
     
