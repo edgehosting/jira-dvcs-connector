@@ -229,8 +229,6 @@
 				</div>
 
 				<div class="vert-space">&nbsp;</div>
-				<div class="vert-space">&nbsp;</div>
-			
 			   <div>
 			     
 			   <table class="aui">
@@ -277,6 +275,9 @@
 			       
 			    </tbody>
 			</table>
+			
+			<div class="vert-space">&nbsp;</div>
+			<div class="vert-space">&nbsp;</div>
 			
 			#end
 
