@@ -36,12 +36,13 @@
                             #end
                         </div>
                         <!-- data for while -->
+                        #set ( $file_counter = 0 ) <!-- used to create link to the diff on github-->
                         #foreach ( $file in $changeset.getFiles() )
                             #set ( $file_name = $file.getFile() )
                             #set ( $color = $file.getFileAction().getColor() )
                             #set ( $file_action_name = $file.getFileAction().toString() )
                             #set ( $file_commit_url = $repository.getRepositoryUri().getFileCommitUrl($changeset.getNode(),
-                                $velocity_utils.encodeUriPath($file.getFile())) )
+                                $velocity_utils.encodeUriPath($file.getFile()), $file_counter))
 
                             #set ( $action = $file.getFileAction().getAction() )
                             #if ( $action == 'modified' )
@@ -79,6 +80,7 @@
                                     </a>
                                 </div>
                             #end
+                            #set ( $file_counter = $file_counter+1 )
                             <!--  -->
                         #end
                         #if ( $changeset.getAllFileCount() gt 5 )

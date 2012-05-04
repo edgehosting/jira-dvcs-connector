@@ -97,7 +97,7 @@ public class DefaultRepositoryUri implements RepositoryUri
         throw new UnsupportedOperationException();
     }
     @Override
-    public String getFileCommitUrl(String node, String file)
+    public String getFileCommitUrl(String node, String file, int counter)
     {
         throw new UnsupportedOperationException();
     }
