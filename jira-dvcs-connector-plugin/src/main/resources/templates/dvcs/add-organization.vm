@@ -216,7 +216,7 @@
 				#set( $orgAutolink = "")
 			#end
 		
-			<h4 class="aui">Organization: $org.name ($org.dvcsType)</h4>
+			<h4 class="aui $org.getDvcsType()Logo">Organization: $org.name ($org.dvcsType)</h4>
 				
 				<div class="dvcs-organization-controls"><input class="aui" $!orgAutolink type="checkbox" name="autolink-quick" /><label> Autolink new repositories</label>
 				 | <a href="javascript:;">Sync Repository List</a>
@@ -227,6 +227,8 @@
 				 #end
 				 | <a href="javascript:;">Delete organization</a>
 				</div>
+
+				<div class="vert-space">&nbsp;</div>
 				<div class="vert-space">&nbsp;</div>
 			
 			   <div>
@@ -248,7 +250,13 @@
 						#else
 						#set( $repoAutolink = "")
 					#end
-			        <tr>
+					
+					#if($velocityCount % 2 == 0)
+						#set( $dvcsEvenClass = "dvcs-even-row")
+						#else
+						#set( $dvcsEvenClass = "")
+					#end
+			        <tr class="$dvcsEvenClass">
 			            <td class="dvcs-org-reponame">$repo.name</td>
 			            <td><input type="checkbox" $!repoAutolink /></td>
 			            <td class="action" headers="action" style="text-align: right;">

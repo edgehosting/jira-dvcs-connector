@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
 import java.util.Date;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +83,9 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 		Organization[] mocks = new Organization[] { mockOrg, mockOrg2  };
 
 		//return mocks;
-		 return organizationService.getAll().toArray(new Organization []{});
+		List<Organization> allOrganizations = organizationService.getAll();
+		allOrganizations.get(0).setRepositories(new Repository[] { mockRepo, mockRepo2 });
+		return allOrganizations.toArray(new Organization []{});
 	}
 
 	public int getRepositoryId()
