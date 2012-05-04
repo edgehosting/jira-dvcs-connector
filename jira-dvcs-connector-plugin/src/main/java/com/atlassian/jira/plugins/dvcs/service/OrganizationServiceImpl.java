@@ -1,29 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.List;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
-import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+
+import java.util.List;
 
 public class OrganizationServiceImpl implements OrganizationService
 {
 
     private final OrganizationDao organizationDao;
-    private final RepositoryDao repositoryDao;
     private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
+    private final RepositoryService repositoryService;
 
-    public OrganizationServiceImpl(DvcsCommunicatorProvider dvcsCommunicatorProvider, OrganizationDao organizationDao, RepositoryDao repositoryDao)
+    public OrganizationServiceImpl(DvcsCommunicatorProvider dvcsCommunicatorProvider, OrganizationDao organizationDao, RepositoryService repositoryService)
     {
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
         this.organizationDao = organizationDao;
-        this.repositoryDao = repositoryDao;
+        this.repositoryService = repositoryService;
     }
 
     @Override
@@ -33,32 +31,38 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-    public List<Organization> getAll()
+    public List<Organization> getAll(final boolean loadRepositories)
     {
         final List<Organization> organizations = organizationDao.getAll();
 
-        CollectionUtils.transform(organizations, new Transformer()
+        if (loadRepositories)
         {
-            @Override
-            public Object transform(Object o)
+            CollectionUtils.transform(organizations, new Transformer()
             {
-                Organization organization = (Organization) o;
-                final List<Repository> repositories = repositoryDao.getAllByOrganization(organization.getId());
-                organization.setRepositories(repositories.toArray(new Repository[]{}));
-                return organization;
-            }
-        });
+                @Override
+                public Object transform(Object o)
+                {
+                    Organization organization = (Organization) o;
+                    final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+                    organization.setRepositories(repositories);
+                    return organization;
+                }
+            });
+        }
+
         return organizations;
     }
 
     @Override
-    public Organization get(int organizationId)
+    public Organization get(int organizationId, boolean loadRepositories)
     {
         final Organization organization = organizationDao.get(organizationId);
 
-        // todo: ozaj array?  nie radsej list?
-        final List<Repository> repositoryList = repositoryDao.getAllByOrganization(organizationId);
-        organization.setRepositories((Repository[]) repositoryList.toArray());
+        if (loadRepositories)
+        {
+            final List<Repository> repositories = repositoryService.getAllByOrganization(organizationId);
+            organization.setRepositories(repositories);
+        }
 
         return organization;
     }
@@ -66,12 +70,20 @@ public class OrganizationServiceImpl implements OrganizationService
     @Override
     public Organization save(Organization organization)
     {
-        return organizationDao.save(organization);
+        // TODO: check if exists with same org name
+        final Organization savedOrg = organizationDao.save(organization);
+
+        savedOrg.setId(17);
+
+        repositoryService.syncRepositoryList(savedOrg);
+
+        return savedOrg;
     }
 
     @Override
     public void remove(int organizationId)
     {
+        // todo
     }
 
 	@Override

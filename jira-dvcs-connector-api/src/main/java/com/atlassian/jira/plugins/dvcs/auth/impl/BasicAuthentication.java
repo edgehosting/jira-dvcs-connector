@@ -1,5 +1,6 @@
-package com.atlassian.jira.plugins.dvcs.auth;
+package com.atlassian.jira.plugins.dvcs.auth.impl;
 
+import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.sal.api.net.Request;
 import org.apache.commons.lang.StringUtils;
 

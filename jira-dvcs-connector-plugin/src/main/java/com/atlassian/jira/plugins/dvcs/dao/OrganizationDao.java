@@ -14,6 +14,8 @@ public interface OrganizationDao
 
     /**
      * returns Organization by ID
+     *
+     *
      * @param organizationId id
      * @return organization
      */

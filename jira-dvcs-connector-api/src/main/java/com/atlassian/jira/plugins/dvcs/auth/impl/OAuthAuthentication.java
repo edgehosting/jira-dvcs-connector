@@ -1,13 +1,14 @@
-package com.atlassian.jira.plugins.dvcs.auth;
+package com.atlassian.jira.plugins.dvcs.auth.impl;
 
+import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.sal.api.net.Request;
 
-public class GithubOAuthAuthentication implements Authentication
+public class OAuthAuthentication implements Authentication
 {
 
     private final String accessToken;
 
-    public GithubOAuthAuthentication(String accessToken)
+    public OAuthAuthentication(String accessToken)
     {
         this.accessToken = accessToken;
     }

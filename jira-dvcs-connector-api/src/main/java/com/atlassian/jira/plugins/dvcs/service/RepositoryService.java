@@ -1,9 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.List;
-
+import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.SyncProgress;
+
+import java.util.List;
 
 /**
  * Returning type {@link Repository} is enriched with synchronization status by default.
@@ -46,9 +47,9 @@ public interface RepositoryService
 
     /**
      * synchronization of repository list in given organization
-     * @param organizationId organizationId
+     * @param organization organization
      */
-    void syncRepositoryList(int organizationId);
+    void syncRepositoryList(Organization organization);
 
     /**
      * synchronization of changesets in given repository

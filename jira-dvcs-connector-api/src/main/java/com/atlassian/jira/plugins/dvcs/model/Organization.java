@@ -1,9 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
 
 @XmlRootElement
 public class Organization
@@ -15,7 +16,7 @@ public class Organization
     private boolean autolinkNewRepos;
     private Credential credential;
 
-    private Repository [] repositories;
+    private List<Repository> repositories;
  
     public Organization()
 	{
@@ -92,6 +93,16 @@ public class Organization
 		this.credential = credential;
 	}
 
+    public List<Repository> getRepositories()
+    {
+        return repositories;
+    }
+
+    public void setRepositories(List<Repository> repositories)
+    {
+        this.repositories = repositories;
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -120,15 +131,5 @@ public class Organization
                 .append(credential)
                 .hashCode();
     }
-
-	public Repository[] getRepositories()
-	{
-		return repositories;
-	}
-
-	public void setRepositories(Repository[] repositories)
-	{
-		this.repositories = repositories;
-	}
 
 }

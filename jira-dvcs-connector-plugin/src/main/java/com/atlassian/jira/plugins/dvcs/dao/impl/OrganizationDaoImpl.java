@@ -1,12 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
@@ -15,6 +8,12 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class OrganizationDaoImpl implements OrganizationDao
 {
@@ -31,16 +30,17 @@ public class OrganizationDaoImpl implements OrganizationDao
 
     protected Organization transform(OrganizationMapping organizationMapping) {
 
-        // TODO decrypt
-        //String decryptedPasswd = encryptor.decrypt()
+        String decryptedPasswd = encryptor.decrypt(organizationMapping.getAdminPassword(),
+                organizationMapping.getName(),
+                organizationMapping.getHostUrl());
 
         Credential credential = new Credential(organizationMapping.getAdminUsername(),
-                null /* do not return password hash outside here */,
+                decryptedPasswd,
                 organizationMapping.getAccessToken());
 
         Organization organization = new Organization(organizationMapping.getID(),
-                                                    organizationMapping.getHostUrl(),
-                                                    organizationMapping.getName(),
+                organizationMapping.getHostUrl(),
+                organizationMapping.getName(),
                 organizationMapping.getDvcsType(),
                 organizationMapping.isAutolinkNewRepos(),
                 credential);
@@ -92,20 +92,12 @@ public class OrganizationDaoImpl implements OrganizationDao
     }
 
     @Override
-    public Organization save(Organization organization)
+    public Organization save(final Organization organization)
     {
-        final Map<String, Object> map = new HashMap<String, Object>();
+        final String encryptedPasswd = encryptor.encrypt(organization.getCredential().getAdminPassword(),
+                organization.getName(),
+                organization.getHostUrl());
 
-        // TODO encrypt
-//        String encryptedPasswd = encryptor.encrypt();
-
-        map.put(OrganizationMapping.HOST_URL, organization.getHostUrl());
-        map.put(OrganizationMapping.NAME, organization.getName());
-        map.put(OrganizationMapping.DVCS_TYPE, organization.getDvcsType());
-        map.put(OrganizationMapping.AUTOLINK_NEW_REPOS, organization.isAutolinkNewRepos());
-        map.put(OrganizationMapping.ADMIN_USERNAME, organization.getCredential().getAdminUsername());
-        map.put(OrganizationMapping.ADMIN_PASSWORD, organization.getCredential().getAdminPassword());
-        map.put(OrganizationMapping.ACCESS_TOKEN, organization.getCredential().getAccessToken());
 
         final OrganizationMapping organizationMapping = activeObjects.executeInTransaction(new TransactionCallback<OrganizationMapping>()
         {
@@ -113,7 +105,34 @@ public class OrganizationDaoImpl implements OrganizationDao
             @Override
             public OrganizationMapping doInTransaction()
             {
-                return activeObjects.create(OrganizationMapping.class, map);
+                OrganizationMapping om;
+                if (organization.getId() == 0)
+                {
+                    final Map<String, Object> map = new HashMap<String, Object>();
+                    map.put(OrganizationMapping.HOST_URL, organization.getHostUrl());
+                    map.put(OrganizationMapping.NAME, organization.getName());
+                    map.put(OrganizationMapping.DVCS_TYPE, organization.getDvcsType());
+                    map.put(OrganizationMapping.AUTOLINK_NEW_REPOS, organization.isAutolinkNewRepos());
+                    map.put(OrganizationMapping.ADMIN_USERNAME, organization.getCredential().getAdminUsername());
+                    map.put(OrganizationMapping.ADMIN_PASSWORD, encryptedPasswd);
+                    map.put(OrganizationMapping.ACCESS_TOKEN, organization.getCredential().getAccessToken());
+
+                    om = activeObjects.create(OrganizationMapping.class, map);
+                } else {
+                    om = activeObjects.get(OrganizationMapping.class, organization.getId());
+
+                    om.setHostUrl(organization.getHostUrl());
+                    om.setName(organization.getName());
+                    om.setDvcsType(organization.getDvcsType());
+                    om.setAutolinkNewRepos(organization.isAutolinkNewRepos());
+                    om.setAdminUsername(organization.getCredential().getAdminUsername());
+                    om.setAdminPassword(encryptedPasswd);
+                    om.setAccessToken(organization.getCredential().getAccessToken());
+
+                    om.save();
+                }
+
+                return om;
             }
         });
 

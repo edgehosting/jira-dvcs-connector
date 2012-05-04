@@ -1,11 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.Date;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -14,6 +8,11 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * Webwork action used to configure the bitbucket organizations
@@ -69,9 +68,9 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 		
 
 		//return mocks;
-		List<Organization> allOrganizations = organizationService.getAll();
-		allOrganizations.get(0).setRepositories(new Repository[] { mockRepo, mockRepo2, mockRepo3 });
-		return allOrganizations.toArray(new Organization []{});
+		List<Organization> allOrganizations = organizationService.getAll(true);
+//		allOrganizations.get(0).setRepositories(new Repository[] { mockRepo, mockRepo2, mockRepo3 });
+		return allOrganizations.toArray(new Organization[]{});
 	}
 
 	public int getRepositoryId()

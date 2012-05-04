@@ -93,7 +93,7 @@
 
 
     <component key="authenticationFactory" name="Authentication Factory"
-               class="com.atlassian.jira.plugins.dvcs.auth.DefaultAuthenticationFactory">
+               class="com.atlassian.jira.plugins.dvcs.auth.impl.DefaultAuthenticationFactory">
         <description>Creating authenticators</description>
         <interface>com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory</interface>
     </component>

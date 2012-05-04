@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.List;
-
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+
+import java.util.List;
 
 public interface OrganizationService
 {
@@ -19,15 +19,18 @@ public interface OrganizationService
     /**
      * returns all organizations
      * @return list of organizations
+     * @param loadRepositories
      */
-    List<Organization> getAll();
+    List<Organization> getAll(boolean loadRepositories);
 
     /**
      * returns Organization by ID
+     *
      * @param organizationId id
+     * @param loadRepositories
      * @return organization
      */
-    Organization get(int organizationId);
+    Organization get(int organizationId, boolean loadRepositories);
 
     /**
      * save Organization to storage. If it's new object (without ID) after this operation it will have it assigned.

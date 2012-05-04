@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
-import java.util.Date;
-
 import net.java.ao.Entity;
 import net.java.ao.schema.Table;
+
+import java.util.Date;
 
 @Table("RepositoryMapping")
 public interface RepositoryMapping extends Entity
@@ -13,7 +13,7 @@ public interface RepositoryMapping extends Entity
     public static final String NAME = "NAME";
     public static final String LAST_COMMIT_DATE = "LAST_COMMIT_DATE";
     public static final String LINKED = "LINKED";
-    public static final String DeleteDelta = "DELETED";
+    public static final String DELETED = "DELETED";
 
     int getOrganizationId();
     String getSlug();

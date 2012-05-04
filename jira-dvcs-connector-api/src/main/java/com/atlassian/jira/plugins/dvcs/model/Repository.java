@@ -1,11 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import java.util.Date;
-
-import javax.xml.bind.annotation.XmlRootElement;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Date;
 
 @XmlRootElement
 public class Repository
@@ -17,6 +16,7 @@ public class Repository
 	private String name;
 	private Date lastCommitDate;
 	private boolean linked;
+    private boolean deleted;
 	private Credential credential;
 	private SyncProgress sync;
 
@@ -38,116 +38,135 @@ public class Repository
 		this.credential = credential;
 	}
 
-	public int getId()
-	{
-		return id;
-	}
+    public void setId(int id)
+    {
+        this.id = id;
+    }
 
-	public int getOrganizationId()
-	{
-		return organizationId;
-	}
+    public int getOrganizationId()
+    {
+        return organizationId;
+    }
 
-	public String getDvcsType()
-	{
-		return dvcsType;
-	}
+    public void setOrganizationId(int organizationId)
+    {
+        this.organizationId = organizationId;
+    }
 
-	public String getSlug()
-	{
-		return slug;
-	}
+    public String getDvcsType()
+    {
+        return dvcsType;
+    }
 
-	public String getName()
-	{
-		return name;
-	}
+    public void setDvcsType(String dvcsType)
+    {
+        this.dvcsType = dvcsType;
+    }
 
-	public Date getLastCommitDate()
-	{
-		return lastCommitDate;
-	}
+    public String getSlug()
+    {
+        return slug;
+    }
 
-	public boolean isLinked()
-	{
-		return linked;
-	}
+    public void setSlug(String slug)
+    {
+        this.slug = slug;
+    }
 
-	public Credential getCredential()
-	{
-		return credential;
-	}
+    public String getName()
+    {
+        return name;
+    }
 
-	@Override
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    public Date getLastCommitDate()
+    {
+        return lastCommitDate;
+    }
+
+    public void setLastCommitDate(Date lastCommitDate)
+    {
+        this.lastCommitDate = lastCommitDate;
+    }
+
+    public boolean isLinked()
+    {
+        return linked;
+    }
+
+    public void setLinked(boolean linked)
+    {
+        this.linked = linked;
+    }
+
+    public Credential getCredential()
+    {
+        return credential;
+    }
+
+    public void setCredential(Credential credential)
+    {
+        this.credential = credential;
+    }
+
+    public boolean isDeleted()
+    {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted)
+    {
+        this.deleted = deleted;
+    }
+    
+    public SyncProgress getSync()
+    {
+        return sync;
+    }
+
+    public void setSync(SyncProgress sync)
+    {
+        this.sync = sync;
+    }
+    
+
+    @Override
 	public boolean equals(Object obj)
 	{
-		if (obj == null)
-			return false;
-		if (this == obj)
-			return true;
-		if (this.getClass() != obj.getClass())
-			return false;
+		if (obj == null) return false;
+		if (this==obj) return true;
+		if (this.getClass()!=obj.getClass()) return false;
 		Repository that = (Repository) obj;
-		return new EqualsBuilder().append(organizationId, organizationId).append(dvcsType, dvcsType).append(slug, slug)
-				.append(name, name).append(lastCommitDate, lastCommitDate).append(linked, linked)
-				.append(credential, credential).isEquals();
+		return new EqualsBuilder()
+                .append(organizationId, this.organizationId)
+                .append(dvcsType, this.dvcsType)
+                .append(slug, this.slug)
+                .append(name, this.name)
+                .append(lastCommitDate, this.lastCommitDate)
+                .append(linked, this.linked)
+                .append(deleted, this.deleted)
+                .append(credential, this.credential)
+                .isEquals();
 	}
 
 	@Override
-	public int hashCode()
-	{
-		return new HashCodeBuilder(17, 37).append(organizationId).append(dvcsType).append(slug).append(name)
-				.append(lastCommitDate).append(linked).append(credential).toHashCode();
-	}
+    public int hashCode()
+    {
+        return new HashCodeBuilder(17, 37)
+                .append(organizationId)
+                .append(dvcsType)
+                .append(slug)
+                .append(name)
+                .append(lastCommitDate)
+                .append(linked)
+                .append(deleted)
+                .append(credential)
+                .toHashCode();
+    }
 
-	public SyncProgress getSync()
-	{
-		return sync;
-	}
-
-	public void setSync(SyncProgress sync)
-	{
-		this.sync = sync;
-	}
-
-	public void setId(int id)
-	{
-		this.id = id;
-	}
-
-	public void setOrganizationId(int organizationId)
-	{
-		this.organizationId = organizationId;
-	}
-
-	public void setDvcsType(String dvcsType)
-	{
-		this.dvcsType = dvcsType;
-	}
-
-	public void setSlug(String slug)
-	{
-		this.slug = slug;
-	}
-
-	public void setName(String name)
-	{
-		this.name = name;
-	}
-
-	public void setLastCommitDate(Date lastCommitDate)
-	{
-		this.lastCommitDate = lastCommitDate;
-	}
-
-	public void setLinked(boolean linked)
-	{
-		this.linked = linked;
-	}
-
-	public void setCredential(Credential credential)
-	{
-		this.credential = credential;
-	}
 
 }
