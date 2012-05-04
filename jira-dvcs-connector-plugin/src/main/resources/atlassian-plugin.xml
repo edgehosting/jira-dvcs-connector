@@ -227,6 +227,11 @@
                     alias="AddBitbucketOrganization" roles-required="admin">
                 <view name="input">/templates/dvcs/add-bitbucket-organization.vm</view>
             </action>
+           
+            <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.UpdateBitbucketCredentials"
+                    alias="UpdateBitbucketCredentials" roles-required="admin">
+                <view name="input">/templates/dvcs/update-bitbucket-password.vm</view>
+            </action>
             
 			
         </actions>

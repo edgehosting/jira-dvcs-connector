@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
-
-import java.util.List;
 
 public interface OrganizationService
 {
@@ -41,5 +41,13 @@ public interface OrganizationService
      * @param organizationId id
      */
     void remove(int organizationId);
+    
+    /**
+     * Update credentials.
+     *
+     * @param organizationId the organization id
+     * @param plaintextPassword the password as a plain text
+     */
+    void updateCredentials(int organizationId, String plaintextPassword);
 
 }

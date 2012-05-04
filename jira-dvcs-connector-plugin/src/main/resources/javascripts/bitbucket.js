@@ -312,8 +312,9 @@ function changePassword(username, id) {
 		 		id: "dvcs-change-pass-dialog"
 	 });
 	 
-	 AJS.$("#organizationUp").text(username);
-	 AJS.$("#organizationUpReadOnly").val(username);
+	 AJS.$("#organizationId").val(id);
+	 AJS.$("#usernameUp").val(username);
+	 AJS.$("#usernameUpReadOnly").text(username);
 	 popup.addHeader("Update account credentials");
 
 	 var dialogContent = AJS.$(".update-credentials").clone();
@@ -321,7 +322,7 @@ function changePassword(username, id) {
 	 popup.addPanel("", dialogContent.html(), "dvcs-update-cred-dialog");
 	 
 	 popup.addButton("Update", function (dialog) {
-         dialog.nextPage();
+        AJS.$("#updatePasswordForm").submit();
      }, "aui-button submit");
      popup.addButton("Cancel", function (dialog) {
          dialog.hide();

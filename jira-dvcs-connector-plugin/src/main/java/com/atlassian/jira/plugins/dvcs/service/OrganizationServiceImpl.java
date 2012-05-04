@@ -73,4 +73,11 @@ public class OrganizationServiceImpl implements OrganizationService
     public void remove(int organizationId)
     {
     }
+
+	@Override
+	public void updateCredentials(int organizationId, String plaintextPassword)
+	{
+		
+	}
+    
 }

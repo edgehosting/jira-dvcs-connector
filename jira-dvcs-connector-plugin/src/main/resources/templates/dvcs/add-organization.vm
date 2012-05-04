@@ -223,7 +223,7 @@
 				 #if($org.dvcsType == "bitbucket")
 				 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Password</a>
 				 #else
-   			 	 | <a href="$baseUrl/secure/admin/ConfigureGithubOAuth!default.jspa">Change OAuth credentials</a>
+   			 	 | <a href="$baseUrl/secure/admin/">Re-generate OAuth Access Token</a>
 				 #end
 				 | <a href="javascript:;">Delete organization</a>
 				</div>
@@ -277,7 +277,12 @@
 #macro (printUpdateCredentialsFormHidden)
 	
 	<div class="update-credentials" style="display:none">
-		<form class="aui" method="post" action="" >
+	
+		<form id="updatePasswordForm" class="aui" method="post" action="$baseUrl/secure/admin/UpdateBitbucketCredentials.jspa" >
+		
+			 <input type="hidden" name="atl_token" value="$atl_token">
+			 <input type="hidden" id="organizationId" name="organizationId" value="" />
+
 			 <div class="field-group">
 		           <label for="usernameUp">Username:</label>
 		           <div class="fieldValue" id="usernameUpReadOnly"></div>
