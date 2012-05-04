@@ -1,5 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
@@ -8,12 +15,6 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class OrganizationDaoImpl implements OrganizationDao
 {
@@ -34,7 +35,7 @@ public class OrganizationDaoImpl implements OrganizationDao
         //String decryptedPasswd = encryptor.decrypt()
 
         Credential credential = new Credential(organizationMapping.getAdminUsername(),
-                organizationMapping.getAdminPassword(),
+                null /* do not return password hash outside here */,
                 organizationMapping.getAccessToken());
 
         Organization organization = new Organization(organizationMapping.getID(),
