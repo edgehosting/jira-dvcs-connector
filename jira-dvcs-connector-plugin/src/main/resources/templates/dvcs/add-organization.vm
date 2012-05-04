@@ -220,7 +220,11 @@
 				
 				<div class="dvcs-organization-controls"><input class="aui" $!orgAutolink type="checkbox" name="autolink-quick" /><label> Autolink new repositories</label>
 				 | <a href="javascript:;">Sync Repository List</a>
-				 | <a href="javascript:changePassword();">Change Password</a>
+				 #if($org.dvcsType == "bitbucket")
+				 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Password</a>
+				 #else
+   			 	 | <a href="$baseUrl/secure/admin/ConfigureGithubOAuth!default.jspa">Change OAuth credentials</a>
+				 #end
 				 | <a href="javascript:;">Delete organization</a>
 				</div>
 				<div class="vert-space">&nbsp;</div>
@@ -273,10 +277,11 @@
 #macro (printUpdateCredentialsFormHidden)
 	
 	<div class="update-credentials" style="display:none">
-		<form class="aui" method="post">
+		<form class="aui" method="post" action="" >
 			 <div class="field-group">
-		           <label for="organization">Organization:</label>
-		           <input type="text" id="organizationUp" name="organizationUp" value=""/>
+		           <label for="usernameUp">Username:</label>
+		           <div class="fieldValue" id="usernameUpReadOnly"></div>
+		           <input type="hidden" id="usernameUp" name="usernameUp" value="" />
 		     </div>
 		                
 		     <div class="field-group">

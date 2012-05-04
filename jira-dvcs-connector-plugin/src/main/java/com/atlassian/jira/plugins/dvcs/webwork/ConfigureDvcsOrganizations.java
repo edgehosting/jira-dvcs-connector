@@ -81,8 +81,8 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
 		Organization[] mocks = new Organization[] { mockOrg, mockOrg2  };
 
-		return mocks;
-		// return organizationService.getAll().toArray(new Organization []{});
+		//return mocks;
+		 return organizationService.getAll().toArray(new Organization []{});
 	}
 
 	public int getRepositoryId()

@@ -304,24 +304,28 @@ function deleteOrg() {
 	
 }
 
-function changePassword() {
+function changePassword(username, id) {
+	
 	 var popup = new AJS.Dialog({
 		 		width: 400, 
 		 		height: 300, 
 		 		id: "dvcs-change-pass-dialog"
 	 });
 	 
+	 AJS.$("#organizationUp").text(username);
+	 AJS.$("#organizationUpReadOnly").val(username);
 	 popup.addHeader("Update account credentials");
 
 	 var dialogContent = AJS.$(".update-credentials").clone();
+
 	 popup.addPanel("", dialogContent.html(), "dvcs-update-cred-dialog");
 	 
 	 popup.addButton("Update", function (dialog) {
          dialog.nextPage();
-     });
+     }, "aui-button submit");
      popup.addButton("Cancel", function (dialog) {
          dialog.hide();
-     });
+     }, "aui-button submit");
      
 	 popup.show();
 }

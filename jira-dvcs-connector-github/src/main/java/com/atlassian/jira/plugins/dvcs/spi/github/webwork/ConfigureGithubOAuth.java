@@ -1,10 +1,10 @@
-package com.atlassian.jira.plugins.bitbucket.spi.github.webwork;
+package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -63,12 +63,12 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
 
     public void setClientID(String value)
     {
-        this.clientID = value;
+        clientID = value;
     }
 
     public String getClientID()
     {
-        return this.clientID;
+        return clientID;
     }
 
     // Client Secret (from GitHub OAuth Application)
@@ -76,12 +76,12 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
 
     public void setClientSecret(String value)
     {
-        this.clientSecret = value;
+        clientSecret = value;
     }
 
     public String getClientSecret()
     {
-        return this.clientSecret;
+        return clientSecret;
     }
 
     // Confirmation Messages
@@ -89,7 +89,7 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
 
     public String getMessages()
     {
-        return this.messages;
+        return messages;
     }
     
     public String getBaseUrl()
