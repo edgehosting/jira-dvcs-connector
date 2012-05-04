@@ -315,14 +315,17 @@ function changePassword(username, id) {
 	 AJS.$("#organizationId").val(id);
 	 AJS.$("#usernameUp").val(username);
 	 AJS.$("#usernameUpReadOnly").text(username);
+
 	 popup.addHeader("Update account credentials");
 
-	 var dialogContent = AJS.$(".update-credentials").clone();
+	 var dialogContent = AJS.$(".update-credentials");
 
-	 popup.addPanel("", dialogContent.html(), "dvcs-update-cred-dialog");
+	 popup.addPanel("", "#updatePasswordForm", "dvcs-update-cred-dialog");
 	 
 	 popup.addButton("Update", function (dialog) {
-        AJS.$("#updatePasswordForm").submit();
+        
+		 AJS.$("#updatePasswordForm").submit();
+        
      }, "aui-button submit");
      popup.addButton("Cancel", function (dialog) {
          dialog.hide();
