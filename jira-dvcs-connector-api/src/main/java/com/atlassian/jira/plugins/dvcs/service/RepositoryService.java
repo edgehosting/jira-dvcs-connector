@@ -1,9 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-
 import java.util.List;
 
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.SyncProgress;
+
+/**
+ * Returning type {@link Repository} is enriched with synchronization status by default.
+ *
+ *
+ * @see SyncProgress
+ *
+ */
 public interface RepositoryService
 {
 
@@ -13,6 +21,14 @@ public interface RepositoryService
      * @return repositories
      */
     List<Repository> getAllByOrganization(int organizationId);
+    
+    /**
+     * Gets the all active repositories with synchronization status.
+     *
+     * @param organizationId the organization id
+     * @return the all active repositories
+     */
+    List<Repository> getAllActiveRepositories();
 
     /**
      * returns repository by ID

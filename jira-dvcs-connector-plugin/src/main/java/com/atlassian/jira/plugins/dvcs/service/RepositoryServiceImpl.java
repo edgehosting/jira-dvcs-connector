@@ -1,8 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-
+import java.util.ArrayList;
 import java.util.List;
+
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 public class RepositoryServiceImpl implements RepositoryService
 {
@@ -33,4 +34,12 @@ public class RepositoryServiceImpl implements RepositoryService
     public void sync(int repositoryId)
     {
     }
+
+	@Override
+	public List<Repository> getAllActiveRepositories()
+	{
+		// TODO Auto-generated method stub
+		return new ArrayList<Repository>();
+	}
+    
 }
