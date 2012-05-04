@@ -91,7 +91,7 @@
 	                </div>
 	                <div class="field-group">
 	                   <label for="adminPassword">Password:</label>
-	                   <input type="text" id="adminPassword" name="adminPassword" value=""/>
+	                   <input type="password" id="adminPassword" name="adminPassword" value=""/>
 	                </div>
 	            </div>
 				

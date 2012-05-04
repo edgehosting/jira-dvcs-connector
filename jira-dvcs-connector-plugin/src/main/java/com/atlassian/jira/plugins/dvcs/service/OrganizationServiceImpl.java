@@ -1,21 +1,22 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-
-import java.util.List;
 
 public class OrganizationServiceImpl implements OrganizationService
 {
 
-    private OrganizationDao organizationDao;
-    private RepositoryDao repositoryDao;
+    private final OrganizationDao organizationDao;
+    private final RepositoryDao repositoryDao;
     private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
     public OrganizationServiceImpl(DvcsCommunicatorProvider dvcsCommunicatorProvider, OrganizationDao organizationDao, RepositoryDao repositoryDao)
@@ -43,7 +44,7 @@ public class OrganizationServiceImpl implements OrganizationService
             {
                 Organization organization = (Organization) o;
                 final List<Repository> repositories = repositoryDao.getAllByOrganization(organization.getId());
-                organization.setRepositories((Repository[]) repositories.toArray());
+                organization.setRepositories(repositories.toArray(new Repository[]{}));
                 return organization;
             }
         });
