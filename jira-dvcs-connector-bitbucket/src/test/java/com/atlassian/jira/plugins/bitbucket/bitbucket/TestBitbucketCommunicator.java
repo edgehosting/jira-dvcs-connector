@@ -22,8 +22,8 @@ import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException
 import com.atlassian.jira.plugins.bitbucket.api.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.bitbucket.api.net.DefaultRequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler;
-import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler.ExtendedResponse;
+import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketRepositoryUri;
 import com.atlassian.sal.api.net.Request;
@@ -63,7 +63,7 @@ public class TestBitbucketCommunicator
     @Test
     public void testUnknownUser() throws Exception
     {
-        when(requestFactory.createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/users/mjensen")).thenReturn(request);
+        when(requestFactory.createRequest(Request.MethodType.GET, "https://bitbucket.org/!api/1.0/users/mjensen")).thenReturn(request);
         when(request.execute()).thenReturn("");
 
         BitbucketCommunicator communicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, responseHandlerFactory));
@@ -75,7 +75,7 @@ public class TestBitbucketCommunicator
     @Test
     public void testGetUser() throws Exception
     {
-        when(requestFactory.createRequest(Request.MethodType.GET, "https://api.bitbucket.org/1.0/users/mjensen")).thenReturn(request);
+        when(requestFactory.createRequest(Request.MethodType.GET, "https://bitbucket.org/!api/1.0/users/mjensen")).thenReturn(request);
         when(request.execute()).thenReturn(resource("TestBitbucket-user.json"));
 
         BitbucketCommunicator communicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, responseHandlerFactory));
@@ -97,11 +97,11 @@ public class TestBitbucketCommunicator
         when(authenticationFactory.getAuthentication(repository)).thenReturn(new BasicAuthentication("user", "pass"));
         when(
             requestFactory.createRequest(Request.MethodType.GET,
-                "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/changesets/aaaaa")).thenReturn(request);
+                "https://bitbucket.org/!api/1.0/repositories/atlassian/jira-bitbucket-connector/changesets/aaaaa")).thenReturn(request);
         when(request.execute()).thenReturn("{I am invalid json}");
         when(
             requestFactory.createRequest(Request.MethodType.GET,
-                "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/changesets/aaaaa/diffstat?limit=5")).thenReturn(request);
+                "https://bitbucket.org/!api/1.0/repositories/atlassian/jira-bitbucket-connector/changesets/aaaaa/diffstat?limit=5")).thenReturn(request);
         when(request.execute()).thenReturn("{I am invalid json}");
 
         BitbucketCommunicator communicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, responseHandlerFactory));
@@ -124,7 +124,7 @@ public class TestBitbucketCommunicator
         when(repository.getAdminPassword()).thenReturn("pass");
         when(
             requestFactory.createRequest(Request.MethodType.POST,
-                "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/services")).thenReturn(request);
+                "https://bitbucket.org/!api/1.0/repositories/atlassian/jira-bitbucket-connector/services")).thenReturn(request);
 
         String postCommitUrl = "http://this.jira.server:1234/jira/rest/postcommithandler";
         BitbucketCommunicator communicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, responseHandlerFactory));
@@ -132,13 +132,13 @@ public class TestBitbucketCommunicator
         communicator.setupPostcommitHook(repository, postCommitUrl);
 
         verify(requestFactory).createRequest(Request.MethodType.POST,
-            "https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/services");
+            "https://bitbucket.org/!api/1.0/repositories/atlassian/jira-bitbucket-connector/services");
         verify(request).addBasicAuthentication("user", "pass");
         verify(request).setRequestBody("type=post;URL=" + postCommitUrl);
     }
 
     @Test
-    public void testPublicRepositoryValid() throws Exception
+    public void testPublicRepositoryValid() throws Exception    
     {
         ExtendedResponse extendedResponse = new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-repository.json"));
         when(responseHandlerFactory.create()).thenReturn(extendedResponseHandler);
