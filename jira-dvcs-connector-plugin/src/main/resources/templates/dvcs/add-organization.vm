@@ -250,15 +250,14 @@
 			            <td class="action" headers="action" style="text-align: right;">
 			                <ul class="menu">
 			                    <li>
-			                        <a href="javascript:;">Sync Repo</a>
+			                        <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Sync Repo</a>
 			                    </li>
 			                </ul>
 			                <span id="syncicon_$repositoryId" class="syncicon" >&nbsp;</span>
                             <span id="sync_status_message_$repositoryId" class="gh_messages">
-                                <span class="content"></span> ded
+                                <span class="content"></span>
                             </span>
 			            </td>
-			            
 			            
 			        </tr>
 			       
