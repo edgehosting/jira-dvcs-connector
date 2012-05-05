@@ -43,7 +43,7 @@ public class OrganizationServiceImpl implements OrganizationService
                 public Object transform(Object o)
                 {
                     Organization organization = (Organization) o;
-                    final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+                    final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId(), false);
                     organization.setRepositories(repositories);
                     return organization;
                 }
@@ -60,24 +60,29 @@ public class OrganizationServiceImpl implements OrganizationService
 
         if (loadRepositories)
         {
-            final List<Repository> repositories = repositoryService.getAllByOrganization(organizationId);
+            final List<Repository> repositories = repositoryService.getAllByOrganization(organizationId, false);
             organization.setRepositories(repositories);
         }
 
         return organization;
     }
 
+
     @Override
     public Organization save(Organization organization)
     {
-        // TODO: check if exists with same org name
-        final Organization savedOrg = organizationDao.save(organization);
+        // todo: uz taku mame. co s Login a Passwd. mozno to treba ziastovat uz skor a na UI
+        Organization org = organizationDao.getByHostAndName(organization.getHostUrl(), organization.getName());
 
-        savedOrg.setId(17);
+        // it's brand new organization. save it.
+        if (org == null)
+        {
+            org = organizationDao.save(organization);
+        }
 
-        repositoryService.syncRepositoryList(savedOrg);
+        repositoryService.syncRepositoryList(org);
 
-        return savedOrg;
+        return org;
     }
 
     @Override

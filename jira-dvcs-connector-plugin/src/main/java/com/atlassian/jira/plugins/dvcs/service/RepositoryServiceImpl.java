@@ -21,9 +21,9 @@ public class RepositoryServiceImpl implements RepositoryService
     }
 
     @Override
-    public List<Repository> getAllByOrganization(int organizationId)
+    public List<Repository> getAllByOrganization(int organizationId, boolean alsoDeleted)
     {
-        return repositoryDao.getAllByOrganization(organizationId);
+        return repositoryDao.getAllByOrganization(organizationId, alsoDeleted);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
     public void syncRepositoryList(Organization organization)
     {
-        List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId());
+        List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
 
         DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
         final List<Repository> remoteRepositories = communicator.getRepositories(organization);
@@ -55,8 +55,11 @@ public class RepositoryServiceImpl implements RepositoryService
                 if (storedRepository.getSlug().equals(remoteRepository.getSlug()))
                 {
                     // remove existed from list. will stay there only those which we have to delete
-                    storedRepositories.remove(storedRepository);
+                    storedRepositories.remove(i);
                     break;
+                } else
+                {
+                    storedRepository = null;
                 }
             }
 
@@ -64,6 +67,7 @@ public class RepositoryServiceImpl implements RepositoryService
             {
                 // we have it. try to update NAME
                 storedRepository.setName(remoteRepository.getName());
+                storedRepository.setDeleted(false); // it could be deleted before and now will be revived
                 repositoryDao.save(storedRepository);
             } else
             {

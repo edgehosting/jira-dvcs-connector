@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import net.java.ao.Query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,20 +42,27 @@ public class RepositoryDaoImpl implements RepositoryDao
                 repositoryMapping.getName(),
                 repositoryMapping.getLastCommitDate(),
                 repositoryMapping.isLinked(),
+                repositoryMapping.isDeleted(),
                 credential);
 
         return repository;
     }
 
     @Override
-    public List<Repository> getAllByOrganization(final int organizationId)
+    public List<Repository> getAllByOrganization(final int organizationId, final boolean alsoDeleted)
     {
         List<RepositoryMapping> repositoryMappings = activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
         {
             @Override
             public List<RepositoryMapping> doInTransaction()
             {
-                final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, RepositoryMapping.ORGANIZATION_ID + " = ?", organizationId);
+                Query query = Query.select().where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
+                if (!alsoDeleted) {
+                    query = Query.select().where(RepositoryMapping.ORGANIZATION_ID + " = ? AND " +
+                            RepositoryMapping.DELETED + " = ? ", organizationId, Boolean.FALSE);
+                }
+
+                final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, query);
                 return Arrays.asList(rms);
             }
         });
@@ -125,6 +133,8 @@ public class RepositoryDaoImpl implements RepositoryDao
                 return rm;
             }
         });
+
+        activeObjects.flushAll();
 
         return transform(repositoryMapping, getOrganizationMapping(repository.getOrganizationId()));
 

@@ -19,9 +19,10 @@ public interface RepositoryService
     /**
      * returns all repositories for given organization
      * @param organizationId organizationId
+     * @param alsoDeleted will contains also deleted
      * @return repositories
      */
-    List<Repository> getAllByOrganization(int organizationId);
+    List<Repository> getAllByOrganization(int organizationId, boolean alsoDeleted);
     
     /**
      * Gets the all active repositories with synchronization status.

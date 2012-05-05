@@ -26,17 +26,23 @@ public class Repository
 	}
 
 	public Repository(int id, int organizationId, String dvcsType, String slug, String name, Date lastCommitDate,
-			boolean linked, Credential credential)
+			boolean linked, boolean deleted, Credential credential)
 	{
 		this.id = id;
 		this.organizationId = organizationId;
 		this.dvcsType = dvcsType;
-		this.slug = name;
+		this.slug = slug;
 		this.name = name;
 		this.lastCommitDate = lastCommitDate;
 		this.linked = linked;
-		this.credential = credential;
+        this.deleted = deleted;
+        this.credential = credential;
 	}
+
+    public int getId()
+    {
+        return id;
+    }
 
     public void setId(int id)
     {

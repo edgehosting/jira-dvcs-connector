@@ -8,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
+import net.java.ao.Query;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 
@@ -75,6 +76,8 @@ public class OrganizationDaoImpl implements OrganizationDao
         return organizations;
     }
 
+
+
     @Override
     public Organization get(final int organizationId)
     {
@@ -89,6 +92,27 @@ public class OrganizationDaoImpl implements OrganizationDao
 
 
         return transform(organizationMapping);
+    }
+
+    @Override
+    public Organization getByHostAndName(final String hostUrl, final String name)
+    {
+        OrganizationMapping organizationMapping = activeObjects.executeInTransaction(new TransactionCallback<OrganizationMapping>()
+        {
+            @Override
+            public OrganizationMapping doInTransaction()
+            {
+                Query query = Query.select().where(OrganizationMapping.HOST_URL + " = ? AND " +
+                            OrganizationMapping.NAME + " = ? ", hostUrl, name);
+
+                final OrganizationMapping[] organizationMappings = activeObjects.find(OrganizationMapping.class, query);
+                return organizationMappings.length != 0 ? organizationMappings[0] : null;
+            }
+        });
+
+
+        return transform(organizationMapping);
+
     }
 
     @Override

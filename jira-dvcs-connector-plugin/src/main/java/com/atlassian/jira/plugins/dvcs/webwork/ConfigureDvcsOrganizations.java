@@ -58,13 +58,13 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	{
 
 		Repository mockRepo = new Repository(124, 12, "bitbucket", "sentinel-core-components",
-				"Sentinel Core Components", new Date(), true, null);
+				"Sentinel Core Components", new Date(), true, false, null);
 
 		Repository mockRepo2 = new Repository(1234, 12, "github", "blogging-samples",
-				"Blogging Samples Repo", new Date(), false, null);
+				"Blogging Samples Repo", new Date(), false, false, null);
 		
 		Repository mockRepo3 = new Repository(125, 12, "github", "perfect-plan-repository",
-				"Perfect Plan Repository", new Date(), false, null);
+				"Perfect Plan Repository", new Date(), false, false, null);
 		
 
 		//return mocks;
