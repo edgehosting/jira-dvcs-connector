@@ -56,6 +56,11 @@ public interface RepositoryService
      * synchronization of changesets in given repository
      * @param repositoryId repositoryId
      */
-    void sync(int repositoryId);
+    void sync(int repositoryId, boolean softSync);
 
+    /**
+     * synchronization of changesets in all repositories which are in given organization
+     * @param organizationId organizationId
+     */
+    void syncAllInOrganization(int organizationId);
 }

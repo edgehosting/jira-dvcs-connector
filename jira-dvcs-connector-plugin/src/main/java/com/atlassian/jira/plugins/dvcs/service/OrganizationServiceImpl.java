@@ -80,7 +80,11 @@ public class OrganizationServiceImpl implements OrganizationService
             org = organizationDao.save(organization);
         }
 
+        // sync repository list
         repositoryService.syncRepositoryList(org);
+
+        // start asynchronous changesets synchronization for all repositories in organization
+        repositoryService.syncAllInOrganization(org.getId());
 
         return org;
     }

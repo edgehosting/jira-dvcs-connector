@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +14,13 @@ public class RepositoryServiceImpl implements RepositoryService
 {
     private DvcsCommunicatorProvider communicatorProvider;
     private RepositoryDao repositoryDao;
+    private Synchronizer synchronizer;
 
-    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao)
+    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
+        this.synchronizer = synchronizer;
     }
 
     @Override
@@ -90,12 +93,26 @@ public class RepositoryServiceImpl implements RepositoryService
 
     }
 
+
+
     @Override
-    public void sync(int repositoryId)
+    public void sync(int repositoryId, boolean softSync)
     {
+        final Repository repository = get(repositoryId);
+        synchronizer.synchronize(repository, softSync);
     }
 
-	@Override
+    @Override
+    public void syncAllInOrganization(int organizationId)
+    {
+        final List<Repository> repositories = getAllByOrganization(organizationId, false);
+        for (Repository repository : repositories)
+        {
+            synchronizer.synchronize(repository, false);
+        }
+    }
+
+    @Override
 	public List<Repository> getAllActiveRepositories()
 	{
 		// TODO Auto-generated method stub
