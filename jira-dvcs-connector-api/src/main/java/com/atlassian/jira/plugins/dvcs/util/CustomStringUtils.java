@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.util;
 
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
-import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 

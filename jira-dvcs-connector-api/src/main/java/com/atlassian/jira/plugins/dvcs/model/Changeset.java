@@ -9,19 +9,21 @@ import java.util.List;
 
 public class Changeset
 {
-    private final int repositoryId;
-    private final String node;
-    private final String issueKey;
-    private final String rawAuthor;
-    private final String author;
-    private final Date date;
-    private final String rawNode;
-    private final String branch;
-    private final String message;
-    private final List<String> parents;
-    private final List<ChangesetFile> files;
+    public static final int MAX_VISIBLE_FILES = 5;
 
-    private final int allFileCount;
+    private int repositoryId;
+    private String node;
+    private String issueKey;
+    private String rawAuthor;
+    private String author;
+    private Date date;
+    private String rawNode;
+    private String branch;
+    private String message;
+    private List<String> parents;
+
+    private List<ChangesetFile> files;
+    private int allFileCount;
 
     public Changeset(int repositoryId, String node, String issueKey, String message, Date timestamp)
     {
@@ -53,9 +55,19 @@ public class Changeset
         return repositoryId;
     }
 
+    public void setRepositoryId(int repositoryId)
+    {
+        this.repositoryId = repositoryId;
+    }
+
     public String getNode()
     {
         return node;
+    }
+
+    public void setNode(String node)
+    {
+        this.node = node;
     }
 
     public String getIssueKey()
@@ -63,9 +75,19 @@ public class Changeset
         return issueKey;
     }
 
+    public void setIssueKey(String issueKey)
+    {
+        this.issueKey = issueKey;
+    }
+
     public String getRawAuthor()
     {
         return rawAuthor;
+    }
+
+    public void setRawAuthor(String rawAuthor)
+    {
+        this.rawAuthor = rawAuthor;
     }
 
     public String getAuthor()
@@ -73,9 +95,19 @@ public class Changeset
         return author;
     }
 
+    public void setAuthor(String author)
+    {
+        this.author = author;
+    }
+
     public Date getDate()
     {
         return date;
+    }
+
+    public void setDate(Date date)
+    {
+        this.date = date;
     }
 
     public String getRawNode()
@@ -83,9 +115,19 @@ public class Changeset
         return rawNode;
     }
 
+    public void setRawNode(String rawNode)
+    {
+        this.rawNode = rawNode;
+    }
+
     public String getBranch()
     {
         return branch;
+    }
+
+    public void setBranch(String branch)
+    {
+        this.branch = branch;
     }
 
     public String getMessage()
@@ -93,9 +135,19 @@ public class Changeset
         return message;
     }
 
+    public void setMessage(String message)
+    {
+        this.message = message;
+    }
+
     public List<String> getParents()
     {
         return parents;
+    }
+
+    public void setParents(List<String> parents)
+    {
+        this.parents = parents;
     }
 
     public List<ChangesetFile> getFiles()
@@ -103,9 +155,19 @@ public class Changeset
         return files;
     }
 
+    public void setFiles(List<ChangesetFile> files)
+    {
+        this.files = files;
+    }
+
     public int getAllFileCount()
     {
         return allFileCount;
+    }
+
+    public void setAllFileCount(int allFileCount)
+    {
+        this.allFileCount = allFileCount;
     }
 
     @Override

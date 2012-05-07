@@ -84,15 +84,14 @@
 
 
 
-    <!--TODO refaktorovat zavislost na RepoManager-->
-    
     <component key="synchronizer" name="Dvcs Synchronization Service"
                class="com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer">
         <description>A Service for managing changesets synchronization operations</description>
         <interface>com.atlassian.jira.plugins.dvcs.sync.Synchronizer</interface>
-        <property ref="repositoryService" />
+        <property name="organizationService" ref="organizationService" />
+        <property name="repositoryService" ref="repositoryService" />
+        <property name="changesetService" ref="changesetService" />
     </component>
-
 
 
     <component key="encryptor" name="Encryption Service"
@@ -147,6 +146,13 @@
         <description>repositoryDao</description>
         <interface>com.atlassian.jira.plugins.dvcs.dao.RepositoryDao</interface>
     </component>
+
+    <component key="changesetDao" name="changesetDao"
+               class="com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl">
+        <description>changesetDao</description>
+        <interface>com.atlassian.jira.plugins.dvcs.dao.ChangesetDao</interface>
+    </component>
+
 
     <component key="organizationService" name="organizationService"
                class="com.atlassian.jira.plugins.dvcs.service.OrganizationServiceImpl">
