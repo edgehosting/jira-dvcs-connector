@@ -54,4 +54,12 @@ public interface OrganizationService
      */
     void updateCredentials(int organizationId, String plaintextPassword);
 
+	/**
+	 * Update credentials access token.
+	 *
+	 * @param organizationId the organization id
+	 * @param accessToken the access token
+	 */
+	void updateCredentialsAccessToken(int organizationId, String accessToken);
+
 }

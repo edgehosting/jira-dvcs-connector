@@ -98,7 +98,16 @@ public class OrganizationServiceImpl implements OrganizationService
 	@Override
 	public void updateCredentials(int organizationId, String plaintextPassword)
 	{
+		organizationDao.updateCredentials(organizationId, plaintextPassword, null);
+	}
+
+	@Override
+	public void updateCredentialsAccessToken(int organizationId,
+			String accessToken) {
+
+		organizationDao.updateCredentials(organizationId, null, accessToken);
 		
 	}
+
     
 }

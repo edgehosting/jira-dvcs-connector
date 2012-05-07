@@ -78,7 +78,8 @@
 
 
 
-    <!--TODO refaktorovat zavyslost na RepoManager-->
+    <!--TODO refaktorovat zavislost na RepoManager-->
+    
     <component key="synchronizer" name="Dvcs Synchronization Service"
                class="com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer">
         <description>A Service for managing changesets synchronization operations</description>
@@ -160,6 +161,10 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetService</interface>
     </component>
     
+    <component class="com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils">
+    	<description>Utils used i.e. to build GH redirect URLs etc.</description>
+    </component>
+    
     
     <!-- Listener -->
     <component key="dvcsAddUserListener" class="com.atlassian.jira.plugins.dvcs.listener.DvcsAddUserListener" />
@@ -235,7 +240,21 @@
                     alias="UpdateBitbucketCredentials" roles-required="admin">
                 <view name="input">/templates/dvcs/update-bitbucket-password.vm</view>
             </action>
-            
+
+			<action name="com.atlassian.jira.plugins.dvcs.webwork.SyncRepositoryListAction"
+                    alias="SyncRepositoryListAction" roles-required="admin">
+                <view name="input">/templates/dvcs/add-organization.vm</view>
+            </action>
+
+			<action name="com.atlassian.jira.plugins.dvcs.webwork.DeleteOrganizationAction"
+                    alias="DeleteOrganizationAction" roles-required="admin">
+                <view name="input">/templates/dvcs/add-organization.vm</view>
+            </action>
+
+			<action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken"
+                    alias="RegenerateGithubOauthToken" roles-required="admin">
+                <view name="input">/templates/dvcs/add-organization.vm</view>
+            </action>
 			
         </actions>
     </webwork1>

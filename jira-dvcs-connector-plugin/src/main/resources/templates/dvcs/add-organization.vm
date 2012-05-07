@@ -219,13 +219,13 @@
 			<h4 class="aui $org.getDvcsType()Logo">Organization: $org.name ($org.dvcsType)</h4>
 				
 				<div class="dvcs-organization-controls"><input class="aui" $!orgAutolink type="checkbox" name="autolink-quick" /><label> Autolink new repositories</label>
-				 | <a href="javascript:;">Sync Repository List</a>
+				 | <a href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=$org.id&amp;atl_token=$atl_token">Sync Repository List</a>
 				 #if($org.dvcsType == "bitbucket")
 				 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Password</a>
 				 #else
-   			 	 | <a href="$baseUrl/secure/admin/">Re-generate OAuth Access Token</a>
+   			 	 | <a href="$baseurl/secure/admin/">Re-generate OAuth Access Token</a>
 				 #end
-				 | <a href="javascript:;">Delete organization</a>
+				 | <a href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=$org.id&amp;atl_token=$atl_token">Delete organization</a>
 				</div>
 
 				<div class="vert-space">&nbsp;</div>

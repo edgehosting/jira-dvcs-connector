@@ -1,5 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.java.ao.Query;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
@@ -8,14 +18,11 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
-import net.java.ao.Query;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+/**
+ * @author julio
+ *
+ */
 public class OrganizationDaoImpl implements OrganizationDao
 {
 
@@ -170,5 +177,35 @@ public class OrganizationDaoImpl implements OrganizationDao
     @Override
     public void remove(int organizationId)
     {
+    	
+    	// TODO
+    	
     }
+
+	@Override
+	public void updateCredentials(int organizationId, String plaintextPassword,
+			String accessToken) {
+		
+		final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, organizationId);
+		
+		if (StringUtils.isNotBlank(plaintextPassword)) {
+			organization.setAdminPassword(encryptor.encrypt(plaintextPassword, organization.getName(), organization.getHostUrl()));
+		}
+
+		if (StringUtils.isNotBlank(accessToken)) {
+			organization.setAccessToken(accessToken);
+		}
+		
+		activeObjects.executeInTransaction(new TransactionCallback<Void>() {
+			@Override
+			public Void doInTransaction() {
+				organization.save();
+				return null;
+			}
+			
+		});
+		
+	}
+    
+    
 }

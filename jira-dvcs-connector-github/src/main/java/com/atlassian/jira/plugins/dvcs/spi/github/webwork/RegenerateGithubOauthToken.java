@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,18 +14,14 @@ import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
-public class AddGithubOrganization extends CommonDvcsConfigurationAction
+public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 {
 	private static final long serialVersionUID = -2316358416248237835L;
 
-	private final Logger log = LoggerFactory.getLogger(AddGithubOrganization.class);
+	private final Logger log = LoggerFactory.getLogger(RegenerateGithubOauthToken.class);
 
 	private String url;
-	private String organization;
-
-	private String oauthClientId;
-	private String oauthSecret;
-	private String oauthRequired;
+	private String organization; // in the meaning of id
 
 	// sent by GH on the way back
 	private String code;
@@ -37,13 +32,11 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	private final PluginSettingsFactory pluginSettingsFactory;
 
 	private final GithubOAuth githubOAuth;
-
 	private final OrganizationService organizationService;
-
 	private final GithubOAuthUtils githubOAuthUtils;
 	
 
-	public AddGithubOrganization(OrganizationService organizationService,
+	public RegenerateGithubOauthToken(OrganizationService organizationService,
 								GithubOAuth githubOAuth,
 								ApplicationProperties applicationProperties, 
 								PluginSettingsFactory pluginSettingsFactory,
@@ -60,19 +53,9 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	@RequiresXsrfCheck
 	protected String doExecute() throws Exception
 	{
-
-		if (isOAuthConfigurationRequired()) {
-			configureOAuth();
-		}
-		
-		// then continue
+		// go GH
 		return redirectUserToGithub();
 
-	}
-
-	private void configureOAuth()
-	{
-		githubOAuth.setClient(oauthClientId, oauthSecret);
 	}
 
 	private String redirectUserToGithub()
@@ -108,20 +91,9 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	protected void doValidation()
 	{
 
-		if (StringUtils.isNotBlank(oauthRequired))
-		{
-			if (StringUtils.isBlank(oauthClientId) || StringUtils.isBlank(oauthSecret))
-			{
-				addErrorMessage("Missing credentials.");
-			}
-		}
 
 	}
 	
-	protected boolean isOAuthConfigurationRequired() {
-		return StringUtils.isNotBlank(oauthRequired);
-	}
-
 	public String doFinish()
 	{
 
@@ -136,10 +108,10 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 			return INPUT;
 		}
 
-		return doAddOrganization();
+		return doChangeAccessToken();
 	}
 
-	private String doAddOrganization()
+	private String doChangeAccessToken()
 	{
 		try
 		{
@@ -150,7 +122,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 			newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
 			newOrganization.setCredential(new Credential(null, null, accessToken));
 			
-			organizationService.save(newOrganization);
+			organizationService.updateCredentialsAccessToken(Integer.parseInt(organization), accessToken);
 			
 		} catch (SourceControlException e)
 		{
@@ -213,36 +185,6 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	public void setOrganization(String organization)
 	{
 		this.organization = organization;
-	}
-
-	public String getOauthClientId()
-	{
-		return oauthClientId;
-	}
-
-	public void setOauthClientId(String oauthClientId)
-	{
-		this.oauthClientId = oauthClientId;
-	}
-
-	public String getOauthSecret()
-	{
-		return oauthSecret;
-	}
-
-	public void setOauthSecret(String oauthSecret)
-	{
-		this.oauthSecret = oauthSecret;
-	}
-
-	public String getOauthRequired()
-	{
-		return oauthRequired;
-	}
-
-	public void setOauthRequired(String oauthRequired)
-	{
-		this.oauthRequired = oauthRequired;
 	}
 
 }
