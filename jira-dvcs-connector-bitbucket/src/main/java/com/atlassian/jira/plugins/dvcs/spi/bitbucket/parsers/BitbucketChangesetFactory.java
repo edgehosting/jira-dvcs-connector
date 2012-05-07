@@ -1,9 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.parsers;
 
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultChangeset;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -30,9 +29,8 @@ public class BitbucketChangesetFactory
     /**
      * Parse the json object as a bitbucket changeset
      *
-     * @param owner the owner of the repository this changeset belongs to
-     * @param slug  the slug of the repository this changeset belons to
-     * @param json  the json object describing the change
+     * @param repositoryId
+     * @param baseJson
      * @return the parsed {@link com.atlassian.jira.plugins.bitbucket.api.Changeset}
      */
     public static Changeset parse(int repositoryId, JSONObject baseJson)
@@ -40,9 +38,10 @@ public class BitbucketChangesetFactory
         try
         {
             List<ChangesetFile> files = fileListFromBaseJson(baseJson);
-            return new DefaultChangeset(
+            return new Changeset(
                     repositoryId,
                     baseJson.getString("node"),
+                    null,
                     baseJson.getString("raw_author"),
                     baseJson.getString("author"),
                     parseDate(baseJson.getString("utctimestamp")),
@@ -53,6 +52,7 @@ public class BitbucketChangesetFactory
                     files,
                     files.size()
             );
+
         } catch (JSONException e)
         {
             throw new SourceControlException("Invalid json object: " + baseJson.toString(), e);
@@ -109,7 +109,7 @@ public class BitbucketChangesetFactory
         try
         {
             List<ChangesetFile> files = fileListFromDiffstatJson(new JSONArray(responseFilesString));
-            return new DefaultChangeset(changeset.getRepositoryId(), changeset.getNode(), changeset.getRawAuthor(), changeset.getAuthor(), changeset.getTimestamp(), changeset.getRawNode(), changeset.getBranch(), changeset.getMessage(), changeset.getParents(), files, changeset.getAllFileCount());
+            return new Changeset(changeset.getRepositoryId(), changeset.getNode(), null ,changeset.getRawAuthor(), changeset.getAuthor(), changeset.getDate(), changeset.getRawNode(), changeset.getBranch(), changeset.getMessage(), changeset.getParents(), files, changeset.getAllFileCount());
         } catch (JSONException e)
         {
             throw new SourceControlException("Invalid diffstat json object: " + responseFilesString, e);

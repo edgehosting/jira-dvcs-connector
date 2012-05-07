@@ -86,6 +86,10 @@ public class OrganizationServiceImpl implements OrganizationService
         // start asynchronous changesets synchronization for all repositories in organization
         repositoryService.syncAllInOrganization(org.getId());
 
+        // todo: pri pridavani repo pozriet ci org.autolink -> podla toho sync / postcommit
+
+        // todo: post commit hook
+
         return org;
     }
 

@@ -134,7 +134,7 @@ public class RepositoryDaoImpl implements RepositoryDao
             }
         });
 
-        activeObjects.flushAll();
+        activeObjects.flush(repositoryMapping);
 
         return transform(repositoryMapping, getOrganizationMapping(repository.getOrganizationId()));
 

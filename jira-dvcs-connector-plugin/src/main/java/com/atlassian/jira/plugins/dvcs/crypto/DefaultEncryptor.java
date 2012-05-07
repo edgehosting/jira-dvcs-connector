@@ -12,6 +12,8 @@ import java.util.Arrays;
 /**
  * An encryption service for storing passwords
  */
+
+// TODO: migracia passwordov
 public class DefaultEncryptor implements Encryptor
 {
     final Logger logger = LoggerFactory.getLogger(DefaultEncryptor.class);

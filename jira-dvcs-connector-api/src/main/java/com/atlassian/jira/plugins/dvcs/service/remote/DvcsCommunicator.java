@@ -1,9 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -16,4 +18,9 @@ public interface DvcsCommunicator
     AccountInfo getAccountInfo(String hostUrl, String accountName);
 
     List<Repository> getRepositories(Organization organization);
+
+    Changeset getDetailChangeset(Organization organization, Repository repository, Changeset changeset);
+
+    public Iterable<Changeset> getChangesets(Organization organization, Repository repository, Date lastCommitDate);
+
 }
