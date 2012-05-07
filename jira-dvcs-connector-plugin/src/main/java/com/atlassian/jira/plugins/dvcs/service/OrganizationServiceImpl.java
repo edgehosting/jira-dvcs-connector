@@ -111,5 +111,11 @@ public class OrganizationServiceImpl implements OrganizationService
 		
 	}
 
+	@Override
+	public void enableAutolinkNewRepos(int orgId, boolean parseBoolean) {
+		// TODO Auto-generated method stub
+		
+	}
+	
     
 }

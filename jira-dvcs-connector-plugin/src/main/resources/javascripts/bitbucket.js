@@ -18,90 +18,6 @@ function toggleMoreFiles(target_div) {
 }
 
 
-function submitFunction() {
-
-    if (!AJS.$('#projectKey').val()) {
-        AJS.$("#aui-message-bar").empty();
-        AJS.messages.error({ title: "Error!",
-            body: "The project has to be selected. There are no projects configured. Please create a project <a href='" + BASE_URL + "/secure/project/ViewProjects.jspa' target='_blank'>first</a>."
-        });
-        return false; // project-key has to be selected
-    }
-
-    AJS.$('#Submit').attr("disabled", "disabled");
-    if (AJS.$('#repoEntry').attr("action")) {
-        AJS.messages.hint({ title: "Linking...", body: "Trying to link repository to the project."});
-		return true; // submit form
-	}
-
-    AJS.$("#aui-message-bar").empty();
-    AJS.messages.hint({ title: "Connecting...", body: "Trying to connect to the repository."});
-
-    var repositoryUrl = AJS.$("#url").val().trim();
-    var requestUrl = BASE_URL + "/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl) + "&projectKey="+AJS.$("#projectKey").val();
-
-    AJS.$.getJSON(requestUrl,
-        function(data) {
-            AJS.$("#aui-message-bar").empty();
-            AJS.$("#isPrivate").val(data.isPrivate);
-
-            AJS.$('#Submit').attr("disabled", "");
-            if (data.validationErrors.length>0) {
-            	AJS.$.each(data.validationErrors, function(i, msg){
-            		AJS.messages.error({title : "Error!", body : msg});
-            	})
-            } else{
-            	handler[data.repositoryType].apply(this, arguments);
-        	}
-    	}).error(function(a) {
-            AJS.$("#aui-message-bar").empty();
-            AJS.messages.error({ title: "Error!", 
-            	body: "The repository url [<b>" + AJS.escapeHtml(AJS.$("#url").val()) + "</b>] is incorrect or the repository is not responding." 
-            });
-            AJS.$('#Submit').attr("disabled", "");
-        });
-    return false;
-}
-
-	var handler = {
-		"bitbucket": function(data){
-			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketRepository.jspa");
-
-			// hide url, organization input box
-			AJS.$('#urlReadOnly').html(AJS.$('#url').val());
-			AJS.$('#url').hide(); 
-			AJS.$('#urlReadOnly').show();
-
-			AJS.$('#organizationReadOnly').html(AJS.$('#organization').val());
-			AJS.$('#organization').hide(); 
-			AJS.$('#organizationReadOnly').show();
-			
-			// hide project selector
-			AJS.$('#projectKeyReadOnly').html(AJS.$('#projectKey').val());
-	        AJS.$('#projectKey').hide();
-			AJS.$('#projectKeyReadOnly').show();
-				
-			// hide examples
-			AJS.$('#examples').hide();
-
-			//show username / password
-			var credentialsHtml = ""
-				+ "<div class='field-group'>"
-				+ "<label for='adminUsername'>Username <span class='notbold'>(requires admin access to repo):</span></label>"
-				+ "<input type='text' name='adminUsername' id='adminUsername' value=''></div>"
-				+ "<div class='field-group' style='margin-bottom: 10px;'>"
-				+ "<label for='adminPassword'>Password</label>"
-				+ "<input type='password' name='adminPassword' id='adminPassword' value=''></div>";
-			AJS.$("#bbCredentials").html(credentialsHtml);
-		}, 
-		"github":function(data) {
-			AJS.$("#repoEntry").attr("action",BASE_URL + "/secure/admin/AddGithubRepository.jspa");
-			AJS.$('#repoEntry').submit();
-		}
-	}
-
-
-	
 function switchDvcsDetails(selectSwitch) {
 	var dvcsType = selectSwitch.selectedIndex;
 	if (dvcsType == 0) {
@@ -342,12 +258,35 @@ function changePassword(username, id) {
 	 popup.show();
 }
 
-function syncRepoList() {
+
+function autoLinkIssuesOrg(organizationId, checkboxId) {
 	
+	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
+	AJS.$("#" + checkboxId).attr("disabled", "disabled");
+
+	AJS.$("#" + checkboxId  + "working").show();
+	
+	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autolink",
+			  {autolink : checkedValue},
+			  function (data) {
+				  AJS.$("#" + checkboxId  + "working").hide();
+				  AJS.$("#" + checkboxId).removeAttr("disabled");
+			  });
 }
 
-function autoLinkIssuesOrg() {
+function autoLinkIssuesRepo(repoId, checkboxId) {
 	
+	var checkedValue = AJS.$("#" + checkboxId).is(":checked");
+	AJS.$("#" + checkboxId).attr("disabled", "disabled");
+
+	AJS.$("#" + checkboxId  + "working").show();
+
+	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/autolink",
+			  {autolink : checkedValue},
+			  function (data) {
+				  AJS.$("#" + checkboxId  + "working").hide();
+				  AJS.$("#" + checkboxId).removeAttr("disabled");
+			  });
 }
 
 //--------------------------------------------------------------------------------------------------

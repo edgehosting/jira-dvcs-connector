@@ -63,4 +63,12 @@ public interface RepositoryService
      * @param organizationId organizationId
      */
     void syncAllInOrganization(int organizationId);
+
+	/**
+	 * Enable autolink commits.
+	 *
+	 * @param repoId the repo id
+	 * @param parseBoolean the parse boolean
+	 */
+	void enableAutolinkCommits(int repoId, boolean parseBoolean);
 }

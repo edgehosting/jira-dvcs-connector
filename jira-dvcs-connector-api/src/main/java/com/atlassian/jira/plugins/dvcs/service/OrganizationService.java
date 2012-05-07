@@ -62,4 +62,12 @@ public interface OrganizationService
 	 */
 	void updateCredentialsAccessToken(int organizationId, String accessToken);
 
+	/**
+	 * Enable autolink new repos.
+	 *
+	 * @param orgId the org id
+	 * @param parseBoolean the parse boolean
+	 */
+	void enableAutolinkNewRepos(int orgId, boolean parseBoolean);
+
 }

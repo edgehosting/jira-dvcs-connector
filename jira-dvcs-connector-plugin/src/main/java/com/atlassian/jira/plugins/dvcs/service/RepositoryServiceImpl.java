@@ -90,9 +90,7 @@ public class RepositoryServiceImpl implements RepositoryService
             repositoryDao.save(storedRepository);
         }
 
-
     }
-
 
 
     @Override
@@ -118,5 +116,12 @@ public class RepositoryServiceImpl implements RepositoryService
 		// TODO Auto-generated method stub
 		return new ArrayList<Repository>();
 	}
+
+	@Override
+	public void enableAutolinkCommits(int repoId, boolean parseBoolean) {
+		// TODO Auto-generated method stub
+		
+	}
+    
     
 }
