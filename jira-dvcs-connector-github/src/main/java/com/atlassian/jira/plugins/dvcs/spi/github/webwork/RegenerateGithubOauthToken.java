@@ -18,7 +18,6 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 
 	private final Logger log = LoggerFactory.getLogger(RegenerateGithubOauthToken.class);
 
-	private String url;
 	private String organization; // in the meaning of id
 
 	// sent by GH on the way back
@@ -59,7 +58,7 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 	private String redirectUserToGithub()
 	{
 		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl(
-				url, getXsrfToken(), organization, getAutoLinking());
+				"", getXsrfToken(), organization, getAutoLinking());
 
 		return getRedirect(githubAuthorizeUrl);
 	}
@@ -72,7 +71,7 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 	private void fixBackwardCompatibility()
 	{
 
-		String encodedRepositoryUrl = encode(url);
+		String encodedRepositoryUrl = encode("");
 
 		String parameters = "repositoryUrl=" + encodedRepositoryUrl + "&atl_token=" + getXsrfToken();
 		String redirectBackUrl = applicationProperties.getBaseUrl() + "/secure/admin/GitHubOAuth2.jspa?" + parameters;
@@ -144,16 +143,6 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 	public void setCode(String code)
 	{
 		this.code = code;
-	}
-
-	public String getUrl()
-	{
-		return url;
-	}
-
-	public void setUrl(String url)
-	{
-		this.url = url;
 	}
 
 	public String getOrganization()

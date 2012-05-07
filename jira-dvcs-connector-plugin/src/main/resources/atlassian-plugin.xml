@@ -148,7 +148,6 @@
         <interface>com.atlassian.jira.plugins.dvcs.dao.RepositoryDao</interface>
     </component>
 
-
     <component key="organizationService" name="organizationService"
                class="com.atlassian.jira.plugins.dvcs.service.OrganizationServiceImpl">
         <description>organizationService</description>
