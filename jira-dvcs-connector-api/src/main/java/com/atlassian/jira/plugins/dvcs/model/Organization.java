@@ -3,10 +3,15 @@ package com.atlassian.jira.plugins.dvcs.model;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+
 import java.util.List;
 
 @XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Organization
 {
     private int id;
@@ -14,7 +19,9 @@ public class Organization
     private String name;
     private String dvcsType;
     private boolean autolinkNewRepos;
-    private Credential credential;
+    
+    @XmlTransient
+    private transient Credential credential;
 
     private List<Repository> repositories;
  
@@ -58,6 +65,7 @@ public class Organization
         return autolinkNewRepos;
     }
 
+    @XmlTransient
     public Credential getCredential()
     {
         return credential;
