@@ -175,7 +175,8 @@
 				<div class="dvcs-organization-controls">
 
 				 <input id="org_autolink_check$org.id" class="aui" $!orgAutolink type="checkbox" name="autolink-quick" onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" /><label> Autolink new repositories</label>
-				 
+				 <span style="display:none; width: 16px; height: 16px;" id="org_autolink_check${org.id}working" class="syncicon running">&nbsp;</span>
+	
 				 | <a href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=$org.id&amp;atl_token=$atl_token">Sync Repository List</a>
 				 #if($org.dvcsType == "bitbucket")
 				 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Password</a>
