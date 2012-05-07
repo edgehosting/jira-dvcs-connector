@@ -26,8 +26,13 @@ DvcsValidator.prototype.runValidation = function () {
 	
 	
 	for (index in this.validatedItems) {
-
+		
 		var value = this.validatedItems[index];
+
+		// if field has more validators, skip other validations in case of first invalidity
+		if (!value.valid) {
+			continue;
+		}
 		
 		var jqElement = AJS.$("#" + value.errorElementId);
 		
@@ -39,9 +44,22 @@ DvcsValidator.prototype.runValidation = function () {
 			
 			this.valid = false;
 		}
+		// rule URL
+		else if (value.rule == "url" && !dvcsIsUrl(jqElement.val())) {
+			var jqElementError = AJS.$("#" + value.errorElementId);
+			jqElementError.show();
+			value.valid = false;
+			
+			this.valid = false;
+		}
 
 	}
 	
 	return this.valid;
 	
+}
+
+function dvcsIsUrl(s) {
+	var regexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+	return regexp.test(s);
 }
