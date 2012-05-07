@@ -31,6 +31,10 @@ public class OrganizationDaoImpl implements OrganizationDao
 
     protected Organization transform(OrganizationMapping organizationMapping) {
 
+    	if (organizationMapping == null) {
+    		return null;
+    	}
+    	
         String decryptedPasswd = encryptor.decrypt(organizationMapping.getAdminPassword(),
                 organizationMapping.getName(),
                 organizationMapping.getHostUrl());
