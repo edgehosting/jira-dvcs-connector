@@ -77,7 +77,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
 	private String redirectUserToGithub()
 	{
-		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubRepository",
+		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubOrganization",
 				url, getXsrfToken(), organization, getAutoLinking());
 
 		return getRedirect(githubAuthorizeUrl);

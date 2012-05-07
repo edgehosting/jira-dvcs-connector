@@ -129,10 +129,6 @@ public class OrganizationDaoImpl implements OrganizationDao
     @Override
     public Organization save(final Organization organization)
     {
-        final String encryptedPasswd = encryptor.encrypt(organization.getCredential().getAdminPassword(),
-                organization.getName(),
-                organization.getHostUrl());
-
 
         final OrganizationMapping organizationMapping = activeObjects.executeInTransaction(new TransactionCallback<OrganizationMapping>()
         {
@@ -140,7 +136,18 @@ public class OrganizationDaoImpl implements OrganizationDao
             @Override
             public OrganizationMapping doInTransaction()
             {
-                OrganizationMapping om;
+            	
+            	String encryptedPasswd = null;
+                
+                if (organization.getCredential().getAdminPassword() != null) {
+                	encryptedPasswd = 
+                	encryptor.encrypt(organization.getCredential().getAdminPassword(),
+                			organization.getName(),
+                			organization.getHostUrl());
+                }
+
+                OrganizationMapping om = null;
+
                 if (organization.getId() == 0)
                 {
                     final Map<String, Object> map = new HashMap<String, Object>();

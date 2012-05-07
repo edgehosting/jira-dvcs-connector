@@ -217,7 +217,8 @@ var submitFormAjaxHandler = {
 				AJS.$("#github-form-section").fadeIn();
 
 			} else {
-
+				
+				AJS.$("#oauthRequired").val("");
 				AJS.$('#repoEntry').submit();
 
 			}
