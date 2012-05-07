@@ -289,6 +289,9 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 			  });
 }
 
+function confirmDeleteOrganization(organization) {
+	return confirm("Are you sure you want to delete organization '" + organization + "' ?");
+}
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
