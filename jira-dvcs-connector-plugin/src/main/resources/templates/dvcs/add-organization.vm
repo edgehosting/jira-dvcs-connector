@@ -16,7 +16,7 @@
                 forceSync($action.getRepositoryId());
             #end
             
-            retrieveSyncStatus();
+           // retrieveSyncStatus();
             
             AJS.$("#repoEntry").submit(submitFormHandler);
         }
@@ -133,52 +133,6 @@
    		
    		#printOrganizations
    		
-        #macro ( repositoryLineItem $projectName $projectKey )
-            #set($encodedProjectName = $textutils.htmlEncode($projectName))
-            #set($projectRepositories = $action.getProjectRepositories($projectKey))
-            #if ($projectRepositories.size() > 0)
-                <tr> <td height="38px" colspan="3" class="gh_table_td_pname">
-                    <span class="gh_table_project_name">$encodedProjectName</span><span class="gh_table_project_key">($projectKey)</span>
-                </td> </tr>
-            #end
-            #foreach ($repository in $projectRepositories)
-
-                    #set($repositoryId = $repository.getId())
-                    #set($encodedProjectKey = $textutils.htmlEncode($action.getProjectKey()))
-                    #set($encodedMode = $textutils.htmlEncode($action.getMode()))
-                    <tr>
-                        #if ($repository.getRepositoryType() == 'bitbucket')
-                            #set($repoTypeImgName = "bitbucket")
-                        #else
-                            #set($repoTypeImgName = "github")
-                        #end
-                        <td width="1px" height="40px">
-                            <span class="$repository.getRepositoryType()Logo">&nbsp;</span>
-                            </td>
-                        <td><a class="repositoryNameLink" href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_new">
-                            <span class="repositoryName">$textutils.htmlEncode($repository.repositoryName)</span>
-                        </a></td>
-                        <td style="text-align: right;">
-                            <span id="syncicon_$repositoryId" class="syncicon" >&nbsp;</span>
-                            <span id="sync_status_message_$repositoryId" class="gh_messages">
-                                <span class="content"></span> |
-                            </span>
-
-                            <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Force Sync</a> |
-                            <a href="#" onclick="deleteRepository($repositoryId, '$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)')">Delete</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="status" colspan="3">
-                            <span id="sync_error_message_$repositoryId" class="gh_messages">
-                            </span>
-                        </td>
-                    </tr>
-
-            #end
-        #end
-
-
 		#*
 
         <table class="gh_table" cellspacing="0" cellpadding="0">
@@ -256,15 +210,15 @@
 					#end
 			        <tr class="$dvcsEvenClass">
 			            <td class="dvcs-org-reponame">$repo.name</td>
-			            <td><input type="checkbox" $!repoAutolink /></td>
+			            <td class="dvcs-autolink-repo"><input type="checkbox" $!repoAutolink /></td>
 			            <td class="action" headers="action" style="text-align: right;">
 			                <ul class="menu">
 			                    <li>
-			                        <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Sync Repo</a>
+			                        <a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">Sync Repo</a>
 			                    </li>
 			                </ul>
-			                <span id="syncicon_$repositoryId" class="syncicon" >&nbsp;</span>
-                            <span id="sync_status_message_$repositoryId" class="gh_messages">
+			                <span id="syncicon_$repo.id" class="syncicon" >&nbsp;</span>
+                            <span id="sync_status_message_$repo.id" class="gh_messages">
                                 <span class="content"></span>
                             </span>
 			            </td>

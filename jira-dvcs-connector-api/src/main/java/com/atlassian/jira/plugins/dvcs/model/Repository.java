@@ -5,12 +5,11 @@ import java.util.Date;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-@XmlRootElement
+@XmlRootElement(name = "repository")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Repository
 {
@@ -23,7 +22,6 @@ public class Repository
 	private boolean linked;
     private boolean deleted;
     
-    @XmlTransient
 	private transient Credential credential;
 	
     private SyncProgress sync;
@@ -117,7 +115,6 @@ public class Repository
         this.linked = linked;
     }
 
-    @XmlTransient
     public Credential getCredential()
     {
         return credential;

@@ -65,7 +65,7 @@ public class RootResource
 	 * @return the repository
 	 */
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_JSON  })
 	@Path("/repository/{id}")
 	public Response getRepository(@PathParam("id") int id)
 	{
@@ -105,13 +105,14 @@ public class RootResource
 	{
 		log.debug("Rest request to sync repository [{}] with payload [{}]", id, payload);
 		
-		repositoryService.sync(id, false);
+		//repositoryService.sync(id, false);
 
 		// ...
 		// redirect to Repository resource - that will contain sync
 		// message/status
 		UriBuilder ub = uriInfo.getBaseUriBuilder();
 		URI uri = ub.path("/repository/{id}").build(id);
+
 		return Response.seeOther(uri).build();
 	}
 

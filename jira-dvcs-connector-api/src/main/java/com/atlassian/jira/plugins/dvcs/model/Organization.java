@@ -20,7 +20,6 @@ public class Organization
     private String dvcsType;
     private boolean autolinkNewRepos;
     
-    @XmlTransient
     private transient Credential credential;
 
     private List<Repository> repositories;
@@ -65,7 +64,6 @@ public class Organization
         return autolinkNewRepos;
     }
 
-    @XmlTransient
     public Credential getCredential()
     {
         return credential;

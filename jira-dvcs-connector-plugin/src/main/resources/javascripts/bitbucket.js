@@ -18,11 +18,6 @@ function toggleMoreFiles(target_div) {
 }
 
 
-function forceSync(repositoryId) {
-    AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync");
-    retrieveSyncStatus();
-}
-
 function submitFunction() {
 
     if (!AJS.$('#projectKey').val()) {
@@ -122,51 +117,63 @@ function switchDvcsDetails(selectSwitch) {
 
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
+function forceSync(repositoryId) {
+	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync", function (data) {
+		updateSyncStatus(data);
+	});
+}
 
 function retrieveSyncStatus() {
 
 	AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/repositories", function (data) {
-	        AJS.$.each(data.repositories, function(a, repo) {
-	            var syncStatusDiv = AJS.$('#sync_status_message_' + repo.id);
-	            var syncErrorDiv = AJS.$('#sync_error_message_' + repo.id);
-	            var syncIconElement = AJS.$('#syncicon_' + repo.id);
 
-	            var syncStatusHtml = "";
-	            var syncIcon;
+		AJS.$.each(data.repositories, function (a, repo) {
+			updateSyncStatus(repo);
+		});
+	
+		window.setTimeout(retrieveSyncStatus, 4000)
+	
+	});
+}
 
-	            if (repo.sync) {
+function updateSyncStatus(repo) {
 
-	                if (repo.sync.isFinished) {
-	                    if (repo.lastCommitRelativeDate != "") syncIcon = "commits";
-	                    syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitRelativeDate);
+	var syncStatusDiv = AJS.$('#sync_status_message_' + repo.id);
+    var syncErrorDiv = AJS.$('#sync_error_message_' + repo.id);
+    var syncIconElement = AJS.$('#syncicon_' + repo.id);
 
-	                } else {
-	                    syncIcon = "running";
-	                    syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong>" + repo.sync.jiraCount + "</strong> issues found";
-	                    if (repo.sync.synchroErrorCount > 0)
-	                        syncStatusHtml += ", <span style='color:#e16161;'><strong>" + repo.sync.synchroErrorCount + "</strong> changesets incomplete</span>";
+    var syncStatusHtml = "";
+    var syncIcon;
 
-	                }
-	                if (repo.sync.error) {
-	                    syncStatusHtml = "";
-	                    syncIcon = "error";
-	                    syncErrorDiv.html("<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>");
-	                } else {
-	                	syncErrorDiv.html("");
-	            	}
-	            }
-	            else {
-	                if (repo.lastCommitRelativeDate != "") syncIcon = "commits";
-	                syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitRelativeDate);
-	            }
-	            syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
+    if (repo.sync) {
 
-	            if (syncStatusHtml != "") syncStatusHtml += " <span style='color:#000;'>|</span>";
-	            syncStatusDiv.html(syncStatusHtml);
+        if (repo.sync.isFinished) {
+            if (repo.lastCommitRelativeDate != "") syncIcon = "commits";
+            syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitRelativeDate);
 
-	        });
-	        window.setTimeout(retrieveSyncStatus, 4000)
-	    })
+        } else {
+            syncIcon = "running";
+            syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong>" + repo.sync.jiraCount + "</strong> issues found";
+            if (repo.sync.synchroErrorCount > 0)
+                syncStatusHtml += ", <span style='color:#e16161;'><strong>" + repo.sync.synchroErrorCount + "</strong> changesets incomplete</span>";
+
+        }
+        if (repo.sync.error) {
+            syncStatusHtml = "";
+            syncIcon = "error";
+            syncErrorDiv.html("<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>");
+        } else {
+        	syncErrorDiv.html("");
+    	}
+    }
+    else {
+        if (repo.lastCommitRelativeDate != "") syncIcon = "commits";
+        syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitRelativeDate);
+    }
+    syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
+
+    syncStatusDiv.html(syncStatusHtml);
+
 }
 
 function getLastCommitRelativeDateHtml(daysAgo) {
