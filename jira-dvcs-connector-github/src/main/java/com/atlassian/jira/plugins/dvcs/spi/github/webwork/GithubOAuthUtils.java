@@ -29,14 +29,14 @@ public class GithubOAuthUtils {
 		this.applicationProperties = applicationProperties;
 	}
 
-	public String createGithubRedirectUrl(String url, String xsrfToken,
+	public String createGithubRedirectUrl(String nextAction, String url, String xsrfToken,
 			String organization, String autoLinking) {
 
 		String encodedRepositoryUrl = encode(url);
 
 		// Redirect back URL
 		String redirectBackUrl = applicationProperties.getBaseUrl()
-				+ "/secure/admin/AddGithubRepository!finish.jspa?url="
+				+ "/secure/admin/" + nextAction + "!finish.jspa?url="
 				+ encodedRepositoryUrl + "&atl_token=" + xsrfToken
 				+ "&organization=" + organization + "&autoLinking="
 				+ autoLinking;
