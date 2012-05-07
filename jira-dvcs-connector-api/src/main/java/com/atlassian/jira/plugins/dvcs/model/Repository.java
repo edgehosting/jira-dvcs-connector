@@ -1,12 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import java.util.Date;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Date;
-
 @XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Repository
 {
 	private int id;
@@ -17,8 +22,11 @@ public class Repository
 	private Date lastCommitDate;
 	private boolean linked;
     private boolean deleted;
-	private Credential credential;
-	private SyncProgress sync;
+    
+    @XmlTransient
+	private transient Credential credential;
+	
+    private SyncProgress sync;
 
 	public Repository()
 	{
@@ -109,6 +117,7 @@ public class Repository
         this.linked = linked;
     }
 
+    @XmlTransient
     public Credential getCredential()
     {
         return credential;
