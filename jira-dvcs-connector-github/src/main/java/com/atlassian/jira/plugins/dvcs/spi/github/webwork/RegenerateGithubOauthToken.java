@@ -6,8 +6,6 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubOAuth;
-import com.atlassian.jira.plugins.dvcs.model.Credential;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
@@ -115,13 +113,6 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 	{
 		try
 		{
-			Organization newOrganization = new Organization();
-			newOrganization.setName(organization);
-			newOrganization.setHostUrl(url);
-			newOrganization.setDvcsType("github");
-			newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
-			newOrganization.setCredential(new Credential(null, null, accessToken));
-			
 			organizationService.updateCredentialsAccessToken(Integer.parseInt(organization), accessToken);
 			
 		} catch (SourceControlException e)
@@ -130,18 +121,6 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 			log.debug("Failed adding the organization: [" + e.getMessage() + "]");
 			return INPUT;
 		}
-
-		/*
-		 * try { globalRepositoryManager.setupPostcommitHook(repository); }
-		 * catch (SourceControlException e) {
-		 * log.debug("Failed adding postcommit hook: [" + e.getMessage() + "]");
-		 * globalRepositoryManager.removeRepository(repository.getId());
-		 * addErrorMessage(
-		 * "Error adding postcommit hook. Do you have admin rights to the repository? <br/> Repository was not added. ["
-		 * + e.getMessage() + "]");
-		 * 
-		 * return INPUT; }
-		 */
 
 		return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + getXsrfToken());
 	}

@@ -223,7 +223,7 @@
 				 #if($org.dvcsType == "bitbucket")
 				 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Password</a>
 				 #else
-   			 	 | <a href="$baseurl/secure/admin/">Re-generate OAuth Access Token</a>
+   			 	 | <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=$org.id&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 				 #end
 				 | <a href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=$org.id&amp;atl_token=$atl_token">Delete organization</a>
 				</div>

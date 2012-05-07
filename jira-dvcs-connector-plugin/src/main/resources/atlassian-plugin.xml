@@ -167,7 +167,7 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetService</interface>
     </component>
     
-    <component class="com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils">
+    <component key="githubOauthUtils" class="com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils">
     	<description>Utils used i.e. to build GH redirect URLs etc.</description>
     </component>
     
