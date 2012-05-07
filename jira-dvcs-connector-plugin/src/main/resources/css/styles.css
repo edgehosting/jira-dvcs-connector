@@ -148,15 +148,15 @@
 .bitbucketLogo {
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png);
     background-repeat: no-repeat;
-    padding: 20px 17px;
-    background-position: 10px 17px;
 }
 
 .githubLogo {
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_logo.png);
     background-repeat: no-repeat;
-    padding: 20px 17px;
-    background-position: 8px 15px;
+}
+
+h4.bitbucketLogo, h4.githubLogo {
+	padding-left: 27px;	
 }
 
 #postCommitServiceDetails{
@@ -480,4 +480,11 @@ a:hover.repositoryNameLink {
 }
 .dvcs-org-reponame {
 	width: 600px;
+}
+#dvcs-change-pass-dialog .dialog-button-panel {
+	border-top: 1px solid #d2d2d2;
+	margin-bottom: 7px;
+}
+.dvcs-even-row td {
+	background-color: #eaeaea;
 }

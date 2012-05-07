@@ -23,6 +23,7 @@
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
 
+
     <ao key="ao-module" name="Active Objects Module">
         <!-- TODO remove the next two lines when possible -->
         <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping</entity>
@@ -63,13 +64,6 @@
         <interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister</interface>
     </component>
 
-    <!--TODO refaktorovat zavyslost na RepoManager-->
-    <!--<component key="synchronizer" name="Bitbucket Synchronization Service"-->
-               <!--class="com.atlassian.jira.plugins.bitbucket.DefaultSynchronizer">-->
-        <!--<description>A Service for migrating from the property set storage to ActiveObjects</description>-->
-        <!--<interface>com.atlassian.jira.plugins.bitbucket.api.Synchronizer</interface>-->
-    <!--</component>-->
-
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
                class="com.atlassian.jira.plugins.bitbucket.activeobjects.DefaultBitbucketProjectSettings">
         <description>A facade for storing project settings</description>
@@ -90,6 +84,16 @@
 
 
 
+    <!--TODO refaktorovat zavyslost na RepoManager-->
+    <component key="synchronizer" name="Dvcs Synchronization Service"
+               class="com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer">
+        <description>A Service for managing changesets synchronization operations</description>
+        <interface>com.atlassian.jira.plugins.dvcs.sync.Synchronizer</interface>
+        <property ref="repositoryService" />
+    </component>
+
+
+
     <component key="encryptor" name="Encryption Service"
                class="com.atlassian.jira.plugins.dvcs.crypto.DefaultEncryptor">
         <description>A service for encrypting and decrypting passwords</description>
@@ -98,7 +102,7 @@
 
 
     <component key="authenticationFactory" name="Authentication Factory"
-               class="com.atlassian.jira.plugins.dvcs.auth.DefaultAuthenticationFactory">
+               class="com.atlassian.jira.plugins.dvcs.auth.impl.DefaultAuthenticationFactory">
         <description>Creating authenticators</description>
         <interface>com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory</interface>
     </component>
@@ -200,7 +204,7 @@
 	            <view name="input">/templates/addbitbucketrepository.vm</view>
 	        </action>
 
-            <action name="com.atlassian.jira.plugins.bitbucket.spi.github.webwork.ConfigureGithubOAuth" alias="ConfigureGithubOAuth">
+            <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.ConfigureGithubOAuth" alias="ConfigureGithubOAuth">
                 <view name="input">/templates/configuregithuboauth.vm</view>
             </action>
 
@@ -231,6 +235,11 @@
             <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.AddBitbucketOrganization"
                     alias="AddBitbucketOrganization" roles-required="admin">
                 <view name="input">/templates/dvcs/add-bitbucket-organization.vm</view>
+            </action>
+           
+            <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.UpdateBitbucketCredentials"
+                    alias="UpdateBitbucketCredentials" roles-required="admin">
+                <view name="input">/templates/dvcs/update-bitbucket-password.vm</view>
             </action>
             
 			

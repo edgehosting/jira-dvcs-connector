@@ -1,12 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.BitbucketClient;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.BitbucketClientException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.RepositoryLink;
@@ -19,6 +12,12 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 
 public class BitbucketLinkerImpl implements BitbucketLinker
@@ -131,7 +130,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 
     private List<Repository> getRepositories(Organization organization)
     {
-        List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+        List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId(), false);
         
         Collections2.filter(repositories, new Predicate<Repository>()
         {

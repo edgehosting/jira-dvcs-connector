@@ -1,29 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.List;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
-import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+
+import java.util.List;
 
 public class OrganizationServiceImpl implements OrganizationService
 {
 
     private final OrganizationDao organizationDao;
-    private final RepositoryDao repositoryDao;
     private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
+    private final RepositoryService repositoryService;
 
-    public OrganizationServiceImpl(DvcsCommunicatorProvider dvcsCommunicatorProvider, OrganizationDao organizationDao, RepositoryDao repositoryDao)
+    public OrganizationServiceImpl(DvcsCommunicatorProvider dvcsCommunicatorProvider, OrganizationDao organizationDao, RepositoryService repositoryService)
     {
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
         this.organizationDao = organizationDao;
-        this.repositoryDao = repositoryDao;
+        this.repositoryService = repositoryService;
     }
 
     @Override
@@ -33,44 +31,74 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-    public List<Organization> getAll()
+    public List<Organization> getAll(final boolean loadRepositories)
     {
         final List<Organization> organizations = organizationDao.getAll();
 
-        CollectionUtils.transform(organizations, new Transformer()
+        if (loadRepositories)
         {
-            @Override
-            public Object transform(Object o)
+            CollectionUtils.transform(organizations, new Transformer()
             {
-                Organization organization = (Organization) o;
-                final List<Repository> repositories = repositoryDao.getAllByOrganization(organization.getId());
-                organization.setRepositories(repositories.toArray(new Repository[]{}));
-                return organization;
-            }
-        });
+                @Override
+                public Object transform(Object o)
+                {
+                    Organization organization = (Organization) o;
+                    final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId(), false);
+                    organization.setRepositories(repositories);
+                    return organization;
+                }
+            });
+        }
+
         return organizations;
     }
 
     @Override
-    public Organization get(int organizationId)
+    public Organization get(int organizationId, boolean loadRepositories)
     {
         final Organization organization = organizationDao.get(organizationId);
 
-        // todo: ozaj array?  nie radsej list?
-        final List<Repository> repositoryList = repositoryDao.getAllByOrganization(organizationId);
-        organization.setRepositories((Repository[]) repositoryList.toArray());
+        if (loadRepositories)
+        {
+            final List<Repository> repositories = repositoryService.getAllByOrganization(organizationId, false);
+            organization.setRepositories(repositories);
+        }
 
         return organization;
     }
 
+
     @Override
     public Organization save(Organization organization)
     {
-        return organizationDao.save(organization);
+        // todo: uz taku mame. co s Login a Passwd. mozno to treba ziastovat uz skor a na UI
+        Organization org = organizationDao.getByHostAndName(organization.getHostUrl(), organization.getName());
+
+        // it's brand new organization. save it.
+        if (org == null)
+        {
+            org = organizationDao.save(organization);
+        }
+
+        // sync repository list
+        repositoryService.syncRepositoryList(org);
+
+        // start asynchronous changesets synchronization for all repositories in organization
+        repositoryService.syncAllInOrganization(org.getId());
+
+        return org;
     }
 
     @Override
     public void remove(int organizationId)
     {
+        // todo
     }
+
+	@Override
+	public void updateCredentials(int organizationId, String plaintextPassword)
+	{
+		
+	}
+    
 }

@@ -19,15 +19,19 @@ public interface OrganizationService
     /**
      * returns all organizations
      * @return list of organizations
+     * @param loadRepositories
      */
-    List<Organization> getAll();
+    List<Organization> getAll(boolean loadRepositories);
 
     /**
      * returns Organization by ID
+     *
      * @param organizationId id
+     * @param loadRepositories
      * @return organization
      */
-    Organization get(int organizationId);
+    Organization get(int organizationId, boolean loadRepositories);
+
 
     /**
      * save Organization to storage. If it's new object (without ID) after this operation it will have it assigned.
@@ -41,5 +45,13 @@ public interface OrganizationService
      * @param organizationId id
      */
     void remove(int organizationId);
+    
+    /**
+     * Update credentials.
+     *
+     * @param organizationId the organization id
+     * @param plaintextPassword the password as a plain text
+     */
+    void updateCredentials(int organizationId, String plaintextPassword);
 
 }

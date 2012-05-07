@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.crypto;
 
-import com.atlassian.jira.project.ProjectManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,29 +15,20 @@ import java.util.Arrays;
 public class DefaultEncryptor implements Encryptor
 {
     final Logger logger = LoggerFactory.getLogger(DefaultEncryptor.class);
-    private final ProjectManager projectManager;
-
-    public DefaultEncryptor(ProjectManager projectManager)
-    {
-        this.projectManager = projectManager;
-    }
 
     /**
      * Encrypt the input into a hex encoded string;
      * @param input the input to encrypt
-     * @param projectKey the project key
-     * @param repoURL the repository url
+     * @param organizationName the project key
+     * @param hostUrl the repository url
      * @return the encrypted string
      */
-    public String encrypt(String input, String projectKey, String repoURL)
+    public String encrypt(String input, String organizationName, String hostUrl)
     {
         byte[] encrypted;
         try
         {
-        	// TODO - Do we need projectID? Can we use projectKey instead? 
-            String projectID = projectManager.getProjectObjByKey(projectKey).getId().toString();
-
-            byte[] key = (projectID + repoURL).getBytes("UTF-8");
+            byte[] key = (organizationName + hostUrl).getBytes("UTF-8");
             MessageDigest sha = MessageDigest.getInstance("SHA-1");
             key = sha.digest(key);
             key = Arrays.copyOf(key, 16); // use only first 128 bit
@@ -74,7 +64,7 @@ public class DefaultEncryptor implements Encryptor
         return data;
     }
 
-    public String decrypt(String password, String projectKey, String repoURL)
+    public String decrypt(String password, String organizationName, String hostUrl)
     {
     	if (password == null) 
     		return null; 
@@ -82,10 +72,9 @@ public class DefaultEncryptor implements Encryptor
         try
         {
             byte[] ciphertext = DefaultEncryptor.hexStringToByteArray(password);
-            String projectID = projectManager.getProjectObjByKey(projectKey).getId().toString();
 
             // Get the Key
-            byte[] key = (projectID + repoURL).getBytes("UTF-8");
+            byte[] key = (organizationName + hostUrl).getBytes("UTF-8");
             MessageDigest sha = MessageDigest.getInstance("SHA-1");
             key = sha.digest(key);
             key = Arrays.copyOf(key, 16); // use only first 128 bit
@@ -107,7 +96,7 @@ public class DefaultEncryptor implements Encryptor
         }
         catch (Exception e)
         {
-            logger.debug("error encrypting",e);
+            logger.debug("error decrypting",e);
         }
         return "";
     }

@@ -1,10 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.Date;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -13,6 +8,11 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * Webwork action used to configure the bitbucket organizations
@@ -58,31 +58,19 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	{
 
 		Repository mockRepo = new Repository(124, 12, "bitbucket", "sentinel-core-components",
-				"Sentinel Core Components", new Date(), true, null);
+				"Sentinel Core Components", new Date(), true, false, null);
 
-		Organization mockOrg = new Organization();
-		mockOrg.setId(12);
-		mockOrg.setHostUrl("https://bitbucket.com");
-		mockOrg.setDvcsType("bitbucket");
-		mockOrg.setName("sentinel");
-		mockOrg.setAutolinkNewRepos(true);
-		mockOrg.setRepositories(new Repository[] { mockRepo });
+		Repository mockRepo2 = new Repository(1234, 12, "github", "blogging-samples",
+				"Blogging Samples Repo", new Date(), false, false, null);
 		
-		Repository mockRepo2 = new Repository(124, 12, "github", "blogging-samples",
-				"Blogging Samples Repo", new Date(), false, null);
+		Repository mockRepo3 = new Repository(125, 12, "github", "perfect-plan-repository",
+				"Perfect Plan Repository", new Date(), false, false, null);
 		
-		Organization mockOrg2 = new Organization();
-		mockOrg2.setId(12);
-		mockOrg2.setHostUrl("https://github.com");
-		mockOrg2.setDvcsType("github");
-		mockOrg2.setName("samuel");
-		mockOrg2.setAutolinkNewRepos(false);
-		mockOrg2.setRepositories(new Repository[] { mockRepo2 });
 
-		Organization[] mocks = new Organization[] { mockOrg, mockOrg2  };
-
-		return mocks;
-		// return organizationService.getAll().toArray(new Organization []{});
+		//return mocks;
+		List<Organization> allOrganizations = organizationService.getAll(true);
+//		allOrganizations.get(0).setRepositories(new Repository[] { mockRepo, mockRepo2, mockRepo3 });
+		return allOrganizations.toArray(new Organization[]{});
 	}
 
 	public int getRepositoryId()

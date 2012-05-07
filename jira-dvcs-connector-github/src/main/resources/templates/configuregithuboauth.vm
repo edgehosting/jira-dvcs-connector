@@ -14,16 +14,14 @@
         <h3>GitHub OAuth Settings</h3>
 
             <div id='gh_config_link'>
-                <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories!default.jspa">Bulk Configure Bitbucket and GitHub Repositories</a>
+                <a href="${baseurl}/secure/admin/ConfigureDvcsOrganizations!default.jspa">Bulk Configure Bitbucket and GitHub Organizations</a>
             </div>
 
               <h4 class="gh_config_h4">Setting up a GitHub OAuth Application</h4>
 
                 <form class="aui" method="post" action="${baseurl}/secure/admin/ConfigureGithubOAuth.jspa">
-                  <input type="hidden" name="atl_token" value="$atl_token">
-                  If you need to sync only with public GitHub repositories, you can skip the this step and proceed directly to <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories!default.jspa">configuring your repositories</a>.
 
-                  For private GitHub repositories, complete the following steps:
+                  <input type="hidden" name="atl_token" value="$atl_token">
 
                   <ol class="gh_steps">
                     <li>Copy the following Callback URL:
@@ -108,7 +106,7 @@
                    </li>
 
                    <li>
-                       Once you have completed the OAuth Application setup, you can begin <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories!default.jspa">configuring your repositories</a>.
+                       Once you have completed the OAuth Application setup, you can begin <a href="${baseurl}/secure/admin/ConfigureBitbucketOrganizations!default.jspa">configuring your organizations</a>.
                    </li>
 
                   </ol>

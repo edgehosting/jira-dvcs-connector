@@ -48,6 +48,66 @@ public class Changeset
         this.allFileCount = allFileCount;
     }
 
+    public int getRepositoryId()
+    {
+        return repositoryId;
+    }
+
+    public String getNode()
+    {
+        return node;
+    }
+
+    public String getIssueKey()
+    {
+        return issueKey;
+    }
+
+    public String getRawAuthor()
+    {
+        return rawAuthor;
+    }
+
+    public String getAuthor()
+    {
+        return author;
+    }
+
+    public Date getDate()
+    {
+        return date;
+    }
+
+    public String getRawNode()
+    {
+        return rawNode;
+    }
+
+    public String getBranch()
+    {
+        return branch;
+    }
+
+    public String getMessage()
+    {
+        return message;
+    }
+
+    public List<String> getParents()
+    {
+        return parents;
+    }
+
+    public List<ChangesetFile> getFiles()
+    {
+        return files;
+    }
+
+    public int getAllFileCount()
+    {
+        return allFileCount;
+    }
+
     @Override
     public boolean equals(Object o)
     {

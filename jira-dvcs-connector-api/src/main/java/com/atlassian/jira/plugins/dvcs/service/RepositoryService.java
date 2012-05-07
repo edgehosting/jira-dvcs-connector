@@ -1,18 +1,36 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.SyncProgress;
 
 import java.util.List;
 
+/**
+ * Returning type {@link Repository} is enriched with synchronization status by default.
+ *
+ *
+ * @see SyncProgress
+ *
+ */
 public interface RepositoryService
 {
 
     /**
      * returns all repositories for given organization
      * @param organizationId organizationId
+     * @param alsoDeleted will contains also deleted
      * @return repositories
      */
-    List<Repository> getAllByOrganization(int organizationId);
+    List<Repository> getAllByOrganization(int organizationId, boolean alsoDeleted);
+    
+    /**
+     * Gets the all active repositories with synchronization status.
+     *
+     * @param organizationId the organization id
+     * @return the all active repositories
+     */
+    List<Repository> getAllActiveRepositories();
 
     /**
      * returns repository by ID
@@ -30,14 +48,19 @@ public interface RepositoryService
 
     /**
      * synchronization of repository list in given organization
-     * @param organizationId organizationId
+     * @param organization organization
      */
-    void syncRepositoryList(int organizationId);
+    void syncRepositoryList(Organization organization);
 
     /**
      * synchronization of changesets in given repository
      * @param repositoryId repositoryId
      */
-    void sync(int repositoryId);
+    void sync(int repositoryId, boolean softSync);
 
+    /**
+     * synchronization of changesets in all repositories which are in given organization
+     * @param organizationId organizationId
+     */
+    void syncAllInOrganization(int organizationId);
 }

@@ -1,5 +1,7 @@
-package com.atlassian.jira.plugins.dvcs.auth;
+package com.atlassian.jira.plugins.dvcs.auth.impl;
 
+import com.atlassian.jira.plugins.dvcs.auth.Authentication;
+import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import org.apache.commons.lang.StringUtils;
 
@@ -11,7 +13,7 @@ public class DefaultAuthenticationFactory implements AuthenticationFactory
 	    // oAuth
 	    if (StringUtils.isNotBlank(credential.getAccessToken()))
 	    {
-	        return new GithubOAuthAuthentication(credential.getAccessToken());
+	        return new OAuthAuthentication(credential.getAccessToken());
 	    }
 
 	    // basic

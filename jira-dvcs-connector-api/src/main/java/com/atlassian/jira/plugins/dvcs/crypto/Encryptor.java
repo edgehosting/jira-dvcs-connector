@@ -8,19 +8,19 @@ public interface Encryptor
     /**
      * Encrypt the input into a hex encoded string;
      * @param input the input to encrypt
-     * @param projectKey the project key
-     * @param repoURL the repository url
+     * @param organizationName the project key
+     * @param hostUrl the repository url
      * @return the encrypted string
      */
-    public String encrypt(String input, String projectKey, String repoURL);
+    public String encrypt(String input, String organizationName, String hostUrl);
 
     /**
      * decrypt the hex encoded input
      * @param input the hex encoded inpud
-     * @param projectKey the project key
-     * @param repoURL the repository url
+     * @param organizationName the project key
+     * @param hostUrl the repository url
      * @return the decrypted sting
      */
-    public String decrypt(String input, String projectKey, String repoURL);
+    public String decrypt(String input, String organizationName, String hostUrl);
 
 }

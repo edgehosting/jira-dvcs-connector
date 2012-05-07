@@ -3,34 +3,50 @@ package com.atlassian.jira.plugins.dvcs.model;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
 
+@XmlRootElement
 public class Repository
 {
-    private final int id;
-    private final int organizationId;
-    private final String dvcsType;
-    private final String slug;
-    private final String name;
-    private final Date lastCommitDate;
-    private final boolean linked;
-    private Credential credential;
+	private int id;
+	private int organizationId;
+	private String dvcsType;
+	private String slug;
+	private String name;
+	private Date lastCommitDate;
+	private boolean linked;
+    private boolean deleted;
+	private Credential credential;
+	private SyncProgress sync;
 
-    public Repository(int id, int organizationId, String dvcsType, String slug, String name, Date lastCommitDate, boolean linked, Credential credential)
-    {
-        this.id = id;
-        this.organizationId = organizationId;
-        this.dvcsType = dvcsType;
-        this.slug = name;
-        this.name = name;
-        this.lastCommitDate = lastCommitDate;
-        this.linked = linked;
+	public Repository()
+	{
+		super();
+	}
+
+	public Repository(int id, int organizationId, String dvcsType, String slug, String name, Date lastCommitDate,
+			boolean linked, boolean deleted, Credential credential)
+	{
+		this.id = id;
+		this.organizationId = organizationId;
+		this.dvcsType = dvcsType;
+		this.slug = slug;
+		this.name = name;
+		this.lastCommitDate = lastCommitDate;
+		this.linked = linked;
+        this.deleted = deleted;
         this.credential = credential;
-    }
+	}
 
     public int getId()
     {
         return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
     }
 
     public int getOrganizationId()
@@ -38,9 +54,19 @@ public class Repository
         return organizationId;
     }
 
+    public void setOrganizationId(int organizationId)
+    {
+        this.organizationId = organizationId;
+    }
+
     public String getDvcsType()
     {
         return dvcsType;
+    }
+
+    public void setDvcsType(String dvcsType)
+    {
+        this.dvcsType = dvcsType;
     }
 
     public String getSlug()
@@ -48,9 +74,19 @@ public class Repository
         return slug;
     }
 
+    public void setSlug(String slug)
+    {
+        this.slug = slug;
+    }
+
     public String getName()
     {
         return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
     }
 
     public Date getLastCommitDate()
@@ -58,15 +94,51 @@ public class Repository
         return lastCommitDate;
     }
 
+    public void setLastCommitDate(Date lastCommitDate)
+    {
+        this.lastCommitDate = lastCommitDate;
+    }
+
     public boolean isLinked()
     {
         return linked;
+    }
+
+    public void setLinked(boolean linked)
+    {
+        this.linked = linked;
     }
 
     public Credential getCredential()
     {
         return credential;
     }
+
+    public void setCredential(Credential credential)
+    {
+        this.credential = credential;
+    }
+
+    public boolean isDeleted()
+    {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted)
+    {
+        this.deleted = deleted;
+    }
+    
+    public SyncProgress getSync()
+    {
+        return sync;
+    }
+
+    public void setSync(SyncProgress sync)
+    {
+        this.sync = sync;
+    }
+    
 
     @Override
 	public boolean equals(Object obj)
@@ -82,6 +154,7 @@ public class Repository
                 .append(name, this.name)
                 .append(lastCommitDate, this.lastCommitDate)
                 .append(linked, this.linked)
+                .append(deleted, this.deleted)
                 .append(credential, this.credential)
                 .isEquals();
 	}
@@ -96,6 +169,7 @@ public class Repository
                 .append(name)
                 .append(lastCommitDate)
                 .append(linked)
+                .append(deleted)
                 .append(credential)
                 .toHashCode();
     }

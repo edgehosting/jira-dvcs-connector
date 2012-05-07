@@ -14,10 +14,20 @@ public interface OrganizationDao
 
     /**
      * returns Organization by ID
+     *
      * @param organizationId id
      * @return organization
      */
     Organization get(int organizationId);
+
+    /**
+     * returns Organization by hostUrl and name
+     *
+     * @param hostUrl hostUrl
+     * @param name name
+     * @return organization
+     */
+    Organization getByHostAndName(String hostUrl, String name);
 
     /**
      * save Organization to storage. If it's new object (without ID) after this operation it will have it assigned.
