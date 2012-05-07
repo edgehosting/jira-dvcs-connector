@@ -17,6 +17,12 @@
     <component-import key="featureManager" interface="com.atlassian.jira.config.FeatureManager" system="true" />
     <component-import key="eventPublisher" interface="com.atlassian.event.api.EventPublisher" />
 
+    <component-import key="pluginScheduler" interface="com.atlassian.sal.api.scheduling.PluginScheduler" />
+
+    <component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
+        <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
+    </component>
+
 
     <ao key="ao-module" name="Active Objects Module">
         <!-- TODO remove the next two lines when possible -->
