@@ -98,6 +98,7 @@ public class OrganizationServiceImpl implements OrganizationService
 	@Override
 	public void updateCredentials(int organizationId, String plaintextPassword)
 	{
+		// TODO check if new credential works
 		organizationDao.updateCredentials(organizationId, plaintextPassword, null);
 	}
 
@@ -105,6 +106,7 @@ public class OrganizationServiceImpl implements OrganizationService
 	public void updateCredentialsAccessToken(int organizationId,
 			String accessToken) {
 
+		// TODO check if new credential works
 		organizationDao.updateCredentials(organizationId, null, accessToken);
 		
 	}
