@@ -25,7 +25,13 @@ import com.google.common.collect.Maps;
 public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
 {
     private static final Logger log = LoggerFactory.getLogger(To_08_ActiveObjectsV3Migrator.class);
+    private final PasswordReEncryptor passwordReEncryptor;
   
+    public To_08_ActiveObjectsV3Migrator(PasswordReEncryptor passwordReEncryptor)
+    {
+        this.passwordReEncryptor = passwordReEncryptor;
+    }
+
     @Override
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
@@ -67,13 +73,13 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
     /**
      * Copied from DvcsRepositoryManager#parseRepositoryUri
      * 
-     * @param projectMapping
+     * @param pm
      * @return
      * @throws MalformedURLException 
      */
-    private Map<String, Object> createOrganisationMap(ProjectMapping projectMapping) throws MalformedURLException
+    private Map<String, Object> createOrganisationMap(ProjectMapping pm) throws MalformedURLException
     {
-        URL url = new URL(projectMapping.getRepositoryUrl());
+        URL url = new URL(pm.getRepositoryUrl());
         String protocol = url.getProtocol();
         String hostname = url.getHost();
         String path = url.getPath();
@@ -86,13 +92,15 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         
         Map<String, Object> organisationMap = Maps.newHashMap();
         
-        organisationMap.put(OrganizationMapping.HOST_URL, MessageFormat.format("{0}://{1}", protocol, hostname));
+        String hostUrl = MessageFormat.format("{0}://{1}", protocol, hostname);
+        organisationMap.put(OrganizationMapping.HOST_URL, hostUrl);
         organisationMap.put(OrganizationMapping.NAME, owner);
-        organisationMap.put(OrganizationMapping.DVCS_TYPE, projectMapping.getRepositoryType());
-        organisationMap.put(OrganizationMapping.ADMIN_USERNAME, projectMapping.getAdminUsername());
-        organisationMap.put(OrganizationMapping.ADMIN_PASSWORD, projectMapping.getAdminPassword());
-        organisationMap.put(OrganizationMapping.ACCESS_TOKEN, projectMapping.getAccessToken());
-        // TODO - set autolinking to false;
+        organisationMap.put(OrganizationMapping.DVCS_TYPE, pm.getRepositoryType());
+        organisationMap.put(OrganizationMapping.ADMIN_USERNAME, pm.getAdminUsername());
+        organisationMap.put(OrganizationMapping.ADMIN_PASSWORD, 
+            reEncryptPassword(pm.getAdminPassword(), pm.getProjectKey(), pm.getRepositoryUrl(), owner, hostUrl));
+        organisationMap.put(OrganizationMapping.ACCESS_TOKEN, pm.getAccessToken());
+        organisationMap.put(OrganizationMapping.AUTOLINK_NEW_REPOS, false);
         return organisationMap;
     }
 
@@ -163,6 +171,27 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
             changesetMap.put(ChangesetMapping.VERSION, issueMapping.getVersion());
             activeObjects.create(ChangesetMapping.class, changesetMap);
         }
+    }
+    
+
+    /**
+     * Repositories are no longer associated with the project, hence the encryption using
+     * projectKey doesn't work anymore.
+     * 
+     * @param password
+     * @param projectKey
+     * @param repositoryUrl 
+     * @param organisationName 
+     * @param hostUrl 
+     * @return
+     */
+    private String reEncryptPassword(String password, String projectKey, String repositoryUrl, String organisationName, String hostUrl)
+    {
+        if (password==null)
+        {
+            return null;
+        }
+        return passwordReEncryptor.reEncryptPassword(password, projectKey, repositoryUrl, organisationName, hostUrl);
     }
 
     @Override
