@@ -74,10 +74,10 @@ public class RepositoryServiceImpl implements RepositoryService
                 repositoryDao.save(storedRepository);
             } else
             {
-                // save brand new or updated repository
+                // save brand new
                 remoteRepository.setOrganizationId(organization.getId());
                 remoteRepository.setDvcsType(organization.getDvcsType());
-                remoteRepository.setLinked(true);
+                remoteRepository.setLinked(organization.isAutolinkNewRepos());
                 remoteRepository.setCredential(organization.getCredential());
                 repositoryDao.save(remoteRepository);
             }
@@ -97,7 +97,7 @@ public class RepositoryServiceImpl implements RepositoryService
     public void sync(int repositoryId, boolean softSync)
     {
         final Repository repository = get(repositoryId);
-        synchronizer.synchronize(repository, softSync);
+        doSync(repository, softSync);
     }
 
     @Override
@@ -106,7 +106,14 @@ public class RepositoryServiceImpl implements RepositoryService
         final List<Repository> repositories = getAllByOrganization(organizationId, false);
         for (Repository repository : repositories)
         {
-            synchronizer.synchronize(repository, false);
+            doSync(repository, false);
+        }
+    }
+
+    private void doSync(Repository repository, boolean softSync)
+    {
+        if (repository.isLinked()) {
+            synchronizer.synchronize(repository, softSync);
         }
     }
 

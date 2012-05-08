@@ -210,10 +210,10 @@ public class BitbucketCommunicator implements DvcsCommunicator
         } catch (ResponseException e)
         {
             log.warn("Could not get changesets from node: {}", startNode);
-            throw new com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException("Error requesting changesets. Node: " + startNode + ". [" + e.getMessage() + "]", e);
+            throw new SourceControlException("Error requesting changesets. Node: " + startNode + ". [" + e.getMessage() + "]", e);
         } catch (JSONException e)
         {
-            throw new com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException("Could not parse json object", e);
+            throw new SourceControlException("Could not parse json object", e);
         }
         return changesets;
     }

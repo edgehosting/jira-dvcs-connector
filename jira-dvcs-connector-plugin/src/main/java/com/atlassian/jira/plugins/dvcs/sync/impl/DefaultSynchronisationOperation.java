@@ -113,9 +113,8 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
     private Set<String> extractIssueKeys(String message)
     {
-        // should check that issue exists?
-        // todo: parse all project keys (zatial TST) !!!!
-        Pattern projectKeyPattern = Pattern.compile("(" + "TST" + "-\\d+)", Pattern.CASE_INSENSITIVE);
+        final String issueKeyRegex = "([A-Z][A-Z0-9]+-\\d+)";
+        Pattern projectKeyPattern = Pattern.compile(issueKeyRegex, Pattern.CASE_INSENSITIVE);
         Matcher match = projectKeyPattern.matcher(message);
 
         Set<String> matches = new HashSet<String>();

@@ -67,7 +67,7 @@ public class ChangesetDaoImpl implements ChangesetDao
 
                 final Map<String, Object> map = new HashMap<String, Object>();
                 map.put(ChangesetMapping.REPOSITORY_ID, changeset.getRepositoryId());
-                map.put(ChangesetMapping.ISSUE_ID, changeset.getIssueKey());
+                map.put(ChangesetMapping.ISSUE_KEY, changeset.getIssueKey());
                 map.put(ChangesetMapping.NODE, changeset.getNode());
                 map.put(ChangesetMapping.RAW_AUTHOR, changeset.getRawAuthor());
                 map.put(ChangesetMapping.AUTHOR, changeset.getAuthor());
