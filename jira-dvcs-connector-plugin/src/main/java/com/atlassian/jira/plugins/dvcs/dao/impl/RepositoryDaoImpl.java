@@ -9,6 +9,9 @@ import java.util.Map;
 
 import net.java.ao.Query;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
@@ -22,6 +25,8 @@ import com.google.common.collect.Collections2;
 
 public class RepositoryDaoImpl implements RepositoryDao
 {
+
+	private static final Logger log = LoggerFactory.getLogger(RepositoryDaoImpl.class);
 
 	private final ActiveObjects activeObjects;
 	private final Synchronizer synchronizer;
@@ -42,7 +47,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 				organizationMapping.getDvcsType(), repositoryMapping.getSlug(), repositoryMapping.getName(),
 				repositoryMapping.getLastCommitDate(), repositoryMapping.isLinked(), repositoryMapping.isDeleted(),
 				credential);
-		
+
 		// set sync progress
 		repository.setSync(synchronizer.getProgress(repository));
 
@@ -110,6 +115,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 		// fill organizations for repositories as we need them for
 		// transformations
 		final Map<Integer, OrganizationMapping> idToOrganizationMapping = new HashMap<Integer, OrganizationMapping>();
+		final List<RepositoryMapping> repositoriesToReturn = new ArrayList<RepositoryMapping>();
 		for (RepositoryMapping repositoryMapping : repositoryMappings)
 		{
 			OrganizationMapping organizationMapping = idToOrganizationMapping
@@ -117,13 +123,37 @@ public class RepositoryDaoImpl implements RepositoryDao
 			if (organizationMapping == null)
 			{
 				organizationMapping = getOrganizationMapping(repositoryMapping.getOrganizationId());
+				if (organizationMapping == null)
+				{
+					// repository without organization ? invalid data
+					log.warn("Found repository without organization. Id = " + repositoryMapping.getID());
+					continue;
+				}
 				// organizationMapping.getID() ==
 				// repositoryMapping.getOrganizationId()
 				idToOrganizationMapping.put(organizationMapping.getID(), organizationMapping);
+				repositoriesToReturn.add(repositoryMapping);
 			}
 		}
 
-		final Collection<Repository> repositories = Collections2.transform(repositoryMappings,
+		final Collection<Repository> repositories = transformRepositories(idToOrganizationMapping, repositoriesToReturn);
+
+		return new ArrayList<Repository>(repositories);
+
+	}
+
+	/**
+	 * Transform repositories.
+	 *
+	 * @param idToOrganizationMapping the id to organization mapping
+	 * @param repositoriesToReturn the repositories to return
+	 * @return the collection< repository>
+	 */
+	private Collection<Repository> transformRepositories(
+			final Map<Integer, OrganizationMapping> idToOrganizationMapping,
+			final List<RepositoryMapping> repositoriesToReturn)
+	{
+		final Collection<Repository> repositories = Collections2.transform(repositoriesToReturn,
 				new Function<RepositoryMapping, Repository>()
 				{
 					@Override
@@ -133,9 +163,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 								idToOrganizationMapping.get(repositoryMapping.getOrganizationId()));
 					}
 				});
-
-		return new ArrayList<Repository>(repositories);
-
+		return repositories;
 	}
 
 	@Override
