@@ -24,6 +24,7 @@ DvcsValidator.prototype.addItem = function (valuableInputId, errorElementId, rul
 
 DvcsValidator.prototype.runValidation = function () {
 	
+	DvcsValidator.clearAllErrors();
 	
 	for (index in this.validatedItems) {
 		
@@ -34,7 +35,7 @@ DvcsValidator.prototype.runValidation = function () {
 			continue;
 		}
 		
-		var jqElement = AJS.$("#" + value.errorElementId);
+		var jqElement = AJS.$("#" + value.valuableInputId);
 		
 		// rule required
 		if (value.rule == "required" && !jqElement.val()) {

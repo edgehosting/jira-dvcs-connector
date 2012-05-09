@@ -1,18 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  * Webwork action used to configure the bitbucket organizations
@@ -23,8 +22,6 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
 	private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
-	private String addedRepositoryId = "";
-	private int repositoryId;
 	private final String baseUrl;
 
 	private String postCommitRepositoryType;
@@ -57,40 +54,9 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	public Organization[] loadOrganizations()
 	{
 
-		Repository mockRepo = new Repository(124, 12, "bitbucket", "sentinel-core-components",
-				"Sentinel Core Components", new Date(), true, false, null);
-
-		Repository mockRepo2 = new Repository(1234, 12, "github", "blogging-samples",
-				"Blogging Samples Repo", new Date(), false, false, null);
-		
-		Repository mockRepo3 = new Repository(125, 12, "github", "perfect-plan-repository",
-				"Perfect Plan Repository", new Date(), false, false, null);
-		
-
-		//return mocks;
 		List<Organization> allOrganizations = organizationService.getAll(true);
-//		allOrganizations.get(0).setRepositories(new Repository[] { mockRepo, mockRepo2, mockRepo3 });
 		return allOrganizations.toArray(new Organization[]{});
-	}
-
-	public int getRepositoryId()
-	{
-		return repositoryId;
-	}
-
-	public void setRepositoryId(int repositoryId)
-	{
-		this.repositoryId = repositoryId;
-	}
-
-	public String getAddedRepositoryId()
-	{
-		return addedRepositoryId;
-	}
-
-	public void setAddedRepositoryId(String addedRepositoryId)
-	{
-		this.addedRepositoryId = addedRepositoryId;
+		
 	}
 
 	public String getPostCommitRepositoryType()

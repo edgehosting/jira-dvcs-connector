@@ -67,7 +67,7 @@
                       <label for="url">Url:</label>
                       <input type="text" id="url" name="url" value="$textutils.htmlEncode($action.getRepositoryUrl())"/>
                       <div class="fieldValue" id="urlReadOnly"></div>
-                      <div id="url-error" class="dvcs-error">Please enter valid url.</div>
+                      <div id="url-error" class="dvcs-error">This field is required.</div>
                     </div>
                 </div>
                 <div class="aui-item-column2" id="examples">
@@ -80,6 +80,7 @@
                       <label for="organization">Organization:</label>
                       <input type="text" id="organization" name="organization" value=""/>
                       <div class="fieldValue" id="organizationReadOnly"></div>
+                      <div id="org-error" class="dvcs-error">This field is required.</div>
                     </div>
                  </div>
 				
@@ -88,10 +89,12 @@
 	                <div class="field-group">
 	                   <label for="adminUsername">Username:</label>
 	                   <input type="text" id="adminUsername" name="adminUsername" value=""/>
+	                   <div id="admin-username-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	                <div class="field-group">
 	                   <label for="adminPassword">Password:</label>
 	                   <input type="password" id="adminPassword" name="adminPassword" value=""/>
+	                   <div id="admin-password-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	            </div>
 				
@@ -101,10 +104,12 @@
                     <div class="field-group">
 	                   <label for="oauthClientId">Key:</label>
 	                   <input type="text" id="oauthClientId" name="oauthClientId" value=""/>
+	                   <div id="oauth-client-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	                <div class="field-group">
 	                   <label for="oauthSecret">Secret:</label>
 	                   <input type="text" id="oauthSecret" name="oauthSecret" value=""/>
+	                   <div id="oauth-secret-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	            </div>
 	            

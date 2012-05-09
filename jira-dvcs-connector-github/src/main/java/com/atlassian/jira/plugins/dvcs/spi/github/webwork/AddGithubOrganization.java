@@ -115,6 +115,12 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 				addErrorMessage("Missing credentials.");
 			}
 		}
+		
+		if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
+		{
+			addErrorMessage("Please provide both url and organization parameters.");
+		}
+
 
 	}
 	

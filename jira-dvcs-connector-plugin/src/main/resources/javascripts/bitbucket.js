@@ -124,6 +124,9 @@ function showAddRepoDetails(show) {
 
 		// show examples
 		AJS.$('#examples').show();
+		
+		// clear all form errors
+		DvcsValidator.clearAllErrors();
 
 		AJS.$('#linkRepositoryButton').fadeOut(function() {
 			AJS.$('#addRepositoryDetails').slideDown();
@@ -142,12 +145,24 @@ function submitFormHandler() {
     AJS.$('#Submit').attr("disabled", "disabled");
 
     // submit form
+    
     if (AJS.$('#repoEntry').attr("action")) {
+    	
+    	if (!validateAddOrganizationForm()) {
+        	AJS.$('#Submit').removeAttr("disabled");
+        	return false;
+        }
+    	
         AJS.messages.hint({ title: "Obtaining information...", body: "Trying to obtain repositories information."});
 		return true; // submit form
 	}
 
     // account info
+    
+    if (!validateAccountInfoForm()) {
+    	AJS.$('#Submit').removeAttr("disabled");
+    	return false;
+    }
 
     AJS.$("#aui-message-bar").empty();
     
@@ -169,7 +184,7 @@ function submitFormHandler() {
             		AJS.messages.error({title : "Error!", body : msg});
             	})
             } else{
-            	submitFormAjaxHandler[data.dvcsType].apply(this, arguments);
+            	dvcsSubmitFormAjaxHandler[data.dvcsType].apply(this, arguments);
         	}
     	}).error(function(a) {
             AJS.$("#aui-message-bar").empty();
@@ -181,7 +196,37 @@ function submitFormHandler() {
     return false;
 }
 
-var submitFormAjaxHandler = {
+function validateAccountInfoForm() {
+
+	var validator = new DvcsValidator();
+	
+	validator.addItem("url", "url-error", "required");
+	validator.addItem("organization", "org-error", "required");
+
+	return validator.runValidation();
+
+}
+
+function validateAddOrganizationForm() {
+	
+	var validator = new DvcsValidator();
+	
+	validator.addItem("url", "url-error", "required");
+	validator.addItem("organization", "org-error", "required");
+	
+	if (AJS.$("#oauthClientId").is(":visible")) {
+		validator.addItem("oauthClientId", "oauth-client-error", "required");
+		validator.addItem("oauthSecret", "oauth-secret-error", "required");
+	} else {
+		validator.addItem("adminUsername", "admin-username-error", "required");
+		validator.addItem("adminPassword", "admin-password-error", "required");
+	}
+	
+	return validator.runValidation();
+	
+}
+
+var dvcsSubmitFormAjaxHandler = {
 
 		"bitbucket": function(data){
 			
