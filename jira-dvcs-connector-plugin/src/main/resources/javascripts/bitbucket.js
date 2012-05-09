@@ -86,7 +86,7 @@ function updateSyncStatus(repo) {
     }
     
     else {
-        if (repo.lastCommitDate != "") {
+        if (repo.lastCommitDate) {
         	syncIcon = "commits";
         }
         syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
@@ -99,7 +99,7 @@ function updateSyncStatus(repo) {
 
 function getLastCommitRelativeDateHtml(daysAgo) {
 	    var html = "";
-	    if (daysAgo != "") {
+	    if (daysAgo) {
 	        html = "last commit " + new Date(daysAgo).toDateString();
 	    }
 	    return html;
