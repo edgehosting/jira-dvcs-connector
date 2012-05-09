@@ -67,7 +67,7 @@
                       <label for="url">Url:</label>
                       <input type="text" id="url" name="url" value="$textutils.htmlEncode($action.getRepositoryUrl())"/>
                       <div class="fieldValue" id="urlReadOnly"></div>
-                      <div id="url-error" class="dvcs-error">This field is required.</div>
+                      <div id="url-error" class="dvcs-error">Please provide valid URL.</div>
                     </div>
                 </div>
                 <div class="aui-item-column2" id="examples">

@@ -46,7 +46,7 @@ DvcsValidator.prototype.runValidation = function () {
 			this.valid = false;
 		}
 		// rule URL
-		else if (value.rule == "url" && !dvcsIsUrl(jqElement.val())) {
+		else if (value.rule == "url" && jqElement.val() && !dvcsIsUrl(jqElement.val())) {
 			var jqElementError = AJS.$("#" + value.errorElementId);
 			jqElementError.show();
 			value.valid = false;

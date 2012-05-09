@@ -201,6 +201,7 @@ function validateAccountInfoForm() {
 	var validator = new DvcsValidator();
 	
 	validator.addItem("url", "url-error", "required");
+	validator.addItem("url", "url-error", "url");
 	validator.addItem("organization", "org-error", "required");
 
 	return validator.runValidation();
