@@ -24,6 +24,8 @@ public class Repository
     private boolean deleted;
     
 	private transient Credential credential;
+	private transient String orgHostUrl;
+	private transient String orgName;
 	
     private Progress sync;
 
@@ -179,6 +181,26 @@ public class Repository
                 .append(credential)
                 .toHashCode();
     }
+
+	public String getOrgHostUrl()
+	{
+		return orgHostUrl;
+	}
+
+	public void setOrgHostUrl(String orgHostUrl)
+	{
+		this.orgHostUrl = orgHostUrl;
+	}
+
+	public String getOrgName()
+	{
+		return orgName;
+	}
+
+	public void setOrgName(String orgName)
+	{
+		this.orgName = orgName;
+	}
 
 
 }

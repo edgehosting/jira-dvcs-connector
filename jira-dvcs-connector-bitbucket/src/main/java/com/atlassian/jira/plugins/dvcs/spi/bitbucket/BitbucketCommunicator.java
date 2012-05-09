@@ -1,5 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.auth.impl.BasicAuthentication;
@@ -18,18 +31,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 public class BitbucketCommunicator implements DvcsCommunicator
 {
@@ -38,7 +39,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     public static final String BITBUCKET = "bitbucket";
 
     private final RequestHelper requestHelper;
-    private AuthenticationFactory authenticationFactory;
+    private final AuthenticationFactory authenticationFactory;
 
     public BitbucketCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper)
     {
@@ -144,7 +145,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             String slug = repository.getSlug();
             String node = changeset.getNode();
 
-            Authentication auth = authenticationFactory.getAuthentication(repository.getCredential());
+            Authentication auth = authenticationFactory.getAuthentication(repository);
 
             log.debug("Parse changeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, node});
             final String urlPath = "/repositories/" + CustomStringUtils.encode(owner) + "/" +
@@ -164,7 +165,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         String owner = organization.getName();
         String slug = repository.getSlug();
 
-        Authentication auth = authenticationFactory.getAuthentication(repository.getCredential());
+        Authentication auth = authenticationFactory.getAuthentication(repository);
 
         log.debug("Parse bitbucket changesets [ {} ] [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, startNode, String.valueOf(limit)});
         Map<String, Object> params = new HashMap<String, Object>();

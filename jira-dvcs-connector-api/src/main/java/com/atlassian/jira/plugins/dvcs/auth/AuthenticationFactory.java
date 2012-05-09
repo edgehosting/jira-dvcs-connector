@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.auth;
 
-import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 public interface AuthenticationFactory
 {
-	public Authentication getAuthentication(Credential credential);
+	public Authentication getAuthentication(Repository repository);
 }

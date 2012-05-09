@@ -41,13 +41,9 @@ public class OrganizationDaoImpl implements OrganizationDao
     	if (organizationMapping == null) {
     		return null;
     	}
-    	
-        String decryptedPasswd = encryptor.decrypt(organizationMapping.getAdminPassword(),
-                organizationMapping.getName(),
-                organizationMapping.getHostUrl());
 
         Credential credential = new Credential(organizationMapping.getAdminUsername(),
-                decryptedPasswd,
+        		organizationMapping.getAdminPassword(),
                 organizationMapping.getAccessToken());
 
         Organization organization = new Organization(organizationMapping.getID(),
