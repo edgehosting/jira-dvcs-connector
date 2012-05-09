@@ -64,8 +64,10 @@ function updateSyncStatus(repo) {
     if (repo.sync) {
 
         if (repo.sync.isFinished) {
-            if (repo.lastCommitRelativeDate != "") syncIcon = "commits";
-            syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitRelativeDate);
+            if (repo.lastCommitDate != "") {
+            	syncIcon = "commits";
+            }
+            syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
 
         } else {
             syncIcon = "running";
@@ -82,9 +84,12 @@ function updateSyncStatus(repo) {
         	syncErrorDiv.html("");
     	}
     }
+    
     else {
-        if (repo.lastCommitRelativeDate != "") syncIcon = "commits";
-        syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitRelativeDate);
+        if (repo.lastCommitDate != "") {
+        	syncIcon = "commits";
+        }
+        syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
     }
     syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
 
@@ -95,7 +100,7 @@ function updateSyncStatus(repo) {
 function getLastCommitRelativeDateHtml(daysAgo) {
 	    var html = "";
 	    if (daysAgo != "") {
-	        html = "last commit " + daysAgo;
+	        html = "last commit " + new Date(daysAgo).toDateString();
 	    }
 	    return html;
 }
