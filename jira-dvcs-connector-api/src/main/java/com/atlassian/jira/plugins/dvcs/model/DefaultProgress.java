@@ -1,17 +1,31 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
+@XmlRootElement(name = "sync")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class DefaultProgress implements Progress, ProgressWriter
 {
+	@XmlAttribute
 	private boolean finished = false;
 	
+	@XmlAttribute
 	private int changesetCount = 0;
+	
+	@XmlAttribute
 	private int jiraCount = 0;
+	
+	@XmlAttribute
 	private int synchroErrorCount = 0;
+	
+	@XmlAttribute
 	private long startTime = 0;
+	
+	@XmlAttribute
 	private String error;
 	
 	public DefaultProgress()
