@@ -1,14 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-
-import java.util.List;
 
 public class OrganizationServiceImpl implements OrganizationService
 {
@@ -98,7 +99,8 @@ public class OrganizationServiceImpl implements OrganizationService
     @Override
     public void remove(int organizationId)
     {
-        // todo
+        // TODO
+    	organizationDao.remove(organizationId);
     }
 
 	@Override

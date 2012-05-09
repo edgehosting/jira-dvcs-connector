@@ -1,5 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.java.ao.Query;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
@@ -8,14 +18,6 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
-import net.java.ao.Query;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author julio
@@ -186,6 +188,7 @@ public class OrganizationDaoImpl implements OrganizationDao
     {
     	
     	// TODO
+    	activeObjects.delete(activeObjects.get(OrganizationMapping.class, organizationId));
     	
     }
 
