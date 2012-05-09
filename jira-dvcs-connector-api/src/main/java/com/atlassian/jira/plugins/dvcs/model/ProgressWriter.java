@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.sync;
+package com.atlassian.jira.plugins.dvcs.model;
 
 /**
  * Interface used for 

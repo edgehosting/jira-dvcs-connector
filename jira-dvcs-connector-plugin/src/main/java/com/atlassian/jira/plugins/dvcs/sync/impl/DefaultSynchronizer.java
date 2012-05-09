@@ -7,7 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.IssueManager;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
+import com.atlassian.jira.plugins.dvcs.model.ProgressWriter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -84,7 +86,7 @@ public class DefaultSynchronizer implements Synchronizer
 
 								SynchronisationOperation synchronisationOperation =
                                         new DefaultSynchronisationOperation(key, organizationService, repositoryService, changesetService,
-                                                progress, issueManager);
+                                                (ProgressWriter) progress, issueManager);
 
 								synchronisationOperation.synchronise();
 							} catch (Throwable e)

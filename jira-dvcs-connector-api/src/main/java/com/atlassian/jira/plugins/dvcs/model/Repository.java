@@ -27,7 +27,7 @@ public class Repository
 	private transient String orgHostUrl;
 	private transient String orgName;
 	
-    private Progress sync;
+    private DefaultProgress sync;
 
 	public Repository()
 	{
@@ -138,50 +138,6 @@ public class Repository
         this.deleted = deleted;
     }
     
-	public Progress getSync()
-	{
-		return sync;
-	}
-
-	public void setSync(Progress sync)
-	{
-		this.sync = sync;
-	}
-
-    @Override
-	public boolean equals(Object obj)
-	{
-		if (obj == null) return false;
-		if (this==obj) return true;
-		if (this.getClass()!=obj.getClass()) return false;
-		Repository that = (Repository) obj;
-		return new EqualsBuilder()
-                .append(organizationId, organizationId)
-                .append(dvcsType, dvcsType)
-                .append(slug, slug)
-                .append(name, name)
-                .append(lastCommitDate, lastCommitDate)
-                .append(linked, linked)
-                .append(deleted, deleted)
-                .append(credential, credential)
-                .isEquals();
-	}
-
-	@Override
-    public int hashCode()
-    {
-        return new HashCodeBuilder(17, 37)
-                .append(organizationId)
-                .append(dvcsType)
-                .append(slug)
-                .append(name)
-                .append(lastCommitDate)
-                .append(linked)
-                .append(deleted)
-                .append(credential)
-                .toHashCode();
-    }
-
 	public String getOrgHostUrl()
 	{
 		return orgHostUrl;
@@ -201,6 +157,46 @@ public class Repository
 	{
 		this.orgName = orgName;
 	}
+
+	public DefaultProgress getSync()
+	{
+		return sync;
+	}
+
+	public void setSync(DefaultProgress sync)
+	{
+		this.sync = sync;
+	}
+
+    @Override
+	public boolean equals(Object obj)
+	{
+		if (obj == null) return false;
+		if (this==obj) return true;
+		if (this.getClass()!=obj.getClass()) return false;
+		Repository that = (Repository) obj;
+		return new EqualsBuilder()
+                .append(organizationId, that.organizationId)
+                .append(dvcsType, that.dvcsType)
+                .append(slug, that.slug)
+                .append(name, that.name)
+                .append(linked, that.linked)
+                .append(deleted, that.deleted)
+                .isEquals();
+	}
+
+	@Override
+    public int hashCode()
+    {
+        return new HashCodeBuilder(17, 37)
+                .append(organizationId)
+                .append(dvcsType)
+                .append(slug)
+                .append(name)
+                .append(linked)
+                .append(deleted)
+                .toHashCode();
+    }
 
 
 }

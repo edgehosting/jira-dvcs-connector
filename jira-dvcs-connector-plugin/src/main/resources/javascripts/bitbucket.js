@@ -63,7 +63,7 @@ function updateSyncStatus(repo) {
 
     if (repo.sync) {
 
-        if (repo.sync.isFinished) {
+        if (repo.sync.finished) {
             if (repo.lastCommitDate != "") {
             	syncIcon = "commits";
             }

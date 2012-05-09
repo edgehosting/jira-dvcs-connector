@@ -1,14 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.net.URI;
+import java.util.List;
 
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -22,8 +15,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import java.net.URI;
-import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
 /**
  * The Class RootResource.
@@ -105,7 +107,7 @@ public class RootResource
 	{
 		log.debug("Rest request to sync repository [{}] with payload [{}]", id, payload);
 		
-		repositoryService.sync(id, true);
+		repositoryService.sync(id, false);
 
 		// ...
 		// redirect to Repository resource - that will contain sync

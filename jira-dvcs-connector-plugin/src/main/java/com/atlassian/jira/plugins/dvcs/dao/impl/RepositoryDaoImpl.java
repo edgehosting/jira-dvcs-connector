@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -52,7 +53,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 		repository.setOrgName(organizationMapping.getName());
 
 		// set sync progress
-		repository.setSync(synchronizer.getProgress(repository));
+		repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
 
 		return repository;
 	}

@@ -1,34 +1,35 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import com.atlassian.jira.issue.IssueManager;
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.sync.ProgressWriter;
-import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.issue.IssueManager;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.ProgressWriter;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
+
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
     private static final Logger log = LoggerFactory.getLogger(DefaultSynchronisationOperation.class);
 
     protected final SynchronizationKey key;
-    private OrganizationService organizationService;
+    private final OrganizationService organizationService;
     protected final RepositoryService repositoryService;
     private final ProgressWriter progressProvider;
-    private ChangesetService changesetService;
+    private final ChangesetService changesetService;
     private final IssueManager issueManager;
 
     public DefaultSynchronisationOperation(SynchronizationKey key, OrganizationService organizationService,
