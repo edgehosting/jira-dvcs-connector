@@ -11,17 +11,14 @@ import java.util.List;
 
 public class RepositoryServiceImpl implements RepositoryService
 {
-    private final DvcsCommunicatorProvider communicatorProvider;
-    private final RepositoryDao repositoryDao;
-    private final Synchronizer synchronizer;
+    private DvcsCommunicatorProvider communicatorProvider;
+    private RepositoryDao repositoryDao;
+    private Synchronizer synchronizer;
+    private ChangesetService changesetService;
 
-//    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer)
-//    {
-//        this.communicatorProvider = communicatorProvider;
-//        this.repositoryDao = repositoryDao;
-//        this.synchronizer = synchronizer;
-//    }
-
+    public RepositoryServiceImpl()
+    {
+    }
 
     public void setCommunicatorProvider(DvcsCommunicatorProvider communicatorProvider)
     {
@@ -36,6 +33,11 @@ public class RepositoryServiceImpl implements RepositoryService
     public void setSynchronizer(Synchronizer synchronizer)
     {
         this.synchronizer = synchronizer;
+    }
+
+    public void setChangesetService(ChangesetService changesetService)
+    {
+        this.changesetService = changesetService;
     }
 
     @Override
@@ -95,6 +97,8 @@ public class RepositoryServiceImpl implements RepositoryService
                 remoteRepository.setLinked(organization.isAutolinkNewRepos());
                 remoteRepository.setCredential(organization.getCredential());
                 repositoryDao.save(remoteRepository);
+
+                // todo: install post commit hook !!! pozor na autoLink
             }
         }
 
@@ -105,6 +109,8 @@ public class RepositoryServiceImpl implements RepositoryService
             repositoryDao.save(storedRepository);
         }
 
+        // start asynchronous changesets synchronization for all repositories in organization
+        syncAllInOrganization(organization.getId());
     }
 
 
@@ -139,10 +145,28 @@ public class RepositoryServiceImpl implements RepositoryService
 	}
 
 	@Override
-	public void enableAutolinkCommits(int repoId, boolean parseBoolean) {
-		// TODO Auto-generated method stub
-		
-	}
-    
-    
+	public void enableAutolinkCommits(int repoId, boolean linked) {
+        final Repository repository = repositoryDao.get(repoId);
+        if (repository != null)
+        {
+            repository.setLinked(linked);
+            repositoryDao.save(repository);
+        }
+
+        // todo: install/uninstal postcommit
+
+    }
+
+    @Override
+    public void removeAllInOrganization(int organizationId)
+    {
+        final List<Repository> repositories = repositoryDao.getAllByOrganization(organizationId, true);
+        for (Repository repository : repositories)
+        {
+            changesetService.removeAllInRepository(repository.getId());
+            repositoryDao.remove(repository.getId());
+        }
+    }
+
+
 }

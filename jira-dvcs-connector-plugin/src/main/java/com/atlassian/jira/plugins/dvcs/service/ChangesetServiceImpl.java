@@ -21,13 +21,6 @@ public class ChangesetServiceImpl implements ChangesetService
     {
     }
 
-//    public ChangesetServiceImpl(ChangesetDao changesetDao, DvcsCommunicatorProvider dvcsCommunicatorProvider, OrganizationService organizationService)
-//    {
-//        this.changesetDao = changesetDao;
-//        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-//        this.organizationService = organizationService;
-//    }
-
 
     public void setChangesetDao(ChangesetDao changesetDao)
     {
@@ -56,10 +49,6 @@ public class ChangesetServiceImpl implements ChangesetService
         return changesetDao.save(changeset);
     }
 
-    @Override
-    public void removeAll(int repositoryId)
-    {
-    }
 
     @Override
     public void removeAllInRepository(int repositoryId)

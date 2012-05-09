@@ -1,17 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import net.java.ao.Query;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
@@ -23,6 +11,16 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import net.java.ao.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RepositoryDaoImpl implements RepositoryDao
 {
@@ -63,22 +61,22 @@ public class RepositoryDaoImpl implements RepositoryDao
 	{
 		List<RepositoryMapping> repositoryMappings = activeObjects
 				.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
-				{
-					@Override
-					public List<RepositoryMapping> doInTransaction()
-					{
-						Query query = Query.select().where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
-						if (!alsoDeleted)
-						{
-							query = Query.select().where(
-									RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED
-											+ " = ? ", organizationId, Boolean.FALSE);
-						}
+                {
+                    @Override
+                    public List<RepositoryMapping> doInTransaction()
+                    {
+                        Query query = Query.select().where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
+                        if (!alsoDeleted)
+                        {
+                            query = Query.select().where(
+                                    RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED
+                                            + " = ? ", organizationId, Boolean.FALSE);
+                        }
 
-						final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, query);
-						return Arrays.asList(rms);
-					}
-				});
+                        final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, query);
+                        return Arrays.asList(rms);
+                    }
+                });
 
 		final OrganizationMapping organizationMapping = getOrganizationMapping(organizationId);
 
@@ -234,7 +232,13 @@ public class RepositoryDaoImpl implements RepositoryDao
 
 	}
 
-	private OrganizationMapping getOrganizationMapping(final int organizationId)
+    @Override
+    public void remove(int repositoryId)
+    {
+        activeObjects.delete(activeObjects.get(RepositoryMapping.class, repositoryId));
+    }
+
+    private OrganizationMapping getOrganizationMapping(final int organizationId)
 	{
 		return activeObjects.executeInTransaction(new TransactionCallback<OrganizationMapping>()
 		{

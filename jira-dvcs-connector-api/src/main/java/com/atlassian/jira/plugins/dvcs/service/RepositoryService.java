@@ -55,6 +55,7 @@ public interface RepositoryService
     /**
      * synchronization of changesets in given repository
      * @param repositoryId repositoryId
+     * @param softSync
      */
     void sync(int repositoryId, boolean softSync);
 
@@ -68,7 +69,13 @@ public interface RepositoryService
 	 * Enable autolink commits.
 	 *
 	 * @param repoId the repo id
-	 * @param parseBoolean the parse boolean
+	 * @param linked the parse boolean
 	 */
-	void enableAutolinkCommits(int repoId, boolean parseBoolean);
+	void enableAutolinkCommits(int repoId, boolean linked);
+
+    /**
+     * remove all repositories in organization.
+     * @param organizationId organizationId
+     */
+    void removeAllInOrganization(int organizationId);
 }

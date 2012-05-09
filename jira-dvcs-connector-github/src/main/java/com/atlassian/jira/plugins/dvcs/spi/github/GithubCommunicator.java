@@ -130,7 +130,7 @@ public class GithubCommunicator implements DvcsCommunicator
             String owner = organization.getName();
             String slug = repository.getSlug();
             String node = changeset.getNode();
-            Authentication authentication = authenticationFactory.getAuthentication(repository.getCredential());
+            Authentication authentication = authenticationFactory.getAuthentication(repository);
 
             log.debug("parse gihchangeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, node});
             String responseString = requestHelper.get(authentication, "/repos/" + CustomStringUtils.encode(owner) + "/" +
@@ -186,7 +186,7 @@ public class GithubCommunicator implements DvcsCommunicator
         String apiUrl = getApiUrl(organization.getHostUrl(), false);
         String owner = organization.getName();
         String slug = repository.getSlug();
-        Authentication authentication = authenticationFactory.getAuthentication(repository.getCredential());
+        Authentication authentication = authenticationFactory.getAuthentication(repository);
 
         log.debug("get list of branches in github repository [ {} ]", slug);
 
@@ -223,7 +223,7 @@ public class GithubCommunicator implements DvcsCommunicator
         String apiUrl = getApiUrl(organization.getHostUrl(), false);
         String owner = organization.getName();
         String slug = repository.getSlug();
-        Authentication authentication = authenticationFactory.getAuthentication(repository.getCredential());
+        Authentication authentication = authenticationFactory.getAuthentication(repository);
 
         log.debug("parse github changesets [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, String.valueOf(pageNumber)});
 

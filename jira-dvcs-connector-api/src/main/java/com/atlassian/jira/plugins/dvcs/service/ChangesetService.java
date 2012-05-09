@@ -23,12 +23,6 @@ public interface ChangesetService
      */
     Changeset save(Changeset changeset);
 
-    /**
-     * remove all changesets in given repository
-     * @param repositoryId repositoryId
-     */
-    void removeAll(int repositoryId);
-
     void removeAllInRepository(int repositoryId);
 
     Changeset getByNode(int repositoryId, String changesetNode);

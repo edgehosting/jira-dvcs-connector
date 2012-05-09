@@ -17,13 +17,9 @@ public class OrganizationServiceImpl implements OrganizationService
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
     private RepositoryService repositoryService;
 
-//    public OrganizationServiceImpl(DvcsCommunicatorProvider dvcsCommunicatorProvider, OrganizationDao organizationDao, RepositoryService repositoryService)
-//    {
-//        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-//        this.organizationDao = organizationDao;
-//        this.repositoryService = repositoryService;
-//    }
-
+    public OrganizationServiceImpl()
+    {
+    }
 
     public void setOrganizationDao(OrganizationDao organizationDao)
     {
@@ -99,22 +95,13 @@ public class OrganizationServiceImpl implements OrganizationService
         // sync repository list
         repositoryService.syncRepositoryList(org);
 
-        // todo: install post commit hook - before sync()  !!! pozor na autoLink
-
-        // start asynchronous changesets synchronization for all repositories in organization
-        repositoryService.syncAllInOrganization(org.getId());
-
-        // todo: pri pridavani repo pozriet ci org.autolink -> podla toho sync / postcommit
-
-
-
         return org;
     }
 
     @Override
     public void remove(int organizationId)
     {
-        // TODO
+        repositoryService.removeAllInOrganization(organizationId);
     	organizationDao.remove(organizationId);
     }
 
@@ -135,10 +122,15 @@ public class OrganizationServiceImpl implements OrganizationService
 	}
 
 	@Override
-	public void enableAutolinkNewRepos(int orgId, boolean parseBoolean) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void enableAutolinkNewRepos(int orgId, boolean autolink) {
+        final Organization organization = organizationDao.get(orgId);
+        if (organization != null)
+        {
+            organization.setAutolinkNewRepos(autolink);
+            organizationDao.save(organization);
+        }
+
+    }
 	
     
 }

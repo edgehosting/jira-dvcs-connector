@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import java.util.List;
-
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+
+import java.util.List;
 
 public interface RepositoryDao
 {
@@ -35,4 +35,5 @@ public interface RepositoryDao
      */
     Repository save(Repository repository);
 
+    void remove(int repositoryId);
 }
