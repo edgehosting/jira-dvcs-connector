@@ -7,4 +7,6 @@ public interface ChangesetDao
     void removeAllInRepository(int repositoryId);
 
     Changeset save(Changeset changeset);
+
+    Changeset getByNode(int repositoryId, String changesetNode);
 }

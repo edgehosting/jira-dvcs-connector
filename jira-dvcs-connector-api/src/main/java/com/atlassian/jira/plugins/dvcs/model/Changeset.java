@@ -25,9 +25,9 @@ public class Changeset
     private List<ChangesetFile> files;
     private int allFileCount;
 
-    public Changeset(int repositoryId, String node, String issueKey, String message, Date timestamp)
+    public Changeset(int repositoryId, String node, String message, Date timestamp)
     {
-        this(repositoryId, node, issueKey, "", "", timestamp, "", "", message, Collections.<String>emptyList(), Collections.<ChangesetFile>emptyList(), 0);
+        this(repositoryId, node, "", "", "", timestamp, "", "", message, Collections.<String>emptyList(), Collections.<ChangesetFile>emptyList(), 0);
     }
 
 

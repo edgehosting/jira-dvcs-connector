@@ -120,4 +120,21 @@ public class ChangesetDaoImpl implements ChangesetDao
         return transform(changesetMapping);
         
     }
+
+    @Override
+    public Changeset getByNode(final int repositoryId, final String changesetNode)
+    {
+        final ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
+        {
+            @Override
+            public ChangesetMapping doInTransaction()
+            {
+                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,ChangesetMapping.REPOSITORY_ID + " = ? AND " + ChangesetMapping.NODE + " = ?", repositoryId, changesetNode);
+                return mappings.length != 0 ? mappings[0] : null;
+            }
+        });
+
+        return transform(changesetMapping);
+
+    }
 }

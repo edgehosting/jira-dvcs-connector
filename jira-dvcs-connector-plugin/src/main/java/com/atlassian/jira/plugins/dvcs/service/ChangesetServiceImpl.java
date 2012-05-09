@@ -17,10 +17,30 @@ public class ChangesetServiceImpl implements ChangesetService
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
     private OrganizationService organizationService;
 
-    public ChangesetServiceImpl(ChangesetDao changesetDao, DvcsCommunicatorProvider dvcsCommunicatorProvider, OrganizationService organizationService)
+    public ChangesetServiceImpl()
+    {
+    }
+
+//    public ChangesetServiceImpl(ChangesetDao changesetDao, DvcsCommunicatorProvider dvcsCommunicatorProvider, OrganizationService organizationService)
+//    {
+//        this.changesetDao = changesetDao;
+//        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
+//        this.organizationService = organizationService;
+//    }
+
+
+    public void setChangesetDao(ChangesetDao changesetDao)
     {
         this.changesetDao = changesetDao;
+    }
+
+    public void setDvcsCommunicatorProvider(DvcsCommunicatorProvider dvcsCommunicatorProvider)
+    {
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
+    }
+
+    public void setOrganizationService(OrganizationService organizationService)
+    {
         this.organizationService = organizationService;
     }
 
@@ -45,6 +65,12 @@ public class ChangesetServiceImpl implements ChangesetService
     public void removeAllInRepository(int repositoryId)
     {
         changesetDao.removeAllInRepository(repositoryId);
+    }
+
+    @Override
+    public Changeset getByNode(int repositoryId, String changesetNode)
+    {
+        return changesetDao.getByNode(repositoryId, changesetNode);
     }
 
     @Override

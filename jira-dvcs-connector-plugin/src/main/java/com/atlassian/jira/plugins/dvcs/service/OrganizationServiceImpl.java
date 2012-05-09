@@ -1,27 +1,42 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.List;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+
+import java.util.List;
 
 public class OrganizationServiceImpl implements OrganizationService
 {
 
-    private final OrganizationDao organizationDao;
-    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
-    private final RepositoryService repositoryService;
+    private OrganizationDao organizationDao;
+    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+    private RepositoryService repositoryService;
 
-    public OrganizationServiceImpl(DvcsCommunicatorProvider dvcsCommunicatorProvider, OrganizationDao organizationDao, RepositoryService repositoryService)
+//    public OrganizationServiceImpl(DvcsCommunicatorProvider dvcsCommunicatorProvider, OrganizationDao organizationDao, RepositoryService repositoryService)
+//    {
+//        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
+//        this.organizationDao = organizationDao;
+//        this.repositoryService = repositoryService;
+//    }
+
+
+    public void setOrganizationDao(OrganizationDao organizationDao)
+    {
+        this.organizationDao = organizationDao;
+    }
+
+    public void setDvcsCommunicatorProvider(DvcsCommunicatorProvider dvcsCommunicatorProvider)
     {
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-        this.organizationDao = organizationDao;
+    }
+
+    public void setRepositoryService(RepositoryService repositoryService)
+    {
         this.repositoryService = repositoryService;
     }
 

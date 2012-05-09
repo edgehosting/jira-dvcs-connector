@@ -88,9 +88,6 @@
                class="com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer">
         <description>A Service for managing changesets synchronization operations</description>
         <interface>com.atlassian.jira.plugins.dvcs.sync.Synchronizer</interface>
-        <property name="organizationService" ref="organizationService" />
-        <property name="repositoryService" ref="repositoryService" />
-        <property name="changesetService" ref="changesetService" />
     </component>
 
 

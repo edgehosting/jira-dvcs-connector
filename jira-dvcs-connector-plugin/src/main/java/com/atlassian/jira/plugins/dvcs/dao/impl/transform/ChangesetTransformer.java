@@ -20,6 +20,11 @@ public class ChangesetTransformer
 
     public Changeset transform(ChangesetMapping changesetMapping)
     {
+
+        if (changesetMapping == null) {
+            return null;
+        }
+
         // TODO: reload from DVCS if old version
 //        if (!isLatestVersion(issueMapping))
 //        {
