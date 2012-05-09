@@ -9,12 +9,14 @@ import java.util.Map;
 
 import net.java.ao.Query;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
+import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -31,17 +33,25 @@ public class RepositoryDaoImpl implements RepositoryDao
 	private final ActiveObjects activeObjects;
 	private final Synchronizer synchronizer;
 
-	public RepositoryDaoImpl(ActiveObjects activeObjects, Synchronizer synchronizer)
+	private final Encryptor encryptor;
+
+	public RepositoryDaoImpl(ActiveObjects activeObjects, Synchronizer synchronizer, Encryptor encryptor)
 	{
 		this.activeObjects = activeObjects;
 		this.synchronizer = synchronizer;
+		this.encryptor = encryptor;
 	}
 
 	protected Repository transform(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
 	{
 
+		String adminPassword = organizationMapping.getAdminPassword();
+		if (StringUtils.isNotBlank(adminPassword)) {
+			adminPassword = encryptor.decrypt(adminPassword, organizationMapping.getName(), organizationMapping.getHostUrl());
+		}
+
 		Credential credential = new Credential(organizationMapping.getAdminUsername(),
-				organizationMapping.getAdminPassword(), organizationMapping.getAccessToken());
+				adminPassword, organizationMapping.getAccessToken());
 
 		Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(),
 				organizationMapping.getDvcsType(), repositoryMapping.getSlug(), repositoryMapping.getName(),
@@ -132,8 +142,10 @@ public class RepositoryDaoImpl implements RepositoryDao
 				// organizationMapping.getID() ==
 				// repositoryMapping.getOrganizationId()
 				idToOrganizationMapping.put(organizationMapping.getID(), organizationMapping);
-				repositoriesToReturn.add(repositoryMapping);
-			}
+				
+			} 
+			
+			repositoriesToReturn.add(repositoryMapping);
 		}
 
 		final Collection<Repository> repositories = transformRepositories(idToOrganizationMapping, repositoriesToReturn);
