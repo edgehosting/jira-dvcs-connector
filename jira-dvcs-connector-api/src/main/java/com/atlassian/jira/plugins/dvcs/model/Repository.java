@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+
 @XmlRootElement(name = "repository")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Repository
@@ -24,7 +25,7 @@ public class Repository
     
 	private transient Credential credential;
 	
-    private SyncProgress sync;
+    private Progress sync;
 
 	public Repository()
 	{
@@ -135,16 +136,15 @@ public class Repository
         this.deleted = deleted;
     }
     
-    public SyncProgress getSync()
-    {
-        return sync;
-    }
+	public Progress getSync()
+	{
+		return sync;
+	}
 
-    public void setSync(SyncProgress sync)
-    {
-        this.sync = sync;
-    }
-    
+	public void setSync(Progress sync)
+	{
+		this.sync = sync;
+	}
 
     @Override
 	public boolean equals(Object obj)
@@ -154,14 +154,14 @@ public class Repository
 		if (this.getClass()!=obj.getClass()) return false;
 		Repository that = (Repository) obj;
 		return new EqualsBuilder()
-                .append(organizationId, this.organizationId)
-                .append(dvcsType, this.dvcsType)
-                .append(slug, this.slug)
-                .append(name, this.name)
-                .append(lastCommitDate, this.lastCommitDate)
-                .append(linked, this.linked)
-                .append(deleted, this.deleted)
-                .append(credential, this.credential)
+                .append(organizationId, organizationId)
+                .append(dvcsType, dvcsType)
+                .append(slug, slug)
+                .append(name, name)
+                .append(lastCommitDate, lastCommitDate)
+                .append(linked, linked)
+                .append(deleted, deleted)
+                .append(credential, credential)
                 .isEquals();
 	}
 

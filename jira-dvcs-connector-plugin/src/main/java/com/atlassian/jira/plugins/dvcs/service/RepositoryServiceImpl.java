@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -7,14 +9,11 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class RepositoryServiceImpl implements RepositoryService
 {
-    private DvcsCommunicatorProvider communicatorProvider;
-    private RepositoryDao repositoryDao;
-    private Synchronizer synchronizer;
+    private final DvcsCommunicatorProvider communicatorProvider;
+    private final RepositoryDao repositoryDao;
+    private final Synchronizer synchronizer;
 
     public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer)
     {
@@ -120,8 +119,7 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
 	public List<Repository> getAllActiveRepositories()
 	{
-		// TODO Auto-generated method stub
-		return new ArrayList<Repository>();
+    	return repositoryDao.getAll(false);
 	}
 
 	@Override

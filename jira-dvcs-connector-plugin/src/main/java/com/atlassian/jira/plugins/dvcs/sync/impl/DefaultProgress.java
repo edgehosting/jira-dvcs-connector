@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
 
-import com.atlassian.jira.plugins.dvcs.sync.Progress;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.sync.ProgressWriter;
 
 public class DefaultProgress implements Progress, ProgressWriter

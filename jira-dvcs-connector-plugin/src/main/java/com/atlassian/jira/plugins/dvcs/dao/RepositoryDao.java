@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-
 import java.util.List;
+
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 public interface RepositoryDao
 {
@@ -12,6 +12,14 @@ public interface RepositoryDao
      * @return repositories
      */
     List<Repository> getAllByOrganization(int organizationId, boolean alsoDeleted);
+
+    /**
+     * Gets all repositories across organizations.
+     *
+     * @param alsoDeleted the also deleted
+     * @return the all
+     */
+    List<Repository> getAll(boolean alsoDeleted);
 
     /**
      * returns repository by ID
