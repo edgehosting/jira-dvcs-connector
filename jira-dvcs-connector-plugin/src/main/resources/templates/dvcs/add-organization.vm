@@ -16,7 +16,7 @@
                 forceSync($action.getRepositoryId());
             #end
             
-            retrieveSyncStatus();
+           	retrieveSyncStatus();
             
             AJS.$("#repoEntry").submit(submitFormHandler);
         }
@@ -32,9 +32,9 @@
  		<h3>Manage DVCS Repositories</h3>
 
         #if ($action.isOnDemandLicense())
-            <p>Connect your <a href="http://confluence.atlassian.com/display/AOD/Linking+a+bitbucket+or+GitHub+repository+with+JIRA+OnDemand" target="_blank">Bitbucket and GitHub repo to JIRA OnDemand</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
+            <p>Connect your <a href="http://confluence.atlassian.com/display/AOD/Linking+a+bitbucket+or+GitHub+repository+with+JIRA+OnDemand" target="_blank">Bitbucket and GitHub account to JIRA OnDemand</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
         #else
-            <p>Connect your <a href="http://confluence.atlassian.com/display/BITBUCKET/Using+the+JIRA+DVCS+Connector+Plugin" target="_blank">Bitbucket and GitHub repo to JIRA</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
+            <p>Connect your <a href="http://confluence.atlassian.com/display/BITBUCKET/Using+the+JIRA+DVCS+Connector+Plugin" target="_blank">Bitbucket and GitHub account to JIRA</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
         #end
         <br/>
 
@@ -67,7 +67,7 @@
                       <label for="url">Url:</label>
                       <input type="text" id="url" name="url" value="$textutils.htmlEncode($action.getRepositoryUrl())"/>
                       <div class="fieldValue" id="urlReadOnly"></div>
-                      <div id="url-error" class="dvcs-error">Please enter valid url.</div>
+                      <div id="url-error" class="dvcs-error">Please provide valid URL.</div>
                     </div>
                 </div>
                 <div class="aui-item-column2" id="examples">
@@ -80,6 +80,7 @@
                       <label for="organization">Organization:</label>
                       <input type="text" id="organization" name="organization" value=""/>
                       <div class="fieldValue" id="organizationReadOnly"></div>
+                      <div id="org-error" class="dvcs-error">This field is required.</div>
                     </div>
                  </div>
 				
@@ -88,10 +89,12 @@
 	                <div class="field-group">
 	                   <label for="adminUsername">Username:</label>
 	                   <input type="text" id="adminUsername" name="adminUsername" value=""/>
+	                   <div id="admin-username-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	                <div class="field-group">
 	                   <label for="adminPassword">Password:</label>
 	                   <input type="password" id="adminPassword" name="adminPassword" value=""/>
+	                   <div id="admin-password-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	            </div>
 				
@@ -101,10 +104,12 @@
                     <div class="field-group">
 	                   <label for="oauthClientId">Key:</label>
 	                   <input type="text" id="oauthClientId" name="oauthClientId" value=""/>
+	                   <div id="oauth-client-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	                <div class="field-group">
 	                   <label for="oauthSecret">Secret:</label>
 	                   <input type="text" id="oauthSecret" name="oauthSecret" value=""/>
+	                   <div id="oauth-secret-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	            </div>
 	            
@@ -133,52 +138,6 @@
    		
    		#printOrganizations
    		
-        #macro ( repositoryLineItem $projectName $projectKey )
-            #set($encodedProjectName = $textutils.htmlEncode($projectName))
-            #set($projectRepositories = $action.getProjectRepositories($projectKey))
-            #if ($projectRepositories.size() > 0)
-                <tr> <td height="38px" colspan="3" class="gh_table_td_pname">
-                    <span class="gh_table_project_name">$encodedProjectName</span><span class="gh_table_project_key">($projectKey)</span>
-                </td> </tr>
-            #end
-            #foreach ($repository in $projectRepositories)
-
-                    #set($repositoryId = $repository.getId())
-                    #set($encodedProjectKey = $textutils.htmlEncode($action.getProjectKey()))
-                    #set($encodedMode = $textutils.htmlEncode($action.getMode()))
-                    <tr>
-                        #if ($repository.getRepositoryType() == 'bitbucket')
-                            #set($repoTypeImgName = "bitbucket")
-                        #else
-                            #set($repoTypeImgName = "github")
-                        #end
-                        <td width="1px" height="40px">
-                            <span class="$repository.getRepositoryType()Logo">&nbsp;</span>
-                            </td>
-                        <td><a class="repositoryNameLink" href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_new">
-                            <span class="repositoryName">$textutils.htmlEncode($repository.repositoryName)</span>
-                        </a></td>
-                        <td style="text-align: right;">
-                            <span id="syncicon_$repositoryId" class="syncicon" >&nbsp;</span>
-                            <span id="sync_status_message_$repositoryId" class="gh_messages">
-                                <span class="content"></span> |
-                            </span>
-
-                            <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Force Sync</a> |
-                            <a href="#" onclick="deleteRepository($repositoryId, '$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)')">Delete</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="status" colspan="3">
-                            <span id="sync_error_message_$repositoryId" class="gh_messages">
-                            </span>
-                        </td>
-                    </tr>
-
-            #end
-        #end
-
-
 		#*
 
         <table class="gh_table" cellspacing="0" cellpadding="0">
@@ -218,14 +177,18 @@
 		
 			<h4 class="aui $org.getDvcsType()Logo">Organization: $org.name ($org.dvcsType)</h4>
 				
-				<div class="dvcs-organization-controls"><input class="aui" $!orgAutolink type="checkbox" name="autolink-quick" /><label> Autolink new repositories</label>
-				 | <a href="javascript:;">Sync Repository List</a>
+				<div class="dvcs-organization-controls">
+
+				 <input id="org_autolink_check$org.id" class="aui" $!orgAutolink type="checkbox" name="autolink-quick" onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" /><label> Autolink new repositories</label>
+				 <span style="display:none; width: 16px; height: 16px;" id="org_autolink_check${org.id}working" class="syncicon running">&nbsp;</span>
+	
+				 | <a href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Sync Repository List</a>
 				 #if($org.dvcsType == "bitbucket")
 				 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Password</a>
 				 #else
-   			 	 | <a href="$baseUrl/secure/admin/">Re-generate OAuth Access Token</a>
+   			 	 | <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 				 #end
-				 | <a href="javascript:;">Delete organization</a>
+				 | <a href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');">Delete organization</a>
 				</div>
 
 				<div class="vert-space">&nbsp;</div>
@@ -240,7 +203,7 @@
 			        </tr>
 			    </thead>
 			    <tbody>
-			    
+
 			    #foreach( $repo in $org.getRepositories() )
 			        
 			        #if($repo.isLinked())
@@ -256,15 +219,21 @@
 					#end
 			        <tr class="$dvcsEvenClass">
 			            <td class="dvcs-org-reponame">$repo.name</td>
-			            <td><input type="checkbox" $!repoAutolink /></td>
+
+			            <td style="text-align: center" class="dvcs-autolink-repo">
+			            	<input id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
+			            	 onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
+
+			            	<span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span> 
+			            </td>
 			            <td class="action" headers="action" style="text-align: right;">
 			                <ul class="menu">
 			                    <li>
-			                        <a href="#" onclick="forceSync($repositoryId); AJS.$('.gh_messages.repository$repositoryId').slideDown(); return false;">Sync Repo</a>
+			                        <a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">Sync Repo</a>
 			                    </li>
 			                </ul>
-			                <span id="syncicon_$repositoryId" class="syncicon" >&nbsp;</span>
-                            <span id="sync_status_message_$repositoryId" class="gh_messages">
+			                <span id="syncicon_$repo.id" class="syncicon" >&nbsp;</span>
+                            <span id="sync_status_message_$repo.id" class="gh_messages">
                                 <span class="content"></span>
                             </span>
 			            </td>

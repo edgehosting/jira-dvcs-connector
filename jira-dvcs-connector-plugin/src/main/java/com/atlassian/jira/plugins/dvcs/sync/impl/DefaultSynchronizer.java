@@ -1,20 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.issue.IssueManager;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
+import com.atlassian.jira.plugins.dvcs.model.ProgressWriter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.jira.plugins.dvcs.sync.Progress;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.google.common.base.Function;
 import com.google.common.collect.MapMaker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
 
 /**
  * Synchronization services
@@ -23,22 +26,40 @@ public class DefaultSynchronizer implements Synchronizer
 {
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
-    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
-	private final ExecutorService executorService;
-    private final IssueManager issueManager;
+	private ExecutorService executorService;
+    private IssueManager issueManager;
 
+    private OrganizationService organizationService;
     private RepositoryService repositoryService;
+    private ChangesetService changesetService;
 
-    public DefaultSynchronizer(ExecutorService executorService, IssueManager issueManager, DvcsCommunicatorProvider dvcsCommunicatorProvider)
+    public DefaultSynchronizer()
     {
-		this.executorService = executorService;
+    }
+
+    public void setExecutorService(ExecutorService executorService)
+    {
+        this.executorService = executorService;
+    }
+
+    public void setIssueManager(IssueManager issueManager)
+    {
         this.issueManager = issueManager;
-        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
+    }
+
+    public void setOrganizationService(OrganizationService organizationService)
+    {
+        this.organizationService = organizationService;
     }
 
     public void setRepositoryService(RepositoryService repositoryService)
     {
         this.repositoryService = repositoryService;
+    }
+
+    public void setChangesetService(ChangesetService changesetService)
+    {
+        this.changesetService = changesetService;
     }
 
     // map of ALL Synchronisation Progresses - running and finished ones
@@ -63,11 +84,9 @@ public class DefaultSynchronizer implements Synchronizer
 							{
 								progress.start();
 
-                                String dvcsType = key.getRepository().getDvcsType();
-                                DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(dvcsType);
-
 								SynchronisationOperation synchronisationOperation =
-                                        new DefaultSynchronisationOperation(key, repositoryService, communicator, progress, issueManager);
+                                        new DefaultSynchronisationOperation(key, organizationService, repositoryService, changesetService,
+                                                (ProgressWriter) progress, issueManager);
 
 								synchronisationOperation.synchronise();
 							} catch (Throwable e)

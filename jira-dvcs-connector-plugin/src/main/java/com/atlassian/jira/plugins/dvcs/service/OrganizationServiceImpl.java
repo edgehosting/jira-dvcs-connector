@@ -13,14 +13,26 @@ import java.util.List;
 public class OrganizationServiceImpl implements OrganizationService
 {
 
-    private final OrganizationDao organizationDao;
-    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
-    private final RepositoryService repositoryService;
+    private OrganizationDao organizationDao;
+    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+    private RepositoryService repositoryService;
 
-    public OrganizationServiceImpl(DvcsCommunicatorProvider dvcsCommunicatorProvider, OrganizationDao organizationDao, RepositoryService repositoryService)
+    public OrganizationServiceImpl()
+    {
+    }
+
+    public void setOrganizationDao(OrganizationDao organizationDao)
+    {
+        this.organizationDao = organizationDao;
+    }
+
+    public void setDvcsCommunicatorProvider(DvcsCommunicatorProvider dvcsCommunicatorProvider)
     {
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-        this.organizationDao = organizationDao;
+    }
+
+    public void setRepositoryService(RepositoryService repositoryService)
+    {
         this.repositoryService = repositoryService;
     }
 
@@ -83,22 +95,42 @@ public class OrganizationServiceImpl implements OrganizationService
         // sync repository list
         repositoryService.syncRepositoryList(org);
 
-        // start asynchronous changesets synchronization for all repositories in organization
-        repositoryService.syncAllInOrganization(org.getId());
-
         return org;
     }
 
     @Override
     public void remove(int organizationId)
     {
-        // todo
+        repositoryService.removeAllInOrganization(organizationId);
+    	organizationDao.remove(organizationId);
     }
 
 	@Override
 	public void updateCredentials(int organizationId, String plaintextPassword)
 	{
+		// TODO check if new credential works
+		organizationDao.updateCredentials(organizationId, plaintextPassword, null);
+	}
+
+	@Override
+	public void updateCredentialsAccessToken(int organizationId,
+			String accessToken) {
+
+		// TODO check if new credential works
+		organizationDao.updateCredentials(organizationId, null, accessToken);
 		
 	}
+
+	@Override
+	public void enableAutolinkNewRepos(int orgId, boolean autolink) {
+        final Organization organization = organizationDao.get(orgId);
+        if (organization != null)
+        {
+            organization.setAutolinkNewRepos(autolink);
+            organizationDao.save(organization);
+        }
+
+    }
+	
     
 }

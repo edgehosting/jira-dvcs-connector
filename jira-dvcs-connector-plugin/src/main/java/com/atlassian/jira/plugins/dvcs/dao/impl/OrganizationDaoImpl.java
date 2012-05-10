@@ -1,5 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.java.ao.Query;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
@@ -8,14 +18,11 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
-import net.java.ao.Query;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+/**
+ * @author julio
+ *
+ */
 public class OrganizationDaoImpl implements OrganizationDao
 {
 
@@ -34,13 +41,9 @@ public class OrganizationDaoImpl implements OrganizationDao
     	if (organizationMapping == null) {
     		return null;
     	}
-    	
-        String decryptedPasswd = encryptor.decrypt(organizationMapping.getAdminPassword(),
-                organizationMapping.getName(),
-                organizationMapping.getHostUrl());
 
         Credential credential = new Credential(organizationMapping.getAdminUsername(),
-                decryptedPasswd,
+        		organizationMapping.getAdminPassword(),
                 organizationMapping.getAccessToken());
 
         Organization organization = new Organization(organizationMapping.getID(),
@@ -107,7 +110,7 @@ public class OrganizationDaoImpl implements OrganizationDao
             public OrganizationMapping doInTransaction()
             {
                 Query query = Query.select().where(OrganizationMapping.HOST_URL + " = ? AND " +
-                            OrganizationMapping.NAME + " = ? ", hostUrl, name);
+                        OrganizationMapping.NAME + " = ? ", hostUrl, name);
 
                 final OrganizationMapping[] organizationMappings = activeObjects.find(OrganizationMapping.class, query);
                 return organizationMappings.length != 0 ? organizationMappings[0] : null;
@@ -122,10 +125,6 @@ public class OrganizationDaoImpl implements OrganizationDao
     @Override
     public Organization save(final Organization organization)
     {
-        final String encryptedPasswd = encryptor.encrypt(organization.getCredential().getAdminPassword(),
-                organization.getName(),
-                organization.getHostUrl());
-
 
         final OrganizationMapping organizationMapping = activeObjects.executeInTransaction(new TransactionCallback<OrganizationMapping>()
         {
@@ -133,7 +132,18 @@ public class OrganizationDaoImpl implements OrganizationDao
             @Override
             public OrganizationMapping doInTransaction()
             {
-                OrganizationMapping om;
+            	
+            	String encryptedPasswd = null;
+                
+                if (organization.getCredential().getAdminPassword() != null) {
+                	encryptedPasswd = 
+                	encryptor.encrypt(organization.getCredential().getAdminPassword(),
+                			organization.getName(),
+                			organization.getHostUrl());
+                }
+
+                OrganizationMapping om = null;
+
                 if (organization.getId() == 0)
                 {
                     final Map<String, Object> map = new HashMap<String, Object>();
@@ -164,11 +174,44 @@ public class OrganizationDaoImpl implements OrganizationDao
             }
         });
 
+        activeObjects.flush(organizationMapping);
+
         return transform(organizationMapping);
     }
 
     @Override
     public void remove(int organizationId)
     {
+    	
+    	// TODO
+    	activeObjects.delete(activeObjects.get(OrganizationMapping.class, organizationId));
+    	
     }
+
+	@Override
+	public void updateCredentials(int organizationId, String plaintextPassword,
+			String accessToken) {
+		
+		final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, organizationId);
+		
+		if (StringUtils.isNotBlank(plaintextPassword)) {
+			organization.setAdminPassword(encryptor.encrypt(plaintextPassword, organization.getName(), organization.getHostUrl()));
+		}
+
+		if (StringUtils.isNotBlank(accessToken)) {
+			organization.setAccessToken(accessToken);
+		}
+		
+		activeObjects.executeInTransaction(new TransactionCallback<Void>() {
+			@Override
+			public Void doInTransaction() {
+				organization.save();
+				return null;
+			}
+			
+		});
+		
+	}
+    
+    
 }

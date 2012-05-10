@@ -158,7 +158,7 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         {
             Map<String, Object> changesetMap = Maps.newHashMap();
             changesetMap.put(ChangesetMapping.REPOSITORY_ID, old2New.get(issueMapping.getRepositoryId()));
-            changesetMap.put(ChangesetMapping.ISSUE_ID, issueMapping.getIssueId());
+            changesetMap.put(ChangesetMapping.ISSUE_KEY, issueMapping.getIssueId());
             changesetMap.put(ChangesetMapping.NODE, issueMapping.getNode());
             changesetMap.put(ChangesetMapping.RAW_AUTHOR, issueMapping.getRawAuthor());
             changesetMap.put(ChangesetMapping.AUTHOR, issueMapping.getAuthor());

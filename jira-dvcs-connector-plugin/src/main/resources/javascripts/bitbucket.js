@@ -18,95 +18,6 @@ function toggleMoreFiles(target_div) {
 }
 
 
-function forceSync(repositoryId) {
-    AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync");
-    retrieveSyncStatus();
-}
-
-function submitFunction() {
-
-    if (!AJS.$('#projectKey').val()) {
-        AJS.$("#aui-message-bar").empty();
-        AJS.messages.error({ title: "Error!",
-            body: "The project has to be selected. There are no projects configured. Please create a project <a href='" + BASE_URL + "/secure/project/ViewProjects.jspa' target='_blank'>first</a>."
-        });
-        return false; // project-key has to be selected
-    }
-
-    AJS.$('#Submit').attr("disabled", "disabled");
-    if (AJS.$('#repoEntry').attr("action")) {
-        AJS.messages.hint({ title: "Linking...", body: "Trying to link repository to the project."});
-		return true; // submit form
-	}
-
-    AJS.$("#aui-message-bar").empty();
-    AJS.messages.hint({ title: "Connecting...", body: "Trying to connect to the repository."});
-
-    var repositoryUrl = AJS.$("#url").val().trim();
-    var requestUrl = BASE_URL + "/rest/bitbucket/1.0/urlinfo?repositoryUrl=" + encodeURIComponent(repositoryUrl) + "&projectKey="+AJS.$("#projectKey").val();
-
-    AJS.$.getJSON(requestUrl,
-        function(data) {
-            AJS.$("#aui-message-bar").empty();
-            AJS.$("#isPrivate").val(data.isPrivate);
-
-            AJS.$('#Submit').attr("disabled", "");
-            if (data.validationErrors.length>0) {
-            	AJS.$.each(data.validationErrors, function(i, msg){
-            		AJS.messages.error({title : "Error!", body : msg});
-            	})
-            } else{
-            	handler[data.repositoryType].apply(this, arguments);
-        	}
-    	}).error(function(a) {
-            AJS.$("#aui-message-bar").empty();
-            AJS.messages.error({ title: "Error!", 
-            	body: "The repository url [<b>" + AJS.escapeHtml(AJS.$("#url").val()) + "</b>] is incorrect or the repository is not responding." 
-            });
-            AJS.$('#Submit').attr("disabled", "");
-        });
-    return false;
-}
-
-	var handler = {
-		"bitbucket": function(data){
-			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketRepository.jspa");
-
-			// hide url, organization input box
-			AJS.$('#urlReadOnly').html(AJS.$('#url').val());
-			AJS.$('#url').hide(); 
-			AJS.$('#urlReadOnly').show();
-
-			AJS.$('#organizationReadOnly').html(AJS.$('#organization').val());
-			AJS.$('#organization').hide(); 
-			AJS.$('#organizationReadOnly').show();
-			
-			// hide project selector
-			AJS.$('#projectKeyReadOnly').html(AJS.$('#projectKey').val());
-	        AJS.$('#projectKey').hide();
-			AJS.$('#projectKeyReadOnly').show();
-				
-			// hide examples
-			AJS.$('#examples').hide();
-
-			//show username / password
-			var credentialsHtml = ""
-				+ "<div class='field-group'>"
-				+ "<label for='adminUsername'>Username <span class='notbold'>(requires admin access to repo):</span></label>"
-				+ "<input type='text' name='adminUsername' id='adminUsername' value=''></div>"
-				+ "<div class='field-group' style='margin-bottom: 10px;'>"
-				+ "<label for='adminPassword'>Password</label>"
-				+ "<input type='password' name='adminPassword' id='adminPassword' value=''></div>";
-			AJS.$("#bbCredentials").html(credentialsHtml);
-		}, 
-		"github":function(data) {
-			AJS.$("#repoEntry").attr("action",BASE_URL + "/secure/admin/AddGithubRepository.jspa");
-			AJS.$('#repoEntry').submit();
-		}
-	}
-
-
-	
 function switchDvcsDetails(selectSwitch) {
 	var dvcsType = selectSwitch.selectedIndex;
 	if (dvcsType == 0) {
@@ -122,57 +33,74 @@ function switchDvcsDetails(selectSwitch) {
 
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
+function forceSync(repositoryId) {
+	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync", function (data) {
+		updateSyncStatus(data);
+	});
+}
 
 function retrieveSyncStatus() {
 
 	AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/repositories", function (data) {
-	        AJS.$.each(data.repositories, function(a, repo) {
-	            var syncStatusDiv = AJS.$('#sync_status_message_' + repo.id);
-	            var syncErrorDiv = AJS.$('#sync_error_message_' + repo.id);
-	            var syncIconElement = AJS.$('#syncicon_' + repo.id);
 
-	            var syncStatusHtml = "";
-	            var syncIcon;
+		AJS.$.each(data.repositories, function (a, repo) {
+			updateSyncStatus(repo);
+		});
+	
+		window.setTimeout(retrieveSyncStatus, 4000)
+	
+	});
+}
 
-	            if (repo.sync) {
+function updateSyncStatus(repo) {
 
-	                if (repo.sync.isFinished) {
-	                    if (repo.lastCommitRelativeDate != "") syncIcon = "commits";
-	                    syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitRelativeDate);
+	var syncStatusDiv = AJS.$('#sync_status_message_' + repo.id);
+    var syncErrorDiv = AJS.$('#sync_error_message_' + repo.id);
+    var syncIconElement = AJS.$('#syncicon_' + repo.id);
 
-	                } else {
-	                    syncIcon = "running";
-	                    syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong>" + repo.sync.jiraCount + "</strong> issues found";
-	                    if (repo.sync.synchroErrorCount > 0)
-	                        syncStatusHtml += ", <span style='color:#e16161;'><strong>" + repo.sync.synchroErrorCount + "</strong> changesets incomplete</span>";
+    var syncStatusHtml = "";
+    var syncIcon;
 
-	                }
-	                if (repo.sync.error) {
-	                    syncStatusHtml = "";
-	                    syncIcon = "error";
-	                    syncErrorDiv.html("<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>");
-	                } else {
-	                	syncErrorDiv.html("");
-	            	}
-	            }
-	            else {
-	                if (repo.lastCommitRelativeDate != "") syncIcon = "commits";
-	                syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitRelativeDate);
-	            }
-	            syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
+    if (repo.sync) {
 
-	            if (syncStatusHtml != "") syncStatusHtml += " <span style='color:#000;'>|</span>";
-	            syncStatusDiv.html(syncStatusHtml);
+        if (repo.sync.finished) {
+            if (repo.lastCommitDate != "") {
+            	syncIcon = "commits";
+            }
+            syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
 
-	        });
-	        window.setTimeout(retrieveSyncStatus, 4000)
-	    })
+        } else {
+            syncIcon = "running";
+            syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong>" + repo.sync.jiraCount + "</strong> issues found";
+            if (repo.sync.synchroErrorCount > 0)
+                syncStatusHtml += ", <span style='color:#e16161;'><strong>" + repo.sync.synchroErrorCount + "</strong> changesets incomplete</span>";
+
+        }
+        if (repo.sync.error) {
+            syncStatusHtml = "";
+            syncIcon = "error";
+            syncErrorDiv.html("<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>");
+        } else {
+        	syncErrorDiv.html("");
+    	}
+    }
+    
+    else {
+        if (repo.lastCommitDate) {
+        	syncIcon = "commits";
+        }
+        syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
+    }
+    syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
+
+    syncStatusDiv.html(syncStatusHtml);
+
 }
 
 function getLastCommitRelativeDateHtml(daysAgo) {
 	    var html = "";
-	    if (daysAgo != "") {
-	        html = "last commit " + daysAgo;
+	    if (daysAgo) {
+	        html = "last commit " + new Date(daysAgo).toDateString();
 	    }
 	    return html;
 }
@@ -201,6 +129,9 @@ function showAddRepoDetails(show) {
 
 		// show examples
 		AJS.$('#examples').show();
+		
+		// clear all form errors
+		DvcsValidator.clearAllErrors();
 
 		AJS.$('#linkRepositoryButton').fadeOut(function() {
 			AJS.$('#addRepositoryDetails').slideDown();
@@ -219,12 +150,24 @@ function submitFormHandler() {
     AJS.$('#Submit').attr("disabled", "disabled");
 
     // submit form
+    
     if (AJS.$('#repoEntry').attr("action")) {
+    	
+    	if (!validateAddOrganizationForm()) {
+        	AJS.$('#Submit').removeAttr("disabled");
+        	return false;
+        }
+    	
         AJS.messages.hint({ title: "Obtaining information...", body: "Trying to obtain repositories information."});
 		return true; // submit form
 	}
 
     // account info
+    
+    if (!validateAccountInfoForm()) {
+    	AJS.$('#Submit').removeAttr("disabled");
+    	return false;
+    }
 
     AJS.$("#aui-message-bar").empty();
     
@@ -246,7 +189,7 @@ function submitFormHandler() {
             		AJS.messages.error({title : "Error!", body : msg});
             	})
             } else{
-            	submitFormAjaxHandler[data.dvcsType].apply(this, arguments);
+            	dvcsSubmitFormAjaxHandler[data.dvcsType].apply(this, arguments);
         	}
     	}).error(function(a) {
             AJS.$("#aui-message-bar").empty();
@@ -258,7 +201,38 @@ function submitFormHandler() {
     return false;
 }
 
-var submitFormAjaxHandler = {
+function validateAccountInfoForm() {
+
+	var validator = new DvcsValidator();
+	
+	validator.addItem("url", "url-error", "required");
+	validator.addItem("url", "url-error", "url");
+	validator.addItem("organization", "org-error", "required");
+
+	return validator.runValidation();
+
+}
+
+function validateAddOrganizationForm() {
+	
+	var validator = new DvcsValidator();
+	
+	validator.addItem("url", "url-error", "required");
+	validator.addItem("organization", "org-error", "required");
+	
+	if (AJS.$("#oauthClientId").is(":visible")) {
+		validator.addItem("oauthClientId", "oauth-client-error", "required");
+		validator.addItem("oauthSecret", "oauth-secret-error", "required");
+	} else if (AJS.$("#adminUsername").is(":visible")){
+		validator.addItem("adminUsername", "admin-username-error", "required");
+		validator.addItem("adminPassword", "admin-password-error", "required");
+	}
+	
+	return validator.runValidation();
+	
+}
+
+var dvcsSubmitFormAjaxHandler = {
 
 		"bitbucket": function(data){
 			
@@ -294,7 +268,8 @@ var submitFormAjaxHandler = {
 				AJS.$("#github-form-section").fadeIn();
 
 			} else {
-
+				
+				AJS.$("#oauthRequired").val("");
 				AJS.$('#repoEntry').submit();
 
 			}
@@ -335,14 +310,40 @@ function changePassword(username, id) {
 	 popup.show();
 }
 
-function syncRepoList() {
+
+function autoLinkIssuesOrg(organizationId, checkboxId) {
 	
+	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
+	AJS.$("#" + checkboxId).attr("disabled", "disabled");
+
+	AJS.$("#" + checkboxId  + "working").show();
+	
+	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autolink",
+			  {autolink : checkedValue},
+			  function (data) {
+				  AJS.$("#" + checkboxId  + "working").hide();
+				  AJS.$("#" + checkboxId).removeAttr("disabled");
+			  });
 }
 
-function autoLinkIssuesOrg() {
+function autoLinkIssuesRepo(repoId, checkboxId) {
 	
+	var checkedValue = AJS.$("#" + checkboxId).is(":checked");
+	AJS.$("#" + checkboxId).attr("disabled", "disabled");
+
+	AJS.$("#" + checkboxId  + "working").show();
+
+	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/autolink",
+			  {autolink : checkedValue},
+			  function (data) {
+				  AJS.$("#" + checkboxId  + "working").hide();
+				  AJS.$("#" + checkboxId).removeAttr("disabled");
+			  });
 }
 
+function confirmDeleteOrganization(organization) {
+	return confirm("Are you sure you want to delete organization '" + organization + "' ?");
+}
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 

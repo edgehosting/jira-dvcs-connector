@@ -4,13 +4,14 @@ import java.util.Date;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-@XmlRootElement
+
+@XmlRootElement(name = "repository")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Repository
 {
@@ -23,10 +24,12 @@ public class Repository
 	private boolean linked;
     private boolean deleted;
     
-    @XmlTransient
 	private transient Credential credential;
+	private transient String orgHostUrl;
+	private transient String orgName;
 	
-    private SyncProgress sync;
+	@XmlElement
+    private DefaultProgress sync;
 
 	public Repository()
 	{
@@ -117,7 +120,6 @@ public class Repository
         this.linked = linked;
     }
 
-    @XmlTransient
     public Credential getCredential()
     {
         return credential;
@@ -138,16 +140,35 @@ public class Repository
         this.deleted = deleted;
     }
     
-    public SyncProgress getSync()
-    {
-        return sync;
-    }
+	public String getOrgHostUrl()
+	{
+		return orgHostUrl;
+	}
 
-    public void setSync(SyncProgress sync)
-    {
-        this.sync = sync;
-    }
-    
+	public void setOrgHostUrl(String orgHostUrl)
+	{
+		this.orgHostUrl = orgHostUrl;
+	}
+
+	public String getOrgName()
+	{
+		return orgName;
+	}
+
+	public void setOrgName(String orgName)
+	{
+		this.orgName = orgName;
+	}
+
+	public DefaultProgress getSync()
+	{
+		return sync;
+	}
+
+	public void setSync(DefaultProgress sync)
+	{
+		this.sync = sync;
+	}
 
     @Override
 	public boolean equals(Object obj)
@@ -157,14 +178,12 @@ public class Repository
 		if (this.getClass()!=obj.getClass()) return false;
 		Repository that = (Repository) obj;
 		return new EqualsBuilder()
-                .append(organizationId, this.organizationId)
-                .append(dvcsType, this.dvcsType)
-                .append(slug, this.slug)
-                .append(name, this.name)
-                .append(lastCommitDate, this.lastCommitDate)
-                .append(linked, this.linked)
-                .append(deleted, this.deleted)
-                .append(credential, this.credential)
+                .append(organizationId, that.organizationId)
+                .append(dvcsType, that.dvcsType)
+                .append(slug, that.slug)
+                .append(name, that.name)
+                .append(linked, that.linked)
+                .append(deleted, that.deleted)
                 .isEquals();
 	}
 
@@ -176,10 +195,8 @@ public class Repository
                 .append(dvcsType)
                 .append(slug)
                 .append(name)
-                .append(lastCommitDate)
                 .append(linked)
                 .append(deleted)
-                .append(credential)
                 .toHashCode();
     }
 

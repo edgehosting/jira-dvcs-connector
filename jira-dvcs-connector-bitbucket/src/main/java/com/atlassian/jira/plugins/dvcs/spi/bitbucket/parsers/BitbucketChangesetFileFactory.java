@@ -1,9 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.parsers;
 
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
-import com.atlassian.jira.plugins.bitbucket.api.ChangesetFileAction;
-import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultBitbucketChangesetFile;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 
@@ -20,7 +19,7 @@ public class BitbucketChangesetFileFactory
         try
         {
             JSONObject diffstatJson = json.getJSONObject("diffstat");
-            return new DefaultBitbucketChangesetFile(
+            return new ChangesetFile(
                     ChangesetFileAction.valueOf(json.getString("type").toUpperCase()),
                     json.getString("file"), diffstatJson.getInt("added"), diffstatJson.getInt("removed"));
         } catch (JSONException e)
@@ -39,7 +38,7 @@ public class BitbucketChangesetFileFactory
     {
         try
         {
-            return new DefaultBitbucketChangesetFile(
+            return new ChangesetFile(
                     ChangesetFileAction.valueOf(json.getString("type").toUpperCase()),
                     json.getString("file"), 0, 0);
         } catch (JSONException e)

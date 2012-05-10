@@ -1,14 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.net.URI;
+import java.util.List;
 
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -22,8 +15,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import java.net.URI;
-import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
 /**
  * The Class RootResource.
@@ -65,7 +67,7 @@ public class RootResource
 	 * @return the repository
 	 */
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_JSON  })
 	@Path("/repository/{id}")
 	public Response getRepository(@PathParam("id") int id)
 	{
@@ -112,6 +114,7 @@ public class RootResource
 		// message/status
 		UriBuilder ub = uriInfo.getBaseUriBuilder();
 		URI uri = ub.path("/repository/{id}").build(id);
+
 		return Response.seeOther(uri).build();
 	}
 
@@ -146,6 +149,26 @@ public class RootResource
 
         Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
 		repositoryService.syncRepositoryList(organization);
+		return Response.ok().build();
+	}
+	
+	@POST
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/org/{id}/autolink")
+	public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, @FormParam("autolink") String autolink)
+	{
+		
+		organizationService.enableAutolinkNewRepos(id, Boolean.parseBoolean(autolink));
+		return Response.ok().build();
+	}
+
+	@POST
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/repo/{id}/autolink")
+	public Response enableRepositoryAutolink(@PathParam("id") int id, @FormParam("autolink") String autolink)
+	{
+		
+		repositoryService.enableAutolinkCommits(id, Boolean.parseBoolean(autolink));
 		return Response.ok().build();
 	}
 

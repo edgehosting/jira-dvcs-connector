@@ -5,11 +5,15 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import net.java.ao.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,133 +25,229 @@ import java.util.Map;
 public class RepositoryDaoImpl implements RepositoryDao
 {
 
-    private final ActiveObjects activeObjects;
+	private static final Logger log = LoggerFactory.getLogger(RepositoryDaoImpl.class);
 
-    public RepositoryDaoImpl(ActiveObjects activeObjects)
-    {
-        this.activeObjects = activeObjects;
-    }
+	private final ActiveObjects activeObjects;
+	private final Synchronizer synchronizer;
 
-    protected Repository transform(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping) {
+	public RepositoryDaoImpl(ActiveObjects activeObjects, Synchronizer synchronizer)
+	{
+		this.activeObjects = activeObjects;
+		this.synchronizer = synchronizer;
+	}
 
-        Credential credential = new Credential(organizationMapping.getAdminUsername(),
-                organizationMapping.getAdminPassword(),
-                organizationMapping.getAccessToken());
+	protected Repository transform(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
+	{
 
+		Credential credential = new Credential(organizationMapping.getAdminUsername(),
+				organizationMapping.getAdminPassword(), organizationMapping.getAccessToken());
 
-        Repository repository = new Repository(repositoryMapping.getID(),
-                repositoryMapping.getOrganizationId(),
-                organizationMapping.getDvcsType(),
-                repositoryMapping.getSlug(),
-                repositoryMapping.getName(),
-                repositoryMapping.getLastCommitDate(),
-                repositoryMapping.isLinked(),
-                repositoryMapping.isDeleted(),
-                credential);
+		Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(),
+				organizationMapping.getDvcsType(), repositoryMapping.getSlug(), repositoryMapping.getName(),
+				repositoryMapping.getLastCommitDate(), repositoryMapping.isLinked(), repositoryMapping.isDeleted(),
+				credential);
 
-        return repository;
-    }
+		repository.setOrgHostUrl(organizationMapping.getHostUrl());
+		repository.setOrgName(organizationMapping.getName());
 
-    @Override
-    public List<Repository> getAllByOrganization(final int organizationId, final boolean alsoDeleted)
-    {
-        List<RepositoryMapping> repositoryMappings = activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
-        {
-            @Override
-            public List<RepositoryMapping> doInTransaction()
-            {
-                Query query = Query.select().where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
-                if (!alsoDeleted) {
-                    query = Query.select().where(RepositoryMapping.ORGANIZATION_ID + " = ? AND " +
-                            RepositoryMapping.DELETED + " = ? ", organizationId, Boolean.FALSE);
-                }
+		// set sync progress
+		repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
 
-                final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, query);
-                return Arrays.asList(rms);
-            }
-        });
+		return repository;
+	}
 
-        final OrganizationMapping organizationMapping = getOrganizationMapping(organizationId);
-
-        final Collection<Repository> repositories = Collections2.transform(repositoryMappings, new Function<RepositoryMapping, Repository>()
-        {
-            @Override
-            public Repository apply(RepositoryMapping repositoryMapping)
-            {
-                return transform(repositoryMapping, organizationMapping);
-            }
-        });
-
-        return new ArrayList<Repository>(repositories);
-    }
-
-    @Override
-    public Repository get(final int repositoryId)
-    {
-        RepositoryMapping repositoryMapping = activeObjects.executeInTransaction(new TransactionCallback<RepositoryMapping>()
-        {
-            @Override
-            public RepositoryMapping doInTransaction()
-            {
-                return activeObjects.get(RepositoryMapping.class, repositoryId);
-            }
-        });
-
-        OrganizationMapping organizationMapping = getOrganizationMapping(repositoryMapping.getOrganizationId());
-        return  transform(repositoryMapping, organizationMapping);
-    }
-
-    @Override
-    public Repository save(final Repository repository)
-    {
-        final RepositoryMapping repositoryMapping = activeObjects.executeInTransaction(new TransactionCallback<RepositoryMapping>()
-        {
-
-            @Override
-            public RepositoryMapping doInTransaction()
-            {
-                RepositoryMapping rm;
-                if (repository.getId() == 0)
+	@Override
+	public List<Repository> getAllByOrganization(final int organizationId, final boolean alsoDeleted)
+	{
+		List<RepositoryMapping> repositoryMappings = activeObjects
+				.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
                 {
-                    final Map<String, Object> map = new HashMap<String, Object>();
-                    map.put(RepositoryMapping.ORGANIZATION_ID, repository.getOrganizationId());
-                    map.put(RepositoryMapping.SLUG, repository.getSlug());
-                    map.put(RepositoryMapping.NAME, repository.getName());
-                    map.put(RepositoryMapping.LAST_COMMIT_DATE, repository.getLastCommitDate());
-                    map.put(RepositoryMapping.LINKED, repository.isLinked());
-                    map.put(RepositoryMapping.DELETED, repository.isDeleted());
+                    @Override
+                    public List<RepositoryMapping> doInTransaction()
+                    {
+                        Query query = Query.select().where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
+                        if (!alsoDeleted)
+                        {
+                            query = Query.select().where(
+                                    RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED
+                                            + " = ? ", organizationId, Boolean.FALSE);
+                        }
 
-                    rm = activeObjects.create(RepositoryMapping.class, map);
-                } else {
-                    rm = activeObjects.get(RepositoryMapping.class, repository.getId());
+                        final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, query);
+                        return Arrays.asList(rms);
+                    }
+                });
 
-                    rm.setSlug(repository.getSlug());
-                    rm.setName(repository.getName());
-                    rm.setLastCommitDate(repository.getLastCommitDate());
-                    rm.setLinked(repository.isLinked());
-                    rm.setDeleted(repository.isDeleted());
+		final OrganizationMapping organizationMapping = getOrganizationMapping(organizationId);
 
-                    rm.save();
-                }
+		final Collection<Repository> repositories = Collections2.transform(repositoryMappings,
+				new Function<RepositoryMapping, Repository>()
+				{
+					@Override
+					public Repository apply(RepositoryMapping repositoryMapping)
+					{
+						return transform(repositoryMapping, organizationMapping);
+					}
+				});
 
-                return rm;
-            }
-        });
+		return new ArrayList<Repository>(repositories);
+	}
 
-        activeObjects.flushAll();
+	@Override
+	public List<Repository> getAll(final boolean alsoDeleted)
+	{
 
-        return transform(repositoryMapping, getOrganizationMapping(repository.getOrganizationId()));
+		List<RepositoryMapping> repositoryMappings = activeObjects
+				.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
+				{
+					@Override
+					public List<RepositoryMapping> doInTransaction()
+					{
+						Query select = Query.select();
+						if (!alsoDeleted)
+						{
+							select = select.where(RepositoryMapping.DELETED + " = ? ", Boolean.FALSE);
+						}
 
+						final RepositoryMapping[] repos = activeObjects.find(RepositoryMapping.class, select);
+						return Arrays.asList(repos);
+					}
+				});
+
+		// fill organizations for repositories as we need them for
+		// transformations
+		final Map<Integer, OrganizationMapping> idToOrganizationMapping = new HashMap<Integer, OrganizationMapping>();
+		final List<RepositoryMapping> repositoriesToReturn = new ArrayList<RepositoryMapping>();
+		for (RepositoryMapping repositoryMapping : repositoryMappings)
+		{
+			OrganizationMapping organizationMapping = idToOrganizationMapping
+					.get(repositoryMapping.getOrganizationId());
+			if (organizationMapping == null)
+			{
+				organizationMapping = getOrganizationMapping(repositoryMapping.getOrganizationId());
+				if (organizationMapping == null)
+				{
+					// repository without organization ? invalid data
+					log.warn("Found repository without organization. Id = " + repositoryMapping.getID());
+					continue;
+				}
+				// organizationMapping.getID() ==
+				// repositoryMapping.getOrganizationId()
+				idToOrganizationMapping.put(organizationMapping.getID(), organizationMapping);
+				
+			} 
+			
+			repositoriesToReturn.add(repositoryMapping);
+		}
+
+		final Collection<Repository> repositories = transformRepositories(idToOrganizationMapping, repositoriesToReturn);
+
+		return new ArrayList<Repository>(repositories);
+
+	}
+
+	/**
+	 * Transform repositories.
+	 *
+	 * @param idToOrganizationMapping the id to organization mapping
+	 * @param repositoriesToReturn the repositories to return
+	 * @return the collection< repository>
+	 */
+	private Collection<Repository> transformRepositories(
+			final Map<Integer, OrganizationMapping> idToOrganizationMapping,
+			final List<RepositoryMapping> repositoriesToReturn)
+	{
+		final Collection<Repository> repositories = Collections2.transform(repositoriesToReturn,
+				new Function<RepositoryMapping, Repository>()
+				{
+					@Override
+					public Repository apply(RepositoryMapping repositoryMapping)
+					{
+						return transform(repositoryMapping,
+								idToOrganizationMapping.get(repositoryMapping.getOrganizationId()));
+					}
+				});
+		return repositories;
+	}
+
+	@Override
+	public Repository get(final int repositoryId)
+	{
+		RepositoryMapping repositoryMapping = activeObjects
+				.executeInTransaction(new TransactionCallback<RepositoryMapping>()
+				{
+					@Override
+					public RepositoryMapping doInTransaction()
+					{
+						return activeObjects.get(RepositoryMapping.class, repositoryId);
+					}
+				});
+
+		OrganizationMapping organizationMapping = getOrganizationMapping(repositoryMapping.getOrganizationId());
+		return transform(repositoryMapping, organizationMapping);
+	}
+
+	@Override
+	public Repository save(final Repository repository)
+	{
+		final RepositoryMapping repositoryMapping = activeObjects
+				.executeInTransaction(new TransactionCallback<RepositoryMapping>()
+				{
+
+					@Override
+					public RepositoryMapping doInTransaction()
+					{
+						RepositoryMapping rm;
+						if (repository.getId() == 0)
+						{
+							final Map<String, Object> map = new HashMap<String, Object>();
+							map.put(RepositoryMapping.ORGANIZATION_ID, repository.getOrganizationId());
+							map.put(RepositoryMapping.SLUG, repository.getSlug());
+							map.put(RepositoryMapping.NAME, repository.getName());
+							map.put(RepositoryMapping.LAST_COMMIT_DATE, repository.getLastCommitDate());
+							map.put(RepositoryMapping.LINKED, repository.isLinked());
+							map.put(RepositoryMapping.DELETED, repository.isDeleted());
+
+							rm = activeObjects.create(RepositoryMapping.class, map);
+						} else
+						{
+							rm = activeObjects.get(RepositoryMapping.class, repository.getId());
+
+							rm.setSlug(repository.getSlug());
+							rm.setName(repository.getName());
+							rm.setLastCommitDate(repository.getLastCommitDate());
+							rm.setLinked(repository.isLinked());
+							rm.setDeleted(repository.isDeleted());
+
+							rm.save();
+						}
+
+						return rm;
+					}
+				});
+
+		activeObjects.flush(repositoryMapping);
+
+		return transform(repositoryMapping, getOrganizationMapping(repository.getOrganizationId()));
+
+	}
+
+    @Override
+    public void remove(int repositoryId)
+    {
+        activeObjects.delete(activeObjects.get(RepositoryMapping.class, repositoryId));
     }
 
-    private OrganizationMapping getOrganizationMapping(final int organizationId) {
-        return activeObjects.executeInTransaction(new TransactionCallback<OrganizationMapping>()
-        {
-            @Override
-            public OrganizationMapping doInTransaction()
-            {
-                return activeObjects.get(OrganizationMapping.class, organizationId);
-            }
-        });
-    }
+    private OrganizationMapping getOrganizationMapping(final int organizationId)
+	{
+		return activeObjects.executeInTransaction(new TransactionCallback<OrganizationMapping>()
+		{
+			@Override
+			public OrganizationMapping doInTransaction()
+			{
+				return activeObjects.get(OrganizationMapping.class, organizationId);
+			}
+		});
+	}
+
 }

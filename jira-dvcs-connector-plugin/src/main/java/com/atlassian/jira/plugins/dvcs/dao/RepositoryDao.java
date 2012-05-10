@@ -14,6 +14,14 @@ public interface RepositoryDao
     List<Repository> getAllByOrganization(int organizationId, boolean alsoDeleted);
 
     /**
+     * Gets all repositories across organizations.
+     *
+     * @param alsoDeleted the also deleted
+     * @return the all
+     */
+    List<Repository> getAll(boolean alsoDeleted);
+
+    /**
      * returns repository by ID
      * @param repositoryId repositoryId
      * @return repository
@@ -27,4 +35,5 @@ public interface RepositoryDao
      */
     Repository save(Repository repository);
 
+    void remove(int repositoryId);
 }

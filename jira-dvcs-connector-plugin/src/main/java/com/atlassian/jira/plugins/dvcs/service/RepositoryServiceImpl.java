@@ -6,8 +6,8 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.sal.api.ApplicationProperties;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RepositoryServiceImpl implements RepositoryService
@@ -15,12 +15,36 @@ public class RepositoryServiceImpl implements RepositoryService
     private DvcsCommunicatorProvider communicatorProvider;
     private RepositoryDao repositoryDao;
     private Synchronizer synchronizer;
+    private ChangesetService changesetService;
+    private ApplicationProperties applicationProperties;
 
-    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer)
+    public RepositoryServiceImpl()
+    {
+    }
+
+    public void setCommunicatorProvider(DvcsCommunicatorProvider communicatorProvider)
     {
         this.communicatorProvider = communicatorProvider;
+    }
+
+    public void setRepositoryDao(RepositoryDao repositoryDao)
+    {
         this.repositoryDao = repositoryDao;
+    }
+
+    public void setSynchronizer(Synchronizer synchronizer)
+    {
         this.synchronizer = synchronizer;
+    }
+
+    public void setChangesetService(ChangesetService changesetService)
+    {
+        this.changesetService = changesetService;
+    }
+
+    public void setApplicationProperties(ApplicationProperties applicationProperties)
+    {
+        this.applicationProperties = applicationProperties;
     }
 
     @Override
@@ -74,12 +98,22 @@ public class RepositoryServiceImpl implements RepositoryService
                 repositoryDao.save(storedRepository);
             } else
             {
-                // save brand new or updated repository
+                // save brand new
                 remoteRepository.setOrganizationId(organization.getId());
                 remoteRepository.setDvcsType(organization.getDvcsType());
-                remoteRepository.setLinked(true);
+                remoteRepository.setLinked(organization.isAutolinkNewRepos());
                 remoteRepository.setCredential(organization.getCredential());
-                repositoryDao.save(remoteRepository);
+
+                // need for install post commit hook
+                remoteRepository.setOrgHostUrl(organization.getHostUrl());
+                remoteRepository.setOrgName(organization.getName());
+
+                final Repository savedRepository = repositoryDao.save(remoteRepository);
+
+                // if linked install post commit hook
+                if (savedRepository.isLinked()) {
+                    setupPostcommitHook(savedRepository);
+                }
             }
         }
 
@@ -90,16 +124,16 @@ public class RepositoryServiceImpl implements RepositoryService
             repositoryDao.save(storedRepository);
         }
 
-
+        // start asynchronous changesets synchronization for all repositories in organization
+        syncAllInOrganization(organization.getId());
     }
-
 
 
     @Override
     public void sync(int repositoryId, boolean softSync)
     {
         final Repository repository = get(repositoryId);
-        synchronizer.synchronize(repository, softSync);
+        doSync(repository, softSync);
     }
 
     @Override
@@ -108,15 +142,63 @@ public class RepositoryServiceImpl implements RepositoryService
         final List<Repository> repositories = getAllByOrganization(organizationId, false);
         for (Repository repository : repositories)
         {
-            synchronizer.synchronize(repository, false);
+            doSync(repository, false);
+        }
+    }
+
+    private void doSync(Repository repository, boolean softSync)
+    {
+        if (repository.isLinked()) {
+            synchronizer.synchronize(repository, softSync);
         }
     }
 
     @Override
 	public List<Repository> getAllActiveRepositories()
 	{
-		// TODO Auto-generated method stub
-		return new ArrayList<Repository>();
+    	return repositoryDao.getAll(false);
 	}
-    
+
+	@Override
+	public void enableAutolinkCommits(int repoId, boolean linked) {
+        final Repository repository = repositoryDao.get(repoId);
+        if (repository != null)
+        {
+            repository.setLinked(linked);
+            repositoryDao.save(repository);
+
+            setupPostcommitHook(repository);
+        }
+    }
+
+    private void setupPostcommitHook(Repository repository)
+    {
+        final DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+        final String postCommitUrl = getPostCommitUrl(repository);
+        if (repository.isLinked())
+        {
+            communicator.setupPostcommitHook(repository, postCommitUrl);
+        } else {
+            communicator.removePostcommitHook(repository, postCommitUrl);
+        }
+    }
+
+    private String getPostCommitUrl(Repository repo)
+    {
+        return applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/" + repo.getId() + "/sync";
+    }
+
+
+    @Override
+    public void removeAllInOrganization(int organizationId)
+    {
+        final List<Repository> repositories = repositoryDao.getAllByOrganization(organizationId, true);
+        for (Repository repository : repositories)
+        {
+            changesetService.removeAllInRepository(repository.getId());
+            repositoryDao.remove(repository.getId());
+        }
+    }
+
+
 }

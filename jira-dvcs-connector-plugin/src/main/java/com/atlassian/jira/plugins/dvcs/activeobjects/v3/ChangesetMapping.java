@@ -10,7 +10,7 @@ import java.util.Date;
 public interface ChangesetMapping extends Entity
 {
     public static final String REPOSITORY_ID = "REPOSITORY_ID";
-    public static final String ISSUE_ID = "ISSUE_KEY";
+    public static final String ISSUE_KEY = "ISSUE_KEY";
     public static final String NODE = "NODE";
     public static final String RAW_AUTHOR = "RAW_AUTHOR";
     public static final String AUTHOR = "AUTHOR";

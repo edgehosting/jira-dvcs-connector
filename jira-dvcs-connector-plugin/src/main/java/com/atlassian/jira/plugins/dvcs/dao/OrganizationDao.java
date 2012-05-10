@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-
 import java.util.List;
+
+import com.atlassian.jira.plugins.dvcs.model.Organization;
 
 public interface OrganizationDao
 {
@@ -41,6 +41,16 @@ public interface OrganizationDao
      * @param organizationId id
      */
     void remove(int organizationId);
+
+	/**
+	 * Update credentials.
+	 *
+	 * @param organizationId the organization id
+	 * @param plaintextPassword the plaintext password, null safe
+	 * @param accessToken the access token, null safe
+	 */
+	void updateCredentials(int organizationId, String plaintextPassword,
+			String accessToken);
 
 
 }
