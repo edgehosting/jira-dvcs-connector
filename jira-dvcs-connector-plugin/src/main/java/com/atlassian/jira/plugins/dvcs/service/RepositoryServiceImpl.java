@@ -103,6 +103,11 @@ public class RepositoryServiceImpl implements RepositoryService
                 remoteRepository.setDvcsType(organization.getDvcsType());
                 remoteRepository.setLinked(organization.isAutolinkNewRepos());
                 remoteRepository.setCredential(organization.getCredential());
+
+                // need for install post commit hook
+                remoteRepository.setOrgHostUrl(organization.getHostUrl());
+                remoteRepository.setOrgName(organization.getName());
+
                 repositoryDao.save(remoteRepository);
 
                 // if linked install post commit hook

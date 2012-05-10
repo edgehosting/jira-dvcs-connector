@@ -128,7 +128,7 @@ public class GithubCommunicator implements DvcsCommunicator
         try
         {
             String apiUrl = getApiUrl(repository.getOrgHostUrl(), true);
-            String owner = repository.getName();
+            String owner = repository.getOrgName();
             String slug = repository.getSlug();
             String node = changeset.getNode();
             Authentication authentication = authenticationFactory.getAuthentication(repository);
@@ -245,7 +245,7 @@ public class GithubCommunicator implements DvcsCommunicator
         List<String> branches = new ArrayList<String>();
 
         String apiUrl = getApiUrl(repository.getOrgHostUrl(), false);
-        String owner = repository.getName();
+        String owner = repository.getOrgName();
         String slug = repository.getSlug();
         Authentication authentication = authenticationFactory.getAuthentication(repository);
 
@@ -282,7 +282,7 @@ public class GithubCommunicator implements DvcsCommunicator
     public List<Changeset> getChangesets(Repository repository, String branch, int pageNumber)
     {
         String apiUrl = getApiUrl(repository.getOrgHostUrl(), false);
-        String owner = repository.getName();
+        String owner = repository.getOrgName();
         String slug = repository.getSlug();
         Authentication authentication = authenticationFactory.getAuthentication(repository);
 
