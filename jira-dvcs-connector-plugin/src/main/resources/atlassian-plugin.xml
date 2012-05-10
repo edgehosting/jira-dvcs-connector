@@ -41,14 +41,15 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
     </ao>
 
+    <component key="reEncryptor" name="reEncryptor" class="com.atlassian.jira.plugins.dvcs.activeobjects.v3.PasswordReEncryptor" />
+    
     <component key="executorService" name="Executor Service Factory Component"
             class="com.atlassian.jira.plugins.bitbucket.DefaultExecutorServiceFactoryBean">
         <description>ExecutorService factory bean for creating executor services</description>
         <interface>com.atlassian.jira.plugins.bitbucket.ExecutorServiceFactoryBean</interface>
     </component>
 
-    <component key="issueLinker" name="issueLinker"
-            class="com.atlassian.jira.plugins.bitbucket.IssueLinkerImpl">
+    <component key="issueLinker" name="issueLinker" class="com.atlassian.jira.plugins.bitbucket.IssueLinkerImpl">
         <interface>com.atlassian.jira.plugins.bitbucket.api.IssueLinker</interface>
     </component>
 
@@ -149,7 +150,7 @@
         <description>changesetDao</description>
         <interface>com.atlassian.jira.plugins.dvcs.dao.ChangesetDao</interface>
     </component>
-
+    
 
     <component key="organizationService" name="organizationService"
                class="com.atlassian.jira.plugins.dvcs.service.OrganizationServiceImpl">
