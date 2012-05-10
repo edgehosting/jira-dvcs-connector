@@ -223,7 +223,7 @@ function validateAddOrganizationForm() {
 	if (AJS.$("#oauthClientId").is(":visible")) {
 		validator.addItem("oauthClientId", "oauth-client-error", "required");
 		validator.addItem("oauthSecret", "oauth-secret-error", "required");
-	} else {
+	} else if (AJS.$("#adminUsername").is(":visible")){
 		validator.addItem("adminUsername", "admin-username-error", "required");
 		validator.addItem("adminPassword", "admin-password-error", "required");
 	}
