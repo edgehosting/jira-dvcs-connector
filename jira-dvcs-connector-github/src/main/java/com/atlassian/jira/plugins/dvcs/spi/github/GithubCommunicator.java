@@ -36,6 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+// todo: treba nam aj CachingCommunicator
+
 public class GithubCommunicator implements DvcsCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
@@ -121,13 +123,12 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
 	@Override
-	public Changeset getDetailChangeset(Organization organization, Repository repository, Changeset changeset)
+	public Changeset getDetailChangeset(Repository repository, Changeset changeset)
 	{
-
         try
         {
-            String apiUrl = getApiUrl(organization.getHostUrl(), true);
-            String owner = organization.getName();
+            String apiUrl = getApiUrl(repository.getOrgHostUrl(), true);
+            String owner = repository.getName();
             String slug = repository.getSlug();
             String node = changeset.getNode();
             Authentication authentication = authenticationFactory.getAuthentication(repository);
@@ -155,19 +156,79 @@ public class GithubCommunicator implements DvcsCommunicator
 
 	}
 
-	@Override
-	public Iterable<Changeset> getChangesets(final Organization organization, final Repository repository, final Date lastCommitDate)
-	{
+    @Override
+    public void setupPostcommitHook(Repository repository, String postCommitUrl)
+    {
+        String apiUrl = getApiUrl(repository.getOrgHostUrl(), true);
+        String owner = repository.getOrgName();
+        String slug = repository.getSlug();
+        Authentication auth = authenticationFactory.getAuthentication(repository);
+
+        String urlPath = "/repos/" + owner + "/" + slug + "/hooks";
+
+        try
+        {
+            JSONObject configJson = new JSONObject().put("url", postCommitUrl);
+            JSONObject postDataJson = new JSONObject().put("name", "web").put("active", true).put("config", configJson);
+            requestHelper.post(auth, urlPath, postDataJson.toString(), apiUrl);
+        } catch (JSONException e)
+        {
+            throw new SourceControlException("Could not create relevant POST data for postcommit hook.", e);
+        } catch (ResponseException e)
+        {
+            throw new SourceControlException("Could not add postcommit hook. ", e);
+        }
+    }
+
+    @Override
+    public Iterable<Changeset> getChangesets(final Repository repository, final Date lastCommitDate)
+    {
         return new Iterable<Changeset>()
         {
             @Override
             public Iterator<Changeset> iterator()
             {
-                List<String> branches = getBranches(organization, repository);
-                return new GithubChangesetIterator(changesetService, GithubCommunicator.this, organization, repository, branches, lastCommitDate);
+                List<String> branches = getBranches(repository);
+                return new GithubChangesetIterator(changesetService, GithubCommunicator.this, repository, branches, lastCommitDate);
             }
         };
-	}
+    }
+
+    @Override
+    public void removePostcommitHook(Repository repository, String postCommitUrl)
+    {
+        String apiUrl = getApiUrl(repository.getOrgHostUrl(), true);
+        String owner = repository.getOrgName();
+        String slug = repository.getSlug();
+        Authentication auth = authenticationFactory.getAuthentication(repository);
+
+        String urlPath = "/repos/" + owner + "/" + slug + "/hooks";
+        // Find the hook
+        try
+        {
+            String responseString = requestHelper.get(auth, urlPath, null, apiUrl);
+            JSONArray jsonArray = new JSONArray(responseString);
+            for (int i = 0; i < jsonArray.length(); i++)
+            {
+                JSONObject data = (JSONObject) jsonArray.get(i);
+                String id = data.getString("id");
+                JSONObject config = data.getJSONObject("config");
+                String url = config.getString("url");
+                if (postCommitUrl.equals(url))
+                {
+                    // We have the hook, lets remove it
+                    requestHelper.delete(auth, apiUrl, urlPath + "/" + id);
+                }
+            }
+        } catch (ResponseException e)
+        {
+            log.warn("Error removing postcommit service [{}]", e.getMessage());
+        } catch (JSONException e)
+        {
+            log.warn("Error removing postcommit service [{}]", e.getMessage());
+        }
+    }
+
 
     private String getApiUrl(String hostUrl, boolean v3) {
 
@@ -179,12 +240,12 @@ public class GithubCommunicator implements DvcsCommunicator
         return hostUrl + "/api/v2/json";
     }
 
-    private List<String> getBranches(Organization organization, Repository repository)
+    private List<String> getBranches(Repository repository)
     {
         List<String> branches = new ArrayList<String>();
 
-        String apiUrl = getApiUrl(organization.getHostUrl(), false);
-        String owner = organization.getName();
+        String apiUrl = getApiUrl(repository.getOrgHostUrl(), false);
+        String owner = repository.getName();
         String slug = repository.getSlug();
         Authentication authentication = authenticationFactory.getAuthentication(repository);
 
@@ -218,10 +279,10 @@ public class GithubCommunicator implements DvcsCommunicator
 
     }
 
-    public List<Changeset> getChangesets(Organization organization, Repository repository, String branch, int pageNumber)
+    public List<Changeset> getChangesets(Repository repository, String branch, int pageNumber)
     {
-        String apiUrl = getApiUrl(organization.getHostUrl(), false);
-        String owner = organization.getName();
+        String apiUrl = getApiUrl(repository.getOrgHostUrl(), false);
+        String owner = repository.getName();
         String slug = repository.getSlug();
         Authentication authentication = authenticationFactory.getAuthentication(repository);
 

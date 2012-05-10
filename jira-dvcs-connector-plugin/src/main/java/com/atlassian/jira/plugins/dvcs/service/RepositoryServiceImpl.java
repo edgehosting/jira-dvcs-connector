@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.sal.api.ApplicationProperties;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class RepositoryServiceImpl implements RepositoryService
     private RepositoryDao repositoryDao;
     private Synchronizer synchronizer;
     private ChangesetService changesetService;
+    private ApplicationProperties applicationProperties;
 
     public RepositoryServiceImpl()
     {
@@ -38,6 +40,11 @@ public class RepositoryServiceImpl implements RepositoryService
     public void setChangesetService(ChangesetService changesetService)
     {
         this.changesetService = changesetService;
+    }
+
+    public void setApplicationProperties(ApplicationProperties applicationProperties)
+    {
+        this.applicationProperties = applicationProperties;
     }
 
     @Override
@@ -98,7 +105,10 @@ public class RepositoryServiceImpl implements RepositoryService
                 remoteRepository.setCredential(organization.getCredential());
                 repositoryDao.save(remoteRepository);
 
-                // todo: install post commit hook !!! pozor na autoLink
+                // if linked install post commit hook
+                if (remoteRepository.isLinked()) {
+                    setupPostcommitHook(remoteRepository);
+                }
             }
         }
 
@@ -151,11 +161,28 @@ public class RepositoryServiceImpl implements RepositoryService
         {
             repository.setLinked(linked);
             repositoryDao.save(repository);
+
+            setupPostcommitHook(repository);
         }
-
-        // todo: install/uninstal postcommit
-
     }
+
+    private void setupPostcommitHook(Repository repository)
+    {
+        final DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+        final String postCommitUrl = getPostCommitUrl(repository);
+        if (repository.isLinked())
+        {
+            communicator.setupPostcommitHook(repository, postCommitUrl);
+        } else {
+            communicator.removePostcommitHook(repository, postCommitUrl);
+        }
+    }
+
+    private String getPostCommitUrl(Repository repo)
+    {
+        return applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/" + repo.getId() + "/sync";
+    }
+
 
     @Override
     public void removeAllInOrganization(int organizationId)

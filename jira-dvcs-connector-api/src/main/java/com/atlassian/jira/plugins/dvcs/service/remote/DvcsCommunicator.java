@@ -19,8 +19,13 @@ public interface DvcsCommunicator
 
     List<Repository> getRepositories(Organization organization);
 
-    Changeset getDetailChangeset(Organization organization, Repository repository, Changeset changeset);
+    Changeset getDetailChangeset(Repository repository, Changeset changeset);
 
-    public Iterable<Changeset> getChangesets(Organization organization, Repository repository, Date lastCommitDate);
+    public Iterable<Changeset> getChangesets(Repository repository, Date lastCommitDate);
+
+    public void setupPostcommitHook(Repository repository, String postCommitUrl);
+
+    public void removePostcommitHook(Repository repository, String postCommitUrl);
+
 
 }
