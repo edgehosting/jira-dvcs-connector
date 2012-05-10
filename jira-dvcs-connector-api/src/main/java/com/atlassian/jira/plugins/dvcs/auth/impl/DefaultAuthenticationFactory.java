@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 public class DefaultAuthenticationFactory implements AuthenticationFactory
@@ -19,27 +20,50 @@ public class DefaultAuthenticationFactory implements AuthenticationFactory
 	}
 
 	@Override
-    public Authentication getAuthentication(Repository repository)
+	public Authentication getAuthentication(Repository repository)
 	{
-	    Credential credential = repository.getCredential();
+		Credential credential = repository.getCredential();
 		// oAuth
-	    if (StringUtils.isNotBlank(credential.getAccessToken()))
-	    {
-	        return new OAuthAuthentication(credential.getAccessToken());
-	    }
+		if (StringUtils.isNotBlank(credential.getAccessToken()))
+		{
+			return new OAuthAuthentication(credential.getAccessToken());
+		}
 
-	    // basic
-	    if (StringUtils.isNotBlank(credential.getAdminUsername()))
-	    {
-	        return new BasicAuthentication(credential.getAdminUsername(), decryptPassword(credential, repository));
-	    }
-	        
-	    // none
-	    return Authentication.ANONYMOUS;
+		// basic
+		if (StringUtils.isNotBlank(credential.getAdminUsername()))
+		{
+			return new BasicAuthentication(credential.getAdminUsername(), decryptPassword(credential,
+					repository.getOrgName(), repository.getOrgHostUrl()));
+		}
+
+		// none
+		return Authentication.ANONYMOUS;
 	}
 
-	private String decryptPassword(Credential credential, Repository repository)
+	@Override
+	public Authentication getAuthentication(Organization organization)
 	{
-		return encryptor.decrypt(credential.getAdminPassword(), repository.getOrgName(), repository.getOrgHostUrl());
+		Credential credential = organization.getCredential();
+		// oAuth
+		if (StringUtils.isNotBlank(credential.getAccessToken()))
+		{
+			return new OAuthAuthentication(credential.getAccessToken());
+		}
+
+		// basic
+		if (StringUtils.isNotBlank(credential.getAdminUsername()))
+		{
+			return new BasicAuthentication(credential.getAdminUsername(), decryptPassword(credential,
+					organization.getName(), organization.getHostUrl()));
+		}
+
+		// none
+		return Authentication.ANONYMOUS;
 	}
+
+	private String decryptPassword(Credential credential, String orgName, String orgHostUrl)
+	{
+		return encryptor.decrypt(credential.getAdminPassword(), orgName, orgHostUrl);
+	}
+
 }

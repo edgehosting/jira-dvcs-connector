@@ -1,8 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
-import com.atlassian.jira.plugins.dvcs.auth.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -18,18 +29,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 public class BitbucketCommunicator implements DvcsCommunicator
 {
@@ -45,21 +44,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
         this.authenticationFactory = authenticationFactory;
         this.requestHelper = requestHelper;
     }
-
-    private Authentication getAuthentication(String adminUsername, String adminPassword)
-    {
-        Authentication auth;
-        if (StringUtils.isNotBlank(adminUsername) && StringUtils.isNotBlank(adminPassword))
-        {
-            auth = new BasicAuthentication(adminUsername, adminPassword);
-        } else
-        {
-            auth = Authentication.ANONYMOUS;
-        }
-        return auth;
-    }
-
-
 
     @Override
     public String getDvcsType()
@@ -108,7 +92,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             String apiUrl = organization.getHostUrl() + "/!api/1.0";
             String listReposUrl = "/users/"+organization.getName();
-            final Authentication authentication = getAuthentication(organization.getCredential().getAdminUsername(), organization.getCredential().getAdminPassword());
+            final Authentication authentication = authenticationFactory.getAuthentication(organization);
+
             ExtendedResponseHandler.ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(authentication, listReposUrl, null, apiUrl);
             if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {

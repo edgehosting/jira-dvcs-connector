@@ -60,23 +60,6 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 			return INPUT;
 		}
 
-		try
-		{
-			// globalRepositoryManager.setupPostcommitHook(repository);
-		} catch (SourceControlException e)
-		{
-			/*
-			 * log.debug("Failed adding postcommit hook: ["+e.getMessage()+"]");
-			 * globalRepositoryManager.removeRepository(repository.getId());
-			 * addErrorMessage(
-			 * "The username/password you provided are invalid. Make sure you entered the correct username/password and that the username has admin rights on "
-			 * + url + ".<br/>" + "<br/>Then, try again.<br/><br/> [" +
-			 * e.getMessage() + "]");
-			 */
-
-			return INPUT;
-		}
-
 		// go back to main DVCS configuration page
 		return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + getXsrfToken());
 	}
@@ -84,7 +67,11 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 	@Override
 	protected void doValidation()
 	{
-		if (StringUtils.isBlank(adminUsername) || StringUtils.isBlank(adminPassword))
+		if (StringUtils.isBlank(organization) || StringUtils.isBlank(url))
+		{
+			addErrorMessage("Invalid request, missing url and organization/account information.");
+		}
+		if (StringUtils.isBlank(adminUsername))
 		{
 			addErrorMessage("Missing credentials.");
 		}
