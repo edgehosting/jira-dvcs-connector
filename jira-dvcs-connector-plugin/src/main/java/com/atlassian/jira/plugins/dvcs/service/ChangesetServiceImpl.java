@@ -65,10 +65,9 @@ public class ChangesetServiceImpl implements ChangesetService
     @Override
     public Iterable<Changeset> getChangesetsFromDvcs(Repository repository, Date lastCommitDate)
     {
-        final Organization organization = organizationService.get(repository.getOrganizationId(), false);
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
-        return communicator.getChangesets(organization, repository, lastCommitDate);
+        return communicator.getChangesets(repository, lastCommitDate);
     }
 
     @Override
@@ -76,6 +75,6 @@ public class ChangesetServiceImpl implements ChangesetService
     {
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
-        return communicator.getDetailChangeset(organization, repository, changeset);
+        return communicator.getDetailChangeset(repository, changeset);
     }
 }
