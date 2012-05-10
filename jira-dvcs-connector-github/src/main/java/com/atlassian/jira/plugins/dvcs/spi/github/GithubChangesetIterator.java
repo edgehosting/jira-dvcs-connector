@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 
@@ -20,7 +19,6 @@ public class GithubChangesetIterator implements Iterator<Changeset>
 
     private final BranchesIterator branchesIterator;
 
-    private final Organization organization;
     private final Repository repository;
 
     private Changeset nextChangeset = null;
@@ -28,14 +26,13 @@ public class GithubChangesetIterator implements Iterator<Changeset>
     private final ChangesetService changesetService;
 
     public GithubChangesetIterator(ChangesetService changesetService, GithubCommunicator githubCommunicator,
-                                   Organization organization, Repository repository, List<String> branches, Date lastCommitDate)
+                                   Repository repository, List<String> branches, Date lastCommitDate)
     {
         this.changesetService = changesetService;
-        this.organization = organization;
         this.repository = repository;
         this.lastCommitDate = lastCommitDate;
 
-        branchesIterator = new BranchesIterator(branches, githubCommunicator, organization, repository);
+        branchesIterator = new BranchesIterator(branches, githubCommunicator, repository);
         pagesIterator = branchesIterator.next();
     }
 
@@ -107,7 +104,6 @@ class PagesIterator implements Iterator<ListIterator<Changeset>>
 {
 
     private final GithubCommunicator githubCommunicator;
-    private Organization organization;
     private final Repository repository;
 
     private int index = 0;
@@ -116,11 +112,10 @@ class PagesIterator implements Iterator<ListIterator<Changeset>>
     private List<Changeset> changesets;
     private boolean stoped = false;
 
-    PagesIterator(String branch, GithubCommunicator githubCommunicator, Organization organization, Repository repository)
+    PagesIterator(String branch, GithubCommunicator githubCommunicator, Repository repository)
     {
         this.branch = branch;
         this.githubCommunicator = githubCommunicator;
-        this.organization = organization;
         this.repository = repository;
     }
 
@@ -136,7 +131,7 @@ class PagesIterator implements Iterator<ListIterator<Changeset>>
             return containsChangesets();
         }
         currentPageNumber++;
-        changesets = githubCommunicator.getChangesets(organization, repository, branch, currentPageNumber);
+        changesets = githubCommunicator.getChangesets(repository, branch, currentPageNumber);
         return containsChangesets();
     }
 
@@ -175,13 +170,11 @@ class BranchesIterator implements Iterator<PagesIterator>
 
     private ListIterator<String> branchNamesIterator = Collections.<String>emptyList().listIterator();
     private final GithubCommunicator githubCommunicator;
-    private Organization organization;
     private final Repository repository;
 
-    BranchesIterator(List<String> branches, GithubCommunicator githubCommunicator, Organization organization, Repository repository)
+    BranchesIterator(List<String> branches, GithubCommunicator githubCommunicator, Repository repository)
     {
         this.githubCommunicator = githubCommunicator;
-        this.organization = organization;
         this.repository = repository;
         this.branchNamesIterator = branches.listIterator();
     }
@@ -200,7 +193,7 @@ class BranchesIterator implements Iterator<PagesIterator>
             return null;
         }
 
-        return new PagesIterator(branchNamesIterator.next(), githubCommunicator, organization, repository);
+        return new PagesIterator(branchNamesIterator.next(), githubCommunicator, repository);
     }
 
     @Override

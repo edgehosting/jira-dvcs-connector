@@ -1,18 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.auth.impl.BasicAuthentication;
@@ -31,6 +18,18 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class BitbucketCommunicator implements DvcsCommunicator
 {
@@ -136,12 +135,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public Changeset getDetailChangeset(Organization organization, Repository repository, Changeset changeset)
+    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
     {
         try
         {
-            String apiUrl = organization.getHostUrl() + "/!api/1.0";
-            String owner = organization.getName();
+            String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
+            String owner = repository.getOrgName();
             String slug = repository.getSlug();
             String node = changeset.getNode();
 
@@ -159,10 +158,10 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     }
 
-    public List<Changeset> getChangesets(final Organization organization, final Repository repository, String startNode, int limit, Date lastCommitDate)
+    public List<Changeset> getChangesets(final Repository repository, String startNode, int limit, Date lastCommitDate)
     {
-        String apiUrl = organization.getHostUrl() + "/!api/1.0";
-        String owner = organization.getName();
+        String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
+        String owner = repository.getOrgName();
         String slug = repository.getSlug();
 
         Authentication auth = authenticationFactory.getAuthentication(repository);
@@ -221,16 +220,75 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
 
     @Override
-    public Iterable<Changeset> getChangesets(final Organization organization, final Repository repository, final Date lastCommitDate)
+    public Iterable<Changeset> getChangesets(final Repository repository, final Date lastCommitDate)
     {
         return new Iterable<Changeset>()
         {
             @Override
             public Iterator<Changeset> iterator()
             {
-                return new BitbucketChangesetIterator(BitbucketCommunicator.this, organization, repository, lastCommitDate);
+                return new BitbucketChangesetIterator(BitbucketCommunicator.this, repository, lastCommitDate);
             }
         };
+
+    }
+
+    @Override
+    public void setupPostcommitHook(Repository repository, String postCommitUrl)
+    {
+        String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
+        String owner = repository.getOrgName();
+        String slug = repository.getSlug();
+        Authentication auth = authenticationFactory.getAuthentication(repository);
+
+        String urlPath = "/repositories/" + owner + "/" + slug + "/services";
+        String postData = "type=post;URL=" + postCommitUrl;
+        try
+        {
+            requestHelper.post(auth, urlPath, postData, apiUrl);
+        } catch (ResponseException e)
+        {
+            throw new SourceControlException("Could not add postcommit hook", e);
+        }
+
+    }
+
+    @Override
+    public void removePostcommitHook(Repository repository, String postCommitUrl)
+    {
+        String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
+        String owner = repository.getOrgName();
+        String slug = repository.getSlug();
+        Authentication auth = authenticationFactory.getAuthentication(repository);
+
+        String urlPath = "/repositories/" + owner + "/" + slug + "/services";
+        // Find the hook
+        try
+        {
+            String responseString = requestHelper.get(auth, urlPath, null, apiUrl);
+            JSONArray jsonArray = new JSONArray(responseString);
+            for (int i = 0; i < jsonArray.length(); i++)
+            {
+                JSONObject data = (JSONObject) jsonArray.get(i);
+                String id = data.getString("id");
+                JSONObject service = data.getJSONObject("service");
+                JSONArray fields = service.getJSONArray("fields");
+                JSONObject fieldData = (JSONObject) fields.get(0);
+                String name = fieldData.getString("name");
+                String value = fieldData.getString("value");
+                if ("URL".equals(name) && postCommitUrl.equals(value))
+                {
+                    // We have the hook, lets remove it
+                    requestHelper.delete(auth, apiUrl, urlPath + "/" + id);
+                }
+            }
+        } catch (ResponseException e)
+        {
+            log.warn("Error removing postcommit service [{}]", e.getMessage());
+        } catch (JSONException e)
+        {
+            log.warn("Error removing postcommit service [{}]", e.getMessage());
+        }
 
     }
 }

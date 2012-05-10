@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 import java.util.Collections;
@@ -18,15 +17,13 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
     public static final int PAGE_SIZE = 15;
     private Iterator<Changeset> currentPage = null;
     private Changeset followingChangset = null; // next changeset after current page
-    private Organization organization;
     private final Repository repository;
     private final BitbucketCommunicator bitbucketCommunicator;
     private final Date lastCommitDate;
 
-    public BitbucketChangesetIterator(BitbucketCommunicator bitbucketCommunicator, Organization organization, Repository repository, Date lastCommitDate)
+    public BitbucketChangesetIterator(BitbucketCommunicator bitbucketCommunicator, Repository repository, Date lastCommitDate)
     {
         this.bitbucketCommunicator = bitbucketCommunicator;
-        this.organization = organization;
         this.repository = repository;
         this.lastCommitDate = lastCommitDate;
     }
@@ -72,7 +69,7 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
     {
         // read PAGE_SIZE + 1 changesets. Last changeset will be used as starting node 
         // for next page (last changeset is actually returned as first in the list)
-        List<Changeset> changesets = bitbucketCommunicator.getChangesets(organization, repository, startNode, PAGE_SIZE + 1, lastCommitDate);
+        List<Changeset> changesets = bitbucketCommunicator.getChangesets(repository, startNode, PAGE_SIZE + 1, lastCommitDate);
 
         followingChangset = null;
         if (changesets.size() > PAGE_SIZE)
