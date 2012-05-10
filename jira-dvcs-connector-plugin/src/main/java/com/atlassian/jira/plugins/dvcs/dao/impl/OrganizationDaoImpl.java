@@ -52,6 +52,7 @@ public class OrganizationDaoImpl implements OrganizationDao
                 organizationMapping.getDvcsType(),
                 organizationMapping.isAutolinkNewRepos(),
                 credential);
+        organization.setAutoInviteNewUsers(organizationMapping.isAutoInviteNewUsers());
         return organization;
     }
 

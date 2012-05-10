@@ -1,5 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.java.ao.Query;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
@@ -11,16 +23,6 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import net.java.ao.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class RepositoryDaoImpl implements RepositoryDao
 {
@@ -128,7 +130,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 				if (organizationMapping == null)
 				{
 					// repository without organization ? invalid data
-					log.warn("Found repository without organization. Id = " + repositoryMapping.getID());
+					//log.warn("Found repository without organization. Id = " + repositoryMapping.getID());
 					continue;
 				}
 				// organizationMapping.getID() ==

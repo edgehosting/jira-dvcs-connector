@@ -1,5 +1,24 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -17,24 +36,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.User;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.service.RepositoryService;
-import org.eclipse.egit.github.core.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 // todo: treba nam aj CachingCommunicator
 
@@ -173,9 +174,11 @@ public class GithubCommunicator implements DvcsCommunicator
             requestHelper.post(auth, urlPath, postDataJson.toString(), apiUrl);
         } catch (JSONException e)
         {
+        	log.warn("Error installing postcommit service [{}]", e.getMessage());
             throw new SourceControlException("Could not create relevant POST data for postcommit hook.", e);
         } catch (ResponseException e)
         {
+        	log.warn("Error installing postcommit service [{}]", e.getMessage());
             throw new SourceControlException("Could not add postcommit hook. ", e);
         }
     }
@@ -223,9 +226,11 @@ public class GithubCommunicator implements DvcsCommunicator
         } catch (ResponseException e)
         {
             log.warn("Error removing postcommit service [{}]", e.getMessage());
+            throw new SourceControlException(e);
         } catch (JSONException e)
         {
             log.warn("Error removing postcommit service [{}]", e.getMessage());
+            throw new SourceControlException(e);
         }
     }
 

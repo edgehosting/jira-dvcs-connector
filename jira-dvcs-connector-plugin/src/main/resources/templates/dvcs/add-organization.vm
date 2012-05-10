@@ -1,7 +1,7 @@
 <html>
   <head>
     <title>
-           Manage DVCS Repositories
+           Manage DVCS Accounts
     </title>
 
 	$webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
@@ -29,7 +29,7 @@
   <body>
         <input type="hidden" id="addedRepositoryId" value="$action.getAddedRepositoryId()">
 
- 		<h3>Manage DVCS Repositories</h3>
+ 		<h3>Manage DVCS Accounts</h3>
 
         #if ($action.isOnDemandLicense())
             <p>Connect your <a href="http://confluence.atlassian.com/display/AOD/Linking+a+bitbucket+or+GitHub+repository+with+JIRA+OnDemand" target="_blank">Bitbucket and GitHub account to JIRA OnDemand</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
@@ -44,7 +44,7 @@
         <div id="addRepositoryDetails" class="aui-message">
             <span class="svg-icon close size-16 customClose" onclick="showAddRepoDetails(false);"></span>
 
-            <h4 style="margin: 0px;">Add new Organization</h4>
+            <h4 style="margin: 0px;">Add new Account</h4>
 
             #foreach ($errorMessage in $action.getErrorMessages())
                 <div class="aui-message error shadowed">
@@ -138,21 +138,6 @@
    		
    		#printOrganizations
    		
-		#*
-
-        <table class="gh_table" cellspacing="0" cellpadding="0">
-            #if ($action.getMode() == 'single')
-                #repositoryLineItem($action.getProjectName() $action.getProjectKey())
-            #else
-                #foreach ($project in $action.getProjects())
-                    #repositoryLineItem($project.name $project.key)
-                #end
-            #end
-
-        </table>
-        
-        *#
-	
 	#printUpdateCredentialsFormHidden
 	
   </body>
@@ -174,32 +159,48 @@
 				#else
 				#set( $orgAutolink = "")
 			#end
+			#if($org.isAutoInviteNewUsers())
+				#set( $orgIsDefault = "checked='checked'")
+				#else
+				#set( $orgIsDefault = "")
+			#end
 		
-			<h4 class="aui $org.getDvcsType()Logo">Organization: $org.name ($org.dvcsType)</h4>
+			<h4 class="aui $org.getDvcsType()Logo">account : $org.name ($org.dvcsType)</h4>
 				
-				<div class="dvcs-organization-controls">
-
-				 <input id="org_autolink_check$org.id" class="aui" $!orgAutolink type="checkbox" name="autolink-quick" onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" /><label> Autolink new repositories</label>
-				 <span style="display:none; width: 16px; height: 16px;" id="org_autolink_check${org.id}working" class="syncicon running">&nbsp;</span>
-	
-				 | <a href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh Repository List</a>
-				 #if($org.dvcsType == "bitbucket")
-				 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Password</a>
-				 #else
-   			 	 | <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
-				 #end
-				 | <a href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');">Delete organization</a>
+				<div class="dvcs-config-panel">
+					<span class="dvcs-open-panel"></span>
+					<a href="javascript:;" onclick="dvcsShowHidePanel('dvcs-organization-controls-$org.id');">Show/Hide Configuration</a>
 				</div>
+				<div id="dvcs-organization-controls-$org.id" class="dvcs-organization-controls" style="display:none">
+
+					 <input id="org_autolink_check$org.id" class="aui" $!orgAutolink type="checkbox" name="autolink-quick" onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" /><label> Autolink new repositories</label>
+					 <span style="display:none; width: 16px; height: 16px;" id="org_autolink_check${org.id}working" class="syncicon running">&nbsp;</span>
+					 
+					 |
+					 <input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" /><label> Default Auto-invite Users</label>
+					 <span style="display:none; width: 16px; height: 16px;" id="org_isdefault_check${org.id}working" class="syncicon running">&nbsp;</span>
+		
+					 
+					 | <a href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh Repository List</a>
+					 #if($org.dvcsType == "bitbucket")
+					 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Password</a>
+					 #else
+	   			 	 | <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+					 #end
+					 | <a href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');">Delete organization</a>
+
+				</div>
+			
 
 				<div class="vert-space">&nbsp;</div>
 			   <div>
 			     
-			   <table class="aui">
+			   <table class="aui" id="dvcs-repos-table">
 			    <thead>
 			        <tr>
 			            <th>Repository</th>
+			            <th style="text-align: center"></th>
 			            <th>Enable Linking</th>
-			            <th>Actions</th>
 			        </tr>
 			    </thead>
 			    <tbody>
@@ -212,30 +213,38 @@
 						#set( $repoAutolink = "")
 					#end
 					
-					#if($velocityCount % 2 == 0)
-						#set( $dvcsEvenClass = "dvcs-even-row")
+					#if(!$repo.linked)
+						#set( $dvcsRepoRowClass = "dvcs-disabled")
+						#set( $dvcsNoDisplayClass = "dvcs-nodisplay")
 						#else
-						#set( $dvcsEvenClass = "")
+						#set( $dvcsRepoRowClass = "")
+						#set( $dvcsNoDisplayClass = "")
 					#end
-			        <tr class="$dvcsEvenClass">
+			        <tr id="dvcs-repo-row-$repo.id" class="$!dvcsRepoRowClass">
+			            
 			            <td class="dvcs-org-reponame">$repo.name</td>
 
+			            
+			            <td class="action" headers="action" style="text-align: right;">
+			            
+			            	<div id="dvcs-action-container-$repo.id" class="$!dvcsNoDisplayClass">
+				                <span id="syncicon_$repo.id" class="syncicon" >&nbsp;</span>
+	                            <span id="sync_status_message_$repo.id" class="gh_messages">
+	                                <span class="content"></span>
+	                            </span>
+	                            
+	                            <span>
+				                 	<a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">Sync Repo</a>
+				                </span>
+			                </div>
+			                
+			            </td>
+			            
 			            <td style="text-align: center" class="dvcs-autolink-repo">
 			            	<input id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
 			            	 onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
 
 			            	<span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span> 
-			            </td>
-			            <td class="action" headers="action" style="text-align: right;">
-			                <ul class="menu">
-			                    <li>
-			                        <a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">Sync Repo</a>
-			                    </li>
-			                </ul>
-			                <span id="syncicon_$repo.id" class="syncicon" >&nbsp;</span>
-                            <span id="sync_status_message_$repo.id" class="gh_messages">
-                                <span class="content"></span>
-                            </span>
 			            </td>
 			            
 			        </tr>

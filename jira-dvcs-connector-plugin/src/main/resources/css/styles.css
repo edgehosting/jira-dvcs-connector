@@ -468,7 +468,7 @@ a:hover.repositoryNameLink {
 }
 .dvcs-organization-controls {
 	text-align: right;
-	border-bottom: 1px solid #f1f2f3;
+	border-bottom: 1px solid #a3a3a3;
 }
 .dvcs-update-cred-dialog {
 	margin-top: 30px;
@@ -490,4 +490,17 @@ a:hover.repositoryNameLink {
 }
 .dvcs-even-row td {
 	background-color: #eaeaea;
+}
+.dvcs-nodisplay {
+	display: none;
+}
+#dvcs-repos-table.aui > thead {
+	border-bottom: none;
+}
+#dvcs-repos-table .dvcs-disabled {
+	color: #959595 !important;
+}
+.dvcs-config-panel {
+	margin-top: 10px;
+	margin-bottom: 5px;
 }

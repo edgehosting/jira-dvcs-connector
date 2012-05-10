@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -7,8 +9,6 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.ApplicationProperties;
-
-import java.util.List;
 
 public class RepositoryServiceImpl implements RepositoryService
 {
@@ -165,9 +165,10 @@ public class RepositoryServiceImpl implements RepositoryService
         if (repository != null)
         {
             repository.setLinked(linked);
-            repositoryDao.save(repository);
 
             setupPostcommitHook(repository);
+            
+            repositoryDao.save(repository);
         }
     }
 

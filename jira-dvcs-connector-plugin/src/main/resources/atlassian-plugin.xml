@@ -274,8 +274,8 @@
     </project-operation>
 
     <web-item key="bitbucket_bulk_repo" name="Bitbucket Bulk Repository" section="admin_plugins_menu/source_control" weight="10">
-        <description>Manage DVCS Repositories</description>
-        <label>DVCS Repositories</label>
+        <description>Manage DVCS Accounts</description>
+        <label>DVCS Accounts</label>
         <name>DVCS Name Item</name>
 
         <link>/secure/admin/ConfigureDvcsOrganizations!default.jspa</link>

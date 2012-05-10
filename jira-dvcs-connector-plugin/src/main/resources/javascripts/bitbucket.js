@@ -64,7 +64,7 @@ function updateSyncStatus(repo) {
     if (repo.sync) {
 
         if (repo.sync.finished) {
-            if (repo.lastCommitDate != "") {
+            if (repo.lastCommitDate) {
             	syncIcon = "commits";
             }
             syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
@@ -93,6 +93,9 @@ function updateSyncStatus(repo) {
     }
     syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
 
+    if (syncStatusHtml != "") {
+    	syncStatusHtml += " <span style='color:#000;'> &nbsp; | &nbsp;</span>";
+    }
     syncStatusDiv.html(syncStatusHtml);
 
 }
@@ -338,11 +341,44 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 			  function (data) {
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
+				  if (checkedValue) {
+					  AJS.$("#dvcs-action-container-" + repoId).removeClass("dvcs-nodisplay");
+					  AJS.$("#dvcs-repo-row-" + repoId).removeClass("dvcs-disabled");
+				  } else {
+					  AJS.$("#dvcs-action-container-" + repoId).addClass("dvcs-nodisplay");
+					  AJS.$("#dvcs-repo-row-" + repoId).addClass("dvcs-disabled");
+				  }
+			  }).error(function (err) { 
+				  showError("Unexpected error occured. Please contact the server admnistrator.");
+				  AJS.$("#" + checkboxId  + "working").hide();
+				  AJS.$("#" + checkboxId).removeAttr("disabled");
+				  setChecked(checkboxId, !checkedValue);
 			  });
 }
 
 function confirmDeleteOrganization(organization) {
 	return confirm("Are you sure you want to delete organization '" + organization + "' ?");
+}
+
+function showError(message) {
+	alert(message);
+}
+
+function setChecked(checkboxId, checked) {
+	if (checked) {
+		AJS.$("#" + checkboxId).attr("checked", "checked");
+	} else {
+		AJS.$("#" + checkboxId).removeAttr("checked");
+	}
+}
+
+function dvcsShowHidePanel(id) {
+	var jqElement = AJS.$("#" + id);
+	if (jqElement.is(":visible")) {
+		AJS.$("#" + id).fadeOut().slideUp();
+	} else {
+		AJS.$("#" + id).fadeIn().slideDown();
+	}
 }
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
@@ -352,6 +388,7 @@ AJS.$(document).ready(function() {
         init_repositories();
     }
 
-})
+});
+
 
 
