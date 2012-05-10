@@ -44,15 +44,16 @@ public class RootResource
 	/** The log. */
 	private final Logger log = LoggerFactory.getLogger(RootResource.class);
 
-
 	/** The repository service. */
 	private final RepositoryService repositoryService;
 
 	/**
 	 * The Constructor.
-	 *
-	 * @param organizationService the organization service
-	 * @param repositoryService the repository service
+	 * 
+	 * @param organizationService
+	 *            the organization service
+	 * @param repositoryService
+	 *            the repository service
 	 */
 	public RootResource(OrganizationService organizationService, RepositoryService repositoryService)
 	{
@@ -62,12 +63,13 @@ public class RootResource
 
 	/**
 	 * Gets the repository.
-	 *
-	 * @param id the id
+	 * 
+	 * @param id
+	 *            the id
 	 * @return the repository
 	 */
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON  })
+	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/repository/{id}")
 	public Response getRepository(@PathParam("id") int id)
 	{
@@ -75,11 +77,10 @@ public class RootResource
 
 		return Response.ok(repository).build();
 	}
-	
 
 	/**
 	 * Gets the all repositories.
-	 *
+	 * 
 	 * @return the all repositories
 	 */
 	@GET
@@ -94,9 +95,11 @@ public class RootResource
 
 	/**
 	 * Start repository sync.
-	 *
-	 * @param id the id
-	 * @param payload the payload
+	 * 
+	 * @param id
+	 *            the id
+	 * @param payload
+	 *            the payload
 	 * @return the response
 	 */
 	@AnonymousAllowed
@@ -106,7 +109,7 @@ public class RootResource
 	public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
 	{
 		log.debug("Rest request to sync repository [{}] with payload [{}]", id, payload);
-		
+
 		repositoryService.sync(id, false);
 
 		// ...
@@ -120,9 +123,11 @@ public class RootResource
 
 	/**
 	 * Account info.
-	 *
-	 * @param server the server
-	 * @param account the account
+	 * 
+	 * @param server
+	 *            the server
+	 * @param account
+	 *            the account
 	 * @return the response
 	 */
 	@GET
@@ -147,18 +152,29 @@ public class RootResource
 	public Response syncRepoList(@PathParam("id") String organizationId)
 	{
 
-        Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
+		Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
 		repositoryService.syncRepositoryList(organization);
 		return Response.ok().build();
 	}
-	
+
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/org/{id}/autolink")
 	public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, @FormParam("autolink") String autolink)
 	{
-		
+
 		organizationService.enableAutolinkNewRepos(id, Boolean.parseBoolean(autolink));
+		return Response.ok().build();
+	}
+
+	@POST
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/org/{id}/autoinvite")
+	public Response enableOrganizationAutoInviteUsers(@PathParam("id") int id,
+			@FormParam("autoinvite") String autoinvite)
+	{
+
+		organizationService.enableAutoInviteUsers(id, Boolean.parseBoolean(autoinvite));
 		return Response.ok().build();
 	}
 
@@ -167,7 +183,7 @@ public class RootResource
 	@Path("/repo/{id}/autolink")
 	public Response enableRepositoryAutolink(@PathParam("id") int id, @FormParam("autolink") String autolink)
 	{
-		
+
 		repositoryService.enableAutolinkCommits(id, Boolean.parseBoolean(autolink));
 		return Response.ok().build();
 	}

@@ -326,6 +326,31 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 			  function (data) {
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
+			  }).error(function (err) { 
+				  showError("Unexpected error occured. Please contact the server admnistrator.");
+				  AJS.$("#" + checkboxId  + "working").hide();
+				  AJS.$("#" + checkboxId).removeAttr("disabled");
+				  setChecked(checkboxId, !checkedValue);
+			  });
+}
+
+function autoInviteNewUser(organizationId, checkboxId) {
+	
+	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
+	AJS.$("#" + checkboxId).attr("disabled", "disabled");
+	
+	AJS.$("#" + checkboxId  + "working").show();
+	
+	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autoinvite",
+			{autoinvite : checkedValue},
+			function (data) {
+				AJS.$("#" + checkboxId  + "working").hide();
+				AJS.$("#" + checkboxId).removeAttr("disabled");
+			}).error(function (err) { 
+				  showError("Unexpected error occured. Please contact the server admnistrator.");
+				  AJS.$("#" + checkboxId  + "working").hide();
+				  AJS.$("#" + checkboxId).removeAttr("disabled");
+				  setChecked(checkboxId, !checkedValue);
 			  });
 }
 
@@ -357,7 +382,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 }
 
 function confirmDeleteOrganization(organization) {
-	return confirm("Are you sure you want to delete organization '" + organization + "' ?");
+	return confirm("Are you sure you want to delete account '" + organization + "' ?");
 }
 
 function showError(message) {

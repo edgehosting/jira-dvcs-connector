@@ -29,7 +29,7 @@ public interface OrganizationMapping extends Entity
     void setName(String name);
     void setDvcsType(String dvcsType);
     void setAutolinkNewRepos(boolean autolinkNewRepos);
-    void setAutoInviteNewUsers();
+    void setAutoInviteNewUsers(boolean autoInviteNewUsers);
     void setAdminUsername(String adminUsername);
     void setAdminPassword(String adminPassword);
     void setAccessToken(String accessToken);

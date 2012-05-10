@@ -2,9 +2,9 @@
 
 <fieldset class="field-group" style="max-height: 300px; overflow: scroll">
   
-  <label>Bitbucket orgs</label>
+  <label>Bitbucket accounts</label>
   
-  <div class="" style="font-size: 0.9em;">
+  <div class="" style="font-size: 0.9em; top: 3px; position: relative; padding-bottom: 3px;">
   	(Invite users to develop on Bitbucket ?)
   </div>
   

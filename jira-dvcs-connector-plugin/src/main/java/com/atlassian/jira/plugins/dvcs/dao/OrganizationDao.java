@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -51,6 +52,21 @@ public interface OrganizationDao
 	 */
 	void updateCredentials(int organizationId, String plaintextPassword,
 			String accessToken);
+
+	/**
+	 * Gets the all by ids.
+	 *
+	 * @param ids the ids
+	 * @return the all by ids
+	 */
+	List<Organization> getAllByIds(Collection<Integer> ids);
+
+	/**
+	 * Gets the auto invition organizations.
+	 *
+	 * @return the auto invition organizations
+	 */
+	List<Organization> getAutoInvitionOrganizations();
 
 
 }
