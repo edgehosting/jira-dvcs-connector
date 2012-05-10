@@ -108,11 +108,11 @@ public class RepositoryServiceImpl implements RepositoryService
                 remoteRepository.setOrgHostUrl(organization.getHostUrl());
                 remoteRepository.setOrgName(organization.getName());
 
-                repositoryDao.save(remoteRepository);
+                final Repository savedRepository = repositoryDao.save(remoteRepository);
 
                 // if linked install post commit hook
-                if (remoteRepository.isLinked()) {
-                    setupPostcommitHook(remoteRepository);
+                if (savedRepository.isLinked()) {
+                    setupPostcommitHook(savedRepository);
                 }
             }
         }
