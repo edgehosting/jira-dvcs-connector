@@ -6,11 +6,8 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
-import com.atlassian.sal.api.ApplicationProperties;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 {
@@ -23,26 +20,17 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 	// sent by GH on the way back
 	private String code;
 
-	private final ApplicationProperties applicationProperties;
 	private String accessToken = "";
 
-	private final PluginSettingsFactory pluginSettingsFactory;
 
-	private final GithubOAuth githubOAuth;
 	private final OrganizationService organizationService;
 	private final GithubOAuthUtils githubOAuthUtils;
 	
 
 	public RegenerateGithubOauthToken(OrganizationService organizationService,
-								GithubOAuth githubOAuth,
-								ApplicationProperties applicationProperties, 
-								PluginSettingsFactory pluginSettingsFactory,
 								GithubOAuthUtils githubOAuthUtils)
 	{
 		this.organizationService = organizationService;
-		this.githubOAuth = githubOAuth;
-		this.applicationProperties = applicationProperties;
-		this.pluginSettingsFactory = pluginSettingsFactory;
 		this.githubOAuthUtils = githubOAuthUtils;
 	}
 
@@ -63,26 +51,6 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 		return getRedirect(githubAuthorizeUrl);
 	}
 
-	/**
-	 * TODO add detailed comment what is this for.
-	 * 
-	 * @param redirectBackUrl
-	 */
-	private void fixBackwardCompatibility()
-	{
-
-		String encodedRepositoryUrl = encode("");
-
-		String parameters = "repositoryUrl=" + encodedRepositoryUrl + "&atl_token=" + getXsrfToken();
-		String redirectBackUrl = applicationProperties.getBaseUrl() + "/secure/admin/GitHubOAuth2.jspa?" + parameters;
-		String encodedRedirectBackUrl = encode(redirectBackUrl);
-
-		String githubAuthorizeUrl = "https://github.com/login/oauth/authorize?scope=repo&client_id="
-				+ githubOAuth.getClientId() + "&redirect_uri=" + encodedRedirectBackUrl;
-
-		pluginSettingsFactory.createGlobalSettings().put("OAuthRedirectUrl", githubAuthorizeUrl);
-		pluginSettingsFactory.createGlobalSettings().put("OAuthRedirectUrlParameters", parameters);
-	}
 
 	@Override
 	protected void doValidation()

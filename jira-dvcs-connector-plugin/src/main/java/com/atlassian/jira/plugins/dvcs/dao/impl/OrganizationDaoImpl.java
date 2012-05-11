@@ -176,25 +176,26 @@ public class OrganizationDaoImpl implements OrganizationDao
 					public OrganizationMapping doInTransaction()
 					{
 
-						String encryptedPasswd = null;
-
-						if (organization.getCredential().getAdminPassword() != null)
-						{
-							encryptedPasswd = encryptor.encrypt(organization.getCredential().getAdminPassword(),
-									organization.getName(), organization.getHostUrl());
-						}
+						String adminPassword = organization.getCredential().getAdminPassword();
 
 						OrganizationMapping om = null;
 
 						if (organization.getId() == 0)
 						{
+							// encrypt password for new organization
+							if (adminPassword != null)
+							{
+								adminPassword = encryptor.encrypt(organization.getCredential().getAdminPassword(),
+										organization.getName(), organization.getHostUrl());
+							}
+							
 							final Map<String, Object> map = new HashMap<String, Object>();
 							map.put(OrganizationMapping.HOST_URL, organization.getHostUrl());
 							map.put(OrganizationMapping.NAME, organization.getName());
 							map.put(OrganizationMapping.DVCS_TYPE, organization.getDvcsType());
 							map.put(OrganizationMapping.AUTOLINK_NEW_REPOS, organization.isAutolinkNewRepos());
 							map.put(OrganizationMapping.ADMIN_USERNAME, organization.getCredential().getAdminUsername());
-							map.put(OrganizationMapping.ADMIN_PASSWORD, encryptedPasswd);
+							map.put(OrganizationMapping.ADMIN_PASSWORD, adminPassword);
 							map.put(OrganizationMapping.ACCESS_TOKEN, organization.getCredential().getAccessToken());
 							map.put(OrganizationMapping.AUTO_INVITE_NEW_USERS, organization.isAutoInviteNewUsers());
 
@@ -208,7 +209,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 							om.setDvcsType(organization.getDvcsType());
 							om.setAutolinkNewRepos(organization.isAutolinkNewRepos());
 							om.setAdminUsername(organization.getCredential().getAdminUsername());
-							om.setAdminPassword(encryptedPasswd);
+							om.setAdminPassword(adminPassword);
 							om.setAccessToken(organization.getCredential().getAccessToken());
 							om.setAutoInviteNewUsers(organization.isAutoInviteNewUsers());
 

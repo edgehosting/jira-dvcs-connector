@@ -41,11 +41,6 @@ public class Credential
 		this.adminUsername = adminUsername;
 	}
 
-	public void setAdminPassword(String adminPassword)
-	{
-		this.adminPassword = adminPassword;
-	}
-
 	public void setAccessToken(String accessToken)
 	{
 		this.accessToken = accessToken;
