@@ -18,6 +18,15 @@ public class Group
 	{
 		this.slug = slug;
 	}
-	
+
+	public String getSlug()
+	{
+		return slug;
+	}
+
+	public void setSlug(String slug)
+	{
+		this.slug = slug;
+	}
 	
 }
