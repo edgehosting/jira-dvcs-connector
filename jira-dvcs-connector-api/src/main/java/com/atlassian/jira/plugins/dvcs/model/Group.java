@@ -9,6 +9,8 @@ public class Group
 
 	private String slug;
 	
+	private String niceName;
+	
 	public Group()
 	{
 		super();
@@ -17,6 +19,13 @@ public class Group
 	public Group(String slug)
 	{
 		this.slug = slug;
+	}
+	
+	public Group(String slug, String niceName)
+	{
+		super();
+		this.slug = slug;
+		this.niceName = niceName;
 	}
 
 	public String getSlug()
@@ -27,6 +36,16 @@ public class Group
 	public void setSlug(String slug)
 	{
 		this.slug = slug;
+	}
+
+	public String getNiceName()
+	{
+		return niceName;
+	}
+
+	public void setNiceName(String niceName)
+	{
+		this.niceName = niceName;
 	}
 	
 }

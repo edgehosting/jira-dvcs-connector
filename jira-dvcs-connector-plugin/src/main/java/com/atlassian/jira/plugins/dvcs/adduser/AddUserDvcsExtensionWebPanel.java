@@ -70,6 +70,7 @@ public class AddUserDvcsExtensionWebPanel implements WebPanel
 			organization.setGroups(groups);
 		}
 		model.put("bbOrgaizations", all);
+		model.put("bbSupressRender", all.isEmpty());
 		return all;
 
 	}

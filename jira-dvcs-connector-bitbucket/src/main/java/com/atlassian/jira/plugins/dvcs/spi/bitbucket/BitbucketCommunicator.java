@@ -301,8 +301,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
 			JSONArray jsonArray = new JSONArray(responseString);
 			for (int i = 0; i < jsonArray.length(); i++)
 			{
-				JSONObject group = (JSONObject) jsonArray.get(i);
-				groups.add(new Group(group.getString("slug")));
+				JSONObject jsonGroup = (JSONObject) jsonArray.get(i);
+				groups.add(new Group(jsonGroup.getString("slug"), jsonGroup.getString("name")));
 			}
 		} catch (Exception e)
 		{
