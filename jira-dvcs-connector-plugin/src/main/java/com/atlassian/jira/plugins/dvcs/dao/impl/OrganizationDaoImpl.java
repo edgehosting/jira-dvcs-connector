@@ -102,7 +102,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 	@Override
 	public List<Organization> getAllByType(String type)
 	{
-		Query query = Query.select().where(OrganizationMapping.DVCS_TYPE, type);
+		Query query = Query.select().where(OrganizationMapping.DVCS_TYPE + " = ? ", type);
 		OrganizationMapping[] found = activeObjects.find(OrganizationMapping.class, query);
 		return transformCollection(Lists.newArrayList(found));
 	}
