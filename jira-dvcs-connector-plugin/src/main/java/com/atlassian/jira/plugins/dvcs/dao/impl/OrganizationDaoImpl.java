@@ -95,6 +95,17 @@ public class OrganizationDaoImpl implements OrganizationDao
 
 		return organizations;
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public List<Organization> getAllByType(String type)
+	{
+		Query query = Query.select().where(OrganizationMapping.DVCS_TYPE, type);
+		OrganizationMapping[] found = activeObjects.find(OrganizationMapping.class, query);
+		return transformCollection(Lists.newArrayList(found));
+	}
 
 	/**
 	 * Transform collection.
@@ -270,6 +281,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 
 	}
 
+	
 	/**
 	 * {@inheritDoc}
 	 */

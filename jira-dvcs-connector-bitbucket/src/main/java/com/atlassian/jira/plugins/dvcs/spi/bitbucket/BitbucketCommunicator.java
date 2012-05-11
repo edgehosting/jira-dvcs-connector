@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler;
@@ -276,4 +277,24 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
 
     }
+
+	@Override
+	public List<Group> getGroupsForOrganizations(Organization organization)
+	{
+		List<Group> groups = new ArrayList<Group>();
+		return groups;
+	}
+
+	@Override
+	public boolean supportsInvitation(Organization organization)
+	{
+		return organization.getDvcsType().equalsIgnoreCase(BITBUCKET);
+	}
+
+	@Override
+	public void inviteUser(Organization organization, String userEmail)
+	{
+		
+	}
+    
 }

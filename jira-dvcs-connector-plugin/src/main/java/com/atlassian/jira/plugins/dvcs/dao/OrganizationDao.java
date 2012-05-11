@@ -68,5 +68,13 @@ public interface OrganizationDao
 	 */
 	List<Organization> getAutoInvitionOrganizations();
 
+	/**
+	 * Gets the all by type.
+	 *
+	 * @param type the type
+	 * @return the all
+	 */
+	List<Organization> getAllByType(String type);
+
 
 }

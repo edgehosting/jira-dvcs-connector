@@ -24,6 +24,7 @@ import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler;
@@ -341,7 +342,23 @@ public class GithubCommunicator implements DvcsCommunicator
         return changesets;
     }
 
+	@Override
+	public boolean supportsInvitation(Organization organization)
+	{
+		return false;
+	}
 
-    
+	@Override
+	public List<Group> getGroupsForOrganizations(Organization organization)
+	{
+		return Collections.emptyList();
+	}
+
+	@Override
+	public void inviteUser(Organization organization, String userEmail)
+	{
+		throw new UnsupportedOperationException("You can not invite users to github so far, ...");
+	}
+
     
 }

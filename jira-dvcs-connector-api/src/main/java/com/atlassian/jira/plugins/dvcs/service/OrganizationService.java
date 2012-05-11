@@ -99,4 +99,5 @@ public interface OrganizationService
 	 */
 	List<Organization> getAllByIds(Collection<Integer> ids);
 
+	List<Organization> getAll(boolean loadRepositories, String type);
 }
