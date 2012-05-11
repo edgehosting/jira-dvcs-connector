@@ -135,8 +135,10 @@ public class DvcsAddUserListener implements InitializingBean
 
 	private void invite(String username, String email, Organization organization, Collection<String> groupSlugs)
 	{
-		DvcsCommunicator communicator = communicatorProvider.getCommunicator(BitbucketCommunicator.BITBUCKET);
-		communicator.inviteUser(organization, groupSlugs, email);
+		if (CollectionUtils.isNotEmpty(groupSlugs)) {
+			DvcsCommunicator communicator = communicatorProvider.getCommunicator(BitbucketCommunicator.BITBUCKET);
+			communicator.inviteUser(organization, groupSlugs, email);
+		}
 	}
 
 	@Override
