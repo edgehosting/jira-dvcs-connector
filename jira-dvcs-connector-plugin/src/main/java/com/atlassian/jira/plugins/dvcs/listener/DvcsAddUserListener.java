@@ -19,7 +19,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 
 public class DvcsAddUserListener implements InitializingBean
 {
@@ -136,7 +135,7 @@ public class DvcsAddUserListener implements InitializingBean
 	private void invite(String username, String email, Organization organization, Collection<String> groupSlugs)
 	{
 		if (CollectionUtils.isNotEmpty(groupSlugs)) {
-			DvcsCommunicator communicator = communicatorProvider.getCommunicator(BitbucketCommunicator.BITBUCKET);
+			DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
 			communicator.inviteUser(organization, groupSlugs, email);
 		}
 	}
