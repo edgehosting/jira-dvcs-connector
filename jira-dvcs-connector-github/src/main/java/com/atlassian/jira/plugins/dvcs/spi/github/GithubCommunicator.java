@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -355,7 +356,7 @@ public class GithubCommunicator implements DvcsCommunicator
 	}
 
 	@Override
-	public void inviteUser(Organization organization, String userEmail)
+	public void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail)
 	{
 		throw new UnsupportedOperationException("You can not invite users to github so far, ...");
 	}

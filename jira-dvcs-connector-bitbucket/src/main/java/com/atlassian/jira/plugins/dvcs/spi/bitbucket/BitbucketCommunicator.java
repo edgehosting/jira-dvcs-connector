@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -319,9 +320,9 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	}
 
 	@Override
-	public void inviteUser(Organization organization, String userEmail)
+	public void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail)
 	{
-
+		// TODO
 	}
 
 }

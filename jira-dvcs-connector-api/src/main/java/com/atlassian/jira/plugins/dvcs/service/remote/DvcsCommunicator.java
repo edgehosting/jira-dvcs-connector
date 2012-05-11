@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -55,8 +56,9 @@ public interface DvcsCommunicator
      * Invite user.
      *
      * @param organization the organization
+     * @param groupSlugs the group slugs
      * @param userEmail the user email
      */
-    void inviteUser(Organization organization, String userEmail);
+    void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail);
 
 }

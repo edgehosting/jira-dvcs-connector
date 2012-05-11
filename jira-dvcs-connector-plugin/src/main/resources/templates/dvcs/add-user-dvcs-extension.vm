@@ -13,7 +13,7 @@
 	    	<label><strong>$bbOrg.name</strong></label>
 	    	 #foreach ($group in $bbOrg.getGroups())
 	    	 	<div>
-	    	 		<input class="checkbox" type="checkbox" id="dvcs_org_selector_$group.slug" value="${bbOrg.id}|$group.slug" name="dvcs_org_selector" />
+	    	 		<input class="checkbox" type="checkbox" id="dvcs_org_selector_$group.slug" value="${bbOrg.id}:$group.slug" name="dvcs_org_selector" />
 	    	 		<span> $group.niceName </span>
 	    	 	</div>
 	    	 #end
