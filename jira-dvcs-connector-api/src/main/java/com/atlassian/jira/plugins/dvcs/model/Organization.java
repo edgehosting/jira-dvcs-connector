@@ -20,9 +20,10 @@ public class Organization
     private boolean autolinkNewRepos;
     private boolean autoInviteNewUsers;
     
-    private transient Credential credential;
-
     private List<Repository> repositories;
+    
+    private transient Credential credential;
+    private transient List<Group> groups;
  
     public Organization()
 	{
@@ -146,6 +147,16 @@ public class Organization
 	public void setAutoInviteNewUsers(boolean autoInviteNewUsers)
 	{
 		this.autoInviteNewUsers = autoInviteNewUsers;
+	}
+
+	public List<Group> getGroups()
+	{
+		return groups;
+	}
+
+	public void setGroups(List<Group> groups)
+	{
+		this.groups = groups;
 	}
 
 }

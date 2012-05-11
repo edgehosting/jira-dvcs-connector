@@ -41,7 +41,7 @@ public interface DvcsCommunicator
      * @param organization the organization
      * @return list of groups
      */
-    List<Group> getGroupsForOrganizations(Organization organization);
+    List<Group> getGroupsForOrganization(Organization organization);
     
     /**
      * Supports invitation.

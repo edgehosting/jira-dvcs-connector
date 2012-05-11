@@ -336,7 +336,7 @@ public class GithubCommunicator implements DvcsCommunicator
         } catch (JSONException e)
         {
             log.debug("Could not parse repositories from page: {}", pageNumber);
-            return Collections.emptyList();
+            throw new SourceControlException(e);
         }
 
         return changesets;
@@ -349,7 +349,7 @@ public class GithubCommunicator implements DvcsCommunicator
 	}
 
 	@Override
-	public List<Group> getGroupsForOrganizations(Organization organization)
+	public List<Group> getGroupsForOrganization(Organization organization)
 	{
 		return Collections.emptyList();
 	}

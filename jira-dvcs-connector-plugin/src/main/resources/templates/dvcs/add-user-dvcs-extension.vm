@@ -12,6 +12,9 @@
   	<div class="checkbox" style="padding-left: 0px">
     	<input class="checkbox" type="checkbox" id="dvcs_org_selector_$bbOrg.id" value="$bbOrg.id" name="dvcs_org_selector" />
     	<label for="org_selector"><strong>$bbOrg.name</strong></label>
+    	 #foreach ($group in $bbOrg.getGroups())
+    	 	$group.slug
+    	 #end
   	</div>
   #end
 
