@@ -2,20 +2,24 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
 
     private ChangesetDao changesetDao;
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
-    private OrganizationService organizationService;
+    private RepositoryService repositoryService;
 
     public ChangesetServiceImpl()
     {
@@ -32,9 +36,9 @@ public class ChangesetServiceImpl implements ChangesetService
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
     }
 
-    public void setOrganizationService(OrganizationService organizationService)
+    public void setRepositoryService(RepositoryService repositoryService)
     {
-        this.organizationService = organizationService;
+        this.repositoryService = repositoryService;
     }
 
     @Override
@@ -76,5 +80,49 @@ public class ChangesetServiceImpl implements ChangesetService
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
         return communicator.getDetailChangeset(repository, changeset);
+    }
+
+    @Override
+    public List<Changeset> getByIssueKey(String issueKey)
+    {
+        return changesetDao.getByIssueKey(issueKey);
+    }
+
+    @Override
+    public String getCommitUrl(Repository repository, Changeset changeset)
+    {
+        final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+        return communicator.getCommitUrl(repository, changeset);
+    }
+
+    @Override
+    public Map<ChangesetFile, String> getFileCommitUrls(Repository repository, Changeset changeset)
+    {
+        final HashMap<ChangesetFile, String> fileCommitUrls = new HashMap<ChangesetFile, String>();
+        final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+
+        for (int i = 0;  i < changeset.getFiles().size(); i++)
+        {
+            ChangesetFile changesetFile = changeset.getFiles().get(i);
+            final String fileCommitUrl = communicator.getFileCommitUrl(repository, changeset, changesetFile.getFile(), i);
+
+            fileCommitUrls.put(changesetFile, fileCommitUrl);
+        }
+
+        return fileCommitUrls;
+    }
+
+    @Override
+    public DvcsUser getUser(Repository repository, Changeset changeset)
+    {
+        final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+        return communicator.getUser(repository, changeset);
+    }
+
+    @Override
+    public String getUserUrl(Repository repository, Changeset changeset)
+    {
+        final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+        return communicator.getUserUrl(repository, changeset);
     }
 }

@@ -1,14 +1,14 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github;
 
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlUser;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 
 public class GithubUserFactory
 {
 
-    public static DefaultSourceControlUser parse(JSONObject userJson)
+    public static DvcsUser parse(JSONObject userJson)
     {
         try
         {
@@ -17,14 +17,11 @@ public class GithubUserFactory
 
 
             String login = userJson.getString("login");
-            return new DefaultSourceControlUser(
-
+            return new DvcsUser(
                     login,
                     "",
                     userJson.has("name") ? userJson.getString("name") : login,  // first and last name is together in github
-                    gravatarUrl,
-                    ""
-            );
+                    gravatarUrl);
         }
         catch (JSONException e)
         {

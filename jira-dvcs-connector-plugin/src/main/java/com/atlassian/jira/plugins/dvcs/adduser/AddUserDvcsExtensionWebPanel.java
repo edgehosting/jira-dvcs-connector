@@ -1,22 +1,20 @@
 package com.atlassian.jira.plugins.dvcs.adduser;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.plugin.web.model.WebPanel;
 import com.atlassian.templaterenderer.TemplateRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.List;
+import java.util.Map;
 
 public class AddUserDvcsExtensionWebPanel implements WebPanel
 {
@@ -61,9 +59,11 @@ public class AddUserDvcsExtensionWebPanel implements WebPanel
 
 	private List<Organization> addBitbucketOrganizations(Map<String, Object> model)
 	{
+        // todo: nemozeme referovat BBCommunicator..
+        String dvcsType = "bitbucket";
 
-		List<Organization> all = organizationService.getAll(false, BitbucketCommunicator.BITBUCKET);
-		DvcsCommunicator communicator = communicatorProvider.getCommunicator(BitbucketCommunicator.BITBUCKET);
+		List<Organization> all = organizationService.getAll(false, dvcsType);
+		DvcsCommunicator communicator = communicatorProvider.getCommunicator(dvcsType);
 		for (Organization organization : all)
 		{
 			List<Group> groups = communicator.getGroupsForOrganization(organization);

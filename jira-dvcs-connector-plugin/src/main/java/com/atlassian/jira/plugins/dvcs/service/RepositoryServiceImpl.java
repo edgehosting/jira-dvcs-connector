@@ -1,9 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.List;
-
-import org.mortbay.log.Log;
-
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -11,9 +7,15 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class RepositoryServiceImpl implements RepositoryService
 {
+    private static final Logger log = LoggerFactory.getLogger(RepositoryServiceImpl.class);
+
 	private DvcsCommunicatorProvider communicatorProvider;
 	private RepositoryDao repositoryDao;
 	private Synchronizer synchronizer;
@@ -233,7 +235,7 @@ public class RepositoryServiceImpl implements RepositoryService
 			communicator.removePostcommitHook(repository, postCommitUrl);
 		} catch (Exception e)
 		{
-			Log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId() + ", slug = "
+			log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId() + ", slug = "
 					+ repository.getSlug(), e);
 		}
 	}

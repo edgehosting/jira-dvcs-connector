@@ -178,12 +178,12 @@
     <!-- Listener -->
     <component key="dvcsAddUserListener" class="com.atlassian.jira.plugins.dvcs.listener.DvcsAddUserListener" />
 
-    <issue-tabpanel key="bitbucket-commits-tabpanel" name="BitBucket Changesets Tab Panel"
-                    class="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketTabPanel">
+    <issue-tabpanel key="dvcs-commits-tabpanel" name="Dvcs Changesets Tab Panel"
+                    class="com.atlassian.jira.plugins.dvcs.webwork.DvcsTabPanel">
 
-        <description>Show Bitbucket changesets related to an issue in an issue tab panel.</description>
+        <description>Show Dvcs changesets related to an issue in an issue tab panel.</description>
         <label>Commits</label>
-        <resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>
+        <!--<resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>-->
         <supports-ajax-load>true</supports-ajax-load>
     </issue-tabpanel>
 

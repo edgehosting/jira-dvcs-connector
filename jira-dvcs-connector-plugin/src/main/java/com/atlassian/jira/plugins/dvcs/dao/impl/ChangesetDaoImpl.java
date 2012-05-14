@@ -11,9 +11,14 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,6 +140,33 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
 
         return transform(changesetMapping);
+
+    }
+
+    @Override
+    public List<Changeset> getByIssueKey(final String issueKey)
+    {
+        final List<ChangesetMapping> changesetMappings = activeObjects.executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
+        {
+            @Override
+            public List<ChangesetMapping> doInTransaction()
+            {
+                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, ChangesetMapping.ISSUE_KEY + " = ?", issueKey);
+                return Arrays.asList(mappings);
+            }
+        });
+
+        final Collection<Changeset> repositories = Collections2.transform(changesetMappings,
+                new Function<ChangesetMapping, Changeset>()
+                {
+                    @Override
+                    public Changeset apply(ChangesetMapping changesetMapping)
+                    {
+                        return transform(changesetMapping);
+                    }
+                });
+
+        return new ArrayList<Changeset>(repositories);
 
     }
 }

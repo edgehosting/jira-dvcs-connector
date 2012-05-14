@@ -5,19 +5,21 @@ package com.atlassian.jira.plugins.dvcs.model;
  */
 public class DvcsUser
 {
+    public static final DvcsUser UNKNOWN_USER = new DvcsUser(
+            "unknown", "", "", "https://secure.gravatar.com/avatar/unknown?d=mm");
+
+
     private final String username;
     private final String firstName;
     private final String lastName;
     private final String avatar;
-    private final String resourceUri;
 
-    public DvcsUser(String username, String firstName, String lastName, String avatar, String resourceUri)
+    public DvcsUser(String username, String firstName, String lastName, String avatar)
     {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.avatar = avatar;
-        this.resourceUri = resourceUri;
     }
 
     public String getUsername()
@@ -40,8 +42,4 @@ public class DvcsUser
         return avatar;
     }
 
-    public String getResourceUri()
-    {
-        return resourceUri;
-    }
 }

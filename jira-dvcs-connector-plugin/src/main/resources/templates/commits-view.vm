@@ -1,3 +1,5 @@
+$webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
+
 <div class="CommitContainer">
     <!-- Gravatar -->
     <div class="CommitContainerMargin">
@@ -14,7 +16,7 @@
                     <div class="CommitUser">$user_name</div>
                 </a>
 
-                <div class="CommitingDate">$velocity_utils.getRelativePastDate($changeset.getTimestamp())</div>
+                <div class="CommitingDate">$velocity_utils.getRelativePastDate($changeset.getDate())</div>
             </div>
             <div class="CommiterInfoRow"></div>
             <!--  -->
@@ -41,9 +43,7 @@
                             #set ( $file_name = $file.getFile() )
                             #set ( $color = $file.getFileAction().getColor() )
                             #set ( $file_action_name = $file.getFileAction().toString() )
-                            #set ( $file_commit_url = $repository.getRepositoryUri().getFileCommitUrl($changeset.getNode(),
-                                $velocity_utils.encodeUriPath($file.getFile()), $file_counter))
-
+                            #set ( $file_commit_url = $file_commit_urls.get($file))
                             #set ( $action = $file.getFileAction().getAction() )
                             #if ( $action == 'modified' )
                                 <div class="CommitRows">

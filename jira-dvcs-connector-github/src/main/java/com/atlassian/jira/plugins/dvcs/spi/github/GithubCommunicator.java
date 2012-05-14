@@ -1,30 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.User;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.service.RepositoryService;
-import org.eclipse.egit.github.core.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.atlassian.jira.plugins.bitbucket.spi.github.GithubUserFactory;
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -38,6 +20,26 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 // todo: treba nam aj CachingCommunicator
 
@@ -234,6 +236,49 @@ public class GithubCommunicator implements DvcsCommunicator
             log.warn("Error removing postcommit service [{}]", e.getMessage());
             throw new SourceControlException(e);
         }
+    }
+
+    @Override
+    public String getCommitUrl(Repository repository, Changeset changeset)
+    {
+        return MessageFormat.format("{0}/{1}/{2}/commit/{3}", repository.getOrgHostUrl(),
+                        repository.getOrgName(), repository.getSlug(), changeset.getNode());
+    }
+
+    @Override
+    public String getFileCommitUrl(Repository repository, Changeset changeset, String file, int index)
+    {
+        return MessageFormat.format("{0}#diff-{1}", getCommitUrl(repository, changeset), index);
+    }
+
+    @Override
+    public DvcsUser getUser(Repository repository, Changeset changeset)
+    {
+        String username = changeset.getAuthor();
+        try
+        {
+            String apiUrl = getApiUrl(repository.getOrgHostUrl(), false);
+
+            log.debug("parse user [ {} ]", username);
+            Authentication authentication = authenticationFactory.getAuthentication(repository);
+            String responseString = requestHelper.get(authentication, "/user/show/" + CustomStringUtils.encode(username), null, apiUrl);
+            return GithubUserFactory.parse(new JSONObject(responseString).getJSONObject("user"));
+        } catch (ResponseException e)
+        {
+            log.debug("could not load user [ " + username + " ]");
+            return DvcsUser.UNKNOWN_USER;
+        } catch (JSONException e)
+        {
+            log.debug("could not load user [ " + username + " ]");
+            return DvcsUser.UNKNOWN_USER;
+        }
+
+    }
+
+    @Override
+    public String getUserUrl(Repository repository, Changeset changeset)
+    {
+        return MessageFormat.format("{0}/{1}", repository.getOrgHostUrl(), changeset.getAuthor());
     }
 
 
