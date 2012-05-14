@@ -136,7 +136,9 @@
         </div>
         </div>
    		
-   		#printOrganizations
+   		<div id="organization-list">
+   			#printOrganizations
+   		</div>
    		
 	#printUpdateCredentialsFormHidden
 	
@@ -152,7 +154,7 @@
 
 <div class="vert-space">&nbsp;</div>
 
-			#foreach( $org in $action.loadOrganizations() )
+		#foreach( $org in $action.loadOrganizations() )
 			
 			#if($org.isAutolinkNewRepos())
 				#set( $orgAutolink = "checked='checked'")
@@ -164,6 +166,8 @@
 				#else
 				#set( $orgIsDefault = "")
 			#end
+		
+		<div class="dvcs-org-container">
 		
 			<h4 class="aui $org.getDvcsType()Logo">account : $org.name ($org.dvcsType)</h4>
 				
@@ -196,7 +200,7 @@
 				<div class="vert-space">&nbsp;</div>
 			   <div>
 			     
-			   <table class="aui" id="dvcs-repos-table">
+			   <table class="aui" id="dvcs-repos-table-$org.id" class="dvcs-repos-table">
 			    <thead>
 			        <tr>
 			            <th>Repository</th>
@@ -257,8 +261,10 @@
 			
 			<div class="vert-space">&nbsp;</div>
 			<div class="vert-space">&nbsp;</div>
-			
-			#end
+		
+		
+		</div>
+		#end
 
 #end
 
