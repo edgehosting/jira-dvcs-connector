@@ -2,7 +2,13 @@ package it.com.atlassian.jira.plugins.dvcs;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -18,8 +24,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 {
     private static final String TEST_URL = "https://bitbucket.org";
     private static final String TEST_NOT_EXISTING_URL = "https://privatebitbucket.org";
-    private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
-    private static final String REPO_ADMIN_PASSWORD = "jirabitbucketconnector1";
+    private static final String ACCOUNT_ADMIN_LOGIN = "jirabitbucketconnector";
+    private static final String ACCOUNT_ADMIN_PASSWORD = "jirabitbucketconnector1";
 
 	@Override
 	protected Class<BitBucketConfigureOrganizationsPage> getPageClass()
@@ -46,7 +52,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 	}
 
 	@Test
-	public void addRepoThatDoesNotExist()
+	public void addUrlThatDoesNotExist()
 	{
 		configureOrganizations.addRepoToProjectFailingStep1("QA", TEST_NOT_EXISTING_URL);
 
@@ -57,7 +63,40 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 		configureOrganizations.clearForm();
 	}
   	
-    
+	 	@Test
+	    public void testPostCommitHookAdded() throws Exception
+	    {
+	        String servicesConfig;
+	        String baseUrl = jira.getProductInstance().getBaseUrl();
+
+	        // add account
+	        configureOrganizations.addOrganizationSuccessfully(TEST_URL, true);
+	        // check that it created postcommit hook
+	        String syncUrl = baseUrl + "/rest/bitbucket/1.0/repository/";
+	        String bitbucketServiceConfigUrl = "https://api.bitbucket.org/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
+	        servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, ACCOUNT_ADMIN_LOGIN, ACCOUNT_ADMIN_PASSWORD);
+	        assertThat(servicesConfig, containsString(syncUrl));
+	        // delete repository
+	        configureOrganizations.deleteAllOrganizations();
+	        // check that postcommit hook is removed
+	        servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, ACCOUNT_ADMIN_LOGIN, ACCOUNT_ADMIN_PASSWORD);
+	        assertThat(servicesConfig, not(containsString(syncUrl)));
+	    }
+	 
+	 
+	   private String getBitbucketServices(String url, String username, String password) throws Exception
+	    {
+	        HttpClient httpClient = new HttpClient();
+	        HttpMethod method = new GetMethod(url);
+
+	        AuthScope authScope = new AuthScope(method.getURI().getHost(), AuthScope.ANY_PORT, null, AuthScope.ANY_SCHEME);
+	        httpClient.getParams().setAuthenticationPreemptive(true);
+	        httpClient.getState().setCredentials(authScope, new UsernamePasswordCredentials(username, password));
+
+	        httpClient.executeMethod(method);
+	        return method.getResponseBodyAsString();
+	    }
+
 
 	/*
     @Test
@@ -91,19 +130,6 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         // check that postcommit hook is removed
         servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
         assertThat(servicesConfig, not(containsString(syncUrl)));
-    }
-
-    private String getBitbucketServices(String url, String username, String password) throws Exception
-    {
-        HttpClient httpClient = new HttpClient();
-        HttpMethod method = new GetMethod(url);
-
-        AuthScope authScope = new AuthScope(method.getURI().getHost(), AuthScope.ANY_PORT, null, AuthScope.ANY_SCHEME);
-        httpClient.getParams().setAuthenticationPreemptive(true);
-        httpClient.getState().setCredentials(authScope, new UsernamePasswordCredentials(username, password));
-
-        httpClient.executeMethod(method);
-        return method.getResponseBodyAsString();
     }
 
     @Test

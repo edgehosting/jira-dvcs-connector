@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.SyncProgress;
-
-import java.util.List;
 
 /**
  * Returning type {@link Repository} is enriched with synchronization status by default.
@@ -78,4 +78,6 @@ public interface RepositoryService
      * @param organizationId organizationId
      */
     void removeAllInOrganization(int organizationId);
+
+    void remove(Repository repository);
 }
