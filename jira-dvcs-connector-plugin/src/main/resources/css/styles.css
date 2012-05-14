@@ -497,7 +497,7 @@ a:hover.repositoryNameLink {
 #dvcs-repos-table.aui > thead {
 	border-bottom: none;
 }
-#dvcs-repos-table .dvcs-disabled {
+.dvcs-repos-table .dvcs-disabled {
 	color: #959595 !important;
 }
 .dvcs-config-panel {

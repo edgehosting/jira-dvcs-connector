@@ -1,57 +1,65 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
+import com.atlassian.pageobjects.elements.PageElement;
 
 /**
  * Test to verify behaviour when syncing bitbucket repository..
  */
 public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 {
-    private static final String TEST_ORG_URL = "https://bitbucket.org";
-//    private static final String TEST_PUBLIC_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/public-hg-repo";
-//    private static final String TEST_PRIVATE_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/private-hg-repo";
-    private static final String TEST_NOT_EXISTING_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/repo-does-not-exist";
+    private static final String TEST_URL = "https://bitbucket.org";
+    private static final String TEST_NOT_EXISTING_URL = "https://privatebitbucket.org";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
     private static final String REPO_ADMIN_PASSWORD = "jirabitbucketconnector1";
 
-    @Override
-    protected Class<BitBucketConfigureOrganizationsPage> getPageClass()
-    {
-        return BitBucketConfigureOrganizationsPage.class;
-    }
+	@Override
+	protected Class<BitBucketConfigureOrganizationsPage> getPageClass()
+	{
+		return BitBucketConfigureOrganizationsPage.class;
+	}
 
+	@Test
+	public void addOrganization()
+	{
+		BaseConfigureOrganizationsPage organizationsPage = configureOrganizations.addOrganizationSuccessfully(TEST_URL, false);
+		PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
+		// first row is header row, than repos ...
+		Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
+	}
+	
+	@Test
+	public void addOrganizationAutoSync()
+	{
+		BaseConfigureOrganizationsPage organizationsPage = configureOrganizations.addOrganizationSuccessfully(TEST_URL, true);
+		PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
+		// first row is header row, than repos ...
+		Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
+	}
 
-    @Test
-    public void addPublicOrganization()
-    {
-        configureOrganizations.addOrganizationSuccessfully(TEST_ORG_URL);
-    }
+	@Test
+	public void addRepoThatDoesNotExist()
+	{
+		configureOrganizations.addRepoToProjectFailingStep1("QA", TEST_NOT_EXISTING_URL);
 
-    @Test
-    public void addPrivateRepo()
-    {
-       // configureOrganizations.addOrganizationSuccessfully("QA", TEST_PRIVATE_REPO_URL);
-    }
+		String errorMessage = configureOrganizations.getErrorStatusMessage();
+		assertThat(errorMessage, containsString("The url [" + TEST_NOT_EXISTING_URL
+				+ "] is incorrect or the server is not responding."));
+		
+		configureOrganizations.clearForm();
+	}
+  	
+    
 
-  /*  @Test
-    public void addRepoThatDoesNotExist()
-    {
-        configureOrganizations.addRepoToProjectFailingStep1("QA", TEST_NOT_EXISTING_REPO_URL);
-
-        String errorMessage = configureOrganizations.getErrorStatusMessage();
-        assertThat(errorMessage, containsString("The repository url [" + TEST_NOT_EXISTING_REPO_URL + "] is incorrect or the repository is not responding."));
-        configureOrganizations.clearForm();
-    }
-
-    @Test
-    public void addRepoAppearsOnList()
-    {
-        configureOrganizations.addOrganizationSuccessfully(TEST_PUBLIC_REPO_URL);
-        assertThat(configureOrganizations.getRepositories().size(), equalTo(1));
-    }
-
+	/*
     @Test
     public void addRepoCommitsAppearOnIssues()
     {
@@ -63,6 +71,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
                 hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
     }
 
+    
     @Test
     public void testPostCommitHookAdded() throws Exception
     {

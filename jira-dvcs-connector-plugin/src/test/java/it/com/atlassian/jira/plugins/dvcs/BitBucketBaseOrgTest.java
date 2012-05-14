@@ -51,7 +51,7 @@ public abstract class BitBucketBaseOrgTest
     {
         configureOrganizations = (BaseConfigureOrganizationsPage) jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(getPageClass());
         configureOrganizations.setJiraTestedProduct(jira);
-        configureOrganizations.deleteAllRepositories();
+        configureOrganizations.deleteAllOrganizations();
     }
 
     @SuppressWarnings("rawtypes")
@@ -65,10 +65,10 @@ public abstract class BitBucketBaseOrgTest
 
     protected void ensureOrganizationPresent(String projectKey, String repoUrl)
     {
-        if (!configureOrganizations.isRepositoryPresent(projectKey, repoUrl))
+    /*    if (!configureOrganizations.isRepositoryPresent(projectKey, repoUrl))
         {
             configureOrganizations.addOrganizationSuccessfully(repoUrl);
-        }
+        }*/
     }
 
 

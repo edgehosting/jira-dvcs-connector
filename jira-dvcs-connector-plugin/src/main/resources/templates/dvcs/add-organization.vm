@@ -128,7 +128,7 @@
 
                 <div class="buttons-container">
                     <div class="buttons">
-                        <input class="button submit" type="submit" name="Submit" id="Submit" value="Add Organization" />
+                        <input class="button submit" type="submit" name="Submit" id="Submit" value="Add account" />
                         <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>
                     </div>
                 </div>
@@ -173,7 +173,7 @@
 				
 				<div class="dvcs-config-panel">
 					<span class="dvcs-open-panel"></span>
-					<a href="javascript:;" onclick="dvcsShowHidePanel('dvcs-organization-controls-$org.id');">Show/Hide Configuration</a>
+					<a class="dvcs-controls-showhide" href="javascript:;" onclick="dvcsShowHidePanel('dvcs-organization-controls-$org.id');">Show/Hide Configuration</a>
 				</div>
 				<div id="dvcs-organization-controls-$org.id" class="dvcs-organization-controls" style="display:none">
 
@@ -192,15 +192,14 @@
 					 #else
 	   			 	 | <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 					 #end
-					 | <a href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');">Delete account</a>
+					 | <a class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" >Delete account</a>
 
 				</div>
 			
 
-				<div class="vert-space">&nbsp;</div>
-			   <div>
+			   <div class="vert-space">&nbsp;</div>
 			     
-			   <table class="aui" id="dvcs-repos-table-$org.id" class="dvcs-repos-table">
+			   <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
 			    <thead>
 			        <tr>
 			            <th>Repository</th>
@@ -261,7 +260,6 @@
 			
 			<div class="vert-space">&nbsp;</div>
 			<div class="vert-space">&nbsp;</div>
-		
 		
 		</div>
 		#end

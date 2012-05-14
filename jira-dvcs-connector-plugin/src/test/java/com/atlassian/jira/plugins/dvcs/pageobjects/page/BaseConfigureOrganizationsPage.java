@@ -9,12 +9,11 @@ import org.hamcrest.Matcher;
 import org.hamcrest.text.StringStartsWith;
 import org.openqa.selenium.By;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketRepository;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketOrganization;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
 import com.atlassian.pageobjects.elements.query.TimedQuery;
@@ -32,22 +31,13 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     PageElement linkRepositoryButton;
 
     @ElementBy(id = "Submit")
-    PageElement addRepositoryButton;
-
-    @ElementBy(name = "projectKey")
-    SelectElement projectSelect;
+    PageElement addOrgButton;
 
     @ElementBy(id = "url")
     PageElement urlTextbox;
 
     @ElementBy(className = "gh_messages")
     PageElement syncStatusDiv;
-
-    @ElementBy(className = "gh_table")
-    PageElement projectsTable;
-
-    @ElementBy(id = "addedRepositoryId")
-    PageElement addedRepositoryIdSpan;
 
     @ElementBy(id = "aui-message-bar")
     PageElement messageBarDiv;
@@ -57,6 +47,9 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     
     @ElementBy(id = "organization-list")
     PageElement organizationsElement;
+   
+    @ElementBy(id = "autoLinking")
+    PageElement autoLinkNewRepos;
 
     protected JiraTestedProduct jiraTestedProduct;
 
@@ -67,72 +60,32 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
     }
 
-//    @WaitUntil
-//    public void waitUntilReady()
-//    {
-//        Poller.waitUntilTrue(addRepositoryButton.timed().isPresent());
-//    }
 
-
-    /**
-     * Returns a list of <tt>BitBucketRepository</tt> with the current list of repositories linked.
-     *
-     * @return List of <tt>BitBucketRepository</tt>
-     */
-    public List<BitBucketRepository> getRepositories()
+    public List<BitBucketOrganization> getOrganizations()
     {
-        List<BitBucketRepository> list = new ArrayList<BitBucketRepository>();
-        String projectKey = null;
-        for (PageElement row : projectsTable.findAll(By.tagName("tr")))
-        {
-            if (row.find(By.className("gh_table_project_key")).isPresent())
-            {
-                String projectKeyBracketed = row.find(By.className("gh_table_project_key")).getText();
-                projectKey = projectKeyBracketed.substring(1, projectKeyBracketed.length() - 1);
-            }
-            if (row.getText().contains("Force Sync"))
-            {
-                list.add(pageBinder.bind(BitBucketRepository.class, row, projectKey));
-            }
-        }
-
-        return list;
-    }
+        List<BitBucketOrganization> list = new ArrayList<BitBucketOrganization>();
+       
+        for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-org-container"))) {
+        	
+        	 orgContainer.find(By.className("dvcs-controls-showhide")).click();
+        	 Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-organization-controls")).timed().isVisible());
+        	 
+             list.add(pageBinder.bind(BitBucketOrganization.class, orgContainer));
+             
+    	}
     
-    public List<BitBucketRepository> getOrganizations()
-    {
-        List<BitBucketRepository> list = new ArrayList<BitBucketRepository>();
-        String projectKey = null;
-        for (PageElement row : organizationsElement.findAll(By.tagName("tr")))
-        {
-            if (row.find(By.className("gh_table_project_key")).isPresent())
-            {
-                String projectKeyBracketed = row.find(By.className("gh_table_project_key")).getText();
-                projectKey = projectKeyBracketed.substring(1, projectKeyBracketed.length() - 1);
-            }
-            if (row.getText().contains("Force Sync"))
-            {
-                list.add(pageBinder.bind(BitBucketRepository.class, row, projectKey));
-            }
-        }
-
         return list;
     }
 
-    /**
-     * Deletes all repositories
-     *
-     * @return BitBucketConfigureRepositoriesPage
-     */
-    public BaseConfigureOrganizationsPage deleteAllRepositories()
+    public BaseConfigureOrganizationsPage deleteAllOrganizations()
     {
-//        List<BitBucketRepository> repos;
-//        while (!(repos = getRepositories()).isEmpty())
-//        {
-//            repos.get(0).delete();
-//        }
-
-        return this;
+        List<BitBucketOrganization> orgs;
+        while (!(orgs = getOrganizations()).isEmpty())
+        {
+            orgs.get(0).delete();
+        }
+    	
+    	return this;
     }
 
     /**
@@ -142,7 +95,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
      * @param url        The repository url
      * @return True if repository is linked, false otherwise
      */
-    public boolean isRepositoryPresent(String projectKey, String url)
+   /* public boolean isRepositoryPresent(String projectKey, String url)
     {
         boolean commitFound = false;
         for (BitBucketRepository repo : getRepositories())
@@ -155,7 +108,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         }
 
         return commitFound;
-    }
+    }*/
 
     /**
      * @param matcher
@@ -216,9 +169,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String projectKey, String url);
 
-    public abstract String addPublicRepoToProjectAndInstallService(String projectKey, String url, String adminUsername, String adminPassword);
-
-    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String url);
+    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String url, boolean autosync);
 
 
     public void setJiraTestedProduct(JiraTestedProduct jiraTestedProduct)
