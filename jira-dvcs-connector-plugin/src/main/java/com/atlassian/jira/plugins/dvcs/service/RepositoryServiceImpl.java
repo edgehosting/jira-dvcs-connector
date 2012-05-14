@@ -118,7 +118,7 @@ public class RepositoryServiceImpl implements RepositoryService
 				// if linked install post commit hook
 				if (savedRepository.isLinked())
 				{
-					setupPostcommitHook(savedRepository);
+					addOrRemovePostcommitHook(savedRepository);
 				}
 			}
 		}
@@ -175,13 +175,13 @@ public class RepositoryServiceImpl implements RepositoryService
 		{
 			repository.setLinked(linked);
 
-			setupPostcommitHook(repository);
+			addOrRemovePostcommitHook(repository);
 
 			repositoryDao.save(repository);
 		}
 	}
 
-	private void setupPostcommitHook(Repository repository)
+	private void addOrRemovePostcommitHook(Repository repository)
 	{
 		final DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
 		final String postCommitUrl = getPostCommitUrl(repository);
