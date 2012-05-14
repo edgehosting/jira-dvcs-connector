@@ -118,7 +118,7 @@ public class RepositoryServiceImpl implements RepositoryService
 				// if linked install post commit hook
 				if (savedRepository.isLinked())
 				{
-					setupPostcommitHook(savedRepository, true);
+					setupPostcommitHook(savedRepository);
 				}
 			}
 		}
@@ -175,18 +175,18 @@ public class RepositoryServiceImpl implements RepositoryService
 		{
 			repository.setLinked(linked);
 
-			setupPostcommitHook(repository, true);
+			setupPostcommitHook(repository);
 
 			repositoryDao.save(repository);
 		}
 	}
 
-	private void setupPostcommitHook(Repository repository, boolean installWhenNotLinked)
+	private void setupPostcommitHook(Repository repository)
 	{
 		final DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
 		final String postCommitUrl = getPostCommitUrl(repository);
 
-		if (repository.isLinked() && installWhenNotLinked)
+		if (repository.isLinked())
 		{
 			communicator.setupPostcommitHook(repository, postCommitUrl);
 		} else
@@ -194,7 +194,7 @@ public class RepositoryServiceImpl implements RepositoryService
 			communicator.removePostcommitHook(repository, postCommitUrl);
 		}
 	}
-
+	
 	private String getPostCommitUrl(Repository repo)
 	{
 		return applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/" + repo.getId() + "/sync";
@@ -226,7 +226,11 @@ public class RepositoryServiceImpl implements RepositoryService
 	{
 		try
 		{
-			setupPostcommitHook(repository, false);
+			final DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+			final String postCommitUrl = getPostCommitUrl(repository);
+			
+
+			communicator.removePostcommitHook(repository, postCommitUrl);
 		} catch (Exception e)
 		{
 			Log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId() + ", slug = "
