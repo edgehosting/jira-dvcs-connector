@@ -182,7 +182,7 @@
 					 
 					 #if($org.dvcsType == "bitbucket")
 					 |
-					 <input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" /><label> Default Auto-invite Users</label>
+					 <input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" /><label> Default Auto-invite New Users</label>
 					 <span style="display:none; width: 16px; height: 16px;" id="org_isdefault_check${org.id}working" class="syncicon running">&nbsp;</span>
 					 #end
 					 
@@ -195,10 +195,7 @@
 					 | <a class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" >Delete account</a>
 
 				</div>
-			
 
-			   <div class="vert-space">&nbsp;</div>
-			     
 			   <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
 			    <thead>
 			        <tr>
@@ -226,7 +223,7 @@
 					#end
 			        <tr id="dvcs-repo-row-$repo.id" class="$!dvcsRepoRowClass">
 			            
-			            <td class="dvcs-org-reponame"><a href="$textutils.htmlEncode($repo.repositoryUrl)">$repo.name</a></td>
+			            <td class="dvcs-org-reponame">$textutils.htmlEncode($org.name) / <a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a></td>
 
 			            
 			            <td class="action" headers="action" style="text-align: right;">
