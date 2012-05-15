@@ -11,9 +11,22 @@ import com.atlassian.sal.api.ApplicationProperties;
 
 public class ConfigureGithubOAuth extends JiraWebActionSupport
 {
-    final Logger logger = LoggerFactory.getLogger(ConfigureGithubOAuth.class);
-    private final GithubOAuth githubOAuth;
+	private static final long serialVersionUID = 1L;
+
+	final Logger logger = LoggerFactory.getLogger(ConfigureGithubOAuth.class);
+   
+	private final GithubOAuth githubOAuth;
     private final ApplicationProperties applicationProperties;
+    
+    // Client ID (from GitHub OAuth Application)
+    private String clientID = "";
+    // Client Secret (from GitHub OAuth Application)
+    private String clientSecret = "";
+    // Confirmation Messages
+    private String messages = "";
+    
+    private String forceClear = "";
+
 
     public ConfigureGithubOAuth(GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
     {
@@ -24,6 +37,10 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
     @Override
     protected void doValidation()
     {
+    	if (StringUtils.isNotBlank(forceClear)) {
+    		return;
+    	}
+  
         if (StringUtils.isBlank(clientSecret) || StringUtils.isBlank(clientID))
         {
             addErrorMessage("Please enter both the GitHub OAuth Client ID and Client Secret.");
@@ -58,9 +75,6 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
         return githubOAuth.getClientId();
     }
 
-    // Client ID (from GitHub OAuth Application)
-    private String clientID = "";
-
     public void setClientID(String value)
     {
         clientID = value;
@@ -71,8 +85,6 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
         return clientID;
     }
 
-    // Client Secret (from GitHub OAuth Application)
-    private String clientSecret = "";
 
     public void setClientSecret(String value)
     {
@@ -84,8 +96,6 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
         return clientSecret;
     }
 
-    // Confirmation Messages
-    private String messages = "";
 
     public String getMessages()
     {
@@ -96,5 +106,15 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
     {
         return applicationProperties.getBaseUrl();
     }
+
+	public String getForceClear()
+	{
+		return forceClear;
+	}
+
+	public void setForceClear(String forceClear)
+	{
+		this.forceClear = forceClear;
+	}
 
 }

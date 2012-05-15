@@ -22,6 +22,33 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
     PageElement adminPasswordInput;
 
 
+    @Override
+    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String url, boolean autoSync)
+    {
+        linkRepositoryButton.click();
+        waitFormBecomeVisible();
+        
+        urlTextbox.clear().type(url);
+        organization.clear().type("jirabitbucketconnector");
+        addOrgButton.click();
+        
+        if (autoSync) {
+        	autoLinkNewRepos.click();
+        }
+        
+        Poller.waitUntilTrue(adminUsernameInput.timed().isVisible());
+        
+        adminUsernameInput.type("jirabitbucketconnector");
+        adminPasswordInput.type("jirabitbucketconnector1");
+        addOrgButton.click();
+
+        if (autoSync) {
+        	checkSyncProcessSuccess();
+        }
+
+        return this;
+    }
+
     /**
      * Links a public repository to the given JIRA project.
      *
@@ -77,30 +104,4 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
      */
 
 
-    @Override
-    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String url, boolean autoSync)
-    {
-        linkRepositoryButton.click();
-        waitFormBecomeVisible();
-        
-        urlTextbox.clear().type(url);
-        organization.clear().type("jirabitbucketconnector");
-        addOrgButton.click();
-        
-        if (autoSync) {
-        	autoLinkNewRepos.click();
-        }
-        
-        Poller.waitUntilTrue(adminUsernameInput.timed().isVisible());
-        
-        adminUsernameInput.type("jirabitbucketconnector");
-        adminPasswordInput.type("jirabitbucketconnector1");
-        addOrgButton.click();
-
-        if (autoSync) {
-        	checkSyncProcessSuccess();
-        }
-
-        return this;
-    }
 }
