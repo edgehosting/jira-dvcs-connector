@@ -10,7 +10,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -30,18 +29,16 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     protected final RepositoryService repositoryService;
     private final ProgressWriter progressProvider;
     private final ChangesetService changesetService;
-    private final IssueManager issueManager;
 
     public DefaultSynchronisationOperation(SynchronizationKey key, OrganizationService organizationService,
                                            RepositoryService repositoryService, ChangesetService changesetService,
-                                           ProgressWriter progressProvider, IssueManager issueManager)
+                                           ProgressWriter progressProvider)
     {
         this.key = key;
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
         this.changesetService = changesetService;
         this.progressProvider = progressProvider;
-        this.issueManager = issueManager;
     }
 
     @Override
@@ -114,7 +111,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
     private Set<String> extractIssueKeys(String message)
     {
-        final String issueKeyRegex = "([A-Z][A-Z0-9]+-\\d+)";
+        final String issueKeyRegex = "([A-Z][A-Z0-9]+-\\d+)";   //TODO check if we can use regexp from IssueLinkerImpl
         Pattern projectKeyPattern = Pattern.compile(issueKeyRegex, Pattern.CASE_INSENSITIVE);
         Matcher match = projectKeyPattern.matcher(message);
 

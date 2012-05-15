@@ -6,7 +6,6 @@ import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.ProgressWriter;
@@ -27,7 +26,6 @@ public class DefaultSynchronizer implements Synchronizer
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
 	private ExecutorService executorService;
-    private IssueManager issueManager;
 
     private OrganizationService organizationService;
     private RepositoryService repositoryService;
@@ -40,11 +38,6 @@ public class DefaultSynchronizer implements Synchronizer
     public void setExecutorService(ExecutorService executorService)
     {
         this.executorService = executorService;
-    }
-
-    public void setIssueManager(IssueManager issueManager)
-    {
-        this.issueManager = issueManager;
     }
 
     public void setOrganizationService(OrganizationService organizationService)
@@ -86,7 +79,7 @@ public class DefaultSynchronizer implements Synchronizer
 
 								SynchronisationOperation synchronisationOperation =
                                         new DefaultSynchronisationOperation(key, organizationService, repositoryService, changesetService,
-                                                (ProgressWriter) progress, issueManager);
+                                                progress);
 
 								synchronisationOperation.synchronise();
 							} catch (Throwable e)
