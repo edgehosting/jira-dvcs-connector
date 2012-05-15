@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import com.atlassian.jira.plugins.bitbucket.spi.github.GithubUserFactory;
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -15,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.net.RequestHelper;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
+import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;

@@ -16,8 +16,7 @@ public class BitbucketUserFactory
 	                userJson.getString("username"),
 	                userJson.getString("first_name"),
 	                userJson.getString("last_name"),
-	                userJson.getString("avatar"),
-	                userJson.getString("resource_uri")
+	                userJson.getString("avatar")
 	        );
 	    }
 	    catch (JSONException e)
