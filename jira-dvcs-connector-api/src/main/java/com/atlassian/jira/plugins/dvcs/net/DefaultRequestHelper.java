@@ -1,16 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.net;
 
+import java.util.Iterator;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.ResponseException;
 import com.atlassian.sal.api.net.ResponseHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Iterator;
-import java.util.Map;
 
 public class DefaultRequestHelper implements RequestHelper
 {
@@ -75,7 +76,7 @@ public class DefaultRequestHelper implements RequestHelper
                                 Map<String, Object> params, String postData, ResponseHandler responseHandler) throws ResponseException
     {
         String url = apiBaseUrl + urlPath + buildQueryString(params);
-        log.debug("get [ " + url + " ]");
+        log.debug(methodType + " [ " + url + " ]");
         Request<?, ?> request = requestFactory.createRequest(methodType, url);
              
         if (auth != null) auth.addAuthentication(request, url);
