@@ -35,6 +35,8 @@ import com.atlassian.sal.api.net.ResponseException;
 
 public class GithubCommunicator implements Communicator
 {
+    private static final int NUM_ATTEMPTS = 8;
+
     private final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
 
     private final AuthenticationFactory authenticationFactory;
@@ -108,6 +110,29 @@ public class GithubCommunicator implements Communicator
     }
 
     public List<Changeset> getChangesets(SourceControlRepository repository, String branch, int pageNumber)
+    {
+        for (int attempt = 1; attempt < NUM_ATTEMPTS; attempt++)
+        {
+            try
+            {
+                return getChangesetsInternal(repository, branch, pageNumber);
+            } catch (SourceControlException e)
+            {
+                long delay = (long) (1000*Math.pow(3, attempt));
+                log.warn("Attempt #"+attempt+" (out of "+NUM_ATTEMPTS+"): Retrieving changesets failed: " + e.getMessage() +"\n. Retrying in " + delay/1000 + "secs");
+                try
+                {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e1)
+                {
+                    // ignore
+                }
+            }
+        }
+        return getChangesetsInternal(repository, branch, pageNumber);
+    }
+
+    private List<Changeset> getChangesetsInternal(SourceControlRepository repository, String branch, int pageNumber)
     {
         RepositoryUri uri = repository.getRepositoryUri();
         String owner = uri.getOwner();
