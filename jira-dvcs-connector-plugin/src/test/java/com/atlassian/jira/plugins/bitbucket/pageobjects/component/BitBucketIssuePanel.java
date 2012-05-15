@@ -1,16 +1,18 @@
 package com.atlassian.jira.plugins.bitbucket.pageobjects.component;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.openqa.selenium.By;
+
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.components.ActivatedComponent;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
-import org.openqa.selenium.By;
-
-import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents the BitBucket panel in the view issue page
@@ -20,23 +22,26 @@ public class BitBucketIssuePanel implements ActivatedComponent<BitBucketIssuePan
     @Inject
     PageBinder pageBinder;
 
-    @ElementBy(id="bitbucket-commits-tabpanel")
+    @ElementBy(id="dvcs-commits-tabpanel")
     PageElement trigger;
 
     @ElementBy(id="issue_actions_container")
     PageElement view;
 
-    public PageElement getTrigger()
+    @Override
+	public PageElement getTrigger()
     {
         return trigger;
     }
 
-    public PageElement getView()
+    @Override
+	public PageElement getView()
     {
         return view;
     }
 
-    public BitBucketIssuePanel open()
+    @Override
+	public BitBucketIssuePanel open()
     {
          if(!isOpen())
         {
@@ -46,7 +51,8 @@ public class BitBucketIssuePanel implements ActivatedComponent<BitBucketIssuePan
         return this;
     }
 
-    public boolean isOpen()
+    @Override
+	public boolean isOpen()
     {
         return trigger.hasClass("active");
     }

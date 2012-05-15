@@ -51,11 +51,22 @@ public class RepositoryDaoImpl implements RepositoryDao
 
 		repository.setOrgHostUrl(organizationMapping.getHostUrl());
 		repository.setOrgName(organizationMapping.getName());
+		repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
 
 		// set sync progress
 		repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
 
 		return repository;
+	}
+
+	private String createRepositoryUrl(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
+	{
+		String hostUrl = organizationMapping.getHostUrl();
+		// normalize
+		if (hostUrl != null && hostUrl.endsWith("/")) {
+			hostUrl = hostUrl.substring(0, hostUrl.length() - 1);
+		}
+		return hostUrl + "/" + organizationMapping.getName() + "/" + repositoryMapping.getSlug();
 	}
 
 	@Override

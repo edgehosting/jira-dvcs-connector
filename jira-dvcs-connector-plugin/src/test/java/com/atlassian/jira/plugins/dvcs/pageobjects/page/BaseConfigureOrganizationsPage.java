@@ -77,6 +77,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         return list;
     }
 
+
     public BaseConfigureOrganizationsPage deleteAllOrganizations()
     {
         List<BitBucketOrganization> orgs;

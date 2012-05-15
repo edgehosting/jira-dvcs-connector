@@ -24,6 +24,8 @@ public class Repository
 	private boolean linked;
     private boolean deleted;
     
+    private String repositoryUrl;
+    
 	private transient Credential credential;
 	private transient String orgHostUrl;
 	private transient String orgName;
@@ -199,6 +201,16 @@ public class Repository
                 .append(deleted)
                 .toHashCode();
     }
+
+	public String getRepositoryUrl()
+	{
+		return repositoryUrl;
+	}
+
+	public void setRepositoryUrl(String repositoryUrl)
+	{
+		this.repositoryUrl = repositoryUrl;
+	}
 
 
 }

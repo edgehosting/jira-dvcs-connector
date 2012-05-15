@@ -24,7 +24,6 @@ import com.google.common.collect.Lists;
 /**
  * The Class OrganizationDaoImpl.
  * 
- * @author julio
  */
 public class OrganizationDaoImpl implements OrganizationDao
 {
@@ -71,7 +70,18 @@ public class OrganizationDaoImpl implements OrganizationDao
 				organizationMapping.getName(), organizationMapping.getDvcsType(),
 				organizationMapping.isAutolinkNewRepos(), credential);
 		organization.setAutoInviteNewUsers(organizationMapping.isAutoInviteNewUsers());
+		organization.setOrganizationUrl(createOrganizationUrl(organizationMapping));
 		return organization;
+	}
+
+	private String createOrganizationUrl(OrganizationMapping organizationMapping)
+	{
+		String hostUrl = organizationMapping.getHostUrl();
+		// normalize
+		if (hostUrl != null && hostUrl.endsWith("/")) {
+			hostUrl = hostUrl.substring(0, hostUrl.length() - 1);
+		}
+		return hostUrl + "/" + organizationMapping.getName();
 	}
 
 	/**

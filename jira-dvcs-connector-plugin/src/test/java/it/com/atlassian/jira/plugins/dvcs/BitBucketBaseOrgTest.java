@@ -63,14 +63,6 @@ public abstract class BitBucketBaseOrgTest
         jira.getTester().getDriver().manage().deleteAllCookies();
     }
 
-    protected void ensureOrganizationPresent(String projectKey, String repoUrl)
-    {
-    /*    if (!configureOrganizations.isRepositoryPresent(projectKey, repoUrl))
-        {
-            configureOrganizations.addOrganizationSuccessfully(repoUrl);
-        }*/
-    }
-
 
     protected List<BitBucketCommitEntry> getCommitsForIssue(String issueKey)
     {
