@@ -69,6 +69,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         waitFormBecomeVisible();
 
         urlTextbox.clear().type(url);
+        organization.clear().type("jirabitbucketconnector");
         setPageAsOld();
         addOrgButton.click();
 

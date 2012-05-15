@@ -1,18 +1,5 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
-import com.atlassian.pageobjects.elements.PageElement;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.util.List;
-
 import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageLinksMatcher.withMessageLinks;
 import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,9 +8,25 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
+import java.util.List;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
+import com.atlassian.pageobjects.elements.PageElement;
+
 /**
  * Test to verify behaviour when syncing bitbucket repository..
  */
+@Ignore
 public class BitbucketRepositoriesTest extends BitBucketBaseTest
 {
     private static final String TEST_PUBLIC_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/public-hg-repo";

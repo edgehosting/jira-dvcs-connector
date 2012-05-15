@@ -192,7 +192,7 @@
 					 #else
 	   			 	 | <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 					 #end
-					 | <a class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" >Delete account</a>
+					 | <a class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Delete account</a>
 
 				</div>
 

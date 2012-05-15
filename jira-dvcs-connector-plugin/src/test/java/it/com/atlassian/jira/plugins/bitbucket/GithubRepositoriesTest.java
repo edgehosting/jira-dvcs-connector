@@ -1,12 +1,14 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubConfigureRepositoriesPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubLoginPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubRegisterOAuthAppPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubRegisteredOAuthAppsPage;
-import com.atlassian.pageobjects.elements.PageElement;
+import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
+
+import java.util.List;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -16,20 +18,21 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.List;
-
-import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.not;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubConfigureRepositoriesPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubLoginPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubRegisterOAuthAppPage;
+import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubRegisteredOAuthAppsPage;
+import com.atlassian.pageobjects.elements.PageElement;
 
 /**
  * Test to verify behaviour when syncing  github repository.
  */
+@Ignore
 public class GithubRepositoriesTest extends BitBucketBaseTest
 {
 
