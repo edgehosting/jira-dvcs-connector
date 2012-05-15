@@ -169,7 +169,7 @@
 		
 		<div class="dvcs-org-container">
 		
-			<h4 class="aui $org.getDvcsType()Logo">account :<a href="$org.organizationUrl"> $textutils.htmlEncode($org.name) </a> ($org.dvcsType)</h4>
+			<h4 class="aui $org.getDvcsType()Logo">account : <a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a> ($org.dvcsType)</h4>
 				
 				<div class="dvcs-config-panel">
 					<span class="dvcs-open-panel"></span>
