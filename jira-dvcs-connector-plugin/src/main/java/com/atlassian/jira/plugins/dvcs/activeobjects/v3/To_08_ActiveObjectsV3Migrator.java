@@ -130,13 +130,16 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
             throw new SourceControlException("Expected url is https://domainname.com/username/repository");
         }
         String slug = split[1];
+        
+        String name = projectMapping.getRepositoryName()==null?slug:projectMapping.getRepositoryName();
 
         Map<String, Object> repositoryMap = Maps.newHashMap();
         repositoryMap.put(RepositoryMapping.ORGANIZATION_ID, organisationId);
         repositoryMap.put(RepositoryMapping.SLUG, slug);
-        repositoryMap.put(RepositoryMapping.NAME, projectMapping.getRepositoryName());
+        repositoryMap.put(RepositoryMapping.NAME, name);
         repositoryMap.put(RepositoryMapping.LAST_COMMIT_DATE, projectMapping.getLastCommitDate());
         repositoryMap.put(RepositoryMapping.LINKED, true);
+        repositoryMap.put(RepositoryMapping.DELETED, false);
         log.debug("Migrating repository : " + repositoryMap);
         return repositoryMap;
     }
