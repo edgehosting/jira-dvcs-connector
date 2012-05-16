@@ -251,6 +251,7 @@ var dvcsSubmitFormAjaxHandler = {
 
 			//show username / password
 			AJS.$("#bitbucket-form-section").fadeIn();
+			AJS.$("#adminUsername").focus().select();
 		}, 
 
 		"github":function(data) {
@@ -269,6 +270,7 @@ var dvcsSubmitFormAjaxHandler = {
 				AJS.$('#examples').hide();
 				
 				AJS.$("#github-form-section").fadeIn();
+				AJS.$("#oauthClientId").focus().select();
 
 			} else {
 				
@@ -285,6 +287,11 @@ function deleteOrg() {
 
 function changePassword(username, id) {
 	
+	 // clear all
+	 AJS.$("#organizationId").val("");
+	 AJS.$("#usernameUp").val("");
+	 AJS.$("#adminPasswordUp").val("");
+	
 	 var popup = new AJS.Dialog({
 		 		width: 400, 
 		 		height: 300, 
@@ -293,7 +300,6 @@ function changePassword(username, id) {
 	 
 	 AJS.$("#organizationId").val(id);
 	 AJS.$("#usernameUp").val(username);
-	 AJS.$("#usernameUpReadOnly").text(username);
 
 	 popup.addHeader("Update account credentials");
 
@@ -311,6 +317,8 @@ function changePassword(username, id) {
      }, "aui-button submit");
      
 	 popup.show();
+	 
+	 AJS.$("#adminPasswordUp").focus().select();
 }
 
 
@@ -321,9 +329,14 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 
 	AJS.$("#" + checkboxId  + "working").show();
 	
-	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autolink",
-			  {autolink : checkedValue},
-			  function (data) {
+	AJS.$.post(
+			// url
+			BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autolink",
+			
+			// data
+			'{ "payload" : "' + checkedValue+ '"}',
+			  
+			function (data) {
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 			  }).error(function (err) { 
@@ -337,12 +350,16 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 function autoInviteNewUser(organizationId, checkboxId) {
 	
 	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
+	
 	AJS.$("#" + checkboxId).attr("disabled", "disabled");
 	
 	AJS.$("#" + checkboxId  + "working").show();
 	
-	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autoinvite",
-			{autoinvite : checkedValue},
+	AJS.$.post(
+			// URL
+			BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autoinvite",
+			// data
+			'{ "payload" : "' + checkedValue+ '"}',
 			function (data) {
 				AJS.$("#" + checkboxId  + "working").hide();
 				AJS.$("#" + checkboxId).removeAttr("disabled");

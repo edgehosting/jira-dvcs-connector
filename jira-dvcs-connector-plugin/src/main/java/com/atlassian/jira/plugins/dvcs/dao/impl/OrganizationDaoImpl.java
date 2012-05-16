@@ -262,17 +262,25 @@ public class OrganizationDaoImpl implements OrganizationDao
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void updateCredentials(int organizationId, String plaintextPassword, String accessToken)
+	public void updateCredentials(int organizationId, String username, String plaintextPassword, String accessToken)
 	{
 
 		final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, organizationId);
 
+		// username
+		if (StringUtils.isNotBlank(username))
+		{
+			organization.setAdminUsername(username);
+		}
+		
+		// password
 		if (StringUtils.isNotBlank(plaintextPassword))
 		{
 			organization.setAdminPassword(encryptor.encrypt(plaintextPassword, organization.getName(),
 					organization.getHostUrl()));
 		}
 
+		// access token
 		if (StringUtils.isNotBlank(accessToken))
 		{
 			organization.setAccessToken(accessToken);

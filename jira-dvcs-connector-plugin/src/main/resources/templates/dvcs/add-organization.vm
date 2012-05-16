@@ -114,7 +114,7 @@
 	            </div>
 	            
 	            <div style="margin-top: 10px; clear: both" >
-	                <input type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
+	                <input type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true" checked="checked" />
 	                <label for="autoLinking">Auto link new repositories</label>
 	                <div>
 	                	Configure new repos to automatically link issue keys and commit messages on Bitbucket.
@@ -228,7 +228,7 @@
 			            
 			            <td class="action" headers="action" style="text-align: right;">
 			            
-			            	<div id="dvcs-action-container-$repo.id" class="$!dvcsNoDisplayClass">
+			            	<div id="dvcs-action-container-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
 				                <span id="syncicon_$repo.id" class="syncicon" >&nbsp;</span>
 	                            <span id="sync_status_message_$repo.id" class="gh_messages">
 	                                <span class="content"></span>
@@ -274,8 +274,7 @@
 
 			 <div class="field-group">
 		           <label for="usernameUp">Username:</label>
-		           <div class="fieldValue" id="usernameUpReadOnly"></div>
-		           <input type="hidden" id="usernameUp" name="usernameUp" value="" />
+		           <input type="text" id="usernameUp" name="usernameUp" value="" />
 		     </div>
 		                
 		     <div class="field-group">

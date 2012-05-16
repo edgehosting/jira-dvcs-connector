@@ -22,7 +22,7 @@
           
           <div class="field-group" >
           	<label for="organization">Organization:</label>
-            <span class="field-value">$action.getOrganization()</span>
+            <span class="field-value">$textutils.htmlEncode($action.getOrganization())</span>
             <input type="hidden" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 		  </div>
       </fieldset>
