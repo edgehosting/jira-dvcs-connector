@@ -1,5 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.adduser;
 
+import java.io.StringWriter;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -7,14 +14,6 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.plugin.web.model.WebPanel;
 import com.atlassian.templaterenderer.TemplateRenderer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.List;
-import java.util.Map;
 
 public class AddUserDvcsExtensionWebPanel implements WebPanel
 {
@@ -75,10 +74,12 @@ public class AddUserDvcsExtensionWebPanel implements WebPanel
 
 	}
 
-	@Override
-	public void writeHtml(Writer writer, Map<String, Object> model) throws IOException
-	{
-
-	}
+	// following is comming since jira 5.1
+	
+//	@Override
+//	public void writeHtml(Writer writer, Map<String, Object> model) throws IOException
+//	{
+//
+//	}
 
 }
