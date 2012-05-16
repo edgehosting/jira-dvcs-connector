@@ -148,7 +148,7 @@ function showAddRepoDetails(show) {
 
 	}
 }
-function submitFormHandler() {
+function dvcsSubmitFormHandler() {
 
     AJS.$('#Submit').attr("disabled", "disabled");
 
@@ -251,6 +251,7 @@ var dvcsSubmitFormAjaxHandler = {
 
 			//show username / password
 			AJS.$("#bitbucket-form-section").fadeIn();
+			AJS.$("#adminUsername").focus().select();
 		}, 
 
 		"github":function(data) {
@@ -269,6 +270,7 @@ var dvcsSubmitFormAjaxHandler = {
 				AJS.$('#examples').hide();
 				
 				AJS.$("#github-form-section").fadeIn();
+				AJS.$("#oauthClientId").focus().select();
 
 			} else {
 				
@@ -285,6 +287,11 @@ function deleteOrg() {
 
 function changePassword(username, id) {
 	
+	 // clear all
+	 AJS.$("#organizationId").val("");
+	 AJS.$("#usernameUp").val("");
+	 AJS.$("#adminPasswordUp").val("");
+	
 	 var popup = new AJS.Dialog({
 		 		width: 400, 
 		 		height: 300, 
@@ -293,7 +300,6 @@ function changePassword(username, id) {
 	 
 	 AJS.$("#organizationId").val(id);
 	 AJS.$("#usernameUp").val(username);
-	 AJS.$("#usernameUpReadOnly").text(username);
 
 	 popup.addHeader("Update account credentials");
 
@@ -311,6 +317,8 @@ function changePassword(username, id) {
      }, "aui-button submit");
      
 	 popup.show();
+	 
+	 AJS.$("#adminPasswordUp").focus().select();
 }
 
 
@@ -321,12 +329,25 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 
 	AJS.$("#" + checkboxId  + "working").show();
 	
-	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autolink",
-			  {autolink : checkedValue},
-			  function (data) {
+	AJS.$.ajax(
+		{
+			type : 'POST',
+			dataType : "json",
+			contentType : "application/json",
+			  
+			url :
+			BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autolink",
+			
+			data :
+			'{ "payload" : "' + checkedValue+ '"}',
+			  
+			success :
+			function (data) {
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
-			  }).error(function (err) { 
+			}
+		}
+	).error(function (err) { 
 				  showError("Unexpected error occured. Please contact the server admnistrator.");
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
@@ -337,16 +358,30 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 function autoInviteNewUser(organizationId, checkboxId) {
 	
 	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
+	
 	AJS.$("#" + checkboxId).attr("disabled", "disabled");
 	
 	AJS.$("#" + checkboxId  + "working").show();
 	
-	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autoinvite",
-			{autoinvite : checkedValue},
+	AJS.$.ajax(
+		{
+			type : 'POST',
+			dataType : "json",
+			contentType : "application/json",
+			  
+			url :
+			BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autoinvite",
+			
+			data :
+			'{ "payload" : "' + checkedValue+ '"}',
+			
+			success :
 			function (data) {
 				AJS.$("#" + checkboxId  + "working").hide();
 				AJS.$("#" + checkboxId).removeAttr("disabled");
-			}).error(function (err) { 
+			}
+		}
+	  ).error(function (err) { 
 				  showError("Unexpected error occured. Please contact the server admnistrator.");
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
@@ -361,9 +396,20 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 
 	AJS.$("#" + checkboxId  + "working").show();
 
-	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/autolink",
-			  {autolink : checkedValue},
-			  function (data) {
+	AJS.$.ajax( 
+		{
+			type : 'POST',
+			dataType : "json",
+			contentType : "application/json",
+			  
+			url :
+			BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/autolink",
+			
+			data :
+			'{ "payload" : "' + checkedValue+ '"}',
+			
+			success :
+			function (data) {
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  if (checkedValue) {
@@ -373,8 +419,11 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 					  AJS.$("#dvcs-action-container-" + repoId).addClass("dvcs-nodisplay");
 					  AJS.$("#dvcs-repo-row-" + repoId).addClass("dvcs-disabled");
 				  }
-			  }).error(function (err) { 
-				  showError("Unexpected error occured. Please contact the server admnistrator.");
+			  }
+		}
+	 
+	).error(function (err) { 
+				  showError("Unexpected error occured. Do you have administrator permissions to selected repository ?");
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);
@@ -382,7 +431,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 }
 
 function confirmDeleteOrganization(organization) {
-	return confirm("Are you sure you want to delete account '" + organization + "' ?");
+	return confirm("Are you sure you want to remove account '" + organization + "' from JIRA ?");
 }
 
 function showError(message) {

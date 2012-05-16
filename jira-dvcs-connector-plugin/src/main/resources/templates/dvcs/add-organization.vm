@@ -12,13 +12,9 @@
 
         function init_repositories()
         {
-            #if ($action.nextAction == 'ForceSync')
-                forceSync($action.getRepositoryId());
-            #end
-            
            	retrieveSyncStatus();
-            
-            AJS.$("#repoEntry").submit(submitFormHandler);
+
+            AJS.$("#repoEntry").submit(dvcsSubmitFormHandler);
         }
      </script>
 
@@ -27,7 +23,6 @@
   </head>
 
   <body>
-        <input type="hidden" id="addedRepositoryId" value="$action.getAddedRepositoryId()">
 
  		<h3>Manage DVCS Accounts</h3>
 
@@ -114,7 +109,7 @@
 	            </div>
 	            
 	            <div style="margin-top: 10px; clear: both" >
-	                <input type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
+	                <input type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true" checked="checked" />
 	                <label for="autoLinking">Auto link new repositories</label>
 	                <div>
 	                	Configure new repos to automatically link issue keys and commit messages on Bitbucket.
@@ -180,19 +175,21 @@
 					 <input id="org_autolink_check$org.id" class="aui" $!orgAutolink type="checkbox" name="autolink-quick" onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" /><label> Autolink new repositories</label>
 					 <span style="display:none; width: 16px; height: 16px;" id="org_autolink_check${org.id}working" class="syncicon running">&nbsp;</span>
 					 
-					 #if($org.dvcsType == "bitbucket")
-					 |
-					 <input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" /><label> Default Auto-invite New Users</label>
-					 <span style="display:none; width: 16px; height: 16px;" id="org_isdefault_check${org.id}working" class="syncicon running">&nbsp;</span>
-					 #end
+			##       user invitations disabled for now
+			##		 #if($org.dvcsType == "bitbucket")
+			##		 |
+			##		 <input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" /><label> Default Auto-invite New Users</label>
+			##		 <span style="display:none; width: 16px; height: 16px;" id="org_isdefault_check${org.id}working" class="syncicon running">&nbsp;</span>
+			##		 #end
+			##		 
 					 
 					 | <a href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh Repository List</a>
 					 #if($org.dvcsType == "bitbucket")
-					 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Password</a>
+					 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Credentials</a>
 					 #else
 	   			 	 | <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 					 #end
-					 | <a class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Delete account</a>
+					 | <a class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Remove This Account From Jira</a>
 
 				</div>
 
@@ -228,7 +225,7 @@
 			            
 			            <td class="action" headers="action" style="text-align: right;">
 			            
-			            	<div id="dvcs-action-container-$repo.id" class="$!dvcsNoDisplayClass">
+			            	<div id="dvcs-action-container-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
 				                <span id="syncicon_$repo.id" class="syncicon" >&nbsp;</span>
 	                            <span id="sync_status_message_$repo.id" class="gh_messages">
 	                                <span class="content"></span>
@@ -274,8 +271,7 @@
 
 			 <div class="field-group">
 		           <label for="usernameUp">Username:</label>
-		           <div class="fieldValue" id="usernameUpReadOnly"></div>
-		           <input type="hidden" id="usernameUp" name="usernameUp" value="" />
+		           <input type="text" id="usernameUp" name="usernameUp" value="" />
 		     </div>
 		                
 		     <div class="field-group">

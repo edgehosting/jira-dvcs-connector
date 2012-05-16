@@ -503,7 +503,9 @@ a:hover.repositoryNameLink {
 .dvcs-repos-table .dvcs-disabled a {
 	color: #A1B9ED !important;
 }
-
+.dvcs-action-container {
+	white-space: nowrap;
+}
 .dvcs-config-panel {
 	margin-top: 10px;
 	margin-bottom: 5px;

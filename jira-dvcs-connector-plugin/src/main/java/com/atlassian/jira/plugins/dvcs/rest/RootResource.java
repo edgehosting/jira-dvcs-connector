@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.rest;
 import java.net.URI;
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -23,6 +24,7 @@ import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
+import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
@@ -160,31 +162,34 @@ public class RootResource
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/org/{id}/autolink")
-	public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, @FormParam("autolink") String autolink)
+	@Consumes({MediaType.APPLICATION_JSON})
+	public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, SentData autolink)
 	{
 
-		organizationService.enableAutolinkNewRepos(id, Boolean.parseBoolean(autolink));
+		organizationService.enableAutolinkNewRepos(id, Boolean.parseBoolean(autolink.getPayload()));
 		return Response.noContent().build();
 	}
 
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/org/{id}/autoinvite")
+	@Consumes({MediaType.APPLICATION_JSON})
 	public Response enableOrganizationAutoInviteUsers(@PathParam("id") int id,
-			@FormParam("autoinvite") String autoinvite)
+			SentData autoinvite)
 	{
 
-		organizationService.enableAutoInviteUsers(id, Boolean.parseBoolean(autoinvite));
+		organizationService.enableAutoInviteUsers(id, Boolean.parseBoolean(autoinvite.getPayload()));
 		return Response.noContent().build();
 	}
 
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/repo/{id}/autolink")
-	public Response enableRepositoryAutolink(@PathParam("id") int id, @FormParam("autolink") String autolink)
+	@Consumes({MediaType.APPLICATION_JSON})
+	public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
 	{
 
-		repositoryService.enableAutolinkCommits(id, Boolean.parseBoolean(autolink));
+		repositoryService.enableAutolinkCommits(id, Boolean.parseBoolean(autolink.getPayload()));
 		return Response.noContent().build();
 	}
 

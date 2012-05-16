@@ -306,13 +306,10 @@
  
     <resource type="i18n" name="bitbucket-i18n" location="i18n"/>
 
-    <!--TODO: refaktorovat zavyslost na RepoManager-->
+    <!--TODO: refactor dependency to RepoManager-->
     <!--<activity-streams-provider key="bitbucket-streams-provider" name="Bitbucket Streams Provider" i18n-name-key="Bitbucket Connector"-->
                        <!--class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsActivityProvider">-->
     <!--</activity-streams-provider>-->
-
-	<!-- Web Panels -->
-	<web-panel key="add-user-dvcs-extension" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />
 
  
 </atlassian-plugin>

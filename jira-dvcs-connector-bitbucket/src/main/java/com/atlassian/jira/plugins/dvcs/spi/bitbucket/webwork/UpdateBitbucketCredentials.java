@@ -32,7 +32,11 @@ public class UpdateBitbucketCredentials extends JiraWebActionSupport
     {
     	
        if (StringUtils.isBlank(adminPasswordUp)) {
-    	   addErrorMessage("Please provide valid password.");
+    	   addErrorMessage("Please provide password.");
+       } 
+
+       if (StringUtils.isBlank(usernameUp)) {
+    	   addErrorMessage("Please provide username.");
        } 
     	
        try {
@@ -47,7 +51,7 @@ public class UpdateBitbucketCredentials extends JiraWebActionSupport
     protected String doExecute() throws Exception
     {
     	
-    	organizationService.updateCredentials(Integer.parseInt(organizationId), adminPasswordUp);
+    	organizationService.updateCredentials(Integer.parseInt(organizationId), usernameUp, adminPasswordUp);
 
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + getXsrfToken());
     }

@@ -47,10 +47,11 @@ public interface OrganizationDao
 	 * Update credentials.
 	 *
 	 * @param organizationId the organization id
+	 * @param username the username
 	 * @param plaintextPassword the plaintext password, null safe
 	 * @param accessToken the access token, null safe
 	 */
-	void updateCredentials(int organizationId, String plaintextPassword,
+	void updateCredentials(int organizationId, String username, String plaintextPassword,
 			String accessToken);
 
 	/**
