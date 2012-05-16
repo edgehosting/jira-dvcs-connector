@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.rest;
 import java.net.URI;
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -171,6 +172,7 @@ public class RootResource
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/org/{id}/autoinvite")
+	@Consumes({MediaType.APPLICATION_JSON})
 	public Response enableOrganizationAutoInviteUsers(@PathParam("id") int id,
 			SentData autoinvite)
 	{
@@ -182,6 +184,7 @@ public class RootResource
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/repo/{id}/autolink")
+	@Consumes({MediaType.APPLICATION_JSON})
 	public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
 	{
 

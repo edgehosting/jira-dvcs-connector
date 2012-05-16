@@ -148,7 +148,7 @@ function showAddRepoDetails(show) {
 
 	}
 }
-function submitFormHandler() {
+function dvcsSubmitFormHandler() {
 
     AJS.$('#Submit').attr("disabled", "disabled");
 

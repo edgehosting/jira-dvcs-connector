@@ -12,13 +12,9 @@
 
         function init_repositories()
         {
-            #if ($action.nextAction == 'ForceSync')
-                forceSync($action.getRepositoryId());
-            #end
-            
            	retrieveSyncStatus();
-            
-            AJS.$("#repoEntry").submit(submitFormHandler);
+
+            AJS.$("#repoEntry").submit(dvcsSubmitFormHandler);
         }
      </script>
 
@@ -188,11 +184,11 @@
 					 
 					 | <a href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh Repository List</a>
 					 #if($org.dvcsType == "bitbucket")
-					 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Password</a>
+					 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Credentials</a>
 					 #else
 	   			 	 | <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 					 #end
-					 | <a class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Delete account</a>
+					 | <a class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Remove This Account From Jira</a>
 
 				</div>
 
