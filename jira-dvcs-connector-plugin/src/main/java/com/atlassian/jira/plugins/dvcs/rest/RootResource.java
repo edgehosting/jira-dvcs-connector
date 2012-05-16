@@ -162,10 +162,11 @@ public class RootResource
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/org/{id}/autolink")
-	public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, @FormParam("autolink") String autolink)
+	@Consumes({MediaType.APPLICATION_JSON})
+	public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, SentData autolink)
 	{
 
-		organizationService.enableAutolinkNewRepos(id, Boolean.parseBoolean(autolink));
+		organizationService.enableAutolinkNewRepos(id, Boolean.parseBoolean(autolink.getPayload()));
 		return Response.noContent().build();
 	}
 

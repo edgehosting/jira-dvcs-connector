@@ -23,7 +23,6 @@
   </head>
 
   <body>
-        <input type="hidden" id="addedRepositoryId" value="$action.getAddedRepositoryId()">
 
  		<h3>Manage DVCS Accounts</h3>
 
@@ -176,11 +175,13 @@
 					 <input id="org_autolink_check$org.id" class="aui" $!orgAutolink type="checkbox" name="autolink-quick" onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" /><label> Autolink new repositories</label>
 					 <span style="display:none; width: 16px; height: 16px;" id="org_autolink_check${org.id}working" class="syncicon running">&nbsp;</span>
 					 
-					 #if($org.dvcsType == "bitbucket")
-					 |
-					 <input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" /><label> Default Auto-invite New Users</label>
-					 <span style="display:none; width: 16px; height: 16px;" id="org_isdefault_check${org.id}working" class="syncicon running">&nbsp;</span>
-					 #end
+			##       user invitations disabled for now
+			##		 #if($org.dvcsType == "bitbucket")
+			##		 |
+			##		 <input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" /><label> Default Auto-invite New Users</label>
+			##		 <span style="display:none; width: 16px; height: 16px;" id="org_isdefault_check${org.id}working" class="syncicon running">&nbsp;</span>
+			##		 #end
+			##		 
 					 
 					 | <a href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh Repository List</a>
 					 #if($org.dvcsType == "bitbucket")
