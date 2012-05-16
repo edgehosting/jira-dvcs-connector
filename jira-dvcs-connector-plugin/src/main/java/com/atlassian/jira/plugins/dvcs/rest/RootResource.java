@@ -154,7 +154,7 @@ public class RootResource
 
 		Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
 		repositoryService.syncRepositoryList(organization);
-		return Response.ok().build();
+		return Response.noContent().build();
 	}
 
 	@POST
@@ -164,7 +164,7 @@ public class RootResource
 	{
 
 		organizationService.enableAutolinkNewRepos(id, Boolean.parseBoolean(autolink));
-		return Response.ok().build();
+		return Response.noContent().build();
 	}
 
 	@POST
@@ -175,7 +175,7 @@ public class RootResource
 	{
 
 		organizationService.enableAutoInviteUsers(id, Boolean.parseBoolean(autoinvite));
-		return Response.ok().build();
+		return Response.noContent().build();
 	}
 
 	@POST
@@ -185,7 +185,7 @@ public class RootResource
 	{
 
 		repositoryService.enableAutolinkCommits(id, Boolean.parseBoolean(autolink));
-		return Response.ok().build();
+		return Response.noContent().build();
 	}
 
 }
