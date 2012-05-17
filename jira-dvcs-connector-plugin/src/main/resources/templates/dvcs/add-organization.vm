@@ -218,7 +218,7 @@
 			        <tr>
 			            <th>Repository</th>
 			            <th style="text-align: center"></th>
-			            <th>Enabled</th>
+			            <th class="dvcs-centered">Enabled</th>
 			        </tr>
 			    </thead>
 			    <tbody>

@@ -491,9 +491,14 @@ a:hover.repositoryNameLink {
 .dvcs-nodisplay {
 	display: none;
 }
-#dvcs-repos-table.aui > thead {
-	border-bottom: none;
-	color: black;
+.dvcs-repos-table.aui > thead {
+}
+
+.dvcs-repos-table > thead > tr > th {
+	color: black !important;
+}
+.dvcs-centered {
+	text-align: center !important;
 }
 .dvcs-repos-table .dvcs-disabled {
 	color: #959595 !important;
