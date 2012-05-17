@@ -94,7 +94,7 @@ function updateSyncStatus(repo) {
     syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
 
     if (syncStatusHtml != "") {
-    	syncStatusHtml += " <span style='color:#000;'> &nbsp; | &nbsp;</span>";
+    	syncStatusHtml += " <span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>";
     }
     syncStatusDiv.html(syncStatusHtml);
 
@@ -459,6 +459,9 @@ function dvcsShowHidePanel(id) {
 
 AJS.$(document).ready(function() {
     if (typeof init_repositories == 'function') {
+    	
+    	AJS.$(".dvcs-organization-controls-tool").dropDown();
+    	
         init_repositories();
     }
 
