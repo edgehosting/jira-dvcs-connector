@@ -83,8 +83,8 @@ $webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-
                             #set ( $file_counter = $file_counter+1 )
                             <!--  -->
                         #end
-                        #if ( $changeset.getAllFileCount() gt 5 )
-                            #set ( $rest = $changeset.getAllFileCount() - 5 )
+                        #if ( $changeset.getAllFileCount() gt $max_visible_files )
+                            #set ( $rest = $changeset.getAllFileCount() - $max_visible_files )
                             <a href="$commit_url" target="_new">
                                 <div class="CommitRows">... $rest more files not shown</div>
                             </a>

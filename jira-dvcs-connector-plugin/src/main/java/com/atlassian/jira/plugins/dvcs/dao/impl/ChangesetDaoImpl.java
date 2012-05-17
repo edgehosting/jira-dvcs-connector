@@ -1,24 +1,26 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import net.java.ao.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +37,24 @@ public class ChangesetDaoImpl implements ChangesetDao
         this.activeObjects = activeObjects;
     }
 
-    protected Changeset transform(ChangesetMapping changesetMapping) {
+    protected Changeset transform(ChangesetMapping changesetMapping)
+    {
         return transformer.transform(changesetMapping);
+    }
+
+    protected List<Changeset> transform(List<ChangesetMapping> changesetMappings)
+    {
+        final Collection<Changeset> changesets = Collections2.transform(changesetMappings,
+                new Function<ChangesetMapping, Changeset>()
+                {
+                    @Override
+                    public Changeset apply(ChangesetMapping changesetMapping)
+                    {
+                        return transform(changesetMapping);
+                    }
+                });
+
+        return new ArrayList<Changeset>(changesets);
     }
 
 
@@ -73,6 +91,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 final Map<String, Object> map = new HashMap<String, Object>();
                 map.put(ChangesetMapping.REPOSITORY_ID, changeset.getRepositoryId());
                 map.put(ChangesetMapping.ISSUE_KEY, changeset.getIssueKey());
+                map.put(ChangesetMapping.PROJECT_KEY, parseProjectKey(changeset.getIssueKey()));
                 map.put(ChangesetMapping.NODE, changeset.getNode());
                 map.put(ChangesetMapping.RAW_AUTHOR, changeset.getRawAuthor());
                 map.put(ChangesetMapping.AUTHOR, changeset.getAuthor());
@@ -85,7 +104,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 {
                     parentsJson.put(parent);
                 }
-                map.put(IssueMapping.PARENTS_DATA, parentsJson.toString());
+                map.put(ChangesetMapping.PARENTS_DATA, parentsJson.toString());
 
                 JSONObject filesDataJson = new JSONObject();
                 JSONArray filesJson = new JSONArray();
@@ -106,7 +125,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                         filesJson.put(fileJson);
                     }
                     filesDataJson.put("files", filesJson);
-                    map.put(IssueMapping.FILES_DATA, filesDataJson.toString());
+                    map.put(ChangesetMapping.FILES_DATA, filesDataJson.toString());
                 } catch (JSONException e)
                 {
                     log.error("Creating files JSON failed!", e);
@@ -124,6 +143,10 @@ public class ChangesetDaoImpl implements ChangesetDao
 
         return transform(changesetMapping);
         
+    }
+
+    private String parseProjectKey(String issueKey) {
+        return issueKey.substring(0, issueKey.indexOf("-"));
     }
 
     @Override
@@ -156,17 +179,28 @@ public class ChangesetDaoImpl implements ChangesetDao
             }
         });
 
-        final Collection<Changeset> repositories = Collections2.transform(changesetMappings,
-                new Function<ChangesetMapping, Changeset>()
-                {
-                    @Override
-                    public Changeset apply(ChangesetMapping changesetMapping)
-                    {
-                        return transform(changesetMapping);
-                    }
-                });
+        return transform(changesetMappings);
+    }
 
-        return new ArrayList<Changeset>(repositories);
+    @Override
+    public List<Changeset> getLatestChangesets(final int maxResults, final GlobalFilter gf)
+    {
+        if (maxResults <= 0)
+        {
+            return Collections.emptyList();
+        }
+        final List<ChangesetMapping> changesetMappings = activeObjects.executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
+        {
+            @Override
+            public List<ChangesetMapping> doInTransaction()
+            {
+                String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
+                Query query = Query.select().where(baseWhereClause).limit(maxResults).order(ChangesetMapping.DATE + " DESC");
+                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
+                return Arrays.asList(mappings);
+            }
+        });
 
+        return transform(changesetMappings);
     }
 }

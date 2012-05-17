@@ -1,17 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import net.java.ao.Query;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
@@ -23,6 +11,16 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import net.java.ao.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RepositoryDaoImpl implements RepositoryDao
 {
@@ -70,7 +68,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 	}
 
 	@Override
-	public List<Repository> getAllByOrganization(final int organizationId, final boolean alsoDeleted)
+	public List<Repository> getAllByOrganization(final int organizationId, final boolean includeDeleted)
 	{
 		List<RepositoryMapping> repositoryMappings = activeObjects
 				.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
@@ -79,7 +77,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                     public List<RepositoryMapping> doInTransaction()
                     {
                         Query query = Query.select().where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
-                        if (!alsoDeleted)
+                        if (!includeDeleted)
                         {
                             query = Query.select().where(
                                     RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED
@@ -107,7 +105,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 	}
 
 	@Override
-	public List<Repository> getAll(final boolean alsoDeleted)
+	public List<Repository> getAll(final boolean includeDeleted)
 	{
 
 		List<RepositoryMapping> repositoryMappings = activeObjects
@@ -117,7 +115,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 					public List<RepositoryMapping> doInTransaction()
 					{
 						Query select = Query.select();
-						if (!alsoDeleted)
+						if (!includeDeleted)
 						{
 							select = select.where(RepositoryMapping.DELETED + " = ? ", Boolean.FALSE);
 						}

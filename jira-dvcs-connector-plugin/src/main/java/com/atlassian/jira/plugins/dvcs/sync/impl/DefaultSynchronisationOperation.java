@@ -12,11 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.ProgressWriter;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 
@@ -24,32 +22,27 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
     private static final Logger log = LoggerFactory.getLogger(DefaultSynchronisationOperation.class);
 
-    protected final SynchronizationKey key;
-    private final OrganizationService organizationService;
+    protected final Repository repository;
     protected final RepositoryService repositoryService;
-    private final ProgressWriter progressProvider;
+    private final DefaultProgress progress;
     private final ChangesetService changesetService;
+    private final boolean softSync;
 
-    public DefaultSynchronisationOperation(SynchronizationKey key, OrganizationService organizationService,
-                                           RepositoryService repositoryService, ChangesetService changesetService,
-                                           ProgressWriter progressProvider)
+    public DefaultSynchronisationOperation(Repository repository, RepositoryService repositoryService, ChangesetService changesetService,
+        boolean softSync)
     {
-        this.key = key;
-        this.organizationService = organizationService;
+        this.repository = repository;
         this.repositoryService = repositoryService;
         this.changesetService = changesetService;
-        this.progressProvider = progressProvider;
+        this.progress = new DefaultProgress();
+        this.softSync = softSync;
     }
 
     @Override
     public void synchronise()
     {
-
-        final Repository repository = key.getRepository();
-        final Organization organization = organizationService.get(repository.getOrganizationId(), false);
-
         Date lastCommitDate = null;
-        if (key.isSoftSync())
+        if (softSync)
         {
             lastCommitDate = repository.getLastCommitDate();
         } else
@@ -84,7 +77,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             {
                 try
                 {
-                    detailChangeset = changesetService.getDetailChangesetFromDvcs(organization, repository, changeset);
+                    detailChangeset = changesetService.getDetailChangesetFromDvcs(repository, changeset);
                 } catch (Exception e)
                 {
                     log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
@@ -105,7 +98,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     }
                 }
             }
-            progressProvider.inProgress(changesetCount, jiraCount, synchroErrorCount);
+            progress.inProgress(changesetCount, jiraCount, synchroErrorCount);
         }
     }
 
@@ -129,4 +122,16 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         return matches;
     }
 
+    @Override
+    public DefaultProgress getProgress()
+    {
+        return progress;
+    }
+
+    @Override
+    public boolean isSoftSync()
+    {
+        return softSync;
+    }
+    
 }

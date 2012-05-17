@@ -11,10 +11,11 @@ public interface Synchronizer
 
     /**
      * Perform a sync on the specified dvcs repostiory from last already saved changeset
-     * @param softSync
+     * 
      * @param repository
+     * @param synchronisationOperation
      */
-    public void synchronize(Repository repository, boolean softSync);
+    public void synchronize(Repository repository, SynchronisationOperation synchronisationOperation);
     
     /**
      * Get the progress of a sync being executed for given repository

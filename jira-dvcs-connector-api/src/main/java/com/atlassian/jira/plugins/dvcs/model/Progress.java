@@ -5,6 +5,16 @@ package com.atlassian.jira.plugins.dvcs.model;
  */
 public interface Progress
 {
+    
+    /**
+     * Call this method to update the current status of the progress.
+     * 
+     * @param changesetCount
+     * @param jiraCount
+        * @param synchroErrorCount
+     */
+    public void inProgress(int changesetCount, int jiraCount, int synchroErrorCount);
+
 	/**
 	 * @return true if the progress is Finished
 	 */

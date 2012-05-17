@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 import java.util.Date;
@@ -32,7 +32,7 @@ public interface ChangesetService
 
     Iterable<Changeset> getChangesetsFromDvcs(Repository repository, Date lastCommitDate);
 
-    Changeset getDetailChangesetFromDvcs(Organization organization, Repository repository, Changeset changeset);
+    Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset);
 
     List<Changeset> getByIssueKey(String issueKey);
 
@@ -44,4 +44,5 @@ public interface ChangesetService
 
     String getUserUrl(Repository repository, Changeset changeset);
 
+    Iterable<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
 }

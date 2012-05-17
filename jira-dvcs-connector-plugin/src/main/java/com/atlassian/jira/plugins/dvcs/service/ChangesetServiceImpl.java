@@ -4,10 +4,11 @@ import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.google.common.collect.Sets;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -19,7 +20,6 @@ public class ChangesetServiceImpl implements ChangesetService
 
     private ChangesetDao changesetDao;
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
-    private RepositoryService repositoryService;
 
     public ChangesetServiceImpl()
     {
@@ -34,11 +34,6 @@ public class ChangesetServiceImpl implements ChangesetService
     public void setDvcsCommunicatorProvider(DvcsCommunicatorProvider dvcsCommunicatorProvider)
     {
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-    }
-
-    public void setRepositoryService(RepositoryService repositoryService)
-    {
-        this.repositoryService = repositoryService;
     }
 
     @Override
@@ -75,7 +70,7 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
-    public Changeset getDetailChangesetFromDvcs(Organization organization, Repository repository, Changeset changeset)
+    public Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset)
     {
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
@@ -124,5 +119,12 @@ public class ChangesetServiceImpl implements ChangesetService
     {
         final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
         return communicator.getUserUrl(repository, changeset);
+    }
+
+    @Override
+    public Iterable<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf)
+    {
+        List<Changeset> changesets = changesetDao.getLatestChangesets(maxResults, gf);
+        return Sets.newHashSet(changesets);
     }
 }

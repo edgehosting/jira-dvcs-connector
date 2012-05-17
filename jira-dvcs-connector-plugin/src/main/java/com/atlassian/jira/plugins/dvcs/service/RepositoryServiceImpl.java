@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.sal.api.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +53,9 @@ public class RepositoryServiceImpl implements RepositoryService
 	}
 
 	@Override
-	public List<Repository> getAllByOrganization(int organizationId, boolean alsoDeleted)
+	public List<Repository> getAllByOrganization(int organizationId, boolean includeDeleted)
 	{
-		return repositoryDao.getAllByOrganization(organizationId, alsoDeleted);
+		return repositoryDao.getAllByOrganization(organizationId, includeDeleted);
 	}
 
 	@Override
@@ -151,7 +152,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		final List<Repository> repositories = getAllByOrganization(organizationId, false);
 		for (Repository repository : repositories)
 		{
-			doSync(repository, false);
+			doSync(repository, true);
 		}
 	}
 
@@ -159,7 +160,8 @@ public class RepositoryServiceImpl implements RepositoryService
 	{
 		if (repository.isLinked())
 		{
-			synchronizer.synchronize(repository, softSync);
+            DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(repository, this, changesetService, softSync);
+			synchronizer.synchronize(repository, synchronisationOperation);
 		}
 	}
 
