@@ -33,7 +33,7 @@
         #end
         <br/>
 
-        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link a Bitbucket or GitHub organization &gt;&gt;" onclick="showAddRepoDetails(true)" value="Link a Bitbucket or GitHub organization &gt;&gt;" />
+        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link a Bitbucket or GitHub account &gt;&gt;" onclick="showAddRepoDetails(true)" value="Link a Bitbucket or GitHub account &gt;&gt;" />
 
         <div id="addRepositoryContent">
         <div id="addRepositoryDetails" class="aui-message">
@@ -149,7 +149,8 @@
 
 <div class="vert-space">&nbsp;</div>
 
-		#foreach( $org in $action.loadOrganizations() )
+#foreach( $org in $action.loadOrganizations() )
+  <div class="dvcs-orgdata-container">
 			
 			#if($org.isAutolinkNewRepos())
 				#set( $orgAutolink = "checked='checked'")
@@ -161,20 +162,48 @@
 				#else
 				#set( $orgIsDefault = "")
 			#end
-		
-		<div class="dvcs-org-container">
-		
-			<h4 class="aui $org.getDvcsType()Logo">account : <a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a> ($org.dvcsType)</h4>
+	
+	<div class="dvcs-header-container">	
+		<h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a></h4>
+		<div class="dvcs-org-container aui-toolbar">
 				
-				<div class="dvcs-config-panel">
-					<span class="dvcs-open-panel"></span>
-					<a class="dvcs-controls-showhide" href="javascript:;" onclick="dvcsShowHidePanel('dvcs-organization-controls-$org.id');">Show/Hide Configuration</a>
-				</div>
-				<div id="dvcs-organization-controls-$org.id" class="dvcs-organization-controls" style="display:none">
-
-					 <input id="org_autolink_check$org.id" class="aui" $!orgAutolink type="checkbox" name="autolink-quick" onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" /><label> Autolink new repositories</label>
-					 <span style="display:none; width: 16px; height: 16px;" id="org_autolink_check${org.id}working" class="syncicon running">&nbsp;</span>
-					 
+				<ul class="toolbar-group">
+				
+					<li class="toolbar-item toolbar-dropdown dvcs-organization-controls-tool">
+					
+						<div class="aui-dd-parent">
+							<a title="Show Settings" class="toolbar-trigger aui-dd-trigger" href="#" style="heiht: 24px;">
+		                                <span class="icon-tools" style="float: left; height: 22px;"></span>
+		                                <span class="icon icon-dropdown" style="padding-left: 0px; margin-left: 0px"></span>
+		                    </a>
+								<ul id="dvcs-organization-controls-$org.id" class=" aui-dropdown dvcs-organization-controls"  >
+								            <li class="dropdown-item">
+								            	 <input id="org_autolink_check$org.id" class="aui" $!orgAutolink type="checkbox" name="autolink-quick" onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" /><label> Autolink new repositories</label>
+												 <span style="display:none; width: 16px; height: 16px;" id="org_autolink_check${org.id}working" class="syncicon running">&nbsp;</span>
+								            </li>
+								            
+								             <li class="dropdown-item">
+								             	 <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh List</a>
+								            </li>
+								            
+								            <li class="dropdown-item">
+												 #if($org.dvcsType == "bitbucket")
+								            	<a  href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Password</a>
+												 #else
+												 <a  href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+								            	 #end
+					   			 	 		</li>
+				
+								            <li class="dropdown-item">
+								            	 <a  dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Delete</a>
+								            </li>
+								 </ul>
+							</div>
+						</li>
+				</ul>
+			</div>
+			<div class="dclear"></div>
+	</div>				 
 			##       user invitations disabled for now
 			##		 #if($org.dvcsType == "bitbucket")
 			##		 |
@@ -183,22 +212,13 @@
 			##		 #end
 			##		 
 					 
-					 | <a href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh Repository List</a>
-					 #if($org.dvcsType == "bitbucket")
-					 | <a href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Credentials</a>
-					 #else
-	   			 	 | <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
-					 #end
-					 | <a class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Remove This Account From Jira</a>
-
-				</div>
 
 			   <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
 			    <thead>
 			        <tr>
 			            <th>Repository</th>
 			            <th style="text-align: center"></th>
-			            <th>Enable Linking</th>
+			            <th>Enabled</th>
 			        </tr>
 			    </thead>
 			    <tbody>
@@ -220,7 +240,7 @@
 					#end
 			        <tr id="dvcs-repo-row-$repo.id" class="$!dvcsRepoRowClass">
 			            
-			            <td class="dvcs-org-reponame">$textutils.htmlEncode($org.name) / <a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a></td>
+			            <td class="dvcs-org-reponame"><a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a></td>
 
 			            
 			            <td class="action" headers="action" style="text-align: right;">
@@ -255,8 +275,9 @@
 			<div class="vert-space">&nbsp;</div>
 			<div class="vert-space">&nbsp;</div>
 		
-		</div>
-		#end
+  </div>
+#end
+
 
 #end
 

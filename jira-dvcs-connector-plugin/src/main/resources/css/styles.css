@@ -466,10 +466,7 @@ a:hover.repositoryNameLink {
 #aui-message-bar {
     clear: both;
 }
-.dvcs-organization-controls {
-	text-align: right;
-	border-bottom: 1px solid #a3a3a3;
-}
+
 .dvcs-update-cred-dialog {
 	margin-top: 30px;
 }
@@ -496,6 +493,7 @@ a:hover.repositoryNameLink {
 }
 #dvcs-repos-table.aui > thead {
 	border-bottom: none;
+	color: black;
 }
 .dvcs-repos-table .dvcs-disabled {
 	color: #959595 !important;
@@ -513,4 +511,46 @@ a:hover.repositoryNameLink {
 
 #addRepositoryContent .buttons-container {
 	border-top: none;
+}
+
+.dvcs-organization-controls {
+}
+.dvcs-org-container .dropdown-item {
+	margin: 10px !important;
+}
+.dvcs-org-container.aui-toolbar {
+	float: right;
+	width: auto !important;
+	clear: none !important;
+}
+.aui.bitbucketLogo, .aui.githubLogo {
+	float: left;
+	position: relative;
+	top: 2px;
+}
+.dvcs-header-container {
+	margin-bottom: 10px;
+	margin-top: 10px;
+	height: 25px;
+	vertical-align: bottom;
+}
+.dclear:after {
+	content: ".";
+	display: block;
+	clear: both;
+	visibility: hidden;
+	line-height: 0;
+	height: 0;
+}
+ 
+.dclear {
+	display: inline-block;
+}
+ 
+html[xmlns] .dclear {
+	display: block;
+}
+ 
+* html .dclear {
+	height: 1%;
 }
