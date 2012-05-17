@@ -1,25 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
 
     private ChangesetDao changesetDao;
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
-    private RepositoryService repositoryService;
 
     public ChangesetServiceImpl()
     {
@@ -34,11 +32,6 @@ public class ChangesetServiceImpl implements ChangesetService
     public void setDvcsCommunicatorProvider(DvcsCommunicatorProvider dvcsCommunicatorProvider)
     {
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-    }
-
-    public void setRepositoryService(RepositoryService repositoryService)
-    {
-        this.repositoryService = repositoryService;
     }
 
     @Override
@@ -75,7 +68,7 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
-    public Changeset getDetailChangesetFromDvcs(Organization organization, Repository repository, Changeset changeset)
+    public Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset)
     {
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
