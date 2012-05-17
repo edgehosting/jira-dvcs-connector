@@ -41,12 +41,6 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
     </ao>
 
-    <!--<component key="repositoryPersister" name="Repository Persister"-->
-               <!--class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister">-->
-        <!--<description>A Service for storing data in ActiveObjects</description>-->
-        <!--<interface>com.atlassian.jira.plugins.bitbucket.api.ChangesetCache</interface>-->
-        <!--<interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister</interface>-->
-    <!--</component>-->
 
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
                class="com.atlassian.jira.plugins.bitbucket.activeobjects.DefaultBitbucketProjectSettings">
@@ -185,19 +179,6 @@
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
 
-            <action name="com.atlassian.jira.plugins.bitbucket.webwork.ConfigureBitbucketRepositories"
-                    alias="ConfigureBitbucketRepositories" roles-required="admin">
-                <view name="input">/templates/configurerepositories.vm</view>
-            </action>
-
-	        <action name="com.atlassian.jira.plugins.bitbucket.spi.github.webwork.AddGithubRepository" alias="AddGithubRepository">
-	            <view name="input">/templates/addgithubrepository.vm</view>
-	        </action>
-
-	        <action name="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.webwork.AddBitbucketRepository" alias="AddBitbucketRepository">
-	            <view name="input">/templates/addbitbucketrepository.vm</view>
-	        </action>
-
             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.ConfigureGithubOAuth" alias="ConfigureGithubOAuth">
                 <view name="input">/templates/configuregithuboauth.vm</view>
             </action>
@@ -212,7 +193,6 @@
             <action name="com.atlassian.jira.plugins.bitbucket.webwork.GitHubOAuth2" alias="GitHubOAuth2">
                 <view name="success">/templates/githuboauth2.vm</view>
             </action>
-
 
 			<!-- New organization driven actions -->
 			
@@ -253,12 +233,6 @@
 			
         </actions>
     </webwork1>
-
-    <!--<project-operation key="com.atlassian.jira.plugins.projectlink" name="Bitbucket Project Link"-->
-                       <!--class="com.atlassian.jira.plugins.bitbucket.webwork.ProjectSettings">-->
-        <!--<resource type="velocity" name="view" location="/templates/com/atlassian/jira/plugins/projectlinks/view.vm"/>-->
-        <!--<order>100</order>-->
-    <!--</project-operation>-->
 
     <web-item key="bitbucket_bulk_repo" name="Bitbucket Bulk Repository" section="admin_plugins_menu/source_control" weight="10">
         <description>Manage DVCS Accounts</description>

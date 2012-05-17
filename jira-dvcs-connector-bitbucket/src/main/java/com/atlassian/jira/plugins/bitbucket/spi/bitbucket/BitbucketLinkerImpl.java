@@ -1,5 +1,12 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.BitbucketClient;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.BitbucketClientException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.RepositoryLink;
@@ -12,17 +19,11 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 
 public class BitbucketLinkerImpl implements BitbucketLinker
 {
-    private final Logger log = LoggerFactory.getLogger(BitbucketRepositoryManager.class);
+    private final Logger log = LoggerFactory.getLogger(BitbucketLinkerImpl.class);
 
     private final String baseUrl;
 

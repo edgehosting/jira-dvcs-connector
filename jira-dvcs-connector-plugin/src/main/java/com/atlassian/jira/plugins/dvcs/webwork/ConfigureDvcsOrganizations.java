@@ -11,35 +11,23 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
-import com.atlassian.sal.api.ApplicationProperties;
 
 /**
  * Webwork action used to configure the bitbucket organizations
  */
 public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 {
-	private static final long serialVersionUID = 8695500426304238626L;
-
 	private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
-
-	private final String baseUrl;
 
 	private String postCommitRepositoryType;
 	private final FeatureManager featureManager;
 
 	private final OrganizationService organizationService;
 
-	public ConfigureDvcsOrganizations(OrganizationService organizationService,
-			ApplicationProperties applicationProperties, FeatureManager featureManager)
+    public ConfigureDvcsOrganizations(OrganizationService organizationService, FeatureManager featureManager)
 	{
 		this.organizationService = organizationService;
-		baseUrl = applicationProperties.getBaseUrl();
 		this.featureManager = featureManager;
-	}
-
-	@Override
-	protected void doValidation()
-	{
 	}
 
 	@Override
@@ -53,10 +41,8 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
 	public Organization[] loadOrganizations()
 	{
-
 		List<Organization> allOrganizations = organizationService.getAll(true);
 		return allOrganizations.toArray(new Organization[]{});
-		
 	}
 
 	public String getPostCommitRepositoryType()
