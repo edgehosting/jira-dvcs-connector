@@ -1,17 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.google.common.collect.Sets;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
@@ -117,5 +119,12 @@ public class ChangesetServiceImpl implements ChangesetService
     {
         final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
         return communicator.getUserUrl(repository, changeset);
+    }
+
+    @Override
+    public Iterable<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf)
+    {
+        List<Changeset> changesets = changesetDao.getLatestChangesets(maxResults, gf);
+        return Sets.newHashSet(changesets);
     }
 }

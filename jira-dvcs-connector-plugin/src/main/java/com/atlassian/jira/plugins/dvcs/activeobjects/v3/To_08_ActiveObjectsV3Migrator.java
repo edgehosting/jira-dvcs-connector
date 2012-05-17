@@ -1,14 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
@@ -16,6 +7,14 @@ import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Map;
 
 /**
  *  Data migration from jira-github-connector plugin to jira-bitbucket-connector plugin
@@ -161,7 +160,9 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         {
             Map<String, Object> changesetMap = Maps.newHashMap();
             changesetMap.put(ChangesetMapping.REPOSITORY_ID, old2New.get(issueMapping.getRepositoryId()));
-            changesetMap.put(ChangesetMapping.ISSUE_KEY, issueMapping.getIssueId());
+            final String issueKey = issueMapping.getIssueId();
+            changesetMap.put(ChangesetMapping.ISSUE_KEY, issueKey);
+            changesetMap.put(ChangesetMapping.PROJECT_KEY, issueKey.substring(0, issueKey.indexOf("-")));
             changesetMap.put(ChangesetMapping.NODE, issueMapping.getNode());
             changesetMap.put(ChangesetMapping.RAW_AUTHOR, issueMapping.getRawAuthor());
             changesetMap.put(ChangesetMapping.AUTHOR, issueMapping.getAuthor());

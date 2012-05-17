@@ -41,29 +41,12 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
     </ao>
 
-    <component key="reEncryptor" name="reEncryptor" class="com.atlassian.jira.plugins.dvcs.activeobjects.v3.PasswordReEncryptor" />
-    
-    <component key="executorService" name="Executor Service Factory Component"
-            class="com.atlassian.jira.plugins.bitbucket.DefaultExecutorServiceFactoryBean">
-        <description>ExecutorService factory bean for creating executor services</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.ExecutorServiceFactoryBean</interface>
-    </component>
-
-    <component key="issueLinker" name="issueLinker" class="com.atlassian.jira.plugins.bitbucket.IssueLinkerImpl">
-        <interface>com.atlassian.jira.plugins.bitbucket.api.IssueLinker</interface>
-    </component>
-
-    <component key="responseHandlerFactory" name="responseHandlerFactory"
-            class="com.atlassian.jira.plugins.bitbucket.api.net.DefaultExtendedResponseHandlerFactory">
-        <interface>com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandlerFactory</interface>
-    </component>
-
-    <component key="repositoryPersister" name="Repository Persister"
-               class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister">
-        <description>A Service for storing data in ActiveObjects</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.api.ChangesetCache</interface>
-        <interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister</interface>
-    </component>
+    <!--<component key="repositoryPersister" name="Repository Persister"-->
+               <!--class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister">-->
+        <!--<description>A Service for storing data in ActiveObjects</description>-->
+        <!--<interface>com.atlassian.jira.plugins.bitbucket.api.ChangesetCache</interface>-->
+        <!--<interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister</interface>-->
+    <!--</component>-->
 
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
                class="com.atlassian.jira.plugins.bitbucket.activeobjects.DefaultBitbucketProjectSettings">
@@ -71,19 +54,22 @@
         <interface>com.atlassian.jira.plugins.bitbucket.activeobjects.BitbucketProjectSettings</interface>
     </component>
 
-    <!--<component key="globalRepositoryManager" name="globalRepositoryManager"-->
-               <!--class="com.atlassian.jira.plugins.bitbucket.GlobalRepositoryManager">-->
-        <!--<description>globalRepositoryManager</description>-->
-        <!--<interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryManager</interface>-->
-    <!--</component>-->
+    <component key="issueLinker" name="issueLinker" class="com.atlassian.jira.plugins.dvcs.webwork.IssueLinkerImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.webwork.IssueLinker</interface>
+    </component>
 
-    <!--<component key="githubRepositoryManager" name="githubRepositoryManager"-->
-               <!--class="com.atlassian.jira.plugins.bitbucket.spi.github.GithubRepositoryManager">-->
-        <!--<description>githubRepositoryManager</description>-->
-        <!--<interface>com.atlassian.jira.plugins.bitbucket.api.RepositoryManager</interface>-->
-    <!--</component>-->
+    <component key="responseHandlerFactory" name="responseHandlerFactory"
+            class="com.atlassian.jira.plugins.dvcs.net.DefaultExtendedResponseHandlerFactory">
+        <interface>com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory</interface>
+    </component>
 
+    <component key="executorService" name="Executor Service Factory Component"
+            class="com.atlassian.jira.plugins.dvcs.sync.impl.DefaultExecutorServiceFactoryBean">
+        <description>ExecutorService factory bean for creating executor services</description>
+        <interface>com.atlassian.jira.plugins.dvcs.sync.ExecutorServiceFactoryBean</interface>
+    </component>
 
+    <component key="reEncryptor" name="reEncryptor" class="com.atlassian.jira.plugins.dvcs.activeobjects.v3.PasswordReEncryptor" />
 
     <component key="synchronizer" name="Dvcs Synchronization Service"
                class="com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer">
@@ -268,11 +254,11 @@
         </actions>
     </webwork1>
 
-    <project-operation key="com.atlassian.jira.plugins.projectlink" name="Bitbucket Project Link"
-                       class="com.atlassian.jira.plugins.bitbucket.webwork.ProjectSettings">
-        <resource type="velocity" name="view" location="/templates/com/atlassian/jira/plugins/projectlinks/view.vm"/>
-        <order>100</order>
-    </project-operation>
+    <!--<project-operation key="com.atlassian.jira.plugins.projectlink" name="Bitbucket Project Link"-->
+                       <!--class="com.atlassian.jira.plugins.bitbucket.webwork.ProjectSettings">-->
+        <!--<resource type="velocity" name="view" location="/templates/com/atlassian/jira/plugins/projectlinks/view.vm"/>-->
+        <!--<order>100</order>-->
+    <!--</project-operation>-->
 
     <web-item key="bitbucket_bulk_repo" name="Bitbucket Bulk Repository" section="admin_plugins_menu/source_control" weight="10">
         <description>Manage DVCS Accounts</description>
@@ -306,10 +292,10 @@
  
     <resource type="i18n" name="bitbucket-i18n" location="i18n"/>
 
-    <!--TODO: refactor dependency to RepoManager-->
-    <!--<activity-streams-provider key="bitbucket-streams-provider" name="Bitbucket Streams Provider" i18n-name-key="Bitbucket Connector"-->
-                       <!--class="com.atlassian.jira.plugins.bitbucket.streams.BitbucketStreamsActivityProvider">-->
-    <!--</activity-streams-provider>-->
+
+    <activity-streams-provider key="dvcs-streams-provider" name="Dvcs Streams Provider" i18n-name-key="Bitbucket Connector"
+                       class="com.atlassian.jira.plugins.dvcs.streams.DvcsStreamsActivityProvider">
+    </activity-streams-provider>
 
  
 </atlassian-plugin>

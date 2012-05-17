@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 
 import java.util.List;
 
@@ -13,4 +14,6 @@ public interface ChangesetDao
     Changeset getByNode(int repositoryId, String changesetNode);
 
     List<Changeset> getByIssueKey(String issueKey);
+
+    List<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
 }

@@ -1,16 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
-import java.util.Date;
-
 import net.java.ao.Entity;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
+
+import java.util.Date;
 
 @Table("ChangesetMapping")
 public interface ChangesetMapping extends Entity
 {
     public static final String REPOSITORY_ID = "REPOSITORY_ID";
     public static final String ISSUE_KEY = "ISSUE_KEY";
+    public static final String PROJECT_KEY = "PROJECT_KEY";
     public static final String NODE = "NODE";
     public static final String RAW_AUTHOR = "RAW_AUTHOR";
     public static final String AUTHOR = "AUTHOR";
@@ -32,6 +33,7 @@ public interface ChangesetMapping extends Entity
     int getRepositoryId();
     String getNode();
     String getIssueKey();
+    String getProjectKey();
     String getRawAuthor();
     String getAuthor();
     Date getDate();
@@ -46,7 +48,8 @@ public interface ChangesetMapping extends Entity
 
     void setRepositoryId(int repositoryId);
     void setNode(String node);
-    void setIssueId(String issueId);
+    void setIssueKey(String issueKey);
+    void setProjectKey(String projectKey);
     void setRawAuthor(String rawAuthor);
     void setAuthor(String author);
     void setDate(Date date);

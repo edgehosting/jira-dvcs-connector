@@ -5,8 +5,6 @@ import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
-import com.atlassian.jira.plugins.bitbucket.api.IssueLinker;
-import com.atlassian.jira.plugins.bitbucket.webwork.CommitsIssueAction;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -101,7 +99,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         String authorName = changeset.getRawAuthor();
         String login = changeset.getAuthor();
 
-        String commitURL = changesetService.getCommitUrl(repository, changeset);
+        String commitUrl = changesetService.getCommitUrl(repository, changeset);
 
         Map<ChangesetFile, String> fileCommitUrls = changesetService.getFileCommitUrls(repository, changeset);
         templateMap.put("file_commit_urls", fileCommitUrls);
@@ -119,8 +117,9 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         templateMap.put("login", login);
         templateMap.put("user_name", authorName);
         templateMap.put("commit_message", commitMessage);
-        templateMap.put("commit_url", commitURL);
+        templateMap.put("commit_url", commitUrl);
         templateMap.put("commit_hash", changeset.getNode());
+        templateMap.put("max_visible_files", Changeset.MAX_VISIBLE_FILES);
 
 
         StringWriter sw = new StringWriter();

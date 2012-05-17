@@ -11,15 +11,15 @@ public interface RepositoryDao
      * @param organizationId organizationId
      * @return repositories
      */
-    List<Repository> getAllByOrganization(int organizationId, boolean alsoDeleted);
+    List<Repository> getAllByOrganization(int organizationId, boolean includeDeleted);
 
     /**
      * Gets all repositories across organizations.
      *
-     * @param alsoDeleted the also deleted
+     * @param includeDeleted the also deleted
      * @return the all
      */
-    List<Repository> getAll(boolean alsoDeleted);
+    List<Repository> getAll(boolean includeDeleted);
 
     /**
      * returns repository by ID
