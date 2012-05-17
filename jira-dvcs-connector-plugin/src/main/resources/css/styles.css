@@ -524,7 +524,8 @@ a:hover.repositoryNameLink {
 	margin: 10px !important;
 }
 .dvcs-org-container.aui-toolbar {
-	float: right;
+	/* float: right; */
+	margin-left: 15px;
 	width: auto !important;
 	clear: none !important;
 }
