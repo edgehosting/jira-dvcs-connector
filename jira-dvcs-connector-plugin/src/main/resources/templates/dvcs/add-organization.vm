@@ -173,8 +173,8 @@
 					
 						<div class="aui-dd-parent">
 							<a title="Show Settings" class="toolbar-trigger aui-dd-trigger" href="#" style="heiht: 24px;">
-		                                <span class="icon-tools" style="float: left; height: 22px;"></span>
-		                                <span class="icon icon-dropdown" style="padding-left: 0px; margin-left: 0px"></span>
+		                                <span class="icon-tools-small" style="float: left;"></span>
+		                                <span class="icon icon-dropdown" ></span>
 		                    </a>
 								<ul id="dvcs-organization-controls-$org.id" class=" aui-dropdown dvcs-organization-controls"  >
 								            <li class="dropdown-item">
@@ -188,7 +188,7 @@
 								            
 								            <li class="dropdown-item">
 												 #if($org.dvcsType == "bitbucket")
-								            	<a  href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Password</a>
+								            	<a  href="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Credentials</a>
 												 #else
 												 <a  href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 								            	 #end

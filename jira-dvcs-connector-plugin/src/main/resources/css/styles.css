@@ -559,3 +559,20 @@ html[xmlns] .dclear {
 * html .dclear {
 	height: 1%;
 }
+.dvcs-organization-controls-tool a.aui-dd-trigger {
+	padding: 3px !important;
+}
+.dvcs-organization-controls-tool .icon-tools-small {
+	height: 14px;
+	width: 16px;
+	position: relative;
+	top: 4px;
+	padding: 0px !important;
+	margin: 0px !important;
+
+}
+.dvcs-organization-controls-tool .icon-dropdown {
+	padding: 0px !important;
+	margin: 0px 4px 0px 3px !important;
+	
+}
