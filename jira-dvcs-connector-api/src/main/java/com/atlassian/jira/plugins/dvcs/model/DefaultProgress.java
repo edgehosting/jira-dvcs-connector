@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "sync")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class DefaultProgress implements Progress, ProgressWriter
+public class DefaultProgress implements Progress
 {
 	@XmlAttribute
 	private boolean finished = false;
@@ -30,7 +30,6 @@ public class DefaultProgress implements Progress, ProgressWriter
 	
 	public DefaultProgress()
 	{
-		super();
 	}
 
     @Override
