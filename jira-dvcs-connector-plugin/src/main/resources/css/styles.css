@@ -493,7 +493,9 @@ a:hover.repositoryNameLink {
 }
 .dvcs-repos-table.aui > thead {
 }
-
+.dvcs-repos-table > tbody > tr:HOVER {
+	background-color: #f8f8f8;
+}
 .dvcs-repos-table > thead > tr > th {
 	color: black !important;
 }
