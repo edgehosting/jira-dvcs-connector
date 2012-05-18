@@ -10,11 +10,13 @@
         
         var BASE_URL = "${baseurl}";
         var GH_REQUIRES_AUTH = "$!action.isGithubOauthRequired()";
+        
 
         function init_repositories()
         {
+        	// run timer for repos sync statuses
            	retrieveSyncStatus();
-
+			// bind submit handler
             AJS.$("#repoEntry").submit(dvcsSubmitFormHandler);
         }
      </script>
@@ -183,12 +185,14 @@
 		                    </a>
 								<ul id="dvcs-organization-controls-$org.id" class=" aui-dropdown dvcs-organization-controls"  >
 								            <li class="dropdown-item">
-								            	 <input id="org_autolink_check$org.id" 
-								            	 		class="aui" $!orgAutolink 
-								            	 		type="checkbox" name="org_autolink_check$org.id"
-								            	 		onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" />
-								            	 <label for="org_autolink_check$org.id"> Autolink new repositories</label>
-												 <span style="display:none; width: 16px; height: 16px;" id="org_autolink_check${org.id}working" class="syncicon running">&nbsp;</span>
+								            	 <div class="dvcs-gearmenu-nohide">
+									            	 <input id="org_autolink_check$org.id" 
+									            	 		class="aui" $!orgAutolink 
+									            	 		type="checkbox" name="org_autolink_check$org.id"
+									            	 		onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" />
+									            	 <label for="org_autolink_check$org.id"> Autolink new repositories</label>
+													 <span style="display:none; width: 16px; height: 16px;" id="org_autolink_check${org.id}working" class="syncicon running">&nbsp;</span>
+								            	 </div>
 								            </li>
 								            
 								             <li class="dropdown-item">

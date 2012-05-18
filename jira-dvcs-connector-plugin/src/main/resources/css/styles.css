@@ -526,8 +526,19 @@ select#urlSelect {
 .dvcs-organization-controls {
 }
 .dvcs-org-container .dropdown-item {
-	margin: 10px !important;
 }
+
+.dvcs-org-container .dropdown-item {
+	margin: 9px !important;
+}
+/*
+.dvcs-org-container .dropdown-item.active {
+	background-color: #3C78B5 !important;
+}
+.dvcs-org-container .dropdown-item.active a {
+	color: white !important;
+} */
+
 .dvcs-org-container.aui-toolbar {
 	float: right;
 	width: auto !important;

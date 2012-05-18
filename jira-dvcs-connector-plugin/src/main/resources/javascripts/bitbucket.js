@@ -562,14 +562,34 @@ AJS.$(document).ready(function() {
 	
     if (typeof init_repositories == 'function') {
     	
+    	// cancel annoying leave message even when browser pre-fill some fields
     	window.onbeforeunload = function () {};
     	
-    	AJS.$(".dvcs-organization-controls-tool").dropDown();
-    	
-        init_repositories();
+    	// some organization gear
+    	AJS.$(".dvcs-organization-controls-tool").dvcsGearMenu(
+    			{ noHideItemsSelector : ".dvcs-gearmenu-nohide" }
+    	);
+
+    	// defined in macro
+    	init_repositories();
     }
 
 });
 
+//---------------------------------------------------------
+
+AJS.$.fn.extend({
+	    dvcsGearMenu : function(opts) {
+	    	// original AUI dropdown
+	    	this.dropDown();
+	    	// stop further propagation - causes not hide dropdown menu
+	    	AJS.$(opts.noHideItemsSelector).bind("click", function (e){
+	    		e.stopPropagation();
+	    	});
+	    }
+});
+
+
+DVCS.gearMenu = AJS.Dropdown.extend({});
 
 
