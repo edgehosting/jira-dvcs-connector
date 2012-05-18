@@ -16,30 +16,20 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 public class OrganizationServiceImpl implements OrganizationService
 {
 
-	private OrganizationDao organizationDao;
-	private DvcsCommunicatorProvider dvcsCommunicatorProvider;
-	private RepositoryService repositoryService;
+	private final OrganizationDao organizationDao;
+	private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
+	private final RepositoryService repositoryService;
 
-	public OrganizationServiceImpl()
-	{
-	}
 
-	public void setOrganizationDao(OrganizationDao organizationDao)
-	{
-		this.organizationDao = organizationDao;
-	}
+	public OrganizationServiceImpl(OrganizationDao organizationDao, DvcsCommunicatorProvider dvcsCommunicatorProvider,
+        RepositoryService repositoryService)
+    {
+        this.organizationDao = organizationDao;
+        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
+        this.repositoryService = repositoryService;
+    }
 
-	public void setDvcsCommunicatorProvider(DvcsCommunicatorProvider dvcsCommunicatorProvider)
-	{
-		this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-	}
-
-	public void setRepositoryService(RepositoryService repositoryService)
-	{
-		this.repositoryService = repositoryService;
-	}
-
-	@Override
+    @Override
 	public AccountInfo getAccountInfo(String hostUrl, String accountName)
 	{
 		return dvcsCommunicatorProvider.getAccountInfo(hostUrl, accountName);

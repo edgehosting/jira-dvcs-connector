@@ -1,5 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -8,51 +13,28 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.sal.api.ApplicationProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class RepositoryServiceImpl implements RepositoryService
 {
     private static final Logger log = LoggerFactory.getLogger(RepositoryServiceImpl.class);
 
-	private DvcsCommunicatorProvider communicatorProvider;
-	private RepositoryDao repositoryDao;
-	private Synchronizer synchronizer;
-	private ChangesetService changesetService;
-	private ApplicationProperties applicationProperties;
+	private final DvcsCommunicatorProvider communicatorProvider;
+	private final RepositoryDao repositoryDao;
+	private final Synchronizer synchronizer;
+	private final ChangesetService changesetService;
+	private final ApplicationProperties applicationProperties;
 
-	public RepositoryServiceImpl()
-	{
-	}
+	public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
+        ChangesetService changesetService, ApplicationProperties applicationProperties)
+    {
+        this.communicatorProvider = communicatorProvider;
+        this.repositoryDao = repositoryDao;
+        this.synchronizer = synchronizer;
+        this.changesetService = changesetService;
+        this.applicationProperties = applicationProperties;
+    }
 
-	public void setCommunicatorProvider(DvcsCommunicatorProvider communicatorProvider)
-	{
-		this.communicatorProvider = communicatorProvider;
-	}
-
-	public void setRepositoryDao(RepositoryDao repositoryDao)
-	{
-		this.repositoryDao = repositoryDao;
-	}
-
-	public void setSynchronizer(Synchronizer synchronizer)
-	{
-		this.synchronizer = synchronizer;
-	}
-
-	public void setChangesetService(ChangesetService changesetService)
-	{
-		this.changesetService = changesetService;
-	}
-
-	public void setApplicationProperties(ApplicationProperties applicationProperties)
-	{
-		this.applicationProperties = applicationProperties;
-	}
-
-	@Override
+    @Override
 	public List<Repository> getAllByOrganization(int organizationId, boolean includeDeleted)
 	{
 		return repositoryDao.getAllByOrganization(organizationId, includeDeleted);
