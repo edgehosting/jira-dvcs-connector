@@ -589,7 +589,3 @@ AJS.$.fn.extend({
 	    }
 });
 
-
-DVCS.gearMenu = AJS.Dropdown.extend({});
-
-
