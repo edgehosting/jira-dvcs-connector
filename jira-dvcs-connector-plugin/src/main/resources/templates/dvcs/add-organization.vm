@@ -9,6 +9,7 @@
     <script type="text/javascript">
         
         var BASE_URL = "${baseurl}";
+        var GH_REQUIRES_AUTH = "$!action.isGithubOauthRequired()";
 
         function init_repositories()
         {
@@ -55,14 +56,18 @@
 
                 <input type="hidden" name="atl_token" id="atl_token" value="$atl_token">
                 <input type="hidden" name="isPrivate" id="isPrivate">
+                <input type="hidden" name="url" id="url" >
               
 	            
 	            <div class="aui-item-column1">
                     <div class="field-group" >
-                      <label for="url">Url:</label>
-                      <input type="text" id="url" name="url" value="$textutils.htmlEncode($action.getRepositoryUrl())"/>
+                      <label for="urlSelect">Url:</label>
+                      <select id="urlSelect" name="urlSelect" class="select" onchange="switchDvcsDetails(this)">
+	               		<option value="bitbucket">BitBucket</option>
+	                	<option value="github">GitHub</option>
+	               	  </select>
                       <div class="fieldValue" id="urlReadOnly"></div>
-                      <div id="url-error" class="dvcs-error">Please provide valid URL.</div>
+                      <div id="url-error" class="dvcs-error">Choose URL.</div>
                     </div>
                 </div>
                 <div class="aui-item-column2" id="examples">
@@ -72,7 +77,7 @@
                 </div>
                  <div>
                     <div class="field-group" >
-                      <label for="organization">Organization:</label>
+                      <label for="organization">Account Name:</label>
                       <input type="text" id="organization" name="organization" value=""/>
                       <div class="fieldValue" id="organizationReadOnly"></div>
                       <div id="org-error" class="dvcs-error">This field is required.</div>
@@ -80,10 +85,10 @@
                  </div>
 				
 				## BB form section
-				<div id="bitbucket-form-section" style="display:none">
+				<div id="bitbucket-form-section">
 	                <div class="field-group">
 	                   <label for="adminUsername">Username:</label>
-	                   <input type="text" id="adminUsername" name="adminUsername" value=""/>
+	                   <input type="text" id="adminUsername" name="adminUsername" value="" onfocus="javascript: dvcsCopyOrganizationToUsername();"/>
 	                   <div id="admin-username-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	                <div class="field-group">
@@ -92,7 +97,7 @@
 	                   <div id="admin-password-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	            </div>
-				
+
 				## GH form section
 				<div id="github-form-section" style="display:none">
 					<input type="hidden" id="oauthRequired" name="oauthRequired" value="true" />
@@ -178,7 +183,11 @@
 		                    </a>
 								<ul id="dvcs-organization-controls-$org.id" class=" aui-dropdown dvcs-organization-controls"  >
 								            <li class="dropdown-item">
-								            	 <input id="org_autolink_check$org.id" class="aui" $!orgAutolink type="checkbox" name="autolink-quick" onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" /><label> Autolink new repositories</label>
+								            	 <input id="org_autolink_check$org.id" 
+								            	 		class="aui" $!orgAutolink 
+								            	 		type="checkbox" name="org_autolink_check$org.id"
+								            	 		onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" />
+								            	 <label for="org_autolink_check$org.id"> Autolink new repositories</label>
 												 <span style="display:none; width: 16px; height: 16px;" id="org_autolink_check${org.id}working" class="syncicon running">&nbsp;</span>
 								            </li>
 								            
@@ -202,7 +211,7 @@
 						</li>
 				</ul>
 			</div>
-			<div class="dclear"></div>
+			<div class="dvcs-dclear"></div>
 	</div>				 
 			##       user invitations disabled for now
 			##		 #if($org.dvcsType == "bitbucket")
@@ -250,6 +259,8 @@
 	                            <span id="sync_status_message_$repo.id" class="gh_messages">
 	                                <span class="content"></span>
 	                            </span>
+	                            <span id="sync_error_message_$repo.id" class="gh_messages">
+                           	 </span>
 	                            
 	                            <span>
 				                 	<a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">Sync Repo</a>

@@ -1,5 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -20,19 +34,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 public class BitbucketCommunicator implements DvcsCommunicator
 {
@@ -54,8 +55,17 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         return BITBUCKET;
     }
-
+    
+    /**
+     * Returns always <code>false</code> as we don't support OAuth for BB so far ...
+     */
     @Override
+	public boolean isOauthConfigured()
+	{
+		return false;
+	}
+
+	@Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
         // TODO: it returns 200 even for non-existing ORG!!!
@@ -71,9 +81,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
             }
             if (extendedResponse.isSuccessful())
             {
-                responseString = extendedResponse.getResponseString();
+            
+            	responseString = extendedResponse.getResponseString();
+                // TODO not used, delete if no need
                 final boolean isUserJson = new JSONObject(responseString).has("user");
                 return new AccountInfo(BitbucketCommunicator.BITBUCKET);
+            
             } else
             {
                 log.error("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());

@@ -69,7 +69,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 	{
 		if (StringUtils.isBlank(organization) || StringUtils.isBlank(url))
 		{
-			addErrorMessage("Invalid request, missing url and organization/account information.");
+			addErrorMessage("Invalid request, missing url or organization/account information.");
 		}
 		if (StringUtils.isBlank(adminUsername))
 		{

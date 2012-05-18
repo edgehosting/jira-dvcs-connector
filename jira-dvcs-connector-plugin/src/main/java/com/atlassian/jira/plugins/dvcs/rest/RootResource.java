@@ -192,5 +192,5 @@ public class RootResource
 		repositoryService.enableAutolinkCommits(id, Boolean.parseBoolean(autolink.getPayload()));
 		return Response.noContent().build();
 	}
-
+	
 }

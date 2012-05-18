@@ -1,5 +1,26 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -20,26 +41,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.User;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.service.RepositoryService;
-import org.eclipse.egit.github.core.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 // todo: treba nam aj CachingCommunicator
 
@@ -58,31 +59,20 @@ public class GithubCommunicator implements DvcsCommunicator
     {
     }
 
-    public void setChangesetService(ChangesetService changesetService)
-    {
-        this.changesetService = changesetService;
-    }
+    @Override
+	public boolean isOauthConfigured()
+	{
+		return StringUtils.isNotBlank(githubOAuth.getClientId()) 
+				&& StringUtils.isNotBlank(githubOAuth.getClientSecret());
+	}
 
-    public void setRequestHelper(RequestHelper requestHelper)
-    {
-        this.requestHelper = requestHelper;
-    }
-
-    public void setAuthenticationFactory(AuthenticationFactory authenticationFactory)
-    {
-        this.authenticationFactory = authenticationFactory;
-    }
-
-    public void setGithubOAuth(GithubOAuth githubOAuth)
-    {
-        this.githubOAuth = githubOAuth;
-    }
-
+	
     @Override
     public String getDvcsType()
     {
         return GITHUB;
     }
+    
 
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
@@ -90,10 +80,13 @@ public class GithubCommunicator implements DvcsCommunicator
         UserService userService = new UserService(GitHubClient.createClient(hostUrl));
         try
         {
+        	// TODO not used, delete if no need
             User user = userService.getUser(accountName);
+            
             boolean requiresOauth = StringUtils.isBlank(githubOAuth.getClientId()) || StringUtils.isBlank(githubOAuth.getClientSecret());
 
             return new AccountInfo(GithubCommunicator.GITHUB, requiresOauth);
+            
         } catch (IOException e)
         {
             log.debug("Unable to retrieve account information ", e);
@@ -405,6 +398,26 @@ public class GithubCommunicator implements DvcsCommunicator
 	{
 		throw new UnsupportedOperationException("You can not invite users to github so far, ...");
 	}
+
+	public void setChangesetService(ChangesetService changesetService)
+    {
+        this.changesetService = changesetService;
+    }
+
+    public void setRequestHelper(RequestHelper requestHelper)
+    {
+        this.requestHelper = requestHelper;
+    }
+
+    public void setAuthenticationFactory(AuthenticationFactory authenticationFactory)
+    {
+        this.authenticationFactory = authenticationFactory;
+    }
+
+    public void setGithubOAuth(GithubOAuth githubOAuth)
+    {
+        this.githubOAuth = githubOAuth;
+    }
 
     
 }

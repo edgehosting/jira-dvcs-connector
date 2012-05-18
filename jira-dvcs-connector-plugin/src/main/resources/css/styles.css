@@ -520,17 +520,28 @@ a:hover.repositoryNameLink {
 	border-top: none;
 }
 
+select#urlSelect {
+	width: 387px;
+}
 .dvcs-organization-controls {
 }
 .dvcs-org-container .dropdown-item {
 	margin: 10px !important;
 }
 .dvcs-org-container.aui-toolbar {
-	/* float: right; */
-	margin-left: 15px;
+	float: right;
 	width: auto !important;
 	clear: none !important;
 }
+
+.dvcs-org-container.aui-toolbar .aui-dropdown a {
+	margin-left: 0px !important;
+}
+.dvcs-org-container.aui-toolbar .aui-dropdown input {
+	position: relative;
+	top: 3px;
+}
+
 .aui.bitbucketLogo, .aui.githubLogo {
 	float: left;
 	position: relative;
@@ -542,7 +553,7 @@ a:hover.repositoryNameLink {
 	height: 25px;
 	vertical-align: bottom;
 }
-.dclear:after {
+.dvcs-clear:after {
 	content: ".";
 	display: block;
 	clear: both;
@@ -551,15 +562,15 @@ a:hover.repositoryNameLink {
 	height: 0;
 }
  
-.dclear {
+.dvcs-dclear {
 	display: inline-block;
 }
  
-html[xmlns] .dclear {
+html[xmlns] .dvcs-dclear {
 	display: block;
 }
  
-* html .dclear {
+* html .dvcs-dclear {
 	height: 1%;
 }
 .dvcs-organization-controls-tool a.aui-dd-trigger {
@@ -578,4 +589,10 @@ html[xmlns] .dclear {
 	padding: 0px !important;
 	margin: 0px 4px 0px 3px !important;
 	
+}
+#bitbucket-form-section {
+	margin-top: 10px;
+}
+#github-form-section {
+	margin-top: 10px;
 }

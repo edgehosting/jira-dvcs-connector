@@ -9,6 +9,8 @@ import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -29,10 +31,13 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
 	private final OrganizationService organizationService;
 
+	private final DvcsCommunicatorProvider communicatorProvider;
+
 	public ConfigureDvcsOrganizations(OrganizationService organizationService,
-			ApplicationProperties applicationProperties, FeatureManager featureManager)
+			ApplicationProperties applicationProperties, FeatureManager featureManager, DvcsCommunicatorProvider communicatorProvider)
 	{
 		this.organizationService = organizationService;
+		this.communicatorProvider = communicatorProvider;
 		baseUrl = applicationProperties.getBaseUrl();
 		this.featureManager = featureManager;
 	}
@@ -72,5 +77,9 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	public boolean isOnDemandLicense()
 	{
 		return featureManager.isEnabled(CoreFeatures.ON_DEMAND);
+	}
+	
+	public boolean isGithubOauthRequired() {
+		return !communicatorProvider.getCommunicator(GithubCommunicator.GITHUB).isOauthConfigured();
 	}
 }

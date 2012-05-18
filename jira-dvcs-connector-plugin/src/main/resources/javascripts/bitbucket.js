@@ -19,15 +19,56 @@ function toggleMoreFiles(target_div) {
 
 
 function switchDvcsDetails(selectSwitch) {
+	
+	
 	var dvcsType = selectSwitch.selectedIndex;
+	switchDvcsDetailsInternal(dvcsType);
+}
+
+function switchDvcsDetailsInternal(dvcsType) {
+	
+	// clear all form errors
+	DvcsValidator.clearAllErrors();
+
+	// impose real URL to hidden input
+	AJS.$("#url").val( dvcsKnownUrls[AJS.$("#urlSelect option:selected").val()] ); 
+	AJS.$("#organization").focus().select();
+
 	if (dvcsType == 0) {
-		AJS.$('#repoEntry').attr('action', '/secure/admin/AddBitbucketOrganization.jspa');
+		
+		
 		AJS.$('#github-form-section').hide();
-		AJS.$('#bitbucket-form-section').fadeIn();
+		
+		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
+
+		// hide examples
+		AJS.$('#examples').hide();
+
+		//show username / password
+		AJS.$("#bitbucket-form-section").fadeIn();
+		
+
 	} else if (dvcsType == 1) {
-		AJS.$('#repoEntry').attr('action', '/secure/admin/AddGithubOrganization.jspa');
+
 		AJS.$('#bitbucket-form-section').hide();
-		AJS.$('#github-form-section').fadeIn();
+		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
+		
+		if (GH_REQUIRES_AUTH == "true") {
+			
+			// we need oauth ...
+			
+			// hide examples
+			AJS.$('#examples').hide();
+			
+			AJS.$("#github-form-section").fadeIn();
+
+		} else {
+			
+			AJS.$("#oauthRequired").val("");
+
+		}
+		
+		
 	}  
 }
 
@@ -117,11 +158,10 @@ function showAddRepoDetails(show) {
 		AJS.$('#repoEntry').attr("action", "");
 		
 		// - hide username/password
-		AJS.$("#bitbucket-form-section").hide();
 		AJS.$("#github-form-section").hide();
 
 		// - show url, organization field
-		AJS.$('#url').show();
+		AJS.$('#urlSelect').show();
 		AJS.$('#urlReadOnly').hide();
 
 		AJS.$('#organization').show();
@@ -135,15 +175,20 @@ function showAddRepoDetails(show) {
 		
 		// clear all form errors
 		DvcsValidator.clearAllErrors();
+		
+		// enable bitbucket form
+		switchDvcsDetailsInternal(0);
 
 		AJS.$('#linkRepositoryButton').fadeOut(function() {
 			AJS.$('#addRepositoryDetails').slideDown();
+			AJS.$("#organization").focus().select();
 		});
 
 	} else {
 
 		AJS.$('#addRepositoryDetails').slideUp(function() {
 			AJS.$('#linkRepositoryButton').fadeIn();
+			AJS.$("#organization").focus().select();
 		});
 
 	}
@@ -153,24 +198,35 @@ function dvcsSubmitFormHandler() {
     AJS.$('#Submit').attr("disabled", "disabled");
 
     // submit form
+    var organizationElement = AJS.$("#organization");
     
-    if (AJS.$('#repoEntry').attr("action")) {
-    	
+    // if not custom URL
+    if ( !dvcsContainsSlash( organizationElement.val()) ) {
+    	// some really simple validation
     	if (!validateAddOrganizationForm()) {
-        	AJS.$('#Submit').removeAttr("disabled");
-        	return false;
-        }
-    	
+    		AJS.$('#Submit').removeAttr("disabled");
+    		return false;
+    	}
+    	//
         AJS.messages.hint({ title: "Obtaining information...", body: "Trying to obtain repositories information."});
-		return true; // submit form
+        // set url by selected type
+        return true; // submit form
 	}
 
+    // else - lets try to identify account
+    
+    
     // account info
     
     if (!validateAccountInfoForm()) {
     	AJS.$('#Submit').removeAttr("disabled");
     	return false;
     }
+    
+    var account = dvcsGetAccountNameFromUrl(AJS.$("#organization").val());
+    var dvcsUrl = dvcsGetUrlFromAccountUrl(AJS.$("#organization").val());
+    AJS.$("#url").val(dvcsUrl);
+    AJS.$("#organization").val(account);
 
     AJS.$("#aui-message-bar").empty();
     
@@ -208,8 +264,6 @@ function validateAccountInfoForm() {
 
 	var validator = new DvcsValidator();
 	
-	validator.addItem("url", "url-error", "required");
-	validator.addItem("url", "url-error", "url");
 	validator.addItem("organization", "org-error", "required");
 
 	return validator.runValidation();
@@ -220,7 +274,6 @@ function validateAddOrganizationForm() {
 	
 	var validator = new DvcsValidator();
 	
-	validator.addItem("url", "url-error", "required");
 	validator.addItem("organization", "org-error", "required");
 	
 	if (AJS.$("#oauthClientId").is(":visible")) {
@@ -235,6 +288,7 @@ function validateAddOrganizationForm() {
 	
 }
 
+// TBD
 var dvcsSubmitFormAjaxHandler = {
 
 		"bitbucket": function(data){
@@ -243,7 +297,7 @@ var dvcsSubmitFormAjaxHandler = {
 
 			// hide url input box
 			AJS.$('#urlReadOnly').html(AJS.$('#url').val());
-			AJS.$('#url').hide(); 
+			AJS.$('#urlSelect').hide(); 
 			AJS.$('#urlReadOnly').show();
 			
 			// hide examples
@@ -254,7 +308,7 @@ var dvcsSubmitFormAjaxHandler = {
 			AJS.$("#adminUsername").focus().select();
 		}, 
 
-		"github":function(data) {
+		"github": function(data) {
 			
 			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
 			
@@ -263,7 +317,7 @@ var dvcsSubmitFormAjaxHandler = {
 				// we need oauth ...
 				
 				AJS.$('#urlReadOnly').html(AJS.$('#url').val());
-				AJS.$('#url').hide(); 
+				AJS.$('#urlSelect').hide(); 
 				AJS.$('#urlReadOnly').show();
 				
 				// hide examples
@@ -457,8 +511,58 @@ function dvcsShowHidePanel(id) {
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
+var dvcsKnownUrls = {
+		
+		"bitbucket" : "https://bitbucket.org",
+		"github" : "https://github.com"
+};
+
+function dvcsContainsSlash(stringType) {
+	
+	return stringType.indexOf("/") != -1;
+	
+};
+
+function dvcsGetAccountNameFromUrl (stringType) {
+	
+	// case of i.e. https://bitbucket.org/someuser/
+	if (dvcsEndsWith(stringType, "/")) {
+		stringType = stringType.substring(0, stringType.length - 1);
+	}
+
+	var extracted = stringType.substring(stringType.lastIndexOf("/") + 1, stringType.length);
+	return extracted.replace("/");
+}
+
+function dvcsGetUrlFromAccountUrl (stringType) {
+	
+	// case of i.e. https://bitbucket.org/someuser/
+	if (dvcsEndsWith(stringType, "/")) {
+		stringType = stringType.substring(0, stringType.length - 1);
+	}
+
+	return stringType.substring(0, stringType.lastIndexOf("/"));
+}
+
+function dvcsEndsWith (stringType, suffix) {
+	  return stringType.indexOf(suffix, stringType.length - suffix.length) !== -1;
+}
+
+function dvcsCopyOrganizationToUsername() {
+	if (AJS.$("#organization").val() && !dvcsContainsSlash(AJS.$("#organization").val())) {
+		if (AJS.$("#adminUsername").val().length == 0) {
+			AJS.$("#adminUsername").val(AJS.$("#organization").val());
+			AJS.$("#adminUsername").focus().select();
+		}
+	}
+}
+//------------------------------------------------------------
+
 AJS.$(document).ready(function() {
+	
     if (typeof init_repositories == 'function') {
+    	
+    	window.onbeforeunload = function () {};
     	
     	AJS.$(".dvcs-organization-controls-tool").dropDown();
     	
