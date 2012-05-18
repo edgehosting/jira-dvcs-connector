@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -130,6 +131,11 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 		{
 			addErrorMessage("Failed adding the organization: [" + e.getMessage() + "]");
 			log.debug("Failed adding the organization: [" + e.getMessage() + "]");
+			return INPUT;
+		} catch (InvalidCredentialsException e)
+		{
+			addErrorMessage("Failed adding the organization: [" + e.getMessage() + "]");
+			log.debug("Invalid credentials : Failed adding the organization: [" + e.getMessage() + "]");
 			return INPUT;
 		}
 

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
@@ -86,6 +87,11 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 		{
 			addErrorMessage("Failed adding the organization: [" + e.getMessage() + "]");
 			log.debug("Failed adding the organization: [" + e.getMessage() + "]");
+			return INPUT;
+		} catch (InvalidCredentialsException e)
+		{
+			addErrorMessage("Failed adding the organization: [" + e.getMessage() + "]");
+			log.debug("Invalid credentials : Failed adding the organization: [" + e.getMessage() + "]");
 			return INPUT;
 		}
 

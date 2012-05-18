@@ -8,7 +8,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
+import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
@@ -101,15 +103,19 @@ public class OrganizationServiceImpl implements OrganizationService
 	@Override
 	public Organization save(Organization organization)
 	{
-		// todo: uz taku mame. co s Login a Passwd. mozno to treba ziastovat uz
-		// skor a na UI
 		Organization org = organizationDao.getByHostAndName(organization.getHostUrl(), organization.getName());
-
-		// it's brand new organization. save it.
-		if (org == null)
-		{
-			org = organizationDao.save(organization);
+		if (org != null) {
+			// nop;
+			// we've already have this organization, don't save another one
+			//
+			return org;
 		}
+		
+		//
+		// it's brand new organization. save it.
+		//
+		checkCredentials(organization);
+		org = organizationDao.save(organization);
 
 		// sync repository list
 		repositoryService.syncRepositoryList(org);
@@ -127,7 +133,15 @@ public class OrganizationServiceImpl implements OrganizationService
 	@Override
 	public void updateCredentials(int organizationId, String username, String plaintextPassword)
 	{
-		// TODO check if new credential works
+		// TODO check if new credential works #checkCredentials() not implemented 
+		
+		// Check credentials
+		// create organization with plain credentials as we need all data like url, etc
+		//
+		Organization organization = organizationDao.get(organizationId);
+		organization.setCredential(new Credential(username, plaintextPassword, null));
+		checkCredentials(organization);
+		
 		organizationDao.updateCredentials(organizationId, username, plaintextPassword, null);
 	}
 
@@ -136,6 +150,15 @@ public class OrganizationServiceImpl implements OrganizationService
 	{
 
 		// TODO check if new credential works
+		
+		// Check credentials
+		// create organization with plain credentials as we need all data like url, etc
+		//
+		Organization organization = organizationDao.get(organizationId);
+		organization.setCredential(new Credential(null, null, accessToken));
+		checkCredentials(organization);
+		//
+		
 		organizationDao.updateCredentials(organizationId, null, null, accessToken);
 
 	}
@@ -178,5 +201,17 @@ public class OrganizationServiceImpl implements OrganizationService
 		}
 		
 	}
+
+	@Override
+	public boolean checkCredentials(Organization forOrganizationWithPlainCredentials) throws InvalidCredentialsException
+	{
+		Credential credentials = forOrganizationWithPlainCredentials.getCredential();
+		
+		// GO GO GO
+		
+		return false;
+	}
+	
+	
 
 }

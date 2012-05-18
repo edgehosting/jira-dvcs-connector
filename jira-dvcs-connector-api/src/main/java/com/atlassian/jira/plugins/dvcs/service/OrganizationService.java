@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 import java.util.Collection;
 import java.util.List;
 
+import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 
@@ -100,5 +101,22 @@ public interface OrganizationService
 	 */
 	List<Organization> getAllByIds(Collection<Integer> ids);
 
+	/**
+	 * Gets the all.
+	 *
+	 * @param loadRepositories the load repositories
+	 * @param type the type
+	 * @return the all
+	 */
 	List<Organization> getAll(boolean loadRepositories, String type);
+	
+	/**
+	 * Check credentials.
+	 *
+	 * @param forOrganization the for organization
+	 * @return true, if check credentials are valid
+	 * @throws InvalidCredentialsException the invalid credentials exception if credentials seems
+	 * to be invalid
+	 */
+	boolean checkCredentials(Organization forOrganizationWithPlainCredentials) throws InvalidCredentialsException;
 }
