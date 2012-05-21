@@ -22,97 +22,44 @@ public class GlobalFilterQueryWhereClauseBuilder
         StringBuilder whereClauseUsersSb = new StringBuilder();
         if (gf != null)
         {
+
             if (gf.getInProjects() != null && gf.getInProjects().iterator().hasNext())
             {
-                for (String projectKey : gf.getInProjects())
-                {
-                    if (StringUtils.isBlank(projectKey))
-                    {
-                        continue;
-                    }
-                    if (whereClauseProjectsSb.length() != 0)
-                    {
-                        whereClauseProjectsSb.append(" OR ");
-                    }
-                    whereClauseProjectsSb.append("ISSUE_KEY like '").append(projectKey).append("-%'");
-                }
+                whereClauseProjectsSb.append("PROJECT_KEY in ").append(joinStrigsToSet(gf.getInProjects())).append(" ");
             }
             if (gf.getNotInProjects() != null && gf.getNotInProjects().iterator().hasNext())
             {
-                for (String projectKey : gf.getNotInProjects())
+                if (whereClauseProjectsSb.length() != 0)
                 {
-                    if (StringUtils.isBlank(projectKey))
-                    {
-                        continue;
-                    }
-                    if (whereClauseProjectsSb.length() != 0)
-                    {
-                        whereClauseProjectsSb.append(" AND ");
-                    }
-                    whereClauseProjectsSb.append("ISSUE_KEY not like '").append(projectKey).append("-%'");
+                    whereClauseProjectsSb.append(" AND ");
                 }
+
+
+                whereClauseProjectsSb.append("PROJECT_KEY not in ").append(joinStrigsToSet(gf.getNotInProjects())).append(" ");
             }
 
             if (gf.getInIssues() != null && gf.getInIssues().iterator().hasNext())
             {
-                for (String issueKey : gf.getInIssues())
-                {
-                    if (StringUtils.isBlank(issueKey))
-                    {
-                        continue;
-                    }
-                    if (whereClauseIssueKyesSb.length() != 0)
-                    {
-                        whereClauseIssueKyesSb.append(" OR ");
-                    }
-                    whereClauseIssueKyesSb.append("ISSUE_KEY like '").append(issueKey.toUpperCase()).append("'");
-                }
+                whereClauseIssueKyesSb.append("ISSUE_KEY in ").append(joinStrigsToSet(gf.getInIssues())).append(" ");
             }
             if (gf.getNotInIssues() != null && gf.getNotInIssues().iterator().hasNext())
             {
-                for (String issueKey : gf.getNotInIssues())
+                if (whereClauseIssueKyesSb.length() != 0)
                 {
-                    if (StringUtils.isBlank(issueKey))
-                    {
-                        continue;
-                    }
-                    if (whereClauseIssueKyesSb.length() != 0)
-                    {
-                        whereClauseIssueKyesSb.append(" AND ");
-                    }
-                    whereClauseIssueKyesSb.append("ISSUE_KEY not like '").append(issueKey.toUpperCase()).append("'");
+                    whereClauseIssueKyesSb.append(" AND ");
                 }
+
+
+                whereClauseIssueKyesSb.append("ISSUE_KEY not in ").append(joinStrigsToSet(gf.getNotInIssues())).append(" ");
             }
 
             if (gf.getInUsers() != null && gf.getInUsers().iterator().hasNext())
             {
-                for (String username : gf.getInUsers())
-                {
-                    if (StringUtils.isBlank(username))
-                    {
-                        continue;
-                    }
-                    if (whereClauseUsersSb.length() != 0)
-                    {
-                        whereClauseUsersSb.append(" OR ");
-                    }
-                    whereClauseUsersSb.append("AUTHOR like '").append(username).append("'");
-                }
+                whereClauseUsersSb.append("AUTHOR in ").append(joinStrigsToSet(gf.getInUsers())).append(" ");
             }
             if (gf.getNotInUsers() != null && gf.getNotInUsers().iterator().hasNext())
             {
-                for (String username : gf.getNotInUsers())
-                {
-                    if (StringUtils.isBlank(username))
-                    {
-                        continue;
-                    }
-                    if (whereClauseUsersSb.length() != 0)
-                    {
-                        whereClauseUsersSb.append(" AND ");
-                    }
-                    whereClauseUsersSb.append("AUTHOR not like '").append(username).append("'");
-                }
+                whereClauseUsersSb.append("AUTHOR not in ").append(joinStrigsToSet(gf.getInUsers())).append(" ");
             }
         }
         StringBuilder whereClauseSb = new StringBuilder();
@@ -143,5 +90,23 @@ public class GlobalFilterQueryWhereClauseBuilder
             whereClauseSb.append(" true ");
         }
         return whereClauseSb.toString();
+    }
+
+    private StringBuilder joinStrigsToSet(Iterable<String> strings)
+    {
+        StringBuilder builder = new StringBuilder("(");
+        for (String string : strings)
+        {
+            if(StringUtils.isEmpty(string)) {
+                continue;
+            }
+            if (builder.length() > 1) {
+                builder.append(", ");
+            }
+            builder.append("'").append(string).append("'");
+        }
+        builder.append(")");
+
+        return builder;
     }
 }
