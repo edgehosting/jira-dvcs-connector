@@ -39,16 +39,29 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         linkRepositoryButton.click();
         waitFormBecomeVisible();
 
-        urlTextbox.clear().type(url);
+        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
+        
         organization.clear().type("jirabitbucketconnector");
+        
         setPageAsOld();
-        addOrgButton.click();
 
+        if (!autoSync) {
+        	autoLinkNewRepos.click();
+        }
+        
+        addOrgButton.click();
+        
         checkAndDoGithubLogin();
+        
         String githubWebLoginRedirectUrl = authorizeGithubAppIfRequired();
+       
         if (!githubWebLoginRedirectUrl.contains("/jira/"))
         {
             Assert.fail("Expected was Valid OAuth login and redirect to JIRA!");
+        }
+
+        if (autoSync) {
+        	checkSyncProcessSuccess();
         }
         
         return this;
@@ -100,7 +113,9 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
     private String checkAndDoGithubLogin()
     {
-        waitWhileNewPageLaoded();
+        
+    	waitWhileNewPageLaoded();
+        
         String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
         if (currentUrl.contains("https://github.com/login?"))
         {
@@ -131,6 +146,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     private String authorizeGithubAppIfRequired()
     {
         waitWhileNewPageLaoded();
+        
         String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
         if (currentUrl.contains("/github.com/login/oauth"))
         {

@@ -13,7 +13,9 @@ import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 
 public class OrganizationServiceImpl implements OrganizationService
 {
@@ -115,6 +117,7 @@ public class OrganizationServiceImpl implements OrganizationService
 		// it's brand new organization. save it.
 		//
 		checkCredentials(organization);
+		//
 		org = organizationDao.save(organization);
 
 		// sync repository list
@@ -203,13 +206,18 @@ public class OrganizationServiceImpl implements OrganizationService
 	}
 
 	@Override
-	public boolean checkCredentials(Organization forOrganizationWithPlainCredentials) throws InvalidCredentialsException
+	public void checkCredentials(Organization forOrganizationWithPlainCredentials) throws InvalidCredentialsException
 	{
-		Credential credentials = forOrganizationWithPlainCredentials.getCredential();
 		
-		// GO GO GO
+		// validate just bitbucket credentials for now
+		if (BitbucketCommunicator.BITBUCKET.equalsIgnoreCase(forOrganizationWithPlainCredentials.getDvcsType())) {
+			DvcsCommunicator bitbucket = dvcsCommunicatorProvider.getCommunicator(BitbucketCommunicator.BITBUCKET);
+			boolean valid = bitbucket.validateCredentials(forOrganizationWithPlainCredentials);
+			if (!valid) {
+				throw new InvalidCredentialsException("Invalid credentials.");
+			}
+		}
 		
-		return false;
 	}
 	
 	

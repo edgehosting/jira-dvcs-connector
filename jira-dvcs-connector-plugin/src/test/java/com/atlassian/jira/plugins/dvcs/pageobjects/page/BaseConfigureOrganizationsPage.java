@@ -14,6 +14,7 @@ import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
 import com.atlassian.pageobjects.elements.query.TimedQuery;
@@ -50,6 +51,9 @@ public abstract class BaseConfigureOrganizationsPage implements Page
    
     @ElementBy(id = "autoLinking")
     PageElement autoLinkNewRepos;
+    
+    @ElementBy(id = "urlSelect")
+    SelectElement dvcsTypeSelect;
 
     protected JiraTestedProduct jiraTestedProduct;
 
@@ -65,10 +69,10 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     {
         List<BitBucketOrganization> list = new ArrayList<BitBucketOrganization>();
        
-        for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-org-container"))) {
+        for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-orgdata-container"))) {
         	
-        	 orgContainer.find(By.className("dvcs-controls-showhide")).click();
-        	 Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-organization-controls")).timed().isVisible());
+        	 orgContainer.find(By.className("dvcs-org-container")).click();
+        	 Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-org-container")).timed().isVisible());
         	 
              list.add(pageBinder.bind(BitBucketOrganization.class, orgContainer));
              

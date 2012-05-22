@@ -12,6 +12,7 @@
     <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddBitbucketOrganization.jspa" class="aui">
       <h2>New Bitbucket repository</h2>
       <input type="hidden" name="atl_token" value="$atl_token">
+      <input type="hidden" name="autoLinking" id="autoLinking" value="$action.autoLinking">
 
       <fieldset>
          <div class="field-group">

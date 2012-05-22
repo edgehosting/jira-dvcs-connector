@@ -1,16 +1,19 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.fail;
 
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.atlassian.jira.plugins.bitbucket.api.rest.AccountInfo;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.UniformInterfaceException;
 
+@Ignore // TBM to IT
 public class TestAccountInfoDetection
 {
 

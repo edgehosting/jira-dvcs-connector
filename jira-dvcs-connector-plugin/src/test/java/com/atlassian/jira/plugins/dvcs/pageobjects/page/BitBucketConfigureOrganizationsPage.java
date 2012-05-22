@@ -28,11 +28,11 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         linkRepositoryButton.click();
         waitFormBecomeVisible();
         
-        urlTextbox.clear().type(url);
-        organization.clear().type("jirabitbucketconnector");
-        addOrgButton.click();
+        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(0));
         
-        if (autoSync) {
+        organization.clear().type("jirabitbucketconnector");
+        
+        if (!autoSync) {
         	autoLinkNewRepos.click();
         }
         

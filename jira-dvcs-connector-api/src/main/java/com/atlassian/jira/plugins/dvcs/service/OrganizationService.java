@@ -114,9 +114,8 @@ public interface OrganizationService
 	 * Check credentials.
 	 *
 	 * @param forOrganization the for organization
-	 * @return true, if check credentials are valid
 	 * @throws InvalidCredentialsException the invalid credentials exception if credentials seems
 	 * to be invalid
 	 */
-	boolean checkCredentials(Organization forOrganizationWithPlainCredentials) throws InvalidCredentialsException;
+	void checkCredentials(Organization forOrganizationWithPlainCredentials) throws InvalidCredentialsException;
 }

@@ -20,7 +20,7 @@ public class BitBucketOrganization
     @Inject
     PageElementFinder elementFinder;
     
-    @ElementBy(className = "dvcs-controls-showhide")
+    @ElementBy(className = "dvcs-org-container")
     PageElement showSettings;
 
     @ElementBy(tagName = "table")

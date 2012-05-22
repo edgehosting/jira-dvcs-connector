@@ -208,7 +208,7 @@
 					   			 	 		</li>
 				
 								            <li class="dropdown-item">
-								            	 <a  dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Delete</a>
+								            	 <a  class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Delete</a>
 								            </li>
 								 </ul>
 							</div>
