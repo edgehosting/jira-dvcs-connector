@@ -172,4 +172,10 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     {
         return delegate.getFileCommitUrl(repository, changeset, file, index);
     }
+
+    @Override
+    public boolean validateCredentials(Organization organization)
+    {
+        return delegate.validateCredentials(organization);
+    }
 }
