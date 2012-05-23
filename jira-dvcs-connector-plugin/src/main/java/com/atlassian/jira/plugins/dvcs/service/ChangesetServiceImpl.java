@@ -1,10 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -14,6 +9,11 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.google.common.collect.Sets;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
@@ -101,7 +101,7 @@ public class ChangesetServiceImpl implements ChangesetService
     public DvcsUser getUser(Repository repository, Changeset changeset)
     {
         final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-        return communicator.getUser(repository, changeset);
+        return communicator.getUser(repository, changeset.getAuthor());
     }
 
     @Override

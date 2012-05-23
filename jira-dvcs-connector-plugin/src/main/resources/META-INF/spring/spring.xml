@@ -3,23 +3,12 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation=" http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-    <bean id="bitbucketCommunicator" class="com.atlassian.jira.plugins.bitbucket.spi.CachingCommunicator">
-        <constructor-arg>
-            <bean class="com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketCommunicator">
-                <constructor-arg ref="authenticationFactory"/>
-                <constructor-arg ref="requestHelper"/>
-            </bean>
-        </constructor-arg>
+    <bean id="cachingBitbucketCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator" lazy-init="true">
+        <constructor-arg  ref="bitbucketCommunicator" />
     </bean>
 
-    <bean id="githubCommunicator" class="com.atlassian.jira.plugins.bitbucket.spi.CachingCommunicator">
-        <constructor-arg>
-            <bean class="com.atlassian.jira.plugins.bitbucket.spi.github.GithubCommunicator">
-                <constructor-arg ref="authenticationFactory"/>
-                <constructor-arg ref="requestHelper"/>
-                <constructor-arg ref="repositoryPersister"/>
-            </bean>
-        </constructor-arg>
+    <bean id="cachingGithubCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator" lazy-init="true">
+        <constructor-arg  ref="githubCommunicator" />
     </bean>
 
 

@@ -1,19 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.httpclient.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -34,6 +20,19 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class BitbucketCommunicator implements DvcsCommunicator
 {
@@ -310,9 +309,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public DvcsUser getUser(Repository repository, Changeset changeset)
+    public DvcsUser getUser(Repository repository, String username)
     {
-        String username = changeset.getAuthor();
         try
         {
             String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
