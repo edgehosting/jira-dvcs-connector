@@ -6,7 +6,7 @@ public class DvcsCommunicatorProvider
 {
     private final DvcsCommunicator[] dvcsCommunicators;
     
-    public DvcsCommunicatorProvider(DvcsCommunicator... dvcsCommunicators)
+    public DvcsCommunicatorProvider(CachingDvcsCommunicator... dvcsCommunicators)
     {
         this.dvcsCommunicators = dvcsCommunicators;
     }
@@ -21,7 +21,6 @@ public class DvcsCommunicatorProvider
             }
         }
         throw new IllegalArgumentException("Unsupported DVCS Type: " + dvcsType);
-
     }
 
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
@@ -35,6 +34,5 @@ public class DvcsCommunicatorProvider
             }
         }
         return null;
-
     }
 }
