@@ -1,10 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -13,6 +8,10 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class RepositoryServiceImpl implements RepositoryService
 {
@@ -153,7 +152,21 @@ public class RepositoryServiceImpl implements RepositoryService
 		return repositoryDao.getAll(false);
 	}
 
-	@Override
+    @Override
+    public boolean existsLinkedRepositories()
+    {
+        final List<Repository> repositories = repositoryDao.getAll(false);
+        for (Repository repository : repositories)
+        {
+            if (repository.isLinked())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
 	public void enableAutolinkCommits(int repoId, boolean linked)
 	{
 		final Repository repository = repositoryDao.get(repoId);

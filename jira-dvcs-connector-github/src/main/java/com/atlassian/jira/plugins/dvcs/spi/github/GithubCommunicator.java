@@ -274,7 +274,7 @@ public class GithubCommunicator implements DvcsCommunicator
     private String getApiUrl(String hostUrl, boolean v3) {
 
         if (v3) {
-            // todo zistit ake URL ma v3 Api pre iny host ako github.com
+            // todo: what URL is for v3 Api when server is not github.com?
             return "https://api.github.com";
         }
 

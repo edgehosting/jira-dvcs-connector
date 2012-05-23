@@ -33,6 +33,12 @@ public interface RepositoryService
     List<Repository> getAllActiveRepositories();
 
     /**
+     * check if there is at least one linked repository
+     * @return true if there is at least one linked repository
+     */
+    boolean existsLinkedRepositories();
+
+    /**
      * returns repository by ID
      * @param repositoryId repositoryId
      * @return repository

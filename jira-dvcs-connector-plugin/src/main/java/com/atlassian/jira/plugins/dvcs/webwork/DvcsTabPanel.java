@@ -5,6 +5,7 @@ import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -13,8 +14,10 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.jira.security.PermissionManager;
+import com.atlassian.jira.security.Permissions;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,9 +64,12 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
                 logger.debug("found changeset [ {} ] on issue [ {} ]", changeset.getNode(), issueKey);
 //                SourceControlRepository repository = globalRepositoryManager.getRepository(changeset.getRepositoryId());
                 String changesetAsHtml = getHtmlForChangeset(changeset);
-                bitbucketActions.add(new CommitsIssueAction(changesetAsHtml, changeset.getDate()));
+                if (StringUtils.isNotBlank(changesetAsHtml))
+                {
+                    bitbucketActions.add(new CommitsIssueAction(changesetAsHtml, changeset.getDate()));
+                }
             }
-        } catch (com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException e)
+        } catch (SourceControlException e)
         {
             logger.debug("Could not retrieve changeset for [ " + issueKey + " ]: " + e, e);
         }
@@ -77,21 +83,22 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     @Override
     public boolean showPanel(Issue issue, User user)
     {
-        // todo:
-//        return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user) &&
-//                !globalRepositoryManager.getRepositories(issue.getProjectObject().getKey()).isEmpty();
-        return true;
+        return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user) &&
+                repositoryService.existsLinkedRepositories();
     }
 
     public String getHtmlForChangeset(Changeset changeset)
     {
         Repository repository = repositoryService.get(changeset.getRepositoryId());
+        if (repository.isDeleted() || !repository.isLinked())
+        {
+            return "";
+        }
 
         Map<String, Object> templateMap = new HashMap<String, Object>();
         templateMap.put("velocity_utils", new VelocityUtils());
         templateMap.put("issue_linker", issueLinker);
         templateMap.put("changeset", changeset);
-//        templateMap.put("repository", repository);
 
         String documentJpgUrl = applicationProperties.getBaseUrl() + "/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/document.jpg";
         templateMap.put("document_jpg_url", documentJpgUrl);
