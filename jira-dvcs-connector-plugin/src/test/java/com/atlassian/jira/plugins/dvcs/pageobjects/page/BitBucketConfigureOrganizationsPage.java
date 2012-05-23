@@ -76,7 +76,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
      * {@inheritDoc}
      */
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String projectKey, String url)
+    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String url)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -90,7 +90,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
      * {@inheritDoc}
      */
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String projectKey, String url)
+    public BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String url)
     {
         return this;
     }

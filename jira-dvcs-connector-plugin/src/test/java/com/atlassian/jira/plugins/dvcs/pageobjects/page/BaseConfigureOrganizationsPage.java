@@ -170,9 +170,9 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingStep1(String projectKey, String url);
 
-    public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String projectKey, String url);
+    public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String url);
 
-    public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String projectKey, String url);
+    public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String url);
 
     public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String url, boolean autosync);
 

@@ -81,24 +81,31 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         linkRepositoryButton.click();
         waitFormBecomeVisible();
 
-        urlTextbox.clear().type(url);
+        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
+        
         organization.clear().type("jirabitbucketconnector");
+        
         setPageAsOld();
+        
         addOrgButton.click();
 
         Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed()
                 .hasText("Error!"));
+        
         return this;
     }
 
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String projectKey, String url)
+    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String url)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
 
-        urlTextbox.clear().type(url);
+        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
+        organization.clear().type("jirabitbucketconnector");
+        
         setPageAsOld();
+        
         addOrgButton.click();
 
         String currentUrl = checkAndDoGithubLogin();
@@ -156,11 +163,13 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     }
 
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String projectKey, String url)
+    public BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String url)
     {
         addRepoToProject(url, true);
+        
         assertThatErrorMessage(containsString("Error adding postcommit hook. Do you have admin rights to the repository?\n" +
                 "Repository was not added. [Could not add postcommit hook. ]"));
+
         return this;
     }
 

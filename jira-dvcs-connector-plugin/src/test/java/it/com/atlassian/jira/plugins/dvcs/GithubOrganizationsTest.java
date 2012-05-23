@@ -104,7 +104,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     @After
     public void deleteRepositoriesAfterTest()
     {
-        goToRepositoriesConfigPage();
+        goToConfigPage();
         configureOrganizations.deleteAllOrganizations();
     }
 
@@ -146,7 +146,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         String hooksURL = "https://github.com/jirabitbucketconnector/test-project/admin/hooks";
         String hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
         assertThat(hooksPage, containsString(githubServiceConfigUrlPath));
-        goToRepositoriesConfigPage();
+        goToConfigPage();
         // delete repository
         configureOrganizations.deleteAllOrganizations();
         // check that postcommit hook is removed
@@ -202,29 +202,17 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         Assert.assertTrue("Expected commit resource Added: 1", commitMessage.isAdded(statistics.get(0)));
     }
 
-  /*
 
     @Test
     public void addPrivateRepoWithInvalidOAuth()
     {
         goToGithubOAuthConfigPage().setCredentials("xxx", "yyy");
 
-        goToRepositoriesConfigPage();
+        goToConfigPage();
 
-        configureOrganizations.addRepoToProjectFailingStep2("QA", TEST_PRIVATE_REPO_URL);
+        configureOrganizations.addRepoToProjectFailingStep2(TEST_URL);
 
         goToGithubOAuthConfigPage().setCredentials(clientID, clientSecret);
     }
-
-    @Test
-    public void testPostCommitHookNotAdded()
-    {
-        goToRepositoriesConfigPage();
-
-        configureOrganizations.addRepoToProjectFailingPostcommitService("QA", TEST_PRIVATE_REPO_URL);
-    }
-
-
-
-*/
+   
 }

@@ -76,7 +76,7 @@ public abstract class BitBucketBaseOrgTest
         return jira.visit(GithubOAuthConfigPage.class);
     }
 
-    protected BaseConfigureOrganizationsPage goToRepositoriesConfigPage()
+    protected BaseConfigureOrganizationsPage goToConfigPage()
     {
         configureOrganizations = (BaseConfigureOrganizationsPage) jira.visit(getPageClass());
         configureOrganizations.setJiraTestedProduct(jira);
