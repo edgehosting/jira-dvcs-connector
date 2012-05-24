@@ -18,6 +18,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.atlassian.jira.plugins</groupId>
+			<artifactId>bitbucket-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.atlassian.jira.plugins</groupId>
 			<artifactId>jira-dvcs-connector-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>

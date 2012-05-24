@@ -336,6 +336,7 @@ public class GithubCommunicator implements DvcsCommunicator
 
         try
         {
+        	// todo check everywhere in plugin if we need to encode slug and owner
             ExtendedResponseHandler.ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(authentication, "/commits/list/" + CustomStringUtils.encode(owner) + "/" +
                     CustomStringUtils.encode(slug) + "/" + branch, params, apiUrl);
 

@@ -1,8 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
 
-import java.util.Set;
-
-import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 
 public interface BitbucketLinker
@@ -17,5 +15,9 @@ public interface BitbucketLinker
      * @param organization
      * @param projectsToLink
      */
-    void setConfiguration(Organization organization, Set<String> projectsToLink);
+//    void setConfiguration(Organization organization, Set<String> projectsToLink);
+
+	public void linkRepository(Repository repository);
+
+	public void unlinkRepository(Repository repository);
 }

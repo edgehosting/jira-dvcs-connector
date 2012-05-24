@@ -73,6 +73,7 @@ public interface RepositoryService
 
 	/**
 	 * Enable autolink commits.
+	 * todo - better method name
 	 *
 	 * @param repoId the repo id
 	 * @param linked the parse boolean
@@ -85,5 +86,8 @@ public interface RepositoryService
      */
     void removeAllInOrganization(int organizationId);
 
+    /**
+     * @param repository
+     */
     void remove(Repository repository);
 }
