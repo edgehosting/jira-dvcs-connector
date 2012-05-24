@@ -108,7 +108,7 @@
                    </li>
 
                    <li>
-                       Once you have completed the OAuth Application setup, you can begin <a href="${baseurl}/secure/admin/ConfigureBitbucketOrganizations!default.jspa">configuring your organizations</a>.
+                       Once you have completed the OAuth Application setup, you can begin <a href="${baseurl}/secure/admin/ConfigureDvcsOrganizations!default.jspa">configuring your organizations</a>.
                    </li>
 
                   </ol>

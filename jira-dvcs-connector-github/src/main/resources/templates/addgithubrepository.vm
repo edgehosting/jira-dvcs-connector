@@ -41,7 +41,7 @@
         <div class="buttons">
           <div>&nbsp;</div>
             <input type="submit" name="Submit" id="Submit" value="Try Again"/>
-            <a class="cancel" href="${baseurl}/secure/admin/ConfigureBitbucketRepositories.jspa?atl_token=${atl_token}">Cancel</a>
+            <a class="cancel" href="${baseurl}/secure/admin/ConfigureDvcsOrganizations.jspa?atl_token=${atl_token}">Cancel</a>
         </div>
       </div>
     
