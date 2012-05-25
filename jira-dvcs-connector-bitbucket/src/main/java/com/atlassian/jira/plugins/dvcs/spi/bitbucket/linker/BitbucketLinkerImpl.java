@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket;
+package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
 import java.util.Collections;
 import java.util.List;
@@ -11,6 +11,7 @@ import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.Bitbucke
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.BitbucketClientException;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.RepositoryLink;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary.RepositoryLinksService;
+import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
@@ -18,16 +19,23 @@ import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-
+/**
+ * Implementation of BitbucketLinker that configures repository links on bitbucket repositories
+ * 
+ * https://confluence.atlassian.com/display/BITBUCKET/Repository+links
+ */
 public class BitbucketLinkerImpl implements BitbucketLinker
 {
     private final Logger log = LoggerFactory.getLogger(BitbucketLinkerImpl.class);
     private final String baseUrl;
 	private final ProjectManager projectManager;
+	private final Encryptor encryptor;
 
-    public BitbucketLinkerImpl(ApplicationProperties applicationProperties, ProjectManager projectManager)
+	public BitbucketLinkerImpl(ApplicationProperties applicationProperties,
+	        ProjectManager projectManager, Encryptor encryptor)
     {
 		this.projectManager = projectManager;
+		this.encryptor = encryptor;
         this.baseUrl = applicationProperties.getBaseUrl();
     }
 
@@ -35,6 +43,11 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     public void unlinkRepository(Repository repository)
     {
     	List<RepositoryLink> currentlyLinkedProjects = getCurrentlyLinkedProjects(repository);
+		if (log.isDebugEnabled())
+		{
+			log.debug("Configuring links for "+repository.getRepositoryUrl() + ". " +
+					"LinksToRemove: " + currentlyLinkedProjects);
+		}
     	removeLinks(repository, currentlyLinkedProjects);
     }
     
@@ -47,6 +60,14 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 		
 		List<RepositoryLink> linksToRemove = calculateLinksToRemove(currentlyLinkedProjects, projectsList);
 		List<String> linksToAdd = calculateLinksToAdd(currentlyLinkedProjects, projectsList);
+		if (log.isDebugEnabled())
+		{
+			log.debug("Configuring links for "+repository.getRepositoryUrl() + ". " +
+					"All projects: " + projectsList +
+					", existingLinks: " + currentlyLinkedProjects +
+					", linksToRemove: " + linksToRemove +
+					", linksToAdd:" + linksToAdd);
+		}
 		
 		removeLinks(repository, linksToRemove);
 		addLinks(repository, linksToAdd);
@@ -63,9 +84,9 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 		return projectKeys; 
     }
 
-	public void addLinks(Repository repository, List<String> linksToAdd)
+	private void addLinks(Repository repository, List<String> linksToAdd)
     {
-        RepositoryLinksService repositoryLinksService = getRepositoryLinksService(repository.getOrgHostUrl());
+        RepositoryLinksService repositoryLinksService = getRepositoryLinksService(repository);
         for (String key : linksToAdd)
         {
             String owner = repository.getOrgName();
@@ -77,14 +98,14 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             } catch (BitbucketClientException e)
             {
                 log.error("Error adding Repository Link [" + baseUrl + ", " + key + "] to "
-                    + getRepositoryUrl(repository) + ": " + e.getMessage());
+                    + repository.getRepositoryUrl() + ": " + e.getMessage());
             }
         }
     }
 
     public void removeLinks(Repository repository, List<RepositoryLink> linksToRemove)
     {
-        RepositoryLinksService repositoryLinksService = getRepositoryLinksService(repository.getOrgHostUrl());
+        RepositoryLinksService repositoryLinksService = getRepositoryLinksService(repository);
         for (RepositoryLink repositoryLink : linksToRemove)
         {
             String owner = repository.getOrgName();
@@ -96,7 +117,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             } catch (BitbucketClientException e)
             {
                 log.error("Error removing Repository Link [" + repositoryLink + "] from "
-                    + getRepositoryUrl(repository) + ": " + e.getMessage());
+                    + repository.getRepositoryUrl() + ": " + e.getMessage());
             }
             
         }
@@ -140,7 +161,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 
     private List<RepositoryLink> getCurrentlyLinkedProjects(Repository repository)
     {
-        RepositoryLinksService repositoryLinksService = getRepositoryLinksService(repository.getOrgHostUrl());
+        RepositoryLinksService repositoryLinksService = getRepositoryLinksService(repository);
         try
         {
             String owner = repository.getOrgName();
@@ -148,27 +169,19 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             return repositoryLinksService.getRepositoryLinks(owner, slug);
         } catch (BitbucketClientException e)
         {
-            log.error("Error retrieving Repository links from " + getRepositoryUrl(repository));
+            log.error("Error retrieving Repository links from " + repository.getRepositoryUrl());
             return Collections.emptyList();
         }
     }
-
     
-    private RepositoryLinksService getRepositoryLinksService(String hostUrl)
+    private RepositoryLinksService getRepositoryLinksService(Repository repository)
     {
         // TODO get apiUrl properly
-        String apiUrl = hostUrl+"/!api/1.0";
-        return new RepositoryLinksService(new BitbucketClient(apiUrl));
-    }
-
-    /**
-     * @param organization
-     * @param repository
-     * @return
-     */
-    @Deprecated
-    private String getRepositoryUrl(Repository repository)
-    {
-        return repository.getOrgHostUrl()+"/"+repository.getOrgName()+"/"+repository.getSlug();
+		String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
+        BitbucketClient bitbucketClient = new BitbucketClient(apiUrl);
+		String unencryptedPassword = encryptor.decrypt(repository.getCredential()
+		        .getAdminPassword(), repository.getOrgName(), repository.getOrgHostUrl());
+        bitbucketClient.setAuthorisation(repository.getCredential().getAdminUsername(), unencryptedPassword);
+		return new RepositoryLinksService(bitbucketClient);
     }
 }

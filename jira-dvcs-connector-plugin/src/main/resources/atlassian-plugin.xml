@@ -41,6 +41,16 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
     </ao>
 
+    <component key="bitbucketLinker" name="bitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinkerImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
+    </component>
+
+    <component key="defferedBitbucketLinker" name="defferedBitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.DeferredBitbucketLinker">
+        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
+    </component>
+
+
+
     <!--<component key="repositoryPersister" name="Repository Persister"-->
                <!--class="com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister">-->
         <!--<description>A Service for storing data in ActiveObjects</description>-->

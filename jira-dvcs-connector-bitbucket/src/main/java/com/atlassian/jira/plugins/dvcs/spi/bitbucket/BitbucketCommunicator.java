@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.dvcs.net.RequestHelper;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.parsers.BitbucketChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.parsers.BitbucketRepositoriesParser;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.parsers.BitbucketUserFactory;
@@ -25,6 +26,7 @@ import com.atlassian.sal.api.net.ResponseException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -54,16 +56,19 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	/** The authentication factory. */
 	private final AuthenticationFactory authenticationFactory;
 
+	private final BitbucketLinker bitbucketLinker;
+
 	/**
 	 * The Constructor.
 	 *
 	 * @param authenticationFactory the authentication factory
 	 * @param requestHelper the request helper
 	 */
-	public BitbucketCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper)
+	public BitbucketCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper, @Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker)
 	{
 		this.authenticationFactory = authenticationFactory;
 		this.requestHelper = requestHelper;
+		this.bitbucketLinker = bitbucketLinker;
 	}
 
 	/**
@@ -306,7 +311,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		{
 			throw new SourceControlException("Could not add postcommit hook", e);
 		}
-
+		bitbucketLinker.linkRepository(repository);
 	}
 
 	/**
@@ -315,6 +320,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public void removePostcommitHook(Repository repository, String postCommitUrl)
 	{
+		bitbucketLinker.unlinkRepository(repository);
+		
 		String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
 		String owner = repository.getOrgName();
 		String slug = repository.getSlug();
@@ -444,6 +451,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		// @ http://confluence.atlassian.com/display/BITBUCKET/SSH+Keys
 		String urlPath = "/ssh-keys/";	
 		// need to create it directly because here we have
+		// TODO... I think the password should be decrypted?
 		Authentication auth = new BasicAuthentication(organization.getCredential().getAdminUsername(), organization.getCredential().getAdminPassword());
 		try
 		{
