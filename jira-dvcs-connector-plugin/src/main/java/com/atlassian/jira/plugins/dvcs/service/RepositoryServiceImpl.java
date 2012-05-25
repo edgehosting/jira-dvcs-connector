@@ -213,6 +213,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	@Override
 	public void remove(Repository repository)
 	{
+		// TODO Stop syncing before deleting 
 		// try remove postcommit hook
 		removePostcommitHook(repository);
 		// remove all changesets from DB that references this repository
