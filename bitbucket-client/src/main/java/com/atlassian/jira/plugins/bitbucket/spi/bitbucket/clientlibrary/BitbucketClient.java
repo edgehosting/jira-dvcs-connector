@@ -12,6 +12,8 @@ import java.net.URL;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
@@ -20,6 +22,8 @@ import com.google.gson.JsonParseException;
 
 public class BitbucketClient
 {
+    private final Logger log = LoggerFactory.getLogger(BitbucketClient.class);
+
     private static final String UTF8 = "UTF-8";
     private static final String HTTP_GET = "GET";
     private static final String HTTP_DELETE = "DELETE";
@@ -46,8 +50,12 @@ public class BitbucketClient
             addAuthorisation(connection);
 
             final int code = connection.getResponseCode();
+			log.debug("Calling [" + connection.getRequestMethod() + " " + connection.getURL() + " ] returned code ["+code+"]");
+            
             if (code != 200)
-                throw new IOException("Unexpected response code: " + code);
+            {
+            	throw new IOException("Unexpected response code: " + code);
+            }
 
             return parseJson(connection.getInputStream(), type);
         } catch (IOException e)
@@ -66,6 +74,7 @@ public class BitbucketClient
             addAuthorisation(connection);
 
             final int code = connection.getResponseCode();
+			log.debug("Calling [" + connection.getRequestMethod() + " " + connection.getURL() + " ] returned code ["+code+"]");
             if (code != 204)
             {
                 throw new IOException("Unexpected response code: " + code);
@@ -87,8 +96,11 @@ public class BitbucketClient
             addParameters(connection, params);
 
             final int code = connection.getResponseCode();
+			log.debug("Calling [" + connection.getRequestMethod() + " " + connection.getURL() + " ] returned code ["+code+"]");
             if (code != 200)
-                throw new IOException("Unexpected response code: " + code);
+            {
+            	throw new IOException("Unexpected response code: " + code);
+            }
 
             return parseJson(connection.getInputStream(), type);
         } catch (IOException e)
