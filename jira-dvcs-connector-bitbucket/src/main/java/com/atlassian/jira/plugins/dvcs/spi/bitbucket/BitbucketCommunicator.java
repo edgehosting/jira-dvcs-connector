@@ -114,8 +114,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
 			{
 
 				responseString = extendedResponse.getResponseString();
-				// TODO not used, delete if no need
-				final boolean isUserJson = new JSONObject(responseString).has("user");
+
+				new JSONObject(responseString).has("user");
 				return new AccountInfo(BitbucketCommunicator.BITBUCKET);
 
 			} else

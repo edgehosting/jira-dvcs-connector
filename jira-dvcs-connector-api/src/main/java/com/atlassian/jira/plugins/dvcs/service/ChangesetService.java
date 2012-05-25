@@ -13,13 +13,6 @@ import java.util.Map;
 public interface ChangesetService
 {
     /**
-     * returns all changesets for given issue
-     * @param issueKey issueKey
-     * @return changesets
-     */
-    List<Changeset> getAllByIssue(String issueKey);
-
-    /**
      * save Changeset to storage. If it's new object (without ID) after this operation it will have it assigned.
      * @param changeset changeset
      * @return changeset
@@ -34,6 +27,11 @@ public interface ChangesetService
 
     Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset);
 
+    /**
+     * returns all changesets for given issue
+     * @param issueKey issueKey
+     * @return changesets
+     */
     List<Changeset> getByIssueKey(String issueKey);
 
     String getCommitUrl(Repository repository, Changeset changeset);

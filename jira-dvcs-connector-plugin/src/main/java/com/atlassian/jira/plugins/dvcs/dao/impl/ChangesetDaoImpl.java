@@ -14,6 +14,7 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import net.java.ao.Query;
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +87,16 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public ChangesetMapping doInTransaction()
             {
+                // delete existing
+                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, ChangesetMapping.REPOSITORY_ID + " = ? and "
+                    + ChangesetMapping.NODE + " = ?", changeset.getRepositoryId(), changeset.getNode());
+
+                if (ArrayUtils.isNotEmpty(mappings))
+                {
+                    activeObjects.delete(mappings);
+                }
+
+                // add new
                 ChangesetMapping om;
 
                 final Map<String, Object> map = new HashMap<String, Object>();

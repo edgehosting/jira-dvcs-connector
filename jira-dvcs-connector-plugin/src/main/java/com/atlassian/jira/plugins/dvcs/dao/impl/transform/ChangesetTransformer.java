@@ -25,16 +25,10 @@ public class ChangesetTransformer
             return null;
         }
 
-        // TODO: reload from DVCS if old version
-//        if (!isLatestVersion(issueMapping))
-//        {
-//            return repositoryManager.reloadChangeset(issueMapping.getRepositoryId(), issueMapping.getNode(), issueMapping.getIssueId(), issueMapping.getBranch());
-//        }
-
         FileData fileData = parseFilesData(changesetMapping.getFilesData());
         List<String> parents = parseParentsData(changesetMapping.getParentsData());
 
-        return new Changeset(changesetMapping.getRepositoryId(),
+        final Changeset changeset = new Changeset(changesetMapping.getRepositoryId(),
                 changesetMapping.getNode(),
                 changesetMapping.getIssueKey(),
                 changesetMapping.getRawAuthor(),
@@ -46,11 +40,9 @@ public class ChangesetTransformer
                 parents,
                 fileData.getFiles(),
                 fileData.getFileCount());
-    }
 
-    private boolean isLatestVersion(ChangesetMapping changesetMapping)
-    {
-        return changesetMapping.getVersion() != null && changesetMapping.getVersion() >= ChangesetMapping.LATEST_VERSION;
+        changeset.setVersion(changesetMapping.getVersion());
+        return changeset;
     }
 
     private List<String> parseParentsData(String parentsData)
@@ -82,27 +74,30 @@ public class ChangesetTransformer
         List<ChangesetFile> files = new ArrayList<ChangesetFile>();
         int fileCount = 0;
 
-        try
+        if (StringUtils.isNotBlank(filesData))
         {
-            JSONObject filesDataJson = new JSONObject(filesData);
-            fileCount = filesDataJson.getInt("count");
-            JSONArray filesJson = filesDataJson.getJSONArray("files");
-
-            for (int i = 0; i < filesJson.length(); i++)
+            try
             {
-                JSONObject file = filesJson.getJSONObject(i);
-                String filename = file.getString("filename");
-                String status = file.getString("status");
-                int additions = file.getInt("additions");
-                int deletions = file.getInt("deletions");
+                JSONObject filesDataJson = new JSONObject(filesData);
+                fileCount = filesDataJson.getInt("count");
+                JSONArray filesJson = filesDataJson.getJSONArray("files");
 
-                files.add(new ChangesetFile(CustomStringUtils.getChangesetFileAction(status),
-                        filename, additions, deletions));
+                for (int i = 0; i < filesJson.length(); i++)
+                {
+                    JSONObject file = filesJson.getJSONObject(i);
+                    String filename = file.getString("filename");
+                    String status = file.getString("status");
+                    int additions = file.getInt("additions");
+                    int deletions = file.getInt("deletions");
+
+                    files.add(new ChangesetFile(CustomStringUtils.getChangesetFileAction(status),
+                            filename, additions, deletions));
+                }
+
+            } catch (JSONException e)
+            {
+                log.error("Failed parsing files from FileJson data.");
             }
-
-        } catch (JSONException e)
-        {
-            log.error("Failed parsing files from FileJson data.");
         }
 
         return new FileData(files, fileCount);
