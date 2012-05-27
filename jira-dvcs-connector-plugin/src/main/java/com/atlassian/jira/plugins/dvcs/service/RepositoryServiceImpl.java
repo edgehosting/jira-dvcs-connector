@@ -215,7 +215,10 @@ public class RepositoryServiceImpl implements RepositoryService
 	{
 		// TODO Stop syncing before deleting 
 		// try remove postcommit hook
-		removePostcommitHook(repository);
+		if (repository.isLinked())
+		{
+			removePostcommitHook(repository);
+		}
 		// remove all changesets from DB that references this repository
 		changesetService.removeAllInRepository(repository.getId());
 		// delete repository record itself
