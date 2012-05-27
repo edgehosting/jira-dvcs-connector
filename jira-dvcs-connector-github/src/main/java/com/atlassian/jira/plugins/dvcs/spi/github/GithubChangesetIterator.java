@@ -1,15 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 
 
 public class GithubChangesetIterator implements Iterator<Changeset>
@@ -23,12 +23,12 @@ public class GithubChangesetIterator implements Iterator<Changeset>
 
     private Changeset nextChangeset = null;
     private final Date lastCommitDate;
-    private final ChangesetService changesetService;
+	private ChangesetCache changesetCache;
 
-    public GithubChangesetIterator(ChangesetService changesetService, GithubCommunicator githubCommunicator,
+    public GithubChangesetIterator(ChangesetCache changesetCache, GithubCommunicator githubCommunicator,
                                    Repository repository, List<String> branches, Date lastCommitDate)
     {
-        this.changesetService = changesetService;
+        this.changesetCache = changesetCache;
         this.repository = repository;
         this.lastCommitDate = lastCommitDate;
 
@@ -57,8 +57,7 @@ public class GithubChangesetIterator implements Iterator<Changeset>
     private boolean shoudStopBranchIteration()
     {
         boolean changesetOlderThanLastCommitDate = lastCommitDate != null && lastCommitDate.after(nextChangeset.getDate());
-        final Changeset changeset = changesetService.getByNode(repository.getId(), nextChangeset.getNode());
-        boolean changesetAlreadySynchronized = changeset != null;
+        boolean changesetAlreadySynchronized = changesetCache.isCached(repository.getId(), nextChangeset.getNode());
         return changesetOlderThanLastCommitDate || changesetAlreadySynchronized;
     }
  

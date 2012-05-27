@@ -1,33 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import com.atlassian.jira.plugins.dvcs.auth.Authentication;
-import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.Group;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler;
-import com.atlassian.jira.plugins.dvcs.net.RequestHelper;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
-import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
-import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
-import com.atlassian.sal.api.net.ResponseException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.service.RepositoryService;
-import org.eclipse.egit.github.core.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -40,22 +12,56 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.dvcs.auth.Authentication;
+import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Group;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler;
+import com.atlassian.jira.plugins.dvcs.net.RequestHelper;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
+import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
+import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
+import com.atlassian.sal.api.net.ResponseException;
+
 public class GithubCommunicator implements DvcsCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
 
     public static final String GITHUB = "github";
 
-    private ChangesetService changesetService;
-    private RequestHelper requestHelper;
-    private AuthenticationFactory authenticationFactory;
-    private GithubOAuth githubOAuth;
+    private final ChangesetCache changesetCache;
+    private final RequestHelper requestHelper;
+    private final AuthenticationFactory authenticationFactory;
+    private final GithubOAuth githubOAuth;
 
-    public GithubCommunicator()
+    public GithubCommunicator(ChangesetCache changesetCache, RequestHelper requestHelper,
+            AuthenticationFactory authenticationFactory, GithubOAuth githubOAuth)
     {
+	    this.changesetCache = changesetCache;
+	    this.requestHelper = requestHelper;
+	    this.authenticationFactory = authenticationFactory;
+	    this.githubOAuth = githubOAuth;
     }
 
-    @Override
+	@Override
 	public boolean isOauthConfigured()
 	{
 		return StringUtils.isNotBlank(githubOAuth.getClientId()) 
@@ -183,7 +189,7 @@ public class GithubCommunicator implements DvcsCommunicator
             public Iterator<Changeset> iterator()
             {
                 List<String> branches = getBranches(repository);
-                return new GithubChangesetIterator(changesetService, GithubCommunicator.this, repository, branches, lastCommitDate);
+                return new GithubChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches, lastCommitDate);
             }
         };
     }
@@ -398,26 +404,5 @@ public class GithubCommunicator implements DvcsCommunicator
 	{
 		throw new UnsupportedOperationException("You can not invite users to github so far, ...");
 	}
-
-	public void setChangesetService(ChangesetService changesetService)
-    {
-        this.changesetService = changesetService;
-    }
-
-    public void setRequestHelper(RequestHelper requestHelper)
-    {
-        this.requestHelper = requestHelper;
-    }
-
-    public void setAuthenticationFactory(AuthenticationFactory authenticationFactory)
-    {
-        this.authenticationFactory = authenticationFactory;
-    }
-
-    public void setGithubOAuth(GithubOAuth githubOAuth)
-    {
-        this.githubOAuth = githubOAuth;
-    }
-
     
 }

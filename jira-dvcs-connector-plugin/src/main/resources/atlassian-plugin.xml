@@ -156,6 +156,12 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetService</interface>
     </component>
     
+    <component key="changesetCache" name="changesetCache"
+               class="com.atlassian.jira.plugins.dvcs.service.ChangesetCacheImpl">
+        <description>changesetCache</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetCache</interface>
+    </component>
+    
     <component key="githubOauthUtils" class="com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils">
     	<description>Utils used i.e. to build GH redirect URLs etc.</description>
     </component>

@@ -21,8 +21,6 @@ public interface ChangesetService
 
     void removeAllInRepository(int repositoryId);
 
-    Changeset getByNode(int repositoryId, String changesetNode);
-
     Iterable<Changeset> getChangesetsFromDvcs(Repository repository, Date lastCommitDate);
 
     Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset);

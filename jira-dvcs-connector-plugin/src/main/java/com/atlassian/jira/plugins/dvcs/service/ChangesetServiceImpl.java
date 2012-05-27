@@ -48,13 +48,6 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
-    public Changeset getByNode(int repositoryId, String changesetNode)
-    {
-        final Changeset changeset = changesetDao.getByNode(repositoryId, changesetNode);
-        return checkChangesetVersion(changeset);
-    }
-
-    @Override
     public Iterable<Changeset> getChangesetsFromDvcs(Repository repository, Date lastCommitDate)
     {
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
