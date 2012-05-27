@@ -25,6 +25,8 @@ public class Changeset
     private List<ChangesetFile> files;
     private int allFileCount;
 
+    private Integer version;
+
     public Changeset(int repositoryId, String node, String message, Date timestamp)
     {
         this(repositoryId, node, "", "", "", timestamp, "", "", message, Collections.<String>emptyList(), Collections.<ChangesetFile>emptyList(), 0);
@@ -168,6 +170,16 @@ public class Changeset
     public void setAllFileCount(int allFileCount)
     {
         this.allFileCount = allFileCount;
+    }
+
+    public Integer getVersion()
+    {
+        return version;
+    }
+
+    public void setVersion(Integer version)
+    {
+        this.version = version;
     }
 
     @Override

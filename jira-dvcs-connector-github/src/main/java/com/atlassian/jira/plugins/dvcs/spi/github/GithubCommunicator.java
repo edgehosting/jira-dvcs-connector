@@ -22,7 +22,6 @@ import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
@@ -77,9 +76,7 @@ public class GithubCommunicator implements DvcsCommunicator
         UserService userService = new UserService(GitHubClient.createClient(hostUrl));
         try
         {
-        	// TODO not used, delete if no need
-            User user = userService.getUser(accountName);
-            
+            userService.getUser(accountName);
             boolean requiresOauth = StringUtils.isBlank(githubOAuth.getClientId()) || StringUtils.isBlank(githubOAuth.getClientSecret());
 
             return new AccountInfo(GithubCommunicator.GITHUB, requiresOauth);

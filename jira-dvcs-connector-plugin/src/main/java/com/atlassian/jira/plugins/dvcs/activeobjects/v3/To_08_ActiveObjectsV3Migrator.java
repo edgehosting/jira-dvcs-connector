@@ -7,6 +7,7 @@ import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.google.common.collect.Maps;
+import net.java.ao.EntityStreamCallback;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,32 +150,36 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
     }
     
     /**
-     * TODO check with Sam efficiency of this method
      * @param activeObjects
      * @param old2New
      */
-    private void migrateChangesets(ActiveObjects activeObjects, Map<Integer, Integer> old2New)
+    private void migrateChangesets(final ActiveObjects activeObjects, final Map<Integer, Integer> old2New)
     {
-        IssueMapping[] issueMappings = activeObjects.find(IssueMapping.class);
-        for (IssueMapping issueMapping : issueMappings)
+
+        activeObjects.stream(IssueMapping.class, new EntityStreamCallback<IssueMapping, Integer>()
         {
-            Map<String, Object> changesetMap = Maps.newHashMap();
-            changesetMap.put(ChangesetMapping.REPOSITORY_ID, old2New.get(issueMapping.getRepositoryId()));
-            final String issueKey = issueMapping.getIssueId();
-            changesetMap.put(ChangesetMapping.ISSUE_KEY, issueKey);
-            changesetMap.put(ChangesetMapping.PROJECT_KEY, issueKey.substring(0, issueKey.indexOf("-")));
-            changesetMap.put(ChangesetMapping.NODE, issueMapping.getNode());
-            changesetMap.put(ChangesetMapping.RAW_AUTHOR, issueMapping.getRawAuthor());
-            changesetMap.put(ChangesetMapping.AUTHOR, issueMapping.getAuthor());
-            changesetMap.put(ChangesetMapping.DATE, issueMapping.getDate());
-            changesetMap.put(ChangesetMapping.RAW_NODE, issueMapping.getRawNode());
-            changesetMap.put(ChangesetMapping.BRANCH, issueMapping.getBranch());
-            changesetMap.put(ChangesetMapping.MESSAGE, issueMapping.getMessage());
-            changesetMap.put(ChangesetMapping.PARENTS_DATA, issueMapping.getParentsData());
-            changesetMap.put(ChangesetMapping.FILES_DATA, issueMapping.getFilesData());
-            changesetMap.put(ChangesetMapping.VERSION, issueMapping.getVersion());
-            activeObjects.create(ChangesetMapping.class, changesetMap);
-        }
+            @Override
+            public void onRowRead(IssueMapping issueMapping)
+            {
+                Map<String, Object> changesetMap = Maps.newHashMap();
+                changesetMap.put(ChangesetMapping.REPOSITORY_ID, old2New.get(issueMapping.getRepositoryId()));
+                final String issueKey = issueMapping.getIssueId();
+                changesetMap.put(ChangesetMapping.ISSUE_KEY, issueKey);
+                changesetMap.put(ChangesetMapping.PROJECT_KEY, issueKey.substring(0, issueKey.indexOf("-")));
+                changesetMap.put(ChangesetMapping.NODE, issueMapping.getNode());
+                changesetMap.put(ChangesetMapping.RAW_AUTHOR, issueMapping.getRawAuthor());
+                changesetMap.put(ChangesetMapping.AUTHOR, issueMapping.getAuthor());
+                changesetMap.put(ChangesetMapping.DATE, issueMapping.getDate());
+                changesetMap.put(ChangesetMapping.RAW_NODE, issueMapping.getRawNode());
+                changesetMap.put(ChangesetMapping.BRANCH, issueMapping.getBranch());
+                changesetMap.put(ChangesetMapping.MESSAGE, issueMapping.getMessage());
+                changesetMap.put(ChangesetMapping.PARENTS_DATA, issueMapping.getParentsData());
+                changesetMap.put(ChangesetMapping.FILES_DATA, issueMapping.getFilesData());
+                changesetMap.put(ChangesetMapping.VERSION, issueMapping.getVersion());
+                activeObjects.create(ChangesetMapping.class, changesetMap);
+
+            }
+        });
     }
     
 
