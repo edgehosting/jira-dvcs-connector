@@ -188,7 +188,7 @@ public class RootResource
 	@Consumes({MediaType.APPLICATION_JSON})
 	public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
 	{
-
+		// todo handle exceptions
 		repositoryService.enableAutolinkCommits(id, Boolean.parseBoolean(autolink.getPayload()));
 		return Response.noContent().build();
 	}
