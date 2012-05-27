@@ -26,6 +26,7 @@ public interface RepositoryService
     
     /**
      * Gets the all active repositories with synchronization status.
+     *	TODO - rename (what does 'active' mean?)
      *
      * @param organizationId the organization id
      * @return the all active repositories
