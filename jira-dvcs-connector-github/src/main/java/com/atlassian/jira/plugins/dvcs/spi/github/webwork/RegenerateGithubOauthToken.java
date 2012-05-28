@@ -1,14 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 {
