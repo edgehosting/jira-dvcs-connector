@@ -55,6 +55,7 @@ public interface RepositoryService
 
     /**
      * synchronization of repository list in given organization
+     * TODO - detailed javadoc on what this does
      * @param organization organization
      */
     void syncRepositoryList(Organization organization);

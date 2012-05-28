@@ -1,5 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -7,11 +12,6 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
-import com.atlassian.sal.api.ApplicationProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * Webwork action used to configure the bitbucket organizations
@@ -22,21 +22,16 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
 	private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
-	private final String baseUrl;
-
 	private String postCommitRepositoryType;
 	private final FeatureManager featureManager;
-
 	private final OrganizationService organizationService;
-
 	private final DvcsCommunicatorProvider communicatorProvider;
 
 	public ConfigureDvcsOrganizations(OrganizationService organizationService,
-			ApplicationProperties applicationProperties, FeatureManager featureManager, DvcsCommunicatorProvider communicatorProvider)
+			FeatureManager featureManager, DvcsCommunicatorProvider communicatorProvider)
 	{
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
-		baseUrl = applicationProperties.getBaseUrl();
 		this.featureManager = featureManager;
 	}
 

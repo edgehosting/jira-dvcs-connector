@@ -198,7 +198,7 @@ public class OrganizationServiceImpl implements OrganizationService
 		if (CollectionUtils.isNotEmpty(ids)) {
 			return organizationDao.getAllByIds(ids);
 		} else {
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		}
 		
 	}

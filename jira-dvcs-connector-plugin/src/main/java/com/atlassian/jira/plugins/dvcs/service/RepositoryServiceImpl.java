@@ -58,7 +58,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	@Override
 	public void syncRepositoryList(Organization organization)
 	{
-		log.debug("Synchronising repositories");
+		log.debug("Synchronising list of repositories");
 		// get repositories from the dvcs hosting server
 		DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
 		List<Repository> remoteRepositories = communicator.getRepositories(organization);
@@ -227,6 +227,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		final Repository repository = repositoryDao.get(repoId);
 		if (repository != null)
 		{
+			// TODO when unlinking repository we should kill any running synchronisation
 			repository.setLinked(linked);
 
 			addOrRemovePostcommitHook(repository);
