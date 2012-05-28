@@ -1,5 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -8,10 +15,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.sal.api.ApplicationProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
+import com.google.common.collect.Maps;
 
 public class RepositoryServiceImpl implements RepositoryService
 {
@@ -54,71 +58,122 @@ public class RepositoryServiceImpl implements RepositoryService
 	@Override
 	public void syncRepositoryList(Organization organization)
 	{
-		List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
-
+		log.debug("Synchronising repositories");
+		// get repositories from the dvcs hosting server
 		DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-		final List<Repository> remoteRepositories = communicator.getRepositories(organization);
-		for (Repository remoteRepository : remoteRepositories)
-		{
-			// find repository by SLUG in storedRepositories
-			Repository storedRepository = null;
-			for (int i = 0; i < storedRepositories.size(); i++)
-			{
-				storedRepository = storedRepositories.get(i);
-				if (storedRepository.getSlug().equals(remoteRepository.getSlug()))
-				{
-					// remove existed from list. will stay there only those
-					// which we have to delete
-					storedRepositories.remove(i);
-					break;
-				} else
-				{
-					storedRepository = null;
-				}
-			}
+		List<Repository> remoteRepositories = communicator.getRepositories(organization);
+		// get local repositories
+		List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
+				
+		// update names of existing repositories in case their names changed
+		updateExistingRepositories(storedRepositories, remoteRepositories);
+		// repositories that are no longer on hosting server will be marked as deleted
+		removeDeletedRepositories(storedRepositories, remoteRepositories);
+		// new repositories will be added to the database
+		addNewRepositories(storedRepositories, remoteRepositories, organization);
 
-			if (storedRepository != null)
-			{
-				// we have it. try to update NAME
-				storedRepository.setName(remoteRepository.getName());
-				storedRepository.setDeleted(false); // it could be deleted
-													// before and now will be
-													// revived
-				repositoryDao.save(storedRepository);
-			} else
-			{
-				// save brand new
-				remoteRepository.setOrganizationId(organization.getId());
-				remoteRepository.setDvcsType(organization.getDvcsType());
-				remoteRepository.setLinked(organization.isAutolinkNewRepos());
-				remoteRepository.setCredential(organization.getCredential());
-
-				// need for install post commit hook
-				remoteRepository.setOrgHostUrl(organization.getHostUrl());
-				remoteRepository.setOrgName(organization.getName());
-
-				final Repository savedRepository = repositoryDao.save(remoteRepository);
-
-				// if linked install post commit hook
-				if (savedRepository.isLinked())
-				{
-					addOrRemovePostcommitHook(savedRepository);
-				}
-			}
-		}
-
-		// set as DELETED all stored repositories which are not on remote dvcs
-		// system
-		for (Repository storedRepository : storedRepositories)
-		{
-			storedRepository.setDeleted(true);
-			repositoryDao.save(storedRepository);
-		}
-
-		// start asynchronous changesets synchronization for all repositories in
-		// organization
+		// start asynchronous changesets synchronization for all linked repositories in organization
 		syncAllInOrganization(organization.getId());
 	}
+
+	/**
+	 * @param storedRepositories
+	 * @param remoteRepositories
+	 * @param organization
+	 */
+	private void addNewRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories, Organization organization)
+    {
+		Map<String, Repository> remoteRepos = makeRepositoryMap(remoteRepositories);
+		// remove existing
+		for (Repository localRepo : storedRepositories)
+		{
+			remoteRepos.remove(localRepo.getSlug());
+		}
+
+		for (Repository repository : remoteRepos.values())
+        {
+			// save brand new
+			repository.setOrganizationId(organization.getId());
+			repository.setDvcsType(organization.getDvcsType());
+			repository.setLinked(organization.isAutolinkNewRepos());
+			repository.setCredential(organization.getCredential());
+
+			// need for installing post commit hook
+			repository.setOrgHostUrl(organization.getHostUrl());
+			repository.setOrgName(organization.getName());
+
+			final Repository savedRepository = repositoryDao.save(repository);
+			log.debug("Adding new repository " + savedRepository);
+
+			// if linked install post commit hook
+			if (savedRepository.isLinked())
+			{
+				addOrRemovePostcommitHook(savedRepository);
+			}
+        }
+    }
+
+	/**
+	 * @param storedRepositories
+	 * @param remoteRepositories
+	 */
+	private void removeDeletedRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories)
+    {
+		Map<String, Repository> remoteRepos = makeRepositoryMap(remoteRepositories);
+		for (Repository localRepo : storedRepositories)
+		{
+			Repository remotRepo = remoteRepos.get(localRepo.getSlug());
+			// does the remote repo exists?
+			if (remotRepo==null)
+			{
+				log.debug("Deleting repository "+ localRepo);
+				localRepo.setDeleted(true);
+				repositoryDao.save(localRepo);
+			}
+		}
+    }
+
+	/**
+	 * Updates existing repositories 
+	 *  - undelete existing deleted
+	 *  - updates names
+	 * 
+	 * @param storedRepositories
+	 * @param remoteRepositories
+	 */
+	private void updateExistingRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories)
+    {
+		Map<String, Repository> remoteRepos = makeRepositoryMap(remoteRepositories);
+		for (Repository localRepo : storedRepositories)
+        {
+			Repository remoteRepo = remoteRepos.get(localRepo.getSlug());
+			if (remoteRepo != null)
+			{
+				// set the name and save
+				localRepo.setName(remoteRepo.getName());
+				localRepo.setDeleted(false); // it could be deleted before and
+											 // now will be revived
+				repositoryDao.save(localRepo);
+			}
+        }
+    }
+
+	/**
+	 * Converts collection of repository objects into map where key is
+	 * repository slug and value is repository object
+	 * 
+	 * @param repositories
+	 * @return
+	 */
+	private Map<String, Repository> makeRepositoryMap(Collection<Repository> repositories)
+    {
+	    Map<String, Repository> map = Maps.newHashMap();
+		for (Repository repository : repositories)
+        {
+	        map.put(repository.getSlug(), repository);
+        }
+		return map;
+    }
 
 	@Override
 	public void sync(int repositoryId, boolean softSync)
