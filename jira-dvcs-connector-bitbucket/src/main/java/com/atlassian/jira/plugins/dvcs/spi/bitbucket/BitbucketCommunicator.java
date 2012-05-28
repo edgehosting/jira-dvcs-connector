@@ -451,7 +451,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		// @ http://confluence.atlassian.com/display/BITBUCKET/SSH+Keys
 		String urlPath = "/ssh-keys/";	
 		// need to create it directly because here we have
-		// TODO... I think the password should be decrypted?
 		Authentication auth = new BasicAuthentication(organization.getCredential().getAdminUsername(), organization.getCredential().getAdminPassword());
 		try
 		{
