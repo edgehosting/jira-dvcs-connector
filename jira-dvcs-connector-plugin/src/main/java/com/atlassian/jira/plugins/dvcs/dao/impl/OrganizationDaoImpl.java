@@ -95,13 +95,11 @@ public class OrganizationDaoImpl implements OrganizationDao
 					@Override
 					public List<OrganizationMapping> doInTransaction()
 					{
-						return Lists.newArrayList(activeObjects.find(OrganizationMapping.class));
+						return Lists.newArrayList(activeObjects.find(OrganizationMapping.class, Query.select().order(OrganizationMapping.NAME)));
 					}
 				});
 
-		List<Organization> organizations = transformCollection(organizationMappings);
-
-		return organizations;
+        return transformCollection(organizationMappings);
 	}
 	
 	/**
@@ -110,7 +108,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 	@Override
 	public List<Organization> getAllByType(String type)
 	{
-		Query query = Query.select().where(OrganizationMapping.DVCS_TYPE + " = ? ", type);
+		Query query = Query.select().where(OrganizationMapping.DVCS_TYPE + " = ? ", type).order(OrganizationMapping.NAME);
 		OrganizationMapping[] found = activeObjects.find(OrganizationMapping.class, query);
 		return transformCollection(Lists.newArrayList(found));
 	}
@@ -168,7 +166,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 					{
 						Query query = Query.select().where(
 								OrganizationMapping.HOST_URL + " = ? AND " + OrganizationMapping.NAME + " = ? ",
-								hostUrl, name);
+								hostUrl, name).order(OrganizationMapping.NAME);
 
 						final OrganizationMapping[] organizationMappings = activeObjects.find(
 								OrganizationMapping.class, query);
@@ -312,7 +310,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 	@Override
 	public List<Organization> getAutoInvitionOrganizations()
 	{
-		Query query = Query.select().where(OrganizationMapping.AUTO_INVITE_NEW_USERS, Boolean.TRUE);
+		Query query = Query.select().where(OrganizationMapping.AUTO_INVITE_NEW_USERS, Boolean.TRUE).order(OrganizationMapping.NAME);
 		OrganizationMapping[] orgMappings = activeObjects.find(OrganizationMapping.class, query);
 		return transformCollection(Arrays.asList(orgMappings));
 	}

@@ -83,6 +83,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                                     RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED
                                             + " = ? ", organizationId, Boolean.FALSE);
                         }
+                        query.order(RepositoryMapping.NAME);
 
                         final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, query);
                         return Arrays.asList(rms);
@@ -119,6 +120,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 						{
 							select = select.where(RepositoryMapping.DELETED + " = ? ", Boolean.FALSE);
 						}
+                        select.order(RepositoryMapping.NAME);
 
 						final RepositoryMapping[] repos = activeObjects.find(RepositoryMapping.class, select);
 						return Arrays.asList(repos);
