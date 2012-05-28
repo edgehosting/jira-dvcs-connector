@@ -552,7 +552,8 @@ select#urlSelect {
 }
 
 .dvcs-org-container.aui-toolbar .aui-dropdown a {
-	margin-left: 0px !important;
+	margin-left: 0 !important;
+	padding-left: 0 !important;
 }
 .dvcs-org-container.aui-toolbar .aui-dropdown input {
 	position: relative;
