@@ -191,7 +191,6 @@
 									            	 		type="checkbox" name="org_autolink_check$org.id"
 									            	 		onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" />
 									            	 <label for="org_autolink_check$org.id"> Autolink new repositories</label>
-													 <span style="display:none; width: 16px; height: 16px;" id="org_autolink_check${org.id}working" class="syncicon running">&nbsp;</span>
 								            	 </div>
 								            </li>
 								            
@@ -273,8 +272,9 @@
 			                
 			            </td>
 			            
-			            <td style="text-align: center" class="dvcs-autolink-repo">
-			            	<input id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
+			            <td class="dvcs-autolink-repo">
+                            <span style="padding-left: 37px;">&nbsp;</span>
+			            	<input class="repo_autolink_check" id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
 			            	 onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
 
 			            	<span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span> 
