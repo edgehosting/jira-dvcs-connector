@@ -236,7 +236,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
 			if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
 			{
-				throw new com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException(
+				throw new SourceControlException(
 						"Incorrect credentials");
 			} else if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
 			{

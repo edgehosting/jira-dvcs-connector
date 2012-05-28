@@ -1,19 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
+import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.sal.api.ApplicationProperties;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
-import com.atlassian.sal.api.ApplicationProperties;
 
 public class GithubOAuthUtils {
 

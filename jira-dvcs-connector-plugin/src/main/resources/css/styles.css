@@ -481,6 +481,12 @@ a:hover.repositoryNameLink {
 .dvcs-autolink-repo {
 	width: 100px;
 }
+
+.repo_autolink_check {
+    position: relative;
+    top: 2px;
+}
+
 #dvcs-change-pass-dialog .dialog-button-panel {
 	border-top: 1px solid #d2d2d2;
 	margin-bottom: 7px;
@@ -546,11 +552,12 @@ select#urlSelect {
 }
 
 .dvcs-org-container.aui-toolbar .aui-dropdown a {
-	margin-left: 0px !important;
+	margin-left: 0 !important;
+	padding-left: 0 !important;
 }
 .dvcs-org-container.aui-toolbar .aui-dropdown input {
 	position: relative;
-	top: 3px;
+	top: 1px;
 }
 
 .aui.bitbucketLogo, .aui.githubLogo {

@@ -5,7 +5,7 @@ import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.google.common.collect.Maps;
 import net.java.ao.EntityStreamCallback;
 import org.apache.commons.lang.StringUtils;

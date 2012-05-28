@@ -1,17 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
-import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException.UnauthorisedException;
 import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Webwork action used to configure the bitbucket organization.
@@ -49,7 +47,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
             organizationService.save(newOrganization);
 
-		} catch (UnauthorisedException e)
+		} catch (SourceControlException.UnauthorisedException e)
 		{
 			addErrorMessage("Failed adding the organization: [" + e.getMessage() + "]");
 			log.debug("Failed adding the organization: [" + e.getMessage() + "]");
