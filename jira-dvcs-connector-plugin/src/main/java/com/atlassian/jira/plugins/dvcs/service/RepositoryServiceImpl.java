@@ -38,9 +38,9 @@ public class RepositoryServiceImpl implements RepositoryService
     }
 
     @Override
-	public List<Repository> getAllByOrganization(int organizationId, boolean includeDeleted)
+	public List<Repository> getAllByOrganization(int organizationId)
 	{
-		return repositoryDao.getAllByOrganization(organizationId, includeDeleted);
+		return repositoryDao.getAllByOrganization(organizationId, false);
 	}
 
 	@Override
@@ -185,7 +185,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	@Override
 	public void syncAllInOrganization(int organizationId)
 	{
-		final List<Repository> repositories = getAllByOrganization(organizationId, false);
+		final List<Repository> repositories = getAllByOrganization(organizationId);
 		for (Repository repository : repositories)
 		{
 			doSync(repository, true);

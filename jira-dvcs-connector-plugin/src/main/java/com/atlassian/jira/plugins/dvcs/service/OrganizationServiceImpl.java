@@ -50,8 +50,7 @@ public class OrganizationServiceImpl implements OrganizationService
 				public Object transform(Object o)
 				{
 					Organization organization = (Organization) o;
-					final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId(),
-							false);
+					final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
 					organization.setRepositories(repositories);
 					return organization;
 				}
@@ -74,8 +73,7 @@ public class OrganizationServiceImpl implements OrganizationService
 				public Object transform(Object o)
 				{
 					Organization organization = (Organization) o;
-					final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId(),
-							false);
+					final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
 					organization.setRepositories(repositories);
 					return organization;
 				}
@@ -93,7 +91,7 @@ public class OrganizationServiceImpl implements OrganizationService
 
 		if (loadRepositories)
 		{
-			final List<Repository> repositories = repositoryService.getAllByOrganization(organizationId, false);
+			final List<Repository> repositories = repositoryService.getAllByOrganization(organizationId);
 			organization.setRepositories(repositories);
 		}
 
