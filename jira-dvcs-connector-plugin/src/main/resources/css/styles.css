@@ -75,7 +75,7 @@
     font-size: 1em;
     padding:0 20px;
 }
-.gh_table td.status .error{
+.error{
     color:#f66;
 }
 
@@ -515,7 +515,7 @@ a:hover.repositoryNameLink {
 	color: #A1B9ED !important;
 }
 .dvcs-action-container {
-	white-space: nowrap;
+	/*white-space: nowrap;*/
 }
 .dvcs-config-panel {
 	margin-top: 10px;
