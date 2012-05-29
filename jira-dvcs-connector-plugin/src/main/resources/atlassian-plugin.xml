@@ -24,10 +24,6 @@
 
 
     <ao key="ao-module" name="Active Objects Module">
-        <!-- TODO remove the next two lines when possible -->
-        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping</entity>
-        <entity>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping</entity>
-        
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
