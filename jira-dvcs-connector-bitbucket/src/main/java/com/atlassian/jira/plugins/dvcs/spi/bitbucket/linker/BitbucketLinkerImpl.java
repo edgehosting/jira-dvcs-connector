@@ -176,7 +176,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     
     private RepositoryLinksService getRepositoryLinksService(Repository repository)
     {
-        // TODO get apiUrl properly
+        // TODO is there a better way to get apiUrl?
 		String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
         BitbucketClient bitbucketClient = new BitbucketClient(apiUrl);
 		String unencryptedPassword = encryptor.decrypt(repository.getCredential()

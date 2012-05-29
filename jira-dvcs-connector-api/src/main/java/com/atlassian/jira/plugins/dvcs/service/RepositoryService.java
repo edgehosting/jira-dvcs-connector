@@ -54,8 +54,10 @@ public interface RepositoryService
     Repository save(Repository repository);
 
     /**
-     * synchronization of repository list in given organization
-     * TODO - detailed javadoc on what this does
+     * Synchronization of repository list in given organization
+     *    Retrieves list of repositories for organization and adds/removes local repositories accordingly.
+     *    If autolinking is set to to true new repositories will be linked and they will start synchronizing.
+     *    
      * @param organization organization
      */
     void syncRepositoryList(Organization organization);
@@ -74,13 +76,16 @@ public interface RepositoryService
     void syncAllInOrganization(int organizationId);
 
 	/**
-	 * Enable autolink commits.
-	 * todo - better method name
-	 *
-	 * @param repoId the repo id
-	 * @param linked the parse boolean
+	 * Enables/links the repository to the jira projects. This will also
+	 * (un)install postcommit hooks on repository and configure Links on
+	 * bitbucket repositories
+	 * 
+	 * @param repoId
+	 *            the repo id
+	 * @param linked
+	 *            the parse boolean
 	 */
-	void enableAutolinkCommits(int repoId, boolean linked);
+	void enableRepository(int repoId, boolean linked);
 
     /**
      * remove all repositories in organization.

@@ -105,10 +105,9 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		String responseString = null;
 		try
 		{
-			String apiUrl = hostUrl + "/!api/1.0";
 			String accountUrl = "/users/" + accountName;
 			ExtendedResponseHandler.ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(null,
-					accountUrl, null, apiUrl);
+					accountUrl, null, getApiUrl(hostUrl));
 			if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
 			{
 				return null; // user with that name doesn't exists
@@ -144,12 +143,11 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	{
 		try
 		{
-			String apiUrl = organization.getHostUrl() + "/!api/1.0";
 			String listReposUrl = "/users/" + organization.getName();
 			final Authentication authentication = authenticationFactory.getAuthentication(organization);
 
 			ExtendedResponseHandler.ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(
-					authentication, listReposUrl, null, apiUrl);
+					authentication, listReposUrl, null, getApiUrl(organization));
 			if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
 			{
 				throw new SourceControlException.UnauthorisedException("Invalid credentials");
@@ -175,6 +173,19 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
 	}
 
+	private String getApiUrl(Organization organization)
+    {
+	    return getApiUrl(organization.getHostUrl());
+    }
+	private String getApiUrl(Repository repository)
+	{
+		return getApiUrl(repository.getOrgHostUrl());
+	}
+	private String getApiUrl(String hostUrl)
+	{
+		return hostUrl + "/!api/1.0";
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -183,7 +194,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	{
 		try
 		{
-			String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
 			String owner = repository.getOrgName();
 			String slug = repository.getSlug();
 			String node = changeset.getNode();
@@ -194,7 +204,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 			final String urlPath = "/repositories/" + CustomStringUtils.encode(owner) + "/"
 					+ CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(node);
 			String responseFilesString = requestHelper.get(auth, urlPath + "/diffstat?limit="
-					+ Changeset.MAX_VISIBLE_FILES, null, apiUrl);
+					+ Changeset.MAX_VISIBLE_FILES, null, getApiUrl(repository));
 			return BitbucketChangesetFactory.getChangesetWithStatistics(changeset, responseFilesString);
 		} catch (ResponseException e)
 		{
@@ -202,6 +212,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		}
 
 	}
+
 
 	/**
 	 * Gets the changesets.
@@ -229,8 +240,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	private List<Changeset> getChangesetsInternal(final Repository repository, String startNode,
             int limit, Date lastCommitDate)
     {
-	    String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
-		String owner = repository.getOrgName();
+	    String owner = repository.getOrgName();
 		String slug = repository.getSlug();
 
 		Authentication auth = authenticationFactory.getAuthentication(repository);
@@ -250,7 +260,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		{
 			ExtendedResponseHandler.ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth,
 					"/repositories/" + CustomStringUtils.encode(owner) + "/" + CustomStringUtils.encode(slug)
-							+ "/changesets", params, apiUrl);
+							+ "/changesets", params, getApiUrl(repository));
 
 			if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
 			{
@@ -315,7 +325,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public void setupPostcommitHook(Repository repository, String postCommitUrl)
 	{
-		String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
 		String owner = repository.getOrgName();
 		String slug = repository.getSlug();
 		Authentication auth = authenticationFactory.getAuthentication(repository);
@@ -324,7 +333,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		String postData = "type=post;URL=" + postCommitUrl;
 		try
 		{
-			requestHelper.post(auth, urlPath, postData, apiUrl);
+			requestHelper.post(auth, urlPath, postData, getApiUrl(repository));
 		} catch (ResponseException e)
 		{
 			throw new SourceControlException("Could not add postcommit hook", e);
@@ -340,7 +349,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	{
 		bitbucketLinker.unlinkRepository(repository);
 		
-		String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
 		String owner = repository.getOrgName();
 		String slug = repository.getSlug();
 		Authentication auth = authenticationFactory.getAuthentication(repository);
@@ -349,7 +357,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		// Find the hook
 		try
 		{
-			String responseString = requestHelper.get(auth, urlPath, null, apiUrl);
+			String responseString = requestHelper.get(auth, urlPath, null, getApiUrl(repository));
 			JSONArray jsonArray = new JSONArray(responseString);
 			for (int i = 0; i < jsonArray.length(); i++)
 			{
@@ -363,7 +371,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 				if ("URL".equals(name) && postCommitUrl.equals(value))
 				{
 					// We have the hook, lets remove it
-					requestHelper.delete(auth, apiUrl, urlPath + "/" + id);
+					requestHelper.delete(auth, getApiUrl(repository), urlPath + "/" + id);
 				}
 			}
 		} catch (ResponseException e)
@@ -405,11 +413,10 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	{
 		try
 		{
-			String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
 			log.debug("Parse user [ {} ]", username);
 
 			String responseString = requestHelper.get(Authentication.ANONYMOUS,
-					"/users/" + CustomStringUtils.encode(username), null, apiUrl);
+					"/users/" + CustomStringUtils.encode(username), null, getApiUrl(repository));
 			return BitbucketUserFactory.parse(new JSONObject(responseString).getJSONObject("user"));
 		} catch (ResponseException e)
 		{
@@ -438,12 +445,11 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	public List<Group> getGroupsForOrganization(Organization organization)
 	{
 		List<Group> groups = new ArrayList<Group>();
-		String apiUrl = organization.getHostUrl() + "/!api/1.0";
 		String urlPath = "/groups/" + organization.getName();
 		Authentication auth = authenticationFactory.getAuthentication(organization);
 		try
 		{
-			String responseString = requestHelper.get(auth, urlPath, null, apiUrl);
+			String responseString = requestHelper.get(auth, urlPath, null, getApiUrl(organization));
 			JSONArray jsonArray = new JSONArray(responseString);
 			for (int i = 0; i < jsonArray.length(); i++)
 			{
@@ -464,7 +470,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public boolean validateCredentials(Organization organization)
 	{
-		String apiUrl = organization.getHostUrl() + "/!api/1.0";
 		// try to obtain user's ssh keys to know if credentials are OK
 		// @ http://confluence.atlassian.com/display/BITBUCKET/SSH+Keys
 		String urlPath = "/ssh-keys/";	
@@ -472,7 +477,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		Authentication auth = new BasicAuthentication(organization.getCredential().getAdminUsername(), organization.getCredential().getAdminPassword());
 		try
 		{
-			ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, urlPath, Collections.EMPTY_MAP, apiUrl);
+			ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, urlPath,
+			        Collections.<String, Object> emptyMap(), getApiUrl(organization));
 			int statusCode = extendedResponse.getStatusCode();
 			if (statusCode == 401 || statusCode == 403) {
 				return false;

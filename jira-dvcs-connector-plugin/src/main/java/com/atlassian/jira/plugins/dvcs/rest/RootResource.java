@@ -189,7 +189,7 @@ public class RootResource
 	public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
 	{
 		// todo handle exceptions
-		repositoryService.enableAutolinkCommits(id, Boolean.parseBoolean(autolink.getPayload()));
+		repositoryService.enableRepository(id, Boolean.parseBoolean(autolink.getPayload()));
 		return Response.noContent().build();
 	}
 	

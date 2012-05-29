@@ -222,7 +222,7 @@ public class RepositoryServiceImpl implements RepositoryService
     }
 
     @Override
-	public void enableAutolinkCommits(int repoId, boolean linked)
+	public void enableRepository(int repoId, boolean linked)
 	{
 		final Repository repository = repositoryDao.get(repoId);
 		if (repository != null)
