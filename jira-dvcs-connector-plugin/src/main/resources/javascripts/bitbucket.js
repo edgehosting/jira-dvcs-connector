@@ -120,7 +120,9 @@ function updateSyncStatus(repo) {
         if (repo.sync.error) {
             syncStatusHtml = "";
             syncIcon = "error";
-            syncErrorDiv.html("<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>");
+//            syncErrorDiv.html("<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>");
+            syncErrorDiv.html("<span class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</span>" +
+                                "<span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>");
         } else {
         	syncErrorDiv.html("");
     	}
