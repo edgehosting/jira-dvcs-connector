@@ -202,7 +202,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	}
 
 	@Override
-	public List<Repository> getAllActiveRepositories()
+	public List<Repository> getAllRepositories()
 	{
 		return repositoryDao.getAll(false);
 	}

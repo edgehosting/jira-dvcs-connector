@@ -25,13 +25,14 @@ public interface RepositoryService
     List<Repository> getAllByOrganization(int organizationId, boolean includeDeleted);
     
     /**
-     * Gets the all active repositories with synchronization status.
-     *	TODO - rename (what does 'active' mean?)
-     *
-     * @param organizationId the organization id
-     * @return the all active repositories
-     */
-    List<Repository> getAllActiveRepositories();
+	 * Gets the all active (not deleted) repositories and their synchronization
+	 * status.
+	 * 
+	 * @param organizationId
+	 *            the organization id
+	 * @return the all active repositories
+	 */
+    List<Repository> getAllRepositories();
 
     /**
      * check if there is at least one linked repository

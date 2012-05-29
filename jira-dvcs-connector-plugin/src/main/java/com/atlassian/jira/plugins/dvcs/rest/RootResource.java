@@ -90,7 +90,7 @@ public class RootResource
 	@Path("/repositories/")
 	public Response getAllRepositories()
 	{
-		List<Repository> activeRepositories = repositoryService.getAllActiveRepositories();
+		List<Repository> activeRepositories = repositoryService.getAllRepositories();
 
 		return Response.ok(new RepositoryList(activeRepositories)).build();
 	}

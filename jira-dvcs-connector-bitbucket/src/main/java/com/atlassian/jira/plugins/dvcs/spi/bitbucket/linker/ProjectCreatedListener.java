@@ -76,7 +76,7 @@ public class ProjectCreatedListener implements InitializingBean, DisposableBean
 	{
 		log.debug("New project [" + projectCreatedEvent.getId()
 		        + "] created, updating repository links");
-		List<Repository> allRepositories = repositoryService.getAllActiveRepositories();
+		List<Repository> allRepositories = repositoryService.getAllRepositories();
 		for (Repository repository : allRepositories)
         {
 			if (repository.isLinked())
