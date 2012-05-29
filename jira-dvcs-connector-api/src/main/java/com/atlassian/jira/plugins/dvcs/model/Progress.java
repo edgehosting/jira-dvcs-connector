@@ -57,5 +57,7 @@ public interface Progress
 	 */
 	boolean isShouldStop();
 
+	void setFinished(boolean finished);
+
 
 }

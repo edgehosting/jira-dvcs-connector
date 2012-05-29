@@ -101,7 +101,8 @@ public class DefaultProgress implements Progress
 		this.startTime = startTime;
 	}
 
-	public void setFinished(boolean finished)
+	@Override
+    public void setFinished(boolean finished)
 	{
 		this.finished = finished;
 	}

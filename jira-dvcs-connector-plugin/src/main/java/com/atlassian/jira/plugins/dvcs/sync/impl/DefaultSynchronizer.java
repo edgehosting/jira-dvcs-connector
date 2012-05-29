@@ -33,9 +33,10 @@ public class DefaultSynchronizer implements Synchronizer
     @Override
     public void synchronize(Repository repository, SynchronisationOperation operation)
     {
-        if (!isSyncRunningOrQueued(repository))
+        Progress progress = progressMap.get(repository);
+        if (progress==null || progress.isFinished() || progress.isShouldStop())
         {
-            addSynchronisationOperation(repository, operation);
+        	addSynchronisationOperation(repository, operation);
         }
     }
 
@@ -47,16 +48,6 @@ public class DefaultSynchronizer implements Synchronizer
     	{
     		progress.setShouldStop(true);
     	}
-    }
-
-    private boolean isSyncRunningOrQueued(Repository repository)
-    {
-        Progress progress = progressMap.get(repository);
-        if (progress==null)
-        {
-            return false;
-        }
-        return !progress.isFinished();
     }
 
     private void addSynchronisationOperation(final Repository repository, final SynchronisationOperation operation)
