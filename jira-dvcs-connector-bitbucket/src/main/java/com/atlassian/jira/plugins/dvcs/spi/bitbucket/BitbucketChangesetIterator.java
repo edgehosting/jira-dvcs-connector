@@ -76,9 +76,6 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
         {
             followingChangset = changesets.remove(0);
         }
-        // get the changesets in the correct order (TODO this is probably not required,
-        // we sort the changesets before displaying anyway)
-        Collections.reverse(changesets);
         return changesets.iterator();
 
     }
