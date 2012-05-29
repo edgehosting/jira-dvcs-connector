@@ -132,8 +132,6 @@ public class OrganizationServiceImpl implements OrganizationService
 	@Override
 	public void updateCredentials(int organizationId, String username, String plaintextPassword)
 	{
-		// TODO check if new credential works #checkCredentials() not implemented 
-		
 		// Check credentials
 		// create organization with plain credentials as we need all data like url, etc
 		//
@@ -147,9 +145,6 @@ public class OrganizationServiceImpl implements OrganizationService
 	@Override
 	public void updateCredentialsAccessToken(int organizationId, String accessToken)
 	{
-
-		// TODO check if new credential works
-		
 		// Check credentials
 		// create organization with plain credentials as we need all data like url, etc
 		//
