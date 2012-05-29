@@ -19,7 +19,6 @@ import com.google.common.collect.MapMaker;
 public class DefaultSynchronizer implements Synchronizer
 {
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
-
 	private final ExecutorService executorService;
 
     public DefaultSynchronizer(ExecutorService executorService)
@@ -34,13 +33,23 @@ public class DefaultSynchronizer implements Synchronizer
     @Override
     public void synchronize(Repository repository, SynchronisationOperation operation)
     {
-        if (!isSyncRunning(repository))
+        if (!isSyncRunningOrQueued(repository))
         {
-            addSynchronisatinoOperation(repository, operation);
+            addSynchronisationOperation(repository, operation);
         }
     }
 
-    private boolean isSyncRunning(Repository repository)
+    @Override
+    public void stopSynchronization(Repository repository)
+    {
+    	Progress progress = progressMap.get(repository);
+    	if (progress!=null)
+    	{
+    		progress.setShouldStop(true);
+    	}
+    }
+
+    private boolean isSyncRunningOrQueued(Repository repository)
     {
         Progress progress = progressMap.get(repository);
         if (progress==null)
@@ -50,7 +59,7 @@ public class DefaultSynchronizer implements Synchronizer
         return !progress.isFinished();
     }
 
-    private void addSynchronisatinoOperation(final Repository repository, final SynchronisationOperation operation)
+    private void addSynchronisationOperation(final Repository repository, final SynchronisationOperation operation)
     {
         final DefaultProgress progress = operation.getProgress();
         progressMap.put(repository, progress);
@@ -63,6 +72,10 @@ public class DefaultSynchronizer implements Synchronizer
                 try
                 {
                     progress.start();
+                    if (progress.isShouldStop())
+                    {
+                    	return;
+                    }
                     operation.synchronise();
                 } catch (Throwable e)
                 {
@@ -84,4 +97,5 @@ public class DefaultSynchronizer implements Synchronizer
     {
 		return progressMap.get(repository);
     }
+
 }

@@ -15,7 +15,15 @@ public interface Synchronizer
      * @param repository
      * @param synchronisationOperation
      */
-    public void synchronize(Repository repository, SynchronisationOperation synchronisationOperation);
+	public void synchronize(Repository repository, SynchronisationOperation synchronisationOperation);
+
+    /**
+     * This tells that any runnnig or queued synchronisation for this repository should be canceled.
+     * Used before deleting or unlinking repository.
+     * 
+     * @param repository
+     */
+	public void stopSynchronization(Repository repository);
     
     /**
      * Get the progress of a sync being executed for given repository

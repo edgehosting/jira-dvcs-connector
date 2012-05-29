@@ -13,7 +13,7 @@ public interface Progress
      * @param jiraCount
         * @param synchroErrorCount
      */
-    public void inProgress(int changesetCount, int jiraCount, int synchroErrorCount);
+    void inProgress(int changesetCount, int jiraCount, int synchroErrorCount);
 
 	/**
 	 * @return true if the progress is Finished
@@ -40,4 +40,22 @@ public interface Progress
 	 * @return error messages
 	 */
 	String getError();
+
+	/**
+	 * Indication that the synchronisation should stop.
+	 * Used when repository is unlinked or organisation and its repositories are deleted.
+	 * 
+	 * @param shouldStop
+	 */
+	void setShouldStop(boolean shouldStop);
+
+	/**
+	 * Indication that the synchronisation should stop 
+	 * Used when repository is unlinked or organisation and its repositories are deleted.
+	 * 
+	 * @return
+	 */
+	boolean isShouldStop();
+
+
 }

@@ -59,6 +59,10 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
         for (Changeset changeset : changesetService.getChangesetsFromDvcs(repository, lastCommitDate))
         {
+        	if (progress.isShouldStop())
+        	{
+        		return;
+        	}
             if (lastCommitDate == null || lastCommitDate.before(changeset.getDate()))
             {
                 lastCommitDate = changeset.getDate();

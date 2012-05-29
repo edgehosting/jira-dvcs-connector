@@ -10,6 +10,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DefaultProgress implements Progress
 {
+	private volatile boolean shouldStop = false;
+	
 	@XmlAttribute
 	private boolean finished = false;
 	
@@ -41,7 +43,7 @@ public class DefaultProgress implements Progress
     }
 
     public void queued () {
-    	// not used
+    	// not used, maybe one day we can have special icon for this state 
     }
 
     public void start()
@@ -114,8 +116,20 @@ public class DefaultProgress implements Progress
 		this.jiraCount = jiraCount;
 	}
 
-	public void setSynchroErrorCount(int synchroErrorCount)
+    public void setSynchroErrorCount(int synchroErrorCount)
 	{
 		this.synchroErrorCount = synchroErrorCount;
 	}
+
+	@Override
+    public boolean isShouldStop()
+    {
+    	return shouldStop;
+    }
+
+	public void setShouldStop(boolean shouldStop)
+    {
+    	this.shouldStop = shouldStop;
+    }
+
 }

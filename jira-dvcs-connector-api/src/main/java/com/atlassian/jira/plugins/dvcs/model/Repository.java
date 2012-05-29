@@ -31,7 +31,7 @@ public class Repository
 	private transient String orgName;
 	
 	@XmlElement
-    private DefaultProgress sync;
+    private Progress sync;
 
 	public Repository()
 	{
@@ -162,12 +162,12 @@ public class Repository
 		this.orgName = orgName;
 	}
 
-	public DefaultProgress getSync()
+	public Progress getSync()
 	{
 		return sync;
 	}
 
-	public void setSync(DefaultProgress sync)
+	public void setSync(Progress sync)
 	{
 		this.sync = sync;
 	}
