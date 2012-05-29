@@ -1,5 +1,22 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import com.atlassian.jira.plugins.bitbucket.api.util.Retryer;
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.auth.impl.BasicAuthentication;
@@ -23,20 +40,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * The Class BitbucketCommunicator.
@@ -209,9 +212,24 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	 * @param lastCommitDate the last commit date
 	 * @return the changesets
 	 */
-	public List<Changeset> getChangesets(final Repository repository, String startNode, int limit, Date lastCommitDate)
+	public List<Changeset> getChangesets(final Repository repository, final String startNode,
+	        final int limit, final Date lastCommitDate)
 	{
-		String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
+		return new Retryer<List<Changeset>>().retry(new Callable<List<Changeset>>()
+		{
+			@Override
+			public List<Changeset> call()
+			{
+				return getChangesetsInternal(repository, startNode, limit, lastCommitDate);
+			}
+		});
+
+	}
+
+	private List<Changeset> getChangesetsInternal(final Repository repository, String startNode,
+            int limit, Date lastCommitDate)
+    {
+	    String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
 		String owner = repository.getOrgName();
 		String slug = repository.getSlug();
 
@@ -272,7 +290,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 			throw new SourceControlException("Could not parse json object", e);
 		}
 		return changesets;
-	}
+    }
 
 	/**
 	 * {@inheritDoc}

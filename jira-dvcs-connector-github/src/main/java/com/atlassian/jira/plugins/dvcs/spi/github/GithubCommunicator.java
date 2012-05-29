@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
@@ -20,6 +21,7 @@ import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.bitbucket.api.util.Retryer;
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -323,9 +325,22 @@ public class GithubCommunicator implements DvcsCommunicator
 
     }
 
-    public List<Changeset> getChangesets(Repository repository, String branch, int pageNumber)
+    public List<Changeset> getChangesets(final Repository repository, final String branch, final int pageNumber)
     {
-        String apiUrl = getApiUrl(repository.getOrgHostUrl(), false);
+    	return new Retryer<List<Changeset>>().retry(new Callable<List<Changeset>>()
+        {
+            @Override
+            public List<Changeset> call()
+            {
+            	return getChangesetsInternal(repository, branch, pageNumber);
+            }
+        });
+    }
+
+	private List<Changeset> getChangesetsInternal(Repository repository, String branch,
+            int pageNumber)
+    {
+	    String apiUrl = getApiUrl(repository.getOrgHostUrl(), false);
         String owner = repository.getOrgName();
         String slug = repository.getSlug();
         Authentication authentication = authenticationFactory.getAuthentication(repository);
