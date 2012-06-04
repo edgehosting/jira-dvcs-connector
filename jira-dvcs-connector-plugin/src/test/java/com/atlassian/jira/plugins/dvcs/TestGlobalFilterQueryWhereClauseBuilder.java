@@ -1,11 +1,12 @@
-package com.atlassian.jira.plugins.bitbucket;
+package com.atlassian.jira.plugins.dvcs;
 
-import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
-import com.atlassian.jira.plugins.bitbucket.streams.GlobalFilterQueryWhereClauseBuilder;
+import java.util.Arrays;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Arrays;
+import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder;
+import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 
 /**
  *
@@ -26,7 +27,7 @@ public class TestGlobalFilterQueryWhereClauseBuilder
     @Test
     public void fullGlobalFilter()
     {
-        final String expected = "(ISSUE_ID like 'projectIn-%' AND ISSUE_ID not like 'projectNotIn-%') AND (ISSUE_ID like 'ISSUEIN' AND ISSUE_ID not like 'ISSUENOTIN') AND (AUTHOR like 'userIn' AND AUTHOR not like 'userNotIn')";
+        final String expected = "(PROJECT_KEY in ('projectIn')  AND PROJECT_KEY not in ('projectNotIn') ) AND (ISSUE_KEY in ('issueIn')  AND ISSUE_KEY not in ('issueNotIn') ) AND (AUTHOR in ('userIn') AUTHOR not in ('userNotIn') )";
         GlobalFilter gf = new GlobalFilter();
         gf.setInProjects(Arrays.asList("projectIn"));
         gf.setNotInProjects(Arrays.asList("projectNotIn"));

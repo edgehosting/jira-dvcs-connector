@@ -1,14 +1,15 @@
-package com.atlassian.jira.plugins.bitbucket;
+package com.atlassian.jira.plugins.dvcs;
 
-import static junit.framework.Assert.*;
-import static org.mockito.Mockito.*;
+import static junit.framework.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.atlassian.jira.plugins.bitbucket.api.IssueLinker;
+import com.atlassian.jira.plugins.dvcs.webwork.IssueLinker;
+import com.atlassian.jira.plugins.dvcs.webwork.IssueLinkerImpl;
 import com.atlassian.sal.api.ApplicationProperties;
 
 public class TestIssueLinker
