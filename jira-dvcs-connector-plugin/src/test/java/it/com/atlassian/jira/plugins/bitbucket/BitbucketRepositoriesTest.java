@@ -27,6 +27,7 @@ import com.atlassian.pageobjects.elements.PageElement;
  * Test to verify behaviour when syncing bitbucket repository..
  */
 @Ignore
+@Deprecated // TO BE DELETED SOON
 public class BitbucketRepositoriesTest extends BitBucketBaseTest
 {
     private static final String TEST_PUBLIC_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/public-hg-repo";

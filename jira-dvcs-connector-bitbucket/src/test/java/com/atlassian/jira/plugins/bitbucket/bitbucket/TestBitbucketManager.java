@@ -1,10 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -19,6 +22,8 @@ import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketRepositoryManager;
 import com.atlassian.jira.plugins.bitbucket.spi.bitbucket.BitbucketRepositoryUri;
 
+@Ignore
+@Deprecated // TO BE DELETED SOON
 public class TestBitbucketManager
 {
     private static final RepositoryUri REPOSITORY_URI = new BitbucketRepositoryUri("https","bitbucket.org","owner","slug");

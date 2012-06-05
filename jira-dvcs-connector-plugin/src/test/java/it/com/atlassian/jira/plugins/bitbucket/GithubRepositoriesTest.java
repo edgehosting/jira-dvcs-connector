@@ -33,6 +33,7 @@ import com.atlassian.pageobjects.elements.PageElement;
  * Test to verify behaviour when syncing  github repository.
  */
 @Ignore
+@Deprecated // TO BE DELETED SOON
 public class GithubRepositoriesTest extends BitBucketBaseTest
 {
 

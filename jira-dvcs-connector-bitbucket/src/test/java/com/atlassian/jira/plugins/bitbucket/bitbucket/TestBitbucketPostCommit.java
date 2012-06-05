@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -16,7 +17,8 @@ import com.atlassian.jira.plugins.bitbucket.api.Synchronizer;
 /**
  * Unit test for {@link BitbucketPostCommit}
  */
-@SuppressWarnings("deprecation")
+@Ignore
+@Deprecated // TO BE DELETED SOON
 public class TestBitbucketPostCommit
 {
     @Mock

@@ -1,8 +1,15 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import static junit.framework.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
@@ -11,6 +18,7 @@ import net.java.ao.Query;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Matchers;
@@ -31,6 +39,8 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
  * Unit tests for {@link DefaultRepositoryPersister}
  */
 @SuppressWarnings("unchecked")
+@Ignore
+@Deprecated // TO BE DELETED SOON
 public class TestDefaultBitbucketMapper
 {
     private static final String URL = "https://bitbucket.org/owner/slug";
