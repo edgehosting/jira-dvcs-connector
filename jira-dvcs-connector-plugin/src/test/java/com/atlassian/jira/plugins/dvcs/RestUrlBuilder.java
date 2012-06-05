@@ -1,4 +1,4 @@
-package it.com.atlassian.jira.plugins.bitbucket;
+package com.atlassian.jira.plugins.dvcs;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

@@ -1,13 +1,18 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -28,6 +33,8 @@ import com.atlassian.jira.plugins.bitbucket.api.impl.SynchronizationKey;
 /**
  * Unit tests for {@link DefaultSynchronizer}
  */
+@Ignore
+@Deprecated // TO BE DELETED SOON
 public class TestDefaultSynchronizer
 {
     @Mock

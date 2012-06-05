@@ -30,14 +30,13 @@ public class RepositoryServiceTest
 
 	@Mock
 	private ApplicationProperties applicationProperties;
-	
+
 	@Mock
 	private DvcsCommunicator bitbucketCommunicator;
 
 	// tested object
 	private RepositoryService repositoryService;
 
-	
 	public RepositoryServiceTest()
 	{
 		super();
@@ -47,46 +46,62 @@ public class RepositoryServiceTest
 	public void setup()
 	{
 		MockitoAnnotations.initMocks(this);
-		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer, changesetService, applicationProperties);
+		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer,
+				changesetService, applicationProperties);
 
 	}
-	
+
 	@Test
-	public void testDisableRepository() {
-		
+	public void testDisableRepository()
+	{
+
 		Repository sampleRepository = createSampleRepository();
 		Mockito.when(repositoryDao.get(0)).thenReturn(sampleRepository);
 		Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
 		Mockito.when(applicationProperties.getBaseUrl()).thenReturn("https://bitbucket.org");
-		
+
 		repositoryService.enableRepository(0, false);
-		
+
 		Mockito.verify(repositoryDao).save(sampleRepository);
 		Mockito.verify(bitbucketCommunicator).removePostcommitHook(Mockito.eq(sampleRepository),
 				Mockito.eq(createPostcommitUrl(sampleRepository)));
 	}
 
 	@Test
-	public void testEnableRepository() {
-		
+	public void testEnableRepository()
+	{
+
 		Repository sampleRepository = createSampleRepository();
 		Mockito.when(repositoryDao.get(0)).thenReturn(sampleRepository);
 		Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
 		Mockito.when(applicationProperties.getBaseUrl()).thenReturn("https://bitbucket.org");
-		
+
 		repositoryService.enableRepository(0, true);
-		
+
 		Mockito.verify(repositoryDao).save(sampleRepository);
 		Mockito.verify(bitbucketCommunicator).setupPostcommitHook(Mockito.eq(sampleRepository),
 				Mockito.eq(createPostcommitUrl(sampleRepository)));
-		
+
 	}
-	
-	private String createPostcommitUrl(Repository forRepo) {
-		return  "https://bitbucket.org" +  "/rest/bitbucket/1.0/repository/" + forRepo.getId() + "/sync";
-		
+
+	private String createPostcommitUrl(Repository forRepo)
+	{
+		return "https://bitbucket.org" + "/rest/bitbucket/1.0/repository/" + forRepo.getId() + "/sync";
+
 	}
-	
+
+	@Test
+	public void testSyncRepositoryListRepository()
+	{
+
+	}
+
+	@Test
+	public void testRemoveRepository()
+	{
+
+	}
+
 	private Repository createSampleRepository()
 	{
 		Repository repository = new Repository();
@@ -98,4 +113,3 @@ public class RepositoryServiceTest
 	}
 
 }
-

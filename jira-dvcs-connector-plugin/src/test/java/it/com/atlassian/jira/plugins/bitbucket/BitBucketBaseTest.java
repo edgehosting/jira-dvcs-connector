@@ -1,5 +1,12 @@
 package it.com.atlassian.jira.plugins.bitbucket;
 
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.openqa.selenium.By;
+
 import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BaseConfigureRepositoriesPage;
 import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
@@ -7,15 +14,12 @@ import com.atlassian.jira.plugins.bitbucket.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
 import com.atlassian.webdriver.jira.page.JiraLoginPage;
-import org.junit.After;
-import org.junit.Before;
-import org.openqa.selenium.By;
-
-import java.util.List;
 
 /**
  * Base class for BitBucket integration tests. Initializes the JiraTestedProduct and logs admin in.
  */
+@Ignore
+@Deprecated // TO BE DELETED SOON
 public abstract class BitBucketBaseTest
 {
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
