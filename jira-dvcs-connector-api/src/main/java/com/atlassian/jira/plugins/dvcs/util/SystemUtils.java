@@ -12,7 +12,7 @@ public class SystemUtils
 		String property = System.getProperty(propertyName, "" + defaultValue);
 		try
 		{
-			return Long.getLong(property);
+			return Long.parseLong(property);
 		} catch (Exception e)
 		{
 			log.warn("Unable to parse system property [" + propertyName + "] with value ["
