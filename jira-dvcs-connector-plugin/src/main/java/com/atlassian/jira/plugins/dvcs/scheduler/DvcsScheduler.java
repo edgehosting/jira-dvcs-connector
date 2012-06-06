@@ -42,7 +42,7 @@ public class DvcsScheduler implements LifecycleAware
     public void onStart()
     {
         log.debug("onStart");
-        // this is here only to trigger migration of AO
+        // this is here only to trigger migration of AO (see BBC-176)
         activeObjects.find(OrganizationMapping.class);
 
         this.interval = SystemUtils.getSystemPropertyLong(PROPERTY_KEY, DEFAULT_INTERVAL);
