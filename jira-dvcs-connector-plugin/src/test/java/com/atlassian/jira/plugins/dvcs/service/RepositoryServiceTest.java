@@ -1,5 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -94,14 +97,70 @@ public class RepositoryServiceTest
 	public void testSyncRepositoryListRepository()
 	{
 
+		Repository sampleRepository1 = createSampleRepository();
+		sampleRepository1.setId(1);
+		sampleRepository1.setSlug("sampleRepository1");
+		
+		Repository sampleRepository2 = createSampleRepository();
+		sampleRepository2.setId(2);
+		sampleRepository2.setSlug("sampleRepository2");
+		
+		Repository sampleRepository3 = createSampleRepository();
+		sampleRepository3.setId(3);
+		sampleRepository3.setSlug("sampleRepository3");
+		
+		Repository sampleRepository4 = createSampleRepository();
+		sampleRepository4.setId(4);
+		sampleRepository4.setSlug("sampleRepository4");
+		
+		Repository sampleRepository5 = createSampleRepository();
+		sampleRepository5.setId(5);
+		sampleRepository5.setSlug("sampleRepository5");
+		
+		List<Repository> storedRepos = new ArrayList<Repository>();
+		storedRepos.add(sampleRepository1);
+		storedRepos.add(sampleRepository2);
+		List<Repository> remoteRepos = new ArrayList<Repository>();
+		// first one deleted, 3, 4 added
+		remoteRepos.add(sampleRepository2);
+		remoteRepos.add(sampleRepository3);
+		remoteRepos.add(sampleRepository4);
+		
+		Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
+		//Mockito.when(bitbucketCommunicator.getRepositories(Mockito.any(Organization.class))).thenReturn(value)
 	}
 
 	@Test
 	public void testRemoveRepository()
 	{
-
+		Repository sampleRepository = createSampleRepository();
+		sampleRepository.setId(8);
+		
+		repositoryService.remove(sampleRepository);
+		
+		Mockito.verify(changesetService).removeAllInRepository(8);
+		Mockito.verify(repositoryDao).remove(8);
 	}
 
+	@Test
+	public void testRemoveRepositoryIsLinked()
+	{
+		Repository sampleRepository = createSampleRepository();
+		sampleRepository.setId(8);
+		sampleRepository.setLinked(true);
+		Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
+		Mockito.when(applicationProperties.getBaseUrl()).thenReturn("https://bitbucket.org");
+		
+		repositoryService.remove(sampleRepository);
+		
+		Mockito.verify(changesetService).removeAllInRepository(8);
+		Mockito.verify(repositoryDao).remove(8);
+		
+		Mockito.verify(bitbucketCommunicator).removePostcommitHook(Mockito.eq(sampleRepository),
+				Mockito.eq(createPostcommitUrl(sampleRepository)));
+	}
+
+	
 	private Repository createSampleRepository()
 	{
 		Repository repository = new Repository();
