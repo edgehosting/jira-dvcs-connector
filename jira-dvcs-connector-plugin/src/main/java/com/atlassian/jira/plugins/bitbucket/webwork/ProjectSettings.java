@@ -53,7 +53,7 @@ public class ProjectSettings extends AbstractPluggableProjectOperation
         } else
         {
             for (int i=0; i<repositories.size(); i++) {
-                SourceControlRepository repository = repositories.get(0);
+                SourceControlRepository repository = repositories.get(i);
                 appendRepositoryRow(result, repository);
             }
         }
