@@ -22,22 +22,25 @@ import static org.hamcrest.CoreMatchers.*;
 /**
  * @author Martin Skurla
  */
-public final class TestDefaultSynchronizer {
+public final class TestDefaultSynchronizer
+{
     private Repository        repositoryMock;
     private ChangesetService  changesetServiceMock;
 
     private Capture<Changeset> savedChangeset = new Capture<Changeset>();
-    
+
     private Changeset changeset = new Changeset(123, "node", "message MES-123 text", new Date());
 
     @Before
-    public void initializeMocks() {
+    public void initializeMocks()
+    {
         repositoryMock        = createNiceMock(Repository.class);
         changesetServiceMock  = createNiceMock(ChangesetService.class);
     }
 
     @After
-    public void verifyMocks() {
+    public void verifyMocks()
+    {
         verify(repositoryMock, changesetServiceMock);
     }
 
@@ -70,10 +73,12 @@ public final class TestDefaultSynchronizer {
         assertThat(savedChangeset.getValue().getIssueKey(), is("MES-123"));
     }
 
-    private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException {
+    private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException
+    {
         Progress progress = synchronizer.getProgress(repositoryMock);
 
-        while (!progress.isFinished()) {
+        while (!progress.isFinished())
+        {
             Thread.sleep(50);
         }
     }

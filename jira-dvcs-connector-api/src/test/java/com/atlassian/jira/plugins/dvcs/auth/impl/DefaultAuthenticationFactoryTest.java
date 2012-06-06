@@ -23,14 +23,16 @@ public final class DefaultAuthenticationFactoryTest {
     private Encryptor  encryptorMock;
 
     @Before
-    public void initializeMocks() {
+    public void initializeMocks()
+    {
         repositoryMock = createStrictMock(Repository.class);
         credentialMock = createStrictMock(Credential.class);
         encryptorMock  = createStrictMock(Encryptor.class);
     }
 
     @After
-    public void verifyMocks() {
+    public void verifyMocks()
+    {
         verify(repositoryMock, credentialMock, encryptorMock);
     }
 
@@ -102,7 +104,8 @@ public final class DefaultAuthenticationFactoryTest {
         assertThat(authentication).isInstanceOf(BasicAuthentication.class);
     }
 
-    private static String anyString() {
+    private static String anyString()
+    {
         return EasyMock.anyObject(String.class);
     }
 }
