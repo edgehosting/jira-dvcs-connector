@@ -1,6 +1,6 @@
 $webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
 
-<div class="CommitContainer">
+<div class="CommitContainer issue-data-block">
     <!-- Gravatar -->
     <div class="CommitContainerMargin">
         <a href="$user_url" target="_blank">
