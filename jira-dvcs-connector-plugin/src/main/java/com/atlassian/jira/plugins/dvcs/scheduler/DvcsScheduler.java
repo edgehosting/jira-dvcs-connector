@@ -6,6 +6,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
@@ -25,23 +27,29 @@ public class DvcsScheduler implements LifecycleAware
 	private long interval = DEFAULT_INTERVAL;
 	private final OrganizationService organizationService;
 	private final RepositoryService repositoryService;
+	private final ActiveObjects activeObjects;
 
 	public DvcsScheduler(PluginScheduler pluginScheduler, OrganizationService organizationService,
-	        RepositoryService repositoryService)
+	        RepositoryService repositoryService, ActiveObjects activeObjects)
 	{
 		this.pluginScheduler = pluginScheduler;
 		this.organizationService = organizationService;
 		this.repositoryService = repositoryService;
+		this.activeObjects = activeObjects;
 	}
 
-	@Override
-	public void onStart()
-	{
-		this.interval = SystemUtils.getSystemPropertyLong(PROPERTY_KEY, DEFAULT_INTERVAL);
-		log.debug("Starting DVCSConnector Scheduler Job starting");
-		reschedule();
-	}
+    @Override
+    public void onStart()
+    {
+        log.debug("onStart");
+        // this is here only to trigger migration of AO
+        activeObjects.find(OrganizationMapping.class);
 
+        this.interval = SystemUtils.getSystemPropertyLong(PROPERTY_KEY, DEFAULT_INTERVAL);
+        log.debug("Starting DVCSConnector Scheduler Job. interval=" + interval);
+        reschedule();
+    }
+	
 	public void reschedule()
 	{
 		Map<String, Object> data = Maps.newHashMap();
@@ -54,5 +62,6 @@ public class DvcsScheduler implements LifecycleAware
 		        new Date(), // the time the job is to start
 		        interval); // interval between repeats, in milliseconds
 	}
+
 
 }
