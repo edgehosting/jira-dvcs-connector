@@ -125,7 +125,7 @@
                         <td width="1px" height="40px">
                             <span class="$repository.getRepositoryType()Logo">&nbsp;</span>
                             </td>
-                        <td><a class="repositoryNameLink" href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_new">
+                        <td><a class="repositoryNameLink" href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_blank">
                             <span class="repositoryName">$textutils.htmlEncode($repository.repositoryName)</span>
                         </a></td>
                         <td style="text-align: right;">
