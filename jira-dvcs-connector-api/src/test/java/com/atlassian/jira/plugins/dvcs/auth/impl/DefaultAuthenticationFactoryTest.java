@@ -5,46 +5,36 @@ import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import org.easymock.EasyMock;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.easymock.EasyMock.*;
 import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Martin Skurla
  */
+@RunWith(MockitoJUnitRunner.class)
 public final class DefaultAuthenticationFactoryTest {
 
+    @Mock
     private Repository repositoryMock;
+
+    @Mock
     private Credential credentialMock;
+
+    @Mock
     private Encryptor  encryptorMock;
-
-    @Before
-    public void initializeMocks()
-    {
-        repositoryMock = createStrictMock(Repository.class);
-        credentialMock = createStrictMock(Credential.class);
-        encryptorMock  = createStrictMock(Encryptor.class);
-    }
-
-    @After
-    public void verifyMocks()
-    {
-        verify(repositoryMock, credentialMock, encryptorMock);
-    }
 
 
     @Test
     public void repositoryWithNullAccessTokenAndAdminUserName_ShouldReturnAnonymousAuthentication()
     {
-        expect(repositoryMock.getCredential())   .andReturn(credentialMock);
-        expect(credentialMock.getAccessToken())  .andReturn(null);
-        expect(credentialMock.getAdminUsername()).andReturn(null);
-
-        replay(repositoryMock, credentialMock, encryptorMock);
+        when(repositoryMock.getCredential())   .thenReturn(credentialMock);
+        when(credentialMock.getAccessToken())  .thenReturn(null); // not necessary, but null value has to be handled
+        when(credentialMock.getAdminUsername()).thenReturn(null); // not necessary, but null value has to be handled
 
         AuthenticationFactory authenticationFactory = new DefaultAuthenticationFactory(null); // no encryptor needed
         Authentication authentication = authenticationFactory.getAuthentication(repositoryMock);
@@ -55,11 +45,9 @@ public final class DefaultAuthenticationFactoryTest {
     @Test
     public void repositoryWithBlankAccessTokenAndAdminUserName_ShouldReturnAnonymousAuthentication()
     {
-        expect(repositoryMock.getCredential())   .andReturn(credentialMock);
-        expect(credentialMock.getAccessToken())  .andReturn("");
-        expect(credentialMock.getAdminUsername()).andReturn("");
-
-        replay(repositoryMock, credentialMock, encryptorMock);
+        when(repositoryMock.getCredential())   .thenReturn(credentialMock);
+        when(credentialMock.getAccessToken())  .thenReturn("");
+        when(credentialMock.getAdminUsername()).thenReturn("");
 
         AuthenticationFactory authenticationFactory = new DefaultAuthenticationFactory(null); // no encryptor needed
         Authentication authentication = authenticationFactory.getAuthentication(repositoryMock);
@@ -70,12 +58,9 @@ public final class DefaultAuthenticationFactoryTest {
     @Test
     public void repositoryWithNotNullAccessToken_ShouldReturnOAuthAuthentication()
     {
-        expect(repositoryMock.getCredential()).andReturn(credentialMock);
-
-        expect(credentialMock.getAccessToken())  .andReturn("accessToken").anyTimes();
-        expect(credentialMock.getAdminUsername()).andReturn(null)         .anyTimes();
-
-        replay(repositoryMock, credentialMock, encryptorMock);
+        when(repositoryMock.getCredential())   .thenReturn(credentialMock);
+        when(credentialMock.getAccessToken())  .thenReturn("accessToken");
+        when(credentialMock.getAdminUsername()).thenReturn(null);
 
         AuthenticationFactory authenticationFactory = new DefaultAuthenticationFactory(null); // no encryptor needed
         Authentication authentication = authenticationFactory.getAuthentication(repositoryMock);
@@ -86,26 +71,17 @@ public final class DefaultAuthenticationFactoryTest {
     @Test
     public void repositoryWithNotNullAdminUserName_ShouldReturnBasicAuthentication()
     {
-        expect(repositoryMock.getCredential()).andReturn(credentialMock);
-        expect(repositoryMock.getOrgName())   .andReturn("orgName");
-        expect(repositoryMock.getOrgHostUrl()).andReturn("orgHostUrl");
+        when(repositoryMock.getCredential()).thenReturn(credentialMock);
+        when(repositoryMock.getOrgName())   .thenReturn("orgName");
+        when(repositoryMock.getOrgHostUrl()).thenReturn("orgHostUrl");
 
-        expect(credentialMock.getAccessToken())  .andReturn(null)           .anyTimes();
-        expect(credentialMock.getAdminUsername()).andReturn("admimUserName").anyTimes();
-        expect(credentialMock.getAdminPassword()).andReturn("adminPassword").anyTimes();
-
-        expect(encryptorMock.decrypt(anyString(), anyString(), anyString())).andReturn("decryptedStuff");
-
-        replay(repositoryMock, credentialMock, encryptorMock);
+        when(credentialMock.getAccessToken())  .thenReturn(null);
+        when(credentialMock.getAdminUsername()).thenReturn("admimUserName");
+        when(credentialMock.getAdminPassword()).thenReturn("adminPassword");
 
         AuthenticationFactory authenticationFactory = new DefaultAuthenticationFactory(encryptorMock);
         Authentication authentication = authenticationFactory.getAuthentication(repositoryMock);
 
         assertThat(authentication).isInstanceOf(BasicAuthentication.class);
-    }
-
-    private static String anyString()
-    {
-        return EasyMock.anyObject(String.class);
     }
 }
