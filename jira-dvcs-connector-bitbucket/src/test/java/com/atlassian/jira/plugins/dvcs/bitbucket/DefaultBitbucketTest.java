@@ -35,7 +35,7 @@ import com.google.common.collect.Iterables;
 /**
  * Unit tests for {@link com.atlassian.jira.plugins.bitbucket.api.Communicator}
  */
-public class TestDefaultBitbucket
+public class DefaultBitbucketTest
 {
 
 	@SuppressWarnings("rawtypes")
