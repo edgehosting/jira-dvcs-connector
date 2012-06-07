@@ -1,5 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import java.util.Arrays;
+import java.util.Date;
+import java.util.concurrent.Executors;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -7,61 +11,51 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import java.util.Collections;
-import java.util.Date;
-import java.util.concurrent.Executors;
-import org.easymock.Capture;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.After;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.easymock.classextension.EasyMock.*;
-import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Martin Skurla
  */
+@RunWith(MockitoJUnitRunner.class)
 public final class TestDefaultSynchronizer
 {
-    private Repository        repositoryMock;
-    private ChangesetService  changesetServiceMock;
+    @Mock
+    private Repository repositoryMock;
 
-    private Capture<Changeset> savedChangeset = new Capture<Changeset>();
+    @Mock
+    private ChangesetService changesetServiceMock;
 
-    private Changeset changeset = new Changeset(123, "node", "message MES-123 text", new Date());
+    @Captor
+    private ArgumentCaptor<Changeset> savedChangesetCaptor;
 
-    @Before
-    public void initializeMocks()
-    {
-        repositoryMock        = createNiceMock(Repository.class);
-        changesetServiceMock  = createNiceMock(ChangesetService.class);
-    }
 
-    @After
-    public void verifyMocks()
-    {
-        verify(repositoryMock, changesetServiceMock);
-    }
+    private Changeset changesetWithJIRAIssue    = new Changeset(123, "node", "message MES-123 text",       new Date());
+    private Changeset changesetWithoutJIRAIssue = new Changeset(123, "node", "message without JIRA issue", new Date());
 
     //TODO if soft sync, bude sa volat lastCommitDate, inak nie???
 
     @Test
-    public void testSoftSynchronize_ShouldAddSingleMapping() throws InterruptedException
+    public void softSynchronization_ShouldSaveOneChangeset() throws InterruptedException
     {
         Date lastCommitDate = new Date();
 
-        expect(repositoryMock.getLastCommitDate()).andReturn(lastCommitDate);
+        when(repositoryMock.getLastCommitDate()).thenReturn(lastCommitDate);
 
-        expect(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(lastCommitDate)))
-                .andReturn(Collections.singletonList(changeset));
-        expect(changesetServiceMock.save(capture(savedChangeset))).andReturn(null);
-
-        replay(repositoryMock, changesetServiceMock);
+        when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(lastCommitDate)))
+                                 .thenReturn(Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
         SynchronisationOperation synchronisationOperation =
                 new DefaultSynchronisationOperation(repositoryMock,
-                                                    createNiceMock(RepositoryService.class),
+                                                    mock(RepositoryService.class),
                                                     changesetServiceMock,
                                                     true); // soft sync
 
@@ -70,7 +64,9 @@ public final class TestDefaultSynchronizer
 
         waitUntilProgressEnds(synchronizer);
 
-        assertThat(savedChangeset.getValue().getIssueKey(), is("MES-123"));
+        verify(changesetServiceMock, times(1)).save(savedChangesetCaptor.capture());
+
+        assertThat(savedChangesetCaptor.getValue().getIssueKey(), is("MES-123"));
     }
 
     private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException
