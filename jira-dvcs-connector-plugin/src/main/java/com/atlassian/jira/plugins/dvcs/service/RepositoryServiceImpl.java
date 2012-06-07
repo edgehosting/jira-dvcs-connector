@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
@@ -15,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.net.ResponseException;
 import com.google.common.collect.Maps;
 
 public class RepositoryServiceImpl implements RepositoryService
@@ -64,7 +66,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		List<Repository> remoteRepositories = communicator.getRepositories(organization);
 		// get local repositories
 		List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
-				
+
 		// update names of existing repositories in case their names changed
 		updateExistingRepositories(storedRepositories, remoteRepositories);
 		// repositories that are no longer on hosting server will be marked as deleted
@@ -108,7 +110,19 @@ public class RepositoryServiceImpl implements RepositoryService
 			// if linked install post commit hook
 			if (savedRepository.isLinked())
 			{
-				addOrRemovePostcommitHook(savedRepository);
+                try
+                {
+                    addOrRemovePostcommitHook(savedRepository);
+                }
+                catch (SourceControlException e)
+                {
+                    if (e.getCause() instanceof ResponseException)
+                    {
+                        // if the user didn't have rights to add post commit hook, just unlink the repository
+                        savedRepository.setLinked(false);
+                        repositoryDao.save(savedRepository);
+                    }
+                }
 			}
         }
     }
@@ -134,10 +148,10 @@ public class RepositoryServiceImpl implements RepositoryService
     }
 
 	/**
-	 * Updates existing repositories 
+	 * Updates existing repositories
 	 *  - undelete existing deleted
 	 *  - updates names
-	 * 
+	 *
 	 * @param storedRepositories
 	 * @param remoteRepositories
 	 */
@@ -161,7 +175,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	/**
 	 * Converts collection of repository objects into map where key is
 	 * repository slug and value is repository object
-	 * 
+	 *
 	 * @param repositories
 	 * @return
 	 */
@@ -249,7 +263,7 @@ public class RepositoryServiceImpl implements RepositoryService
 			communicator.removePostcommitHook(repository, postCommitUrl);
 		}
 	}
-	
+
 	private String getPostCommitUrl(Repository repo)
 	{
 		return applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/" + repo.getId() + "/sync";
@@ -269,7 +283,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	@Override
 	public void remove(Repository repository)
 	{
-		// TODO Stop syncing before deleting 
+		// TODO Stop syncing before deleting
 		// try remove postcommit hook
 		if (repository.isLinked())
 		{
@@ -287,7 +301,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		{
 			final DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
 			final String postCommitUrl = getPostCommitUrl(repository);
-			
+
 
 			communicator.removePostcommitHook(repository, postCommitUrl);
 		} catch (Exception e)
