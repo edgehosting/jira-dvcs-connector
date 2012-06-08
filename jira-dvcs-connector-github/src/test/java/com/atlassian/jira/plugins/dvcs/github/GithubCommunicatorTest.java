@@ -14,9 +14,13 @@ import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.net.DefaultRequestHelper;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
 
@@ -42,8 +46,16 @@ public class GithubCommunicatorTest
 	@Mock
 	private RequestFactory requestFactory;
 	
+	@Mock
+	private ChangesetCache changesetCache;
+
+	@Mock
+	private GithubOAuth githubOAuth;
+	
 	// tested object
 	private DvcsCommunicator communicator;
+
+	
 	
 	public GithubCommunicatorTest()
 	{
@@ -55,7 +67,7 @@ public class GithubCommunicatorTest
 		
 		MockitoAnnotations.initMocks(this);
 		
-		communicator = null; //
+		communicator = new GithubCommunicator(changesetCache, new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory), authenticationFactory, githubOAuth);
 		
 		when(extendedResponseHandlerFactory.create()).thenReturn(responseHandler);
 	}
