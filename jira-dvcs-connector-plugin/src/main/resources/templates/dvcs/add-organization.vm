@@ -36,13 +36,13 @@
         #end
         <br/>
 
-        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link a Bitbucket or GitHub account &gt;&gt;" onclick="showAddRepoDetails(true)" value="Link a Bitbucket or GitHub account &gt;&gt;" />
+        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account &gt;&gt;" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account &gt;&gt;" />
 
         <div id="addRepositoryContent">
-        <div id="addRepositoryDetails" class="aui-message">
+        <div id="addRepositoryDetails" class="aui-message form-body">
             <span class="svg-icon close size-16 customClose" onclick="showAddRepoDetails(false);"></span>
 
-            <h4 style="margin: 0px;">Add new Account</h4>
+            <h4 style="margin: 0px;">Add New Account</h4>
 
             #foreach ($errorMessage in $action.getErrorMessages())
                 <div class="aui-message error shadowed">
@@ -54,47 +54,45 @@
                 </div>
             #end
 
-            <form class="aui top-label" id="repoEntry" method="post"  >
+            <form class="aui long-label" id="repoEntry" method="post"  >
 
                 <input type="hidden" name="atl_token" id="atl_token" value="$atl_token">
                 <input type="hidden" name="isPrivate" id="isPrivate">
                 <input type="hidden" name="url" id="url" >
               
 	            
-	            <div class="aui-item-column1">
                     <div class="field-group" >
                       <label for="urlSelect">Url:</label>
                       <select id="urlSelect" name="urlSelect" class="select" onchange="switchDvcsDetails(this)">
-	               		<option value="bitbucket">BitBucket</option>
+	               		<option value="bitbucket">Bitbucket</option>
 	                	<option value="github">GitHub</option>
 	               	  </select>
                       <div class="fieldValue" id="urlReadOnly"></div>
                       <div id="url-error" class="dvcs-error">Choose URL.</div>
                     </div>
-                </div>
+                
                 <div class="aui-item-column2" id="examples">
                     <label>Examples:</label>
                     <div style="padding-top: 3px;"><i>https://bitbucket.org</i></div>
                     <div><i>https://github.com</i></div>
                 </div>
-                 <div>
+                
                     <div class="field-group" >
-                      <label for="organization">Account Name:</label>
+                      <label for="organization">Team Account Username:</label>
                       <input type="text" id="organization" name="organization" value=""/>
                       <div class="fieldValue" id="organizationReadOnly"></div>
                       <div id="org-error" class="dvcs-error">This field is required.</div>
                     </div>
-                 </div>
 				
 				## BB form section
 				<div id="bitbucket-form-section">
 	                <div class="field-group">
-	                   <label for="adminUsername">Username:</label>
+	                   <label for="adminUsername">Admin Username:</label>
 	                   <input type="text" id="adminUsername" name="adminUsername" value="" onfocus="javascript: dvcsCopyOrganizationToUsername();"/>
 	                   <div id="admin-username-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	                <div class="field-group">
-	                   <label for="adminPassword">Password:</label>
+	                   <label for="adminPassword">Admin Password:</label>
 	                   <input type="password" id="adminPassword" name="adminPassword" value=""/>
 	                   <div id="admin-password-error" class="dvcs-error">This field is required.</div>
 	                </div>
@@ -107,6 +105,7 @@
 	                   <label for="oauthClientId">OAuth Key:</label>
 	                   <input type="text" id="oauthClientId" name="oauthClientId" value=""/>
 	                   <div id="oauth-client-error" class="dvcs-error">This field is required.</div>
+	                   <div class="descripton">What is <a href="http://developer.github.com/v3/oauth/">OAuth</a> ?</div>
 	                </div>
 	                <div class="field-group">
 	                   <label for="oauthSecret">OAuth Secret:</label>
@@ -115,12 +114,14 @@
 	                </div>
 	            </div>
 	            
-	            <div style="margin-top: 10px; clear: both" >
-	                <input type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true" checked="checked" />
-	                <label for="autoLinking">Auto link new repositories</label>
+	            <div style="margin-top: 10px;"  class="field-group">
+	                <label for="autoLinking">Auto Link New Repositories:</label>
+	                <input class="checkbox" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true" checked="checked" />
+	           		 #*
 	                <div>
 	                	Configure new repos to automatically link issue keys and commit messages on Bitbucket.
 	            	</div>
+	            	*#
 	            </div>
      
                 <div id="bbCredentials"></div>
@@ -130,7 +131,7 @@
 
                 <div class="buttons-container">
                     <div class="buttons">
-                        <input class="button submit" type="submit" name="Submit" id="Submit" value="Add account" />
+                        <input class="button submit" type="submit" name="Submit" id="Submit" value="Add" />
                         <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>
                     </div>
                 </div>
@@ -230,7 +231,7 @@
 			        <tr>
                         <th>Enabled</th>
 			            <th>Repository</th>
-			            <th style="text-align: right;"><span class="syncicon commits">&nbsp;</span>Last commit</th>   ## last commit
+			            <th style="text-align: right;">Last commit</th>   ## last commit
 			            <th class="dvcs-centered">Sync Repo</th>   ## sync repo
 
 			        </tr>

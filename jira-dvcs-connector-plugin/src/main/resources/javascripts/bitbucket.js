@@ -169,6 +169,7 @@ function showAddRepoDetails(show) {
 
 		// - show url, organization field
 		AJS.$('#urlSelect').show();
+		AJS.$('#urlSelect').val(0); // select BB by default
 		AJS.$('#urlReadOnly').hide();
 
 		AJS.$('#organization').show();
@@ -362,7 +363,7 @@ function changePassword(username, id) {
 	 AJS.$("#organizationId").val(id);
 	 AJS.$("#usernameUp").val(username);
 
-	 popup.addHeader("Update account credentials");
+	 popup.addHeader("Update Account credentials");
 
 	 var dialogContent = AJS.$(".update-credentials");
 

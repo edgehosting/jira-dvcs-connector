@@ -63,7 +63,7 @@
     padding-left: 10px;
 }
 
-.gh_table th{
+.gh_table th {
     font-weight: normal;
     color: #656565;
     border-bottom: 1px solid #cccccc;
@@ -93,7 +93,6 @@
 
 .gh_messages{
     font-size: 1em;
-    color: #959595;
     font-style: italic;
 }
 
@@ -458,7 +457,11 @@ a:hover.repositoryNameLink {
 #addRepositoryDetails .field-group input {
     width: 380px	
 }
-
+#addRepositoryDetails .field-group input[type="checkbox"] {
+	width: auto;
+	margin-top: 5px;
+	vertical-align: middle;
+}
 .notbold {
 	font-weight: normal;
 }
@@ -511,7 +514,7 @@ a:hover.repositoryNameLink {
 	background-color: #f8f8f8;
 }
 .dvcs-repos-table > thead > tr > th {
-	color: black !important;
+	color: f0f0f0 !important;
 }
 .dvcs-centered {
 	text-align: center !important;
