@@ -1,5 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
@@ -8,12 +15,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 public class OrganizationServiceImpl implements OrganizationService
 {
@@ -206,7 +207,7 @@ public class OrganizationServiceImpl implements OrganizationService
 			DvcsCommunicator bitbucket = dvcsCommunicatorProvider.getCommunicator(bitbucketDvcsType);
 			boolean valid = bitbucket.validateCredentials(forOrganizationWithPlainCredentials);
 			if (!valid) {
-				throw new InvalidCredentialsException("Invalid credentials.");
+				throw new InvalidCredentialsException("Incorrect password");
 			}
 		}
 		
