@@ -228,9 +228,11 @@
 			   <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
 			    <thead>
 			        <tr>
+                        <th>Enabled</th>
 			            <th>Repository</th>
-			            <th style="text-align: center"></th>
-			            <th class="dvcs-centered">Enabled</th>
+			            <th style="text-align: right;"><span class="syncicon commits">&nbsp;</span>Last commit</th>   ## last commit
+			            <th class="dvcs-centered">Sync Repo</th>   ## sync repo
+
 			        </tr>
 			    </thead>
 			    <tbody>
@@ -251,7 +253,16 @@
 						#set( $dvcsNoDisplayClass = "")
 					#end
 			        <tr id="dvcs-repo-row-$repo.id" class="$!dvcsRepoRowClass">
-			            
+
+                        <td class="dvcs-autolink-repo">
+                            <span style="padding-left: 1px;">&nbsp;</span>
+                            <input class="repo_autolink_check" id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
+                             onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
+
+                            <span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
+                        </td>
+
+
 			            <td class="dvcs-org-reponame"><a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a></td>
 
 			            
@@ -264,22 +275,22 @@
 	                            </span>
 	                            <span id="sync_error_message_$repo.id" class="gh_messages">
                            	 </span>
-	                            
-	                            <span>
-				                 	<a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">Sync Repo</a>
-				                </span>
+##
+##	                            <span>
+##				                 	<a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">Sync Repo</a>
+##				                </span>
 			                </div>
 			                
 			            </td>
-			            
-			            <td class="dvcs-autolink-repo">
-                            <span style="padding-left: 37px;">&nbsp;</span>
-			            	<input class="repo_autolink_check" id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
-			            	 onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
 
-			            	<span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span> 
-			            </td>
-			            
+                        <td class="dvcs-sync-repo dvcs-centered">
+                            <div id="dvcs-action-container2-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
+                                <a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">
+                                    <span id="syncrepoicon_$repo.id" class="syncrepoicon" >&nbsp;</span>
+                                </a>
+                            </div>
+                        </td>
+
 			        </tr>
 			       
 			    #end
