@@ -126,7 +126,7 @@ public class RepositoryDaoTest
 		Mockito.verify(repositoryMapping).setLastCommitDate(Mockito.eq(SAMPLE_DATE));
 		Mockito.verify(repositoryMapping).setLinked(Mockito.eq(true));
 		Mockito.verify(repositoryMapping).setDeleted(Mockito.eq(true));
-		
+
 		Mockito.verify(repositoryMapping).save();
 	}
 
