@@ -124,10 +124,27 @@
 }
 
  .syncrepoicon {
-     width:16px;
+     width: 16px;
+     height: 16px;
      background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/not_working.png);
      background-repeat: no-repeat;
+     background-position: 1px 1px;
      display:inline-block;
+     padding: 1px;
+     border: 1px solid white;
+ }
+ 
+ .syncrepoicon:HOVER {
+ 	padding: 1px;
+ 	border: 1px dotted #dedede;
+ 	border-radius: 3px;
+ 	-moz-border-radius: 3px;
+ 	-webkit-border-radius: 3px;
+ }
+  .syncrepoicon:ACTIVE {
+  	top: 1px;
+  	left: 1px;
+  	position: relative;
  }
 
  .syncrepoicon.running {
@@ -510,8 +527,8 @@ a:hover.repositoryNameLink {
 }
 .dvcs-repos-table.aui > thead {
 }
-.dvcs-repos-table > tbody > tr:HOVER {
-	background-color: #f8f8f8;
+.dvcs-repo-row:HOVER {
+	background-color: #F2F2F2;
 }
 .dvcs-repos-table > thead > tr > th {
 	color: f0f0f0 !important;

@@ -215,8 +215,9 @@ function dvcsSubmitFormHandler() {
     		AJS.$('#Submit').removeAttr("disabled");
     		return false;
     	}
+    	var dvcsHost = AJS.$("#urlSelect option:selected").text();
     	//
-        AJS.messages.hint({ title: "Obtaining information...", body: "Trying to obtain repositories information."});
+        AJS.messages.info({ title: "Connecting to " + dvcsHost + " to configure your account...", closeable : false});
         // set url by selected type
         return true; // submit form
 	}
@@ -238,7 +239,7 @@ function dvcsSubmitFormHandler() {
 
     AJS.$("#aui-message-bar").empty();
     
-    AJS.messages.hint({ title: "Identifying...", body: "Trying to identify repository type."});
+    AJS.messages.info({ title: "Trying to identify repository type...", closeable : false});
 
     var repositoryUrl = AJS.$("#url").val().trim();
     var organizationName = AJS.$("#organization").val().trim();
@@ -312,6 +313,7 @@ var dvcsSubmitFormAjaxHandler = {
 			AJS.$('#examples').hide();
 
 			//show username / password
+			AJS.$("#github-form-section").hide();
 			AJS.$("#bitbucket-form-section").fadeIn();
 			AJS.$("#adminUsername").focus().select();
 		}, 
@@ -331,6 +333,7 @@ var dvcsSubmitFormAjaxHandler = {
 				// hide examples
 				AJS.$('#examples').hide();
 				
+				AJS.$("#bitbucket-form-section").hide();
 				AJS.$("#github-form-section").fadeIn();
 				AJS.$("#oauthClientId").focus().select();
 

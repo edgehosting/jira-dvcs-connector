@@ -231,7 +231,7 @@
 			        <tr>
                         <th>Enabled</th>
 			            <th>Repository</th>
-			            <th style="text-align: right;">Last commit</th>   ## last commit
+			            <th style="text-align: right;">Last Commit</th>   ## last commit
 			            <th class="dvcs-centered">Sync Repo</th>   ## sync repo
 
 			        </tr>
@@ -253,7 +253,7 @@
 						#set( $dvcsRepoRowClass = "")
 						#set( $dvcsNoDisplayClass = "")
 					#end
-			        <tr id="dvcs-repo-row-$repo.id" class="$!dvcsRepoRowClass">
+			        <tr id="dvcs-repo-row-$repo.id" class="$!dvcsRepoRowClass dvcs-repo-row">
 
                         <td class="dvcs-autolink-repo">
                             <span style="padding-left: 1px;">&nbsp;</span>
@@ -287,7 +287,7 @@
                         <td class="dvcs-sync-repo dvcs-centered">
                             <div id="dvcs-action-container2-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
                                 <a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">
-                                    <span id="syncrepoicon_$repo.id" class="syncrepoicon" >&nbsp;</span>
+                                    <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo" >&nbsp;</span>
                                 </a>
                             </div>
                         </td>
