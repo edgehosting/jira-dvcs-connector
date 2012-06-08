@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Add new Github organization</title>
+    <title>New Github Account</title>
 
 	$webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
 
@@ -10,7 +10,7 @@
 
   <body>
     <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddGithubOrganization.jspa" class="aui">
-      <h2>New Github organization</h2>
+      <h2>New Github Account</h2>
       <input type="hidden" name="atl_token" value="$atl_token">
       <input type="hidden" name="autoLinking" id="autoLinking" value="$action.autoLinking">
       
@@ -50,7 +50,7 @@
 	      #else
 	      	 <input disabled="disabled" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
 	      #end
-	         <label for="autoLinking">Auto link new repositories</label>
+	         <label for="autoLinking">Auto Link New Repositories</label>
 	     </div>
          
         </fieldset>
