@@ -105,7 +105,7 @@
 	                   <label for="oauthClientId">OAuth Key:</label>
 	                   <input type="text" id="oauthClientId" name="oauthClientId" value=""/>
 	                   <div id="oauth-client-error" class="dvcs-error">This field is required.</div>
-	                   <div class="descripton">What is <a href="http://developer.github.com/v3/oauth/">OAuth</a> ?</div>
+	                   <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureGithubOAuth!default.jspa">find OAuth key and secret</a>?</div>
 	                </div>
 	                <div class="field-group">
 	                   <label for="oauthSecret">OAuth Secret:</label>
