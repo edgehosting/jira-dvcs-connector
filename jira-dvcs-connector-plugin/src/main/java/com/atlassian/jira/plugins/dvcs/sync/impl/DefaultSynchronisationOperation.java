@@ -1,15 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -17,6 +7,15 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
@@ -27,6 +26,12 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     private final DefaultProgress progress;
     private final ChangesetService changesetService;
     private final boolean softSync;
+
+    /**
+     * performance improvement for syncing GH large repositories with changesets which doesn't contain issue keys.
+     * changeset after this step will be stored even if it has no issue key
+     */
+    private static int GH_CHANGESETS_SAVING_INTERVAL = 100;
 
     public DefaultSynchronisationOperation(Repository repository, RepositoryService repositoryService, ChangesetService changesetService,
         boolean softSync)
@@ -74,6 +79,15 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             log.debug("syncing changeset [{}] [{}]", changeset.getNode(), changeset.getMessage());
 
             Set<String> extractedIssues = extractIssueKeys(message);
+
+
+            // see GH_CHANGESETS_SAVING_INTERVAL javadoc
+            if (repository.getDvcsType().equals("github") &&
+                    (changesetCount % GH_CHANGESETS_SAVING_INTERVAL) == 0 &&
+                    CollectionUtils.isEmpty(extractedIssues))
+            {
+                extractedIssues.add("***-0");
+            }
 
             // get detial changeset because in this response is not information about files
             Changeset detailChangeset = null;
