@@ -75,7 +75,7 @@
     font-size: 1em;
     padding:0 20px;
 }
-.gh_table td.status .error{
+.error{
     color:#f66;
 }
 
@@ -123,6 +123,18 @@
     background-repeat: no-repeat;
     display: none;
 }
+
+ .syncrepoicon {
+     width:16px;
+     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/not_working.png);
+     background-repeat: no-repeat;
+     display:inline-block;
+ }
+
+ .syncrepoicon.running {
+     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
+ }
+
 
 .syncicon.error {
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png);
@@ -471,7 +483,11 @@ a:hover.repositoryNameLink {
 	width: 400px;
 }
 .dvcs-autolink-repo {
-	width: 100px;
+	width: 70px;
+}
+
+.dvcs-sync-repo {
+    width: 100px;
 }
 
 .repo_autolink_check {
@@ -507,7 +523,7 @@ a:hover.repositoryNameLink {
 	color: #A1B9ED !important;
 }
 .dvcs-action-container {
-	white-space: nowrap;
+	/*white-space: nowrap;*/
 }
 .dvcs-config-panel {
 	margin-top: 10px;

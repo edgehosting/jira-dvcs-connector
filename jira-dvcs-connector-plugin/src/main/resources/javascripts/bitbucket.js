@@ -98,20 +98,23 @@ function updateSyncStatus(repo) {
 	var syncStatusDiv = AJS.$('#sync_status_message_' + repo.id);
     var syncErrorDiv = AJS.$('#sync_error_message_' + repo.id);
     var syncIconElement = AJS.$('#syncicon_' + repo.id);
+    var syncRepoIconElement = AJS.$('#syncrepoicon_' + repo.id);
 
     var syncStatusHtml = "";
     var syncIcon;
+    var syncRepoIcon;
 
     if (repo.sync) {
 
         if (repo.sync.finished) {
             if (repo.lastCommitDate) {
-            	syncIcon = "commits";
+//            	syncIcon = "commits";
             }
             syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
 
         } else {
-            syncIcon = "running";
+//            syncIcon = "running";
+            syncRepoIcon = "running";
             syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong>" + repo.sync.jiraCount + "</strong> issues found";
             if (repo.sync.synchroErrorCount > 0)
                 syncStatusHtml += ", <span style='color:#e16161;'><strong>" + repo.sync.synchroErrorCount + "</strong> changesets incomplete</span>";
@@ -120,7 +123,9 @@ function updateSyncStatus(repo) {
         if (repo.sync.error) {
             syncStatusHtml = "";
             syncIcon = "error";
-            syncErrorDiv.html("<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>");
+//            syncErrorDiv.html("<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>");
+            syncErrorDiv.html("<span class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</span>" +
+                                "<span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>");
         } else {
         	syncErrorDiv.html("");
     	}
@@ -128,15 +133,16 @@ function updateSyncStatus(repo) {
     
     else {
         if (repo.lastCommitDate) {
-        	syncIcon = "commits";
+//        	syncIcon = "commits";
         }
         syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
     }
     syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
+    syncRepoIconElement.removeClass("running").addClass(syncRepoIcon);
 
-    if (syncStatusHtml != "") {
-    	syncStatusHtml += " <span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>";
-    }
+//    if (syncStatusHtml != "") {
+//    	syncStatusHtml += " <span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>";
+//    }
     syncStatusDiv.html(syncStatusHtml);
 
 }
@@ -144,7 +150,8 @@ function updateSyncStatus(repo) {
 function getLastCommitRelativeDateHtml(daysAgo) {
 	    var html = "";
 	    if (daysAgo) {
-	        html = "last commit " + new Date(daysAgo).toDateString();
+//	        html = "last commit " + new Date(daysAgo).toDateString();
+	        html = new Date(daysAgo).toDateString();
 	    }
 	    return html;
 }
@@ -468,9 +475,11 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  if (checkedValue) {
 					  AJS.$("#dvcs-action-container-" + repoId).removeClass("dvcs-nodisplay");
+					  AJS.$("#dvcs-action-container2-" + repoId).removeClass("dvcs-nodisplay");
 					  AJS.$("#dvcs-repo-row-" + repoId).removeClass("dvcs-disabled");
 				  } else {
 					  AJS.$("#dvcs-action-container-" + repoId).addClass("dvcs-nodisplay");
+					  AJS.$("#dvcs-action-container2-" + repoId).addClass("dvcs-nodisplay");
 					  AJS.$("#dvcs-repo-row-" + repoId).addClass("dvcs-disabled");
 				  }
 			  }
