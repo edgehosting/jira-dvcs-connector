@@ -1,6 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.github;
 
 
+import java.io.IOException;
+
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.net.DefaultRequestHelper;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory;
@@ -17,7 +21,10 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
+import com.atlassian.sal.api.net.ResponseException;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 
@@ -27,6 +34,9 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class GithubCommunicatorTest
 {
+
+    private static final String GITHUB_GET_USER_RESPONSE_RESOURCE = "github-getUser-response.json";
+
 
 	@Mock
 	private AuthenticationFactory authenticationFactory;
@@ -55,7 +65,8 @@ public class GithubCommunicatorTest
 
 
 	@Before
-	public void initializeGithubCommunicator() {
+	public void initializeGithubCommunicator()
+    {
 		communicator = new GithubCommunicator(changesetCache,
                                               new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory),
                                               authenticationFactory,
@@ -63,12 +74,11 @@ public class GithubCommunicatorTest
 	}
 
 	@Test
-	public void testSetupPostcommitHook() {
-
+	public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub()
+    {
 		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
 		when(repository.getOrgName()).thenReturn("org");
 		when(repository.getSlug()).thenReturn("slug");
-		when(repository.getOrgHostUrl()).thenReturn(""); // is not important
 
 		communicator.setupPostcommitHook(repository, "post-commit-url");
 
@@ -76,6 +86,24 @@ public class GithubCommunicatorTest
                                              eq("https://api.github.com/repos/org/slug/hooks"));
         verify(request).setRequestBody(contains("post-commit-url"));
 	}
+
+    @Test
+    public void gettingUser_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException
+    {
+		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
+		when(repository.getOrgHostUrl()).thenReturn("hostUrl");
+
+        when(request.execute()).thenReturn(resourceAsString(GITHUB_GET_USER_RESPONSE_RESOURCE));
+
+        DvcsUser githubUser = communicator.getUser(repository, "user-name");
+
+        verify(requestFactory).createRequest(eq(Request.MethodType.GET),
+                                             eq("hostUrl/api/v2/json/user/show/user-name"));
+
+        assertThat(githubUser.getUsername(), is("Test GitHub user login"));
+        assertThat(githubUser.getLastName(), is("Test GitHub user name"));
+    }
+
 
 //	private Organization createSampleOrganization()
 //	{
@@ -89,17 +117,18 @@ public class GithubCommunicatorTest
 //
 //        return organization;
 //	}
-//
-//	private static String resourceAsString(String name)
-//	{
-//		try
-//		{
-//			return IOUtils.toString(GithubCommunicatorTest.class.getClassLoader().getResourceAsStream(name));
-//
-//		} catch (IOException e)
-//		{
-//			throw new RuntimeException("Can not load resource " + name, e);
-//		}
-//	}
+
+	private static String resourceAsString(String relativeResourcePath)
+	{
+		try
+		{
+			return IOUtils.toString(GithubCommunicatorTest.class.getClassLoader()
+                                                                .getResourceAsStream(relativeResourcePath));
+
+		} catch (IOException e)
+		{
+			throw new RuntimeException("Can not load resource " + relativeResourcePath, e);
+		}
+	}
 }
 
