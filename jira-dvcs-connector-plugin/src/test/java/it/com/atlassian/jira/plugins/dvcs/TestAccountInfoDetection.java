@@ -1,15 +1,14 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
+import static junit.framework.Assert.*;
 
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Test;
 
-import com.atlassian.jira.plugins.bitbucket.api.rest.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.RestUrlBuilder;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.UniformInterfaceException;
 
@@ -29,8 +28,7 @@ public class TestAccountInfoDetection
             .accept(MediaType.APPLICATION_XML_TYPE)
             .get(AccountInfo.class);
         
-        assertEquals("https://secure.gravatar.com/avatar/e8209d16f7811a9919f80cc141f4e2eb?d=identicon&s=32", accountInfo.getAvatarUrl());
-        assertEquals("bitbucket", accountInfo.getAccountType());
+        assertEquals("bitbucket", accountInfo.getDvcsType());
     }
 
     @Test
@@ -69,10 +67,7 @@ public class TestAccountInfoDetection
             .accept(MediaType.APPLICATION_XML_TYPE)
             .get(AccountInfo.class);
 
-        assertEquals(
-            "https://secure.gravatar.com/avatar/e8209d16f7811a9919f80cc141f4e2eb?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
-            accountInfo.getAvatarUrl());
-        assertEquals("github", accountInfo.getAccountType());
+        assertEquals("github", accountInfo.getDvcsType());
     }
 
     @Test

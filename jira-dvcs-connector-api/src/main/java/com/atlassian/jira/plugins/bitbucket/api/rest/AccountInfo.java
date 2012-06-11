@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "accountinfo")
 @XmlAccessorType(XmlAccessType.FIELD)
+@Deprecated
 public class AccountInfo
 {
     @XmlAttribute
