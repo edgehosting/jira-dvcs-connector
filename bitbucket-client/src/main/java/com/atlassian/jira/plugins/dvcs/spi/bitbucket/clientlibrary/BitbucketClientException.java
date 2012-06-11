@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.spi.bitbucket.clientlibrary;
+package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary;
 
 import java.io.IOException;
 
