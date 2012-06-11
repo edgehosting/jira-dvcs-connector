@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.net.DefaultRequestHelper;
@@ -34,8 +35,8 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class GithubCommunicatorTest
 {
-
-    private static final String GITHUB_SHOW_USER_NAME_RESPONSE_RESOURCE = "github-showUserName-response.json";
+    private static final String GITHUB_SHOW_USER_NAME_RESPONSE_RESOURCE    = "github-showUserName-response.json";
+    private static final String GITHUB_GET_SINGLE_COMMIT_RESPONSE_RESOURCE = "github-getSingleCommit-response.json";
 
 
 	@Mock
@@ -77,8 +78,9 @@ public class GithubCommunicatorTest
 	public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub()
     {
 		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
-		when(repository.getOrgName()).thenReturn("ORG");
-		when(repository.getSlug()).thenReturn("SLUG");
+
+        when(repository.getOrgName()).thenReturn("ORG");
+		when(repository.getSlug())   .thenReturn("SLUG");
 
 		communicator.setupPostcommitHook(repository, "POST-COMMIT-URL");
 
@@ -104,6 +106,27 @@ public class GithubCommunicatorTest
         assertThat(githubUser.getLastName(), is("Test GitHub user name"));
     }
 
+    @Test
+    public void gettingDetailChangeset_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException {
+        Changeset changesetMock = mock(Changeset.class);
+
+		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
+
+        when(repository.getOrgName()).thenReturn("ORG");
+        when(repository.getSlug())   .thenReturn("SLUG");
+
+        when(changesetMock.getNode()).thenReturn("SHA");
+
+        when(request.execute()).thenReturn(resourceAsString(GITHUB_GET_SINGLE_COMMIT_RESPONSE_RESOURCE));
+
+        Changeset changeset = communicator.getDetailChangeset(repository, changesetMock);
+
+        verify(requestFactory).createRequest(eq(Request.MethodType.GET),
+                                             eq("https://api.github.com/repos/ORG/SLUG/commits/SHA"));
+
+        assertThat(changeset.getMessage(), is("Test GitHub commit message"));
+        assertThat(changeset.getAuthor(),  is("Test GitHub author login"));
+    }
 
 //	private Organization createSampleOrganization()
 //	{
