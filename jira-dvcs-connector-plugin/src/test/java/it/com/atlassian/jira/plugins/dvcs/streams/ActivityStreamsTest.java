@@ -1,4 +1,4 @@
-package it.com.atlassian.jira.plugins.bitbucket.streams;
+package it.com.atlassian.jira.plugins.dvcs.streams;
 
 import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest.AnotherLoginPage;
 import junit.framework.Assert;

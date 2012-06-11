@@ -122,7 +122,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     @Test
     public void addUrlThatDoesNotExist()
     {
-        configureOrganizations.addRepoToProjectFailingStep1("QA", TEST_NOT_EXISTING_URL);
+        configureOrganizations.addOrganizationFailingStep1(TEST_NOT_EXISTING_URL);
 
         String errorMessage = configureOrganizations.getErrorStatusMessage();
         assertThat(errorMessage, containsString("The url [" + TEST_NOT_EXISTING_URL
