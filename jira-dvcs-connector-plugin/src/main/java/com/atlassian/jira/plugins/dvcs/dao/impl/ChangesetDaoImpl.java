@@ -88,8 +88,11 @@ public class ChangesetDaoImpl implements ChangesetDao
             public ChangesetMapping doInTransaction()
             {
                 // delete existing
-                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, ChangesetMapping.REPOSITORY_ID + " = ? and "
-                    + ChangesetMapping.NODE + " = ?", changeset.getRepositoryId(), changeset.getNode());
+                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, 
+                        ChangesetMapping.REPOSITORY_ID + " = ? and " + 
+                        ChangesetMapping.NODE + " = ? and " + 
+                        ChangesetMapping.ISSUE_KEY + " = ? ", 
+                        changeset.getRepositoryId(), changeset.getNode(), changeset.getIssueKey());
 
                 if (ArrayUtils.isNotEmpty(mappings))
                 {

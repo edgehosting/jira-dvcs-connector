@@ -77,7 +77,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 		configureOrganizations.addOrganizationSuccessfully(TEST_URL, true);
 		// check that it created postcommit hook
 		String syncUrl = baseUrl + "/rest/bitbucket/1.0/repository/";
-		String bitbucketServiceConfigUrl = "https://api.bitbucket.org/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
+		String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
 		servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, ACCOUNT_ADMIN_LOGIN, ACCOUNT_ADMIN_PASSWORD);
 		assertThat(servicesConfig, containsString(syncUrl));
 		// delete repository
@@ -128,12 +128,12 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 		commitMessages = getCommitsForIssue("QA-3");
 		Assert.assertEquals("Expected 2 commits", 2, commitMessages.size());
 		// commit 1
-		commitMessage = commitMessages.get(1);
+		commitMessage = commitMessages.get(0);
 		statistics = commitMessage.getStatistics();
 		Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
 		Assert.assertTrue("Expected Added", commitMessage.isAdded(statistics.get(0)));
 		// commit 2
-		commitMessage = commitMessages.get(0);
+		commitMessage = commitMessages.get(1);
 		statistics = commitMessage.getStatistics();
 		Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
 		Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+3");
