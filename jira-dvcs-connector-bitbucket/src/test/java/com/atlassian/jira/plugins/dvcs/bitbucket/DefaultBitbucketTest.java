@@ -28,6 +28,7 @@ import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
+import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
 import com.google.common.collect.Iterables;
@@ -52,7 +53,10 @@ public class DefaultBitbucketTest
 	@Mock
 	private ExtendedResponseHandler responseHandler;
 	@Mock
-	BitbucketLinker linker;
+	private BitbucketLinker linker;
+    @Mock
+    private PluginAccessor pluginAccessor;
+
 
 	@Before
 	public void setup() throws Exception
@@ -86,7 +90,7 @@ public class DefaultBitbucketTest
 		setupBitbucketConnection();
 
 		BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(authenticationFactory,
-				new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory), linker);
+				new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory), linker, pluginAccessor);
 
 		final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator,
 				repository, null);
@@ -113,7 +117,7 @@ public class DefaultBitbucketTest
 		setupBitbucketConnection();
 
 		BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(authenticationFactory,
-				new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory), linker);
+				new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory), linker, pluginAccessor);
 
 		final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator,
 				repository, null);
