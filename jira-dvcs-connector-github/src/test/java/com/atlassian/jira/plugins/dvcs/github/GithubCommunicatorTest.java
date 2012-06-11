@@ -77,28 +77,28 @@ public class GithubCommunicatorTest
 	public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub()
     {
 		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
-		when(repository.getOrgName()).thenReturn("org");
-		when(repository.getSlug()).thenReturn("slug");
+		when(repository.getOrgName()).thenReturn("ORG");
+		when(repository.getSlug()).thenReturn("SLUG");
 
-		communicator.setupPostcommitHook(repository, "post-commit-url");
+		communicator.setupPostcommitHook(repository, "POST-COMMIT-URL");
 
 		verify(requestFactory).createRequest(eq(Request.MethodType.POST),
-                                             eq("https://api.github.com/repos/org/slug/hooks"));
-        verify(request).setRequestBody(contains("post-commit-url"));
+                                             eq("https://api.github.com/repos/ORG/SLUG/hooks"));
+        verify(request).setRequestBody(contains("POST-COMMIT-URL"));
 	}
 
     @Test
     public void gettingUser_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException
     {
 		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
-		when(repository.getOrgHostUrl()).thenReturn("hostUrl");
+		when(repository.getOrgHostUrl()).thenReturn("HOST-URL");
 
         when(request.execute()).thenReturn(resourceAsString(GITHUB_SHOW_USER_NAME_RESPONSE_RESOURCE));
 
-        DvcsUser githubUser = communicator.getUser(repository, "user-name");
+        DvcsUser githubUser = communicator.getUser(repository, "USER-NAME");
 
         verify(requestFactory).createRequest(eq(Request.MethodType.GET),
-                                             eq("hostUrl/api/v2/json/user/show/user-name"));
+                                             eq("HOST-URL/api/v2/json/user/show/USER-NAME"));
 
         assertThat(githubUser.getUsername(), is("Test GitHub user login"));
         assertThat(githubUser.getLastName(), is("Test GitHub user name"));
