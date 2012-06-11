@@ -32,9 +32,6 @@ public class OrganizationDaoTest {
     private ActiveObjects activeObjectsMock;
 
     @Mock
-    private Encryptor encryptorMock;
-
-    @Mock
     private OrganizationMapping organizationMappingMock;
 
     @Captor
@@ -47,7 +44,7 @@ public class OrganizationDaoTest {
 	@Before
 	public void initializeOrganizationDAO()
 	{
-		organizationDao = new OrganizationDaoImpl(activeObjectsMock, encryptorMock);
+		organizationDao = new OrganizationDaoImpl(activeObjectsMock, mock(Encryptor.class));
 	}
 
 
