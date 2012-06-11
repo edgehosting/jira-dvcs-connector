@@ -40,26 +40,26 @@ public class GithubCommunicatorTest
 
 
 	@Mock
-	private AuthenticationFactory authenticationFactory;
+	private AuthenticationFactory authenticationFactoryMock;
 
 	@Mock
-	private ExtendedResponseHandlerFactory extendedResponseHandlerFactory;
+	private ExtendedResponseHandlerFactory extendedResponseHandlerFactoryMock;
 
 	@Mock
-	private Request<?, ?> request;
+	private Request<?, ?> requestMock;
 
 	@Mock
-	private Repository repository;
+	private Repository repositoryMock;
 
 	@SuppressWarnings("rawtypes")
 	@Mock
-	private RequestFactory requestFactory;
+	private RequestFactory requestFactoryMock;
 
 	@Mock
-	private ChangesetCache changesetCache;
+	private ChangesetCache changesetCacheMock;
 
 	@Mock
-	private GithubOAuth githubOAuth;//TODO pomazat mocky ktore tam nemaju byt, ...
+	private GithubOAuth githubOAuthMock;//TODO pomazat mocky ktore tam nemaju byt, ...
 
 	// tested object
 	private DvcsCommunicator communicator;
@@ -68,38 +68,38 @@ public class GithubCommunicatorTest
 	@Before
 	public void initializeGithubCommunicator()
     {
-		communicator = new GithubCommunicator(changesetCache,
-                                              new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory),
-                                              authenticationFactory,
-                                              githubOAuth);
+		communicator = new GithubCommunicator(changesetCacheMock,
+                                              new DefaultRequestHelper(requestFactoryMock, extendedResponseHandlerFactoryMock),
+                                              authenticationFactoryMock,
+                                              githubOAuthMock);
 	}
 
 	@Test
 	public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub()
     {
-		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
+		when(requestFactoryMock.createRequest(any(Request.MethodType.class), anyString())).thenReturn(requestMock);
 
-        when(repository.getOrgName()).thenReturn("ORG");
-		when(repository.getSlug())   .thenReturn("SLUG");
+        when(repositoryMock.getOrgName()).thenReturn("ORG");
+		when(repositoryMock.getSlug())   .thenReturn("SLUG");
 
-		communicator.setupPostcommitHook(repository, "POST-COMMIT-URL");
+		communicator.setupPostcommitHook(repositoryMock, "POST-COMMIT-URL");
 
-		verify(requestFactory).createRequest(eq(Request.MethodType.POST),
+		verify(requestFactoryMock).createRequest(eq(Request.MethodType.POST),
                                              eq("https://api.github.com/repos/ORG/SLUG/hooks"));
-        verify(request).setRequestBody(contains("POST-COMMIT-URL"));
+        verify(requestMock).setRequestBody(contains("POST-COMMIT-URL"));
 	}
 
     @Test
     public void gettingUser_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException
     {
-		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
-		when(repository.getOrgHostUrl()).thenReturn("HOST-URL");
+		when(requestFactoryMock.createRequest(any(Request.MethodType.class), anyString())).thenReturn(requestMock);
+		when(repositoryMock.getOrgHostUrl()).thenReturn("HOST-URL");
 
-        when(request.execute()).thenReturn(resourceAsString(GITHUB_SHOW_USER_NAME_RESPONSE_RESOURCE));
+        when(requestMock.execute()).thenReturn(resourceAsString(GITHUB_SHOW_USER_NAME_RESPONSE_RESOURCE));
 
-        DvcsUser githubUser = communicator.getUser(repository, "USER-NAME");
+        DvcsUser githubUser = communicator.getUser(repositoryMock, "USER-NAME");
 
-        verify(requestFactory).createRequest(eq(Request.MethodType.GET),
+        verify(requestFactoryMock).createRequest(eq(Request.MethodType.GET),
                                              eq("HOST-URL/api/v2/json/user/show/USER-NAME"));
 
         assertThat(githubUser.getUsername(), is("Test GitHub user login"));
@@ -110,18 +110,18 @@ public class GithubCommunicatorTest
     public void gettingDetailChangeset_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException {
         Changeset changesetMock = mock(Changeset.class);
 
-		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
+		when(requestFactoryMock.createRequest(any(Request.MethodType.class), anyString())).thenReturn(requestMock);
 
-        when(repository.getOrgName()).thenReturn("ORG");
-        when(repository.getSlug())   .thenReturn("SLUG");
+        when(repositoryMock.getOrgName()).thenReturn("ORG");
+        when(repositoryMock.getSlug())   .thenReturn("SLUG");
 
         when(changesetMock.getNode()).thenReturn("SHA");
 
-        when(request.execute()).thenReturn(resourceAsString(GITHUB_GET_SINGLE_COMMIT_RESPONSE_RESOURCE));
+        when(requestMock.execute()).thenReturn(resourceAsString(GITHUB_GET_SINGLE_COMMIT_RESPONSE_RESOURCE));
 
-        Changeset changeset = communicator.getDetailChangeset(repository, changesetMock);
+        Changeset changeset = communicator.getDetailChangeset(repositoryMock, changesetMock);
 
-        verify(requestFactory).createRequest(eq(Request.MethodType.GET),
+        verify(requestFactoryMock).createRequest(eq(Request.MethodType.GET),
                                              eq("https://api.github.com/repos/ORG/SLUG/commits/SHA"));
 
         assertThat(changeset.getMessage(), is("Test GitHub commit message"));
