@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.api.util;
+package com.atlassian.jira.plugins.dvcs.util;
 
 import java.util.concurrent.Callable;
 
