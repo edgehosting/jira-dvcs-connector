@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.*;
 import junit.framework.Assert;
 
 import org.openqa.selenium.By;
@@ -76,7 +76,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
      * @return BitBucketConfigureRepositoriesPage
      */
     @Override
-    public GithubConfigureOrganizationsPage addRepoToProjectFailingStep1(String projectKey, String url)
+    public GithubConfigureOrganizationsPage addOrganizationFailingStep1(String url)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -178,8 +178,10 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
+        
+        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
+        organization.clear().type("jirabitbucketconnector");
 
-        urlTextbox.clear().type(url);
         setPageAsOld();
         addOrgButton.click();
 

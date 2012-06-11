@@ -1,23 +1,25 @@
 package it.com.atlassian.jira.plugins.bitbucket.streams;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.BitBucketConfigureRepositoriesPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.DashboardActivityStreamsPage;
+import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest.AnotherLoginPage;
+import junit.framework.Assert;
+
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.DashboardActivityStreamsPage;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.page.LoginPage;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
 import com.atlassian.webdriver.jira.page.DashboardPage;
-import it.com.atlassian.jira.plugins.bitbucket.BitBucketBaseTest.AnotherLoginPage;
-import junit.framework.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 /**
  *
  */
 public class ActivityStreamsTest
 {
-    private static final String TEST_PUBLIC_REPO_URL = "https://bitbucket.org/jirabitbucketconnector/public-hg-repo";
+	private static final String BB_TEST_URL = "https://bitbucket.org";
 
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private DashboardActivityStreamsPage page;
@@ -29,11 +31,11 @@ public class ActivityStreamsTest
         jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(DashboardPage.class);
     }
 
-    private void addRepo()
+    private void addOrganization()
     {
-        BitBucketConfigureRepositoriesPage configureRepos = goToRepositoriesConfigPage();
-        configureRepos.deleteAllRepositories();
-        configureRepos.addRepoToProjectSuccessfully("QA", TEST_PUBLIC_REPO_URL);
+    	BitBucketConfigureOrganizationsPage configureRepos = goToConfigPage();
+        configureRepos.deleteAllOrganizations();
+        configureRepos.addOrganizationSuccessfully(BB_TEST_URL, true);
     }
 
 
@@ -62,9 +64,9 @@ public class ActivityStreamsTest
         jira.getTester().getDriver().findElement(By.id("delete_submit")).click();
     }
 
-    private BitBucketConfigureRepositoriesPage goToRepositoriesConfigPage()
+    private BitBucketConfigureOrganizationsPage goToConfigPage()
     {
-        BitBucketConfigureRepositoriesPage configureRepos = jira.visit(BitBucketConfigureRepositoriesPage.class);
+    	BitBucketConfigureOrganizationsPage configureRepos = jira.visit(BitBucketConfigureOrganizationsPage.class);
         configureRepos.setJiraTestedProduct(jira);
         return configureRepos;
     }
@@ -87,7 +89,7 @@ public class ActivityStreamsTest
     public void testActivityPresentedForQA5()
     {
         loginToJira();
-        addRepo();
+        addOrganization();
         goToDashboardPage();
 
         Assert.assertTrue("Activity streams gadget expected at dashboard page!", page.isActivityStreamsGadgetVisible());
@@ -111,7 +113,7 @@ public class ActivityStreamsTest
 
         page.checkIssueActivityPresentedForQA5();
 
-        goToRepositoriesConfigPage().deleteAllRepositories();
+        goToConfigPage().deleteAllOrganizations();
 
         goToDashboardPage();
         bindPageAndSetJira();
@@ -126,7 +128,7 @@ public class ActivityStreamsTest
     {
         loginToJira();
         setupAnonymousAccessAllowed();
-        addRepo();
+        addOrganization();
         goToDashboardPage();
 
         Assert.assertTrue("Activity streams gadget expected at dashboard page!", page.isActivityStreamsGadgetVisible());

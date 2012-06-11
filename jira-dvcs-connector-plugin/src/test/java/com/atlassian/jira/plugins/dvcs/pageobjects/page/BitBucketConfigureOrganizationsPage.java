@@ -57,13 +57,12 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
      * @return BitBucketConfigureRepositoriesPage
      */
     @Override
-    public BitBucketConfigureOrganizationsPage addRepoToProjectFailingStep1(String projectKey, String url)
+    public BitBucketConfigureOrganizationsPage addOrganizationFailingStep1(String url)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
         
-        urlTextbox.clear().type(url);
-        organization.clear().type("jirabitbucketconnector");
+        organization.clear().type(url);
 
         addOrgButton.click();
 
@@ -80,9 +79,11 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
-        urlTextbox.clear().type(url);
+       
+        organization.clear().type("https://bitbucket.org/someaccount");
         addOrgButton.click();
         Poller.waitUntilTrue("Expected form for bitbucket repository admin login/password!", Conditions.and(adminUsernameInput.timed().isVisible(), adminPasswordInput.timed().isVisible()));
+        
         return this;
     }
 
