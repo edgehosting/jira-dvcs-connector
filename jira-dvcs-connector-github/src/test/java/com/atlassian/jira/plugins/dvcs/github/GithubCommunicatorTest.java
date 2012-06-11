@@ -35,7 +35,7 @@ import static org.mockito.Mockito.*;
 public class GithubCommunicatorTest
 {
 
-    private static final String GITHUB_GET_USER_RESPONSE_RESOURCE = "github-getUser-response.json";
+    private static final String GITHUB_SHOW_USER_NAME_RESPONSE_RESOURCE = "github-showUserName-response.json";
 
 
 	@Mock
@@ -93,7 +93,7 @@ public class GithubCommunicatorTest
 		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
 		when(repository.getOrgHostUrl()).thenReturn("hostUrl");
 
-        when(request.execute()).thenReturn(resourceAsString(GITHUB_GET_USER_RESPONSE_RESOURCE));
+        when(request.execute()).thenReturn(resourceAsString(GITHUB_SHOW_USER_NAME_RESPONSE_RESOURCE));
 
         DvcsUser githubUser = communicator.getUser(repository, "user-name");
 
