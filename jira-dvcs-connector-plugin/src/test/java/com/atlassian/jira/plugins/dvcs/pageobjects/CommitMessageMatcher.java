@@ -1,6 +1,7 @@
-package com.atlassian.jira.plugins.bitbucket.pageobjects;
+package com.atlassian.jira.plugins.dvcs.pageobjects;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
+
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;

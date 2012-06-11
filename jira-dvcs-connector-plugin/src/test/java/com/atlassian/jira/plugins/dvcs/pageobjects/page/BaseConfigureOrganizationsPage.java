@@ -6,10 +6,10 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.hamcrest.Matcher;
-import org.hamcrest.text.StringStartsWith;
+import org.hamcrest.text.StringEndsWith;
 import org.openqa.selenium.By;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketOrganization;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketOrganization;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
@@ -33,9 +33,6 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     @ElementBy(id = "Submit")
     PageElement addOrgButton;
-
-    @ElementBy(id = "url")
-    PageElement urlTextbox;
 
     @ElementBy(className = "gh_messages")
     PageElement syncStatusDiv;
@@ -148,7 +145,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         if (syncStatusDiv.timed().isVisible().now())
         {
             TimedQuery<String> syncFinishedCond = syncStatusDiv.timed().getText();
-            Poller.waitUntil("Expected sync status message to be 'Sync Finished'", syncFinishedCond, new StringStartsWith("last commit"));
+            Poller.waitUntil("Expected sync status message", syncFinishedCond, new StringEndsWith("2012")); // last commit date 
         }
     }
 
@@ -168,7 +165,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         return messageBarDiv.find(By.className("error")).timed().getText().now();
     }
 
-    public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingStep1(String projectKey, String url);
+    public abstract BaseConfigureOrganizationsPage addOrganizationFailingStep1(String url);
 
     public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String url);
 
@@ -184,7 +181,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     public void clearForm()
     {
-        urlTextbox.clear();
+
     }
 
 }

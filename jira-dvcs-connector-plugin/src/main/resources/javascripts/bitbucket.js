@@ -366,7 +366,7 @@ function changePassword(username, id) {
 	 AJS.$("#organizationId").val(id);
 	 AJS.$("#usernameUp").val(username);
 
-	 popup.addHeader("Update Account credentials");
+	 popup.addHeader("Update Account Credentials");
 
 	 var dialogContent = AJS.$(".update-credentials");
 

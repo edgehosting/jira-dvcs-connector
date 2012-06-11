@@ -6,10 +6,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.openqa.selenium.By;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.JiraViewIssuePage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
 import com.atlassian.webdriver.jira.page.JiraLoginPage;

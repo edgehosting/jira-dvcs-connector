@@ -1,11 +1,8 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import static com.atlassian.jira.plugins.bitbucket.pageobjects.CommitMessageMatcher.withMessage;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.not;
+import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 import java.util.List;
 
@@ -20,12 +17,12 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.atlassian.jira.plugins.bitbucket.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubLoginPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubOAuthConfigPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubRegisterOAuthAppPage;
-import com.atlassian.jira.plugins.bitbucket.pageobjects.page.GithubRegisteredOAuthAppsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
 import com.atlassian.pageobjects.elements.PageElement;
 
 /**

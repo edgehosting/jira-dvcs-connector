@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.pageobjects.component;
+package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
 import javax.inject.Inject;
 
