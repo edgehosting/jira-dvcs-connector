@@ -80,8 +80,14 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		this.authenticationFactory = authenticationFactory;
 		this.requestHelper = requestHelper;
 		this.bitbucketLinker = bitbucketLinker;
-        this.pluginVersion = pluginAccessor.getPlugin(PLUGIN_KEY).getPluginInformation().getVersion();
+        this.pluginVersion = getPluginVersion(pluginAccessor);
 	}
+
+
+    protected String getPluginVersion(PluginAccessor pluginAccessor)
+    {
+        return pluginAccessor.getPlugin(PLUGIN_KEY).getPluginInformation().getVersion();
+    }
 
 
     /**

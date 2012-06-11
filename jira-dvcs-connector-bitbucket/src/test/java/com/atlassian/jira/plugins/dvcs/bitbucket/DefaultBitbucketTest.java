@@ -89,8 +89,7 @@ public class DefaultBitbucketTest
 	{
 		setupBitbucketConnection();
 
-		BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(authenticationFactory,
-				new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory), linker, pluginAccessor);
+		BitbucketCommunicator bitbucketCommunicator = createCommunicator();
 
 		final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator,
 				repository, null);
@@ -111,13 +110,25 @@ public class DefaultBitbucketTest
 
 	}
 
+    private BitbucketCommunicator createCommunicator()
+    {
+        return new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(
+                requestFactory, extendedResponseHandlerFactory), linker, pluginAccessor)
+		{
+		    @Override
+            protected String getPluginVersion(PluginAccessor pluginAccessor)
+            {
+                return "123";
+            }
+		};
+    }
+
 	@Test
 	public void testIteratorCyclesOnNext() throws Exception
 	{
 		setupBitbucketConnection();
 
-		BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(authenticationFactory,
-				new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory), linker, pluginAccessor);
+        BitbucketCommunicator bitbucketCommunicator = createCommunicator();
 
 		final BitbucketChangesetIterator changesetIterator = new BitbucketChangesetIterator(bitbucketCommunicator,
 				repository, null);

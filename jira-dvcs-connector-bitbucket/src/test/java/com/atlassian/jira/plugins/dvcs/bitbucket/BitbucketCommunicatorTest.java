@@ -77,7 +77,14 @@ public class BitbucketCommunicatorTest
         RequestHelper requestHelper = new DefaultRequestHelper(
                 requestFactory, extendedResponseHandlerFactory);
         communicator = new BitbucketCommunicator(authenticationFactory, requestHelper,
-                bitbucketLinker, pluginAccessor);
+                bitbucketLinker, pluginAccessor)
+        {
+            @Override
+            protected String getPluginVersion(PluginAccessor pluginAccessor)
+            {
+                return "123";
+            }
+        };
 		
 		when(extendedResponseHandlerFactory.create()).thenReturn(responseHandler);
 	}
