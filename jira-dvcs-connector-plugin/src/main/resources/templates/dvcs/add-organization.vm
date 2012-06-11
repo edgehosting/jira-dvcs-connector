@@ -105,7 +105,7 @@
 	                   <label for="oauthClientId">OAuth Key:</label>
 	                   <input type="text" id="oauthClientId" name="oauthClientId" value=""/>
 	                   <div id="oauth-client-error" class="dvcs-error">This field is required.</div>
-	                   <div class="descripton">What is <a href="http://developer.github.com/v3/oauth/">OAuth</a> ?</div>
+	                   <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureGithubOAuth!default.jspa">find OAuth key and secret</a>?</div>
 	                </div>
 	                <div class="field-group">
 	                   <label for="oauthSecret">OAuth Secret:</label>
@@ -287,7 +287,7 @@
                         <td class="dvcs-sync-repo dvcs-centered">
                             <div id="dvcs-action-container2-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
                                 <a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">
-                                    <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo" >&nbsp;</span>
+                                    <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo $textutils.htmlEncode($repo.name)" >&nbsp;</span>
                                 </a>
                             </div>
                         </td>
