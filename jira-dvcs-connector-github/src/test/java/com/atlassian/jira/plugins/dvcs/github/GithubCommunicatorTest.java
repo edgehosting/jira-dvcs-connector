@@ -40,12 +40,6 @@ public class GithubCommunicatorTest
 
 
 	@Mock
-	private AuthenticationFactory authenticationFactoryMock;
-
-	@Mock
-	private ExtendedResponseHandlerFactory extendedResponseHandlerFactoryMock;
-
-	@Mock
 	private Request<?, ?> requestMock;
 
 	@Mock
@@ -55,12 +49,6 @@ public class GithubCommunicatorTest
 	@Mock
 	private RequestFactory requestFactoryMock;
 
-	@Mock
-	private ChangesetCache changesetCacheMock;
-
-	@Mock
-	private GithubOAuth githubOAuthMock;//TODO pomazat mocky ktore tam nemaju byt, ...
-
 	// tested object
 	private DvcsCommunicator communicator;
 
@@ -68,10 +56,11 @@ public class GithubCommunicatorTest
 	@Before
 	public void initializeGithubCommunicator()
     {
-		communicator = new GithubCommunicator(changesetCacheMock,
-                                              new DefaultRequestHelper(requestFactoryMock, extendedResponseHandlerFactoryMock),
-                                              authenticationFactoryMock,
-                                              githubOAuthMock);
+		communicator = new GithubCommunicator(mock(ChangesetCache.class),
+                                              new DefaultRequestHelper(requestFactoryMock,
+                                                                       mock(ExtendedResponseHandlerFactory.class)),
+                                              mock(AuthenticationFactory.class),
+                                              mock(GithubOAuth.class));
 	}
 
 	@Test
@@ -85,7 +74,7 @@ public class GithubCommunicatorTest
 		communicator.setupPostcommitHook(repositoryMock, "POST-COMMIT-URL");
 
 		verify(requestFactoryMock).createRequest(eq(Request.MethodType.POST),
-                                             eq("https://api.github.com/repos/ORG/SLUG/hooks"));
+                                                 eq("https://api.github.com/repos/ORG/SLUG/hooks"));
         verify(requestMock).setRequestBody(contains("POST-COMMIT-URL"));
 	}
 
@@ -100,14 +89,15 @@ public class GithubCommunicatorTest
         DvcsUser githubUser = communicator.getUser(repositoryMock, "USER-NAME");
 
         verify(requestFactoryMock).createRequest(eq(Request.MethodType.GET),
-                                             eq("HOST-URL/api/v2/json/user/show/USER-NAME"));
+                                                 eq("HOST-URL/api/v2/json/user/show/USER-NAME"));
 
         assertThat(githubUser.getUsername(), is("Test GitHub user login"));
         assertThat(githubUser.getLastName(), is("Test GitHub user name"));
     }
 
     @Test
-    public void gettingDetailChangeset_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException {
+    public void gettingDetailChangeset_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException
+    {
         Changeset changesetMock = mock(Changeset.class);
 
 		when(requestFactoryMock.createRequest(any(Request.MethodType.class), anyString())).thenReturn(requestMock);
@@ -122,24 +112,11 @@ public class GithubCommunicatorTest
         Changeset changeset = communicator.getDetailChangeset(repositoryMock, changesetMock);
 
         verify(requestFactoryMock).createRequest(eq(Request.MethodType.GET),
-                                             eq("https://api.github.com/repos/ORG/SLUG/commits/SHA"));
+                                                 eq("https://api.github.com/repos/ORG/SLUG/commits/SHA"));
 
         assertThat(changeset.getMessage(), is("Test GitHub commit message"));
         assertThat(changeset.getAuthor(),  is("Test GitHub author login"));
     }
-
-//	private Organization createSampleOrganization()
-//	{
-//		Organization organization = new Organization();
-//
-//        organization.setDvcsType("github");
-//		organization.setHostUrl ("https://github.com");
-//		organization.setName    ("doesnotmatter");
-//
-//        organization.setCredential(new Credential("doesnotmatter_u", "doesnotmatter_p", null));
-//
-//        return organization;
-//	}
 
 	private static String resourceAsString(String relativeResourcePath)
 	{
