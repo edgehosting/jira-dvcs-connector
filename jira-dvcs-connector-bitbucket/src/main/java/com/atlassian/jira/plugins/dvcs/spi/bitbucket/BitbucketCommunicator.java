@@ -39,6 +39,7 @@ import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
+import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.sal.api.net.ResponseException;
 
 /**
@@ -53,6 +54,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	/** The Constant BITBUCKET. */
 	public static final String BITBUCKET = "bitbucket";
 
+    private static final String PLUGIN_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin";
+
 	/** The request helper. */
 	private final RequestHelper requestHelper;
 	
@@ -61,20 +64,27 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
 	private final BitbucketLinker bitbucketLinker;
 
+    private final String pluginVersion;
+
 	/**
 	 * The Constructor.
 	 *
 	 * @param authenticationFactory the authentication factory
 	 * @param requestHelper the request helper
 	 */
-	public BitbucketCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper, @Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker)
+    public BitbucketCommunicator(AuthenticationFactory authenticationFactory,
+            RequestHelper requestHelper,
+            @Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
+            PluginAccessor pluginAccessor)
 	{
 		this.authenticationFactory = authenticationFactory;
 		this.requestHelper = requestHelper;
 		this.bitbucketLinker = bitbucketLinker;
+        this.pluginVersion = pluginAccessor.getPlugin(PLUGIN_KEY).getPluginInformation().getVersion();
 	}
 
-	/**
+
+    /**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -392,11 +402,11 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public String getCommitUrl(Repository repository, Changeset changeset)
 	{
-		return MessageFormat.format("{0}/{1}/{2}/changeset/{3}", repository.getOrgHostUrl(), repository.getOrgName(),
-				repository.getSlug(), changeset.getNode());
+		return MessageFormat.format("{0}/{1}/{2}/changeset/{3}?dvcsconnector={4}", repository.getOrgHostUrl(), repository.getOrgName(),
+				repository.getSlug(), changeset.getNode(), pluginVersion);
 	}
 
-	/**
+    /**
 	 * {@inheritDoc}
 	 */
 	@Override

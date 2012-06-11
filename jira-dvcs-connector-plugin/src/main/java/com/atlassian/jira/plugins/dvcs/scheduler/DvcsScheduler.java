@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
@@ -42,8 +41,6 @@ public class DvcsScheduler implements LifecycleAware
     public void onStart()
     {
         log.debug("onStart");
-        // this is here only to trigger migration of AO (see BBC-176)
-        activeObjects.find(OrganizationMapping.class);
 
         this.interval = SystemUtils.getSystemPropertyLong(PROPERTY_KEY, DEFAULT_INTERVAL);
         log.debug("Starting DVCSConnector Scheduler Job. interval=" + interval);
@@ -55,11 +52,12 @@ public class DvcsScheduler implements LifecycleAware
 		Map<String, Object> data = Maps.newHashMap();
 		data.put("organizationService",organizationService);
 		data.put("repositoryService",repositoryService);
+		data.put("activeObjects", activeObjects);
 
 		pluginScheduler.scheduleJob(JOB_NAME, // unique name of the job
 		        DvcsSchedulerJob.class, // class of the job
 		        data, // data that needs to be passed to the job
-		        new Date(), // the time the job is to start
+		        new Date(System.currentTimeMillis() + interval/2), // the time the job is to start
 		        interval); // interval between repeats, in milliseconds
 	}
 

@@ -66,17 +66,17 @@ public class GithubCommunicator implements DvcsCommunicator
 	@Override
 	public boolean isOauthConfigured()
 	{
-		return StringUtils.isNotBlank(githubOAuth.getClientId()) 
+		return StringUtils.isNotBlank(githubOAuth.getClientId())
 				&& StringUtils.isNotBlank(githubOAuth.getClientSecret());
 	}
 
-	
+
     @Override
     public String getDvcsType()
     {
         return GITHUB;
     }
-    
+
 
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
@@ -88,7 +88,7 @@ public class GithubCommunicator implements DvcsCommunicator
             boolean requiresOauth = StringUtils.isBlank(githubOAuth.getClientId()) || StringUtils.isBlank(githubOAuth.getClientSecret());
 
             return new AccountInfo(GithubCommunicator.GITHUB, requiresOauth);
-            
+
         } catch (IOException e)
         {
             log.debug("Unable to retrieve account information ", e);
@@ -419,5 +419,5 @@ public class GithubCommunicator implements DvcsCommunicator
 	{
 		throw new UnsupportedOperationException("You can not invite users to github so far, ...");
 	}
-    
+
 }

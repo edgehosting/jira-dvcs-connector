@@ -23,9 +23,11 @@ import com.atlassian.jira.plugins.dvcs.net.DefaultRequestHelper;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory;
+import com.atlassian.jira.plugins.dvcs.net.RequestHelper;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
+import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.Request.MethodType;
 import com.atlassian.sal.api.net.RequestFactory;
@@ -55,8 +57,12 @@ public class BitbucketCommunicatorTest
 	@Mock
 	private RequestFactory requestFactory;
 	
+	@Mock
+	private PluginAccessor pluginAccessor;
+
 	// tested object
 	private DvcsCommunicator communicator;
+
 	
 	public BitbucketCommunicatorTest()
 	{
@@ -68,7 +74,10 @@ public class BitbucketCommunicatorTest
 		
 		MockitoAnnotations.initMocks(this);
 		
-		communicator = new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(requestFactory, extendedResponseHandlerFactory), bitbucketLinker);
+        RequestHelper requestHelper = new DefaultRequestHelper(
+                requestFactory, extendedResponseHandlerFactory);
+        communicator = new BitbucketCommunicator(authenticationFactory, requestHelper,
+                bitbucketLinker, pluginAccessor);
 		
 		when(extendedResponseHandlerFactory.create()).thenReturn(responseHandler);
 	}
