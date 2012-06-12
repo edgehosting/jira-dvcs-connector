@@ -102,13 +102,13 @@ public class ActivityStreamsTest
         Assert.assertTrue("Activity streams should contain at least one changeset with 'more files' link.", page.isMoreFilesLinkVisible());
         page.checkIssueActivityPresentedForQA5();
 
-        page.setIssueKeyFilter("qa-4");
+        page.setIssueKeyFilter("QA-4");
         bindPageAndSetJira();
 
-        // because commit contains both keys QA-4 and QA-5, so should be present on both issues' commit tabs
+        // because commit contains both keys QA-4 and QA-5, so should be present on both issues' activity streams
         page.checkIssueActivityPresentedForQA5();
 
-        page.setIssueKeyFilter("qa-5");
+        page.setIssueKeyFilter("QA-5");
         bindPageAndSetJira();
 
         page.checkIssueActivityPresentedForQA5();
