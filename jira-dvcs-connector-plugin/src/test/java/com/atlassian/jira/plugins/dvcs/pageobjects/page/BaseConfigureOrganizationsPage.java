@@ -68,7 +68,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
        
         for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-orgdata-container"))) {
         	
-        	 orgContainer.find(By.className("dvcs-org-container")).click();
+        	// orgContainer.find(By.className("dvcs-org-container")).click();
         	 Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-org-container")).timed().isVisible());
         	 
              list.add(pageBinder.bind(BitBucketOrganization.class, orgContainer));

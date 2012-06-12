@@ -267,7 +267,7 @@
 			            <td class="dvcs-org-reponame"><a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a></td>
 
 			            
-			            <td class="action" headers="action" style="text-align: right;">
+			            <td class="action" headers="action" style="text-align: right; white-space: nowrap;">
 			            
 			            	<div id="dvcs-action-container-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
 				                <span id="syncicon_$repo.id" class="syncicon" >&nbsp;</span>

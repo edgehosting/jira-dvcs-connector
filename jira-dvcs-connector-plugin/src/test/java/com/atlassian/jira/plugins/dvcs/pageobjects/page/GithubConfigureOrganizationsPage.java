@@ -68,13 +68,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     }
 
 
-    /**
-     * Links a public repository to the given JIRA project
-     *
-     * @param projectKey The JIRA project key
-     * @param url        The url to the bitucket public repo
-     * @return BitBucketConfigureRepositoriesPage
-     */
+ 
     @Override
     public GithubConfigureOrganizationsPage addOrganizationFailingStep1(String url)
     {
@@ -83,7 +77,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
         
-        organization.clear().type("jirabitbucketconnector");
+        organization.clear().type(url);
         
         setPageAsOld();
         

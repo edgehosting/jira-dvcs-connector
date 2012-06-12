@@ -32,7 +32,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 {
 
     private static final String TEST_URL = "https://github.com";
-    private static final String TEST_NOT_EXISTING_URL = "https://privategithub.com";
+    private static final String TEST_NOT_EXISTING_URL = "https://privategithub.com/myaccount";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
     private static final String REPO_ADMIN_PASSWORD = "jirabitbucketconnector1";
 
@@ -125,8 +125,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationFailingStep1(TEST_NOT_EXISTING_URL);
 
         String errorMessage = configureOrganizations.getErrorStatusMessage();
-        assertThat(errorMessage, containsString("The url [" + TEST_NOT_EXISTING_URL
-				+ "] is incorrect or the server is not responding."));
+        assertThat(errorMessage, containsString("is incorrect or the server is not responding."));
         configureOrganizations.clearForm();
     }
     
