@@ -1,5 +1,21 @@
 package com.atlassian.jira.plugins.dvcs.streams;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -37,21 +53,6 @@ import com.atlassian.util.concurrent.Nullable;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import org.apache.commons.collections.CollectionUtils;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 {
@@ -91,9 +92,19 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         List<StreamsEntry> entries = new ArrayList<StreamsEntry>();
         for (Changeset changeset : changesetEntries)
         {
-            if (cancelled.get())
-                throw new CancelledException();
-            entries.add(toStreamsEntry(changeset));
+            if (cancelled.get()) {
+            
+            	throw new CancelledException();
+
+            } else {
+            	
+            	StreamsEntry streamsEntry = toStreamsEntry(changeset);
+				if (streamsEntry != null)
+				{
+					entries.add(streamsEntry);
+				}
+            
+            }
         }
         return entries;
     }
@@ -107,6 +118,10 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     private StreamsEntry toStreamsEntry(final Changeset changeset)
     {
         final Repository repository = repositoryService.get(changeset.getRepositoryId());
+        
+        if (repository == null) {
+        	return null;
+        }
 
         StreamsEntry.ActivityObject activityObject = new StreamsEntry.ActivityObject(StreamsEntry.ActivityObject.params()
                 .id(changeset.getNode()).alternateLinkUri(URI.create(""))

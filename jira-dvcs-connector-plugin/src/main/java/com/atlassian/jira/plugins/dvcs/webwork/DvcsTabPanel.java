@@ -1,5 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
@@ -17,16 +28,6 @@ import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class DvcsTabPanel extends AbstractIssueTabPanel
 {
@@ -35,8 +36,8 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     private static final GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction("No commits found.");
     private final ApplicationProperties applicationProperties;
     private final PermissionManager permissionManager;
-    private ChangesetService changesetService;
-    private RepositoryService repositoryService;
+    private final ChangesetService changesetService;
+    private final RepositoryService repositoryService;
 
     private final IssueLinker issueLinker;
     private final TemplateRenderer templateRenderer;
@@ -90,7 +91,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     public String getHtmlForChangeset(Changeset changeset)
     {
         Repository repository = repositoryService.get(changeset.getRepositoryId());
-        if (repository.isDeleted() || !repository.isLinked())
+        if (repository == null || repository.isDeleted() || !repository.isLinked())
         {
             return "";
         }
