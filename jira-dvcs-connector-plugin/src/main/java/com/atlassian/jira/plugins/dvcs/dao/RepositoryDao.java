@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-
 import java.util.List;
+
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 public interface RepositoryDao
 {
@@ -22,7 +22,7 @@ public interface RepositoryDao
     List<Repository> getAll(boolean includeDeleted);
 
     /**
-     * returns repository by ID
+     * returns repository by ID or <code>null</code> if not found
      * @param repositoryId repositoryId
      * @return repository
      */

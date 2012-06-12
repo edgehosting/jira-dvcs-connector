@@ -76,8 +76,16 @@ public class RootResource
 	public Response getRepository(@PathParam("id") int id)
 	{
 		Repository repository = repositoryService.get(id);
+		
+		if (repository != null) {
 
-		return Response.ok(repository).build();
+			return Response.ok(repository).build();
+		
+		} else {
+			
+			return Response.noContent().build();
+		}
+
 	}
 
 	/**

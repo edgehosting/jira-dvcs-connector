@@ -42,7 +42,8 @@ public class BitBucketOrganization
         // add marker to wait for post complete
         driver.executeScript("document.getElementById('Submit').className = '_posting'");
         
-        showSettings.click();
+        PageElement ddButton = row.find(By.className("aui-dd-trigger"));
+        ddButton.click();
         
         PageElement deleteLink = row.find(By.className("dvcs-control-delete-org"));
         deleteLink.click();
