@@ -138,14 +138,14 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
 			} else
 			{
-				log.error("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
+				log.debug("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
 			}
 		} catch (ResponseException e)
 		{
-			log.error(e.getMessage(), e);
+			log.debug(e.getMessage());
 		} catch (JSONException e)
 		{
-			log.error("Error parsing json response: " + responseString, e);
+            log.debug("Error parsing json response: " + responseString + ". " + e.getMessage());
 		}
 		return null; // something went wrong, we don't have any account info.
 
