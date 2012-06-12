@@ -283,7 +283,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	@Override
 	public void remove(Repository repository)
 	{
-		// TODO Stop syncing before deleting
+	    synchronizer.stopSynchronization(repository);
 		// try remove postcommit hook
 		if (repository.isLinked())
 		{
