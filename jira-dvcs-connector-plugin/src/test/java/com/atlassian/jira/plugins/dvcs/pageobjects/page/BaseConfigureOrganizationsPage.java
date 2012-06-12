@@ -137,16 +137,25 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     protected void checkSyncProcessSuccess()
     {
-        // isPresent = true => repositories list is shown
-        TimedCondition isMsgVisibleCond = syncStatusDiv.timed().isPresent();
-        Poller.waitUntilTrue("Expected sync status message to appear.", isMsgVisibleCond);
+    	
+    	List<PageElement> allSyncMessages = organizationsElement.findAll(By.className("gh_messages"));
+    	
+    	for (PageElement syncMessage : allSyncMessages)
+		{
+    		// isPresent = true => repositories list is shown
+            TimedCondition isMsgVisibleCond = syncMessage.timed().isPresent();
+            Poller.waitUntilTrue("Expected sync status message to appear.", isMsgVisibleCond);
 
-        // isVisible = true => started sync => we will wait for result
-        if (syncStatusDiv.timed().isVisible().now())
-        {
-            TimedQuery<String> syncFinishedCond = syncStatusDiv.timed().getText();
-            Poller.waitUntil("Expected sync status message", syncFinishedCond, new StringEndsWith("2012")); // last commit date 
-        }
+            // isVisible = true => started sync => we will wait for result
+            if (syncMessage.timed().isVisible().now())
+            {
+                TimedQuery<String> syncFinishedCond = syncMessage.timed().getText();
+                Poller.waitUntil("Expected sync status message", syncFinishedCond, new StringEndsWith("2012")); // last commit date 
+            }
+            
+		}
+    	
+        
     }
 
     protected void waitFormBecomeVisible()
