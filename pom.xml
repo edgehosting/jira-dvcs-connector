@@ -34,7 +34,7 @@
 	<properties>
 		<jira.version>5.0.4</jira.version>
 		<jira.data.version>5.0.4</jira.data.version>
-		<ao.version>0.19</ao.version>
+		<ao.version>0.19.2</ao.version>
 		<streams.version>5.0.1</streams.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
