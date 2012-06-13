@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.activeobjects;
+package com.atlassian.jira.plugins.dvcs.activeobjects;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v1.IssueMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v1.ProjectMapping;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.google.common.collect.Maps;

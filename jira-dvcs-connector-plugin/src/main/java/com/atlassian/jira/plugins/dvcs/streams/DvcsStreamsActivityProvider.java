@@ -110,7 +110,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     }
 
     /**
-     * Transforms a single {@link com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping} to a {@link com.atlassian.streams.api.StreamsEntry}.
+     * Transforms a single {@link com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping} to a {@link com.atlassian.streams.api.StreamsEntry}.
      *
      * @param changeset the changeset entry
      * @return the transformed streams entry

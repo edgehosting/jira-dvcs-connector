@@ -28,12 +28,12 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.PropertyMigrator</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.Uri2UrlMigrator</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_04_ActiveObjectsV2Migrator</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_05_RepositoryTypeMigrator</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.v2.To_06_GithubRepositories</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.bitbucket.activeobjects.CleanupPluginSettings</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v2.To_04_ActiveObjectsV2Migrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v2.To_05_RepositoryTypeMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v2.To_06_GithubRepositories</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.CleanupPluginSettings</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
     </ao>
 
@@ -46,9 +46,9 @@
     <component key="projectCreatedEventListener" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.ProjectCreatedListener" />
 
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
-               class="com.atlassian.jira.plugins.bitbucket.activeobjects.DefaultBitbucketProjectSettings">
+               class="com.atlassian.jira.plugins.dvcs.activeobjects.DefaultBitbucketProjectSettings">
         <description>A facade for storing project settings</description>
-        <interface>com.atlassian.jira.plugins.bitbucket.activeobjects.BitbucketProjectSettings</interface>
+        <interface>com.atlassian.jira.plugins.dvcs.activeobjects.BitbucketProjectSettings</interface>
     </component>
 
     <component key="issueLinker" name="issueLinker" class="com.atlassian.jira.plugins.dvcs.webwork.IssueLinkerImpl">

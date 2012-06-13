@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.activeobjects;
+package com.atlassian.jira.plugins.dvcs.activeobjects;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;

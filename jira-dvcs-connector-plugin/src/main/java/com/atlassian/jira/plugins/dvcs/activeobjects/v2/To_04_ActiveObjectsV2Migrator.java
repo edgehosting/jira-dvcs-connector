@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.activeobjects.v2;
+package com.atlassian.jira.plugins.dvcs.activeobjects.v2;
 
 import java.util.List;
 import java.util.Map;
@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.RepositoryUri;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v1.ProjectMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.RepositoryUri;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v1.IssueMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v1.ProjectMapping;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -27,7 +27,7 @@ public class To_04_ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
     {
         logger.debug("upgrade [ " + modelVersion + " ]");
 
-        activeObjects.migrate(IssueMapping.class, ProjectMapping.class, com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping.class, com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping.class);
+        activeObjects.migrate(IssueMapping.class, ProjectMapping.class, com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping.class, com.atlassian.jira.plugins.dvcs.activeobjects.v2.ProjectMapping.class);
         List<Integer> repositoriesToBeSynchronised = Lists.newArrayList(); 
         
         // get all ProjectMappings from v1 and store them as ProjectMappings v2
@@ -50,7 +50,7 @@ public class To_04_ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
                 map.put("USERNAME", username);
                 map.put("PASSWORD", password);
             }
-            com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping pm = activeObjects.create(com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping.class, map);
+            com.atlassian.jira.plugins.dvcs.activeobjects.v2.ProjectMapping pm = activeObjects.create(com.atlassian.jira.plugins.dvcs.activeobjects.v2.ProjectMapping.class, map);
 
             if (!fixedUrl.equals(originalUrl))
             {
@@ -68,7 +68,7 @@ public class To_04_ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
             	map2.put("REPOSITORY_ID", repositoryId);
             	map2.put("NODE", node);
             	map2.put("ISSUE_ID", issueId);
-            	activeObjects.create(com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping.class, map2);
+            	activeObjects.create(com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping.class, map2);
             }
         }
 

@@ -1,12 +1,10 @@
-package com.atlassian.jira.plugins.bitbucket.activeobjects;
+package com.atlassian.jira.plugins.dvcs.activeobjects;
 
-import com.atlassian.jira.plugins.bitbucket.api.RepositoryPersister;
 
 import java.util.List;
 
 /**
  * Access to the settings for this plugins state
- * @deprecated Use the {@link RepositoryPersister} - this implementation will not work
  */
 interface BitbucketProjectSettings
 {

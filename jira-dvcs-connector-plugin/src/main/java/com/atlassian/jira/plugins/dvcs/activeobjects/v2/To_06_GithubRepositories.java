@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.activeobjects.v2;
+package com.atlassian.jira.plugins.dvcs.activeobjects.v2;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.activeobjects;
+package com.atlassian.jira.plugins.dvcs.activeobjects;
 
 import java.net.MalformedURLException;
 import java.net.URL;

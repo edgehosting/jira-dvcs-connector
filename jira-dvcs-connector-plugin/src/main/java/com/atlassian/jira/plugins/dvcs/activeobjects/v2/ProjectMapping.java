@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.bitbucket.activeobjects.v2;
+package com.atlassian.jira.plugins.dvcs.activeobjects.v2;
 
 import net.java.ao.Entity;
 import net.java.ao.schema.Table;
