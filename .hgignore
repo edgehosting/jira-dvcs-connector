@@ -15,3 +15,5 @@ syntax: regexp
 ^jira-dvcs-connector-plugin/target$
 ^jira-dvcs-connector-common/target$
 ^bitbucket-client/target$
+
+/nb-configuration.xml
