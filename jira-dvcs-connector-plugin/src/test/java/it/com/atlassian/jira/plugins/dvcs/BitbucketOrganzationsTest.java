@@ -1,10 +1,9 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
+import java.io.IOException;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -12,13 +11,23 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
+
+import it.com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
+
+import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Test to verify behaviour when syncing bitbucket repository..
@@ -35,6 +44,18 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 	{
 		return BitBucketConfigureOrganizationsPage.class;
 	}
+
+
+    @Before
+    public void removeExistingPostCommitHooks()
+    {
+        Set<String> extactedBitbucketServiceIds = extractBitbucketServiceIds();
+
+        for (String extractedBitbucketServiceId : extactedBitbucketServiceIds)
+        {
+            removePostCommitHook(extractedBitbucketServiceId);
+        }
+    }
 
 	@Test
 	public void addOrganization()
@@ -140,4 +161,57 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 		Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
 	}
 
+
+    private static Set<String> extractBitbucketServiceIds()
+    {
+        String listServicesResponseString;
+
+        try
+        {
+            listServicesResponseString = HttpSenderUtils.sendGetHttpRequest(
+                    "https://api.bitbucket.org/1.0/repositories/jirabitbucketconnector/public-hg-repo/services/",
+                    ACCOUNT_ADMIN_LOGIN,
+                    ACCOUNT_ADMIN_PASSWORD);
+        }
+        catch (IOException e)
+        {
+            throw new IllegalStateException("Cannot extract BitBucket service IDs !", e);
+        }
+
+        Set<String> extractedServiceIds = new LinkedHashSet<String>();
+
+        try {
+            JSONArray jsonArray = new JSONArray(listServicesResponseString);
+            for (int i = 0; i < jsonArray.length(); i++)
+            {
+                JSONObject data = (JSONObject) jsonArray.get(i);
+
+                String bitbucketServiceId = data.getString("id");
+
+                extractedServiceIds.add(bitbucketServiceId);
+            }
+        }
+        catch (JSONException e)
+        {
+            throw new IllegalStateException("Cannot parse JSON !", e);
+        }
+
+        return extractedServiceIds;
+    }
+
+    private static void removePostCommitHook(String serviceId) {
+        String finalBitbucketUrl = String.format(
+                "https://api.bitbucket.org/1.0/repositories/jirabitbucketconnector/public-hg-repo/services/%s/",
+                serviceId);
+        try
+        {
+            HttpSenderUtils.sendDeleteHttpRequest(finalBitbucketUrl,
+                                  ACCOUNT_ADMIN_LOGIN,
+                                  ACCOUNT_ADMIN_PASSWORD);
+        }
+        catch (IOException e)
+        {
+            throw new IllegalStateException("Cannot send DELETE Http request !", e);
+        }
+    }
 }
