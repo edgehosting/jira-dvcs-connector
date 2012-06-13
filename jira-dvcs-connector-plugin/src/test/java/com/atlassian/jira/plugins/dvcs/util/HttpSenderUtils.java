@@ -1,4 +1,4 @@
-package it.com.atlassian.jira.plugins.dvcs.util;
+package com.atlassian.jira.plugins.dvcs.util;
 
 
 import java.io.IOException;
