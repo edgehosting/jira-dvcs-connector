@@ -28,7 +28,7 @@ public class Retryer<V>
 				long delay = (long) (1000 * Math.pow(3, attempt)); // exponencial delay. (currently up to 12 minutes)
 				log.warn("Attempt #" + attempt + " (out of " + NUM_ATTEMPTS
 				        + "): Retrieving changesets failed: " + e.getMessage() + "\n. Retrying in "
-				        + delay / 1000 + "secs");
+				        + delay / 1000 + " secs");
 				try
 				{
 					Thread.sleep(delay);
