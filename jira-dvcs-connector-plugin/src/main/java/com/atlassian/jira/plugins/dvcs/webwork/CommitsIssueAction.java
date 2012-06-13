@@ -1,17 +1,24 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
-
 import java.util.Date;
 
-public class CommitsIssueAction extends GenericMessageAction
+import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
+
+public class CommitsIssueAction implements IssueAction
 {
-    private Date timestamp;
+    private final String htmlContent;
+    private final Date timestamp;
 
     public CommitsIssueAction(String changesetAsHtml, Date timestamp)
     {
-        super(changesetAsHtml);
+        htmlContent = changesetAsHtml;
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public String getHtml()
+    {
+        return htmlContent;
     }
 
     @Override
