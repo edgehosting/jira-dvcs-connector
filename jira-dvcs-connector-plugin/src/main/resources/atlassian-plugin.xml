@@ -197,18 +197,6 @@
                 <view name="input">/templates/configuregithuboauth.vm</view>
             </action>
 
-            <!-- these actions are  here for backward compatibility -->
-            <action name="com.atlassian.jira.plugins.bitbucket.webwork.BitbucketPostCommit" alias="BitbucketPostCommit">
-                <view name="postcommit">/templates/postcommit.vm</view>
-            </action>
-	        <action name="com.atlassian.jira.plugins.bitbucket.webwork.GithubPostCommit" alias="GitHubPostCommit">
-                <view name="postcommit">/templates/postcommit.vm</view>
-            </action>
-            <action name="com.atlassian.jira.plugins.bitbucket.webwork.GitHubOAuth2" alias="GitHubOAuth2">
-                <view name="success">/templates/githuboauth2.vm</view>
-            </action>
-
-
 			<!-- New organization driven actions -->
 			
 			<action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
