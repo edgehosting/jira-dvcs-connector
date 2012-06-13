@@ -23,7 +23,7 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
 
-import it.com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
+import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
 import static org.hamcrest.MatcherAssert.*;
@@ -201,7 +201,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 
     private static void removePostCommitHook(String serviceId) {
         String finalBitbucketUrl = String.format(
-                "https://api.bitbucket.org/1.0/repositories/jirabitbucketconnector/public-hg-repo/services/%s/",
+                "https://api.bitbucket.org/1.0/repositories/jirabitbucketconnector/public-hg-repo/services/%s",
                 serviceId);
         try
         {

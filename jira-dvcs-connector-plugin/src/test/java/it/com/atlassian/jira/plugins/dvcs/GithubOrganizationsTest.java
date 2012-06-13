@@ -1,10 +1,9 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
+import java.io.IOException;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -14,6 +13,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -23,7 +23,15 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
+import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
+
+import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Test to verify behaviour when syncing  github repository.
@@ -83,19 +91,34 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 */
 
         jira.getTester().gotoUrl(oauthAppLink);
-        
+
     	try
 		{
 			jira.getTester().getDriver().switchTo().alert().accept();
 		} catch (Exception e)
 		{
-			// nop, probably no leave page alert 
+			// nop, probably no leave page alert
 		}
-        
+
         GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
         registerAppPage.deleteOAuthApp();
 
         jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
+    }
+
+    @Before
+    public void removeExistingPostCommitHooks()
+    {
+        String[] githubRepositories = {"repo1", "test-project"};
+
+        for (String githubRepositoryId : githubRepositories) {
+            Set<String> extactedGithubHookIds = extractGithubHookIdsForRepository(githubRepositoryId);
+
+            for (String extractedGithubHookId : extactedGithubHookIds)
+            {
+                removePostCommitHook(githubRepositoryId, extractedGithubHookId);
+            }
+        }
     }
 
     @After
@@ -118,7 +141,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationSuccessfully(TEST_URL, false);
         assertThat(configureOrganizations.getOrganizations().size(), equalTo(1));
     }
-    
+
     @Test
     public void addUrlThatDoesNotExist()
     {
@@ -128,7 +151,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         assertThat(errorMessage, containsString("is incorrect or the server is not responding."));
         configureOrganizations.clearForm();
     }
-    
+
     @Test
     public void testPostCommitHookAdded() throws Exception
     {
@@ -149,7 +172,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
         assertThat(hooksPage, not(containsString(githubServiceConfigUrlPath)));
     }
-    
+
     private String getGithubServices(String url, String username, String password) throws Exception
     {
         HttpClient httpClient = new HttpClient();
@@ -173,7 +196,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         assertThat(getCommitsForIssue("QA-3"),
                 hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
     }
-    
+
     @Test
     public void testCommitStatistics()
     {
@@ -210,5 +233,58 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 
         goToGithubOAuthConfigPage().setCredentials(clientID, clientSecret);
     }
-   
+
+    private static Set<String> extractGithubHookIdsForRepository(String repositoryId)
+    {
+        String listHooksResponseString;
+        String finalGithubUrl = String.format("https://api.github.com/repos/jirabitbucketconnector/%s/hooks",
+                                              repositoryId);
+
+        try
+        {
+            listHooksResponseString = HttpSenderUtils.sendGetHttpRequest(finalGithubUrl,
+                                                                         REPO_ADMIN_LOGIN,
+                                                                         REPO_ADMIN_PASSWORD);
+        }
+        catch (IOException e)
+        {
+            throw new IllegalStateException("Cannot extract BitBucket service IDs !", e);
+        }
+
+        Set<String> extractedHookIds = new LinkedHashSet<String>();
+
+        try {
+            JSONArray jsonArray = new JSONArray(listHooksResponseString);
+
+            for (int i = 0; i < jsonArray.length(); i++)
+            {
+                JSONObject data = (JSONObject) jsonArray.get(i);
+
+                String githubHookId = data.getString("id");
+
+                extractedHookIds.add(githubHookId);
+            }
+        }
+        catch (JSONException e)
+        {
+            throw new IllegalStateException("Cannot parse JSON !", e);
+        }
+
+        return extractedHookIds;
+    }
+
+    private static void removePostCommitHook(String repositoryId, String serviceId) {
+        String finalGithubUrl = String.format(
+                "https://api.github.com/repos/jirabitbucketconnector/%s/hooks/%s",
+                repositoryId,
+                serviceId);
+        try
+        {
+            HttpSenderUtils.sendDeleteHttpRequest(finalGithubUrl, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
+        }
+        catch (IOException e)
+        {
+            throw new IllegalStateException("Cannot send DELETE Http request !", e);
+        }
+    }
 }
