@@ -11,9 +11,14 @@ import java.net.URLEncoder;
 public class CustomStringUtils
 {
 
-    // TODO: check all calls this method if correctly calls method encode() not encodeUriPath() !!!
+    // TODO: check all calls this method if correctly calls method encode() not
+    // encodeUriPath() !!!
     public static String encode(String str)
     {
+        if (str == null)
+        {
+            return null;
+        }
         try
         {
             return URLEncoder.encode(str, "UTF-8");
@@ -36,7 +41,6 @@ public class CustomStringUtils
             return ChangesetFileAction.MODIFIED;
         }
     }
-
 
     public static String encodeUriPath(String str)
     {
