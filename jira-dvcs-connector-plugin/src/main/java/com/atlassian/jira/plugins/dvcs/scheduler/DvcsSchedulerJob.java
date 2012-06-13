@@ -6,8 +6,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
@@ -22,8 +20,6 @@ public class DvcsSchedulerJob implements PluginJob
     {   
 		log.debug("Running DvcsSchedulerJob ");
 		
-		doTheWorkaround(jobDataMap);
-
 		OrganizationService organizationService = (OrganizationService) jobDataMap.get("organizationService");
 		RepositoryService repositoryService = (RepositoryService) jobDataMap.get("repositoryService");
 		List<Organization> organizations = organizationService.getAll(false);
@@ -32,19 +28,5 @@ public class DvcsSchedulerJob implements PluginJob
 			repositoryService.syncRepositoryList(organization);
         }
     }
-
-    /**
-     * Attempt to get around BBC-176
-     */
-    private void doTheWorkaround(Map<String, Object> jobDataMap)
-    {
-        ActiveObjects activeObjects = (ActiveObjects) jobDataMap.get("activeObjects");
-		if (activeObjects!=null)
-		{
-	        // this is here only to trigger migration of AO (see BBC-176)
-	        activeObjects.find(OrganizationMapping.class);
-	        jobDataMap.remove("activeObjects");
-		}
-    }
-
+	
 }

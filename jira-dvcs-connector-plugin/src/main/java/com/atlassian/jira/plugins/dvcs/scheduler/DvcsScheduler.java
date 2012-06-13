@@ -6,7 +6,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
@@ -22,19 +21,17 @@ public class DvcsScheduler implements LifecycleAware
 	private final PluginScheduler pluginScheduler; // provided by SAL
 	
 	private static final String PROPERTY_KEY = "dvcs.connector.scheduler.interval";
-	private static final long DEFAULT_INTERVAL = 1000L * 60 * 10; // default job interval (1 hour) TODO set to 1 hour
+	private static final long DEFAULT_INTERVAL = 1000L * 60 * 60; // default job interval (1 hour)
 	private long interval = DEFAULT_INTERVAL;
 	private final OrganizationService organizationService;
 	private final RepositoryService repositoryService;
-	private final ActiveObjects activeObjects;
 
 	public DvcsScheduler(PluginScheduler pluginScheduler, OrganizationService organizationService,
-	        RepositoryService repositoryService, ActiveObjects activeObjects)
+	        RepositoryService repositoryService)
 	{
 		this.pluginScheduler = pluginScheduler;
 		this.organizationService = organizationService;
 		this.repositoryService = repositoryService;
-		this.activeObjects = activeObjects;
 	}
 
     @Override
@@ -52,12 +49,11 @@ public class DvcsScheduler implements LifecycleAware
 		Map<String, Object> data = Maps.newHashMap();
 		data.put("organizationService",organizationService);
 		data.put("repositoryService",repositoryService);
-		data.put("activeObjects", activeObjects);
 
 		pluginScheduler.scheduleJob(JOB_NAME, // unique name of the job
 		        DvcsSchedulerJob.class, // class of the job
 		        data, // data that needs to be passed to the job
-		        new Date(System.currentTimeMillis() + interval/2), // the time the job is to start
+		        new Date(), // the time the job is to start
 		        interval); // interval between repeats, in milliseconds
 	}
 
