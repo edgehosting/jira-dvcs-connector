@@ -193,10 +193,6 @@
                 <view name="input">/templates/configurerepositories.vm</view>
             </action>
 
-	        <action name="com.atlassian.jira.plugins.bitbucket.spi.github.webwork.AddGithubRepository" alias="AddGithubRepository">
-	            <view name="input">/templates/addgithubrepository.vm</view>
-	        </action>
-
             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.ConfigureGithubOAuth" alias="ConfigureGithubOAuth">
                 <view name="input">/templates/configuregithuboauth.vm</view>
             </action>
