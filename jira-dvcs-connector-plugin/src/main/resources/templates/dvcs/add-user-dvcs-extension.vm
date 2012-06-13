@@ -1,0 +1,25 @@
+#if(!$bbSupressRender)
+
+	<fieldset class="field-group" style="max-height: 300px; overflow: scroll">
+	  
+	  <label>Bitbucket accounts</label>
+	  
+	  <div class="" style="font-size: 0.9em; top: 3px; position: relative; padding-bottom: 3px;">
+	  	(Invite users to develop on Bitbucket ?)
+	  </div>
+	
+	  #foreach ($bbOrg in $bbOrgaizations)
+	  	<div class="checkbox" style="padding-left: 0px">
+	    	<label><strong>$bbOrg.name</strong></label>
+	    	 #foreach ($group in $bbOrg.getGroups())
+	    	 	<div>
+	    	 		<input class="checkbox" type="checkbox" id="dvcs_org_selector_$group.slug" value="${bbOrg.id}:$group.slug" name="dvcs_org_selector" />
+	    	 		<span> $group.niceName </span>
+	    	 	</div>
+	    	 #end
+	  	</div>
+	  #end
+	
+	</fieldset>
+
+#end

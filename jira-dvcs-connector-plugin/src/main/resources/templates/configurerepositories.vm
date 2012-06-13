@@ -1,4 +1,3 @@
-
 <html>
   <head>
     <title>
@@ -10,7 +9,7 @@
     </title>
 
     <script type="text/javascript">
-        var BASE_URL = "${baseurl}"
+        var BASE_URL = "${baseurl}";
 
         function init_repositories()
         {
@@ -94,7 +93,7 @@
 
                 <div id="aui-message-bar"></div>
 
-                <div class="buttons-container dvcs-buttons-container">
+                <div class="buttons-container">
                     <div class="buttons">
                         <input class="button dvcs-submit" type="submit" name="Submit" id="Submit" value="Continue" />
                         <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>
@@ -126,7 +125,7 @@
                         <td width="1px" height="40px">
                             <span class="$repository.getRepositoryType()Logo">&nbsp;</span>
                             </td>
-                        <td><a class="repositoryNameLink" href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_new">
+                        <td><a class="repositoryNameLink" href="$textutils.htmlEncode($repository.repositoryUri.repositoryUrl)" target="_blank">
                             <span class="repositoryName">$textutils.htmlEncode($repository.repositoryName)</span>
                         </a></td>
                         <td style="text-align: right;">

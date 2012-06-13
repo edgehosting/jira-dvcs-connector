@@ -1,6 +1,8 @@
 <html>
   <head>
     <title>GitHub OAuth Settings</title>
+    
+    $webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
 
     <meta name="admin.active.section" content="admin_plugins_menu/source_control"/>
     <meta name="admin.active.tab" content="github_oauth"/>
@@ -14,16 +16,14 @@
         <h3>GitHub OAuth Settings</h3>
 
             <div id='gh_config_link'>
-                <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories!default.jspa">Bulk Configure Bitbucket and GitHub Repositories</a>
+                <a href="${baseurl}/secure/admin/ConfigureDvcsOrganizations!default.jspa">Bulk Configure Bitbucket and GitHub Organizations</a>
             </div>
 
               <h4 class="gh_config_h4">Setting up a GitHub OAuth Application</h4>
 
                 <form class="aui" method="post" action="${baseurl}/secure/admin/ConfigureGithubOAuth.jspa">
-                  <input type="hidden" name="atl_token" value="$atl_token">
-                  If you need to sync only with public GitHub repositories, you can skip the this step and proceed directly to <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories!default.jspa">configuring your repositories</a>.
 
-                  For private GitHub repositories, complete the following steps:
+                  <input type="hidden" name="atl_token" value="$atl_token">
 
                   <ol class="gh_steps">
                     <li>Copy the following Callback URL:
@@ -33,10 +33,10 @@
                    </li>
 
                    <li>
-                      Browse to <a href="https://github.com/account/applications" target="_blank">https://github.com/account/applications</a> to create a new GitHub OAuth Application.
+                      Browse to <a href="https://github.com/settings/applications" target="_blank">https://github.com/settings/applications</a> to create a new GitHub OAuth Application.
 
                        <div id="gh_oauth_app_screenshot">
-                           <img alt='GitHub Configuration Screenshot' src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_oauth.jpg">
+                           <img alt='GitHub Configuration Screenshot' src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_oauth.png">
                        </div>
                    </li>
 
@@ -108,7 +108,7 @@
                    </li>
 
                    <li>
-                       Once you have completed the OAuth Application setup, you can begin <a href="${baseurl}/secure/admin/ConfigureBitbucketRepositories!default.jspa">configuring your repositories</a>.
+                       Once you have completed the OAuth Application setup, you can begin <a href="${baseurl}/secure/admin/ConfigureDvcsOrganizations!default.jspa">configuring your organizations</a>.
                    </li>
 
                   </ol>

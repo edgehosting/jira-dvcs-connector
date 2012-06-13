@@ -2,8 +2,8 @@
      padding-top: 16px;
  }
 
- .gh_steps li{
-     padding-top: 10px;
+ .gh_steps li {
+     margin-top: 15px;
  }
 
 
@@ -63,7 +63,7 @@
     padding-left: 10px;
 }
 
-.gh_table th{
+.gh_table th {
     font-weight: normal;
     color: #656565;
     border-bottom: 1px solid #cccccc;
@@ -75,7 +75,7 @@
     font-size: 1em;
     padding:0 20px;
 }
-.gh_table td.status .error{
+.error{
     color:#f66;
 }
 
@@ -93,7 +93,6 @@
 
 .gh_messages{
     font-size: 1em;
-    color: #959595;
     font-style: italic;
 }
 
@@ -124,6 +123,25 @@
     display: none;
 }
 
+ .syncrepoicon {
+     width: 16px;
+     height: 16px;
+     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/not_working.png);
+     background-repeat: no-repeat;
+     display: inline-block;
+ }
+ 
+  .syncrepoicon:ACTIVE {
+  	top: 1px;
+  	left: 1px;
+  	position: relative;
+ }
+
+ .syncrepoicon.running {
+     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
+ }
+
+
 .syncicon.error {
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png);
     display:inline-block;
@@ -148,15 +166,15 @@
 .bitbucketLogo {
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png);
     background-repeat: no-repeat;
-    padding: 20px 17px;
-    background-position: 10px 17px;
 }
 
 .githubLogo {
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_logo.png);
     background-repeat: no-repeat;
-    padding: 20px 17px;
-    background-position: 8px 15px;
+}
+
+h4.bitbucketLogo, h4.githubLogo {
+	padding-left: 27px;	
 }
 
 #postCommitServiceDetails{
@@ -440,22 +458,177 @@ a:hover.repositoryNameLink {
 }
 
 #addRepositoryContent div,  #addRepositoryContent input {
-    color: #555 !important;
-}
-
-.dvcs-buttons-container.buttons-container {
-	margin-top: 20px;
-	border: none !important;
+    color: #555;
 }
 
 #addRepositoryDetails .field-group input {
     width: 380px	
 }
-
+#addRepositoryDetails .field-group input[type="checkbox"] {
+	width: auto;
+	margin-top: 5px;
+	vertical-align: middle;
+}
 .notbold {
 	font-weight: normal;
 }
 
+.vert-space {
+	margin-top: 7px;
+	margin-bottom: 7px;
+}
 #aui-message-bar {
     clear: both;
+}
+
+.dvcs-update-cred-dialog {
+	margin-top: 30px;
+}
+
+.dvcs-error {
+	color: red !important;
+	display: none;
+}
+.dvcs-org-reponame {
+	width: 400px;
+}
+.dvcs-autolink-repo {
+	width: 70px;
+}
+
+.dvcs-sync-repo {
+    width: 100px;
+}
+
+.repo_autolink_check {
+    position: relative;
+    top: 2px;
+}
+
+#dvcs-change-pass-dialog .dialog-button-panel {
+	border-top: 1px solid #d2d2d2;
+	margin-bottom: 7px;
+}
+.dvcs-even-row td {
+	background-color: #eaeaea;
+}
+.dvcs-nodisplay {
+	display: none;
+}
+.dvcs-repos-table.aui > thead {
+}
+.dvcs-repo-row:HOVER {
+	background-color: #F2F2F2;
+}
+.dvcs-repos-table > thead > tr > th {
+	color: f0f0f0 !important;
+}
+.dvcs-centered {
+	text-align: center !important;
+}
+.dvcs-repos-table .dvcs-disabled {
+	color: #959595 !important;
+}
+.dvcs-repos-table .dvcs-disabled a {
+	color: #A1B9ED !important;
+}
+.dvcs-action-container {
+	/*white-space: nowrap;*/
+}
+.dvcs-config-panel {
+	margin-top: 10px;
+	margin-bottom: 5px;
+}
+
+#addRepositoryContent .buttons-container {
+	border-top: none;
+}
+
+select#urlSelect {
+	width: 387px;
+}
+.dvcs-organization-controls {
+}
+.dvcs-org-container .dropdown-item {
+}
+
+.dvcs-org-container .dropdown-item {
+	margin: 9px !important;
+}
+/*
+.dvcs-org-container .dropdown-item.active {
+	background-color: #3C78B5 !important;
+}
+.dvcs-org-container .dropdown-item.active a {
+	color: white !important;
+} */
+
+.dvcs-org-container.aui-toolbar {
+	float: right;
+	width: auto !important;
+	clear: none !important;
+}
+
+.dvcs-org-container.aui-toolbar .aui-dropdown a {
+	margin-left: 0 !important;
+	padding-left: 0 !important;
+}
+.dvcs-org-container.aui-toolbar .aui-dropdown input {
+	position: relative;
+	top: 1px;
+}
+
+.aui.bitbucketLogo, .aui.githubLogo {
+	float: left;
+	position: relative;
+	top: 2px;
+}
+.dvcs-header-container {
+	margin-bottom: 10px;
+	margin-top: 10px;
+	height: 25px;
+	vertical-align: bottom;
+}
+.dvcs-clear:after {
+	content: ".";
+	display: block;
+	clear: both;
+	visibility: hidden;
+	line-height: 0;
+	height: 0;
+}
+ 
+.dvcs-dclear {
+	display: inline-block;
+}
+ 
+html[xmlns] .dvcs-dclear {
+	display: block;
+}
+ 
+* html .dvcs-dclear {
+	height: 1%;
+}
+.dvcs-organization-controls-tool a.aui-dd-trigger {
+	padding: 3px !important;
+}
+.dvcs-organization-controls-tool .icon-tools-small {
+	height: 14px;
+	width: 16px;
+	position: relative;
+	top: 4px;
+	padding: 0px !important;
+	margin: 0px !important;
+
+}
+.dvcs-organization-controls-tool .icon-dropdown {
+	padding: 0px !important;
+	margin: 0px 4px 0px 3px !important;
+	
+}
+#bitbucket-form-section {
+	margin-top: 10px;
+}
+#github-form-section {
+	margin-top: 10px;
 }

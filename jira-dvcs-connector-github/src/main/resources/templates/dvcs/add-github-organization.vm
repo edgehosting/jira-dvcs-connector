@@ -1,0 +1,80 @@
+<html>
+  <head>
+    <title>New Github Account</title>
+
+	$webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
+
+    <meta name="admin.active.section" content="admin_plugins_menu/source_control"/>
+    <meta name="admin.active.tab" content="bitbucket_bulk_repo"/>
+  </head>
+
+  <body>
+    <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddGithubOrganization.jspa" class="aui">
+      <h2>New Github Account</h2>
+      <input type="hidden" name="atl_token" value="$atl_token">
+      <input type="hidden" name="autoLinking" id="autoLinking" value="$action.autoLinking">
+      
+        <fieldset>
+         
+          <div class="field-group">
+              <label for="url">Url:</label>
+              <span class="field-value">$textutils.htmlEncode($action.getUrl())</span>
+              <input type="hidden" id="url" name="url" value="$textutils.htmlEncode($action.getUrl())"/>
+          </div>
+          
+          <div class="field-group" >
+          	<label for="organization">Organization:</label>
+            <span class="field-value">$textutils.htmlEncode($action.getOrganization())</span>
+            <input type="hidden" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
+		  </div>
+ 			
+          #if($action.getOauthRequired() == "true")
+          	<input type="hidden" name="oauthRequired" value="true" />
+          	<div class="field-group" >
+          		<label for="oauthClientId">Key:</label>
+            	<span class="field-value">$action.getOauthClientId()</span>
+            	<input type="text" id="oauthClientId" name="oauthClientId" value="$textutils.htmlEncode($action.getOauthClientId())"/>
+		    </div>
+		  
+		   <div class="field-group" >
+          		<label for="oauthSecret">Secret:</label>
+            	<span class="field-value">$action.getOauthSecret()</span>
+            	<input type="text" id="oauthSecret" name="oauthSecret" value="$textutils.htmlEncode($action.getOauthSecret())"/>
+		   </div>
+		  
+          #end
+         
+         <div style="margin-top: 10px; clear: both" >
+          #if($action.getAutoLinking() == "true")
+	         <input disabled="disabled" checked="checked" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
+	      #else
+	      	 <input disabled="disabled" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
+	      #end
+	         <label for="autoLinking">Auto Link New Repositories</label>
+	     </div>
+         
+        </fieldset>
+
+      <div id="aui-message-bar">
+        #foreach ($errorMessage in $action.getErrorMessages())
+        <div class="aui-message error">
+            <p class="title">
+                <span class="aui-icon icon-error"></span>
+                <strong>Error!</strong>
+            </p>
+            <p>$errorMessage</p>
+        </div>                       
+        #end
+      </div>
+
+      <div class="buttons-container">
+        <div class="buttons">
+          <div>&nbsp;</div>
+            <input class="button submit" type="submit" name="Submit" id="Submit" value="Try Again"/>
+            <a class="cancel" href="${baseurl}/secure/admin/ConfigureDvcsOrganizations.jspa?atl_token=${atl_token}">Cancel</a>
+        </div>
+      </div>
+    
+  </form>      
+  </body>
+</html>
