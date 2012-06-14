@@ -8,11 +8,15 @@ import com.atlassian.jira.plugins.bitbucket.api.util.CustomStringUtils;
 import com.atlassian.util.concurrent.Nullable;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.RepositoryCommit;
 
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -28,12 +32,31 @@ public class GithubChangesetFactory
     {
         final List<ChangesetFile> changesetFiles = transformFiles(repositoryCommit.getFiles());
 
+        String name = "";
+        Date date = Calendar.getInstance().getTime();
+        if (repositoryCommit.getCommit() != null
+                && repositoryCommit.getCommit().getAuthor() != null)
+        {
+            if (StringUtils.isBlank(repositoryCommit.getCommit().getAuthor().getName()))
+            {
+                name = repositoryCommit.getCommit().getAuthor().getName();
+            }
+            date = repositoryCommit.getCommit().getAuthor().getDate();
+        }
+
+        String login = "";
+        if (repositoryCommit.getAuthor() != null
+                && StringUtils.isNotBlank(repositoryCommit.getAuthor().getLogin()))
+        {
+            login = repositoryCommit.getAuthor().getLogin();
+        }
+
         return new DefaultChangeset(
                 repositoryId,
                 repositoryCommit.getSha(),
-                repositoryCommit.getCommit().getAuthor().getName(),
-                repositoryCommit.getAuthor().getLogin(),
-                repositoryCommit.getCommit().getAuthor().getDate(),
+                name,
+                login,
+                date,
                 "", // todo: raw-node. what is it in github?
                 branch,
                 repositoryCommit.getCommit().getMessage(),
