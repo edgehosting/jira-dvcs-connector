@@ -1,35 +1,24 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github;
 
-import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultSourceControlUser;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.User;
 
 public class GithubUserFactory
 {
 
-    public static DefaultSourceControlUser parse(JSONObject userJson)
+    public static DefaultSourceControlUser transform(User ghUser)
     {
-        try
-        {
-            String gravatarHash = userJson.getString("gravatar_id");
-            String gravatarUrl = "https://secure.gravatar.com/avatar/" + gravatarHash + "?s=60";
-
-
-            String login = userJson.getString("login");
-            return new DefaultSourceControlUser(
-
-                    login,
-                    "",
-                    userJson.has("name") ? userJson.getString("name") : login,  // first and last name is together in github
-                    gravatarUrl,
-                    ""
-            );
-        }
-        catch (JSONException e)
-        {
-            throw new SourceControlException("invalid json object", e);
-        }
+        final String login = ghUser.getLogin();
+        final String name = ghUser.getName();
+        String gravatarUrl = "https://secure.gravatar.com/avatar/" + ghUser.getGravatarId() + "?s=60";
+        return new DefaultSourceControlUser(
+                login,
+                "",
+                StringUtils.isNotBlank(name) ? name : login,  // first and last name is together in github
+                gravatarUrl,
+                ""
+        );
     }
 
 }

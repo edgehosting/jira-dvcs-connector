@@ -1,12 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.api.net;
 
-import java.util.Iterator;
-import java.util.Map;
-
-import org.apache.commons.httpclient.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.RepositoryUri;
 import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler.ExtendedResponse;
@@ -17,6 +10,12 @@ import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.ResponseException;
 import com.atlassian.sal.api.net.ResponseHandler;
+import org.apache.commons.httpclient.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
+import java.util.Map;
 
 public class DefaultRequestHelper implements RequestHelper 
 {
@@ -136,7 +135,8 @@ public class DefaultRequestHelper implements RequestHelper
             log.warn("Unable to retrieve repository info for: " +repositoryUri.getRepositoryUrl());
             return null;
         }
-        
+
+        // TODO V3: in GH return 404, instead of 403
         if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
         {
             // this looks like a private repository
