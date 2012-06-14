@@ -241,7 +241,11 @@ public class RepositoryServiceImpl implements RepositoryService
 		final Repository repository = repositoryDao.get(repoId);
 		if (repository != null)
 		{
-			// TODO when unlinking repository we should kill any running synchronisation
+		    if (!linked)
+		    {
+		        synchronizer.stopSynchronization(repository);
+		    }
+
 			repository.setLinked(linked);
 
 			addOrRemovePostcommitHook(repository);
