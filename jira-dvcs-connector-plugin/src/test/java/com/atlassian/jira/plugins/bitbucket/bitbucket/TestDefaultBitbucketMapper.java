@@ -1,14 +1,13 @@
 package com.atlassian.jira.plugins.bitbucket.bitbucket;
 
-import static junit.framework.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-
-import java.util.List;
-import java.util.Map;
-
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
+import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
+import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.Query;
-
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,13 +18,12 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
-import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.Encryptor;
-import com.atlassian.jira.plugins.bitbucket.api.impl.DefaultRepositoryPersister;
-import com.atlassian.sal.api.transaction.TransactionCallback;
+import java.util.List;
+import java.util.Map;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link DefaultRepositoryPersister}
@@ -170,7 +168,7 @@ public class TestDefaultBitbucketMapper
 //                "PROJECT_KEY = ? and REPOSITORY_URI = ?", "JST", "owner/slug");
 //        verify(activeObjects, times(1)).find(IssueMapping.class,
 //                "ISSUE_ID = ?", "JST-1");
-//        verify(bitbucket, times(1)).getChangeset(argThat(new ArgumentMatcher<Authentication>()
+//        verify(bitbucket, times(1)).getDetailChangeset(argThat(new ArgumentMatcher<Authentication>()
 //        {
 //            @Override
 //            public boolean matches(Object o)
@@ -200,7 +198,7 @@ public class TestDefaultBitbucketMapper
 //                "JST", "owner/slug");
 //        verify(activeObjects, times(1)).find(IssueMapping.class,
 //                "ISSUE_ID = ?", "JST-1");
-//        verify(bitbucket, times(1)).getChangeset(argThat(new ArgumentMatcher<Authentication>()
+//        verify(bitbucket, times(1)).getDetailChangeset(argThat(new ArgumentMatcher<Authentication>()
 //        {
 //            @Override
 //            public boolean matches(Object o)

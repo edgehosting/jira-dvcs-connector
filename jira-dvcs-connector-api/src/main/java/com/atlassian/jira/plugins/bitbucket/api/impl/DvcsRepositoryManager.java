@@ -1,18 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.api.impl;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
@@ -38,6 +25,18 @@ import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
@@ -135,13 +134,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
     @Override
-    public Changeset getChangeset(SourceControlRepository repository, String node)
-    {
-        return getCommunicator().getChangeset(repository, node);
-    }
-
-    @Override
-    public Changeset getChangeset(SourceControlRepository repository, Changeset changeset)
+    public Changeset getDetailChangeset(SourceControlRepository repository, Changeset changeset)
     {
         return getCommunicator().getChangeset(repository, changeset);
     }

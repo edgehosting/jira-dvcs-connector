@@ -1,13 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
 import com.atlassian.jira.plugins.bitbucket.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ProgressWriter;
@@ -19,6 +11,14 @@ import com.atlassian.jira.plugins.bitbucket.api.SynchronisationOperation;
 import com.atlassian.jira.plugins.bitbucket.api.impl.SynchronizationKey;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.api.streams.GlobalFilter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Aggregated Repository Manager that handles all Repository Managers based on the repository url
@@ -119,16 +119,11 @@ public class GlobalRepositoryManager implements RepositoryManager
         return new ArrayList<Changeset>(allChangesets);
     }
 
-    @Override
-    public Changeset getChangeset(SourceControlRepository repository, String node)
-    {
-        return getManagerByRepoId(repository.getId()).getChangeset(repository, node);
-    }
 
     @Override
-    public Changeset getChangeset(SourceControlRepository repository, Changeset changeset)
+    public Changeset getDetailChangeset(SourceControlRepository repository, Changeset changeset)
     {
-        return getManagerByRepository(repository).getChangeset(repository, changeset);
+        return getManagerByRepository(repository).getDetailChangeset(repository, changeset);
     }
 
     @Override
