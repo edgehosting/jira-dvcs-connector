@@ -4,11 +4,17 @@ package com.atlassian.jira.plugins.dvcs.github;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.egit.github.core.IRepositoryIdProvider;
+import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.service.CommitService;
+import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -46,6 +52,10 @@ public class GithubCommunicatorTest
 	@Mock
 	private GithubClientProvider githubClientProvider;
 	@Mock
+	private CommitService commitService;
+	@Mock
+	private RepositoryService repositoryService;
+	@Mock
 	private UserService userService;
 	@Mock
 	private User githubUser;
@@ -62,28 +72,25 @@ public class GithubCommunicatorTest
 	public void initializeGithubCommunicator()
     {
         communicator = new GithubCommunicator(mock(ChangesetCache.class), mock(GithubOAuth.class), githubClientProvider);
+        when(githubClientProvider.getRepositoryService(repositoryMock)).thenReturn(repositoryService);
+        when(githubClientProvider.getUserService(repositoryMock)).thenReturn(userService);
+        when(githubClientProvider.getCommitService(repositoryMock)).thenReturn(commitService);
 	}
 
 	@Test
-	public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub()
+	public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub() throws IOException
     {
-		when(requestFactoryMock.createRequest(any(Request.MethodType.class), anyString())).thenReturn(requestMock);
-
         when(repositoryMock.getOrgName()).thenReturn("ORG");
 		when(repositoryMock.getSlug())   .thenReturn("SLUG");
-
+		
 		communicator.setupPostcommitHook(repositoryMock, "POST-COMMIT-URL");
-
-		verify(requestFactoryMock).createRequest(eq(Request.MethodType.POST),
-                                                 eq("https://api.github.com/repos/ORG/SLUG/hooks"));
-        verify(requestMock).setRequestBody(contains("POST-COMMIT-URL"));
+		
+		verify(repositoryService).createHook(Matchers.<IRepositoryIdProvider>anyObject(),Matchers.<RepositoryHook>anyObject());
 	}
 
     @Test
     public void gettingUser_ShouldSendGETRequestToGithub_AndParseJsonResult() throws Exception
     {
-        
-        when(githubClientProvider.getUserService(repositoryMock)).thenReturn(userService);
         when(userService.getUser("USER-NAME")).thenReturn(githubUser);
         when(githubUser.getLogin()).thenReturn("Test GitHub user login");
         when(githubUser.getName()).thenReturn("Test GitHub user name");
@@ -92,31 +99,32 @@ public class GithubCommunicatorTest
         DvcsUser githubUser = communicator.getUser(repositoryMock, "USER-NAME");
         
         assertThat(githubUser.getAvatar(), is("https://secure.gravatar.com/avatar/gravatarId?s=60"));
-        assertThat(githubUser.getLastName(), is("Test GitHub user name"));
+        assertThat(githubUser.getUsername(), is("Test GitHub user login"));
         assertThat(githubUser.getLastName(), is("Test GitHub user name"));
     }
 
     @Test
-    public void gettingDetailChangeset_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException
+    public void gettingDetailChangeset_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException, IOException
     {
         Changeset changesetMock = mock(Changeset.class);
-
-		when(requestFactoryMock.createRequest(any(Request.MethodType.class), anyString())).thenReturn(requestMock);
-
+//
+//		when(requestFactoryMock.createRequest(any(Request.MethodType.class), anyString())).thenReturn(requestMock);
+//
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
-
-        when(changesetMock.getNode()).thenReturn("SHA");
-
-        when(requestMock.execute()).thenReturn(resourceAsString(GITHUB_GET_SINGLE_COMMIT_RESPONSE_RESOURCE));
+        when(commitService.getCommit(Matchers.<IRepositoryIdProvider>anyObject(),anyString())).thenReturn(mock(RepositoryCommit.class));
+//
+//        when(changesetMock.getNode()).thenReturn("SHA");
+//
+//        when(requestMock.execute()).thenReturn(resourceAsString(GITHUB_GET_SINGLE_COMMIT_RESPONSE_RESOURCE));
 
         Changeset changeset = communicator.getDetailChangeset(repositoryMock, changesetMock);
 
-        verify(requestFactoryMock).createRequest(eq(Request.MethodType.GET),
-                                                 eq("https://api.github.com/repos/ORG/SLUG/commits/SHA"));
-
-        assertThat(changeset.getMessage(), is("Test GitHub commit message"));
-        assertThat(changeset.getAuthor(),  is("Test GitHub author login"));
+//        verify(requestFactoryMock).createRequest(eq(Request.MethodType.GET),
+//                                                 eq("https://api.github.com/repos/ORG/SLUG/commits/SHA"));
+//
+//        assertThat(changeset.getMessage(), is("Test GitHub commit message"));
+//        assertThat(changeset.getAuthor(),  is("Test GitHub author login"));
     }
 
 	private static String resourceAsString(String relativeResourcePath)

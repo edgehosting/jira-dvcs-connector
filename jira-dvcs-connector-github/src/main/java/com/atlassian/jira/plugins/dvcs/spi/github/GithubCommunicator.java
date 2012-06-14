@@ -97,7 +97,7 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public List<Repository> getRepositories(Organization organization)
     {
-        RepositoryService repositoryService = new RepositoryService(GitHubClient.createClient(organization.getHostUrl()));
+        RepositoryService repositoryService = githubClientProvider.getRepositoryService(organization);
         repositoryService.getClient().setOAuth2Token(organization.getCredential().getAccessToken());
         try
         {
@@ -122,12 +122,13 @@ public class GithubCommunicator implements DvcsCommunicator
 	@Override
 	public Changeset getDetailChangeset(Repository repository, Changeset changeset)
 	{
-        final CommitService commitService = githubClientProvider.getCommitService(repository);
+        CommitService commitService = githubClientProvider.getCommitService(repository);
+        RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
         try
         {
-            final RepositoryCommit commit = commitService.getCommit(RepositoryId.create(repository.getOrgName(), repository.getSlug()), changeset.getNode());
-            return GithubChangesetFactory.transform(commit, repository.getId(), "master");
+            RepositoryCommit commit = commitService.getCommit(repositoryId, changeset.getNode());
+            return GithubChangesetFactory.transform(commit, repository.getId(), changeset.getBranch());
         } catch (IOException e)
         {
             throw new SourceControlException("could not get result", e);
@@ -172,7 +173,7 @@ public class GithubCommunicator implements DvcsCommunicator
     public void setupPostcommitHook(Repository repository, String postCommitUrl)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
-        RepositoryId repositoryId = RepositoryId.create(repository.getOrgHostUrl(), repository.getSlug());
+        RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
         final RepositoryHook repositoryHook = new RepositoryHook();
         repositoryHook.setName("web");
@@ -195,7 +196,7 @@ public class GithubCommunicator implements DvcsCommunicator
     public void removePostcommitHook(Repository repository, String postCommitUrl)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
-        RepositoryId repositoryId = RepositoryId.create(repository.getOrgHostUrl(), repository.getSlug());
+        RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
         
         try
         {

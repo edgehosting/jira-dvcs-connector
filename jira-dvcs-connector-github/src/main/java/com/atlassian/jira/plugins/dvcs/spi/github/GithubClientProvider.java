@@ -7,6 +7,7 @@ import org.eclipse.egit.github.core.service.UserService;
 
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 public class GithubClientProvider
@@ -21,8 +22,18 @@ public class GithubClientProvider
     private GitHubClient createClient(Repository repository)
     {
         GitHubClient client = GitHubClient.createClient(repository.getOrgHostUrl());
-
+        
         OAuthAuthentication auth = (OAuthAuthentication) authenticationFactory.getAuthentication(repository);
+        client.setOAuth2Token(auth.getAccessToken());
+        
+        return client;
+    }
+    
+    private GitHubClient createClient(Organization organization)
+    {
+        GitHubClient client = GitHubClient.createClient(organization.getHostUrl());
+
+        OAuthAuthentication auth = (OAuthAuthentication) authenticationFactory.getAuthentication(organization);
         client.setOAuth2Token(auth.getAccessToken());
         
         return client;
@@ -41,6 +52,11 @@ public class GithubClientProvider
     public RepositoryService getRepositoryService(Repository repository)
     {
         return new RepositoryService(createClient(repository));
+    }
+
+    public RepositoryService getRepositoryService(Organization organization)
+    {
+        return new RepositoryService(createClient(organization));
     }
 
 }

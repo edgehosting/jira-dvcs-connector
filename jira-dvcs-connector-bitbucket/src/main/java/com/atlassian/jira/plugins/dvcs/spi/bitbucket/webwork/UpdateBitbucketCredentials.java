@@ -7,44 +7,43 @@ import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
-import com.atlassian.sal.api.ApplicationProperties;
 
 public class UpdateBitbucketCredentials extends JiraWebActionSupport
 {
-	private static final long serialVersionUID = 6246027331604675862L;
-
-	final Logger logger = LoggerFactory.getLogger(UpdateBitbucketCredentials.class);
+	private final Logger log = LoggerFactory.getLogger(UpdateBitbucketCredentials.class);
 	
 	private String usernameUp;
 	private String organizationId;
 	private String adminPasswordUp;
 
-    private final ApplicationProperties applicationProperties;
 	private final OrganizationService organizationService;
 
-    public UpdateBitbucketCredentials(OrganizationService organizationService, ApplicationProperties applicationProperties)
+    public UpdateBitbucketCredentials(OrganizationService organizationService)
     {
         this.organizationService = organizationService;
-		this.applicationProperties = applicationProperties;
     }
 
     @Override
     protected void doValidation()
     {
-    	
-       if (StringUtils.isBlank(adminPasswordUp)) {
-    	   addErrorMessage("Please provide password.");
-       } 
 
-       if (StringUtils.isBlank(usernameUp)) {
-    	   addErrorMessage("Please provide username.");
-       } 
-    	
-       try {
-    	   Integer.parseInt(organizationId);
-       } catch (Exception e) {
-    	   addErrorMessage("Invalid request has been sent.");
-       }
+        if (StringUtils.isBlank(adminPasswordUp))
+        {
+            addErrorMessage("Please provide password.");
+        }
+
+        if (StringUtils.isBlank(usernameUp))
+        {
+            addErrorMessage("Please provide username.");
+        }
+
+        try
+        {
+            Integer.parseInt(organizationId);
+        } catch (Exception e)
+        {
+            addErrorMessage("Invalid request has been sent.");
+        }
     }
 
     @Override
@@ -95,6 +94,5 @@ public class UpdateBitbucketCredentials extends JiraWebActionSupport
 	{
 		this.adminPasswordUp = adminPasswordUp;
 	}
-
 
 }
