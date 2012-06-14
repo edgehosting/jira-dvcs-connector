@@ -4,6 +4,8 @@ package com.atlassian.jira.plugins.dvcs.github;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.service.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +20,7 @@ import com.atlassian.jira.plugins.dvcs.net.DefaultRequestHelper;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.sal.api.net.Request;
@@ -35,16 +38,20 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class GithubCommunicatorTest
 {
-    private static final String GITHUB_SHOW_USER_NAME_RESPONSE_RESOURCE    = "github-showUserName-response.json";
     private static final String GITHUB_GET_SINGLE_COMMIT_RESPONSE_RESOURCE = "github-getSingleCommit-response.json";
 
 
 	@Mock
 	private Request<?, ?> requestMock;
-
 	@Mock
 	private Repository repositoryMock;
-
+	@Mock
+	private GithubClientProvider githubClientProvider;
+	@Mock
+	private UserService userService;
+	@Mock
+	private User githubUser;
+	
 	@SuppressWarnings("rawtypes")
 	@Mock
 	private RequestFactory requestFactoryMock;
@@ -56,11 +63,9 @@ public class GithubCommunicatorTest
 	@Before
 	public void initializeGithubCommunicator()
     {
-		communicator = new GithubCommunicator(mock(ChangesetCache.class),
-                                              new DefaultRequestHelper(requestFactoryMock,
-                                                                       mock(ExtendedResponseHandlerFactory.class)),
-                                              mock(AuthenticationFactory.class),
-                                              mock(GithubOAuth.class));
+        communicator = new GithubCommunicator(mock(ChangesetCache.class), 
+                new DefaultRequestHelper(requestFactoryMock, mock(ExtendedResponseHandlerFactory.class)),
+                mock(AuthenticationFactory.class), mock(GithubOAuth.class), githubClientProvider);
 	}
 
 	@Test
@@ -79,19 +84,19 @@ public class GithubCommunicatorTest
 	}
 
     @Test
-    public void gettingUser_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException
+    public void gettingUser_ShouldSendGETRequestToGithub_AndParseJsonResult() throws Exception
     {
-		when(requestFactoryMock.createRequest(any(Request.MethodType.class), anyString())).thenReturn(requestMock);
-		when(repositoryMock.getOrgHostUrl()).thenReturn("HOST-URL");
-
-        when(requestMock.execute()).thenReturn(resourceAsString(GITHUB_SHOW_USER_NAME_RESPONSE_RESOURCE));
-
+        
+        when(githubClientProvider.getUserService(repositoryMock)).thenReturn(userService);
+        when(userService.getUser("USER-NAME")).thenReturn(githubUser);
+        when(githubUser.getLogin()).thenReturn("Test GitHub user login");
+        when(githubUser.getName()).thenReturn("Test GitHub user name");
+        when(githubUser.getGravatarId()).thenReturn("gravatarId");
+        
         DvcsUser githubUser = communicator.getUser(repositoryMock, "USER-NAME");
-
-        verify(requestFactoryMock).createRequest(eq(Request.MethodType.GET),
-                                                 eq("HOST-URL/api/v2/json/user/show/USER-NAME"));
-
-        assertThat(githubUser.getUsername(), is("Test GitHub user login"));
+        
+        assertThat(githubUser.getAvatar(), is("https://secure.gravatar.com/avatar/gravatarId?s=60"));
+        assertThat(githubUser.getLastName(), is("Test GitHub user name"));
         assertThat(githubUser.getLastName(), is("Test GitHub user name"));
     }
 

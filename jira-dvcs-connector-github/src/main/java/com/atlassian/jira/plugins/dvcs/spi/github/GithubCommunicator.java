@@ -15,7 +15,13 @@ import java.util.concurrent.Callable;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.RepositoryBranch;
+import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
@@ -23,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
+import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -54,14 +61,19 @@ public class GithubCommunicator implements DvcsCommunicator
     private final AuthenticationFactory authenticationFactory;
     private final GithubOAuth githubOAuth;
 
+    private final GithubClientProvider githubClientProvider;
+
     public GithubCommunicator(ChangesetCache changesetCache, RequestHelper requestHelper,
-            AuthenticationFactory authenticationFactory, GithubOAuth githubOAuth)
+            AuthenticationFactory authenticationFactory, GithubOAuth githubOAuth,
+            GithubClientProvider githubClientProvider)
     {
 	    this.changesetCache = changesetCache;
 	    this.requestHelper = requestHelper;
 	    this.authenticationFactory = authenticationFactory;
 	    this.githubOAuth = githubOAuth;
+        this.githubClientProvider = githubClientProvider;
     }
+    
 
 	@Override
 	public boolean isOauthConfigured()
@@ -76,7 +88,6 @@ public class GithubCommunicator implements DvcsCommunicator
     {
         return GITHUB;
     }
-
 
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
@@ -183,6 +194,28 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
+    
+    public PageIterator<RepositoryCommit> getPageIterator(final Repository repository, final String branch)
+    {
+        return new Retryer<PageIterator<RepositoryCommit>>().retry(new Callable<PageIterator<RepositoryCommit>>()
+        {
+            @Override
+            public PageIterator<RepositoryCommit> call()
+            {
+                return getPageIteratorInternal(repository, branch);
+            }
+        });
+        
+    }
+
+    private PageIterator<RepositoryCommit> getPageIteratorInternal(Repository repository, String branch)
+    {
+        final CommitService commitService = githubClientProvider.getCommitService(repository);
+
+        return commitService.pageCommits(RepositoryId.create(repository.getOrgName(), repository.getSlug()), branch, null);
+    }
+    
+    
     @Override
     public Iterable<Changeset> getChangesets(final Repository repository, final Date lastCommitDate)
     {
@@ -247,29 +280,25 @@ public class GithubCommunicator implements DvcsCommunicator
         return MessageFormat.format("{0}#diff-{1}", getCommitUrl(repository, changeset), index);
     }
 
+
     @Override
     public DvcsUser getUser(Repository repository, String username)
     {
+        final UserService userService = githubClientProvider.getUserService(repository);
+
         try
         {
-            String apiUrl = getApiUrl(repository.getOrgHostUrl(), false);
-
-            log.debug("parse user [ {} ]", username);
-            Authentication authentication = authenticationFactory.getAuthentication(repository);
-            String responseString = requestHelper.get(authentication, "/user/show/" + CustomStringUtils.encode(username), null, apiUrl);
-            return GithubUserFactory.parse(new JSONObject(responseString).getJSONObject("user"));
-        } catch (ResponseException e)
-        {
-            log.debug("could not load user [ " + username + " ]");
-            return DvcsUser.UNKNOWN_USER;
-        } catch (JSONException e)
+            log.debug("Get user information for: [ {} ]", username);
+            final User ghUser = userService.getUser(username);
+            return GithubUserFactory.transform(ghUser);
+        } catch (IOException e)
         {
             log.debug("could not load user [ " + username + " ]");
             return DvcsUser.UNKNOWN_USER;
         }
-
     }
-
+    
+    
     @Override
     public String getUserUrl(Repository repository, Changeset changeset)
     {
@@ -289,24 +318,17 @@ public class GithubCommunicator implements DvcsCommunicator
 
     private List<String> getBranches(Repository repository)
     {
+        RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
+
         List<String> branches = new ArrayList<String>();
-
-        String apiUrl = getApiUrl(repository.getOrgHostUrl(), false);
-        String owner = repository.getOrgName();
-        String slug = repository.getSlug();
-        Authentication authentication = authenticationFactory.getAuthentication(repository);
-
-        log.debug("get list of branches in github repository [ {} ]", slug);
-
         try
         {
-            String responseString = requestHelper.get(authentication, "/repos/show/" +
-                    CustomStringUtils.encode(owner) + "/" + CustomStringUtils.encode(slug) + "/branches", null, apiUrl);
+            final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(repository.getOrgName(), repository.getSlug()));
+            log.debug("Found branches: " + ghBranches.size());
 
-            JSONArray list = new JSONObject(responseString).getJSONObject("branches").names();
-            for (int i = 0; i < list.length(); i++)
+            for (RepositoryBranch ghBranch: ghBranches)
             {
-                final String branchName = list.getString(i);
+                final String branchName = ghBranch.getName();
                 if (branchName.equalsIgnoreCase("master"))
                 {
                     branches.add(0,branchName);
@@ -315,16 +337,16 @@ public class GithubCommunicator implements DvcsCommunicator
                     branches.add(branchName);
                 }
             }
-        } catch (Exception e)
+
+        } catch (IOException e)
         {
-            log.info("Can not obtain branches list from repository [ {} ]", slug);
+            log.info("Can not obtain branches list from repository [ {} ]", repository.getSlug());
             // we have to use at least master branch
             return Arrays.asList("master");
         }
-
         return branches;
-
     }
+    
 
     public List<Changeset> getChangesets(final Repository repository, final String branch, final int pageNumber)
     {

@@ -1,32 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.parsers;
 
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.User;
+
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
 
 public class GithubUserFactory
 {
 
-    public static DvcsUser parse(JSONObject userJson)
+    public static DvcsUser transform(User ghUser)
     {
-        try
-        {
-            String gravatarHash = userJson.getString("gravatar_id");
-            String gravatarUrl = "https://secure.gravatar.com/avatar/" + gravatarHash + "?s=60";
-
-
-            String login = userJson.getString("login");
-            return new DvcsUser(
-                    login,
-                    "",
-                    userJson.has("name") ? userJson.getString("name") : login,  // first and last name is together in github
-                    gravatarUrl);
-        }
-        catch (JSONException e)
-        {
-            throw new SourceControlException("invalid json object", e);
-        }
+        final String login = ghUser.getLogin();
+        final String name = ghUser.getName();
+        String gravatarUrl = "https://secure.gravatar.com/avatar/" + ghUser.getGravatarId() + "?s=60";
+        
+        return new DvcsUser(
+                login,
+                "",
+                StringUtils.isNotBlank(name) ? name : login,  // first and last name is together in github
+                gravatarUrl);
     }
-
 }
