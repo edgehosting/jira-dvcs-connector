@@ -48,7 +48,7 @@
 	          #end
 	         
 	         <div class="field-group" style="margin-top: 10px; clear: both" >
-			  <label for="autoLinking">Auto Link New Repositories</label>
+			  <label for="autoLinking">Auto Link New Repositories:</label>
 	          #if($action.getAutoLinking() == "true")
 		         <input disabled="disabled" checked="checked" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
 		      #else
