@@ -14,7 +14,6 @@ public class GithubRepositoryUri extends DefaultRepositoryUri
     @Override
     public String getApiUrl()
     {
-//        return MessageFormat.format("{0}://{1}/api/v2/json", getProtocol(), getHostname());
         return "https://api.github.com";
     }
 

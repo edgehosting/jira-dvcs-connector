@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github;
 
-import com.atlassian.jira.plugins.bitbucket.api.Authentication;
 import com.atlassian.jira.plugins.bitbucket.api.AuthenticationFactory;
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.Communicator;
@@ -10,14 +9,11 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.exception.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
-import com.atlassian.jira.plugins.bitbucket.api.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.api.net.RequestHelper;
 import com.atlassian.jira.plugins.bitbucket.api.rest.UrlInfo;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
-import com.atlassian.sal.api.net.ResponseException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryHook;
@@ -25,6 +21,7 @@ import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
@@ -280,45 +277,35 @@ public class GithubCommunicator implements Communicator
     @Override
     public String getRepositoryName(String repositoryType, String projectKey, RepositoryUri repositoryUri,
                                     String adminUsername, String adminPassword, String accessToken) throws SourceControlException
-    {
-        Authentication auth;
-        if (StringUtils.isNotBlank(accessToken))
-        {
-            auth = new GithubOAuthAuthentication(accessToken);
-        } else
-        {
-            auth = Authentication.ANONYMOUS;
-        }
+    {String host = repositoryUri.getBaseUrl();
+        String owner = repositoryUri.getOwner();
+        String slug = repositoryUri.getSlug();
+
+        final GitHubClient client = GitHubClient.createClient(host);
+        client.setOAuth2Token(accessToken);
+
+        RepositoryService repositoryService = new RepositoryService(client);
+
 
         try
         {
-            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, repositoryUri.getRepositoryInfoUrl(), null,
-                    repositoryUri.getApiUrl());
+            final Repository repository = repositoryService.getRepository(RepositoryId.create(owner, slug));
+            return repository.getName();
+
+        } catch (RequestException re)
+        {
             // in case we have valid access_token but for other account github
             // returns HttpStatus.SC_NOT_FOUND response
-
-            // for unauthorized access Github API v3 return 404
-            if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
+            if (re.getStatus() == HttpStatus.SC_NOT_FOUND)
             {
                 throw new SourceControlException.UnauthorisedException("You don't have access to the repository.");
             }
-            if (extendedResponse.isSuccessful())
-            {
-                String responseString = extendedResponse.getResponseString();
-                return new JSONObject(responseString).getString("name");
-            } else
-            {
-                throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
-            }
-        } catch (ResponseException e)
-        {
-            log.debug(e.getMessage(), e);
-            throw new SourceControlException(e.getMessage());
-        } catch (JSONException e)
+            throw new SourceControlException("Server response was not successful!");
+
+        } catch (IOException e)
         {
             log.debug(e.getMessage(), e);
             throw new SourceControlException(e.getMessage());
         }
-
     }
 }
