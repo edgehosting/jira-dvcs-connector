@@ -448,23 +448,34 @@ a:hover.repositoryNameLink {
     display: none;	
 }
 
-#addRepositoryContent label {
+#addRepositoryContent label, .aui-message label {
     color: #555 !important;
     font-weight: bold;
     padding-bottom: 6px;
 }
-#addRepositoryContent h4 {
+#addRepositoryContent h4, .aui-message h4, .aui-message h3 {
     color: #666 !important;
 }
 
-#addRepositoryContent div,  #addRepositoryContent input {
+.aui-message h4 {
+    margin-bottom: 15px;
+}
+
+#add-org-form-container h3 {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border-bottom: none;
+}
+
+#addRepositoryContent div,  #addRepositoryContent input, #add-org-form-container input {
     color: #555;
 }
 
-#addRepositoryDetails .field-group input {
+#addRepositoryDetails .field-group input, #add-org-form-container .field-group input {
     width: 380px	
 }
-#addRepositoryDetails .field-group input[type="checkbox"] {
+#addRepositoryDetails .field-group input[type="checkbox"],
+#add-org-form-container .field-group input[type="checkbox"] {
 	width: auto;
 	margin-top: 5px;
 	vertical-align: middle;
@@ -540,7 +551,7 @@ a:hover.repositoryNameLink {
 	margin-bottom: 5px;
 }
 
-#addRepositoryContent .buttons-container {
+#addRepositoryContent .buttons-container, #add-org-form-container .buttons-container {
 	border-top: none;
 }
 
