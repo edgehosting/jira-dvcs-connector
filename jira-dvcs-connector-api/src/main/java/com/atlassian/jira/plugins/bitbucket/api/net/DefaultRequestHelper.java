@@ -136,7 +136,6 @@ public class DefaultRequestHelper implements RequestHelper
             return null;
         }
 
-        // TODO V3: in GH return 404, instead of 403
         if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
         {
             // this looks like a private repository
