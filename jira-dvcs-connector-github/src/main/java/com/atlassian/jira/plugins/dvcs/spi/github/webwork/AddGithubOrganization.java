@@ -1,5 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
@@ -9,9 +13,6 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AddGithubOrganization extends CommonDvcsConfigurationAction
 {
@@ -75,7 +76,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	@Override
 	protected void doValidation()
 	{
-
+		
 		if (StringUtils.isNotBlank(oauthRequired))
 		{
 			if (StringUtils.isBlank(oauthClientId) || StringUtils.isBlank(oauthSecret))
