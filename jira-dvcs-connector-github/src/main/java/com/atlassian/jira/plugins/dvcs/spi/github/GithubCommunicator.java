@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -27,9 +27,6 @@ import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.auth.Authentication;
-import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
-import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -37,18 +34,11 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler;
-import com.atlassian.jira.plugins.dvcs.net.RequestHelper;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
-import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
-import com.atlassian.sal.api.net.ResponseException;
 
 public class GithubCommunicator implements DvcsCommunicator
 {
@@ -57,19 +47,14 @@ public class GithubCommunicator implements DvcsCommunicator
     public static final String GITHUB = "github";
 
     private final ChangesetCache changesetCache;
-    private final RequestHelper requestHelper;
-    private final AuthenticationFactory authenticationFactory;
     private final GithubOAuth githubOAuth;
 
     private final GithubClientProvider githubClientProvider;
 
-    public GithubCommunicator(ChangesetCache changesetCache, RequestHelper requestHelper,
-            AuthenticationFactory authenticationFactory, GithubOAuth githubOAuth,
+    public GithubCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
             GithubClientProvider githubClientProvider)
     {
 	    this.changesetCache = changesetCache;
-	    this.requestHelper = requestHelper;
-	    this.authenticationFactory = authenticationFactory;
 	    this.githubOAuth = githubOAuth;
         this.githubClientProvider = githubClientProvider;
     }
@@ -137,63 +122,17 @@ public class GithubCommunicator implements DvcsCommunicator
 	@Override
 	public Changeset getDetailChangeset(Repository repository, Changeset changeset)
 	{
+        final CommitService commitService = githubClientProvider.getCommitService(repository);
+
         try
         {
-            String apiUrl = getApiUrl(repository.getOrgHostUrl(), true);
-            String owner = repository.getOrgName();
-            String slug = repository.getSlug();
-            String node = changeset.getNode();
-            Authentication authentication = authenticationFactory.getAuthentication(repository);
-
-            log.debug("parse gihchangeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, node});
-            String responseString = requestHelper.get(authentication, "/repos/" + CustomStringUtils.encode(owner) + "/" +
-                    CustomStringUtils.encode(slug) + "/commits/" + CustomStringUtils.encode(node), null,
-                    apiUrl);
-
-            final Changeset detailChangeset = GithubChangesetFactory.parseV3(repository.getId(), "master", new JSONObject(responseString));
-
-            if (StringUtils.isNotBlank(changeset.getBranch()))
-            {
-                detailChangeset.setBranch(changeset.getBranch());
-            }
-
-            return detailChangeset;
-        } catch (ResponseException e)
+            final RepositoryCommit commit = commitService.getCommit(RepositoryId.create(repository.getOrgName(), repository.getSlug()), changeset.getNode());
+            return GithubChangesetFactory.transform(commit, repository.getId(), "master");
+        } catch (IOException e)
         {
             throw new SourceControlException("could not get result", e);
-        } catch (JSONException e)
-        {
-            throw new SourceControlException("could not parse json result", e);
-        }
-
-	}
-
-    @Override
-    public void setupPostcommitHook(Repository repository, String postCommitUrl)
-    {
-        String apiUrl = getApiUrl(repository.getOrgHostUrl(), true);
-        String owner = repository.getOrgName();
-        String slug = repository.getSlug();
-        Authentication auth = authenticationFactory.getAuthentication(repository);
-
-        String urlPath = "/repos/" + owner + "/" + slug + "/hooks";
-
-        try
-        {
-            JSONObject configJson = new JSONObject().put("url", postCommitUrl);
-            JSONObject postDataJson = new JSONObject().put("name", "web").put("active", true).put("config", configJson);
-            requestHelper.post(auth, urlPath, postDataJson.toString(), apiUrl);
-        } catch (JSONException e)
-        {
-        	log.warn("Error installing postcommit service [{}]", e.getMessage());
-            throw new SourceControlException("Could not create relevant POST data for postcommit hook.", e);
-        } catch (ResponseException e)
-        {
-        	log.warn("Error installing postcommit service [{}]", e.getMessage());
-            throw new SourceControlException("Could not add postcommit hook. ", e);
         }
     }
-
     
     public PageIterator<RepositoryCommit> getPageIterator(final Repository repository, final String branch)
     {
@@ -229,43 +168,49 @@ public class GithubCommunicator implements DvcsCommunicator
             }
         };
     }
+    @Override
+    public void setupPostcommitHook(Repository repository, String postCommitUrl)
+    {
+        RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
+        RepositoryId repositoryId = RepositoryId.create(repository.getOrgHostUrl(), repository.getSlug());
+
+        final RepositoryHook repositoryHook = new RepositoryHook();
+        repositoryHook.setName("web");
+        repositoryHook.setActive(true);
+
+        Map<String, String> config = new HashMap<String, String>();
+        config.put("url", postCommitUrl);
+        repositoryHook.setConfig(config);
+
+        try
+        {
+            repositoryService.createHook(repositoryId, repositoryHook);
+        } catch (IOException e)
+        {
+            throw new SourceControlException("Could not add postcommit hook. ", e);
+        }
+    }
 
     @Override
     public void removePostcommitHook(Repository repository, String postCommitUrl)
     {
-        String apiUrl = getApiUrl(repository.getOrgHostUrl(), true);
-        String owner = repository.getOrgName();
-        String slug = repository.getSlug();
-        Authentication auth = authenticationFactory.getAuthentication(repository);
-
-        String urlPath = "/repos/" + owner + "/" + slug + "/hooks";
-        // Find the hook
+        RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
+        RepositoryId repositoryId = RepositoryId.create(repository.getOrgHostUrl(), repository.getSlug());
+        
         try
         {
-            String responseString = requestHelper.get(auth, urlPath, null, apiUrl);
-            JSONArray jsonArray = new JSONArray(responseString);
-            for (int i = 0; i < jsonArray.length(); i++)
+            final List<RepositoryHook> hooks = repositoryService.getHooks(repositoryId);
+            for (RepositoryHook hook : hooks)
             {
-                JSONObject data = (JSONObject) jsonArray.get(i);
-                String id = data.getString("id");
-                JSONObject config = data.getJSONObject("config");
-                String url = config.getString("url");
-                if (postCommitUrl.equals(url))
+                if (postCommitUrl.equals(hook.getConfig().get("url")))
                 {
-                    // We have the hook, lets remove it
-                    requestHelper.delete(auth, apiUrl, urlPath + "/" + id);
+                    repositoryService.deleteHook(repositoryId, (int) hook.getId());
                 }
             }
-        } catch (ResponseException e)
+        } catch (IOException e)
         {
             log.warn("Error removing postcommit service [{}]", e.getMessage());
-            throw new SourceControlException(e);
-        } catch (JSONException e)
-        {
-            log.warn("Error removing postcommit service [{}]", e.getMessage());
-            throw new SourceControlException(e);
-        }
-    }
+        }    }
 
     @Override
     public String getCommitUrl(Repository repository, Changeset changeset)
@@ -305,17 +250,6 @@ public class GithubCommunicator implements DvcsCommunicator
         return MessageFormat.format("{0}/{1}", repository.getOrgHostUrl(), changeset.getAuthor());
     }
 
-
-    private String getApiUrl(String hostUrl, boolean v3) {
-
-        if (v3) {
-            // todo: what URL is for v3 Api when server is not github.com?
-            return "https://api.github.com";
-        }
-
-        return hostUrl + "/api/v2/json";
-    }
-
     private List<String> getBranches(Repository repository)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
@@ -345,78 +279,6 @@ public class GithubCommunicator implements DvcsCommunicator
             return Arrays.asList("master");
         }
         return branches;
-    }
-    
-
-    public List<Changeset> getChangesets(final Repository repository, final String branch, final int pageNumber)
-    {
-    	return new Retryer<List<Changeset>>().retry(new Callable<List<Changeset>>()
-        {
-            @Override
-            public List<Changeset> call()
-            {
-            	return getChangesetsInternal(repository, branch, pageNumber);
-            }
-        });
-    }
-
-	private List<Changeset> getChangesetsInternal(Repository repository, String branch,
-            int pageNumber)
-    {
-	    String apiUrl = getApiUrl(repository.getOrgHostUrl(), false);
-        String owner = repository.getOrgName();
-        String slug = repository.getSlug();
-        Authentication authentication = authenticationFactory.getAuthentication(repository);
-
-        log.debug("parse github changesets [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, String.valueOf(pageNumber)});
-
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("page", String.valueOf(pageNumber));
-
-        List<Changeset> changesets = new ArrayList<Changeset>();
-
-        try
-        {
-        	// todo check everywhere in plugin if we need to encode slug and owner
-            ExtendedResponseHandler.ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(authentication, "/commits/list/" + CustomStringUtils.encode(owner) + "/" +
-                    CustomStringUtils.encode(slug) + "/" + branch, params, apiUrl);
-
-            if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
-            {
-                throw new SourceControlException("Incorrect credentials");
-            } else if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
-            {
-                // no more changesets
-                log.debug("Page: {} not contains changesets. Return empty list", pageNumber);
-                return Collections.emptyList();
-            }
-
-            if (extendedResponse.isSuccessful())
-            {
-                String responseString = extendedResponse.getResponseString();
-                JSONArray list = new JSONObject(responseString).getJSONArray("commits");
-                for (int i = 0; i < list.length(); i++)
-                {
-                    JSONObject commitJson = list.getJSONObject(i);
-                    final Changeset changeset = GithubChangesetFactory.parseV2(repository.getId(), commitJson);
-                    changeset.setBranch(branch);
-                    changesets.add(changeset);
-                }
-            } else
-            {
-                throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
-            }
-        } catch (ResponseException e)
-        {
-            log.debug("Could not get changesets from page: {}", pageNumber, e);
-            throw new SourceControlException("Error requesting changesets. Page: " + pageNumber + ". [" + e.getMessage() + "]", e);
-        } catch (JSONException e)
-        {
-            log.debug("Could not parse repositories from page: {}", pageNumber);
-            throw new SourceControlException(e);
-        }
-
-        return changesets;
     }
 
 	@Override

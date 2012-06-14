@@ -12,12 +12,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.net.DefaultRequestHelper;
-import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
@@ -29,6 +26,7 @@ import com.atlassian.sal.api.net.ResponseException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 
@@ -63,9 +61,7 @@ public class GithubCommunicatorTest
 	@Before
 	public void initializeGithubCommunicator()
     {
-        communicator = new GithubCommunicator(mock(ChangesetCache.class), 
-                new DefaultRequestHelper(requestFactoryMock, mock(ExtendedResponseHandlerFactory.class)),
-                mock(AuthenticationFactory.class), mock(GithubOAuth.class), githubClientProvider);
+        communicator = new GithubCommunicator(mock(ChangesetCache.class), mock(GithubOAuth.class), githubClientProvider);
 	}
 
 	@Test
