@@ -1,9 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.github;
 
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+
 import java.io.IOException;
 
-import org.apache.commons.io.IOUtils;
+import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryHook;
@@ -26,14 +31,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
-import com.atlassian.sal.api.net.Request;
-import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.ResponseException;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
 
 
 /**
@@ -42,11 +40,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class GithubCommunicatorTest
 {
-    private static final String GITHUB_GET_SINGLE_COMMIT_RESPONSE_RESOURCE = "github-getSingleCommit-response.json";
 
-
-	@Mock
-	private Request<?, ?> requestMock;
 	@Mock
 	private Repository repositoryMock;
 	@Mock
@@ -60,13 +54,8 @@ public class GithubCommunicatorTest
 	@Mock
 	private User githubUser;
 	
-	@SuppressWarnings("rawtypes")
-	@Mock
-	private RequestFactory requestFactoryMock;
-
 	// tested object
 	private DvcsCommunicator communicator;
-
 
 	@Before
 	public void initializeGithubCommunicator()
@@ -107,37 +96,19 @@ public class GithubCommunicatorTest
     public void gettingDetailChangeset_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException, IOException
     {
         Changeset changesetMock = mock(Changeset.class);
-//
-//		when(requestFactoryMock.createRequest(any(Request.MethodType.class), anyString())).thenReturn(requestMock);
-//
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        when(commitService.getCommit(Matchers.<IRepositoryIdProvider>anyObject(),anyString())).thenReturn(mock(RepositoryCommit.class));
-//
-//        when(changesetMock.getNode()).thenReturn("SHA");
-//
-//        when(requestMock.execute()).thenReturn(resourceAsString(GITHUB_GET_SINGLE_COMMIT_RESPONSE_RESOURCE));
+        RepositoryCommit repositoryCommit = mock(RepositoryCommit.class);
+        when(commitService.getCommit(Matchers.<IRepositoryIdProvider>anyObject(),anyString())).thenReturn(repositoryCommit);
+        Commit commit = mock(Commit.class);
+        when(repositoryCommit.getCommit()).thenReturn(commit);
+        when(commit.getMessage()).thenReturn("ABC-123 fix");
 
-        Changeset changeset = communicator.getDetailChangeset(repositoryMock, changesetMock);
+        Changeset detailChangeset = communicator.getDetailChangeset(repositoryMock, changesetMock);
+        
+        verify(commitService).getCommit(Matchers.<IRepositoryIdProvider>anyObject(),anyString());
 
-//        verify(requestFactoryMock).createRequest(eq(Request.MethodType.GET),
-//                                                 eq("https://api.github.com/repos/ORG/SLUG/commits/SHA"));
-//
-//        assertThat(changeset.getMessage(), is("Test GitHub commit message"));
-//        assertThat(changeset.getAuthor(),  is("Test GitHub author login"));
+        assertThat(detailChangeset.getMessage(), is("ABC-123 fix"));
     }
-
-	private static String resourceAsString(String relativeResourcePath)
-	{
-		try
-		{
-			return IOUtils.toString(GithubCommunicatorTest.class.getClassLoader()
-                                                                .getResourceAsStream(relativeResourcePath));
-
-		} catch (IOException e)
-		{
-			throw new RuntimeException("Can not load resource " + relativeResourcePath, e);
-		}
-	}
 }
 
