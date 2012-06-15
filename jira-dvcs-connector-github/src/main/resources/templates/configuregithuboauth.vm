@@ -46,16 +46,18 @@
 
                    <li>
                       After you create the application, GitHub will provide you with a <strong>Client ID</strong> and a <strong>Client Secret</strong> which you will need to enter below.
-
+						
+						 <div>&nbsp;</div>
+						 
                          #if ($action.getMessages() != "")
-                             <div id="gh_messages" >
-                                    <h2>$action.getMessages()</h2>
+                             <div id="gh_messages" class="aui-message success shadowed" >
+                                    <p class="title">$action.getMessages()</p>
                              </div>
                          #end
-
+						 
                          #foreach ($errorMessage in $action.getErrorMessages())
                              <div class="aui-message error shadowed">
-                                    <h3>$errorMessage</h3>
+                                    <p class="title">$errorMessage</p>
                              </div>
                          #end
                          
