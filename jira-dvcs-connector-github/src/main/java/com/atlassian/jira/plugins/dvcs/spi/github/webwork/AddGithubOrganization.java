@@ -129,13 +129,13 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 			
 		} catch (SourceControlException e)
 		{
-			addErrorMessage("Failed adding the organization: [" + e.getMessage() + "]");
-			log.debug("Failed adding the organization: [" + e.getMessage() + "]");
+			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
+			log.debug("Failed adding the account: [" + e.getMessage() + "]");
 			return INPUT;
 		} catch (InvalidCredentialsException e)
 		{
-			addErrorMessage("Failed adding the organization: [" + e.getMessage() + "]");
-			log.debug("Invalid credentials : Failed adding the organization: [" + e.getMessage() + "]");
+			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
+			log.debug("Invalid credentials : Failed adding the account: [" + e.getMessage() + "]");
 			return INPUT;
 		}
 

@@ -56,8 +56,8 @@ public class UpdateBitbucketCredentials extends JiraWebActionSupport
 			organizationService.updateCredentials(Integer.parseInt(organizationId), usernameUp, adminPasswordUp);
 		} catch (InvalidCredentialsException e)
 		{
-			addErrorMessage("Failed adding the organization: [" + e.getMessage() + "]");
-			log.debug("Invalid credentials : Failed adding the organization: [" + e.getMessage() + "]");
+			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
+			log.debug("Invalid credentials : Failed adding the account: [" + e.getMessage() + "]");
 			return INPUT;
 		}
 
