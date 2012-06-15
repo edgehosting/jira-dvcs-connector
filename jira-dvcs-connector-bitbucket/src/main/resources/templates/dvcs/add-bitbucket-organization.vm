@@ -25,7 +25,7 @@
 	          </div>
 	          
 	          <div class="field-group" >
-	          	<label for="organization">Organization:</label>
+	          	<label for="organization">Team Account Username:</label>
 	            <span class="field-value">$textutils.htmlEncode($action.getOrganization())</span>
 	            <input type="hidden" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 			  </div>
@@ -44,11 +44,11 @@
 	      </fieldset>
 	
 	      <div class="field-group">
-	        <label for="adminUsername">Username:</label>
+	        <label for="adminUsername">Admin Username:</label>
 	        <input type="text" name="adminUsername" id="adminUsername" value="$textutils.htmlEncode($action.getAdminUsername())">
 	      </div>  
 	      <div class="field-group">
-	        <label for="adminPassword">Password:</label>
+	        <label for="adminPassword">Admin Password:</label>
 	        <input type="password" name="adminPassword" id="adminPassword" value="">
 	      </div>  
 	
