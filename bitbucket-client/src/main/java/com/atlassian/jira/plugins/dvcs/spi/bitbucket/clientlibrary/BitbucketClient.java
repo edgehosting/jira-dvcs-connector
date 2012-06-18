@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
@@ -25,10 +26,23 @@ public class BitbucketClient
     private final Logger log = LoggerFactory.getLogger(BitbucketClient.class);
 
     private static final String UTF8 = "UTF-8";
-    private static final String HTTP_GET = "GET";
-    private static final String HTTP_DELETE = "DELETE";
-    private static final String HTTP_POST = "POST";
-    
+
+    private static final Type NO_RETURN_TYPE = new Type() {};
+
+    private static enum HttpMethod { GET, POST, DELETE };
+
+    private static enum HttpStatusCode {
+        OK        ((short) 200),
+        NO_CONTENT((short) 204);
+
+        final short statusCode;
+
+        private HttpStatusCode(short statusCode)
+        {
+            this.statusCode = statusCode;
+        }
+    }
+
     private static final Gson GSON = new GsonBuilder().create();
 
     private final String apiUrl;
@@ -44,20 +58,7 @@ public class BitbucketClient
     {
         try
         {
-            URL url = new URL(apiUrl + resourceUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod(HTTP_GET);
-            addAuthorisation(connection);
-
-            final int code = connection.getResponseCode();
-			log.debug("Calling [" + connection.getRequestMethod() + " " + connection.getURL() + " ] returned code ["+code+"]");
-            
-            if (code != 200)
-            {
-            	throw new IOException("Unexpected response code: " + code);
-            }
-
-            return parseJson(connection.getInputStream(), type);
+            return executeHttpRequest(resourceUrl, HttpMethod.GET, HttpStatusCode.OK, type);
         } catch (IOException e)
         {
             throw new BitbucketClientException("Error retrieving data from [" + apiUrl + resourceUrl + "]", e);
@@ -68,44 +69,68 @@ public class BitbucketClient
     {
         try
         {
-            URL url = new URL(apiUrl + resourceUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod(HTTP_DELETE);
-            addAuthorisation(connection);
-
-            final int code = connection.getResponseCode();
-			log.debug("Calling [" + connection.getRequestMethod() + " " + connection.getURL() + " ] returned code ["+code+"]");
-            if (code != 204)
-            {
-                throw new IOException("Unexpected response code: " + code);
-            } 
+            executeHttpRequest(resourceUrl, HttpMethod.DELETE, HttpStatusCode.NO_CONTENT, NO_RETURN_TYPE);
         } catch (IOException e)
         {
             throw new BitbucketClientException("Error calling DELETE on [" + apiUrl + resourceUrl + "]", e);
         }
     }
-    
-    public RepositoryLink post(String resourceUrl, List<String> params, Type type) throws BitbucketClientException
+
+    public Object post(String resourceUrl, List<String> params, Type type) throws BitbucketClientException
     {
         try
         {
-            URL url = new URL(apiUrl + resourceUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod(HTTP_POST);
-            addAuthorisation(connection);
-            addParameters(connection, params);
-
-            final int code = connection.getResponseCode();
-			log.debug("Calling [" + connection.getRequestMethod() + " " + connection.getURL() + " ] returned code ["+code+"]");
-            if (code != 200)
-            {
-            	throw new IOException("Unexpected response code: " + code);
-            }
-
-            return parseJson(connection.getInputStream(), type);
+            return executeHttpRequest(resourceUrl, HttpMethod.POST, HttpStatusCode.OK, params, type);
         } catch (IOException e)
         {
             throw new BitbucketClientException("Error posting data to [" + apiUrl + resourceUrl + "]", e);
+        }
+    }
+
+    private <T> T executeHttpRequest(String resourceUrl, HttpMethod requestMethod, HttpStatusCode expectedResponseCode,
+            Type returnType) throws IOException
+    {
+        return executeHttpRequest(resourceUrl,
+                                  requestMethod,
+                                  expectedResponseCode,
+                                  Collections.<String>emptyList(), // no request parameters
+                                  returnType);
+    }
+
+    private <T> T executeHttpRequest(String resourceUrl, HttpMethod requestMethod, HttpStatusCode expectedResponseCode,
+            List<String> requestParameters, Type returnType) throws IOException
+    {
+        URL finalUrl = new URL(apiUrl + resourceUrl);
+
+        HttpURLConnection urlConnection = (HttpURLConnection) finalUrl.openConnection();
+        urlConnection.setRequestMethod(requestMethod.name());
+        addAuthorisation(urlConnection);
+
+        addParameters(urlConnection, requestParameters);
+
+        checkResponseCode(urlConnection, expectedResponseCode);
+
+        switch (requestMethod) {
+            case GET:
+            case POST:
+                return parseJson(urlConnection.getInputStream(), returnType);
+
+            case DELETE:
+                return null; // delete method does not return anything
+
+            default:
+                throw new IllegalStateException("Request method " + requestMethod + " is not supported !");
+        }
+    }
+
+    private void checkResponseCode(HttpURLConnection connection, HttpStatusCode expectedResponseCode) throws IOException {
+        final int responseCode = connection.getResponseCode();
+        log.debug("Calling [" + connection.getRequestMethod() + " " + connection.getURL() + " ] returned code ["
+                + responseCode + "]");
+
+        if (responseCode != expectedResponseCode.statusCode)
+        {
+            throw new IOException("Unexpected response code: " + responseCode);
         }
     }
 
@@ -145,8 +170,8 @@ public class BitbucketClient
         this.username = username;
         this.password = password;
     }
-    
-    
+
+
     /**
      * @param connection
      * @throws UnsupportedEncodingException
@@ -183,5 +208,4 @@ public class BitbucketClient
             }
         }
     }
-    
 }
