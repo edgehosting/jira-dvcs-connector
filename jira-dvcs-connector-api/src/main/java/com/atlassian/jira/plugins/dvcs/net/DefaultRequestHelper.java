@@ -84,7 +84,11 @@ public class DefaultRequestHelper implements RequestHelper
     private String runRequest(Request.MethodType methodType, String apiBaseUrl, String urlPath, Authentication auth,
                                 Map<String, Object> params, String postData, ResponseHandler responseHandler) throws ResponseException
     {
-       return runRequestGetExtendedResponse(methodType, apiBaseUrl, urlPath, auth, params, postData).getResponseString();
+       ExtendedResponse extendedResponse = runRequestGetExtendedResponse(methodType, apiBaseUrl, urlPath, auth, params, postData);
+       if (!extendedResponse.isSuccessful()) {
+			throw new ResponseException("Request failed. Status Code = " + extendedResponse.getStatusCode());
+       }
+       return extendedResponse.getResponseString();
     }
 
     private ExtendedResponse runRequestGetExtendedResponse(Request.MethodType methodType, String apiBaseUrl, String urlPath, Authentication auth,
@@ -118,17 +122,13 @@ public class DefaultRequestHelper implements RequestHelper
     		log.debug("returned: " + response);
     		
     		int statusCode = method.getStatusCode();
-    		boolean successful = statusCode >= 200 && statusCode <= 300;
-    		
-    		if (!successful) {
-    			throw new ResponseException("Request failed. Status Code = " + statusCode);
-    		}
+    		boolean successful = statusCode >= 200 && statusCode < 400;
     		
     		return new ExtendedResponse(successful, statusCode, response);
     		
     	} catch (Exception e) {
     		log.warn("error execute method :  " + method, e);
-    		throw new ResponseException("error execute method :  " + method, e);
+    		throw new ResponseException("error execute method :  " + method.getName(), e);
     	}
     }
     
