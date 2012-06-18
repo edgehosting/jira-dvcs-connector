@@ -49,9 +49,9 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     @Before
     public void removeExistingPostCommitHooks()
     {
-        Set<String> extactedBitbucketServiceIds = extractBitbucketServiceIds();
+        Set<String> extractedBitbucketServiceIds = extractBitbucketServiceIds();
 
-        for (String extractedBitbucketServiceId : extactedBitbucketServiceIds)
+        for (String extractedBitbucketServiceId : extractedBitbucketServiceIds)
         {
             removePostCommitHook(extractedBitbucketServiceId);
         }
@@ -187,8 +187,20 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
                 JSONObject data = (JSONObject) jsonArray.get(i);
 
                 String bitbucketServiceId = data.getString("id");
+                JSONObject serviceObject = data.getJSONObject("service");
+                JSONArray  fieldsArray = serviceObject.getJSONArray("fields");
 
-                extractedServiceIds.add(bitbucketServiceId);
+                for (int j = 0; j < fieldsArray.length(); j++) {
+                    JSONObject fieldObject = fieldsArray.getJSONObject(j);
+
+                    if (fieldObject.getString("name").equals("URL")) {
+                        String serviceURL = fieldObject.getString("value");
+
+                        if (serviceURL.contains(jira.getProductInstance().getBaseUrl())) {
+                            extractedServiceIds.add(bitbucketServiceId);
+                        }
+                    }
+                }
             }
         }
         catch (JSONException e)
