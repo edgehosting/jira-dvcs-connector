@@ -1,7 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.auth.impl;
 
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.sal.api.net.Request;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -25,6 +32,25 @@ public class BasicAuthentication implements Authentication
         if (!StringUtils.isBlank(username) && !StringUtils.isBlank(password))
             request.addBasicAuthentication(username, password);
     }
+    
+    @Override
+	public void addAuthentication(HttpMethod forMethod, HttpClient client) {
+    	
+		forMethod.getParams().setCredentialCharset("utf-8");
+	
+		try {
+			
+			AuthScope authscope = new AuthScope(forMethod.getURI().getHost(),
+					AuthScope.ANY_PORT, null, AuthScope.ANY_SCHEME);
+			client.getState().setCredentials(authscope,
+					new UsernamePasswordCredentials(username, password));
+			client.getParams().setAuthenticationPreemptive(true);
+			
+		} catch (URIException uriException) {
+			throw new SourceControlException("Decoding of given URI has failed. " + uriException.getMessage(), uriException);
+		}
+    	
+	}
 
     @Override
     public boolean equals(Object o)
@@ -44,4 +70,6 @@ public class BasicAuthentication implements Authentication
         result = 31 * result + (password != null ? password.hashCode() : 0);
         return result;
     }
+
+	
 }

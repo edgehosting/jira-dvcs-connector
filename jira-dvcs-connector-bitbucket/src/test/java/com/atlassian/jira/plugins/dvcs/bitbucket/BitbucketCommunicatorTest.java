@@ -1,10 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.bitbucket;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
@@ -15,11 +19,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.net.DefaultRequestHelper;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory;
@@ -31,6 +35,7 @@ import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.Request.MethodType;
 import com.atlassian.sal.api.net.RequestFactory;
+import com.atlassian.sal.api.net.ResponseException;
 
 public class BitbucketCommunicatorTest
 {
@@ -46,6 +51,9 @@ public class BitbucketCommunicatorTest
 
 	@Mock
 	private ExtendedResponseHandler responseHandler;
+	
+	@Mock
+	private RequestHelper requestHelper;
 	
 	@Mock
 	private Request<?, ?> request;
@@ -74,8 +82,6 @@ public class BitbucketCommunicatorTest
 		
 		MockitoAnnotations.initMocks(this);
 		
-        RequestHelper requestHelper = new DefaultRequestHelper(
-                requestFactory, extendedResponseHandlerFactory);
         communicator = new BitbucketCommunicator(authenticationFactory, requestHelper,
                 bitbucketLinker, pluginAccessor)
         {
@@ -90,10 +96,10 @@ public class BitbucketCommunicatorTest
 	}
 	
 	@Test
-	public void testGetRepositories() {
+	public void testGetRepositories() throws ResponseException {
 		
 		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
-		when(responseHandler.getExtendedResponse()).thenReturn(
+		when(requestHelper.getExtendedResponse(any(Authentication.class), any(String.class), any(Map.class), any(String.class))).thenReturn(
 				new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-get-repositories.json")));
 		
 		List<Repository> repositories = communicator.getRepositories(createSampleOrganization());
@@ -105,9 +111,8 @@ public class BitbucketCommunicatorTest
 	}
 	
 	@Test
-	public void testSetupPostcommitHook () {
+	public void testSetupPostcommitHook () throws ResponseException {
 		
-		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
 		when(repository.getOrgName()).thenReturn("org");
 		when(repository.getSlug()).thenReturn("slug");
 		when(repository.getOrgHostUrl()).thenReturn("https://bitbucket.org");
@@ -115,7 +120,8 @@ public class BitbucketCommunicatorTest
 		communicator.setupPostcommitHook(repository, "post-commit-url");
 		
 		verify(bitbucketLinker).linkRepository(repository);
-		verify(requestFactory).createRequest(Mockito.eq(MethodType.POST), eq("https://bitbucket.org/!api/1.0/repositories/org/slug/services"));
+		verify(requestHelper).post(any(Authentication.class), eq("/repositories/org/slug/services"), anyString(), eq("https://bitbucket.org/!api/1.0"));
+		
 	}
 	
 	private Organization createSampleOrganization()

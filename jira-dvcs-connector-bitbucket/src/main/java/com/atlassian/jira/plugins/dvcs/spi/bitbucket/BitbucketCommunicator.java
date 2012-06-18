@@ -346,7 +346,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		Authentication auth = authenticationFactory.getAuthentication(repository);
 
 		String urlPath = "/repositories/" + owner + "/" + slug + "/services";
-		String postData = "type=post;URL=" + postCommitUrl;
+		String postData = "type=post&URL=" + postCommitUrl;
 		try
 		{
 			requestHelper.post(auth, urlPath, postData, getApiUrl(repository));

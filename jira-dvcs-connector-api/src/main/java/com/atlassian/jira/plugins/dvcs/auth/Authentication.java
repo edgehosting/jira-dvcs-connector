@@ -1,5 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.auth;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+
 import com.atlassian.sal.api.net.Request;
 
 /**
@@ -17,7 +20,15 @@ public interface Authentication
         {
             // add no authentication headers
         }
+        
+        @Override
+        public void addAuthentication(HttpMethod forMethod, HttpClient forClient) {
+        	// TODO Auto-generated method stub
+        	
+        }
     };
 
     public void addAuthentication(Request<?, ?> request, String url);
+
+    public void addAuthentication(HttpMethod forMethod, HttpClient forClient);
 }
