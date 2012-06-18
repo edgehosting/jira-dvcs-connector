@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
@@ -18,19 +19,21 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.net.DefaultRequestHelper;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory;
+import com.atlassian.jira.plugins.dvcs.net.RequestHelper;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.sal.api.net.Request;
 import com.atlassian.sal.api.net.RequestFactory;
+import com.atlassian.sal.api.net.ResponseException;
 import com.google.common.collect.Iterables;
 
 /**
@@ -56,6 +59,8 @@ public class DefaultBitbucketTest
 	private BitbucketLinker linker;
     @Mock
     private PluginAccessor pluginAccessor;
+	@Mock
+	private RequestHelper requestHelper;
 
 
 	@Before
@@ -69,7 +74,7 @@ public class DefaultBitbucketTest
 		return IOUtils.toString(getClass().getClassLoader().getResourceAsStream(name));
 	}
 
-	private void setupBitbucketConnection() throws IOException
+	private void setupBitbucketConnection() throws IOException, ResponseException
 	{
 
 		when(requestFactory.createRequest(any(Request.MethodType.class), anyString())).thenReturn(request);
@@ -78,9 +83,9 @@ public class DefaultBitbucketTest
 		when(repository.getSlug()).thenReturn("jira-bitbucket-connector");
 		when(extendedResponseHandlerFactory.create()).thenReturn(responseHandler);
 
-		when(responseHandler.getExtendedResponse()).thenReturn(
+		when(requestHelper.getExtendedResponse(any(Authentication.class), any(String.class), any(Map.class), any(String.class))).thenReturn(
 				new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesets-12.json"))).thenReturn(
-				new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesetFiles.json")));
+						new ExtendedResponse(true, HttpStatus.SC_OK, resource("TestBitbucket-changesetFiles.json")));
 
 	}
 
@@ -112,8 +117,7 @@ public class DefaultBitbucketTest
 
     private BitbucketCommunicator createCommunicator()
     {
-        return new BitbucketCommunicator(authenticationFactory, new DefaultRequestHelper(
-                requestFactory, extendedResponseHandlerFactory), linker, pluginAccessor)
+        return new BitbucketCommunicator(authenticationFactory, requestHelper, linker, pluginAccessor)
 		{
 		    @Override
             protected String getPluginVersion(PluginAccessor pluginAccessor)
