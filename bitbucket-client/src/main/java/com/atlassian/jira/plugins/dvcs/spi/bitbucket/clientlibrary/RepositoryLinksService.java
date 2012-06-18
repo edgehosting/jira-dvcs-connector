@@ -34,6 +34,15 @@ public class RepositoryLinksService
         String resourceUrl = MessageFormat.format("/repositories/{0}/{1}/links", owner, slug);
         return (List<RepositoryLink>) bitbucketClient.get(resourceUrl, type);
     }
+    
+    public RepositoryLink getRepositoryLink(String owner, String slug, int id) throws BitbucketClientException
+    {
+        Type type = new TypeToken<RepositoryLink>(){}.getType();
+        
+        String resourceUrl = MessageFormat.format("/repositories/{0}/{1}/links/{2}", owner, slug, String.valueOf(id));
+        
+        return (RepositoryLink) bitbucketClient.get(resourceUrl, type);
+    }
 
     /**
      * @param owner
@@ -53,22 +62,22 @@ public class RepositoryLinksService
      *
      * @param owner
      * @param slug
-     * @param name
-     * @param url
-     * @param key
+     * @param handler
+     * @param linkUrl
+     * @param linkKey
      * @return
      * @throws BitbucketClientException
      */
-    public RepositoryLink addRepositoryLink(String owner, String slug, String name, String url, String key) throws BitbucketClientException
+    public RepositoryLink addRepositoryLink(String owner, String slug, String handler, String linkUrl, String linkKey) throws BitbucketClientException
     {
         Type type = new TypeToken<RepositoryLink>(){}.getType();
 
         String resourceUrl = MessageFormat.format("/repositories/{0}/{1}/links", owner, slug);
 
         List<String> params = Lists.newArrayList();
-        params.add("handler=" + name);
-        params.add("link_url=" + url);
-        params.add("link_key=" + key);
+        params.add("handler=" + handler);
+        params.add("link_url=" + linkUrl);
+        params.add("link_key=" + linkKey);
 
         return (RepositoryLink) bitbucketClient.post(resourceUrl, params, type);
     }
