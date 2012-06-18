@@ -49,7 +49,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     @Before
     public void removeExistingPostCommitHooks()
     {
-        Set<String> extractedBitbucketServiceIds = extractBitbucketServiceIds();
+        Set<String> extractedBitbucketServiceIds = extractBitbucketServiceIdsToRemove();
 
         for (String extractedBitbucketServiceId : extractedBitbucketServiceIds)
         {
@@ -162,7 +162,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 	}
 
 
-    private static Set<String> extractBitbucketServiceIds()
+    private static Set<String> extractBitbucketServiceIdsToRemove()
     {
         String listServicesResponseString;
 
@@ -180,6 +180,22 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 
         Set<String> extractedServiceIds = new LinkedHashSet<String>();
 
+        // parsing following JSON:
+        //[
+        //    {
+        //        "id": 3,
+        //        "service": {
+        //            "fields": [
+        //                {
+        //                    "name": "URL",
+        //                    "value": "..."
+        //                }
+        //            ],
+        //            "type": "Email"
+        //        }
+        //    }
+        //]
+        
         try {
             JSONArray jsonArray = new JSONArray(listServicesResponseString);
             for (int i = 0; i < jsonArray.length(); i++)
