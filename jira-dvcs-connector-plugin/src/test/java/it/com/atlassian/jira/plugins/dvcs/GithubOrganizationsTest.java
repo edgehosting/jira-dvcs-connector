@@ -112,9 +112,9 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         String[] githubRepositories = {"repo1", "test-project"};
 
         for (String githubRepositoryId : githubRepositories) {
-            Set<String> extactedGithubHookIds = extractGithubHookIdsForRepository(githubRepositoryId);
+            Set<String> extractedGithubHookIds = extractGithubHookIdsForRepositoryToRemove(githubRepositoryId);
 
-            for (String extractedGithubHookId : extactedGithubHookIds)
+            for (String extractedGithubHookId : extractedGithubHookIds)
             {
                 removePostCommitHook(githubRepositoryId, extractedGithubHookId);
             }
@@ -234,7 +234,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         goToGithubOAuthConfigPage().setCredentials(clientID, clientSecret);
     }
 
-    private static Set<String> extractGithubHookIdsForRepository(String repositoryId)
+    private static Set<String> extractGithubHookIdsForRepositoryToRemove(String repositoryId)
     {
         String listHooksResponseString;
         String finalGithubUrl = String.format("https://api.github.com/repos/jirabitbucketconnector/%s/hooks",
@@ -253,6 +253,25 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 
         Set<String> extractedHookIds = new LinkedHashSet<String>();
 
+        // parsing following JSON:
+        //[
+        //  {
+        //    "url": "https://api.github.com/repos/octocat/Hello-World/hooks/1",
+        //    "updated_at": "2011-09-06T20:39:23Z",
+        //    "created_at": "2011-09-06T17:26:27Z",
+        //    "name": "web",
+        //    "events": [
+        //      "push"
+        //    ],
+        //    "active": true,
+        //    "config": {
+        //      "url": "http://example.com",
+        //      "content_type": "json"
+        //    },
+        //    "id": 1
+        //  }
+        //]
+        
         try {
             JSONArray jsonArray = new JSONArray(listHooksResponseString);
 
@@ -261,8 +280,12 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
                 JSONObject data = (JSONObject) jsonArray.get(i);
 
                 String githubHookId = data.getString("id");
+                JSONObject configObject = data.getJSONObject("config");
+                String configURL = configObject.getString("url");
 
-                extractedHookIds.add(githubHookId);
+                if (configURL.contains(jira.getProductInstance().getBaseUrl())) {
+                    extractedHookIds.add(githubHookId);
+                }
             }
         }
         catch (JSONException e)
