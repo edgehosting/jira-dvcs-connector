@@ -1,5 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.java.ao.Query;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
@@ -13,18 +27,6 @@ import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import net.java.ao.Query;
-import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ChangesetDaoImpl implements ChangesetDao
 {
@@ -69,7 +71,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             {
                 final ChangesetMapping[] changesetMappings = activeObjects.find(ChangesetMapping.class, ChangesetMapping.REPOSITORY_ID+" = ?", repositoryId);
 
-                log.debug("deleting [ {} ] changesets [ {} ]", new String[]{String.valueOf(changesetMappings.length), String.valueOf(repositoryId)});
+                log.debug("deleting [ {} ] changesets from repository with id = [ {} ]", new String[]{String.valueOf(changesetMappings.length), String.valueOf(repositoryId)});
 
                 activeObjects.delete(changesetMappings);
                 return null;

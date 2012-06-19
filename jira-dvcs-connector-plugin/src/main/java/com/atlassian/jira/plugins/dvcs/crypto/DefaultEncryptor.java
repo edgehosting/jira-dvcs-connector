@@ -1,13 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.crypto;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.Arrays;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An encryption service for storing passwords
@@ -24,12 +25,13 @@ public class DefaultEncryptor implements Encryptor
      * @param hostUrl the repository url
      * @return the encrypted string
      */
-    public String encrypt(String input, String organizationName, String hostUrl)
+    @Override
+	public String encrypt(String input, String organizationName, String hostUrl)
     {
         byte[] encrypted;
         try
         {
-            byte[] key = (organizationName + hostUrl).getBytes("UTF-8");
+            byte[] key = (organizationName + hostUrl).getBytes("utf-8");
             MessageDigest sha = MessageDigest.getInstance("SHA-1");
             key = sha.digest(key);
             key = Arrays.copyOf(key, 16); // use only first 128 bit
@@ -41,7 +43,7 @@ public class DefaultEncryptor implements Encryptor
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
 
-            encrypted = cipher.doFinal((input).getBytes());
+            encrypted = cipher.doFinal((input).getBytes("utf-8"));
         }
         catch (Exception e)
         {
@@ -65,7 +67,8 @@ public class DefaultEncryptor implements Encryptor
         return data;
     }
 
-    public String decrypt(String password, String organizationName, String hostUrl)
+    @Override
+	public String decrypt(String password, String organizationName, String hostUrl)
     {
     	if (password == null) 
     		return null; 
@@ -75,7 +78,7 @@ public class DefaultEncryptor implements Encryptor
             byte[] ciphertext = DefaultEncryptor.hexStringToByteArray(password);
 
             // Get the Key
-            byte[] key = (organizationName + hostUrl).getBytes("UTF-8");
+            byte[] key = (organizationName + hostUrl).getBytes("utf-8");
             MessageDigest sha = MessageDigest.getInstance("SHA-1");
             key = sha.digest(key);
             key = Arrays.copyOf(key, 16); // use only first 128 bit
@@ -88,7 +91,7 @@ public class DefaultEncryptor implements Encryptor
 
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
             byte[] original = cipher.doFinal(ciphertext);
-            String originalString = new String(original);
+            String originalString = new String(original, "utf-8");
             //logger.debug("Original string: " + originalString + "\nOriginal string (Hex): " + original.toString());
 
 //            logger.debug("decrypted password [ " + original+" ]");
