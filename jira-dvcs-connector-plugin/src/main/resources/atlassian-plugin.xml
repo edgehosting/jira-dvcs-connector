@@ -285,5 +285,8 @@
                        class="com.atlassian.jira.plugins.dvcs.streams.DvcsStreamsActivityProvider">
     </activity-streams-provider>
 
+	<!-- Web Panels -->
+	<web-panel key="add-user-dvcs-extension" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />
+
  
 </atlassian-plugin>

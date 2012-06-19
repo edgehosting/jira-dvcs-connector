@@ -47,50 +47,48 @@ import com.atlassian.sal.api.net.ResponseException;
  */
 public class BitbucketCommunicator implements DvcsCommunicator
 {
-	
+
 	/** The Constant log. */
 	private static final Logger log = LoggerFactory.getLogger(BitbucketCommunicator.class);
 
 	/** The Constant BITBUCKET. */
 	public static final String BITBUCKET = "bitbucket";
 
-    private static final String PLUGIN_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin";
+	private static final String PLUGIN_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin";
 
 	/** The request helper. */
 	private final RequestHelper requestHelper;
-	
+
 	/** The authentication factory. */
 	private final AuthenticationFactory authenticationFactory;
 
 	private final BitbucketLinker bitbucketLinker;
 
-    private final String pluginVersion;
+	private final String pluginVersion;
 
 	/**
 	 * The Constructor.
-	 *
-	 * @param authenticationFactory the authentication factory
-	 * @param requestHelper the request helper
+	 * 
+	 * @param authenticationFactory
+	 *            the authentication factory
+	 * @param requestHelper
+	 *            the request helper
 	 */
-    public BitbucketCommunicator(AuthenticationFactory authenticationFactory,
-            RequestHelper requestHelper,
-            @Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
-            PluginAccessor pluginAccessor)
+	public BitbucketCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper,
+			@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor)
 	{
 		this.authenticationFactory = authenticationFactory;
 		this.requestHelper = requestHelper;
 		this.bitbucketLinker = bitbucketLinker;
-        this.pluginVersion = getPluginVersion(pluginAccessor);
+		pluginVersion = getPluginVersion(pluginAccessor);
 	}
 
+	protected String getPluginVersion(PluginAccessor pluginAccessor)
+	{
+		return pluginAccessor.getPlugin(PLUGIN_KEY).getPluginInformation().getVersion();
+	}
 
-    protected String getPluginVersion(PluginAccessor pluginAccessor)
-    {
-        return pluginAccessor.getPlugin(PLUGIN_KEY).getPluginInformation().getVersion();
-    }
-
-
-    /**
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -102,7 +100,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	/**
 	 * Returns always <code>false</code> as we don't support OAuth for BB so far
 	 * ...
-	 *
+	 * 
 	 * @return true, if checks if is oauth configured
 	 */
 	@Override
@@ -145,7 +143,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 			log.debug(e.getMessage());
 		} catch (JSONException e)
 		{
-            log.debug("Error parsing json response: " + responseString + ". " + e.getMessage());
+			log.debug("Error parsing json response: " + responseString + ". " + e.getMessage());
 		}
 		return null; // something went wrong, we don't have any account info.
 
@@ -190,13 +188,15 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	}
 
 	private String getApiUrl(Organization organization)
-    {
-	    return getApiUrl(organization.getHostUrl());
-    }
+	{
+		return getApiUrl(organization.getHostUrl());
+	}
+
 	private String getApiUrl(Repository repository)
 	{
 		return getApiUrl(repository.getOrgHostUrl());
 	}
+
 	private String getApiUrl(String hostUrl)
 	{
 		return hostUrl + "/!api/1.0";
@@ -229,18 +229,21 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
 	}
 
-
 	/**
 	 * Gets the changesets.
-	 *
-	 * @param repository the repository
-	 * @param startNode the start node
-	 * @param limit the limit
-	 * @param lastCommitDate the last commit date
+	 * 
+	 * @param repository
+	 *            the repository
+	 * @param startNode
+	 *            the start node
+	 * @param limit
+	 *            the limit
+	 * @param lastCommitDate
+	 *            the last commit date
 	 * @return the changesets
 	 */
-	public List<Changeset> getChangesets(final Repository repository, final String startNode,
-	        final int limit, final Date lastCommitDate)
+	public List<Changeset> getChangesets(final Repository repository, final String startNode, final int limit,
+			final Date lastCommitDate)
 	{
 		return new Retryer<List<Changeset>>().retry(new Callable<List<Changeset>>()
 		{
@@ -253,10 +256,10 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
 	}
 
-	private List<Changeset> getChangesetsInternal(final Repository repository, String startNode,
-            int limit, Date lastCommitDate)
-    {
-	    String owner = repository.getOrgName();
+	private List<Changeset> getChangesetsInternal(final Repository repository, String startNode, int limit,
+			Date lastCommitDate)
+	{
+		String owner = repository.getOrgName();
 		String slug = repository.getSlug();
 
 		Authentication auth = authenticationFactory.getAuthentication(repository);
@@ -280,8 +283,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
 			if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
 			{
-				throw new SourceControlException(
-						"Incorrect credentials");
+				throw new SourceControlException("Incorrect credentials");
 			} else if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
 			{
 				// no more changesets
@@ -316,7 +318,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 			throw new SourceControlException("Could not parse json object", e);
 		}
 		return changesets;
-    }
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -364,7 +366,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	public void removePostcommitHook(Repository repository, String postCommitUrl)
 	{
 		bitbucketLinker.unlinkRepository(repository);
-		
+
 		String owner = repository.getOrgName();
 		String slug = repository.getSlug();
 		Authentication auth = authenticationFactory.getAuthentication(repository);
@@ -408,11 +410,11 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public String getCommitUrl(Repository repository, Changeset changeset)
 	{
-		return MessageFormat.format("{0}/{1}/{2}/changeset/{3}?dvcsconnector={4}", repository.getOrgHostUrl(), repository.getOrgName(),
-				repository.getSlug(), changeset.getNode(), pluginVersion);
+		return MessageFormat.format("{0}/{1}/{2}/changeset/{3}?dvcsconnector={4}", repository.getOrgHostUrl(),
+				repository.getOrgName(), repository.getSlug(), changeset.getNode(), pluginVersion);
 	}
 
-    /**
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -425,7 +427,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	 * {@inheritDoc}
 	 */
 	@Override
-    public DvcsUser getUser(Repository repository, String username)
+	public DvcsUser getUser(Repository repository, String username)
 	{
 		try
 		{
@@ -488,15 +490,17 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	{
 		// try to obtain user's ssh keys to know if credentials are OK
 		// @ http://confluence.atlassian.com/display/BITBUCKET/SSH+Keys
-		String urlPath = "/ssh-keys/";	
+		String urlPath = "/ssh-keys/";
 		// need to create it directly because here we have
-		Authentication auth = new BasicAuthentication(organization.getCredential().getAdminUsername(), organization.getCredential().getAdminPassword());
+		Authentication auth = new BasicAuthentication(organization.getCredential().getAdminUsername(), organization
+				.getCredential().getAdminPassword());
 		try
 		{
 			ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, urlPath,
-			        Collections.<String, Object> emptyMap(), getApiUrl(organization));
+					Collections.<String, Object> emptyMap(), getApiUrl(organization));
 			int statusCode = extendedResponse.getStatusCode();
-			if (statusCode == 401 || statusCode == 403) {
+			if (statusCode == 401 || statusCode == 403)
+			{
 				return false;
 			}
 		} catch (Exception e)
@@ -522,7 +526,18 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail)
 	{
-		// TODO
+
+		for (String group : groupSlugs)
+		{
+			/*
+			 * try { // TODO
+			 * requestHelper.post(authenticationFactory.getAuthentication
+			 * (organization), "/invitations/juliushocman/", "permission=write",
+			 * getApiUrl(organization)); } catch (ResponseException e) { // TODO
+			 * Auto-generated catch block e.printStackTrace(); }
+			 */
+		}
+
 	}
 
 }
