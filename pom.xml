@@ -47,12 +47,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.sal</groupId>
-            <artifactId>sal-api</artifactId>
-            <version>2.0.17</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>com.atlassian.crowd</groupId>
             <artifactId>crowd-api</artifactId>
             <version>2.2.0</version>
