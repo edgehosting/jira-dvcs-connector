@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CommitCommentParser
+public class DefaultCommitMessageParser
 {
     private static final Pattern JIRA_ISSUE_PATTERN = Pattern.compile("(?<![&=\\?>^!~/])\\b(\\p{Lu}{2,}-\\p{Digit}+)\\b");
     private static final Pattern COMMAND_PATTERN = Pattern.compile("#([A-Za-z]+)");

@@ -21,9 +21,8 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.util.I18nHelper;
 
-public class SmartcommitsService
+public class DefaultSmartcommitsService 
 {
-
     private static final String NO_COMMANDS = "dvcs.smartcommits.commands.nocommands";
     private static final String BAD_COMMAND = "dvcs.smartcommits.commands.badcommand";
     private static final String UNKNOWN_ISSUE = "dvcs.smartcommits.commands.unknownissue";
@@ -35,13 +34,17 @@ public class SmartcommitsService
     private final WorkLogHandler workLogHandler;
 
     private final IssueManager issueManager;
+
     private final JiraAuthenticationContext jiraAuthenticationContext;
     private final I18nHelper i18nHelper;
-    private final CommitCommentParser commitCommentParser;
+    private final DefaultCommitMessageParser commitCommentParser;
 
-    public SmartcommitsService(IssueManager issueManager,
-    						  TransitionHandler transitionHandler, CommentHandler commentHandler,
-                                 WorkLogHandler workLogHandler, JiraAuthenticationContext jiraAuthenticationContext, CommitCommentParser commitCommentParser)
+    public DefaultSmartcommitsService(IssueManager issueManager,
+    						  		TransitionHandler transitionHandler, 
+    						  		CommentHandler commentHandler,
+    						  		WorkLogHandler workLogHandler,
+    						  		JiraAuthenticationContext jiraAuthenticationContext,
+    						  		DefaultCommitMessageParser commitCommentParser)
     {
         NO_CACHE = new CacheControl();
         NO_CACHE.setNoCache(true);
@@ -55,7 +58,10 @@ public class SmartcommitsService
         this.commitCommentParser = commitCommentParser;
     }
 
-    public void parseAndHandleCommitCommands(List<Changeset> changesets)
+    /**
+	 * {@inheritDoc}
+	 */
+	public void parseAndHandleCommitCommands(List<Changeset> changesets)
     {
         for (Changeset changeset : changesets)
         {
@@ -65,7 +71,10 @@ public class SmartcommitsService
     }
 
 
-    public Response doCommands(CommitCommands commands)
+    /**
+	 * {@inheritDoc}
+	 */
+	public Response doCommands(CommitCommands commands)
     {
         User user = getUser();
 
@@ -144,6 +153,8 @@ public class SmartcommitsService
 
     private User getUser()
     {
+    	// TODO nobody's logged in while invoking commit hook- read user from commit message seems to be only one solution ... 
+    	
         return jiraAuthenticationContext.getLoggedInUser();
     }
 }

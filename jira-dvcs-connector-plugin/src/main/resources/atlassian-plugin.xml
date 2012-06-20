@@ -24,6 +24,32 @@
     </component>
 
 
+	<!-- =============================================================================================================================== 
+		 smartcommits 
+	 	 =============================================================================================================================== -->
+	
+	<component-import key="issueManager" interface="com.atlassian.jira.issue.IssueManager" />
+		
+	<component key="smartcommitsService" name="DVCS Smartcommits Service Job"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsService" public="true">
+	</component>
+	<component key="smartcommitsParser" name="DVCS Smartcommits Parser"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultCommitMessageParser" public="true">
+	</component>
+
+	<component key="smartcommitsWorklogHandler" name="DVCS Smartcommits Worklog Time Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler" public="true">
+	</component>
+
+	<component key="smartcommitsCommentHandler" name="DVCS Smartcommits Comment Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommentHandler" public="true">
+	</component>
+
+	<component key=smartcommitsTransitionsHandler name="DVCS Smartcommits workflow Transition Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler" public="true">
+	</component>
+	
+	
+	<!-- =============================================================================================================================== 
+		 smartcommits 
+	 	 =============================================================================================================================== -->
+	    
+	 
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
