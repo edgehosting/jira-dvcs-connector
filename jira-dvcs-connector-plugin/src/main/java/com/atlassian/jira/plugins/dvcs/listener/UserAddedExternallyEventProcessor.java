@@ -76,7 +76,10 @@ class UserAddedExternallyEventProcessor implements Runnable
 		}
 		// ------------------------------------------------------
 
-		// TODO invite
+		for (Organization organization : defaultOrganizations)
+		{
+			// TODO default groups ?
+		}
 
 	}
 }
