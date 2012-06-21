@@ -1,5 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.java.ao.Query;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
@@ -8,16 +20,6 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
-import net.java.ao.Query;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * The Class OrganizationDaoImpl.
@@ -310,7 +312,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 	@Override
 	public List<Organization> getAutoInvitionOrganizations()
 	{
-		Query query = Query.select().where(OrganizationMapping.AUTO_INVITE_NEW_USERS, Boolean.TRUE).order(OrganizationMapping.NAME);
+		Query query = Query.select().where(OrganizationMapping.AUTO_INVITE_NEW_USERS + " = ? ", Boolean.TRUE).order(OrganizationMapping.NAME);
 		OrganizationMapping[] orgMappings = activeObjects.find(OrganizationMapping.class, query);
 		return transformCollection(Arrays.asList(orgMappings));
 	}
