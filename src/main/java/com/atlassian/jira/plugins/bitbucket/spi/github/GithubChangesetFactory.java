@@ -81,7 +81,7 @@ public class GithubChangesetFactory
         return Lists.transform(parents, new Function<Commit, String>()
         {
             @Override
-            public String apply(@Nullable Commit commit)//TODO ???
+            public String apply(@Nullable Commit commit)
             {
                 return commit.getSha();
             }
