@@ -98,8 +98,15 @@ public class GithubCommunicator implements Communicator
     @Override
     public Changeset getChangeset(SourceControlRepository repository, Changeset changeset)
     {
-        // for GH we use v3 API. there are all details. we cannot get more.
-        return changeset;
+        final Changeset reloadedChangeset = getChangeset(repository, changeset.getNode());
+
+        if (StringUtils.isNotBlank(changeset.getBranch()))
+        {
+            reloadedChangeset.setBranch(changeset.getBranch());
+        }
+
+        return reloadedChangeset;
+
     }
 
     public PageIterator<RepositoryCommit> getPageIterator(SourceControlRepository repository, String branch)
