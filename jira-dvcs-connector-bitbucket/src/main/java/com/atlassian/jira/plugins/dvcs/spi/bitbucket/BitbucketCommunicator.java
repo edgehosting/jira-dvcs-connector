@@ -40,6 +40,7 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.sal.api.net.Request.MethodType;
 import com.atlassian.sal.api.net.ResponseException;
 
 /**
@@ -526,16 +527,33 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail)
 	{
-
+		
+		String apiUrl  = getApiUrl(organization);
+		String baseEndpointUrl  = "/users/" + organization.getName() + "/invitations/" + userEmail + "/" + organization.getName() + "/";
+		
 		for (String group : groupSlugs)
 		{
-			/*
-			 * try { // TODO
-			 * requestHelper.post(authenticationFactory.getAuthentication
-			 * (organization), "/invitations/juliushocman/", "permission=write",
-			 * getApiUrl(organization)); } catch (ResponseException e) { // TODO
-			 * Auto-generated catch block e.printStackTrace(); }
-			 */
+			
+			try
+			{ 
+				
+				ExtendedResponse response = requestHelper.runRequestGetExtendedResponse(MethodType.PUT,
+															apiUrl, 
+															baseEndpointUrl + group,
+															authenticationFactory.getAuthentication(organization),
+															null, null);
+				
+				if (!response.isSuccessful()) {
+					log.warn("Failed to invite user {} to organization {}. Response HTTP code {}",
+							new Object [] { userEmail, organization.getName(), response.getStatusCode() } );
+				}
+				
+			} catch (ResponseException e)
+			{ 
+				log.warn("Failed to invite user {} to organization {}. Cause error message is {}",
+						new Object [] { userEmail, organization.getName(), e.getMessage() } );
+			}
+			 
 		}
 
 	}

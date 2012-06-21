@@ -20,12 +20,12 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 
-// TODO<jho> are these listeners async ?  if no, ... threads for long running tasks
-// what if this listener fails ?
+// 1/ TODO<jho> are these listeners async ?  if no, ... threads for long running tasks
+// 2/ what if this listener fails ?
+// 3/ user event type on user add via crowd
 public class DvcsAddUserListener implements InitializingBean
 
 {
-
 	private static final String SPLITTER = ":";
 
 	private static final Logger log = LoggerFactory.getLogger(DvcsAddUserListener.class);
@@ -74,7 +74,8 @@ public class DvcsAddUserListener implements InitializingBean
 	@EventListener
 	public void onUserAddViaCrowd(UserEvent event)
 	{
-
+		//com.atlassian.jira.event.user.UserEventType.USER_CREATED;
+		
 		String username = event.getUser().getName();
 		String email = event.getUser().getEmailAddress();
 
