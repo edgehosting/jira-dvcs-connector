@@ -236,9 +236,21 @@ public class GithubCommunicator implements Communicator
     public UrlInfo getUrlInfo(final RepositoryUri repositoryUri, String projectKey)
     {
         log.debug("get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
+
         Boolean repositoryPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
-        if (repositoryPrivate == null) return null;
-        return new UrlInfo(GithubRepositoryManager.GITHUB, repositoryPrivate.booleanValue(), repositoryUri.getRepositoryUrl(), projectKey);
+        if (repositoryPrivate == null)
+        {
+            if ("https://github.com".equalsIgnoreCase(repositoryUri.getBaseUrl()) && StringUtils.isNotBlank(repositoryUri.getOwner()) && StringUtils.isNotBlank(repositoryUri.getSlug()))
+            {
+                repositoryPrivate = Boolean.TRUE; // it looks like github repository, but github doesn't tell us if it exists. Lets assume it's private
+            } else
+            {
+                return null;
+            }
+        }
+
+        return new UrlInfo(GithubRepositoryManager.GITHUB, repositoryPrivate.booleanValue(),
+                repositoryUri.getRepositoryUrl(), projectKey);
     }
 
     private List<String> getBranches(SourceControlRepository repository)
@@ -299,7 +311,7 @@ public class GithubCommunicator implements Communicator
                     repositoryUri.getApiUrl());
             // in case we have valid access_token but for other account github
             // returns HttpStatus.SC_NOT_FOUND response
-            if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+            if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
             {
                 throw new SourceControlException.UnauthorisedException("You don't have access to the repository.");
             }
