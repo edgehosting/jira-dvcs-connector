@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -13,6 +12,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -34,7 +34,6 @@ import com.atlassian.jira.plugins.bitbucket.spi.*;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubUserFactory;
-import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.net.ResponseException;
@@ -77,38 +76,30 @@ public class GithubCommunicator implements Communicator
     @Override
     public Changeset getChangeset(SourceControlRepository repository, String id)
     {
+        RepositoryUri uri = repository.getRepositoryUri();
+
+        String owner = uri.getOwner();
+        String slug = uri.getSlug();
+
+        final GitHubClient client = createClient(repository)    ;
+        final CommitService commitService = new CommitService(client);
+
         try
         {
-            String apiUrl = "https://api.github.com"; // we have to use API v3
-            RepositoryUri uri = repository.getRepositoryUri();
-            String owner = uri.getOwner();
-            String slug = uri.getSlug();
-            Authentication authentication = authenticationFactory.getAuthentication(repository);
+            final RepositoryCommit commit = commitService.getCommit(RepositoryId.create(owner, slug), id);
+            return GithubChangesetFactory.transform(commit, repository.getId(), "master");
 
-            log.debug("parse gihchangeset [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, id});
-            String responseString = requestHelper.get(authentication, "/repos/" + CustomStringUtils.encode(owner) + "/" +
-                    CustomStringUtils.encode(slug) + "/commits/" + CustomStringUtils.encode(id), null,
-                    apiUrl);
-
-            return GithubChangesetFactory.parseV3(repository.getId(), "master", new JSONObject(responseString));
-        } catch (ResponseException e)
+        } catch (IOException e)
         {
             throw new SourceControlException("could not get result", e);
-        } catch (JSONException e)
-        {
-            throw new SourceControlException("could not parse json result", e);
         }
     }
 
     @Override
     public Changeset getChangeset(SourceControlRepository repository, Changeset changeset)
     {
-        final Changeset reloadedChangeset = getChangeset(repository, changeset.getNode());
-        if (StringUtils.isNotBlank(changeset.getBranch()))
-        {
-            reloadedChangeset.setBranch(changeset.getBranch());
-        }
-        return reloadedChangeset;
+        // for GH we use v3 API. there are all details. we cannot get more.
+        return changeset;
     }
 
     public PageIterator<RepositoryCommit> getPageIterator(SourceControlRepository repository, String branch)
@@ -161,82 +152,31 @@ public class GithubCommunicator implements Communicator
         return client;
     }
 
-
-    public List<Changeset> getChangesets(SourceControlRepository repository, String branch, int pageNumber)
-    {
-        RepositoryUri uri = repository.getRepositoryUri();
-        String owner = uri.getOwner();
-        String slug = uri.getSlug();
-        Authentication authentication = authenticationFactory.getAuthentication(repository);
-
-        log.debug("parse github changesets [ {} ] [ {} ] [ {} ]", new String[]{owner, slug, String.valueOf(pageNumber)});
-
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("page", String.valueOf(pageNumber));
-
-        List<Changeset> changesets = new ArrayList<Changeset>();
-
-        try
-        {
-            ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(authentication, "/commits/list/" + CustomStringUtils.encode(owner) + "/" +
-                    CustomStringUtils.encode(slug) + "/" + branch, params, uri.getApiUrl());
-
-            if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
-            {
-                throw new SourceControlException("Incorrect credentials");
-            } else if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
-            {
-                // no more changesets
-                log.debug("Page: {} not contains changesets. Return empty list", pageNumber);
-                return Collections.emptyList();
-            }
-
-            if (extendedResponse.isSuccessful())
-            {
-                String responseString = extendedResponse.getResponseString();
-                JSONArray list = new JSONObject(responseString).getJSONArray("commits");
-                for (int i = 0; i < list.length(); i++)
-                {
-                    JSONObject commitJson = list.getJSONObject(i);
-                    final Changeset changeset = GithubChangesetFactory.parseV2(repository.getId(), commitJson);
-                    changeset.setBranch(branch);
-                    changesets.add(changeset);
-                }
-            } else
-            {
-                throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
-            }
-        } catch (ResponseException e)
-        {
-            log.debug("Could not get changesets from page: {}", pageNumber, e);
-            throw new SourceControlException("Error requesting changesets. Page: " + pageNumber + ". [" + e.getMessage() + "]", e);
-        } catch (JSONException e)
-        {
-            log.debug("Could not parse repositories from page: {}", pageNumber);
-            return Collections.emptyList();
-        }
-
-        return changesets;
-    }
-
     @Override
     public void setupPostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
-        RepositoryUri uri = repo.getRepositoryUri();
-        Authentication auth = authenticationFactory.getAuthentication(repo);
+        final RepositoryUri uri = repo.getRepositoryUri();
 
-        String urlPath = "/repos/" + uri.getOwner() + "/" + uri.getSlug() + "/hooks";
-        String apiUrl = "https://api.github.com"; // we have to use API v3
+        String owner = uri.getOwner();
+        String slug = uri.getSlug();
+
+        final GitHubClient client = createClient(repo);
+        RepositoryService repositoryService = new RepositoryService(client);//TODO !!! rafactor na utility method taking repo and returning service
+                                                                            // SCR GithubServiceUtils.repositoryService(SCR repo)...
+                                                                            // + find all similar usages
+        final RepositoryHook repositoryHook = new RepositoryHook();
+
+        repositoryHook.setName("web");
+        repositoryHook.setActive(true);
+
+        Map<String, String> config = new HashMap<String, String>();
+        config.put("url", postCommitUrl);
+        repositoryHook.setConfig(config);
 
         try
         {
-            JSONObject configJson = new JSONObject().put("url", postCommitUrl);
-            JSONObject postDataJson = new JSONObject().put("name", "web").put("active", true).put("config", configJson);
-            requestHelper.post(auth, urlPath, postDataJson.toString(), apiUrl);
-        } catch (JSONException e)
-        {
-            throw new SourceControlException("Could not create relevant POST data for postcommit hook.", e);
-        } catch (ResponseException e)
+            repositoryService.createHook(RepositoryId.create(owner, slug), repositoryHook);
+        } catch (IOException e)
         {
             throw new SourceControlException("Could not add postcommit hook. ", e);
         }
@@ -245,31 +185,27 @@ public class GithubCommunicator implements Communicator
     @Override
     public void removePostcommitHook(SourceControlRepository repo, String postCommitUrl)
     {
-        RepositoryUri uri = repo.getRepositoryUri();
-        Authentication auth = authenticationFactory.getAuthentication(repo);
-        String urlPath = "/repos/" + uri.getOwner() + "/" + uri.getSlug() + "/hooks";
-        String apiUrl = "https://api.github.com"; // hardcoded url because we have to use API v3
-        // Find the hook
+        final RepositoryUri uri = repo.getRepositoryUri();
+
+        String owner = uri.getOwner();
+        String slug = uri.getSlug();
+
+        final GitHubClient client = createClient(repo);
+        RepositoryService repositoryService = new RepositoryService(client);
+        final RepositoryId repositoryId = RepositoryId.create(owner, slug);
+
         try
         {
-            String responseString = requestHelper.get(auth, urlPath, null, apiUrl);
-            JSONArray jsonArray = new JSONArray(responseString);
-            for (int i = 0; i < jsonArray.length(); i++)
+            final List<RepositoryHook> hooks = repositoryService.getHooks(repositoryId);
+
+            for (RepositoryHook hook : hooks)
             {
-                JSONObject data = (JSONObject) jsonArray.get(i);
-                String id = data.getString("id");
-                JSONObject config = data.getJSONObject("config");
-                String url = config.getString("url");
-                if (postCommitUrl.equals(url))
+                if (postCommitUrl.equals(hook.getConfig().get("url")))
                 {
-                    // We have the hook, lets remove it
-                    requestHelper.delete(auth, apiUrl, urlPath + "/" + id);
+                    repositoryService.deleteHook(repositoryId, (int) hook.getId());
                 }
             }
-        } catch (ResponseException e)
-        {
-            log.warn("Error removing postcommit service [{}]", e.getMessage());
-        } catch (JSONException e)
+        } catch (IOException e)
         {
             log.warn("Error removing postcommit service [{}]", e.getMessage());
         }
