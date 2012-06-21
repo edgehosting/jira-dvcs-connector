@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DefaultCommitMessageParser
+public class DefaultCommitMessageParser implements CommitMessageParser
 {
     private static final Pattern JIRA_ISSUE_PATTERN = Pattern.compile("(?<![&=\\?>^!~/])\\b(\\p{Lu}{2,}-\\p{Digit}+)\\b");
     private static final Pattern COMMAND_PATTERN = Pattern.compile("#([A-Za-z]+)");
@@ -50,12 +50,10 @@ public class DefaultCommitMessageParser
      */
 
     /**
-     * Parse the comment
-     *
-     * @param comment The comment to parse
-     * @return The parsed actions
-     */
-    public CommitCommands parseCommitComment(final String comment)
+	 * {@inheritDoc}
+	 */
+    @Override
+	public CommitCommands parseCommitComment(final String comment)
     {
         // Split the comment into lines
         final String[] lines = comment.split("\r?\n");

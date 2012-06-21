@@ -27,6 +27,9 @@ import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.smartcommits.CommitMessageParser;
+import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsService;
+import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
 /**
@@ -48,6 +51,12 @@ public class RootResource
 
 	/** The repository service. */
 	private final RepositoryService repositoryService;
+	
+	/** The smartcommits service. */
+	private final SmartcommitsService smartcommitsService;
+
+	/** The commit message parser. */
+	private final CommitMessageParser commitMessageParser;
 
 	/**
 	 * The Constructor.
@@ -57,10 +66,12 @@ public class RootResource
 	 * @param repositoryService
 	 *            the repository service
 	 */
-	public RootResource(OrganizationService organizationService, RepositoryService repositoryService)
+	public RootResource(OrganizationService organizationService, RepositoryService repositoryService,  SmartcommitsService smartcommitsService, CommitMessageParser commitMessageParser)
 	{
 		this.organizationService = organizationService;
 		this.repositoryService = repositoryService;
+		this.smartcommitsService = smartcommitsService;
+		this.commitMessageParser = commitMessageParser;
 	}
 
 	/**
@@ -128,7 +139,19 @@ public class RootResource
 		UriBuilder ub = uriInfo.getBaseUriBuilder();
 		URI uri = ub.path("/repository/{id}").build(id);
 
+		//
+		// process smartcommits
+		//
+		processSmartcommits(payload);
+		//
 		return Response.seeOther(uri).build();
+	}
+
+	private void processSmartcommits(String payload)
+	{
+		// TODO Thread
+		CommitCommands commitCommands = commitMessageParser.parseCommitComment(payload);
+		smartcommitsService.doCommands(commitCommands);
 	}
 
 	/**

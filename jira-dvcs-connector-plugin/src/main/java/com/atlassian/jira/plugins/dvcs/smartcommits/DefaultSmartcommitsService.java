@@ -37,14 +37,14 @@ public class DefaultSmartcommitsService
 
     private final JiraAuthenticationContext jiraAuthenticationContext;
     private final I18nHelper i18nHelper;
-    private final DefaultCommitMessageParser commitCommentParser;
+    private final CommitMessageParser commitCommentParser;
 
     public DefaultSmartcommitsService(IssueManager issueManager,
     						  		TransitionHandler transitionHandler, 
     						  		CommentHandler commentHandler,
     						  		WorkLogHandler workLogHandler,
     						  		JiraAuthenticationContext jiraAuthenticationContext,
-    						  		DefaultCommitMessageParser commitCommentParser)
+    						  		CommitMessageParser commitCommentParser)
     {
         NO_CACHE = new CacheControl();
         NO_CACHE.setNoCache(true);
