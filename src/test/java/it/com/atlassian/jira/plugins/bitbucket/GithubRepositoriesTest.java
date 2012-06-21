@@ -35,7 +35,7 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
 
     private static final String TEST_PUBLIC_REPO_URL = "https://github.com/jirabitbucketconnector/test-project";
     private static final String TEST_PRIVATE_REPO_URL = "https://github.com/dusanhornik/my-private-github-repo";
-    private static final String TEST_NOT_EXISTING_REPO_URL = "https://github.com/jirabitbucketconnector/repo-does-not-exist";
+    private static final String TEST_NOT_EXISTING_REPO_URL = "https://not-a-github.com/jirabitbucketconnector/repo-does-not-exist";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
     private static final String REPO_ADMIN_PASSWORD = "jirabitbucketconnector1";
 
@@ -177,7 +177,7 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
         hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
         assertThat(hooksPage, not(containsString(githubServiceConfigUrlPath)));
     }
-    
+
     private String getGithubServices(String url, String username, String password) throws Exception
     {
         HttpClient httpClient = new HttpClient();
@@ -190,7 +190,7 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
         httpClient.executeMethod(method);
         return method.getResponseBodyAsString();
     }
-    
+
     @Test
     public void testCommitStatistics()
     {
@@ -214,5 +214,5 @@ public class GithubRepositoriesTest extends BitBucketBaseTest
         Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
         Assert.assertTrue("Expected commit resource Added: 1", commitMessage.isAdded(statistics.get(0)));
     }
-    
+
 }
