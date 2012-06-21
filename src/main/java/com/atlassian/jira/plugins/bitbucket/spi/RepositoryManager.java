@@ -44,16 +44,7 @@ public interface RepositoryManager
      */
     public List<Changeset> getChangesets(String issueKey);
 
-    /**
-     * Load changeset from repository with changeset details
-     *
-     * @param repository
-     * @param node
-     * @return
-     */
-    public Changeset getChangeset(SourceControlRepository repository, String node);
-
-    public Changeset getChangeset(SourceControlRepository repository, Changeset changeset);
+    public Changeset getDetailChangeset(SourceControlRepository repository, Changeset changeset);
 
     /**
      * Removes the repository with given id and all the issue mappings for this repository
