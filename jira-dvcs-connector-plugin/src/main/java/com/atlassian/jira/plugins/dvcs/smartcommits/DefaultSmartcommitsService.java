@@ -5,6 +5,8 @@ import java.util.List;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Response;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueManager;
@@ -21,7 +23,7 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.util.I18nHelper;
 
-public class DefaultSmartcommitsService 
+public class DefaultSmartcommitsService implements SmartcommitsService
 {
     private static final String NO_COMMANDS = "dvcs.smartcommits.commands.nocommands";
     private static final String BAD_COMMAND = "dvcs.smartcommits.commands.badcommand";
@@ -40,8 +42,11 @@ public class DefaultSmartcommitsService
     private final CommitMessageParser commitCommentParser;
 
     public DefaultSmartcommitsService(IssueManager issueManager,
-    						  		TransitionHandler transitionHandler, 
+    								@Qualifier("smartcommitsTransitionsHandler")
+    						  		TransitionHandler transitionHandler,
+    						  		@Qualifier("smartcommitsCommentHandler")
     						  		CommentHandler commentHandler,
+    						  		@Qualifier("smartcommitsWorklogHandler")
     						  		WorkLogHandler workLogHandler,
     						  		JiraAuthenticationContext jiraAuthenticationContext,
     						  		CommitMessageParser commitCommentParser)
@@ -61,6 +66,7 @@ public class DefaultSmartcommitsService
     /**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public void parseAndHandleCommitCommands(List<Changeset> changesets)
     {
         for (Changeset changeset : changesets)
@@ -74,6 +80,7 @@ public class DefaultSmartcommitsService
     /**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public Response doCommands(CommitCommands commands)
     {
         User user = getUser();
