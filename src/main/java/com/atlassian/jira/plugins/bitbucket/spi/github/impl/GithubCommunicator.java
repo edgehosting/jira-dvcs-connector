@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,9 +9,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.atlassian.jira.plugins.bitbucket.spi.*;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.RepositoryBranch;
+import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.service.CommitService;
+import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +30,7 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
+import com.atlassian.jira.plugins.bitbucket.spi.*;
 import com.atlassian.jira.plugins.bitbucket.spi.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubUserFactory;
@@ -31,9 +41,10 @@ import com.atlassian.sal.api.net.ResponseException;
 
 public class GithubCommunicator implements Communicator
 {
+    private static final int NUM_ATTEMPTS = 8;
+
     private final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
 
-    private GithubRepositoryManager githubRepositoryManager;
     private final AuthenticationFactory authenticationFactory;
     private final RequestHelper requestHelper;
 
@@ -46,20 +57,19 @@ public class GithubCommunicator implements Communicator
     @Override
     public SourceControlUser getUser(SourceControlRepository repository, String username)
     {
+        final GitHubClient client = createClient(repository);
+        final UserService userService = new UserService(client);
+
         try
         {
-            RepositoryUri uri = repository.getRepositoryUri();
-            log.debug("parse user [ {} ]", username);
-            Authentication authentication = authenticationFactory.getAuthentication(repository);
-            String responseString = requestHelper.get(authentication, "/user/show/" + CustomStringUtils.encode(username), null, uri.getApiUrl());
-            return GithubUserFactory.parse(new JSONObject(responseString).getJSONObject("user"));
-        } catch (ResponseException e)
+            log.debug("Get user information for: [ {} ]", username);
+            final User ghUser = userService.getUser(username);
+
+            return GithubUserFactory.transform(ghUser);
+        } catch (IOException e)
         {
             log.debug("could not load user [ " + username + " ]");
-            return SourceControlUser.UNKNOWN_USER;
-        } catch (JSONException e)
-        {
-            log.debug("could not load user [ " + username + " ]");
+
             return SourceControlUser.UNKNOWN_USER;
         }
     }
@@ -100,6 +110,57 @@ public class GithubCommunicator implements Communicator
         }
         return reloadedChangeset;
     }
+
+    public PageIterator<RepositoryCommit> getPageIterator(SourceControlRepository repository, String branch)
+    {
+        for (int attempt = 1; attempt < NUM_ATTEMPTS; attempt++)
+
+        {
+            try
+            {
+                return getPageIteratorInternal(repository, branch);
+            } catch (SourceControlException e)
+            {
+                long delay = (long) (1000*Math.pow(3, attempt));
+                log.warn("Attempt #"+attempt+" (out of "+NUM_ATTEMPTS+"): Retrieving changesets failed: " + e.getMessage() +"\n. Retrying in " + delay/1000 + "secs");
+
+                try
+                {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e1)
+                {
+                    // ignore
+                }
+            }
+        }
+
+        return getPageIteratorInternal(repository, branch);
+    }
+
+    private PageIterator<RepositoryCommit> getPageIteratorInternal(SourceControlRepository repository, String branch)
+    {
+        RepositoryUri uri = repository.getRepositoryUri();
+        String owner = uri.getOwner();
+        String slug = uri.getSlug();
+
+        final GitHubClient client = createClient(repository);
+        final CommitService commitService = new CommitService(client);
+
+        return commitService.pageCommits(RepositoryId.create(owner, slug), branch, null);
+    }
+
+
+    private GitHubClient createClient(SourceControlRepository repository)
+    {
+        final RepositoryUri uri = repository.getRepositoryUri();
+        String host = uri.getBaseUrl();
+        GithubOAuthAuthentication auth = (GithubOAuthAuthentication) authenticationFactory.getAuthentication(repository);
+
+        final GitHubClient client = GitHubClient.createClient(host);
+        client.setOAuth2Token(auth.getAccessToken());
+        return client;
+    }
+
 
     public List<Changeset> getChangesets(SourceControlRepository repository, String branch, int pageNumber)
     {
@@ -239,23 +300,23 @@ public class GithubCommunicator implements Communicator
 
     private List<String> getBranches(SourceControlRepository repository)
     {
-        List<String> branches = new ArrayList<String>();
-        RepositoryUri repositoryUri = repository.getRepositoryUri();
-        String owner = repositoryUri.getOwner();
-        String slug = repositoryUri.getSlug();
-        Authentication authentication = authenticationFactory.getAuthentication(repository);
+        final RepositoryUri uri = repository.getRepositoryUri();
+        String owner = uri.getOwner();
+        String slug = uri.getSlug();
 
-        log.debug("get list of branches in github repository [ {} ]", slug);
+        final GitHubClient client = createClient(repository);
+        RepositoryService repositoryService = new RepositoryService(client);
+
+        List<String> branches = new ArrayList<String>();
 
         try
         {
-            String responseString = requestHelper.get(authentication, "/repos/show/" +
-                    CustomStringUtils.encode(owner) + "/" + CustomStringUtils.encode(slug) + "/branches", null, repositoryUri.getApiUrl());
+            final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(owner, slug));
+            log.debug("Found branches: " + ghBranches.size());
 
-            JSONArray list = new JSONObject(responseString).getJSONObject("branches").names();
-            for (int i = 0; i < list.length(); i++)
+            for (RepositoryBranch ghBranch: ghBranches)
             {
-                final String branchName = list.getString(i);
+                final String branchName = ghBranch.getName();
                 if (branchName.equalsIgnoreCase("master"))
                 {
                     branches.add(0,branchName);
@@ -264,7 +325,7 @@ public class GithubCommunicator implements Communicator
                     branches.add(branchName);
                 }
             }
-        } catch (Exception e)
+        } catch (IOException e)
         {
             log.info("Can not obtain branches list from repository [ {} ]", slug);
             // we have to use at least master branch
@@ -302,7 +363,7 @@ public class GithubCommunicator implements Communicator
             if (extendedResponse.isSuccessful())
             {
                 String responseString = extendedResponse.getResponseString();
-                return new JSONObject(responseString).getJSONObject("repository").getString("name");
+                return new JSONObject(responseString).getString("name");
             } else
             {
                 throw new ResponseException("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
