@@ -47,7 +47,6 @@ public final class HttpSenderUtils {
 		HttpClient httpClient = new HttpClient();
 		PostMethod method = new PostMethod(url);
 		method.addParameters(toPairs(params));
-
 		httpClient.executeMethod(method);
 		
 		return method.getResponseBodyAsString();

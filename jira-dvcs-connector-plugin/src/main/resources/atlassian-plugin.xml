@@ -30,18 +30,18 @@
 	
 	<component-import key="issueManager" interface="com.atlassian.jira.issue.IssueManager" />
 		
-	<component key="smartcommitsService" name="DVCS Smartcommits Service Job"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsService" public="true">
+	<component key="smartcommitsService" name="DVCS Smartcommits Service Job"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsService" >
 	</component>
-	<component key="smartcommitsParser" name="DVCS Smartcommits Parser"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultCommitMessageParser" public="true">
-	</component>
-
-	<component key="smartcommitsWorklogHandler" name="DVCS Smartcommits Worklog Time Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler" public="true">
+	<component key="smartcommitsParser" name="DVCS Smartcommits Parser"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultCommitMessageParser">
 	</component>
 
-	<component key="smartcommitsCommentHandler" name="DVCS Smartcommits Comment Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommentHandler" public="true">
+	<component key="smartcommitsWorklogHandler" name="DVCS Smartcommits Worklog Time Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler">
 	</component>
 
-	<component key=smartcommitsTransitionsHandler name="DVCS Smartcommits workflow Transition Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler" public="true">
+	<component key="smartcommitsCommentHandler" name="DVCS Smartcommits Comment Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommentHandler">
+	</component>
+
+	<component key="smartcommitsTransitionsHandler" name="DVCS Smartcommits workflow Transition Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler">
 	</component>
 	
 	

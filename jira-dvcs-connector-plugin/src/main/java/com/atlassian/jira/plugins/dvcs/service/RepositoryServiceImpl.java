@@ -105,7 +105,7 @@ public class RepositoryServiceImpl implements RepositoryService
 			repository.setOrgName(organization.getName());
 
 			final Repository savedRepository = repositoryDao.save(repository);
-			log.debug("Adding new repository " + savedRepository);
+			log.debug("Adding new repository with name " + savedRepository.getName());
 
 			// if linked install post commit hook
 			if (savedRepository.isLinked())

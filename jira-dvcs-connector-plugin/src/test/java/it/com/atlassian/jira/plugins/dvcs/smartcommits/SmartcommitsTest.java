@@ -14,8 +14,7 @@ public class SmartcommitsTest
 	@Test
 	public void testCommentIssueCommand() throws IOException
 	{
-
-		HttpSenderUtils.sendPostHttpRequest("", EasyMap.build("payload", resource("SmartcommitsTest-bitbucket.json")));
+		HttpSenderUtils.sendPostHttpRequest("http://localhost:2990/jira/rest/bitbucket/1.0/repository/60/sync", EasyMap.build("payload", resource("SmartcommitsTest-bitbucket.json")));
 
 	}
 
