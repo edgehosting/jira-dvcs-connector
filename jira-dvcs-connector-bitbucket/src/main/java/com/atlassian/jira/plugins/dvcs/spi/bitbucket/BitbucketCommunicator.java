@@ -536,6 +536,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 			
 			try
 			{ 
+				log.debug("Going invite " + userEmail + " to group " + group + " of bitbucket organization " + organization.getName());
 				
 				ExtendedResponse response = requestHelper.runRequestGetExtendedResponse(MethodType.PUT,
 															apiUrl, 
