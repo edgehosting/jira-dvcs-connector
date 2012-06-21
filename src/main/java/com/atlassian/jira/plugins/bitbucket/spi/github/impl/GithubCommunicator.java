@@ -238,7 +238,9 @@ public class GithubCommunicator implements Communicator
             if ("https://github.com".equalsIgnoreCase(repositoryUri.getBaseUrl()) && StringUtils.isNotBlank(repositoryUri.getOwner()) && StringUtils.isNotBlank(repositoryUri.getSlug()))
             {
                 repositoryPrivate = Boolean.TRUE; // it looks like github repository, but github doesn't tell us if it exists. Lets assume it's private
-            } else
+            } else if (repositoryUri.toString().endsWith(".git")) {
+                return null;
+            }
             {
                 return null;
             }
@@ -310,7 +312,8 @@ public class GithubCommunicator implements Communicator
             // returns HttpStatus.SC_NOT_FOUND response
             if (re.getStatus() == HttpStatus.SC_NOT_FOUND)
             {
-                throw new SourceControlException.UnauthorisedException("You don't have access to the repository.");
+                throw new SourceControlException.UnauthorisedException(
+                        "The repository is private or you don't have access to the repository");
             }
 
             throw new SourceControlException("Server response was not successful!");
