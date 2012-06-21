@@ -311,6 +311,8 @@ public class GithubCommunicator implements Communicator
                     repositoryUri.getApiUrl());
             // in case we have valid access_token but for other account github
             // returns HttpStatus.SC_NOT_FOUND response
+
+            // for unauthorized access Github API v3 return 404
             if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
             {
                 throw new SourceControlException.UnauthorisedException("You don't have access to the repository.");
