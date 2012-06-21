@@ -165,9 +165,7 @@ public class GithubCommunicator implements Communicator
         String slug = uri.getSlug();
 
         final GitHubClient client = createClient(repo);
-        RepositoryService repositoryService = new RepositoryService(client);//TODO !!! rafactor na utility method taking repo and returning service
-                                                                            // SCR GithubServiceUtils.repositoryService(SCR repo)...
-                                                                            // + find all similar usages
+        RepositoryService repositoryService = new RepositoryService(client);
         final RepositoryHook repositoryHook = new RepositoryHook();
 
         repositoryHook.setName("web");
