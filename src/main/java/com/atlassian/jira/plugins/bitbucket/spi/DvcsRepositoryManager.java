@@ -119,13 +119,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     }
 
     @Override
-    public Changeset getChangeset(SourceControlRepository repository, String node)
-    {
-        return getCommunicator().getChangeset(repository, node);
-    }
-
-    @Override
-    public Changeset getChangeset(SourceControlRepository repository, Changeset changeset)
+    public Changeset getDetailChangeset(SourceControlRepository repository, Changeset changeset)
     {
         return getCommunicator().getChangeset(repository, changeset);
     }
@@ -233,7 +227,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
             urlInfo.addValidationError("Repository " + urlInfo.getRepositoryUrl() + " is already linked to project "
                 + urlInfo.getProjectKey());
         }
-        return urlInfo; 
+        return urlInfo;
     }
 
     @Override
@@ -270,8 +264,8 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         List<Changeset> changesets = Lists.transform(latestIssueMappings, toChangesetTransformer);
         return Sets.newHashSet(changesets);
     }
-    
-    
+
+
     @Override
     public Date getLastCommitDate(SourceControlRepository repo)
     {
@@ -285,7 +279,7 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
         ProjectMapping projectMapping = repositoryPersister.getRepository(repo.getId());
         if (projectMapping == null)
             throw new SourceControlException("Repository " + repo.getRepositoryUri().getRepositoryUrl() + " ("+ repo.getId() + ") does not exists!" );
-       
+
         projectMapping.setLastCommitDate(date);
         projectMapping.save();
     }
