@@ -82,7 +82,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                 {
                     try
                     {
-                        detailChangeset = repositoryManager.getChangeset(key.getRepository(), changeset.getNode());
+                        detailChangeset = repositoryManager.getDetailChangeset(key.getRepository(), changeset);
                     } catch (SourceControlException e)
                     {
                         log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
@@ -133,9 +133,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         log.debug("synchronize [ {} ] with [ {} ]", key.getRepository().getProjectKey(),
                 key.getRepository().getRepositoryUri().getRepositoryUrl());
 
-        
         Iterable<Changeset> changesets = key.getChangesets() == null ? communicator.getChangesets(repositoryManager, key.getRepository()) : key.getChangesets();
         return changesets;
     }
-
 }
