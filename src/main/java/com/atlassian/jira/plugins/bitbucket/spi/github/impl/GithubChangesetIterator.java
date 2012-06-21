@@ -1,18 +1,24 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github.impl;
 
-import com.atlassian.jira.plugins.bitbucket.api.Changeset;
-import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
-
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
+import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.client.PageIterator;
+
+import com.atlassian.jira.plugins.bitbucket.api.Changeset;
+import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
+import com.atlassian.jira.plugins.bitbucket.spi.github.GithubChangesetFactory;
+
 public class GithubChangesetIterator implements Iterator<Changeset>
 {
     private ListIterator<Changeset> inPageChangesetsIterator = Collections.<Changeset>emptyList().listIterator();
-    private PagesIterator pagesIterator;
+    private StoppablePageIterator pagesIterator;
 
     private BranchesIterator branchesIterator;
     private GithubRepositoryManager githubRepositoryManager;
@@ -82,54 +88,40 @@ public class GithubChangesetIterator implements Iterator<Changeset>
     }
 }
 
-class PagesIterator implements Iterator<ListIterator<Changeset>>
+class StoppablePageIterator implements Iterator<ListIterator<Changeset>>
 {
-
-    private GithubCommunicator githubCommunicator;
-    private SourceControlRepository repository;
-
-    private int index = 0;
-    private int currentPageNumber = 0;   // github gives us pages indexed from 1 (zero is one before)
-    private String branch;
-    private List<Changeset> changesets;
+    private final PageIterator<RepositoryCommit> pageIterator;
+    private final SourceControlRepository repository;
+    private final String branch;
     private boolean stoped = false;
 
-    PagesIterator(String branch, GithubCommunicator githubCommunicator, SourceControlRepository repository)
+
+    StoppablePageIterator(PageIterator<RepositoryCommit> pageIterator, SourceControlRepository repository, String branch)
     {
-        this.branch = branch;
-        this.githubCommunicator = githubCommunicator;
+        this.pageIterator = pageIterator;
         this.repository = repository;
+        this.branch = branch;
     }
 
     @Override
     public boolean hasNext()
     {
-        if (stoped) {
-            return false;
-        }
-        if (index < currentPageNumber) {
-            return containsChangesets();
-        }
-        currentPageNumber++;
-        changesets = githubCommunicator.getChangesets(repository, branch, currentPageNumber);
-        return containsChangesets();
-    }
-
-    private boolean containsChangesets() {
-        return changesets != null && !changesets.isEmpty();
+        return !stoped && pageIterator.hasNext();
     }
 
     @Override
     public ListIterator<Changeset> next()
     {
-        index++;
-        if (index != currentPageNumber && !hasNext()) {
-            throw new NoSuchElementException();
+        final ArrayList<Changeset> changesets = new ArrayList<Changeset>();
+        final Collection<RepositoryCommit> page = pageIterator.next();
+
+        for (RepositoryCommit repositoryCommit : page)
+        {
+            Changeset changeset = GithubChangesetFactory.transform(repositoryCommit, repository.getId(), branch);
+            changesets.add(changeset);
         }
-        if (changesets != null && !changesets.isEmpty()) {
-            return changesets.listIterator();
-        }
-        return Collections.<Changeset>emptyList().listIterator();
+
+        return changesets.listIterator();
     }
 
     @Override
@@ -143,7 +135,7 @@ class PagesIterator implements Iterator<ListIterator<Changeset>>
     }
 }
 
-class BranchesIterator implements Iterator<PagesIterator>
+class BranchesIterator implements Iterator<StoppablePageIterator>
 {
 
     private ListIterator<String> branchNamesIterator = Collections.<String>emptyList().listIterator();
@@ -164,14 +156,17 @@ class BranchesIterator implements Iterator<PagesIterator>
     }
 
     @Override
-    public PagesIterator next()
+    public StoppablePageIterator next()
     {
         if (!hasNext())
         {
             return null;
         }
 
-        return new PagesIterator(branchNamesIterator.next(), githubCommunicator, repository);
+        String branch = branchNamesIterator.next();
+        return new StoppablePageIterator(githubCommunicator.getPageIterator(repository, branch),
+                                         repository,
+                                         branch);
     }
 
     @Override
