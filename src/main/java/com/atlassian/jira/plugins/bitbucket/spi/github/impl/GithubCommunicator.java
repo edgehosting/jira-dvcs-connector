@@ -230,7 +230,7 @@ public class GithubCommunicator implements Communicator
     @Override
     public UrlInfo getUrlInfo(final RepositoryUri repositoryUri, String projectKey)
     {
-        log.debug("get repository info in bitbucket [ {} ]", repositoryUri.getRepositoryUrl());
+        log.debug("get repository info from github [ {} ]", repositoryUri.getRepositoryUrl());
 
         Boolean repositoryPrivate = requestHelper.isRepositoryPrivate1(repositoryUri);
         if (repositoryPrivate == null)
@@ -238,9 +238,7 @@ public class GithubCommunicator implements Communicator
             if ("https://github.com".equalsIgnoreCase(repositoryUri.getBaseUrl()) && StringUtils.isNotBlank(repositoryUri.getOwner()) && StringUtils.isNotBlank(repositoryUri.getSlug()))
             {
                 repositoryPrivate = Boolean.TRUE; // it looks like github repository, but github doesn't tell us if it exists. Lets assume it's private
-            } else if (repositoryUri.toString().endsWith(".git")) {
-                return null;
-            }
+            } else
             {
                 return null;
             }
