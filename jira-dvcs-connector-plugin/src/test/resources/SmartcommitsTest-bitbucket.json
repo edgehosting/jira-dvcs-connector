@@ -10,7 +10,7 @@
                     "type": "modified"
                 }
             ], 
-            "message": "Added some featureA things QA-1 #time 30m", 
+            "message": "JRA-123 JRA-234 JRA-345 #resolve #time 2d 5h #comment Task completed ahead of schedule", 
             "node": "d14d26a93fd2", 
             "parents": [
                 "1b458191f31a"

@@ -11,6 +11,6 @@ public interface CommitMessageParser
 	 * @param comment The comment to parse
 	 * @return The parsed actions
 	 */
-	public abstract CommitCommands parseCommitComment(final String comment);
+	CommitCommands parseCommitComment(final String comment);
 
 }

@@ -28,6 +28,8 @@ import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.smartcommits.CommitMessageParser;
+import com.atlassian.jira.plugins.dvcs.smartcommits.PayloadChangeset;
+import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsPayloadParser;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsService;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
@@ -58,6 +60,9 @@ public class RootResource
 	/** The commit message parser. */
 	private final CommitMessageParser commitMessageParser;
 
+	/** The smartcommits payload parser. */
+	private final SmartcommitsPayloadParser smartcommitsPayloadParser;
+
 	/**
 	 * The Constructor.
 	 * 
@@ -66,12 +71,17 @@ public class RootResource
 	 * @param repositoryService
 	 *            the repository service
 	 */
-	public RootResource(OrganizationService organizationService, RepositoryService repositoryService,  SmartcommitsService smartcommitsService, CommitMessageParser commitMessageParser)
+	public RootResource(OrganizationService organizationService,
+						RepositoryService repositoryService,
+						SmartcommitsService smartcommitsService,
+						CommitMessageParser commitMessageParser,
+						SmartcommitsPayloadParser smartcommitsPayloadParser)
 	{
 		this.organizationService = organizationService;
 		this.repositoryService = repositoryService;
 		this.smartcommitsService = smartcommitsService;
 		this.commitMessageParser = commitMessageParser;
+		this.smartcommitsPayloadParser = smartcommitsPayloadParser;
 	}
 
 	/**
@@ -126,7 +136,7 @@ public class RootResource
 	@AnonymousAllowed
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/repository/{id}/sync")
+	@Path("/repository/{id}/forcesync")
 	public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
 	{
 		log.debug("Rest request to sync repository [{}] with payload [{}]", id, payload);
@@ -139,19 +149,42 @@ public class RootResource
 		UriBuilder ub = uriInfo.getBaseUriBuilder();
 		URI uri = ub.path("/repository/{id}").build(id);
 
+		return Response.seeOther(uri).build();
+	}
+	
+	/**
+	 * Postcommit hook.
+	 *
+	 * @param repositoryId the repository id
+	 * @param payload the payload
+	 * @return the response
+	 */
+	@AnonymousAllowed
+	@POST
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/repository/{id}/sync")
+	public Response postcommitHook(@PathParam("id") int repositoryId, @FormParam("payload") String payload)
+	{
+		log.debug("Rest request for postcommit hook [{}] with payload [{}]", repositoryId, payload);
 		//
 		// process smartcommits
 		//
-		processSmartcommits(payload);
+		processSmartcommits(payload, repositoryId);
 		//
-		return Response.seeOther(uri).build();
+		return Response.noContent().build();
 	}
 
-	private void processSmartcommits(String payload)
+	private void processSmartcommits(String payload, int repositoryId)
 	{
 		// TODO Thread
-		CommitCommands commitCommands = commitMessageParser.parseCommitComment(payload);
-		smartcommitsService.doCommands(commitCommands);
+
+		List<PayloadChangeset> changesets = smartcommitsPayloadParser.parse(payload, repositoryId);
+		for (PayloadChangeset payloadChangeset : changesets)
+		{
+			CommitCommands commitCommands = commitMessageParser.parseCommitComment(payloadChangeset.getCommitMessage());
+			commitCommands.setAuthor(payloadChangeset.getAuthor());
+			smartcommitsService.doCommands(commitCommands);
+		}
 	}
 
 	/**

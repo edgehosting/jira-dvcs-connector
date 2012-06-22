@@ -18,6 +18,7 @@
     <component-import key="eventPublisher" interface="com.atlassian.event.api.EventPublisher" />
     <component-import key="pluginScheduler" interface="com.atlassian.sal.api.scheduling.PluginScheduler" />
     <component-import key="pluginAccessor" interface="com.atlassian.plugin.PluginAccessor" />
+    <component-import key="userManager" interface="com.atlassian.jira.user.util.UserManager" />
 
     <component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
@@ -47,6 +48,10 @@
 
 	<component key="smartcommitsTransitionsHandler" name="DVCS Smartcommits workflow Transition Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommandHandler</interface>
+	</component>
+	
+	<component key="smartcommitsPayloadParser" name="DVCS Smartcommits Payload Parser"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsPayloadParser" public="true">
+		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsPayloadParser</interface>
 	</component>
 	
 	
