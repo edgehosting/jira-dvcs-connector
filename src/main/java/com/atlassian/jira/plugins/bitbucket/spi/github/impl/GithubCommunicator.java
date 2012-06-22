@@ -237,7 +237,12 @@ public class GithubCommunicator implements Communicator
         {
             if ("https://github.com".equalsIgnoreCase(repositoryUri.getBaseUrl()) && StringUtils.isNotBlank(repositoryUri.getOwner()) && StringUtils.isNotBlank(repositoryUri.getSlug()))
             {
-                repositoryPrivate = Boolean.TRUE; // it looks like github repository, but github doesn't tell us if it exists. Lets assume it's private
+                if (repositoryUri.getRepositoryUrl().endsWith(".git")) {
+                    return null;
+                }
+                else {
+                    repositoryPrivate = Boolean.TRUE; // it looks like github repository, but github doesn't tell us if it exists. Lets assume it's private
+                }
             } else
             {
                 return null;
