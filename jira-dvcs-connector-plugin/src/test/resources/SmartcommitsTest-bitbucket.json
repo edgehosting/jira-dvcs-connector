@@ -2,7 +2,7 @@
     "canon_url": "https://bitbucket.org", 
     "commits": [
         {
-            "author": "marcus", 
+            "author": "kiki", 
             "branch": "featureA", 
             "files": [
                 {
@@ -10,7 +10,7 @@
                     "type": "modified"
                 }
             ], 
-            "message": "Added some featureA things", 
+            "message": "Added some featureA things QA-1 #time 30m", 
             "node": "d14d26a93fd2", 
             "parents": [
                 "1b458191f31a"
