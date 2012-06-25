@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,12 +137,21 @@ public class RootResource
 	@AnonymousAllowed
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/repository/{id}/forcesync")
+	@Path("/repository/{id}/sync")
 	public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
 	{
 		log.debug("Rest request to sync repository [{}] with payload [{}]", id, payload);
 
-		repositoryService.sync(id, false);
+		if (StringUtils.isNotBlank(payload)) {
+			
+			repositoryService.sync(id, true);
+		
+		} else {
+			
+			repositoryService.sync(id, false);
+			
+		}
+			
 
 		// ...
 		// redirect to Repository resource - that will contain sync
@@ -150,28 +160,6 @@ public class RootResource
 		URI uri = ub.path("/repository/{id}").build(id);
 
 		return Response.seeOther(uri).build();
-	}
-	
-	/**
-	 * Postcommit hook.
-	 *
-	 * @param repositoryId the repository id
-	 * @param payload the payload
-	 * @return the response
-	 */
-	@AnonymousAllowed
-	@POST
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/repository/{id}/sync")
-	public Response postcommitHook(@PathParam("id") int repositoryId, @FormParam("payload") String payload)
-	{
-		log.debug("Rest request for postcommit hook [{}] with payload [{}]", repositoryId, payload);
-		//
-		// process smartcommits
-		//
-		processSmartcommits(payload, repositoryId);
-		//
-		return Response.noContent().build();
 	}
 
 	private void processSmartcommits(String payload, int repositoryId)

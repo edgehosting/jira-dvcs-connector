@@ -21,6 +21,7 @@ import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.user.util.UserManager;
 import com.atlassian.jira.util.I18nHelper;
 
+// TODO take away WS layer from here
 public class DefaultSmartcommitsService implements SmartcommitsService
 {
 	private static final String NO_COMMANDS = "dvcs.smartcommits.commands.nocommands";
@@ -65,6 +66,14 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 	public Response doCommands(CommitCommands commands)
 	{
 		User user = getUser(commands.getAuthor());
+		
+		//
+		if (user == null) {
+			return Response.noContent().build();
+		}
+		//
+		jiraAuthenticationContext.setLoggedInUser(user);
+		//
 
 		if (commands == null || commands.getCommands().isEmpty())
 		{
@@ -140,6 +149,6 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 	private User getUser(String username)
 	{
 
-		return userManager.getUser(username);
+		return userManager.getUserObject(username);
 	}
 }

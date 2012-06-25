@@ -1,5 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits.handlers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.issue.IssueService;
 import com.atlassian.jira.issue.Issue;
@@ -16,9 +25,6 @@ import com.atlassian.jira.workflow.WorkflowManager;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.opensymphony.workflow.loader.ActionDescriptor;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.*;
 
 public class TransitionHandler implements CommandHandler<Issue> {
 
@@ -31,22 +37,26 @@ public class TransitionHandler implements CommandHandler<Issue> {
     private static final String NO_MATCHING_ACTIONS_TEMPLATE = "fisheye.commithooks.transition.nomatch";
     private static final String MULTIPLE_ACTIONS_TEMPLATE = "fisheye.commithooks.transition.ambiguous";
 
-    private IssueService issueService;
-    private WorkflowManager workflowManager;
-    private I18nHelper i18nHelper;
+    private final IssueService issueService;
+    private final WorkflowManager workflowManager;
+    private final I18nHelper i18nHelper;
 
     public TransitionHandler(IssueService issueService, WorkflowManager workflowManager, JiraAuthenticationContext jiraAuthenticationContext) {
         this.issueService = issueService;
         this.workflowManager = workflowManager;
-        this.i18nHelper = jiraAuthenticationContext.getI18nHelper();
+        i18nHelper = jiraAuthenticationContext.getI18nHelper();
     }
 
-    public CommandType getCommandType() {
+    @Override
+	public CommandType getCommandType() {
         return CMD_TYPE;
     }
 
-    public Either<CommitHookErrors, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args) {
-        String cmd = args.isEmpty() ? null : args.get(0);
+    @Override
+	public Either<CommitHookErrors, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args) {
+        
+    	String cmd = commandName;
+      
         if (cmd == null || cmd.equals("")) {
             return Either.error(CommitHookErrors.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(NO_COMMAND_PROVIDED_TEMPLATE, issue.getKey())));
@@ -97,7 +107,8 @@ public class TransitionHandler implements CommandHandler<Issue> {
     private Iterator<String> getActionNamesIterator(Collection<ValidatedAction> matchingValidActions) {
         return Iterables.transform(matchingValidActions,
                     new Function<ValidatedAction, String>() {
-                        public String apply(ValidatedAction in) {
+                        @Override
+						public String apply(ValidatedAction in) {
                             return in.action.getName();
                         }
                     }).iterator();
@@ -150,7 +161,7 @@ public class TransitionHandler implements CommandHandler<Issue> {
             new ArrayList<ValidatedAction>();
         for (ActionDescriptor ad : actionsToValidate) {
             IssueService.TransitionValidationResult validation =
-                    issueService.validateTransition(user, issue.getId(), ad.getId(), parameters);
+                    issueService.validateTransition(user, issue.getId(), ad.getId(), new IssueInputParametersImpl());
             if (validation.isValid()) {
                 validations.add(new ValidatedAction(ad, validation));
             }

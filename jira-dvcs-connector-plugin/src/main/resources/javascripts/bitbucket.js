@@ -75,7 +75,7 @@ function switchDvcsDetailsInternal(dvcsType) {
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 function forceSync(repositoryId) {
-	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/forcesync", function (data) {
+	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/sync", function (data) {
 		updateSyncStatus(data);
 	});
 }

@@ -2,7 +2,7 @@
     "canon_url": "https://bitbucket.org", 
     "commits": [
         {
-            "author": "kiki", 
+            "author": "admin", 
             "branch": "featureA", 
             "files": [
                 {
@@ -10,7 +10,7 @@
                     "type": "modified"
                 }
             ], 
-            "message": "JRA-123 JRA-234 JRA-345 #resolve #time 2d 5h #comment Task completed ahead of schedule", 
+            "message": "QA-1 #close Task completed ahead of schedule", 
             "node": "d14d26a93fd2", 
             "parents": [
                 "1b458191f31a"

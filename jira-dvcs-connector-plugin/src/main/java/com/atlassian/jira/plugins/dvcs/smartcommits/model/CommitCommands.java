@@ -76,5 +76,11 @@ public class CommitCommands {
         public List<String> getArguments() {
             return arguments;
         }
+        
+        @Override
+        public String toString()
+        {
+        	return issueKey + " " + commandName + " args [ " + arguments + "]";
+        }
     }
 }
