@@ -32,7 +32,7 @@ public class GithubRepositoryUri extends DefaultRepositoryUri
     @Override
     public String getRepositoryInfoUrl()
     {
-        return MessageFormat.format("/repos/show/{0}/{1}", getOwner(), getSlug());
+        return MessageFormat.format("/repos/{0}/{1}", getOwner(), getSlug());
     }
 
     @Override
