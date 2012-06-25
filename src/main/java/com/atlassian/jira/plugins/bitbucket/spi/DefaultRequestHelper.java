@@ -80,7 +80,7 @@ public class DefaultRequestHelper implements RequestHelper
                                 Map<String, Object> params, String postData, ResponseHandler responseHandler) throws ResponseException
     {
         String url = apiBaseUrl + urlPath + buildQueryString(params);
-        log.debug("get [ " + url + " ]");
+        log.debug(methodType + " [ " + url + " ]");
         if (auth instanceof GithubOAuthAuthentication)
         {
             String separator = (params == null || params.isEmpty()) ? "?" : "&";
