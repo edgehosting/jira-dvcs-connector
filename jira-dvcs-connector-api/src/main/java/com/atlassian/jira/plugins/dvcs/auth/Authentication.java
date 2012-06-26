@@ -22,9 +22,9 @@ public interface Authentication
         }
         
         @Override
-        public void addAuthentication(HttpMethod forMethod, HttpClient forClient) {
-        	// TODO Auto-generated method stub
-        	
+        public void addAuthentication(HttpMethod forMethod, HttpClient forClient)
+        {
+            // add no authentication headers
         }
     };
 
