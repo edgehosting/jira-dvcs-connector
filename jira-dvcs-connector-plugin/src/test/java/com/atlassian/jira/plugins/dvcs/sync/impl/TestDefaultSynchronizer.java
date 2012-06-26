@@ -37,11 +37,9 @@ public final class TestDefaultSynchronizer
     @Captor
     private ArgumentCaptor<Changeset> savedChangesetCaptor;
 
-
+    
     private Changeset changesetWithJIRAIssue    = new Changeset(123, "node", "message MES-123 text",       new Date());
     private Changeset changesetWithoutJIRAIssue = new Changeset(123, "node", "message without JIRA issue", new Date());
-
-    //TODO if soft sync, bude sa volat lastCommitDate, inak nie???
 
     @Test
     public void softSynchronization_ShouldSaveOneChangeset() throws InterruptedException
@@ -63,12 +61,12 @@ public final class TestDefaultSynchronizer
         synchronizer.synchronize(repositoryMock, synchronisationOperation);
 
         waitUntilProgressEnds(synchronizer);
-
+       
         verify(changesetServiceMock, times(1)).save(savedChangesetCaptor.capture());
-
+        
         assertThat(savedChangesetCaptor.getValue().getIssueKey(), is("MES-123"));
     }
-
+    
     private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException
     {
         Progress progress = synchronizer.getProgress(repositoryMock);
