@@ -233,7 +233,7 @@
 			            <th>Repository</th>
 			            <th style="text-align: right;">Last Commit</th>   ## last commit
 			            <th class="dvcs-centered">Sync Repo</th>   ## sync repo
-
+						<th class="dvcs-smartcommits-head">Smartcommits Enabled</th>
 			        </tr>
 			    </thead>
 			    <tbody>
@@ -244,6 +244,12 @@
 						#set( $repoAutolink = "checked='checked'")
 						#else
 						#set( $repoAutolink = "")
+					#end
+					
+					#if($repo.isSmartcommitsEnabled())
+						#set( $smartcommitsEnabled = "checked='checked'")
+						#else
+						#set( $smartcommitsEnabled = "")
 					#end
 					
 					#if(!$repo.linked)
@@ -262,8 +268,7 @@
 
                             <span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
                         </td>
-
-
+                        
 			            <td class="dvcs-org-reponame"><a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a></td>
 
 			            
@@ -289,6 +294,16 @@
                                 <a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">
                                     <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo $textutils.htmlEncode($repo.name)" >&nbsp;</span>
                                 </a>
+                            </div>
+                        </td>
+                        
+                        <td class="dvcs-smartcommits-repo">
+                        	<div id="dvcs-action-container3-$repo.id" class="$!dvcsNoDisplayClass">
+	                            <span style="padding-left: 1px;">&nbsp;</span>
+	                            <input class="repo_autolink_check" id="repo_smartcommits$repo.id" type="checkbox" $!smartcommitsEnabled
+	                             onclick="javascript: enableRepoSmartcommits($repo.id, 'repo_smartcommits$repo.id');" />
+	
+	                            <span style="display:none; width: 16px; height: 16px;" id="repo_smartcommits${repo.id}working" class="syncicon running">&nbsp;</span>
                             </div>
                         </td>
 

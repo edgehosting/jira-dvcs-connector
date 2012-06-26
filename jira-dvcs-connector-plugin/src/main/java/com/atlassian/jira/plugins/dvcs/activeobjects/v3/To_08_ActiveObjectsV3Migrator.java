@@ -1,5 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Map;
+
+import net.java.ao.EntityStreamCallback;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
@@ -7,15 +18,6 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.google.common.collect.Maps;
-import net.java.ao.EntityStreamCallback;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.Map;
 
 /**
  *  Data migration from jira-github-connector plugin to jira-bitbucket-connector plugin
@@ -140,6 +142,8 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         repositoryMap.put(RepositoryMapping.LAST_COMMIT_DATE, projectMapping.getLastCommitDate());
         repositoryMap.put(RepositoryMapping.LINKED, true);
         repositoryMap.put(RepositoryMapping.DELETED, false);
+        repositoryMap.put(RepositoryMapping.SMARTCOMMITS_ENABLED, false);
+
         log.debug("Migrating repository : " + repositoryMap);
         return repositoryMap;
     }

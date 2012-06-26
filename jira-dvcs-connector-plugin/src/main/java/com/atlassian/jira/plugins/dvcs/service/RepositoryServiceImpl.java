@@ -19,16 +19,39 @@ import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.net.ResponseException;
 import com.google.common.collect.Maps;
 
+/**
+ * The Class RepositoryServiceImpl.
+ */
 public class RepositoryServiceImpl implements RepositoryService
 {
+    
+    /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(RepositoryServiceImpl.class);
 
+	/** The communicator provider. */
 	private final DvcsCommunicatorProvider communicatorProvider;
+	
+	/** The repository dao. */
 	private final RepositoryDao repositoryDao;
+	
+	/** The synchronizer. */
 	private final Synchronizer synchronizer;
+	
+	/** The changeset service. */
 	private final ChangesetService changesetService;
+	
+	/** The application properties. */
 	private final ApplicationProperties applicationProperties;
 
+	/**
+	 * The Constructor.
+	 *
+	 * @param communicatorProvider the communicator provider
+	 * @param repositoryDao the repository dao
+	 * @param synchronizer the synchronizer
+	 * @param changesetService the changeset service
+	 * @param applicationProperties the application properties
+	 */
 	public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
         ChangesetService changesetService, ApplicationProperties applicationProperties)
     {
@@ -39,24 +62,36 @@ public class RepositoryServiceImpl implements RepositoryService
         this.applicationProperties = applicationProperties;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
 	public List<Repository> getAllByOrganization(int organizationId)
 	{
 		return repositoryDao.getAllByOrganization(organizationId, false);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Repository get(int repositoryId)
 	{
 		return repositoryDao.get(repositoryId);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Repository save(Repository repository)
 	{
 		return repositoryDao.save(repository);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void syncRepositoryList(Organization organization)
 	{
@@ -79,9 +114,11 @@ public class RepositoryServiceImpl implements RepositoryService
 	}
 
 	/**
-	 * @param storedRepositories
-	 * @param remoteRepositories
-	 * @param organization
+	 * Adds the new repositories.
+	 *
+	 * @param storedRepositories the stored repositories
+	 * @param remoteRepositories the remote repositories
+	 * @param organization the organization
 	 */
 	private void addNewRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories, Organization organization)
     {
@@ -128,8 +165,10 @@ public class RepositoryServiceImpl implements RepositoryService
     }
 
 	/**
-	 * @param storedRepositories
-	 * @param remoteRepositories
+	 * Removes the deleted repositories.
+	 *
+	 * @param storedRepositories the stored repositories
+	 * @param remoteRepositories the remote repositories
 	 */
 	private void removeDeletedRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories)
     {
@@ -149,11 +188,11 @@ public class RepositoryServiceImpl implements RepositoryService
 
 	/**
 	 * Updates existing repositories
-	 *  - undelete existing deleted
-	 *  - updates names
+	 * - undelete existing deleted
+	 * - updates names.
 	 *
-	 * @param storedRepositories
-	 * @param remoteRepositories
+	 * @param storedRepositories the stored repositories
+	 * @param remoteRepositories the remote repositories
 	 */
 	private void updateExistingRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories)
     {
@@ -174,10 +213,10 @@ public class RepositoryServiceImpl implements RepositoryService
 
 	/**
 	 * Converts collection of repository objects into map where key is
-	 * repository slug and value is repository object
+	 * repository slug and value is repository object.
 	 *
-	 * @param repositories
-	 * @return
+	 * @param repositories the repositories
+	 * @return the map< string, repository>
 	 */
 	private Map<String, Repository> makeRepositoryMap(Collection<Repository> repositories)
     {
@@ -189,6 +228,9 @@ public class RepositoryServiceImpl implements RepositoryService
 		return map;
     }
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void sync(int repositoryId, boolean softSync)
 	{
@@ -196,6 +238,9 @@ public class RepositoryServiceImpl implements RepositoryService
 		doSync(repository, softSync);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void syncAllInOrganization(int organizationId)
 	{
@@ -206,6 +251,12 @@ public class RepositoryServiceImpl implements RepositoryService
 		}
 	}
 
+	/**
+	 * Do sync.
+	 *
+	 * @param repository the repository
+	 * @param softSync the soft sync
+	 */
 	private void doSync(Repository repository, boolean softSync)
 	{
 		if (repository.isLinked())
@@ -215,12 +266,18 @@ public class RepositoryServiceImpl implements RepositoryService
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public List<Repository> getAllRepositories()
 	{
 		return repositoryDao.getAll(false);
 	}
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean existsLinkedRepositories()
     {
@@ -235,6 +292,9 @@ public class RepositoryServiceImpl implements RepositoryService
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
 	public void enableRepository(int repoId, boolean linked)
 	{
@@ -253,7 +313,31 @@ public class RepositoryServiceImpl implements RepositoryService
 			repositoryDao.save(repository);
 		}
 	}
+    
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void enableRepositorySmartcommits(int repoId, boolean enabled)
+	{
+		final Repository repository = repositoryDao.get(repoId);
+		if (repository != null)
+		{
+		    if (!enabled)
+		    {
+		       // TODO - does syncer need to know that ? - synchronizer.disableSmartcommits();
+		    }
 
+			repository.setSmartcommitsEnabled(enabled);
+			repositoryDao.save(repository);
+		}
+	}
+
+	/**
+	 * Adds the or remove postcommit hook.
+	 *
+	 * @param repository the repository
+	 */
 	private void addOrRemovePostcommitHook(Repository repository)
 	{
 		final DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
@@ -268,11 +352,20 @@ public class RepositoryServiceImpl implements RepositoryService
 		}
 	}
 
+	/**
+	 * Gets the post commit url.
+	 *
+	 * @param repo the repo
+	 * @return the post commit url
+	 */
 	private String getPostCommitUrl(Repository repo)
 	{
 		return applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/" + repo.getId() + "/sync";
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void removeAllInOrganization(int organizationId)
 	{
@@ -284,6 +377,9 @@ public class RepositoryServiceImpl implements RepositoryService
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void remove(Repository repository)
 	{
@@ -299,6 +395,11 @@ public class RepositoryServiceImpl implements RepositoryService
 		repositoryDao.remove(repository.getId());
 	}
 
+	/**
+	 * Removes the postcommit hook.
+	 *
+	 * @param repository the repository
+	 */
 	private void removePostcommitHook(Repository repository)
 	{
 		try
@@ -314,5 +415,6 @@ public class RepositoryServiceImpl implements RepositoryService
 					+ repository.getSlug(), e);
 		}
 	}
+
 
 }

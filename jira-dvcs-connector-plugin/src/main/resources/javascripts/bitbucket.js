@@ -480,10 +480,12 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 				  if (checkedValue) {
 					  AJS.$("#dvcs-action-container-" + repoId).removeClass("dvcs-nodisplay");
 					  AJS.$("#dvcs-action-container2-" + repoId).removeClass("dvcs-nodisplay");
+					  AJS.$("#dvcs-action-container3-" + repoId).removeClass("dvcs-nodisplay");
 					  AJS.$("#dvcs-repo-row-" + repoId).removeClass("dvcs-disabled");
 				  } else {
 					  AJS.$("#dvcs-action-container-" + repoId).addClass("dvcs-nodisplay");
 					  AJS.$("#dvcs-action-container2-" + repoId).addClass("dvcs-nodisplay");
+					  AJS.$("#dvcs-action-container3-" + repoId).addClass("dvcs-nodisplay");
 					  AJS.$("#dvcs-repo-row-" + repoId).addClass("dvcs-disabled");
 				  }
 			  }
@@ -491,6 +493,40 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 	 
 	).error(function (err) { 
 				  showError("Unexpected error occured. Do you have administrator permissions to selected repository ?");
+				  AJS.$("#" + checkboxId  + "working").hide();
+				  AJS.$("#" + checkboxId).removeAttr("disabled");
+				  setChecked(checkboxId, !checkedValue);
+			  });
+}
+
+function enableRepoSmartcommits(repoId, checkboxId) {
+	
+	var checkedValue = AJS.$("#" + checkboxId).is(":checked");
+	AJS.$("#" + checkboxId).attr("disabled", "disabled");
+
+	AJS.$("#" + checkboxId  + "working").show();
+
+	AJS.$.ajax( 
+		{
+			type : 'POST',
+			dataType : "json",
+			contentType : "application/json",
+			  
+			url :
+			BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/smart",
+			
+			data :
+			'{ "payload" : "' + checkedValue+ '"}',
+			
+			success :
+			function (data) {
+				  AJS.$("#" + checkboxId  + "working").hide();
+				  AJS.$("#" + checkboxId).removeAttr("disabled");
+			  }
+		}
+	 
+	).error(function (err) { 
+				  showError("Unexpected error occured.");
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);

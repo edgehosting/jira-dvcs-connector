@@ -240,8 +240,18 @@ public class RootResource
 	@Consumes({MediaType.APPLICATION_JSON})
 	public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
 	{
-		// todo handle exceptions
 		repositoryService.enableRepository(id, Boolean.parseBoolean(autolink.getPayload()));
+		return Response.noContent().build();
+	}
+	
+	@POST
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/repo/{id}/smart")
+	@Consumes({MediaType.APPLICATION_JSON})
+	public Response enableSmartcommits(@PathParam("id") int id, SentData enabled)
+	{
+		// todo handle exceptions
+		repositoryService.enableRepositorySmartcommits(id, Boolean.parseBoolean(enabled.getPayload()));
 		return Response.noContent().build();
 	}
 	

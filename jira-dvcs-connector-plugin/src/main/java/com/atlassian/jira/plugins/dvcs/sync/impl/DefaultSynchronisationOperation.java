@@ -1,5 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -7,15 +17,6 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
@@ -39,7 +40,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         this.repository = repository;
         this.repositoryService = repositoryService;
         this.changesetService = changesetService;
-        this.progress = new DefaultProgress();
+        progress = new DefaultProgress();
         this.softSync = softSync;
     }
 
@@ -47,6 +48,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     public void synchronise()
     {
         Date lastCommitDate = null;
+       
         if (softSync)
         {
             lastCommitDate = repository.getLastCommitDate();

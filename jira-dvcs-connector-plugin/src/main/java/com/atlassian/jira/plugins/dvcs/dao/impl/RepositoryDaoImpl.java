@@ -52,7 +52,8 @@ public class RepositoryDaoImpl implements RepositoryDao
 		repository.setOrgHostUrl(organizationMapping.getHostUrl());
 		repository.setOrgName(organizationMapping.getName());
 		repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
-
+		repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
+		
 		// set sync progress
 		repository.setSync((Progress) synchronizer.getProgress(repository));
 
@@ -231,6 +232,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 							map.put(RepositoryMapping.LAST_COMMIT_DATE, repository.getLastCommitDate());
 							map.put(RepositoryMapping.LINKED, repository.isLinked());
 							map.put(RepositoryMapping.DELETED, repository.isDeleted());
+							map.put(RepositoryMapping.SMARTCOMMITS_ENABLED, repository.isSmartcommitsEnabled());
 
 							rm = activeObjects.create(RepositoryMapping.class, map);
 						} else
@@ -242,6 +244,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 							rm.setLastCommitDate(repository.getLastCommitDate());
 							rm.setLinked(repository.isLinked());
 							rm.setDeleted(repository.isDeleted());
+							rm.setSmartcommitsEnabled(repository.isSmartcommitsEnabled());
 
 							rm.save();
 						}
