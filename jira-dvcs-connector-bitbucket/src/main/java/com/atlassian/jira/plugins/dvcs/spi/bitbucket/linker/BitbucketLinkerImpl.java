@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.BitbucketClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.BitbucketClientException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.RepositoryLink;
@@ -176,8 +177,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     
     private RepositoryLinksService getRepositoryLinksService(Repository repository)
     {
-        // TODO is there a better way to get apiUrl?
-		String apiUrl = repository.getOrgHostUrl() + "/!api/1.0";
+		String apiUrl = BitbucketCommunicator.getApiUrl(repository.getOrgHostUrl());
         BitbucketClient bitbucketClient = new BitbucketClient(apiUrl);
 		String unencryptedPassword = encryptor.decrypt(repository.getCredential()
 		        .getAdminPassword(), repository.getOrgName(), repository.getOrgHostUrl());
