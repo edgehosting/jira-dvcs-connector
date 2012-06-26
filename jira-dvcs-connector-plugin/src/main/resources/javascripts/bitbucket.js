@@ -386,6 +386,39 @@ function changePassword(username, id) {
 	 AJS.$("#adminPasswordUp").focus().select();
 }
 
+function configureDefaultGroups(orgName, id) {
+	
+	// clear all
+	AJS.$("#organizationIdDefaultGroups").val("");
+	
+	var popup = new AJS.Dialog({
+		width: 400, 
+		height: 300, 
+		id: "dvcs-default-groups-dialog"
+	});
+	
+	AJS.$("#organizationIdDefaultGroups").val(id);
+	
+	popup.addHeader("Configure Default Groups");
+	
+	var dialogContent = AJS.$(".configure-default-groups");
+	
+	popup.addPanel("", "#configureDefaultGroupsForm", "configure-default-groups-dialog");
+	
+	popup.addButton("Save", function (dialog) {
+		
+		AJS.$("#configureDefaultGroupsForm").submit();
+		
+	}, "aui-button submit");
+	
+	popup.addButton("Cancel", function (dialog) {
+		dialog.hide();
+	}, "aui-button submit");
+	
+	popup.show();
+	
+}
+
 
 function autoLinkIssuesOrg(organizationId, checkboxId) {
 	

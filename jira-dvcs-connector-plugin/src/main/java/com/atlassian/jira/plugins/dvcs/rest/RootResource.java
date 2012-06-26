@@ -201,4 +201,13 @@ public class RootResource
 		return Response.noContent().build();
 	}
 	
+	@GET
+	@Produces({ MediaType.TEXT_HTML })
+	@Path("/fragment/{id}/defaultgroups")
+	public Response getDefaultGroups(@PathParam("id") String orgId)
+	{
+
+		return Response.noContent().build();
+	}
+	
 }

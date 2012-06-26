@@ -144,6 +144,7 @@
    		</div>
    		
 	#printUpdateCredentialsFormHidden
+	#printConfigureDefaultGroupsFormHidden
 	
   </body>
 </html>
@@ -196,12 +197,18 @@
 								            </li>
 								            
    							            	 #if($org.dvcsType == "bitbucket")
+   							            	 
    							            	   	<li class="dropdown-item">
 	   							                	<div class="dvcs-gearmenu-nohide">
 							 							<input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" />
-							 							<label for="org_isdefault_check$org.id"> Default auto-invite new users</label>
+							 							<label for="org_isdefault_check$org.id"> Default auto-invite new users </label>
 						 							</div>
 					 							</li>
+					 							
+					 							<li class="dropdown-item">
+					 								<a  href="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id);"> Configure default groups</a>
+					 							</li>
+					 							
 					 						#end
 								            
 								             <li class="dropdown-item">
@@ -337,3 +344,37 @@
 
 #end
 
+#macro (printConfigureDefaultGroupsFormHidden)
+	
+	<div class="update-credentials" style="display:none">
+	
+		<form id="configureDefaultGroupsForm" class="aui" method="post" action="$baseurl/secure/admin/ConfigureDefaultBitbucketGroups.jspa" >
+		
+			 <input type="hidden" name="atl_token" value="$atl_token">
+			 <input type="hidden" id="organizationIdDefaultGroups" name="organizationIdDefaultGroups" value="" />
+
+			 <div class="configureDefaultGroupsContent">
+			 
+			 	## TMP ##
+			 	<table class="aui">
+			 		<thead>
+				 		<tr>
+				 			<th>Is Default Group</th>
+				 		</tr>
+			 		</thead>
+			 		<tbody>
+				 		<tr>
+				 			<td>
+				 				<input type="checkbox" id="default-group-slug" name="default-group-slug" /> <label for="default-group-slug" > Administrators </label> 
+				 			</td>
+				 		</tr>
+			 		</tbody>
+			 	</table>
+			 	
+			 
+			 </div>
+		     
+		</form>
+	</div>
+
+#end
