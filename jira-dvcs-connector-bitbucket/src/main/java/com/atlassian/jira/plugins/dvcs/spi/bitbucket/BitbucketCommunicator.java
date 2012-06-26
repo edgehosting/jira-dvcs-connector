@@ -117,7 +117,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public AccountInfo getAccountInfo(String hostUrl, String accountName)
 	{
-		// TODO: it returns 200 even for non-existing ORG!!!
 		String responseString = null;
 		try
 		{
