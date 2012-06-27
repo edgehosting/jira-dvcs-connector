@@ -120,7 +120,13 @@ public class RootResource
 	{
 		log.debug("Rest request to sync repository [{}] with payload [{}]", id, payload);
 
-		repositoryService.sync(id, false);
+        if (payload == null)
+        {
+            repositoryService.sync(id, false);
+        } else
+        {
+            repositoryService.sync(id, true);
+        }
 
 		// ...
 		// redirect to Repository resource - that will contain sync
