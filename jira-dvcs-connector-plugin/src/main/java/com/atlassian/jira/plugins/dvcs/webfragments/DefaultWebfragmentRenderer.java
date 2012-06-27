@@ -99,7 +99,10 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
 		Iterable<String> slugs = new ArrayList<String>();
 		
 		if (StringUtils.isNotBlank(organization.getDefaultGroupsSlugsSerialized())) {
-			Splitter.on(Organization.DEFAULT_GROUP_SLUGS_SEPARATOR).split(
+			
+			slugs =
+			
+				Splitter.on(Organization.DEFAULT_GROUP_SLUGS_SEPARATOR).split(
 					organization.getDefaultGroupsSlugsSerialized()
 			);
 		}
