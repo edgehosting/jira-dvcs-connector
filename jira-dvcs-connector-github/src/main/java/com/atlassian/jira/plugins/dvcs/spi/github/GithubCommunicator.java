@@ -1,6 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -165,8 +168,28 @@ public class GithubCommunicator implements DvcsCommunicator
     private PageIterator<RepositoryCommit> getPageIteratorInternal(Repository repository, String branch)
     {
         final CommitService commitService = githubClientProvider.getCommitService(repository);
+        
+        return commitService.pageCommits(RepositoryId.create(repository.getOrgName(), repository.getSlug()), doTheUtfEncoding(branch), null);
+        
+    }
 
-        return commitService.pageCommits(RepositoryId.create(repository.getOrgName(), repository.getSlug()), branch, null);
+    /**
+     * The git library is encoding parameters using ISO-8859-1. Lets trick it and encode UTF-8 instead
+     * @param branch
+     * @return
+     */
+    private String doTheUtfEncoding(String branch)
+    {
+        String isoDecoded = branch;
+        try
+        {
+            String utfEncoded = URLEncoder.encode(branch, "UTF-8");
+            isoDecoded = URLDecoder.decode(utfEncoded,"ISO-8859-1");
+        } catch (UnsupportedEncodingException e)
+        {
+            log.warn("Error encoding branch name: " + branch + e.getMessage());
+        }
+        return isoDecoded;
     }
     
     
