@@ -10,6 +10,8 @@ import com.atlassian.jira.web.action.JiraWebActionSupport;
 
 public class UpdateBitbucketCredentials extends JiraWebActionSupport
 {
+	private static final long serialVersionUID = 5708673582858872703L;
+
 	private final Logger log = LoggerFactory.getLogger(UpdateBitbucketCredentials.class);
 	
 	private String usernameUp;

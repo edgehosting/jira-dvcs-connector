@@ -390,10 +390,12 @@ function configureDefaultGroups(orgName, id) {
 	
 	// clear all
 	AJS.$("#organizationIdDefaultGroups").val("");
+	AJS.$("#configureDefaultGroupsContent").html("");
+	AJS.$("#configureDefaultGroupsContentWorking").show();
 	
 	var popup = new AJS.Dialog({
-		width: 400, 
-		height: 300, 
+		width: 540, 
+		height: 400, 
 		id: "dvcs-default-groups-dialog"
 	});
 	
@@ -411,12 +413,33 @@ function configureDefaultGroups(orgName, id) {
 		
 	}, "aui-button submit");
 	
-	popup.addButton("Cancel", function (dialog) {
+	popup.addCancel("Cancel", function (dialog) {
 		dialog.hide();
-	}, "aui-button submit");
+	});
 	
 	popup.show();
 	
+	// load web fragment
+	AJS.$.ajax(
+			{
+				type : 'GET',
+				  
+				url :
+				BASE_URL + "/rest/bitbucket/1.0/fragment/" + id + "/defaultgroups",
+	
+				success :
+				function (data) {
+					
+					AJS.$("#configureDefaultGroupsContentWorking").hide()
+					AJS.$("#configureDefaultGroupsContent").html(data);
+					
+				}
+			}
+		
+	).error(function (err) { 
+			AJS.$("#configureDefaultGroupsContentWorking").show()
+			showError("Unexpected error occured. Please contact the server admnistrator.");
+		});
 }
 
 

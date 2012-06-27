@@ -118,4 +118,6 @@ public interface OrganizationService
 	 * to be invalid
 	 */
 	void checkCredentials(Organization forOrganizationWithPlainCredentials) throws InvalidCredentialsException;
+	
+	void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs);
 }

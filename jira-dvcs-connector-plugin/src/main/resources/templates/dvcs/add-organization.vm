@@ -196,24 +196,20 @@
 								            	 </div>
 								            </li>
 								            
-   							            	 #if($org.dvcsType == "bitbucket")
+								            <li class="dropdown-item">
+								             	 <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh List</a>
+								            </li>
+								            
+ 							            	#if($org.dvcsType == "bitbucket")
    							            	 
    							            	   	<li class="dropdown-item">
 	   							                	<div class="dvcs-gearmenu-nohide">
 							 							<input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" />
 							 							<label for="org_isdefault_check$org.id"> Default auto-invite new users </label>
+							 							<a style="display:block;"  href="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id);"> Configure default groups</a>
 						 							</div>
 					 							</li>
-					 							
-					 							<li class="dropdown-item">
-					 								<a  href="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id);"> Configure default groups</a>
-					 							</li>
-					 							
 					 						#end
-								            
-								             <li class="dropdown-item">
-								             	 <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh List</a>
-								            </li>
 								            
 								            <li class="dropdown-item">
 												 #if($org.dvcsType == "bitbucket")
@@ -352,25 +348,12 @@
 		
 			 <input type="hidden" name="atl_token" value="$atl_token">
 			 <input type="hidden" id="organizationIdDefaultGroups" name="organizationIdDefaultGroups" value="" />
-
-			 <div class="configureDefaultGroupsContent">
 			 
-			 	## TMP ##
-			 	<table class="aui">
-			 		<thead>
-				 		<tr>
-				 			<th>Is Default Group</th>
-				 		</tr>
-			 		</thead>
-			 		<tbody>
-				 		<tr>
-				 			<td>
-				 				<input type="checkbox" id="default-group-slug" name="default-group-slug" /> <label for="default-group-slug" > Administrators </label> 
-				 			</td>
-				 		</tr>
-			 		</tbody>
-			 	</table>
-			 	
+			 <div id="configureDefaultGroupsContentWorking" style="margin:10px; display: none">
+			 	&nbsp;
+			 </div>
+			 
+			 <div id="configureDefaultGroupsContent">
 			 
 			 </div>
 		     

@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
 /**
@@ -49,6 +51,9 @@ public class RootResource
 	/** The repository service. */
 	private final RepositoryService repositoryService;
 
+	/** The webfragment renderer. */
+	private final WebfragmentRenderer webfragmentRenderer;
+
 	/**
 	 * The Constructor.
 	 * 
@@ -57,10 +62,11 @@ public class RootResource
 	 * @param repositoryService
 	 *            the repository service
 	 */
-	public RootResource(OrganizationService organizationService, RepositoryService repositoryService)
+	public RootResource(OrganizationService organizationService, RepositoryService repositoryService, WebfragmentRenderer webfragmentRenderer)
 	{
 		this.organizationService = organizationService;
 		this.repositoryService = repositoryService;
+		this.webfragmentRenderer = webfragmentRenderer;
 	}
 
 	/**
@@ -204,10 +210,20 @@ public class RootResource
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
 	@Path("/fragment/{id}/defaultgroups")
-	public Response getDefaultGroups(@PathParam("id") String orgId)
+	public Response renderDefaultGroupsFragment(@PathParam("id") int orgId)
 	{
+		try
+		{
 
-		return Response.noContent().build();
+			String html = webfragmentRenderer.renderDefaultGroupsFragment(orgId);
+			return Response.ok(html).build();
+			
+		} catch (IOException e)
+		{
+			log.error("Failed to get default groups for organization with id " + orgId, e);
+			return Response.serverError().build();
+
+		}
 	}
 	
 }

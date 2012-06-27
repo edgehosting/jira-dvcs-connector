@@ -77,5 +77,7 @@ public interface OrganizationDao
 	 */
 	List<Organization> getAllByType(String type);
 
+	void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs);
+
 
 }

@@ -15,6 +15,7 @@ public interface OrganizationMapping extends Entity
     public static final String ADMIN_PASSWORD = "ADMIN_PASSWORD";
     public static final String ACCESS_TOKEN = "ACCESS_TOKEN";
     public static final String AUTO_INVITE_NEW_USERS = "AUTO_INVITE_NEW_USERS";
+    public static final String DEFAULT_GROUP_SLUGS = "DEFAULT_GROUP_SLUGS"; // serialized, separated by ";"
 
     String getHostUrl();
     String getName();
@@ -24,6 +25,7 @@ public interface OrganizationMapping extends Entity
     String getAdminUsername();
     String getAdminPassword();
     String getAccessToken();
+    String getDefaultGroupsSlugs();
 
     void setHostUrl(String hostUrl);
     void setName(String name);
@@ -33,4 +35,5 @@ public interface OrganizationMapping extends Entity
     void setAdminUsername(String adminUsername);
     void setAdminPassword(String adminPassword);
     void setAccessToken(String accessToken);
+    void setDefaultGroupsSlugs(String slugs);
 }

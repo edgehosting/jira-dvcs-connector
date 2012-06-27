@@ -2,10 +2,10 @@
 
 	<fieldset class="field-group" style="max-height: 300px; overflow: auto">
 	  
-	  <label>Bitbucket accounts</label>
+	  <label>Bitbucket Accounts</label>
 	  
 	  <div class="" style="font-size: 0.9em; top: 3px; position: relative; padding-bottom: 3px;">
-	  	(Invite users to develop on Bitbucket ?)
+	  	Add the new user to the following Bitbucket groups:
 	  </div>
 	
 	  #foreach ($bbOrg in $bbOrgaizations)
