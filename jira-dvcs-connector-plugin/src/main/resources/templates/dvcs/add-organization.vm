@@ -234,14 +234,6 @@
 			</div>
 			<div class="dvcs-dclear"></div>
 	</div>				 
-			##       user invitations disabled for now
-			##		 #if($org.dvcsType == "bitbucket")
-			##		 |
-			##		 <input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" /><label> Default Auto-invite New Users</label>
-			##		 <span style="display:none; width: 16px; height: 16px;" id="org_isdefault_check${org.id}working" class="syncicon running">&nbsp;</span>
-			##		 #end
-			##		 
-					 
 
 			   <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
 			    <thead>
