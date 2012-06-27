@@ -116,7 +116,8 @@ public class GithubCommunicator implements DvcsCommunicator
             }
             for (org.eclipse.egit.github.core.Repository ghRepository : allRepositoriesFromAuthorizedUser)
             {
-                if (ghRepository.getOwner().getLogin().equals(organization.getName()))
+                
+                if (StringUtils.equals(ghRepository.getOwner().getLogin(), organization.getName()))
                 {
                     Repository repository = new Repository();
                     repository.setSlug(ghRepository.getName());
