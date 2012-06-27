@@ -490,7 +490,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 		}
 	 
 	).error(function (err) { 
-				  showError("Unexpected error occured. Do you have administrator permissions to selected repository ?");
+				  showError("Unable to link selected repository. Do you have administrator permissions?");
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);
