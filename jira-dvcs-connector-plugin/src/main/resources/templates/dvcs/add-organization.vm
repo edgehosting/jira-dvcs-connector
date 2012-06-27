@@ -298,10 +298,6 @@
 	                            </span>
 	                            <span id="sync_error_message_$repo.id" class="gh_messages">
                            	 </span>
-##
-##	                            <span>
-##				                 	<a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">Sync Repo</a>
-##				                </span>
 			                </div>
 			                
 			            </td>
