@@ -78,7 +78,7 @@
                 </div>
                 
                     <div class="field-group" >
-                      <label for="organization">Team Account Username:</label>
+                      <label for="organization">Team or User Account:</label>
                       <input type="text" id="organization" name="organization" value=""/>
                       <div class="fieldValue" id="organizationReadOnly"></div>
                       <div id="org-error" class="dvcs-error">This field is required.</div>
