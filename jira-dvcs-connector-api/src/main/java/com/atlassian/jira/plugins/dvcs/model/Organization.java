@@ -19,6 +19,7 @@ public class Organization
     private String dvcsType;
     private boolean autolinkNewRepos;
     private boolean autoInviteNewUsers;
+    private boolean globalSmartcommitsEnabled;
     
     private String organizationUrl;
     
@@ -169,6 +170,16 @@ public class Organization
 	public void setOrganizationUrl(String organizationUrl)
 	{
 		this.organizationUrl = organizationUrl;
+	}
+
+	public boolean isGlobalSmartcommitsEnabled()
+	{
+		return globalSmartcommitsEnabled;
+	}
+
+	public void setGlobalSmartcommitsEnabled(boolean globalSmartcommitsEnabled)
+	{
+		this.globalSmartcommitsEnabled = globalSmartcommitsEnabled;
 	}
 
 }

@@ -118,4 +118,12 @@ public interface OrganizationService
 	 * to be invalid
 	 */
 	void checkCredentials(Organization forOrganizationWithPlainCredentials) throws InvalidCredentialsException;
+
+	/**
+	 * Enable global smartcommits.
+	 *
+	 * @param id the id
+	 * @param parseBoolean the parse boolean
+	 */
+	void enableGlobalSmartcommits(int id, boolean parseBoolean);
 }

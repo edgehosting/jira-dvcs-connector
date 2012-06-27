@@ -170,6 +170,12 @@
 				#else
 				#set( $orgIsDefault = "")
 			#end
+			#if($org.isGlobalSmartcommitsEnabled())
+				#set( $orgGlobalSmartcommits = "checked='checked'")
+				#set( $localSmartcommitsDisabled = "disabled='disabled'")
+				#else
+				#set( $localSmartcommitsDisabled = "")
+			#end
 	
 	<div class="dvcs-header-container">	
 		<h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a></h4>
@@ -185,13 +191,24 @@
 		                                <span class="icon icon-dropdown" ></span>
 		                    </a>
 								<ul id="dvcs-organization-controls-$org.id" class=" aui-dropdown dvcs-organization-controls"  >
-								            <li class="dropdown-item">
+								           
+								           <li class="dropdown-item">
 								            	 <div class="dvcs-gearmenu-nohide">
 									            	 <input id="org_autolink_check$org.id" 
 									            	 		class="aui" $!orgAutolink 
 									            	 		type="checkbox" name="org_autolink_check$org.id"
 									            	 		onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" />
 									            	 <label for="org_autolink_check$org.id"> Autolink new repositories</label>
+								            	 </div>
+								            </li>
+
+								           <li class="dropdown-item">
+								            	 <div class="dvcs-gearmenu-nohide">
+									            	 <input id="org_global_smarts$org.id" 
+									            	 		class="aui" $!orgGlobalSmartcommits 
+									            	 		type="checkbox" name="org_autolink_check$org.id"
+									            	 		onclick="javascript: enableOrgGlobalSmartcommits($org.id, 'org_global_smarts$org.id');" />
+									            	 <label for="org_global_smarts$org.id"> Global Smart Commits</label>
 								            	 </div>
 								            </li>
 								            
@@ -233,7 +250,7 @@
 			            <th>Repository</th>
 			            <th style="text-align: right;">Last Commit</th>   ## last commit
 			            <th class="dvcs-centered">Sync Repo</th>   ## sync repo
-						<th class="dvcs-smartcommits-head">Smartcommits Enabled</th>
+						<th class="dvcs-smartcommits-head">Smart Commits</th>
 			        </tr>
 			    </thead>
 			    <tbody>
@@ -300,10 +317,10 @@
                         <td class="dvcs-smartcommits-repo">
                         	<div id="dvcs-action-container3-$repo.id" class="$!dvcsNoDisplayClass">
 	                            <span style="padding-left: 1px;">&nbsp;</span>
-	                            <input class="repo_autolink_check" id="repo_smartcommits$repo.id" type="checkbox" $!smartcommitsEnabled
+	                            <input class="repo_smartcommit_check repo_smartcommit_check$org.id" id="repo_smartcommits$repo.id" type="checkbox" $!smartcommitsEnabled $!localSmartcommitsDisabled
 	                             onclick="javascript: enableRepoSmartcommits($repo.id, 'repo_smartcommits$repo.id');" />
 	
-	                            <span style="display:none; width: 16px; height: 16px;" id="repo_smartcommits${repo.id}working" class="syncicon running">&nbsp;</span>
+	                            <span style="display:none; width: 16px; height: 16px;" id="repo_smartcommit_check${repo.id}working" class="syncicon running">&nbsp;</span>
                             </div>
                         </td>
 

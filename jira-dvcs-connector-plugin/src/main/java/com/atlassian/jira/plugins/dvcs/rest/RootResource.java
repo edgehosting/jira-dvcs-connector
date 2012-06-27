@@ -28,11 +28,6 @@ import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.smartcommits.CommitMessageParser;
-import com.atlassian.jira.plugins.dvcs.smartcommits.PayloadChangeset;
-import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsPayloadParser;
-import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsService;
-import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
 /**
@@ -55,15 +50,6 @@ public class RootResource
 	/** The repository service. */
 	private final RepositoryService repositoryService;
 	
-	/** The smartcommits service. */
-	private final SmartcommitsService smartcommitsService;
-
-	/** The commit message parser. */
-	private final CommitMessageParser commitMessageParser;
-
-	/** The smartcommits payload parser. */
-	private final SmartcommitsPayloadParser smartcommitsPayloadParser;
-
 	/**
 	 * The Constructor.
 	 * 
@@ -73,16 +59,10 @@ public class RootResource
 	 *            the repository service
 	 */
 	public RootResource(OrganizationService organizationService,
-						RepositoryService repositoryService,
-						SmartcommitsService smartcommitsService,
-						CommitMessageParser commitMessageParser,
-						SmartcommitsPayloadParser smartcommitsPayloadParser)
+						RepositoryService repositoryService)
 	{
 		this.organizationService = organizationService;
 		this.repositoryService = repositoryService;
-		this.smartcommitsService = smartcommitsService;
-		this.commitMessageParser = commitMessageParser;
-		this.smartcommitsPayloadParser = smartcommitsPayloadParser;
 	}
 
 	/**
@@ -152,7 +132,6 @@ public class RootResource
 			
 		}
 			
-
 		// ...
 		// redirect to Repository resource - that will contain sync
 		// message/status
@@ -160,19 +139,6 @@ public class RootResource
 		URI uri = ub.path("/repository/{id}").build(id);
 
 		return Response.seeOther(uri).build();
-	}
-
-	private void processSmartcommits(String payload, int repositoryId)
-	{
-		// TODO Thread
-
-		List<PayloadChangeset> changesets = smartcommitsPayloadParser.parse(payload, repositoryId);
-		for (PayloadChangeset payloadChangeset : changesets)
-		{
-			CommitCommands commitCommands = commitMessageParser.parseCommitComment(payloadChangeset.getCommitMessage());
-			commitCommands.setAuthor(payloadChangeset.getAuthor());
-			smartcommitsService.doCommands(commitCommands);
-		}
 	}
 
 	/**
@@ -231,6 +197,18 @@ public class RootResource
 	{
 
 		organizationService.enableAutoInviteUsers(id, Boolean.parseBoolean(autoinvite.getPayload()));
+		return Response.noContent().build();
+	}
+	
+	@POST
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/org/{id}/globalsmarts")
+	@Consumes({MediaType.APPLICATION_JSON})
+	public Response enableOrganizationGlobalSmartcommits(@PathParam("id") int id,
+			SentData autoinvite)
+	{
+		
+		organizationService.enableGlobalSmartcommits(id, Boolean.parseBoolean(autoinvite.getPayload()));
 		return Response.noContent().build();
 	}
 

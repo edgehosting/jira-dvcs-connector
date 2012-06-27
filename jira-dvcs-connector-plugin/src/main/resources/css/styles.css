@@ -518,7 +518,7 @@ a:hover.repositoryNameLink {
     width: 100px;
 }
 
-.repo_autolink_check {
+.repo_autolink_check, .repo_smartcommit_check {
     position: relative;
     top: 2px;
 }

@@ -454,6 +454,40 @@ function autoInviteNewUser(organizationId, checkboxId) {
 			  });
 }
 
+function enableOrgGlobalSmartcommits(organizationId, checkboxId) {
+	
+	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
+	
+	AJS.$("#" + checkboxId).attr("disabled", "disabled");
+	
+	AJS.$.ajax(
+		{
+			type : 'POST',
+			dataType : "json",
+			contentType : "application/json",
+			  
+			url :
+			BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/globalsmarts",
+			
+			data :
+			'{ "payload" : "' + checkedValue+ '"}',
+			
+			success :
+			function (data) {
+				AJS.$("#" + checkboxId).removeAttr("disabled");
+				if (checkedValue) {
+					AJS.$(".repo_smartcommit_check" + organizationId).attr("disabled", "disabled");
+				} else {
+					AJS.$(".repo_smartcommit_check" + organizationId).removeAttr("disabled");
+				}
+			}
+		}
+	  ).error(function (err) {
+				  showError("Unexpected error occured. Please contact the server admnistrator.");
+				  setChecked(checkboxId, !checkedValue);
+	  });
+}
+
 function autoLinkIssuesRepo(repoId, checkboxId) {
 	
 	var checkedValue = AJS.$("#" + checkboxId).is(":checked");
