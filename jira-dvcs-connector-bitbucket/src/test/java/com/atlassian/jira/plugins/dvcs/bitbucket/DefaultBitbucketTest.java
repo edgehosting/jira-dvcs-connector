@@ -25,6 +25,7 @@ import com.atlassian.jira.plugins.dvcs.net.DefaultRequestHelper;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
@@ -34,7 +35,7 @@ import com.atlassian.sal.api.net.RequestFactory;
 import com.google.common.collect.Iterables;
 
 /**
- * Unit tests for {@link com.atlassian.jira.plugins.bitbucket.api.Communicator}
+ * Unit tests for {@link DvcsCommunicator}
  */
 public class DefaultBitbucketTest
 {
