@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
+import java.util.Date;
+
 import net.java.ao.Entity;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
-
-import java.util.Date;
 
 @Table("ChangesetMapping")
 public interface ChangesetMapping extends Entity
@@ -22,6 +22,8 @@ public interface ChangesetMapping extends Entity
     public static final String PARENTS_DATA = "PARENTS_DATA";
     public static final String FILES_DATA = "FILES_DATA";
     public static final String VERSION = "VERSION";
+    public static final String AUTHOR_EMAIL = "AUTHOR_EMAIL";
+    public static final String SMARTCOMMIT_AVAILABLE = "SMARTCOMMIT_AVAILABLE";
     
     /**
      * Rows at the table can contain data loaded by previous versions of this plugin. Some column data maybe missing 
@@ -45,6 +47,8 @@ public interface ChangesetMapping extends Entity
     String getFilesData();
     String getParentsData();
     Integer getVersion();
+    String getAuthorEmail();
+    Boolean isSmartcommitAvailable();
 
     void setRepositoryId(int repositoryId);
     void setNode(String node);
@@ -61,5 +65,6 @@ public interface ChangesetMapping extends Entity
     void setFilesData(String files);
     void setParentsData(String parents);
     void setVersion(Integer version);
- 
+    void setAuthorEmail(String authorEmail);
+    void setSmartcommitAvailable(Boolean available);
 }

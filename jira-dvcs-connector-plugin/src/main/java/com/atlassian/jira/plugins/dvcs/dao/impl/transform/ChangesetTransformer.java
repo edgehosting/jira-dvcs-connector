@@ -1,5 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.transform;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -7,12 +14,6 @@ import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ChangesetTransformer
 {
@@ -42,6 +43,9 @@ public class ChangesetTransformer
                 fileData.getFileCount());
 
         changeset.setVersion(changesetMapping.getVersion());
+        changeset.setAuthorEmail(changesetMapping.getAuthorEmail());
+        changeset.setSmartcommitAvaliable(changesetMapping.isSmartcommitAvailable());
+        
         return changeset;
     }
 

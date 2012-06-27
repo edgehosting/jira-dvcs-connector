@@ -1,5 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -13,13 +20,6 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
@@ -158,6 +158,7 @@ public class ChangesetServiceImpl implements ChangesetService
                 changeset.setParents(updatedChangeset.getParents());
                 changeset.setFiles(updatedChangeset.getFiles());
                 changeset.setAllFileCount(updatedChangeset.getAllFileCount());
+                changeset.setAuthorEmail(updatedChangeset.getAuthorEmail());
 
                 changeset = changesetDao.save(changeset);
             }
@@ -165,4 +166,16 @@ public class ChangesetServiceImpl implements ChangesetService
 
         return changeset;
     }
+
+	@Override
+	public List<Changeset> getLatestChangesetsAvailableForSmartcommits()
+	{
+		return changesetDao.getLatestChangesetsAvailableForSmartcommits();
+	}
+
+	@Override
+	public void markSmartcommitAvailability(int id, boolean available)
+	{
+		changesetDao.markSmartcommitAvailability(id, available);
+	}
 }

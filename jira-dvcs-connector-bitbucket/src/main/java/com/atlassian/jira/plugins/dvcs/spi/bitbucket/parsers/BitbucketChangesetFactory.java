@@ -1,5 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.parsers;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
+import java.util.regex.Pattern;
+
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -7,19 +15,13 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
-
 /**
  * Factory for {@link com.atlassian.jira.plugins.bitbucket.api.Changeset} implementations
  */
 public class BitbucketChangesetFactory
 {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final Pattern HGRC_MAIL_PATTERN = Pattern.compile("\\<(.*)\\>");
 
     static
     {
@@ -38,11 +40,14 @@ public class BitbucketChangesetFactory
         try
         {
             List<ChangesetFile> files = fileListFromBaseJson(baseJson);
-            return new Changeset(
+            String rawAuthor = baseJson.getString("raw_author");
+            String authorEmail = parseUsersEmailHgRcFormatOrNull(rawAuthor);
+
+			Changeset changeset = new Changeset(
                     repositoryId,
                     baseJson.getString("node"),
                     null,
-                    baseJson.getString("raw_author"),
+                    rawAuthor,
                     baseJson.getString("author"),
                     parseDate(baseJson.getString("utctimestamp")),
                     baseJson.getString("raw_node"),
@@ -52,6 +57,10 @@ public class BitbucketChangesetFactory
                     files,
                     files.size()
             );
+			
+			changeset.setAuthorEmail(authorEmail);
+
+			return changeset;
 
         } catch (JSONException e)
         {
@@ -59,7 +68,19 @@ public class BitbucketChangesetFactory
         }
     }
 
-    public static Date parseDate(String dateStr)
+    private static String parseUsersEmailHgRcFormatOrNull(String rawAuthor)
+	{
+		try
+		{
+			return HGRC_MAIL_PATTERN.matcher(rawAuthor).group(1).trim();
+		} catch (Exception e)
+		{
+			// nop
+			return null;
+		}
+	}
+
+	public static Date parseDate(String dateStr)
     {
         // example:    2011-05-26 10:54:41+xx:xx   (timezone is ignored because we parse utc timestamp date with utc parser)
         try

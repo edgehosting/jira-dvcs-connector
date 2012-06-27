@@ -115,6 +115,9 @@ public class ChangesetDaoImpl implements ChangesetDao
                 map.put(ChangesetMapping.RAW_NODE, changeset.getRawNode());
                 map.put(ChangesetMapping.BRANCH, changeset.getBranch());
                 map.put(ChangesetMapping.MESSAGE, changeset.getMessage());
+                map.put(ChangesetMapping.AUTHOR_EMAIL, changeset.getAuthorEmail());
+                map.put(ChangesetMapping.SMARTCOMMIT_AVAILABLE, changeset.isSmartcommitAvaliable());
+
                 JSONArray parentsJson = new JSONArray();
                 for (String parent : changeset.getParents())
                 {
@@ -140,8 +143,10 @@ public class ChangesetDaoImpl implements ChangesetDao
 
                         filesJson.put(fileJson);
                     }
+                
                     filesDataJson.put("files", filesJson);
                     map.put(ChangesetMapping.FILES_DATA, filesDataJson.toString());
+              
                 } catch (JSONException e)
                 {
                     log.error("Creating files JSON failed!", e);
@@ -219,4 +224,30 @@ public class ChangesetDaoImpl implements ChangesetDao
 
         return transform(changesetMappings);
     }
+
+	@Override
+	public List<Changeset> getLatestChangesetsAvailableForSmartcommits()
+	{
+		Query query = Query.select().where(ChangesetMapping.SMARTCOMMIT_AVAILABLE + " = ? ", Boolean.TRUE);
+		query.order(ChangesetMapping.DATE).distinct();
+		
+		ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
+		return transform( Arrays.asList(mappings) );
+	}
+
+	@Override
+	public void markSmartcommitAvailability(int id, boolean available)
+	{
+		final ChangesetMapping changesetMapping = activeObjects.get(ChangesetMapping.class, id);
+		changesetMapping.setSmartcommitAvailable(available);
+		activeObjects.executeInTransaction(new TransactionCallback<Void>()
+		{
+			@Override
+			public Void doInTransaction()
+			{
+				changesetMapping.save();
+				return null;
+			}
+		});
+	}
 }

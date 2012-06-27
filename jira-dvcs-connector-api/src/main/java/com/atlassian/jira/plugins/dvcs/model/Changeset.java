@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class Changeset
 {
@@ -21,6 +21,8 @@ public class Changeset
     private String branch;
     private String message;
     private List<String> parents;
+    private String authorEmail;
+    private Boolean smartcommitAvaliable;
 
     private List<ChangesetFile> files;
     private int allFileCount;
@@ -224,5 +226,29 @@ public class Changeset
                 .append(allFileCount)
                 .hashCode();
     }
+
+
+	public String getAuthorEmail()
+	{
+		return authorEmail;
+	}
+
+
+	public void setAuthorEmail(String authorEmail)
+	{
+		this.authorEmail = authorEmail;
+	}
+
+
+	public Boolean isSmartcommitAvaliable()
+	{
+		return smartcommitAvaliable;
+	}
+
+
+	public void setSmartcommitAvaliable(Boolean smartcommitAvaliable)
+	{
+		this.smartcommitAvaliable = smartcommitAvaliable;
+	}
 
 }
