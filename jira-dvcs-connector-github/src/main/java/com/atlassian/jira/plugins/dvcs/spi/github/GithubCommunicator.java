@@ -8,9 +8,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,6 +41,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
+import com.google.common.collect.Iterators;
 
 public class GithubCommunicator implements DvcsCommunicator
 {
@@ -97,26 +100,40 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public List<Repository> getRepositories(Organization organization)
     {
-        RepositoryService repositoryService = githubClientProvider.getRepositoryService(organization);
+        RepositoryService repositoryService = githubClientProvider
+                .getRepositoryService(organization);
         repositoryService.getClient().setOAuth2Token(organization.getCredential().getAccessToken());
         try
         {
-            List<org.eclipse.egit.github.core.Repository> ghRepositories = repositoryService.getRepositories(organization.getName());
-            List<Repository> repositories = new ArrayList<Repository>();
-            for (org.eclipse.egit.github.core.Repository ghRepository : ghRepositories)
+            List<org.eclipse.egit.github.core.Repository> publicRepositoriesFromOrganization = repositoryService
+                    .getRepositories(organization.getName());
+            List<org.eclipse.egit.github.core.Repository> allRepositoriesFromAuthorizedUser = repositoryService
+                    .getRepositories();
+
+            Iterator<org.eclipse.egit.github.core.Repository> iterator = Iterators.concat(
+                    publicRepositoriesFromOrganization.iterator(),
+                    allRepositoriesFromAuthorizedUser.iterator());
+
+            Set<Repository> repositories = new HashSet<Repository>();
+            while (iterator.hasNext())
             {
-                Repository repository = new Repository();
-                repository.setSlug(ghRepository.getName());
-                repository.setName(ghRepository.getName());
-                repositories.add(repository);
+                org.eclipse.egit.github.core.Repository ghRepository = (org.eclipse.egit.github.core.Repository) iterator
+                        .next();
+                if (StringUtils.equals(ghRepository.getOwner().getLogin(), organization.getName()))
+                {
+                    Repository repository = new Repository();
+                    repository.setSlug(ghRepository.getName());
+                    repository.setName(ghRepository.getName());
+                    repositories.add(repository);
+                }
             }
+
             log.debug("Found repositories: " + repositories.size());
-            return repositories;
+            return new ArrayList<Repository>((Set<Repository>) repositories);
         } catch (IOException e)
         {
             throw new SourceControlException("Error retrieving list of repositories", e);
         }
-
     }
 
 	@Override
