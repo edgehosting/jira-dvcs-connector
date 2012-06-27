@@ -66,8 +66,7 @@ public final class TestDefaultSynchronizer
 				Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
 		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(repositoryMock,
-				mock(RepositoryService.class), changesetServiceMock, true); // soft
-																			// sync
+				mock(RepositoryService.class), changesetServiceMock, true); // soft sync
 
 		Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(),
 				changesetsProcessorMock, changesetServiceMock, smartcommitsServiceMock, commitMessageParserMock);
