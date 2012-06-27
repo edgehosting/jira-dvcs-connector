@@ -16,17 +16,8 @@ public class CommitCommands {
     @XmlElement(name = "command")
     List<CommitCommand> commands;
     
-    String author;
-
-    public String getAuthor()
-	{
-		return author;
-	}
-
-	public void setAuthor(String author)
-	{
-		this.author = author;
-	}
+    private String authorEmail;
+    
 
 	public void setCommands(List<CommitCommand> commands)
 	{
@@ -83,4 +74,14 @@ public class CommitCommands {
         	return issueKey + " " + commandName + " args [ " + arguments + "]";
         }
     }
+
+	public String getAuthorEmail()
+	{
+		return authorEmail;
+	}
+
+	public void setAuthorEmail(String authorEmail)
+	{
+		this.authorEmail = authorEmail;
+	}
 }

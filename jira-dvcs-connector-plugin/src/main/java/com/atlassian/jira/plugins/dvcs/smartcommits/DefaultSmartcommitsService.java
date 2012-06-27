@@ -3,9 +3,17 @@ package com.atlassian.jira.plugins.dvcs.smartcommits;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.crowd.embedded.api.CrowdService;
 import com.atlassian.crowd.embedded.api.User;
+import com.atlassian.crowd.search.EntityDescriptor;
+import com.atlassian.crowd.search.builder.QueryBuilder;
+import com.atlassian.crowd.search.builder.Restriction;
+import com.atlassian.crowd.search.query.entity.EntityQuery;
+import com.atlassian.crowd.search.query.entity.restriction.constants.UserTermKeys;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.issue.MutableIssue;
@@ -18,7 +26,6 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookErrors;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
-import com.atlassian.jira.user.util.UserManager;
 import com.atlassian.jira.util.I18nHelper;
 
 // TODO take away WS layer from here
@@ -27,6 +34,8 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 	private static final String NO_COMMANDS = "dvcs.smartcommits.commands.nocommands";
 	private static final String BAD_COMMAND = "dvcs.smartcommits.commands.badcommand";
 	private static final String UNKNOWN_ISSUE = "dvcs.smartcommits.commands.unknownissue";
+	
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(DefaultSmartcommitsService.class);
 
 	private final CacheControl NO_CACHE;
 
@@ -39,15 +48,16 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 	private final JiraAuthenticationContext jiraAuthenticationContext;
 	private final I18nHelper i18nHelper;
 
-	private final UserManager userManager;
+	private final CrowdService crowdService;
 
 	public DefaultSmartcommitsService(IssueManager issueManager,
 			@Qualifier("smartcommitsTransitionsHandler") TransitionHandler transitionHandler,
 			@Qualifier("smartcommitsCommentHandler") CommentHandler commentHandler,
 			@Qualifier("smartcommitsWorklogHandler") WorkLogHandler workLogHandler,
-			JiraAuthenticationContext jiraAuthenticationContext, UserManager userManager)
+			JiraAuthenticationContext jiraAuthenticationContext, CrowdService crowdService)
 	{
-		this.userManager = userManager;
+		this.crowdService = crowdService;
+		
 		NO_CACHE = new CacheControl();
 		NO_CACHE.setNoCache(true);
 
@@ -65,7 +75,12 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 	@Override
 	public Response doCommands(CommitCommands commands)
 	{
-		User user = getUser(commands.getAuthor());
+		
+		String authorEmail = commands.getAuthorEmail();
+		if (StringUtils.isBlank(authorEmail)) {
+			return Response.noContent().build();
+		}
+		User user = getUserByEmail(authorEmail);
 		
 		//
 		if (user == null) {
@@ -146,9 +161,19 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		return String.format(i18nHelper.getText(UNKNOWN_ISSUE), key);
 	}
 
-	private User getUser(String username)
+	private User getUserByEmail(String email)
 	{
-
-		return userManager.getUserObject(username);
+		try
+		{
+			EntityQuery<User> query = QueryBuilder.queryFor(User.class, EntityDescriptor.user()).
+												  with(Restriction.on(UserTermKeys.EMAIL).
+												  exactlyMatching(email)).returningAtMost(1);
+			Iterable<User> user = crowdService.search(query);
+			return user.iterator().next();
+		} catch (Exception e)
+		{
+			log.warn("User not found by email {} ", email);
+			return null;
+		}
 	}
 }

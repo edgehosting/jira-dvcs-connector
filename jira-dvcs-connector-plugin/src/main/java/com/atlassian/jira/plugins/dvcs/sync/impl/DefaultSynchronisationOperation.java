@@ -64,7 +64,9 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         int jiraCount = 0;
         int synchroErrorCount = 0;
 
-        for (Changeset changeset : changesetService.getChangesetsFromDvcs(repository, lastCommitDate))
+        Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository, lastCommitDate);
+		
+        for (Changeset changeset : allOrLatestChangesets)
         {
         	if (progress.isShouldStop())
         	{
@@ -113,6 +115,10 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     {
                         Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
                         changesetForSave.setIssueKey(issueKey);
+                        
+                        // mark smartcommit can be processed
+                        changesetForSave.setSmartcommitAvaliable(Boolean.TRUE);
+                        
                         changesetService.save(changesetForSave);
                     } catch (SourceControlException e)
                     {
@@ -122,9 +128,10 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             }
             progress.inProgress(changesetCount, jiraCount, synchroErrorCount);
         }
+        
     }
 
-    private Set<String> extractIssueKeys(String message)
+	private Set<String> extractIssueKeys(String message)
     {
         final String issueKeyRegex = "([A-Z][A-Z0-9]+-\\d+)";   //TODO check if we can use regexp from IssueLinkerImpl
         Pattern projectKeyPattern = Pattern.compile(issueKeyRegex, Pattern.CASE_INSENSITIVE);

@@ -26,7 +26,7 @@ public class DeferredBitbucketLinker implements BitbucketLinker
 		this.bitbucketLinker = bitbucketLinker;
 		// would be nice to have 2-3 threads but that doesn't seem to be trivial task: 
 		// http://stackoverflow.com/questions/3419380/threadpoolexecutor-policy
-		this.executor = new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS,
+		executor = new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(),
 		        ThreadFactories.namedThreadFactory("BitbucketLinkerThread"));
     }

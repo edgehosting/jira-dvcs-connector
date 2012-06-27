@@ -11,6 +11,7 @@ public class Changeset
 {
     public static final int MAX_VISIBLE_FILES = 5;
 
+    private int id;
     private int repositoryId;
     private String node;
     private String issueKey;
@@ -249,6 +250,18 @@ public class Changeset
 	public void setSmartcommitAvaliable(Boolean smartcommitAvaliable)
 	{
 		this.smartcommitAvaliable = smartcommitAvaliable;
+	}
+
+
+	public int getId()
+	{
+		return id;
+	}
+
+
+	public void setId(int id)
+	{
+		this.id = id;
 	}
 
 }

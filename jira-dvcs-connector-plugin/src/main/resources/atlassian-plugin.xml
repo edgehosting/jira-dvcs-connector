@@ -19,6 +19,7 @@
     <component-import key="pluginScheduler" interface="com.atlassian.sal.api.scheduling.PluginScheduler" />
     <component-import key="pluginAccessor" interface="com.atlassian.plugin.PluginAccessor" />
     <component-import key="userManager" interface="com.atlassian.jira.user.util.UserManager" />
+    <component-import key="crowdService" interface="com.atlassian.crowd.embedded.api.CrowdService" />
 
     <component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
@@ -50,8 +51,8 @@
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommandHandler</interface>
 	</component>
 	
-	<component key="smartcommitsPayloadParser" name="DVCS Smartcommits Payload Parser"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsPayloadParser" public="true">
-		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsPayloadParser</interface>
+	<component key="smartcommitsChangesetsProcessor" name="DVCS Smartcommits Changesets Processor"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsChangesetsProcessor" public="true">
+		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor</interface>
 	</component>
 	
 	
