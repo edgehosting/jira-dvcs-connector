@@ -100,23 +100,37 @@ public class GithubCommunicator implements DvcsCommunicator
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(organization);
         repositoryService.getClient().setOAuth2Token(organization.getCredential().getAccessToken());
         try
-        {
-            List<org.eclipse.egit.github.core.Repository> ghRepositories = repositoryService.getRepositories(organization.getName());
+        {           
+            List<org.eclipse.egit.github.core.Repository> publicRepositoriesFromOrganization
+                    = repositoryService.getRepositories(organization.getName());
+            List<org.eclipse.egit.github.core.Repository> allRepositoriesFromAuthorizedUser
+                    = repositoryService.getRepositories();
+            
             List<Repository> repositories = new ArrayList<Repository>();
-            for (org.eclipse.egit.github.core.Repository ghRepository : ghRepositories)
+            for (org.eclipse.egit.github.core.Repository ghRepository : publicRepositoriesFromOrganization)
             {
                 Repository repository = new Repository();
                 repository.setSlug(ghRepository.getName());
                 repository.setName(ghRepository.getName());
                 repositories.add(repository);
             }
+            for (org.eclipse.egit.github.core.Repository ghRepository : allRepositoriesFromAuthorizedUser)
+            {
+                if (ghRepository.getOwner().getLogin().equals(organization.getName()))
+                {
+                    Repository repository = new Repository();
+                    repository.setSlug(ghRepository.getName());
+                    repository.setName(ghRepository.getName());
+                    repositories.add(repository);
+                }
+            }
+            
             log.debug("Found repositories: " + repositories.size());
             return repositories;
         } catch (IOException e)
         {
             throw new SourceControlException("Error retrieving list of repositories", e);
         }
-
     }
 
 	@Override
