@@ -75,20 +75,27 @@ public class ProjectCreatedListener implements InitializingBean, DisposableBean
 	@EventListener
 	public void onProjectCreated(ProjectCreatedEvent projectCreatedEvent)
 	{
-		log.debug("New project [" + projectCreatedEvent.getId()
-		        + "] created, updating repository links");
-		
-		List<Repository> allRepositories = repositoryService.getAllRepositories();
-		
-		for (Repository repository : allRepositories)
-        {
-			if (repository.isLinked() &&
-					repository.getDvcsType() != null &&
-					repository.getDvcsType().trim().equalsIgnoreCase(BitbucketCommunicator.BITBUCKET))
+		try
+		{
+			log.debug("New project [" + projectCreatedEvent.getId()
+			        + "] created, updating repository links");
+			
+			List<Repository> allRepositories = repositoryService.getAllRepositories();
+			
+			for (Repository repository : allRepositories)
 			{
-				bitbucketLinker.linkRepository(repository);
+				if (repository.isLinked() &&
+						repository.getDvcsType() != null &&
+						repository.getDvcsType().trim().equalsIgnoreCase(BitbucketCommunicator.BITBUCKET))
+				{
+					bitbucketLinker.linkRepository(repository);
+				}
 			}
-        }
+		
+		} catch (Exception e)
+		{
+			log.warn("Failed to properly execute linking project to bitbucket.", e);
+		}
 	}
 
 }
