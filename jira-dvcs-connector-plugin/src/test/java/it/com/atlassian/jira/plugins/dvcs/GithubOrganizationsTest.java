@@ -30,6 +30,7 @@ import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
@@ -232,6 +233,16 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addRepoToProjectFailingStep2(TEST_URL);
 
         goToGithubOAuthConfigPage().setCredentials(clientID, clientSecret);
+    }
+     
+    @Test
+    public void addPrivateRepositoryWithValidOAuth() {
+        GithubConfigureOrganizationsPage githubConfigPage = (GithubConfigureOrganizationsPage) goToConfigPage();
+        
+        GithubConfigureOrganizationsPage githubConfigureOrganizationsPage =
+                githubConfigPage.addRepoToProjectForOrganization("dusanhornik", true);
+        
+        assertThat(githubConfigureOrganizationsPage.getNumberOfVisibleRepositories(), is(3));
     }
 
     private static Set<String> extractGithubHookIdsForRepositoryToRemove(String repositoryId)
