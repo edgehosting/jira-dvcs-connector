@@ -18,7 +18,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 /**
- * Factory for {@link com.atlassian.jira.plugins.bitbucket.api.Changeset} implementations
+ * Factory for {@link Changeset} implementations
  */
 public class GithubChangesetFactory
 {

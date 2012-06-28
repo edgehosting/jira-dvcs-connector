@@ -37,7 +37,7 @@ import com.atlassian.sal.api.net.ResponseException;
 import com.google.common.collect.Iterables;
 
 /**
- * Unit tests for {@link com.atlassian.jira.plugins.bitbucket.api.Communicator}
+ * Unit tests for {@link DvcsCommunicator}
  */
 public class DefaultBitbucketTest
 {
