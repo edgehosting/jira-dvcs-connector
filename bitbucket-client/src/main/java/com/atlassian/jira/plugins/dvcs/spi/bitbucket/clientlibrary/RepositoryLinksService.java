@@ -35,6 +35,15 @@ public class RepositoryLinksService
         return (List<RepositoryLink>) bitbucketClient.get(resourceUrl, type);
     }
     
+    /**
+     * Gets Repository Link frm given owner, slug and repository link id.
+     * 
+     * @param owner
+     * @param slug
+     * @param id
+     * @return
+     * @throws BitbucketClientException 
+     */
     public RepositoryLink getRepositoryLink(String owner, String slug, int id) throws BitbucketClientException
     {
         Type type = new TypeToken<RepositoryLink>(){}.getType();
