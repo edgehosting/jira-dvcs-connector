@@ -190,7 +190,10 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public List<ChangesetMapping> doInTransaction()
             {
-                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, ChangesetMapping.ISSUE_KEY + " = ?", issueKey);
+                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
+                                                                 Query.select().where(ChangesetMapping.ISSUE_KEY + " = ?", issueKey)
+                                                                               .order(ChangesetMapping.DATE));
+
                 return Arrays.asList(mappings);
             }
         });
