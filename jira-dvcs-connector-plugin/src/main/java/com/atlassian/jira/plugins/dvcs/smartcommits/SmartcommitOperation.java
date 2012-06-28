@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
@@ -51,7 +52,9 @@ public class SmartcommitOperation implements Runnable
 					CommitCommands commands = commitMessageParser.parseCommitComment(changeset.getMessage());
 					commands.setAuthorEmail(changeset.getAuthorEmail());
 					// do commands
-					smartcommitsService.doCommands(commands);
+					if (CollectionUtils.isNotEmpty(commands.getCommands())) {
+						smartcommitsService.doCommands(commands);
+					}
 				}
 			});
 			

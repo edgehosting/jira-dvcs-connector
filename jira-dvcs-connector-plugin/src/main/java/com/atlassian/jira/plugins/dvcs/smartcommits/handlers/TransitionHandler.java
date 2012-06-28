@@ -17,7 +17,7 @@ import com.atlassian.jira.issue.IssueInputParametersImpl;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.status.Status;
 import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
-import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookErrors;
+import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.util.I18nHelper;
@@ -53,12 +53,12 @@ public class TransitionHandler implements CommandHandler<Issue> {
     }
 
     @Override
-	public Either<CommitHookErrors, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args) {
+	public Either<CommitHookHandlerError, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args) {
         
     	String cmd = commandName;
       
         if (cmd == null || cmd.equals("")) {
-            return Either.error(CommitHookErrors.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
+            return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(NO_COMMAND_PROVIDED_TEMPLATE, issue.getKey())));
         }
 
@@ -67,7 +67,7 @@ public class TransitionHandler implements CommandHandler<Issue> {
         Collection<ValidatedAction> validActions =
                 getValidActions(actions, user, issue, new IssueInputParametersImpl());
         if (validActions.isEmpty()) {
-            return Either.error(CommitHookErrors.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
+            return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(NO_ALLOWED_ACTIONS_TEMPLATE, issue.getKey())));
         }
 
@@ -77,21 +77,21 @@ public class TransitionHandler implements CommandHandler<Issue> {
 
             String validActionNames = StringUtils.join(getActionNamesIterator(validActions), ", ");
 
-            return Either.error(CommitHookErrors.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
+            return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(NO_MATCHING_ACTIONS_TEMPLATE, issue.getKey(), getIssueState(issue), cmd, validActionNames)));
 
         } else if (matchingValidActions.size() > 1) {
 
             String validActionNames = StringUtils.join(getActionNamesIterator(matchingValidActions), ", ");
 
-            return Either.error(CommitHookErrors.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
+            return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(MULTIPLE_ACTIONS_TEMPLATE, cmd, issue.getKey(), getIssueState(issue), validActionNames)));
         } else {
             
             IssueService.TransitionValidationResult validation = matchingValidActions.iterator().next().validation;
             IssueService.IssueResult result = issueService.transition(user, validation);
             if (!result.isValid()) {
-                return Either.error(CommitHookErrors.fromErrorCollection(
+                return Either.error(CommitHookHandlerError.fromErrorCollection(
                         CMD_TYPE.getName(), issue.getKey(), result.getErrorCollection()));
             }
 

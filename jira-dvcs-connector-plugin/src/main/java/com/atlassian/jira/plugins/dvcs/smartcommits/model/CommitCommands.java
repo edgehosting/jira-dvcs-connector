@@ -2,18 +2,8 @@ package com.atlassian.jira.plugins.dvcs.smartcommits.model;
 
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
-
-@XmlRootElement()
-@XmlAccessorType(XmlAccessType.FIELD)
 public class CommitCommands {
 
-    @XmlElementWrapper(name = "commands")
-    @XmlElement(name = "command")
     List<CommitCommand> commands;
     
     private String authorEmail;
@@ -36,14 +26,11 @@ public class CommitCommands {
         return commands;
     }
 
-    @XmlAccessorType(XmlAccessType.FIELD)
     public static class CommitCommand {
 
         String issueKey;
         String commandName;
 
-        @XmlElementWrapper(name = "arguments")
-        @XmlElement(name = "argument")
         List<String> arguments;
 
         public CommitCommand(String issueKey, String commandName, List<String> arguments) {
@@ -71,7 +58,7 @@ public class CommitCommands {
         @Override
         public String toString()
         {
-        	return issueKey + " " + commandName + " args [ " + arguments + "]";
+        	return issueKey + " <<" + commandName + ">> args [ " + arguments + "]";
         }
     }
 

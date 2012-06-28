@@ -8,7 +8,7 @@ import com.atlassian.jira.bc.issue.worklog.WorklogService;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.worklog.Worklog;
 import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
-import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookErrors;
+import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 
 import java.util.Date;
@@ -29,7 +29,7 @@ public class WorkLogHandler implements CommandHandler<Worklog> {
         return CMD_TYPE;
     }
 
-    public Either<CommitHookErrors, Worklog> handle(User user, MutableIssue issue, String commandName, List<String> args) {
+    public Either<CommitHookHandlerError, Worklog> handle(User user, MutableIssue issue, String commandName, List<String> args) {
         JiraServiceContextImpl jiraServiceContext = new JiraServiceContextImpl(user);
         WorklogResult result = worklogService.validateCreate(
                 jiraServiceContext,
@@ -42,7 +42,7 @@ public class WorkLogHandler implements CommandHandler<Worklog> {
             return Either.value(worklogService.createAndAutoAdjustRemainingEstimate(
                     jiraServiceContext, result, true));
         } else {
-            return Either.error(CommitHookErrors.fromErrorCollection(
+            return Either.error(CommitHookHandlerError.fromErrorCollection(
                     CMD_TYPE.getName(), issue.getKey(), jiraServiceContext.getErrorCollection()));
         }
     }

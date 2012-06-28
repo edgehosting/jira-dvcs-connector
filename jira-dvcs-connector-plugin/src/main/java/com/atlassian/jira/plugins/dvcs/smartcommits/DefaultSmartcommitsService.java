@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
 import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.Response;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,19 +22,15 @@ import com.atlassian.jira.issue.worklog.Worklog;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommentHandler;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler;
+import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommandsResults;
+import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommandsResults.CommandResult;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
-import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookErrors;
+import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
-import com.atlassian.jira.util.I18nHelper;
 
-// TODO take away WS layer from here
 public class DefaultSmartcommitsService implements SmartcommitsService
 {
-	private static final String NO_COMMANDS = "dvcs.smartcommits.commands.nocommands";
-	private static final String BAD_COMMAND = "dvcs.smartcommits.commands.badcommand";
-	private static final String UNKNOWN_ISSUE = "dvcs.smartcommits.commands.unknownissue";
-	
 	private static final Logger log = org.slf4j.LoggerFactory.getLogger(DefaultSmartcommitsService.class);
 
 	private final CacheControl NO_CACHE;
@@ -46,7 +42,6 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 	private final IssueManager issueManager;
 
 	private final JiraAuthenticationContext jiraAuthenticationContext;
-	private final I18nHelper i18nHelper;
 
 	private final CrowdService crowdService;
 
@@ -57,7 +52,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 			JiraAuthenticationContext jiraAuthenticationContext, CrowdService crowdService)
 	{
 		this.crowdService = crowdService;
-		
+
 		NO_CACHE = new CacheControl();
 		NO_CACHE.setNoCache(true);
 
@@ -66,113 +61,135 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		this.commentHandler = commentHandler;
 		this.workLogHandler = workLogHandler;
 		this.jiraAuthenticationContext = jiraAuthenticationContext;
-		i18nHelper = jiraAuthenticationContext.getI18nHelper();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Response doCommands(CommitCommands commands)
+	public CommandsResults doCommands(CommitCommands commands)
 	{
-		
-		String authorEmail = commands.getAuthorEmail();
-		if (StringUtils.isBlank(authorEmail)) {
-			return Response.noContent().build();
-		}
-		User user = getUserByEmail(authorEmail);
-		
+		CommandsResults results = new CommandsResults();
+
 		//
-		if (user == null) {
-			return Response.noContent().build();
+		// recognise user and auth user by email
+		//
+		String authorEmail = commands.getAuthorEmail();
+		if (StringUtils.isBlank(authorEmail))
+		{
+			return results;
 		}
+		//
+		// Fetch user by email
+		//
+		User user = getUserByEmailOrNull(authorEmail);
+		if (user == null)
+		{
+			return results;
+		}
+
+		//
+		// Authenticate user
 		//
 		jiraAuthenticationContext.setLoggedInUser(user);
-		//
 
-		if (commands == null || commands.getCommands().isEmpty())
+		if (CollectionUtils.isEmpty(commands.getCommands()))
 		{
-			return formResponse(CommitHookErrors.fromSingleError("commands", "", i18nHelper.getText(NO_COMMANDS)));
+			results.addGlobalError("No commands to execute.");
+			return results;
 		}
 
-		CommitHookErrors errors = new CommitHookErrors();
+		//
+		// finally we can process commands
+		//
+		processCommands(commands, results, user);
+
+		return results;
+	}
+
+	private void processCommands(CommitCommands commands, CommandsResults results, User user)
+	{
 		for (CommitCommands.CommitCommand command : commands.getCommands())
 		{
 			CommandType commandType = CommandType.getCommandType(command.getCommandName());
+			//
+			// init command result
+			//
+			CommandResult commandResult = new CommandResult();
+			results.addResult(command, commandResult);
 
 			MutableIssue issue = issueManager.getIssueObject(command.getIssueKey());
 			if (issue == null)
 			{
-				errors.addError(command.getCommandName(), command.getIssueKey(), badIssueKey(command.getIssueKey()));
+				commandResult.addError("Issue has not been found :" + command.getIssueKey());
 				continue;
 			}
 
 			switch (commandType)
 			{
+			// -----------------------------------------------------------------------------------------------
+			// Log Work
+			// -----------------------------------------------------------------------------------------------
 			case LOG_WORK:
-				Either<CommitHookErrors, Worklog> logResult = workLogHandler.handle(user, issue,
+				Either<CommitHookHandlerError, Worklog> logResult = workLogHandler.handle(user, issue,
 						command.getCommandName(), command.getArguments());
 
 				if (logResult.hasError())
 				{
-					errors.addErrors(logResult.getError());
+					commandResult.addError(logResult.getError() + "");
 				}
 				break;
+			// -----------------------------------------------------------------------------------------------
+			// Comment
+			// -----------------------------------------------------------------------------------------------
 			case COMMENT:
-				Either<CommitHookErrors, Comment> commentResult = commentHandler.handle(user, issue,
+				Either<CommitHookHandlerError, Comment> commentResult = commentHandler.handle(user, issue,
 						command.getCommandName(), command.getArguments());
 
 				if (commentResult.hasError())
 				{
-					errors.addErrors(commentResult.getError());
+					commandResult.addError(commentResult.getError() + "");
 				}
 				break;
+			// -----------------------------------------------------------------------------------------------
+			// Transition
+			// -----------------------------------------------------------------------------------------------
 			case TRANSITION:
-				Either<CommitHookErrors, Issue> transitionResult = transitionHandler.handle(user, issue,
+				Either<CommitHookHandlerError, Issue> transitionResult = transitionHandler.handle(user, issue,
 						command.getCommandName(), command.getArguments());
 
 				if (transitionResult.hasError())
 				{
-					errors.addErrors(transitionResult.getError());
+					commandResult.addError(transitionResult.getError() + "");
 				}
 				break;
+
 			default:
-				errors.addError(command.getCommandName(), command.getIssueKey(),
-						String.format(i18nHelper.getText(BAD_COMMAND), command.getCommandName(), command.getIssueKey()));
+				commandResult.addError("Invalid command " + command.getCommandName());
 			}
 		}
-
-		return formResponse(errors);
 	}
 
-	private Response formResponse(CommitHookErrors errors)
-	{
-		if (errors == null || errors.isEmpty())
-		{
-			return Response.ok().cacheControl(NO_CACHE).build();
-		} else
-		{
-			return Response.status(400).entity(errors).build();
-		}
-	}
-
-	private String badIssueKey(String key)
-	{
-		return String.format(i18nHelper.getText(UNKNOWN_ISSUE), key);
-	}
-
-	private User getUserByEmail(String email)
+	private User getUserByEmailOrNull(String email)
 	{
 		try
 		{
-			EntityQuery<User> query = QueryBuilder.queryFor(User.class, EntityDescriptor.user()).
-												  with(Restriction.on(UserTermKeys.EMAIL).
-												  exactlyMatching(email)).returningAtMost(1);
+			EntityQuery<User> query = QueryBuilder.queryFor(User.class, EntityDescriptor.user())
+					.with(Restriction.on(UserTermKeys.EMAIL).exactlyMatching(email)).returningAtMost(EntityQuery.ALL_RESULTS);
+			
 			Iterable<User> user = crowdService.search(query);
-			return user.iterator().next();
+			User firstShouldBeOneUser = user.iterator().next();
+			
+			if (user.iterator().hasNext()) {
+				log.warn("Found more than one user by email {} - can not recognise.", email);
+				return null;
+			}
+			
+			return firstShouldBeOneUser;
+			
 		} catch (Exception e)
 		{
-			log.warn("User not found by email {} ", email);
+			log.warn("User not found by email {}.", email);
 			return null;
 		}
 	}

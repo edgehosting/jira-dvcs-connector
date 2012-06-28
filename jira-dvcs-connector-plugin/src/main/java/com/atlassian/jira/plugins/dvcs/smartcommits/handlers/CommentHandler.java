@@ -8,7 +8,7 @@ import com.atlassian.jira.bc.issue.comment.CommentService;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.comments.Comment;
 import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
-import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookErrors;
+import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 
 public class CommentHandler implements CommandHandler<Comment> {
@@ -28,14 +28,14 @@ public class CommentHandler implements CommandHandler<Comment> {
     }
 
     @Override
-	public Either<CommitHookErrors, Comment> handle(User user, MutableIssue issue, String commandName, List<String> args) {
+	public Either<CommitHookHandlerError, Comment> handle(User user, MutableIssue issue, String commandName, List<String> args) {
 
     	JiraServiceContextImpl jiraServiceContext = new JiraServiceContextImpl(user);
        
         Comment comment = commentService.create(user, issue, args.isEmpty() ? null : args.get(0), true, jiraServiceContext.getErrorCollection());
 
         if (jiraServiceContext.getErrorCollection().hasAnyErrors()) {
-            return Either.error(CommitHookErrors.fromErrorCollection(
+            return Either.error(CommitHookHandlerError.fromErrorCollection(
                     CMD_TYPE.getName(), issue.getKey(), jiraServiceContext.getErrorCollection()));
         } else {
             return Either.value(comment);

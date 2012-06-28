@@ -1,31 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits.model;
 
-import com.atlassian.jira.util.ErrorCollection;
-
-import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
-public class CommitHookErrors {
-    @XmlElementWrapper(name = "errors")
-    @XmlElement(name = "error")
-    List<CommitHookError> errors;
+import com.atlassian.jira.util.ErrorCollection;
 
-    public CommitHookErrors() {
+public class CommitHookHandlerError {
+
+	List<CommitHookError> errors;
+
+    public CommitHookHandlerError() {
         errors = new ArrayList<CommitHookError>();
     }
 
-    public static CommitHookErrors fromSingleError(String command, String issueKey, String message) {
-        CommitHookErrors e = new CommitHookErrors();
+    public static CommitHookHandlerError fromSingleError(String command, String issueKey, String message) {
+        CommitHookHandlerError e = new CommitHookHandlerError();
         e.addError(command, issueKey, message);
         return e;
     }
 
-    public static CommitHookErrors fromErrorCollection(String command, String issueKey, ErrorCollection errors) {
-        CommitHookErrors e = new CommitHookErrors();
+    public static CommitHookHandlerError fromErrorCollection(String command, String issueKey, ErrorCollection errors) {
+        CommitHookHandlerError e = new CommitHookHandlerError();
         e.addErrors(command, issueKey, errors);
         return e;
     }
@@ -34,7 +30,7 @@ public class CommitHookErrors {
         errors.add(new CommitHookError(command, issueKey, message));
     }
 
-    public void addErrors(CommitHookErrors other) {
+    public void addErrors(CommitHookHandlerError other) {
         errors.addAll(other.errors);
     }
 
@@ -56,8 +52,13 @@ public class CommitHookErrors {
     public boolean isEmpty() {
         return errors.isEmpty();
     }
+    
+    @Override
+    public String toString()
+    {
+    	return "Errors: " + errors;
+    }
 
-    @XmlAccessorType(XmlAccessType.FIELD)
     public static class CommitHookError {
         String command;
         String issueKey;
