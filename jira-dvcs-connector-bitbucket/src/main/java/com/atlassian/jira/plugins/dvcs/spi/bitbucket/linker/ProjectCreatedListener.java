@@ -13,6 +13,7 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.event.ProjectCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 
 /**
  * Simple JIRA listener using the atlassian-event library and demonstrating
@@ -76,10 +77,14 @@ public class ProjectCreatedListener implements InitializingBean, DisposableBean
 	{
 		log.debug("New project [" + projectCreatedEvent.getId()
 		        + "] created, updating repository links");
+		
 		List<Repository> allRepositories = repositoryService.getAllRepositories();
+		
 		for (Repository repository : allRepositories)
         {
-			if (repository.isLinked())
+			if (repository.isLinked() &&
+					repository.getDvcsType() != null &&
+					repository.getDvcsType().trim().equalsIgnoreCase(BitbucketCommunicator.BITBUCKET))
 			{
 				bitbucketLinker.linkRepository(repository);
 			}
