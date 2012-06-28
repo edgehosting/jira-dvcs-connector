@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 /**
- * Factory for {@link com.atlassian.jira.plugins.bitbucket.api.Changeset} implementations
+ * Factory for {@link Changeset} implementations
  */
 public class BitbucketChangesetFactory
 {
@@ -31,7 +31,7 @@ public class BitbucketChangesetFactory
      *
      * @param repositoryId
      * @param baseJson
-     * @return the parsed {@link com.atlassian.jira.plugins.bitbucket.api.Changeset}
+     * @return the parsed {@link Changeset}
      */
     public static Changeset parse(int repositoryId, JSONObject baseJson)
     {

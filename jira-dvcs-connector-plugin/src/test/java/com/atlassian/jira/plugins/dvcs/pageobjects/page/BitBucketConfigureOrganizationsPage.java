@@ -54,7 +54,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
      *
      * @param projectKey The JIRA project key
      * @param url        The url to the bitucket public repo
-     * @return BitBucketConfigureRepositoriesPage
+     * @return BitBucketConfigureOrganizationsPage
      */
     @Override
     public BitBucketConfigureOrganizationsPage addOrganizationFailingStep1(String url)
@@ -101,7 +101,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
      *
      * @param projectKey The JIRA project key
      * @param url        The url to the bitucket public repo
-     * @return BitBucketConfigureRepositoriesPage
+     * @return BitBucketConfigureOrganizationsPage
      */
 
 

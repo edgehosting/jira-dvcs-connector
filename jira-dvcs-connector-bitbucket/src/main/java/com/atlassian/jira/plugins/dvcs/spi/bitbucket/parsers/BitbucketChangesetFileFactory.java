@@ -9,10 +9,10 @@ import com.atlassian.jira.util.json.JSONObject;
 public class BitbucketChangesetFileFactory
 {
     /**
-     * Parse the json object as a {@link com.atlassian.jira.plugins.bitbucket.api.ChangesetFile file} within a changeset.
+     * Parse the json object as a {@link ChangesetFile file} within a changeset.
      *
      * @param json the json object describing the file
-     * @return the parsed {@link com.atlassian.jira.plugins.bitbucket.api.ChangesetFile}
+     * @return the parsed {@link ChangesetFile}
      */
     public static ChangesetFile parseFromDiffstatJson(JSONObject json)
     {
@@ -29,10 +29,10 @@ public class BitbucketChangesetFileFactory
     }
 
     /**
-     * Parse the json object as a {@link com.atlassian.jira.plugins.bitbucket.api.ChangesetFile file} within a changeset.
+     * Parse the json object as a {@link ChangesetFile file} within a changeset.
      *
      * @param json the json object describing the file
-     * @return the parsed {@link com.atlassian.jira.plugins.bitbucket.api.ChangesetFile}
+     * @return the parsed {@link ChangesetFile}
      */
     public static ChangesetFile parseFromBaseJson(JSONObject json)
     {

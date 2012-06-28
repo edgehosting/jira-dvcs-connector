@@ -116,12 +116,11 @@ public class RepositoryServiceImpl implements RepositoryService
                 }
                 catch (SourceControlException e)
                 {
-                    if (e.getCause() instanceof ResponseException)
-                    {
-                        // if the user didn't have rights to add post commit hook, just unlink the repository
-                        savedRepository.setLinked(false);
-                        repositoryDao.save(savedRepository);
-                    }
+                    log.warn("Adding postcommit hook for repository "
+                            + savedRepository.getRepositoryUrl() + " failed: " + e.getMessage());
+                    // if the user didn't have rights to add post commit hook, just unlink the repository
+                    savedRepository.setLinked(false);
+                    repositoryDao.save(savedRepository);
                 }
 			}
         }
