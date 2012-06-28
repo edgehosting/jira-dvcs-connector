@@ -39,6 +39,8 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class GithubCommunicator implements DvcsCommunicator
 {
@@ -106,7 +108,7 @@ public class GithubCommunicator implements DvcsCommunicator
             List<org.eclipse.egit.github.core.Repository> allRepositoriesFromAuthorizedUser
                     = repositoryService.getRepositories();
             
-            List<Repository> repositories = new ArrayList<Repository>();
+            Set<Repository> repositories = new LinkedHashSet<Repository>();
             for (org.eclipse.egit.github.core.Repository ghRepository : publicRepositoriesFromOrganization)
             {
                 Repository repository = new Repository();
@@ -116,7 +118,6 @@ public class GithubCommunicator implements DvcsCommunicator
             }
             for (org.eclipse.egit.github.core.Repository ghRepository : allRepositoriesFromAuthorizedUser)
             {
-                
                 if (StringUtils.equals(ghRepository.getOwner().getLogin(), organization.getName()))
                 {
                     Repository repository = new Repository();
@@ -125,9 +126,8 @@ public class GithubCommunicator implements DvcsCommunicator
                     repositories.add(repository);
                 }
             }
-            
             log.debug("Found repositories: " + repositories.size());
-            return repositories;
+            return new ArrayList<Repository>(repositories);
         } catch (IOException e)
         {
             throw new SourceControlException("Error retrieving list of repositories", e);
@@ -200,7 +200,7 @@ public class GithubCommunicator implements DvcsCommunicator
 
         try
         {
-            repositoryService.createHook(repositoryId, repositoryHook);
+            repositoryService.createHook(repositoryId, repositoryHook);//TODO TUTO
         } catch (IOException e)
         {
             throw new SourceControlException("Could not add postcommit hook. ", e);
