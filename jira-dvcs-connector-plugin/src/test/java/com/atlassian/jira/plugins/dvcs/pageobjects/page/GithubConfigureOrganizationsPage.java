@@ -8,6 +8,8 @@ import org.openqa.selenium.By;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import java.util.List;
+import org.openqa.selenium.WebElement;
 
 /**
  * Represents the page to link repositories to projects
@@ -187,5 +189,35 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         }
 
         return this;
+    }
+    
+    public GithubConfigureOrganizationsPage addRepoToProjectForOrganization(String organizationString, boolean autoSync)
+    {
+        linkRepositoryButton.click();
+        waitFormBecomeVisible();
+
+        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
+        organization.clear().type(organizationString);
+
+        setPageAsOld();
+        addOrgButton.click();
+
+        checkAndDoGithubLogin();
+        String currentUrl = authorizeGithubAppIfRequired();
+        if (!currentUrl.contains("/jira/"))
+        {
+            Assert.fail("Expected was automatic continue to jira!");
+        }
+
+        return this;
+    }
+
+    public int getNumberOfVisibleRepositories()
+    {
+        List<WebElement> visibleRepositoryRows = jiraTestedProduct.getTester()
+                                                                  .getDriver()
+                                                                  .findElements(By.className("dvcs-repo-row"));
+
+        return visibleRepositoryRows.size();
     }
 }
