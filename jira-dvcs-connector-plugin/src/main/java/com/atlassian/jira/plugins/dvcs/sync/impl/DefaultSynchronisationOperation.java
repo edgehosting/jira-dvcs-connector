@@ -115,10 +115,12 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     {
                         Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
                         changesetForSave.setIssueKey(issueKey);
-                        
-                        // mark smartcommit can be processed
-                        changesetForSave.setSmartcommitAvaliable(Boolean.TRUE);
-                        
+                        //--------------------------------------------
+                        // mark smart commit can be processed
+                        if (softSync) {
+                        	changesetForSave.setSmartcommitAvaliable(Boolean.TRUE);
+                        }
+                        //--------------------------------------------
                         changesetService.save(changesetForSave);
                     } catch (SourceControlException e)
                     {

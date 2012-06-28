@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -228,11 +229,29 @@ public class ChangesetDaoImpl implements ChangesetDao
 	@Override
 	public List<Changeset> getLatestChangesetsAvailableForSmartcommits()
 	{
-		Query query = Query.select().where(ChangesetMapping.SMARTCOMMIT_AVAILABLE + " = ? ", Boolean.TRUE);
-		query.order(ChangesetMapping.DATE).distinct();
+		Query query = createLatestChangesetsAvailableForSmartcommitQuery();
 		
 		ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
 		return transform( Arrays.asList(mappings) );
+	}
+
+	@Override
+	public void forEachLatestChangesetsAvailableForSmartcommitDo(final ForEachChangesetClosure closure)
+	{
+		Query query = createLatestChangesetsAvailableForSmartcommitQuery();
+		activeObjects.stream(ChangesetMapping.class, query, new EntityStreamCallback<ChangesetMapping, Integer>() {
+			@Override
+			public void onRowRead(ChangesetMapping mapping)
+			{
+				closure.execute(transform(mapping));
+			}
+		});
+	}
+	
+	private Query createLatestChangesetsAvailableForSmartcommitQuery()
+	{
+		return Query.select("*").where(ChangesetMapping.SMARTCOMMIT_AVAILABLE + " = ? ", Boolean.TRUE)
+		.order(ChangesetMapping.DATE + " DESC");
 	}
 
 	@Override
@@ -250,4 +269,5 @@ public class ChangesetDaoImpl implements ChangesetDao
 			}
 		});
 	}
+
 }

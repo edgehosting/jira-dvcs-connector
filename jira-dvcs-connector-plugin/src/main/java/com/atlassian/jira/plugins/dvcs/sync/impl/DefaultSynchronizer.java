@@ -9,11 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.smartcommits.CommitMessageParser;
-import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitOperation;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
-import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.google.common.collect.MapMaker;
@@ -27,19 +23,13 @@ public class DefaultSynchronizer implements Synchronizer
 	
     private final ExecutorService executorService;
 	private final SmartcommitsChangesetsProcessor smartcommitsChangesetsProcessor;
-	private final ChangesetService changesetService;
-	private final CommitMessageParser commitParser;
 
-	private final SmartcommitsService smartcommitService;
 
 	public DefaultSynchronizer(ExecutorService executorService,
-			SmartcommitsChangesetsProcessor smartcommitsChangesetsProcessor, ChangesetService changesetService, SmartcommitsService smartcommitService, CommitMessageParser commitParser)
+			SmartcommitsChangesetsProcessor smartcommitsChangesetsProcessor)
 	{
 		this.executorService = executorService;
 		this.smartcommitsChangesetsProcessor = smartcommitsChangesetsProcessor;
-		this.changesetService = changesetService;
-		this.smartcommitService = smartcommitService;
-		this.commitParser = commitParser;
 	}
 
     // map of ALL Synchronisation Progresses - running and finished ones
@@ -87,9 +77,10 @@ public class DefaultSynchronizer implements Synchronizer
                     
                     operation.synchronise();
                     
-                    // on the end of execution
-                    if (operation.isSoftSync()) {
-                    	smartcommitsChangesetsProcessor.queue(new SmartcommitOperation(changesetService, commitParser, smartcommitService));
+                    // at the end of execution
+                    if (operation.isSoftSync()) 
+                    {
+                    	smartcommitsChangesetsProcessor.startProcess();
                     }
                     //
         

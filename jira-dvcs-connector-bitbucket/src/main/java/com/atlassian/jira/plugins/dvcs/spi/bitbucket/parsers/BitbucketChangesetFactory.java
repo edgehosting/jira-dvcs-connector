@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -72,7 +73,9 @@ public class BitbucketChangesetFactory
 	{
 		try
 		{
-			return HGRC_MAIL_PATTERN.matcher(rawAuthor).group(1).trim();
+			Matcher matcher = HGRC_MAIL_PATTERN.matcher(rawAuthor);
+			matcher.find();
+			return matcher.group(1).trim();
 		} catch (Exception e)
 		{
 			// nop
@@ -130,7 +133,9 @@ public class BitbucketChangesetFactory
         try
         {
             List<ChangesetFile> files = fileListFromDiffstatJson(new JSONArray(responseFilesString));
-            return new Changeset(changeset.getRepositoryId(), changeset.getNode(), null ,changeset.getRawAuthor(), changeset.getAuthor(), changeset.getDate(), changeset.getRawNode(), changeset.getBranch(), changeset.getMessage(), changeset.getParents(), files, changeset.getAllFileCount());
+            Changeset changezet = new Changeset(changeset.getRepositoryId(), changeset.getNode(), null ,changeset.getRawAuthor(), changeset.getAuthor(), changeset.getDate(), changeset.getRawNode(), changeset.getBranch(), changeset.getMessage(), changeset.getParents(), files, changeset.getAllFileCount());
+            changezet.setAuthorEmail(changeset.getAuthorEmail());
+            return changezet;
         } catch (JSONException e)
         {
             throw new SourceControlException("Invalid diffstat json object: " + responseFilesString, e);

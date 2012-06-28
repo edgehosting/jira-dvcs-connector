@@ -19,5 +19,11 @@ public interface ChangesetDao
     
     List<Changeset> getLatestChangesetsAvailableForSmartcommits();
     
+    void forEachLatestChangesetsAvailableForSmartcommitDo(ForEachChangesetClosure closure);
+    
     void markSmartcommitAvailability(int id, boolean available);
+    
+    public interface ForEachChangesetClosure {
+    	void execute(Changeset changeset);
+    }
 }

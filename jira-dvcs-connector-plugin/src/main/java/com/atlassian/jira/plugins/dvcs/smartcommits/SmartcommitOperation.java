@@ -1,11 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao.ForEachChangesetClosure;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 
 /**
@@ -16,19 +15,19 @@ public class SmartcommitOperation implements Runnable
 	
 	private static final Logger log = org.slf4j.LoggerFactory.getLogger(SmartcommitOperation.class);
 	
-	private final ChangesetService changesetService;
-
 	private final CommitMessageParser commitMessageParser;
 
 	private final SmartcommitsService smartcommitsService;
 
+	private final ChangesetDao changesetDao;
+
 	/**
 	 * The Constructor.
 	 */
-	public SmartcommitOperation(ChangesetService changesetService, CommitMessageParser commitMessageParser, SmartcommitsService smartcommitsService)
+	public SmartcommitOperation(ChangesetDao changesetDao, CommitMessageParser commitMessageParser, SmartcommitsService smartcommitsService)
 	{
 		super();
-		this.changesetService = changesetService;
+		this.changesetDao = changesetDao;
 		this.commitMessageParser = commitMessageParser;
 		this.smartcommitsService = smartcommitsService;
 	}
@@ -41,17 +40,20 @@ public class SmartcommitOperation implements Runnable
 	{
 		try
 		{
-			List<Changeset> latestChangesetsAvailableForSmartcommits = changesetService.getLatestChangesetsAvailableForSmartcommits();
-			for (Changeset changeset : latestChangesetsAvailableForSmartcommits)
+			changesetDao.forEachLatestChangesetsAvailableForSmartcommitDo(new ForEachChangesetClosure()
 			{
-				// first mark as processed
-				changesetService.markSmartcommitAvailability(changeset.getId(), true);
-				// parse message
-				CommitCommands commands = commitMessageParser.parseCommitComment(changeset.getMessage());
-				commands.setAuthorEmail(changeset.getAuthorEmail());
-				// do commands
-				smartcommitsService.doCommands(commands);
-			}
+				@Override
+				public void execute(Changeset changeset)
+				{
+					// first mark as processed 
+					changesetDao.markSmartcommitAvailability(changeset.getId(), false);
+					// parse message
+					CommitCommands commands = commitMessageParser.parseCommitComment(changeset.getMessage());
+					commands.setAuthorEmail(changeset.getAuthorEmail());
+					// do commands
+					smartcommitsService.doCommands(commands);
+				}
+			});
 			
 		} catch (Exception e)
 		{
