@@ -225,5 +225,11 @@ public class OrganizationServiceImpl implements OrganizationService
 		
 	}
 
+	@Override
+	public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
+	{
+		organizationDao.setDefaultGroupsSlugs(orgId, groupsSlugs);
+	}
+
 
 }

@@ -1,0 +1,36 @@
+<table class="aui">
+
+			 		<thead>
+				 		<tr>
+				 			<th>When adding new users, invite the user to join the following Bitbucket groups by default:</th>
+				 		</tr>
+			 		</thead>
+			 		
+			 		<tbody>
+			 		
+			 		#foreach($group in $groups)
+
+				 		#if($configuredSlugs.contains($group.slug))
+				 			#set( $selectedGroup = "checked='checked'")
+				 			#else
+				 			#set( $selectedGroup = "")
+				 		#end
+				 		<tr>
+				 			<td>
+				 				
+				 				<input type="checkbox" 
+				 					id="default-group-slug-$group.slug"
+				 					name="organizationDefaultGroups" value="$group.slug"
+				 					$!selectedGroup /> 
+				 				
+				 				<label for="default-group-slug-$group.slug" >
+				 				 $textutils.htmlEncode($group.niceName) 
+				 				</label> 
+				 			</td>
+				 		</tr>
+				 		
+				 	#end
+				 		
+			 		</tbody>
+
+</table>

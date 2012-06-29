@@ -198,9 +198,14 @@
         <description>changesetCache</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetCache</interface>
     </component>
-    
+
     <component key="githubOauthUtils" class="com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils">
     	<description>Utils used i.e. to build GH redirect URLs etc.</description>
+    </component>
+    
+    <component key="webFragmentRenderer" name="webFragmentRenderer"
+               class="com.atlassian.jira.plugins.dvcs.webfragments.DefaultWebfragmentRenderer">
+        <interface>com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer</interface>
     </component>
     
     
@@ -269,6 +274,11 @@
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
 			
+			<action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.ConfigureDefaultBitbucketGroups"
+                    alias="ConfigureDefaultBitbucketGroups" roles-required="admin">
+                <view name="input">/templates/dvcs/add-organization.vm</view>
+            </action>
+			
         </actions>
     </webwork1>
 
@@ -308,6 +318,9 @@
     <activity-streams-provider key="dvcs-streams-provider" name="Dvcs Streams Provider" i18n-name-key="Bitbucket Connector"
                        class="com.atlassian.jira.plugins.dvcs.streams.DvcsStreamsActivityProvider">
     </activity-streams-provider>
+
+	<!-- Web Panels -->
+	<web-panel key="add-user-dvcs-extension" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />
 
  
 </atlassian-plugin>

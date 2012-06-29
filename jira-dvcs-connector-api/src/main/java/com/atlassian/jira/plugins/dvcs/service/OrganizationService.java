@@ -126,4 +126,7 @@ public interface OrganizationService
 	 * @param parseBoolean the parse boolean
 	 */
 	void enableGlobalSmartcommits(int id, boolean parseBoolean);
+	
+	void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs);
 }
+

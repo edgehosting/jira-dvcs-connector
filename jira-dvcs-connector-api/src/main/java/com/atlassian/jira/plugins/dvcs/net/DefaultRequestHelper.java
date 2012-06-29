@@ -8,7 +8,11 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.HeadMethod;
+import org.apache.commons.httpclient.methods.OptionsMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.methods.TraceMethod;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +47,7 @@ public class DefaultRequestHelper implements RequestHelper
     public DefaultRequestHelper(RequestFactory<?> requestFactory)
     {
         this.requestFactory = requestFactory;
-        this.responseHandlerFactory = new DefaultExtendedResponseHandlerFactory();
+        responseHandlerFactory = new DefaultExtendedResponseHandlerFactory();
     }
 
     @Override
@@ -74,7 +78,8 @@ public class DefaultRequestHelper implements RequestHelper
         runRequest(Request.MethodType.DELETE, apiUrl, urlPath, auth, null, null);
     }
 
-    private String runRequest(Request.MethodType methodType, String apiBaseUrl, String urlPath, Authentication auth,
+    @Override
+	public String runRequest(Request.MethodType methodType, String apiBaseUrl, String urlPath, Authentication auth,
         Map<String, Object> params, String postData) throws ResponseException
     {
         return runRequest(methodType, apiBaseUrl, urlPath, auth, params, postData, null);
@@ -91,9 +96,12 @@ public class DefaultRequestHelper implements RequestHelper
        return extendedResponse.getResponseString();
     }
 
-    private ExtendedResponse runRequestGetExtendedResponse(Request.MethodType methodType, String apiBaseUrl, String urlPath, Authentication auth,
+    @Override
+	public ExtendedResponse runRequestGetExtendedResponse(Request.MethodType methodType, String apiBaseUrl, String urlPath, Authentication auth,
     		Map<String, Object> params, String postData) throws ResponseException
-    		{
+    	
+    	{
+    	
     	String url = apiBaseUrl + urlPath + buildQueryString(params);
     	log.debug(methodType + " [ " + url + " ]");
     	
@@ -128,7 +136,7 @@ public class DefaultRequestHelper implements RequestHelper
     		
     	} catch (Exception e) {
     		log.warn("error execute method :  " + method, e);
-    		throw new ResponseException("error execute method :  " + method.getName(), e);
+    		throw new ResponseException("Error execute method :  " + method.getName() + ". Cause is " + e.getMessage(), e);
     	}
     }
     
@@ -155,6 +163,14 @@ public class DefaultRequestHelper implements RequestHelper
 	    		return new PostMethod(uri);
 	    	case DELETE:
 	    		return new DeleteMethod(uri);
+	    	case PUT:
+	    		return new PutMethod(uri);
+	    	case OPTIONS:
+	    		return new OptionsMethod(uri);
+	    	case HEAD:
+	    		return new HeadMethod(uri);
+	    	case TRACE:
+	    		return new TraceMethod(uri);
 			default:
 				return new GetMethod(uri);
     	}

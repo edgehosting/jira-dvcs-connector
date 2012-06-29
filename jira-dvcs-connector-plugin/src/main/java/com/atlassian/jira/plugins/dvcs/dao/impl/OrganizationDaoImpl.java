@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,8 +18,11 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 /**
@@ -73,7 +77,23 @@ public class OrganizationDaoImpl implements OrganizationDao
 		organization.setOrganizationUrl(createOrganizationUrl(organizationMapping));
 		organization.setGlobalSmartcommitsEnabled(organizationMapping.isGlobalSmartcommitsEnabled());
 		
+		organization.setDefaultGroupsSlugs(createGroupSlugs(organizationMapping.getDefaultGroupsSlugs()));
+		organization.setDefaultGroupsSlugsSerialized(organizationMapping.getDefaultGroupsSlugs());
+		
 		return organization;
+	}
+
+	private List<Group> createGroupSlugs(String defaultGroupsSlugs)
+	{
+		List<Group> slugs = new ArrayList<Group>();
+		if (StringUtils.isNotBlank(defaultGroupsSlugs)) {
+			Iterable<String> groupsSlugs = Splitter.on(Organization.DEFAULT_GROUP_SLUGS_SEPARATOR).split(defaultGroupsSlugs);
+			for (String slug : groupsSlugs)
+			{
+				slugs.add(new Group(slug));
+			}
+		}
+		return slugs;
 	}
 
 	private String createOrganizationUrl(OrganizationMapping organizationMapping)
@@ -220,6 +240,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 							map.put(OrganizationMapping.ACCESS_TOKEN, organization.getCredential().getAccessToken());
 							map.put(OrganizationMapping.AUTO_INVITE_NEW_USERS, organization.isAutoInviteNewUsers());
 							map.put(OrganizationMapping.GLOBAL_SMARTCOMMITS_ENABLED, organization.isGlobalSmartcommitsEnabled());
+							map.put(OrganizationMapping.DEFAULT_GROUP_SLUGS, organization.getDefaultGroupsSlugsSerialized());
 
 							om = activeObjects.create(OrganizationMapping.class, map);
 						} else
@@ -235,6 +256,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 							om.setAccessToken(organization.getCredential().getAccessToken());
 							om.setAutoInviteNewUsers(organization.isAutoInviteNewUsers());
 							om.setGlobalSmartcommitsEnabled(organization.isGlobalSmartcommitsEnabled());
+							om.setDefaultGroupsSlugs(organization.getDefaultGroupsSlugsSerialized());
 
 							om.save();
 						}
@@ -298,6 +320,27 @@ public class OrganizationDaoImpl implements OrganizationDao
 		});
 
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
+	{
+		String serializedGroups = Joiner.on(Organization.DEFAULT_GROUP_SLUGS_SEPARATOR).join(groupsSlugs);
+		final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, orgId);
+		organization.setDefaultGroupsSlugs(serializedGroups);
+		activeObjects.executeInTransaction(new TransactionCallback<Void>()
+		{
+			@Override
+			public Void doInTransaction()
+			{
+				organization.save();
+				return null;
+			}
+
+		});
+	}
 
 	
 	/**
@@ -316,9 +359,10 @@ public class OrganizationDaoImpl implements OrganizationDao
 	@Override
 	public List<Organization> getAutoInvitionOrganizations()
 	{
-		Query query = Query.select().where(OrganizationMapping.AUTO_INVITE_NEW_USERS, Boolean.TRUE).order(OrganizationMapping.NAME);
+		Query query = Query.select().where(OrganizationMapping.AUTO_INVITE_NEW_USERS + " = ? ", Boolean.TRUE).order(OrganizationMapping.NAME);
 		OrganizationMapping[] orgMappings = activeObjects.find(OrganizationMapping.class, query);
 		return transformCollection(Arrays.asList(orgMappings));
 	}
+
 
 }

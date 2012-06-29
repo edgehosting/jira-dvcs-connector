@@ -16,7 +16,8 @@ public interface OrganizationMapping extends Entity
     public static final String ACCESS_TOKEN = "ACCESS_TOKEN";
     public static final String AUTO_INVITE_NEW_USERS = "AUTO_INVITE_NEW_USERS";
     public static final String GLOBAL_SMARTCOMMITS_ENABLED = "AUTO_INVITE_NEW_USERS";
-
+    public static final String DEFAULT_GROUP_SLUGS = "DEFAULT_GROUP_SLUGS"; // serialized, separated by ";"
+    
     String getHostUrl();
     String getName();
     String getDvcsType();
@@ -26,6 +27,7 @@ public interface OrganizationMapping extends Entity
     String getAdminPassword();
     String getAccessToken();
     boolean isGlobalSmartcommitsEnabled();
+    String getDefaultGroupsSlugs();
 
     void setHostUrl(String hostUrl);
     void setName(String name);
@@ -36,4 +38,5 @@ public interface OrganizationMapping extends Entity
     void setAdminPassword(String adminPassword);
     void setAccessToken(String accessToken);
     void setGlobalSmartcommitsEnabled(boolean enabled);
+    void setDefaultGroupsSlugs(String slugs);
 }

@@ -13,6 +13,9 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Organization
 {
+	
+	public static final String DEFAULT_GROUP_SLUGS_SEPARATOR = ";";
+	  
     private int id;
     private String hostUrl;
     private String name;
@@ -24,9 +27,13 @@ public class Organization
     private String organizationUrl;
     
     private List<Repository> repositories;
+    private String defaultGroupsSlugsSerialized;
     
     private transient Credential credential;
+    // 1/ default groups - when configuring default groups
     private transient List<Group> groups;
+    //2/ invitation groups - when adding new user as information holder for rendering form extension
+    private transient List<Group> defaultGroupsSlugs;
  
     public Organization()
 	{
@@ -180,6 +187,26 @@ public class Organization
 	public void setGlobalSmartcommitsEnabled(boolean globalSmartcommitsEnabled)
 	{
 		this.globalSmartcommitsEnabled = globalSmartcommitsEnabled;
+	}
+	
+	public List<Group> getDefaultGroupsSlugs()
+	{
+		return defaultGroupsSlugs;
+	}
+
+	public void setDefaultGroupsSlugs(List<Group> defaultGroupsSlugs)
+	{
+		this.defaultGroupsSlugs = defaultGroupsSlugs;
+	}
+
+	public String getDefaultGroupsSlugsSerialized()
+	{
+		return defaultGroupsSlugsSerialized;
+	}
+
+	public void setDefaultGroupsSlugsSerialized(String defaultGroupsSlugsSerialized)
+	{
+		this.defaultGroupsSlugsSerialized = defaultGroupsSlugsSerialized;
 	}
 
 }

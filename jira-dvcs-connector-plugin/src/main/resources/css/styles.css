@@ -140,6 +140,12 @@
  .syncrepoicon.running {
      background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
  }
+ 
+ #configureDefaultGroupsContentWorking {
+     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
+     width: 16px;
+     height: 16px;
+ }
 
 
 .syncicon.error {

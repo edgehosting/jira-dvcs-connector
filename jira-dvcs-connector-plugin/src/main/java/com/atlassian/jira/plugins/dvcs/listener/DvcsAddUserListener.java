@@ -1,144 +1,176 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 
-public class DvcsAddUserListener {}
+import com.atlassian.crowd.model.event.Operation;
+import com.atlassian.crowd.model.event.UserEvent;
+import com.atlassian.event.api.EventListener;
+import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 
-// following needs to be in plugin descriptor
+/**
+ * 
+ * Listens to user events (just for <code>CREATED</code> type).
+ *
+ * Handler methods run asynchronously and are safe to fail.
+ * That means that it does not corrupt process of adding the user
+ * because of some unexpected error at this place. 
+ * 
+ * @see #onUserAddViaInterface(UserAddedEvent)
+ * @see #onUserAddViaCrowd(UserEvent)
+ *
+ * <br /><br />
+ * Created on 21.6.2012, 14:07:34
+ * <br /><br />
+ * @author jhocman@atlassian.com
+ *
+ */
+public class DvcsAddUserListener implements InitializingBean
 
-// <web-panel key="add-user-dvcs-extension" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />
+{
+	
+	/** The Constant log. */
+	private static final Logger log = LoggerFactory.getLogger(DvcsAddUserListener.class);
 
+	/** The event publisher. */
+	private final EventPublisher eventPublisher;
 
-//following will be uncommented only for jira 5.1 dependency because of new code deps
+	/** The organization service. */
+	private final OrganizationService organizationService;
 
-//
-//implements InitializingBean
-//{
-//
-//	private static final String SPLITTER = ":";
-//
-//	private static final Logger log = LoggerFactory.getLogger(DvcsAddUserListener.class);
-//
-//	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM = "dvcs_org_selector";
-//	public static String USERNAME_PARAM = "username";
-//	public static String EMAIL_PARAM = "email";
-//
-//	private final EventPublisher eventPublisher;
-//
-//	private final OrganizationService organizationService;
-//
-//	private final DvcsCommunicatorProvider communicatorProvider;
-//
-//	public DvcsAddUserListener(EventPublisher eventPublisher, OrganizationService organizationService, DvcsCommunicatorProvider communicatorProvider)
-//	{
-//		super();
-//		this.eventPublisher = eventPublisher;
-//		this.organizationService = organizationService;
-//		this.communicatorProvider = communicatorProvider;
-//	}
-//
-//	@EventListener
-//	public void onUserAddViaInterface(UserAddedEvent event)
-//	{
-//
-//		Map<String, String[]> parameters = event.getRequestParameters();
-//		String[] organizationIdsAndGroupSlugs = parameters.get(ORGANIZATION_SELECTOR_REQUEST_PARAM);
-//
-//		// continue ? ------------------------------------------------
-//		if (organizationIdsAndGroupSlugs == null || organizationIdsAndGroupSlugs.length == 0)
-//		{
-//			return;
-//		}
-//		// ------------------------------------------------------------
-//		
-//		Collection<Invitations> invitationsFor = toInvitations(organizationIdsAndGroupSlugs);
-//		String username = parameters.get(USERNAME_PARAM)[0];
-//		String email = parameters.get(EMAIL_PARAM)[0];
-//
-//
-//		// invite
-//		invite(username, email, invitationsFor);
-//	}
-//
-//	private Collection<Invitations> toInvitations(String[] organizationIdsAndGroupSlugs)
-//	{
-//		
-//		Map<Integer, Invitations> orgIdsToInvitations = new HashMap<Integer, DvcsAddUserListener.Invitations>();
-//		
-//		for (String requestParamToken : organizationIdsAndGroupSlugs)
-//		{
-//			
-//			String [] tokens = requestParamToken.split(SPLITTER);
-//			Integer orgId = Integer.parseInt(tokens [0]);
-//			String slug = tokens[1];
-//			Invitations existingInvitations = orgIdsToInvitations.get(orgId);
-//			
-//			//
-//			// first time organization ?
-//			if (existingInvitations == null) {
-//				Invitations newInvitations = new Invitations();
-//				newInvitations.organizaton = organizationService.get(orgId, false);
-//				orgIdsToInvitations.put(orgId, newInvitations);
-//				
-//				existingInvitations = newInvitations;
-//			}
-//			
-//			//
-//			existingInvitations.groupSlugs.add(slug);
-//		}
-//		
-//		return orgIdsToInvitations.values();
-//	}
-//
-//	@EventListener
-//	public void onUserAddViaCrowd(UserEvent event)
-//	{
-//
-//		String username = event.getUser().getName();
-//		String email = event.getUser().getEmailAddress();
-//
-//		List<Organization> defaultOrganizations = organizationService.getAutoInvitionOrganizations();
-//
-//		// continue ? ------------------------------------------
-//		if (CollectionUtils.isEmpty(defaultOrganizations))
-//		{
-//			return;
-//		}
-//		// ------------------------------------------------------
-//		
-//		// invite
-//		
-//	}
-//
-//	private void invite(String username, String email, Collection<Invitations> invitations)
-//	{
-//		if (CollectionUtils.isNotEmpty(invitations)) {
-//			
-//			for (Invitations invitation : invitations)
-//			{
-//				Collection<String> groupSlugs = invitation.groupSlugs;
-//				Organization organizaton = invitation.organizaton;
-//				invite(username, email, organizaton, groupSlugs);
-//			}
-//			
-//		}
-//	}
-//
-//	private void invite(String username, String email, Organization organization, Collection<String> groupSlugs)
-//	{
-//		if (CollectionUtils.isNotEmpty(groupSlugs)) {
-//			DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-//			communicator.inviteUser(organization, groupSlugs, email);
-//		}
-//	}
-//
-//	@Override
-//	public void afterPropertiesSet() throws Exception
-//	{
-//		eventPublisher.register(this);
-//	}
-//
-//	static class Invitations {
-//		Organization organizaton;
-//		Collection<String> groupSlugs = new ArrayList<String>(); 
-//	}
-//}
+	/** The communicator provider. */
+	private final DvcsCommunicatorProvider communicatorProvider;
+
+	/**
+	 * The Constructor.
+	 *
+	 * @param eventPublisher the event publisher
+	 * @param organizationService the organization service
+	 * @param communicatorProvider the communicator provider
+	 */
+	public DvcsAddUserListener(EventPublisher eventPublisher, OrganizationService organizationService,
+			DvcsCommunicatorProvider communicatorProvider)
+	{
+		super();
+		this.eventPublisher = eventPublisher;
+		this.organizationService = organizationService;
+		this.communicatorProvider = communicatorProvider;
+	}
+
+	/**
+	 * Handler method for add user via interface.
+	 *
+	 * @param event the event object
+	 */
+	@EventListener
+	public void onUserAddViaInterface(final UserAddedEvent event)
+	{
+		safeExecute(new Closure()
+		{
+			@Override
+			public void execute()
+			{
+				UserAddedViaInterfaceEventProcessor runnableProcessor = new UserAddedViaInterfaceEventProcessor(event,
+						organizationService, communicatorProvider);
+
+				Thread runnableThreadProcessor = new Thread(runnableProcessor,
+						humanNameThread(UserAddedViaInterfaceEventProcessor.class));
+
+				runnableThreadProcessor.start();
+			}
+
+		}, "Failed to handle add user via interface event [ " + event + ", params =  " + event.getRequestParameters()
+				+ "] ");
+	}
+
+	/**
+	 * Handler method for add user externally; i.e
+	 *
+	 * @param event the event object
+	 */
+	@EventListener
+	public void onUserAddViaCrowd(final UserEvent event)
+	{
+		safeExecute(new Closure()
+		{
+			@Override
+			public void execute()
+			{
+				if (Operation.CREATED != event.getOperation())
+				{
+					return;
+				}
+				
+				UserAddedExternallyEventProcessor runnableProcessor = new UserAddedExternallyEventProcessor(event,
+						organizationService, communicatorProvider);
+
+				Thread runnableThreadProcessor = new Thread(runnableProcessor,
+						humanNameThread(UserAddedViaInterfaceEventProcessor.class));
+
+				runnableThreadProcessor.start();
+			}
+
+		}, "Failed to handle add user externally event [ " + event + ", user =  " + event.getUser()
+				+ "] ");
+
+	}
+
+	/**
+	 * Wraps {@link Closure#execute()} method
+	 * invocation with <code>try-catch</code> block
+	 * to ensure that no exception is propagated up.
+	 *
+	 * @param closure the closure
+	 * @param onFailMessage the on fail message
+	 */
+	private void safeExecute(Closure closure, String onFailMessage)
+	{
+
+		try
+		{
+			closure.execute();
+
+		} catch (Throwable t)
+		{
+			log.warn(onFailMessage, t);
+		}
+	}
+
+	/**
+	 * Create nice thread name. I.e. Thread___UserAddedExternallyEventProcessor
+	 *
+	 * @param klass the class name to be used
+	 * @return the string
+	 */
+	private String humanNameThread(Class<UserAddedViaInterfaceEventProcessor> klass)
+	{
+		return Thread.class.getSimpleName() + "___" + klass.getSimpleName();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void afterPropertiesSet() throws Exception
+	{
+		eventPublisher.register(this);
+	}
+
+	/**
+	 * The Interface Closure.
+	 */
+	interface Closure
+	{
+
+		/**
+		 * Execute.
+		 */
+		void execute();
+
+	}
+
+}

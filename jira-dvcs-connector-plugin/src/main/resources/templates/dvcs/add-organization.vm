@@ -144,6 +144,7 @@
    		</div>
    		
 	#printUpdateCredentialsFormHidden
+	#printConfigureDefaultGroupsFormHidden
 	
   </body>
 </html>
@@ -212,9 +213,20 @@
 								            	 </div>
 								            </li>
 								            
-								             <li class="dropdown-item">
+								            <li class="dropdown-item">
 								             	 <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh List</a>
 								            </li>
+								            
+ 							            	#if($org.dvcsType == "bitbucket")
+   							            	 
+   							            	   	<li class="dropdown-item">
+	   							                	<div class="dvcs-gearmenu-nohide">
+							 							<input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" />
+							 							<label for="org_isdefault_check$org.id"> Default auto-invite new users </label>
+							 							<a style="display:block;"  href="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id);"> Configure default groups</a>
+						 							</div>
+					 							</li>
+					 						#end
 								            
 								            <li class="dropdown-item">
 												 #if($org.dvcsType == "bitbucket")
@@ -352,3 +364,24 @@
 
 #end
 
+#macro (printConfigureDefaultGroupsFormHidden)
+	
+	<div class="update-credentials" style="display:none">
+	
+		<form id="configureDefaultGroupsForm" class="aui" method="post" action="$baseurl/secure/admin/ConfigureDefaultBitbucketGroups.jspa" >
+		
+			 <input type="hidden" name="atl_token" value="$atl_token">
+			 <input type="hidden" id="organizationIdDefaultGroups" name="organizationIdDefaultGroups" value="" />
+			 
+			 <div id="configureDefaultGroupsContentWorking" style="margin:10px; display: none">
+			 	&nbsp;
+			 </div>
+			 
+			 <div id="configureDefaultGroupsContent">
+			 
+			 </div>
+		     
+		</form>
+	</div>
+
+#end
