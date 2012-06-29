@@ -240,7 +240,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 							map.put(OrganizationMapping.ACCESS_TOKEN, organization.getCredential().getAccessToken());
 							map.put(OrganizationMapping.AUTO_INVITE_NEW_USERS, organization.isAutoInviteNewUsers());
 							map.put(OrganizationMapping.GLOBAL_SMARTCOMMITS_ENABLED, organization.isGlobalSmartcommitsEnabled());
-							map.put(OrganizationMapping.DEFAULT_GROUP_SLUGS, organization.getDefaultGroupsSlugsSerialized());
+							map.put(OrganizationMapping.DEFAULT_GROUPS_SLUGS, organization.getDefaultGroupsSlugsSerialized());
 
 							om = activeObjects.create(OrganizationMapping.class, map);
 						} else
