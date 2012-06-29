@@ -6,6 +6,7 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,13 +98,17 @@ public class AddUserDvcsExtensionWebPanel implements WebPanel
 
 		List<Organization> all = organizationService.getAll(false, dvcsType);
 		DvcsCommunicator communicator = communicatorProvider.getCommunicator(dvcsType);
-
+		boolean groupFound = false;
+		
 		for (Organization organization : all)
 		{
 			try
 			{
 				List<Group> groups = communicator.getGroupsForOrganization(organization);
 				organization.setGroups(groups);
+				
+				groupFound |= CollectionUtils.isNotEmpty(groups);
+				
 			} catch (Exception e)
 			{
 				log.warn("Failed to get groups for organization {}. Cause message is {}", organization.getName(), e.getMessage());
@@ -113,7 +118,7 @@ public class AddUserDvcsExtensionWebPanel implements WebPanel
 		model.put("bbOrgaizations", all);
 		
 		// quick helper var to find out if we have som data to show
-		model.put("bbSupressRender", all.isEmpty());
+		model.put("bbSupressRender", !groupFound);
 
 		return all;
 
