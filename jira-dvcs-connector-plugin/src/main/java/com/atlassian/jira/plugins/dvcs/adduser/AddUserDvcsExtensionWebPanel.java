@@ -100,8 +100,14 @@ public class AddUserDvcsExtensionWebPanel implements WebPanel
 
 		for (Organization organization : all)
 		{
-			List<Group> groups = communicator.getGroupsForOrganization(organization);
-			organization.setGroups(groups);
+			try
+			{
+				List<Group> groups = communicator.getGroupsForOrganization(organization);
+				organization.setGroups(groups);
+			} catch (Exception e)
+			{
+				log.warn("Failed to get groups for organization {}. Cause message is {}", organization.getName(), e.getMessage());
+			}
 		}
 
 		model.put("bbOrgaizations", all);
