@@ -91,7 +91,9 @@ public class DefaultRequestHelper implements RequestHelper
     {
        ExtendedResponse extendedResponse = runRequestGetExtendedResponse(methodType, apiBaseUrl, urlPath, auth, params, postData);
        if (!extendedResponse.isSuccessful()) {
-			throw new ResponseException("Request failed. Status Code = " + extendedResponse.getStatusCode());
+			throw new ResponseException("\n Request [ " + methodType + " "+ apiBaseUrl + urlPath + " ] failed. \n " +
+					"Status Code = " + extendedResponse.getStatusCode() + " params = " + params + "\n" +
+					"post data = " + postData);
        }
        return extendedResponse.getResponseString();
     }
@@ -136,9 +138,18 @@ public class DefaultRequestHelper implements RequestHelper
     		
     	} catch (Exception e) {
     		log.warn("error execute method :  " + method, e);
-    		throw new ResponseException("Error execute method :  " + method.getName() + ". Cause is " + e.getMessage(), e);
+    		throw new ResponseException(
+    				"\n Request [ " + methodType + " "+ apiBaseUrl + urlPath + " ] failed. \n " +
+    						"Status Code = " + getStatusCode(method) + " params = " + params + "\n" +
+    						"post data = " + postData + ". \n" +
+    						"Cause is " + e.getMessage(), e);
     	}
     }
+
+	private String getStatusCode(HttpMethod method)
+	{
+		return method.getStatusCode() > 0 ? method.getStatusCode() + "" : " [method not invoked yet] " ;
+	}
     
     private static Map<String, String> parseParameters(String postData) {
     	
