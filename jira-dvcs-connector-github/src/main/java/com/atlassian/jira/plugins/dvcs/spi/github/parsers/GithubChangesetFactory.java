@@ -32,15 +32,21 @@ public class GithubChangesetFactory
         final List<ChangesetFile> changesetFiles = transformFiles(repositoryCommit.getFiles());
 
         String name = "";
+        String authorEmail = null;
+
         Date date = Calendar.getInstance().getTime();
+        
         if (repositoryCommit.getCommit() != null
                 && repositoryCommit.getCommit().getAuthor() != null)
         {
-            if (StringUtils.isBlank(repositoryCommit.getCommit().getAuthor().getName()))
+        	
+            if (StringUtils.isNotBlank(repositoryCommit.getCommit().getAuthor().getName()))
             {
                 name = repositoryCommit.getCommit().getAuthor().getName();
             }
+            
             date = repositoryCommit.getCommit().getAuthor().getDate();
+            authorEmail = repositoryCommit.getCommit().getAuthor().getEmail();
         }
 
         String login = "";
@@ -50,7 +56,7 @@ public class GithubChangesetFactory
             login = repositoryCommit.getAuthor().getLogin();
         }
 
-        return new Changeset(
+        Changeset changeset = new Changeset(
                 repositoryId,
                 repositoryCommit.getSha(),
                 "",
@@ -64,6 +70,9 @@ public class GithubChangesetFactory
                 changesetFiles,
                 changesetFiles.size()
         );
+
+        changeset.setAuthorEmail(authorEmail);
+		return changeset;
         
     }
 

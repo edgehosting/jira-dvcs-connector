@@ -179,6 +179,18 @@ public class OrganizationServiceImpl implements OrganizationService
 			organizationDao.save(organization);
 		}
 	}
+	
+	@Override
+	public void enableGlobalSmartcommits(int id, boolean enabled)
+	{
+		final Organization organization = organizationDao.get(id);
+		if (organization != null)
+		{
+			organization.setGlobalSmartcommitsEnabled(enabled);
+			organizationDao.save(organization);
+		}
+		
+	}
 
 	@Override
 	public List<Organization> getAutoInvitionOrganizations()
@@ -212,7 +224,6 @@ public class OrganizationServiceImpl implements OrganizationService
 		}
 		
 	}
-	
-	
+
 
 }

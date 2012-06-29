@@ -23,6 +23,7 @@ public class Repository
 	private Date lastCommitDate;
 	private boolean linked;
     private boolean deleted;
+    private boolean smartcommitsEnabled;
     
     private String repositoryUrl;
     
@@ -210,6 +211,16 @@ public class Repository
 	public void setRepositoryUrl(String repositoryUrl)
 	{
 		this.repositoryUrl = repositoryUrl;
+	}
+
+	public boolean isSmartcommitsEnabled()
+	{
+		return smartcommitsEnabled;
+	}
+
+	public void setSmartcommitsEnabled(boolean smartcommitsEnabled)
+	{
+		this.smartcommitsEnabled = smartcommitsEnabled;
 	}
 
 

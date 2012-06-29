@@ -1,14 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 public interface ChangesetService
 {
@@ -41,4 +41,8 @@ public interface ChangesetService
     String getUserUrl(Repository repository, Changeset changeset);
 
     Iterable<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
+    
+    List<Changeset> getLatestChangesetsAvailableForSmartcommits();
+    
+    void markSmartcommitAvailability(int id, boolean available);
 }

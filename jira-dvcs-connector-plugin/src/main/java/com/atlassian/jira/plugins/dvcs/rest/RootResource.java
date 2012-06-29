@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public class RootResource
 
 	/** The repository service. */
 	private final RepositoryService repositoryService;
-
+	
 	/**
 	 * The Constructor.
 	 * 
@@ -57,7 +58,8 @@ public class RootResource
 	 * @param repositoryService
 	 *            the repository service
 	 */
-	public RootResource(OrganizationService organizationService, RepositoryService repositoryService)
+	public RootResource(OrganizationService organizationService,
+						RepositoryService repositoryService)
 	{
 		this.organizationService = organizationService;
 		this.repositoryService = repositoryService;
@@ -195,6 +197,18 @@ public class RootResource
 		organizationService.enableAutoInviteUsers(id, Boolean.parseBoolean(autoinvite.getPayload()));
 		return Response.noContent().build();
 	}
+	
+	@POST
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/org/{id}/globalsmarts")
+	@Consumes({MediaType.APPLICATION_JSON})
+	public Response enableOrganizationGlobalSmartcommits(@PathParam("id") int id,
+			SentData autoinvite)
+	{
+		
+		organizationService.enableGlobalSmartcommits(id, Boolean.parseBoolean(autoinvite.getPayload()));
+		return Response.noContent().build();
+	}
 
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
@@ -202,8 +216,18 @@ public class RootResource
 	@Consumes({MediaType.APPLICATION_JSON})
 	public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
 	{
-		// todo handle exceptions
 		repositoryService.enableRepository(id, Boolean.parseBoolean(autolink.getPayload()));
+		return Response.noContent().build();
+	}
+	
+	@POST
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/repo/{id}/smart")
+	@Consumes({MediaType.APPLICATION_JSON})
+	public Response enableSmartcommits(@PathParam("id") int id, SentData enabled)
+	{
+		// todo handle exceptions
+		repositoryService.enableRepositorySmartcommits(id, Boolean.parseBoolean(enabled.getPayload()));
 		return Response.noContent().build();
 	}
 	

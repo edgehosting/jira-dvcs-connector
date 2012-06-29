@@ -506,12 +506,19 @@ a:hover.repositoryNameLink {
 .dvcs-autolink-repo {
 	width: 70px;
 }
+.dvcs-smartcommits-repo {
+	width: 70px;
+	text-align: center !important;
+}
+.dvcs-smartcommits-head {
+	text-align: center !important;
+}
 
 .dvcs-sync-repo {
     width: 100px;
 }
 
-.repo_autolink_check {
+.repo_autolink_check, .repo_smartcommit_check {
     position: relative;
     top: 2px;
 }

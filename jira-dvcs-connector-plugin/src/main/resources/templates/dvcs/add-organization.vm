@@ -170,6 +170,12 @@
 				#else
 				#set( $orgIsDefault = "")
 			#end
+			#if($org.isGlobalSmartcommitsEnabled())
+				#set( $orgGlobalSmartcommits = "checked='checked'")
+				#set( $localSmartcommitsDisabled = "disabled='disabled'")
+				#else
+				#set( $localSmartcommitsDisabled = "")
+			#end
 	
 	<div class="dvcs-header-container">	
 		<h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a></h4>
@@ -185,13 +191,24 @@
 		                                <span class="icon icon-dropdown" ></span>
 		                    </a>
 								<ul id="dvcs-organization-controls-$org.id" class=" aui-dropdown dvcs-organization-controls"  >
-								            <li class="dropdown-item">
+								           
+								           <li class="dropdown-item">
 								            	 <div class="dvcs-gearmenu-nohide">
 									            	 <input id="org_autolink_check$org.id" 
 									            	 		class="aui" $!orgAutolink 
 									            	 		type="checkbox" name="org_autolink_check$org.id"
 									            	 		onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" />
 									            	 <label for="org_autolink_check$org.id"> Autolink new repositories</label>
+								            	 </div>
+								            </li>
+
+								           <li class="dropdown-item">
+								            	 <div class="dvcs-gearmenu-nohide">
+									            	 <input id="org_global_smarts$org.id" 
+									            	 		class="aui" $!orgGlobalSmartcommits 
+									            	 		type="checkbox" name="org_autolink_check$org.id"
+									            	 		onclick="javascript: enableOrgGlobalSmartcommits($org.id, 'org_global_smarts$org.id');" />
+									            	 <label for="org_global_smarts$org.id"> Global Smart Commits</label>
 								            	 </div>
 								            </li>
 								            
@@ -217,14 +234,6 @@
 			</div>
 			<div class="dvcs-dclear"></div>
 	</div>				 
-			##       user invitations disabled for now
-			##		 #if($org.dvcsType == "bitbucket")
-			##		 |
-			##		 <input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" /><label> Default Auto-invite New Users</label>
-			##		 <span style="display:none; width: 16px; height: 16px;" id="org_isdefault_check${org.id}working" class="syncicon running">&nbsp;</span>
-			##		 #end
-			##		 
-					 
 
 			   <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
 			    <thead>
@@ -233,7 +242,7 @@
 			            <th>Repository</th>
 			            <th style="text-align: right;">Last Commit</th>   ## last commit
 			            <th class="dvcs-centered">Sync Repo</th>   ## sync repo
-
+						<th class="dvcs-smartcommits-head">Smart Commits</th>
 			        </tr>
 			    </thead>
 			    <tbody>
@@ -244,6 +253,12 @@
 						#set( $repoAutolink = "checked='checked'")
 						#else
 						#set( $repoAutolink = "")
+					#end
+					
+					#if($repo.isSmartcommitsEnabled())
+						#set( $smartcommitsEnabled = "checked='checked'")
+						#else
+						#set( $smartcommitsEnabled = "")
 					#end
 					
 					#if(!$repo.linked)
@@ -262,8 +277,7 @@
 
                             <span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
                         </td>
-
-
+                        
 			            <td class="dvcs-org-reponame"><a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a></td>
 
 			            
@@ -276,10 +290,6 @@
 	                            </span>
 	                            <span id="sync_error_message_$repo.id" class="gh_messages">
                            	 </span>
-##
-##	                            <span>
-##				                 	<a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">Sync Repo</a>
-##				                </span>
 			                </div>
 			                
 			            </td>
@@ -289,6 +299,16 @@
                                 <a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">
                                     <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo $textutils.htmlEncode($repo.name)" >&nbsp;</span>
                                 </a>
+                            </div>
+                        </td>
+                        
+                        <td class="dvcs-smartcommits-repo">
+                        	<div id="dvcs-action-container3-$repo.id" class="$!dvcsNoDisplayClass">
+	                            <span style="padding-left: 1px;">&nbsp;</span>
+	                            <input class="repo_smartcommit_check repo_smartcommit_check$org.id" id="repo_smartcommits$repo.id" type="checkbox" $!smartcommitsEnabled $!localSmartcommitsDisabled
+	                             onclick="javascript: enableRepoSmartcommits($repo.id, 'repo_smartcommits$repo.id');" />
+	
+	                            <span style="display:none; width: 16px; height: 16px;" id="repo_smartcommit_check${repo.id}working" class="syncicon running">&nbsp;</span>
                             </div>
                         </td>
 

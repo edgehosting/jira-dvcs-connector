@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.SyncProgress;
-
-import java.util.List;
 
 /**
  * Returning type {@link Repository} is enriched with synchronization status by default.
@@ -86,6 +86,14 @@ public interface RepositoryService
 	 *            the parse boolean
 	 */
 	void enableRepository(int repoId, boolean linked);
+	
+	/**
+	 * Enable repository smartcommits.
+	 *
+	 * @param repoId the repo id
+	 * @param enabled the enabled
+	 */
+	void enableRepositorySmartcommits(int repoId, boolean enabled);
 
     /**
      * remove all repositories in organization.

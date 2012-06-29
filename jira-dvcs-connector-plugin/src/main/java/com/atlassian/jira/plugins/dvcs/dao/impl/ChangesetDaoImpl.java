@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -115,6 +116,9 @@ public class ChangesetDaoImpl implements ChangesetDao
                 map.put(ChangesetMapping.RAW_NODE, changeset.getRawNode());
                 map.put(ChangesetMapping.BRANCH, changeset.getBranch());
                 map.put(ChangesetMapping.MESSAGE, changeset.getMessage());
+                map.put(ChangesetMapping.AUTHOR_EMAIL, changeset.getAuthorEmail());
+                map.put(ChangesetMapping.SMARTCOMMIT_AVAILABLE, changeset.isSmartcommitAvaliable());
+
                 JSONArray parentsJson = new JSONArray();
                 for (String parent : changeset.getParents())
                 {
@@ -140,8 +144,10 @@ public class ChangesetDaoImpl implements ChangesetDao
 
                         filesJson.put(fileJson);
                     }
+                
                     filesDataJson.put("files", filesJson);
                     map.put(ChangesetMapping.FILES_DATA, filesDataJson.toString());
+              
                 } catch (JSONException e)
                 {
                     log.error("Creating files JSON failed!", e);
@@ -222,4 +228,49 @@ public class ChangesetDaoImpl implements ChangesetDao
 
         return transform(changesetMappings);
     }
+
+	@Override
+	public List<Changeset> getLatestChangesetsAvailableForSmartcommits()
+	{
+		Query query = createLatestChangesetsAvailableForSmartcommitQuery();
+		
+		ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
+		return transform( Arrays.asList(mappings) );
+	}
+
+	@Override
+	public void forEachLatestChangesetsAvailableForSmartcommitDo(final ForEachChangesetClosure closure)
+	{
+		Query query = createLatestChangesetsAvailableForSmartcommitQuery();
+		activeObjects.stream(ChangesetMapping.class, query, new EntityStreamCallback<ChangesetMapping, Integer>() {
+			@Override
+			public void onRowRead(ChangesetMapping mapping)
+			{
+				closure.execute(transform(mapping));
+			}
+		});
+	}
+	
+	private Query createLatestChangesetsAvailableForSmartcommitQuery()
+	{
+		return Query.select("*").where(ChangesetMapping.SMARTCOMMIT_AVAILABLE + " = ? ", Boolean.TRUE)
+		.order(ChangesetMapping.DATE + " DESC");
+	}
+
+	@Override
+	public void markSmartcommitAvailability(int id, boolean available)
+	{
+		final ChangesetMapping changesetMapping = activeObjects.get(ChangesetMapping.class, id);
+		changesetMapping.setSmartcommitAvailable(available);
+		activeObjects.executeInTransaction(new TransactionCallback<Void>()
+		{
+			@Override
+			public Void doInTransaction()
+			{
+				changesetMapping.save();
+				return null;
+			}
+		});
+	}
+
 }

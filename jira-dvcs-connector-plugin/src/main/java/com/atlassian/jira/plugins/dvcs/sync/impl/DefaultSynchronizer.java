@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.google.common.collect.MapMaker;
@@ -19,12 +20,17 @@ import com.google.common.collect.MapMaker;
 public class DefaultSynchronizer implements Synchronizer
 {
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
-	private final ExecutorService executorService;
+	
+    private final ExecutorService executorService;
+	private final SmartcommitsChangesetsProcessor smartcommitsChangesetsProcessor;
 
-    public DefaultSynchronizer(ExecutorService executorService)
-    {
-        this.executorService = executorService;
-    }
+
+	public DefaultSynchronizer(ExecutorService executorService,
+			SmartcommitsChangesetsProcessor smartcommitsChangesetsProcessor)
+	{
+		this.executorService = executorService;
+		this.smartcommitsChangesetsProcessor = smartcommitsChangesetsProcessor;
+	}
 
     // map of ALL Synchronisation Progresses - running and finished ones
     private final ConcurrentMap<Repository, Progress> progressMap = new MapMaker().makeMap();
@@ -63,11 +69,21 @@ public class DefaultSynchronizer implements Synchronizer
                 try
                 {
                     progress.start();
+                
                     if (progress.isShouldStop())
                     {
                     	return;
                     }
+                    
                     operation.synchronise();
+                    
+                    // at the end of execution
+                    if (operation.isSoftSync()) 
+                    {
+                    	smartcommitsChangesetsProcessor.startProcess();
+                    }
+                    //
+        
                 } catch (Throwable e)
                 {
                     String errorMessage = e.getMessage() == null ? e.toString() : e.getMessage();
@@ -79,7 +95,9 @@ public class DefaultSynchronizer implements Synchronizer
                 }
             }
         };
+       
         executorService.submit(runnable);
+        
         progress.queued();
     }
 

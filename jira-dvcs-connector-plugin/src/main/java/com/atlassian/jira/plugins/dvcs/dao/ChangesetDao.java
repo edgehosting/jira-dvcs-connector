@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
-
-import java.util.List;
 
 public interface ChangesetDao
 {
@@ -16,4 +16,14 @@ public interface ChangesetDao
     List<Changeset> getByIssueKey(String issueKey);
 
     List<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
+    
+    List<Changeset> getLatestChangesetsAvailableForSmartcommits();
+    
+    void forEachLatestChangesetsAvailableForSmartcommitDo(ForEachChangesetClosure closure);
+    
+    void markSmartcommitAvailability(int id, boolean available);
+    
+    public interface ForEachChangesetClosure {
+    	void execute(Changeset changeset);
+    }
 }
