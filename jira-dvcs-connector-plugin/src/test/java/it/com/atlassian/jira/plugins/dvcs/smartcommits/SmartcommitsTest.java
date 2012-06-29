@@ -5,16 +5,12 @@ import java.io.IOException;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
-import com.atlassian.core.util.map.EasyMap;
-import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
-
 public class SmartcommitsTest
 {
 
 	@Test
 	public void testCommentIssueCommand() throws IOException
 	{
-		HttpSenderUtils.sendPostHttpRequest("http://localhost:2990/jira/rest/bitbucket/1.0/repository/60/sync", EasyMap.build("payload", resource("SmartcommitsTest-bitbucket.json")));
 
 	}
 

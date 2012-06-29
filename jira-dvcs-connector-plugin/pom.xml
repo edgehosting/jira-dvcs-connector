@@ -108,13 +108,13 @@
         <dependency>
             <groupId>com.atlassian.plugins.rest</groupId>
             <artifactId>atlassian-rest-common</artifactId>
-            <version>2.4.0</version>
+             <version>2.6.5.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.plugins.rest</groupId>
             <artifactId>com.atlassian.jersey-library</artifactId>
-            <version>2.4.0</version>
+            <version>2.6.5.1</version>
             <scope>provided</scope>
             <type>pom</type>
         </dependency>
