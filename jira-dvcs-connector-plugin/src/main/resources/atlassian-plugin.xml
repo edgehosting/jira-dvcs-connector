@@ -21,7 +21,11 @@
     <component-import key="userManager" interface="com.atlassian.jira.user.util.UserManager" />
     <component-import key="crowdService" interface="com.atlassian.crowd.embedded.api.CrowdService" />
 
-    <component key="scheduledJob" 	<!-- =============================================================================================================================== 
+	<component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
+        <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
+    </component>
+	
+ 	<!-- =============================================================================================================================== 
 		 smartcommits 
 	 	 =============================================================================================================================== -->
 	
@@ -55,13 +59,7 @@
 		 smartcommits 
 	 	 =============================================================================================================================== -->
 	    
-	 
-name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
-        <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
-    </component>
-
-
-    <ao key="ao-module" name="Active Objects Module">
+   <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
