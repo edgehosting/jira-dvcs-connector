@@ -30,6 +30,7 @@ public class Repository
 	private transient Credential credential;
 	private transient String orgHostUrl;
 	private transient String orgName;
+	private transient boolean orgGlobalSmartcommitsEnabled;
 	
 	@XmlElement
     private Progress sync;
@@ -221,6 +222,16 @@ public class Repository
 	public void setSmartcommitsEnabled(boolean smartcommitsEnabled)
 	{
 		this.smartcommitsEnabled = smartcommitsEnabled;
+	}
+
+	public boolean isOrgGlobalSmartcommitsEnabled()
+	{
+		return orgGlobalSmartcommitsEnabled;
+	}
+
+	public void setOrgGlobalSmartcommitsEnabled(boolean orgGlobalSmartcommitsEnabled)
+	{
+		this.orgGlobalSmartcommitsEnabled = orgGlobalSmartcommitsEnabled;
 	}
 
 

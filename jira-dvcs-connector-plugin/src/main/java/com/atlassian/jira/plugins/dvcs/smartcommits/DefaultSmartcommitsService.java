@@ -102,7 +102,11 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		//
 		// finally we can process commands
 		//
+		log.debug("Processing commands : " + commands);
+		
 		processCommands(commands, results, user);
+		
+		log.debug("Processing commands results : " + results);
 
 		return results;
 	}
