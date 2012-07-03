@@ -223,7 +223,7 @@ public class GithubCommunicator implements DvcsCommunicator
 
         try
         {
-            repositoryService.createHook(repositoryId, repositoryHook);//TODO TUTO
+            repositoryService.createHook(repositoryId, repositoryHook);
         } catch (IOException e)
         {
             throw new SourceControlException("Could not add postcommit hook. " + e.getMessage(), e);
