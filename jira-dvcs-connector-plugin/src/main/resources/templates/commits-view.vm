@@ -1,5 +1,3 @@
-$webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
-
 <div class="CommitContainer issue-data-block">
     <!-- Gravatar -->
     <div class="CommitContainerMargin">

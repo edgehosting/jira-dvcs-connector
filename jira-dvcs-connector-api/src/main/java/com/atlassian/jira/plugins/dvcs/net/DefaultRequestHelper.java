@@ -108,6 +108,8 @@ public class DefaultRequestHelper implements RequestHelper
     	log.debug(methodType + " [ " + url + " ]");
     	
     	HttpClient httpClient = new HttpClient();
+    	new HttpClientProxyConfig().configureProxy(httpClient, apiBaseUrl + urlPath);
+    	
     	HttpMethod method = getHttpMethodByType(methodType, url);
     	
     	

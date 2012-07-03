@@ -58,7 +58,7 @@ public class CommitCommands {
         @Override
         public String toString()
         {
-        	return issueKey + " <<" + commandName + ">> args [ " + arguments + "]";
+        	return "COMMAND " + issueKey + " <<" + commandName + ">> " + arguments + "]";
         }
     }
 

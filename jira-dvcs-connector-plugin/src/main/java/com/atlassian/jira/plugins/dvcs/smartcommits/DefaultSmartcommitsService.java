@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
+import java.util.Iterator;
+
 import javax.ws.rs.core.CacheControl;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -182,10 +184,13 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 					.with(Restriction.on(UserTermKeys.EMAIL).exactlyMatching(email)).returningAtMost(EntityQuery.ALL_RESULTS);
 			
 			Iterable<User> user = crowdService.search(query);
-			User firstShouldBeOneUser = user.iterator().next();
+			Iterator<User> iterator = user.iterator();
+			User firstShouldBeOneUser = iterator.next();
+			log.debug("Found {} by email {}", new Object [] { firstShouldBeOneUser.getName(), firstShouldBeOneUser.getEmailAddress()});
 			
-			if (user.iterator().hasNext()) {
-				log.warn("Found more than one user by email {} - can not recognise.", email);
+			if (iterator.hasNext()) {
+				User nextUser = iterator.next();
+				log.warn("Found more than one user by email {} with username {} - assuming can not recognise.", new Object [] { email, nextUser.getName() });
 				return null;
 			}
 			

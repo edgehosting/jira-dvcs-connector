@@ -137,7 +137,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 	{
 		if (repository.isSmartcommitsEnabled() || repository.isOrgGlobalSmartcommitsEnabled()) {
 			
-			log.debug("Marking changeset id = {} to be processed by smart commits", changesetForSave.getId());
+			log.debug("Marking changeset node = {} to be processed by smart commits", changesetForSave.getRawNode());
 			
 			changesetForSave.setSmartcommitAvaliable(Boolean.TRUE);
 
