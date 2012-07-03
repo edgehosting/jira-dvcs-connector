@@ -260,6 +260,12 @@
 	    <resource type="download" name="css/styles.css" location="css/styles.css" />
         <context>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin</context>
     </web-resource>
+    
+    <web-resource key="requiredResourceForAjaxCommitsTab" name="Resources That Needs To be Loaded On Issue View">
+		<context>jira.view.issue</context>
+		<dependency>jira.webresources:viewissue</dependency>
+		<resource type="download" name="css/issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
+	</web-resource>
 
     <rest key="bitbucket-rest-resources" path="/bitbucket" version="1.0">
         <description>REST Resources</description>
