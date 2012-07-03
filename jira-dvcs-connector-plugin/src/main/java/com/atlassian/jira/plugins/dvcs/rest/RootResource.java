@@ -192,18 +192,6 @@ public class RootResource
 
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/org/{id}/autoinvite")
-	@Consumes({MediaType.APPLICATION_JSON})
-	public Response enableOrganizationAutoInviteUsers(@PathParam("id") int id,
-			SentData autoinvite)
-	{
-
-		organizationService.enableAutoInviteUsers(id, Boolean.parseBoolean(autoinvite.getPayload()));
-		return Response.noContent().build();
-	}
-	
-	@POST
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/org/{id}/globalsmarts")
 	@Consumes({MediaType.APPLICATION_JSON})
 	public Response enableOrganizationGlobalSmartcommits(@PathParam("id") int id,

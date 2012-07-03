@@ -1,6 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
 
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+
 import java.util.Map;
 
 import org.junit.Before;
@@ -20,9 +24,6 @@ import com.atlassian.jira.plugins.dvcs.dao.impl.OrganizationDaoImpl;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -74,7 +75,6 @@ public class OrganizationDaoTest {
                                                           entry(OrganizationMapping.NAME,           "organizationName"),
 
                                                           entry(OrganizationMapping.AUTOLINK_NEW_REPOS,    true),
-                                                          entry(OrganizationMapping.AUTO_INVITE_NEW_USERS, true),
 
                                                           entry(OrganizationMapping.ADMIN_PASSWORD, null));
     }
@@ -107,14 +107,12 @@ public class OrganizationDaoTest {
         verify(organizationMappingMock).setHostUrl      (eq("organizationHostUrl"));
         verify(organizationMappingMock).setName         (eq("organizationName"));
 
-        verify(organizationMappingMock).setAutoInviteNewUsers(eq(true));
         verify(organizationMappingMock).setAutolinkNewRepos  (eq(true));
 
         verify(organizationMappingMock).setAdminPassword(eq((String) null));
 
         verify(organizationMappingMock).save();
     }
-
 
     private static Organization createSampleOrganization()
     {
@@ -127,7 +125,6 @@ public class OrganizationDaoTest {
         organization.setDvcsType("bitbucket");
 
         organization.setAutolinkNewRepos  (true);
-        organization.setAutoInviteNewUsers(true);
 
         Credential organizationCredential = new Credential("adminUserName", null, "accessToken");
         organization.setCredential(organizationCredential);

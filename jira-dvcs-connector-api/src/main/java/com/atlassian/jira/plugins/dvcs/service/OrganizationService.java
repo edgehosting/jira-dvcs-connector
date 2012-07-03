@@ -79,14 +79,6 @@ public interface OrganizationService
 	void enableAutolinkNewRepos(int orgId, boolean autolink);
 
 	/**
-	 * Enable auto invite users.
-	 *
-	 * @param id the id
-	 * @param autoInviteUsers the auto invite users
-	 */
-	void enableAutoInviteUsers(int id, boolean autoInviteUsers);
-	
-	/**
 	 * Gets the auto invition organizations.
 	 *
 	 * @return the auto invition organizations

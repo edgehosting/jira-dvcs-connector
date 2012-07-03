@@ -73,7 +73,6 @@ public class OrganizationDaoImpl implements OrganizationDao
 		Organization organization = new Organization(organizationMapping.getID(), organizationMapping.getHostUrl(),
 				organizationMapping.getName(), organizationMapping.getDvcsType(),
 				organizationMapping.isAutolinkNewRepos(), credential);
-		organization.setAutoInviteNewUsers(organizationMapping.isAutoInviteNewUsers());
 		organization.setOrganizationUrl(createOrganizationUrl(organizationMapping));
 		organization.setGlobalSmartcommitsEnabled(organizationMapping.isGlobalSmartcommitsEnabled());
 		
@@ -238,7 +237,6 @@ public class OrganizationDaoImpl implements OrganizationDao
 							map.put(OrganizationMapping.ADMIN_USERNAME, organization.getCredential().getAdminUsername());
 							map.put(OrganizationMapping.ADMIN_PASSWORD, adminPassword);
 							map.put(OrganizationMapping.ACCESS_TOKEN, organization.getCredential().getAccessToken());
-							map.put(OrganizationMapping.AUTO_INVITE_NEW_USERS, organization.isAutoInviteNewUsers());
 							map.put(OrganizationMapping.GLOBAL_SMARTCOMMITS_ENABLED, organization.isGlobalSmartcommitsEnabled());
 							map.put(OrganizationMapping.DEFAULT_GROUPS_SLUGS, organization.getDefaultGroupsSlugsSerialized());
 
@@ -254,7 +252,6 @@ public class OrganizationDaoImpl implements OrganizationDao
 							om.setAdminUsername(organization.getCredential().getAdminUsername());
 							om.setAdminPassword(adminPassword);
 							om.setAccessToken(organization.getCredential().getAccessToken());
-							om.setAutoInviteNewUsers(organization.isAutoInviteNewUsers());
 							om.setGlobalSmartcommitsEnabled(organization.isGlobalSmartcommitsEnabled());
 							om.setDefaultGroupsSlugs(organization.getDefaultGroupsSlugsSerialized());
 
@@ -359,8 +356,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 	@Override
 	public List<Organization> getAutoInvitionOrganizations()
 	{
-		Query query = Query.select().where(OrganizationMapping.AUTO_INVITE_NEW_USERS + " = ? ", Boolean.TRUE).order(OrganizationMapping.NAME);
-		OrganizationMapping[] orgMappings = activeObjects.find(OrganizationMapping.class, query);
+		OrganizationMapping[] orgMappings = activeObjects.find(OrganizationMapping.class);
 		return transformCollection(Arrays.asList(orgMappings));
 	}
 

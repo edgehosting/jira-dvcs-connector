@@ -21,7 +21,6 @@ public class Organization
     private String name;
     private String dvcsType;
     private boolean autolinkNewRepos;
-    private boolean autoInviteNewUsers;
     private boolean globalSmartcommitsEnabled;
     
     private String organizationUrl;
@@ -148,16 +147,6 @@ public class Organization
                 .append(credential)
                 .hashCode();
     }
-
-	public boolean isAutoInviteNewUsers()
-	{
-		return autoInviteNewUsers;
-	}
-
-	public void setAutoInviteNewUsers(boolean autoInviteNewUsers)
-	{
-		this.autoInviteNewUsers = autoInviteNewUsers;
-	}
 
 	public List<Group> getGroups()
 	{

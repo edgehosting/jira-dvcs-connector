@@ -476,39 +476,6 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 			  });
 }
 
-function autoInviteNewUser(organizationId, checkboxId) {
-	
-	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
-	
-	AJS.$("#" + checkboxId).attr("disabled", "disabled");
-	
-	AJS.$("#" + checkboxId  + "working").show();
-	
-	AJS.$.ajax(
-		{
-			type : 'POST',
-			dataType : "json",
-			contentType : "application/json",
-			  
-			url :
-			BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autoinvite",
-			
-			data :
-			'{ "payload" : "' + checkedValue+ '"}',
-			
-			success :
-			function (data) {
-				AJS.$("#" + checkboxId  + "working").hide();
-				AJS.$("#" + checkboxId).removeAttr("disabled");
-			}
-		}
-	  ).error(function (err) { 
-				  showError("Unexpected error occured. Please contact the server admnistrator.");
-				  AJS.$("#" + checkboxId  + "working").hide();
-				  AJS.$("#" + checkboxId).removeAttr("disabled");
-				  setChecked(checkboxId, !checkedValue);
-			  });
-}
 
 function enableOrgGlobalSmartcommits(organizationId, checkboxId) {
 	

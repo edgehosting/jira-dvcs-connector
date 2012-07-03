@@ -169,16 +169,6 @@ public class OrganizationServiceImpl implements OrganizationService
 		}
 	}
 
-	@Override
-	public void enableAutoInviteUsers(int id, boolean autoInviteUsers)
-	{
-		final Organization organization = organizationDao.get(id);
-		if (organization != null)
-		{
-			organization.setAutoInviteNewUsers(autoInviteUsers);
-			organizationDao.save(organization);
-		}
-	}
 	
 	@Override
 	public void enableGlobalSmartcommits(int id, boolean enabled)

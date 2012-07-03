@@ -166,11 +166,6 @@
 				#else
 				#set( $orgAutolink = "")
 			#end
-			#if($org.isAutoInviteNewUsers())
-				#set( $orgIsDefault = "checked='checked'")
-				#else
-				#set( $orgIsDefault = "")
-			#end
 			#if($org.isGlobalSmartcommitsEnabled())
 				#set( $orgGlobalSmartcommits = "checked='checked'")
 				#set( $localSmartcommitsDisabled = "disabled='disabled'")
@@ -218,11 +213,8 @@
 								            </li>
 								            
  							            	#if($org.dvcsType == "bitbucket")
-   							            	 
    							            	   	<li class="dropdown-item">
 	   							                	<div class="dvcs-gearmenu-nohide">
-							 							<input id="org_isdefault_check$org.id" class="aui" $!orgIsDefault type="checkbox" onclick="javascript: autoInviteNewUser($org.id, 'org_isdefault_check$org.id');" />
-							 							<label for="org_isdefault_check$org.id"> Default auto-invite new users </label>
 							 							<a style="display:block;"  href="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id);"> Configure default groups</a>
 						 							</div>
 					 							</li>

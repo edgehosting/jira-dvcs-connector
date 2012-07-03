@@ -14,7 +14,6 @@ public interface OrganizationMapping extends Entity
     public static final String ADMIN_USERNAME = "ADMIN_USERNAME";
     public static final String ADMIN_PASSWORD = "ADMIN_PASSWORD";
     public static final String ACCESS_TOKEN = "ACCESS_TOKEN";
-    public static final String AUTO_INVITE_NEW_USERS = "AUTO_INVITE_NEW_USERS";
     public static final String GLOBAL_SMARTCOMMITS_ENABLED = "GLOBAL_SMARTCOMMITS_ENABLED";
     public static final String DEFAULT_GROUPS_SLUGS = "DEFAULT_GROUPS_SLUGS"; // serialized, separated by ";"
     
@@ -22,7 +21,6 @@ public interface OrganizationMapping extends Entity
     String getName();
     String getDvcsType();
     boolean isAutolinkNewRepos();
-    boolean isAutoInviteNewUsers();
     String getAdminUsername();
     String getAdminPassword();
     String getAccessToken();
@@ -33,7 +31,6 @@ public interface OrganizationMapping extends Entity
     void setName(String name);
     void setDvcsType(String dvcsType);
     void setAutolinkNewRepos(boolean autolinkNewRepos);
-    void setAutoInviteNewUsers(boolean autoInviteNewUsers);
     void setAdminUsername(String adminUsername);
     void setAdminPassword(String adminPassword);
     void setAccessToken(String accessToken);
