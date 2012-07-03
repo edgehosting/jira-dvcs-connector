@@ -118,7 +118,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                         //--------------------------------------------
                         // mark smart commit can be processed
                         if (softSync) {
-                        	changesetForSave.setSmartcommitAvaliable(Boolean.TRUE);
+                        	markChangesetForSmartCommit(changesetForSave);
                         }
                         //--------------------------------------------
                         changesetService.save(changesetForSave);
@@ -132,6 +132,17 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         }
         
     }
+
+	private void markChangesetForSmartCommit(Changeset changesetForSave)
+	{
+		if (repository.isSmartcommitsEnabled() || repository.isOrgGlobalSmartcommitsEnabled()) {
+			
+			log.debug("Marking changeset id = {} to be processed by smart commits", changesetForSave.getId());
+			
+			changesetForSave.setSmartcommitAvaliable(Boolean.TRUE);
+
+		}
+	}
 
 	private Set<String> extractIssueKeys(String message)
     {
