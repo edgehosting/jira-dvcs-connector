@@ -135,22 +135,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
 	private Set<String> extractIssueKeys(String message)
     {
-        final String issueKeyRegex = "([A-Z][A-Z0-9]+-\\d+)";   //TODO check if we can use regexp from IssueLinkerImpl
-        Pattern projectKeyPattern = Pattern.compile(issueKeyRegex, Pattern.CASE_INSENSITIVE);
-        Matcher match = projectKeyPattern.matcher(message);
-
-        Set<String> matches = new HashSet<String>();
-
-        while (match.find())
-        {
-            // Get all groups for this match
-            for (int i = 0; i <= match.groupCount(); i++)
-            {
-                String issueKey = match.group(i);
-                matches.add(issueKey);
-            }
-        }
-        return matches;
+        return IssueKeyExtractor.extractIssueKeys(message);
     }
 
     @Override
