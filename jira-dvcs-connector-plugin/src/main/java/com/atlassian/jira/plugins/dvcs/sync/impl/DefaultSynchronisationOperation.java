@@ -1,10 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -135,7 +132,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
 	private void markChangesetForSmartCommit(Changeset changesetForSave)
 	{
-		if (repository.isSmartcommitsEnabled() || repository.isOrgGlobalSmartcommitsEnabled()) {
+		if (repository.isSmartcommitsEnabled()) {
 			
 			log.debug("Marking changeset node = {} to be processed by smart commits", changesetForSave.getRawNode());
 			

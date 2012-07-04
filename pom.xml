@@ -31,8 +31,8 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<jira.version>5.1-rc2</jira.version>
-		<jira.data.version>5.1-rc2</jira.data.version>
+		<jira.version>5.1-rc7</jira.version>
+		<jira.data.version>5.1-rc7</jira.data.version>
 		<ao.version>0.19.7</ao.version>
 		<streams.version>5.0.1</streams.version>
 

@@ -14,7 +14,7 @@ public interface OrganizationMapping extends Entity
     public static final String ADMIN_USERNAME = "ADMIN_USERNAME";
     public static final String ADMIN_PASSWORD = "ADMIN_PASSWORD";
     public static final String ACCESS_TOKEN = "ACCESS_TOKEN";
-    public static final String GLOBAL_SMARTCOMMITS_ENABLED = "GLOBAL_SMARTCOMMITS_ENABLED";
+    public static final String SMARTCOMMITS_FOR_NEW_REPOS = "SMARTCOMMITS_FOR_NEW_REPOS";
     public static final String DEFAULT_GROUPS_SLUGS = "DEFAULT_GROUPS_SLUGS"; // serialized, separated by ";"
     
     String getHostUrl();
@@ -24,7 +24,7 @@ public interface OrganizationMapping extends Entity
     String getAdminUsername();
     String getAdminPassword();
     String getAccessToken();
-    boolean isGlobalSmartcommitsEnabled();
+    boolean isSmartcommitsForNewRepos();
     String getDefaultGroupsSlugs();
 
     void setHostUrl(String hostUrl);
@@ -34,6 +34,6 @@ public interface OrganizationMapping extends Entity
     void setAdminUsername(String adminUsername);
     void setAdminPassword(String adminPassword);
     void setAccessToken(String accessToken);
-    void setGlobalSmartcommitsEnabled(boolean enabled);
+    void setSmartcommitsForNewRepos(boolean enabled);
     void setDefaultGroupsSlugs(String slugs);
 }

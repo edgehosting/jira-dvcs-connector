@@ -124,6 +124,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 			newOrganization.setDvcsType("github");
 			newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
 			newOrganization.setCredential(new Credential(null, null, accessToken));
+			newOrganization.setSmartcommitsOnNewRepos(true);
 			
 			organizationService.save(newOrganization);
 			

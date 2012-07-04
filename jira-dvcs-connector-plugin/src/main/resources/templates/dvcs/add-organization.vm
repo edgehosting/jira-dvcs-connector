@@ -166,11 +166,10 @@
 				#else
 				#set( $orgAutolink = "")
 			#end
-			#if($org.isGlobalSmartcommitsEnabled())
-				#set( $orgGlobalSmartcommits = "checked='checked'")
-				#set( $localSmartcommitsDisabled = "disabled='disabled'")
+			#if($org.isSmartcommitsOnNewRepos())
+				#set( $orgSmartcommitsOnNewRepos = "checked='checked'")
 				#else
-				#set( $localSmartcommitsDisabled = "")
+				#set( $orgSmartcommitsOnNewRepos = "")
 			#end
 	
 	<div class="dvcs-header-container">	
@@ -201,10 +200,10 @@
 								           <li class="dropdown-item">
 								            	 <div class="dvcs-gearmenu-nohide">
 									            	 <input id="org_global_smarts$org.id" 
-									            	 		class="aui" $!orgGlobalSmartcommits 
+									            	 		class="aui" $!orgSmartcommitsOnNewRepos
 									            	 		type="checkbox" name="org_autolink_check$org.id"
-									            	 		onclick="javascript: enableOrgGlobalSmartcommits($org.id, 'org_global_smarts$org.id');" />
-									            	 <label for="org_global_smarts$org.id"> Global Smart Commits</label>
+									            	 		onclick="javascript: enableSmartcommitsOnNewRepos($org.id, 'org_global_smarts$org.id');" />
+									            	 <label for="org_global_smarts$org.id"> Enable smart commits on new repositories</label>
 								            	 </div>
 								            </li>
 								            

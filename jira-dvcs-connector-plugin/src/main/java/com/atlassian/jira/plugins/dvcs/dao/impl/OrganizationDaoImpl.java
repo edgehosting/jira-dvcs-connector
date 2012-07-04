@@ -74,7 +74,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 				organizationMapping.getName(), organizationMapping.getDvcsType(),
 				organizationMapping.isAutolinkNewRepos(), credential);
 		organization.setOrganizationUrl(createOrganizationUrl(organizationMapping));
-		organization.setGlobalSmartcommitsEnabled(organizationMapping.isGlobalSmartcommitsEnabled());
+		organization.setSmartcommitsOnNewRepos(organizationMapping.isSmartcommitsForNewRepos());
 		
 		organization.setDefaultGroupsSlugs(createGroupSlugs(organizationMapping.getDefaultGroupsSlugs()));
 		organization.setDefaultGroupsSlugsSerialized(organizationMapping.getDefaultGroupsSlugs());
@@ -237,7 +237,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 							map.put(OrganizationMapping.ADMIN_USERNAME, organization.getCredential().getAdminUsername());
 							map.put(OrganizationMapping.ADMIN_PASSWORD, adminPassword);
 							map.put(OrganizationMapping.ACCESS_TOKEN, organization.getCredential().getAccessToken());
-							map.put(OrganizationMapping.GLOBAL_SMARTCOMMITS_ENABLED, organization.isGlobalSmartcommitsEnabled());
+							map.put(OrganizationMapping.SMARTCOMMITS_FOR_NEW_REPOS, organization.isSmartcommitsOnNewRepos());
 							map.put(OrganizationMapping.DEFAULT_GROUPS_SLUGS, organization.getDefaultGroupsSlugsSerialized());
 
 							om = activeObjects.create(OrganizationMapping.class, map);
@@ -252,7 +252,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 							om.setAdminUsername(organization.getCredential().getAdminUsername());
 							om.setAdminPassword(adminPassword);
 							om.setAccessToken(organization.getCredential().getAccessToken());
-							om.setGlobalSmartcommitsEnabled(organization.isGlobalSmartcommitsEnabled());
+							om.setSmartcommitsForNewRepos(organization.isSmartcommitsOnNewRepos());
 							om.setDefaultGroupsSlugs(organization.getDefaultGroupsSlugsSerialized());
 
 							om.save();
@@ -324,7 +324,11 @@ public class OrganizationDaoImpl implements OrganizationDao
 	@Override
 	public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
 	{
-		String serializedGroups = Joiner.on(Organization.DEFAULT_GROUP_SLUGS_SEPARATOR).join(groupsSlugs);
+		String serializedGroups = null;
+		if (CollectionUtils.isNotEmpty(groupsSlugs)) {
+			serializedGroups = Joiner.on(Organization.DEFAULT_GROUP_SLUGS_SEPARATOR).join(groupsSlugs);
+		}
+
 		final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, orgId);
 		organization.setDefaultGroupsSlugs(serializedGroups);
 		activeObjects.executeInTransaction(new TransactionCallback<Void>()

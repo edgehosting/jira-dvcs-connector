@@ -477,7 +477,7 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 }
 
 
-function enableOrgGlobalSmartcommits(organizationId, checkboxId) {
+function enableSmartcommitsOnNewRepos(organizationId, checkboxId) {
 	
 	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
 	
@@ -498,11 +498,6 @@ function enableOrgGlobalSmartcommits(organizationId, checkboxId) {
 			success :
 			function (data) {
 				AJS.$("#" + checkboxId).removeAttr("disabled");
-				if (checkedValue) {
-					AJS.$(".repo_smartcommit_check" + organizationId).attr("disabled", "disabled");
-				} else {
-					AJS.$(".repo_smartcommit_check" + organizationId).removeAttr("disabled");
-				}
 			}
 		}
 	  ).error(function (err) {

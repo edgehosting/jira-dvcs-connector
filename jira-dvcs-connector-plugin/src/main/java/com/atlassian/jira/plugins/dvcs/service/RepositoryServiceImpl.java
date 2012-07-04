@@ -16,7 +16,6 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.sal.api.ApplicationProperties;
-import com.atlassian.sal.api.net.ResponseException;
 import com.google.common.collect.Maps;
 
 /**
@@ -123,6 +122,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	private void addNewRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories, Organization organization)
     {
 		Map<String, Repository> remoteRepos = makeRepositoryMap(remoteRepositories);
+		
 		// remove existing
 		for (Repository localRepo : storedRepositories)
 		{
@@ -136,6 +136,7 @@ public class RepositoryServiceImpl implements RepositoryService
 			repository.setDvcsType(organization.getDvcsType());
 			repository.setLinked(organization.isAutolinkNewRepos());
 			repository.setCredential(organization.getCredential());
+			repository.setSmartcommitsEnabled(organization.isSmartcommitsOnNewRepos());
 
 			// need for installing post commit hook
 			repository.setOrgHostUrl(organization.getHostUrl());

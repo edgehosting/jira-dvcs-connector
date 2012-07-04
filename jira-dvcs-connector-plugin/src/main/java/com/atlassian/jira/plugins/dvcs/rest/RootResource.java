@@ -194,11 +194,10 @@ public class RootResource
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/org/{id}/globalsmarts")
 	@Consumes({MediaType.APPLICATION_JSON})
-	public Response enableOrganizationGlobalSmartcommits(@PathParam("id") int id,
+	public Response enableSmartcommitsOnNewRepos(@PathParam("id") int id,
 			SentData autoinvite)
 	{
-		
-		organizationService.enableGlobalSmartcommits(id, Boolean.parseBoolean(autoinvite.getPayload()));
+		organizationService.enableSmartcommitsOnNewRepos(id, Boolean.parseBoolean(autoinvite.getPayload()));
 		return Response.noContent().build();
 	}
 

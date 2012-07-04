@@ -53,7 +53,6 @@ public class RepositoryDaoImpl implements RepositoryDao
 		repository.setOrgName(organizationMapping.getName());
 		repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
 		repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
-		repository.setOrgGlobalSmartcommitsEnabled(organizationMapping.isGlobalSmartcommitsEnabled());
 		
 		// set sync progress
 		repository.setSync((Progress) synchronizer.getProgress(repository));

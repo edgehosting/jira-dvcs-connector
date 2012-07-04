@@ -376,8 +376,7 @@ select#urlSelect {
 	padding-left: 0 !important;
 }
 .dvcs-org-container.aui-toolbar .aui-dropdown input {
-	position: relative;
-	top: 1px;
+
 }
 
 .aui.bitbucketLogo, .aui.githubLogo {

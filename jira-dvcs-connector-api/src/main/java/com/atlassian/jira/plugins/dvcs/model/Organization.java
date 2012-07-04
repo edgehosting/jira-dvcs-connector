@@ -21,7 +21,7 @@ public class Organization
     private String name;
     private String dvcsType;
     private boolean autolinkNewRepos;
-    private boolean globalSmartcommitsEnabled;
+    private boolean smartcommitsOnNewRepos;
     
     private String organizationUrl;
     
@@ -168,16 +168,6 @@ public class Organization
 		this.organizationUrl = organizationUrl;
 	}
 
-	public boolean isGlobalSmartcommitsEnabled()
-	{
-		return globalSmartcommitsEnabled;
-	}
-
-	public void setGlobalSmartcommitsEnabled(boolean globalSmartcommitsEnabled)
-	{
-		this.globalSmartcommitsEnabled = globalSmartcommitsEnabled;
-	}
-	
 	public List<Group> getDefaultGroupsSlugs()
 	{
 		return defaultGroupsSlugs;
@@ -196,6 +186,16 @@ public class Organization
 	public void setDefaultGroupsSlugsSerialized(String defaultGroupsSlugsSerialized)
 	{
 		this.defaultGroupsSlugsSerialized = defaultGroupsSlugsSerialized;
+	}
+
+	public boolean isSmartcommitsOnNewRepos()
+	{
+		return smartcommitsOnNewRepos;
+	}
+
+	public void setSmartcommitsOnNewRepos(boolean smartcommitsOnNewRepos)
+	{
+		this.smartcommitsOnNewRepos = smartcommitsOnNewRepos;
 	}
 
 }

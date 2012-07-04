@@ -111,13 +111,14 @@ public interface OrganizationService
 	 */
 	void checkCredentials(Organization forOrganizationWithPlainCredentials) throws InvalidCredentialsException;
 
+	
 	/**
-	 * Enable global smartcommits.
+	 * Enable smartcommits on new repos.
 	 *
 	 * @param id the id
 	 * @param parseBoolean the parse boolean
 	 */
-	void enableGlobalSmartcommits(int id, boolean parseBoolean);
+	void enableSmartcommitsOnNewRepos(int id, boolean parseBoolean);
 	
 	void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs);
 }

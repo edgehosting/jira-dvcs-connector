@@ -171,12 +171,12 @@ public class OrganizationServiceImpl implements OrganizationService
 
 	
 	@Override
-	public void enableGlobalSmartcommits(int id, boolean enabled)
+	public void enableSmartcommitsOnNewRepos(int id, boolean enabled)
 	{
 		final Organization organization = organizationDao.get(id);
 		if (organization != null)
 		{
-			organization.setGlobalSmartcommitsEnabled(enabled);
+			organization.setSmartcommitsOnNewRepos(enabled);
 			organizationDao.save(organization);
 		}
 		
