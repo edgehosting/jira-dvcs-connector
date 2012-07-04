@@ -11,6 +11,9 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.plugin.event.PluginEventListener;
+import com.atlassian.plugin.event.events.PluginDisabledEvent;
+import com.atlassian.plugin.event.events.PluginUninstalledEvent;
 
 /**
  * 
@@ -160,6 +163,30 @@ public class DvcsAddUserListener implements InitializingBean
 		eventPublisher.register(this);
 	}
 
+	@PluginEventListener
+    public void onPluginDisabled(PluginDisabledEvent event)
+    {
+       unregisterSelf();
+    }
+
+	@PluginEventListener
+	public void onPluginUninstalled(PluginUninstalledEvent event)
+	{
+		unregisterSelf();
+	}
+
+	private void unregisterSelf()
+	{
+		try
+		{
+
+			eventPublisher.unregister(this);
+
+		} catch (Exception e)
+		{
+			log.warn("Failed to unregister " + this + ", cause message is " + e.getMessage());
+		}
+	}
 	/**
 	 * The Interface Closure.
 	 */
