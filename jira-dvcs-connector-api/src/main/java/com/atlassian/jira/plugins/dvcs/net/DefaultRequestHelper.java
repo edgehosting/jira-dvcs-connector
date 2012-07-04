@@ -35,6 +35,8 @@ public class DefaultRequestHelper implements RequestHelper
     
     private final ExtendedResponseHandlerFactory responseHandlerFactory;
 
+	private final HttpClientProxyConfig httpClientProxyConfig;
+
     /**
      * For testing only
      */
@@ -42,12 +44,12 @@ public class DefaultRequestHelper implements RequestHelper
     {
         this.requestFactory = requestFactory;
         this.responseHandlerFactory = responseHandlerFactory;
+        httpClientProxyConfig = new HttpClientProxyConfig();
     }
 
     public DefaultRequestHelper(RequestFactory<?> requestFactory)
     {
-        this.requestFactory = requestFactory;
-        responseHandlerFactory = new DefaultExtendedResponseHandlerFactory();
+    	this(requestFactory, new DefaultExtendedResponseHandlerFactory());
     }
 
     @Override
@@ -108,7 +110,7 @@ public class DefaultRequestHelper implements RequestHelper
     	log.debug(methodType + " [ " + url + " ]");
     	
     	HttpClient httpClient = new HttpClient();
-    	new HttpClientProxyConfig().configureProxy(httpClient, apiBaseUrl + urlPath);
+		httpClientProxyConfig.configureProxy(httpClient, apiBaseUrl + urlPath);
     	
     	HttpMethod method = getHttpMethodByType(methodType, url);
     	
