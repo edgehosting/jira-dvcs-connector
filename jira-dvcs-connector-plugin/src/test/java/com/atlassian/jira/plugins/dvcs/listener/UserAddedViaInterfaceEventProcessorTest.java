@@ -23,6 +23,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("unchecked")
 public class UserAddedViaInterfaceEventProcessorTest
 {
 
@@ -41,10 +42,10 @@ public class UserAddedViaInterfaceEventProcessorTest
 	Organization organizationMock;
 
 	@Captor
-	ArgumentCaptor<String> email;
+	ArgumentCaptor<String> emailCaptor;
 	
 	@Captor
-	ArgumentCaptor<Collection<String>> slugs;
+	ArgumentCaptor<Collection<String>> slugsCaptor;
 
 	public UserAddedViaInterfaceEventProcessorTest()
 	{
@@ -69,17 +70,17 @@ public class UserAddedViaInterfaceEventProcessorTest
 
 		verify(organizationServiceMock, times(2)).get(anyInt(), eq(false));
 
-		verify(communicator, times(2)).inviteUser(isA(Organization.class), slugs.capture(), email.capture());
+		verify(communicator, times(2)).inviteUser(isA(Organization.class), slugsCaptor.capture(), emailCaptor.capture());
 		
-		Assert.assertTrue(slugs.getAllValues().size() == 2 &&
-						slugs.getAllValues().get(0).size() == 2 &&
-						slugs.getAllValues().get(0).contains("developers") &&
-						slugs.getAllValues().get(0).contains("managers") &&
-						slugs.getAllValues().get(1).size() == 1 &&
-						slugs.getAllValues().get(0).contains("developers") 
+		Assert.assertTrue(slugsCaptor.getAllValues().size() == 2 &&
+						slugsCaptor.getAllValues().get(0).size() == 2 &&
+						slugsCaptor.getAllValues().get(0).contains("developers") &&
+						slugsCaptor.getAllValues().get(0).contains("managers") &&
+						slugsCaptor.getAllValues().get(1).size() == 1 &&
+						slugsCaptor.getAllValues().get(0).contains("developers") 
 					);
 		
-		Assert.assertTrue(email.getAllValues().size() ==  2 && email.getAllValues().get(0).contains("new@example.com"));
+		Assert.assertTrue(emailCaptor.getAllValues().size() ==  2 && emailCaptor.getAllValues().get(0).contains("new@example.com"));
 	}
 	
 	@Test
@@ -95,7 +96,6 @@ public class UserAddedViaInterfaceEventProcessorTest
 		verifyNoMoreInteractions(communicatorProviderMock);
 	}
 	
-	@SuppressWarnings("unchecked")
 	private Map<String, String[]> sampleRequestParameters()
 	{
 		return EasyMap.build(UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM, new String [] {
