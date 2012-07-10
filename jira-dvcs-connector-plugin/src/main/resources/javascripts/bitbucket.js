@@ -464,8 +464,14 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 			  
 			success :
 			function (data) {
+				  
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
+				  if (!checkedValue && AJS.$("#org_global_smarts" + organizationId)) {
+					  AJS.$("#org_global_smarts" + organizationId).attr("disabled", "disabled");
+				  } else {
+					  AJS.$("#org_global_smarts" + organizationId).removeAttr("disabled");
+				  }
 			}
 		}
 	).error(function (err) { 
