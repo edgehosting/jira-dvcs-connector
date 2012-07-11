@@ -84,7 +84,7 @@ public class UserAddedViaInterfaceEventProcessorTest
 	}
 	
 	@Test
-	public void testRunNoGrpupsHasBeenSelected() {
+	public void testRunNoGroupsHasBeenSelectedShouldNotInvite() {
 		
 		UserAddedEvent event = new UserAddedEvent(EasyMap.build());
 		
