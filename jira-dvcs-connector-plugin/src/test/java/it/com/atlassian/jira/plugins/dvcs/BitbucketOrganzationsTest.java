@@ -1,5 +1,9 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
+import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -18,16 +22,12 @@ import org.openqa.selenium.By;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddUserPage;
+import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
-
-import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
-
-import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
 
 /**
  * Test to verify behaviour when syncing bitbucket repository..
@@ -65,6 +65,9 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 		PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
 		// first row is header row, than repos ...
 		Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
+		
+		// check add user extension
+		jira.visit(JiraAddUserPage.class).checkPanelPresented();
 	}
 
 	@Test

@@ -1,6 +1,6 @@
 #if(!$bbSupressRender)
 
-	<fieldset class="field-group" style="max-height: 300px; overflow: auto">
+	<fieldset class="field-group" style="max-height: 300px; overflow: auto" id="dvcs-bitucket-extension">
 	  
 	  <label>Bitbucket Accounts</label>
 	  
