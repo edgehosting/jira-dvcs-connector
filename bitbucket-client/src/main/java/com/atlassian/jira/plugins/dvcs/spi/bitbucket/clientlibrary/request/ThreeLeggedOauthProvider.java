@@ -1,27 +1,39 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
-public class ThreeLeggedOauthProvider implements OAuthProvider
+/**
+ * ThreeLeggedOauthProvider
+ *
+ * 
+ * <br /><br />
+ * Created on 13.7.2012, 10:25:48
+ * <br /><br />
+ * @author jhocman@atlassian.com
+ *
+ */
+public class ThreeLeggedOauthProvider implements AuthProvider
 {
 
 	private final String accessToken;
+
+	private final String apiUrl;
 	
-	public ThreeLeggedOauthProvider(String accessToken)
+	public ThreeLeggedOauthProvider(String apiUrl, String accessToken)
 	{
 		super();
+		this.apiUrl = apiUrl;
 		this.accessToken = accessToken;
 	}
 
 	@Override
-	public OAuthKind getKind()
+	public AuthKind getKind()
 	{
-		return OAuthKind.THREE_LEGGED_10a;
+		return AuthKind.THREE_LEGGED_OAUTH_10a;
 	}
 
 	@Override
 	public RemoteRequestor provideRequestor()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new ThreeLeggedOauthRemoteRequestor(apiUrl, accessToken);
 	}
 	
 	
