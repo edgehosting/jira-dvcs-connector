@@ -8,30 +8,34 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Re
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServicesRepositoryRemoteRestpoint;
 
 /**
- * TODO rename it
- * Client
+ * 
+ * <h3>Example of use</h3>
+ * <pre>
+ * RepositoryRemoteRestpoint repositoriesRest = 
+ * 				new BitbucketRemoteClient( new TwoLeggedOauthProvider("https://www.bitbucket.org", "coolkey9b9...", "coolsecret040oerre....") ).getRepositoriesRest();
+ *
+ * List&lt;BitbucketRepository&gt; repositories = repositoriesRest.getAllRepositories("teamname");
+ *		
+ * <pre>
  *
  * 
  * <br /><br />
  * Created on 12.7.2012, 17:04:43
  * <br /><br />
+ * 
+ * @see AuthProvider
+ * 
  * @author jhocman@atlassian.com
  *
  */
-public class Client
+public class BitbucketRemoteClient
 {
-
-	private AuthProvider provider;
-	private String apiUrl;
-
-	public Client()
+	private final AuthProvider provider;
+	
+	public BitbucketRemoteClient(AuthProvider provider)
 	{
 		super();
-	}
-	
-	public Client configure(AuthProvider provider) {
 		this.provider = provider;
-		return this;
 	}
 	
 	public GroupRemoteRestpoint getGroupsRest() {
@@ -58,12 +62,6 @@ public class Client
 	{
 		return provider;
 	}
-
-	public String getApiUrl()
-	{
-		return apiUrl;
-	}
 	
-
 }
 

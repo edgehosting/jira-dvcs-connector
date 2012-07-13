@@ -15,12 +15,6 @@ public class BasicAuthAuthProvider extends AbstractOauthProvider
 	}
 
 	@Override
-	public AuthKind getKind()
-	{
-		return AuthKind.BASIC_AUTH;
-	}
-
-	@Override
 	public RemoteRequestor provideRequestor()
 	{
 		return new BasicAuthRemoteRequestor(getApiUrl(), username, password);

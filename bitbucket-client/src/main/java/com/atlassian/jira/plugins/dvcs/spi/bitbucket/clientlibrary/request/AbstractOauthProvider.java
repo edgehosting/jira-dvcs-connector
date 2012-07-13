@@ -23,12 +23,6 @@ public abstract class AbstractOauthProvider implements AuthProvider
 	}
 
 	@Override
-	public AuthKind getKind()
-	{
-		return AuthKind.THREE_LEGGED_OAUTH_10a;
-	}
-
-	@Override
 	public String getApiUrl()
 	{
 		if (hostUrl.endsWith("/")) {

@@ -15,7 +15,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Remot
  */
 public class TwoLeggedOauthProvider extends AbstractOauthProvider
 {
-
 	private final String key;
 
 	private final String secret;
@@ -25,12 +24,6 @@ public class TwoLeggedOauthProvider extends AbstractOauthProvider
 		super(hostUrl);
 		this.key = key;
 		this.secret = secret;
-	}
-
-	@Override
-	public AuthKind getKind()
-	{
-		return AuthKind.TWO_LEGGED_OAUTH_10a;
 	}
 
 	@Override

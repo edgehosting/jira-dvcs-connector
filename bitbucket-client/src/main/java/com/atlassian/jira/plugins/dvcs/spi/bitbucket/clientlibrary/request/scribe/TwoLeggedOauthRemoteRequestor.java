@@ -10,6 +10,7 @@ import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BaseRemoteRequestor;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpMethod;
 
 /**
  * TwoLeggedOauthRemoteRequestor
@@ -36,14 +37,14 @@ public class TwoLeggedOauthRemoteRequestor extends BaseRemoteRequestor
 	}
 
 	@Override
-	protected String afterFinalUriConstructed(String finalUri)
+	protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri)
 	{
 		//
 		// generate oauth 1.0 params for 2LO - use scribe so far for that ...
 		//
 		OAuthService service = new ServiceBuilder().provider(new Bitbucket10aApi(apiUrl)).apiKey(key)
 				.signatureType(SignatureType.Header).apiSecret(secret).build();
-		OAuthRequest request = new OAuthRequest(Verb.GET, finalUri);
+		OAuthRequest request = new OAuthRequest(getScribeVerb(forMethod), finalUri);
 		service.signRequest(new EmptyToken(), request);
 		Map<String, String> oauthParams = request.getOauthParameters();
 		//
@@ -51,6 +52,21 @@ public class TwoLeggedOauthRemoteRequestor extends BaseRemoteRequestor
 		//
 		
 		return finalUri + paramsToString(oauthParams, finalUri.indexOf("?") != -1);
+	}
+
+	private Verb getScribeVerb(HttpMethod forMethod)
+	{
+		switch (forMethod)
+		{
+		case PUT:
+			return Verb.PUT;
+		case DELETE:
+			return Verb.DELETE;
+		case POST:
+			return Verb.POST;
+		default:
+			return Verb.GET;
+		}
 	}
 	
 	static class EmptyToken extends Token {

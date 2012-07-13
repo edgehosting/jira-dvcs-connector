@@ -22,12 +22,6 @@ public class ThreeLeggedOauthProvider extends AbstractOauthProvider
 	}
 
 	@Override
-	public AuthKind getKind()
-	{
-		return AuthKind.THREE_LEGGED_OAUTH_10a;
-	}
-
-	@Override
 	public RemoteRequestor provideRequestor()
 	{
 		return new ThreeLeggedOauthRemoteRequestor(getApiUrl(), accessToken);

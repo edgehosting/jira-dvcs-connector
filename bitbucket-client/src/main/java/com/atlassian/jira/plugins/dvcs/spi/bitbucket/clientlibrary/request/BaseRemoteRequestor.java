@@ -43,7 +43,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 	@Override
 	public RemoteResponse delete(String uri)
 	{
-		return requestWithoutPayload(HttpMethod.GET, uri, new HashMap<String, String>());
+		return requestWithoutPayload(HttpMethod.DELETE, uri, new HashMap<String, String>());
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
 	}
 	
-	protected String afterFinalUriConstructed(String finalUri)
+	protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri)
 	{
 		return finalUri;
 	}
@@ -176,7 +176,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
 	private HttpURLConnection createConnection(HttpMethod method, String uri) throws IOException
 	{
-		HttpURLConnection connection = method.createConnection(afterFinalUriConstructed(apiUrl + uri));
+		HttpURLConnection connection = method.createConnection(afterFinalUriConstructed(method, apiUrl + uri));
 		//
 		// something to extend
 		//
@@ -198,7 +198,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 				connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 				data = ClientUtils.toJson(params).getBytes("UTF-8");
 			} else {
-				// assuming post/put params
+				// assuming post/put kind of "form" params
 				data = paramsToString((Map) params, true).getBytes("UTF-8");
 			}
 
