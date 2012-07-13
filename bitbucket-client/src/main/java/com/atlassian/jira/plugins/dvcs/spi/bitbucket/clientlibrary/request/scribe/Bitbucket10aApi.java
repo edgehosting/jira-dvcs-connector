@@ -20,13 +20,20 @@ import org.scribe.oauth.OAuthService;
 public class Bitbucket10aApi extends DefaultApi10a
 {
 
+	private final String apiUrl;
+
+	public Bitbucket10aApi(String apiUrl)
+	{
+		this.apiUrl = apiUrl;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public String getRequestTokenEndpoint()
 	{
-		return "https://staging.bitbucket.org/api/1.0/oauth/request_token/";
+		return apiUrl + "/oauth/request_token/";
 	}
 
 	/**
@@ -35,7 +42,7 @@ public class Bitbucket10aApi extends DefaultApi10a
 	@Override
 	public String getAccessTokenEndpoint()
 	{
-		return "https://staging.bitbucket.org/api/1.0/oauth/access_token/";
+		return apiUrl + "/oauth/access_token/";
 	}
 
 	/**
@@ -44,7 +51,7 @@ public class Bitbucket10aApi extends DefaultApi10a
 	@Override
 	public String getAuthorizationUrl(Token requestToken)
 	{
-		return String.format("https://staging.bitbucket.org/api/1.0/oauth/authenticate/?oauth_token=%s",
+		return String.format(apiUrl + "/oauth/authenticate/?oauth_token=%s",
 				requestToken.getToken());
 	}
 	

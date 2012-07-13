@@ -10,17 +10,14 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
  * @author jhocman@atlassian.com
  *
  */
-public class ThreeLeggedOauthProvider implements AuthProvider
+public class ThreeLeggedOauthProvider extends AbstractOauthProvider
 {
 
 	private final String accessToken;
 
-	private final String apiUrl;
-	
-	public ThreeLeggedOauthProvider(String apiUrl, String accessToken)
+	public ThreeLeggedOauthProvider(String hostUrl, String accessToken)
 	{
-		super();
-		this.apiUrl = apiUrl;
+		super(hostUrl);
 		this.accessToken = accessToken;
 	}
 
@@ -33,10 +30,8 @@ public class ThreeLeggedOauthProvider implements AuthProvider
 	@Override
 	public RemoteRequestor provideRequestor()
 	{
-		return new ThreeLeggedOauthRemoteRequestor(apiUrl, accessToken);
+		return new ThreeLeggedOauthRemoteRequestor(getApiUrl(), accessToken);
 	}
-	
-	
 
 }
 

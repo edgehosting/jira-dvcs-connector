@@ -13,5 +13,7 @@ public interface AuthProvider
 
 	RemoteRequestor provideRequestor();
 	
+	String getApiUrl();
+	
 }
 

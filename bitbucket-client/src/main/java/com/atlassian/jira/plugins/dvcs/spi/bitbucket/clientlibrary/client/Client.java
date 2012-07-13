@@ -29,9 +29,8 @@ public class Client
 		super();
 	}
 	
-	public Client create(AuthProvider provider, String apiUrl) {
+	public Client configure(AuthProvider provider) {
 		this.provider = provider;
-		this.apiUrl = apiUrl;
 		return this;
 	}
 	
@@ -44,7 +43,7 @@ public class Client
 	}
 	
 	public RepositoryRemoteRestpoint getRepositoriesRest() {
-		return null;
+		return new RepositoryRemoteRestpoint (provider.provideRequestor());
 	}
 	
 	public ServicesRepositoryRemoteRestpoint getServicesRest() {

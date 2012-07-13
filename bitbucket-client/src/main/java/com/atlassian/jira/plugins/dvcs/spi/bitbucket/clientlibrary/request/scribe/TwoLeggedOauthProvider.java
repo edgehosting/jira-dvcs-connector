@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AbstractOauthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 
 /**
@@ -13,19 +13,16 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Remot
  * @author jhocman@atlassian.com
  *
  */
-public class TwoLeggedOauthProvider implements AuthProvider
+public class TwoLeggedOauthProvider extends AbstractOauthProvider
 {
 
 	private final String key;
 
 	private final String secret;
 
-	private final String apiUrl;
-
-	public TwoLeggedOauthProvider(String apiUrl, String key, String secret)
+	public TwoLeggedOauthProvider(String hostUrl, String key, String secret)
 	{
-		super();
-		this.apiUrl = apiUrl;
+		super(hostUrl);
 		this.key = key;
 		this.secret = secret;
 	}
@@ -39,7 +36,7 @@ public class TwoLeggedOauthProvider implements AuthProvider
 	@Override
 	public RemoteRequestor provideRequestor()
 	{
-		return new TwoLeggedOauthRemoteRequestor(apiUrl, key, secret);
+		return new TwoLeggedOauthRemoteRequestor(getApiUrl(), key, secret);
 	}
 
 

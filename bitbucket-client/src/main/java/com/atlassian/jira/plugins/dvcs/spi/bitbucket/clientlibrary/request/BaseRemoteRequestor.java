@@ -26,7 +26,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Client
 public class BaseRemoteRequestor implements RemoteRequestor
 {
 
-	private final String apiUrl;
+	protected final String apiUrl;
 
 	public BaseRemoteRequestor(String apiUrl)
 	{
