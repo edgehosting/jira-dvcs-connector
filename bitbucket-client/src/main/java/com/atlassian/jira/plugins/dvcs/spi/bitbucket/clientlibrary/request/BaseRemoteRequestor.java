@@ -70,12 +70,18 @@ public class BaseRemoteRequestor implements RemoteRequestor
 		return requestWithPayload(HttpMethod.PUT, uri, payload, true);
 	}
 	
-	
+	//--------------------------------------------------------------------------------------------------
+	// extension hooks
+	//--------------------------------------------------------------------------------------------------
+		
 	protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method) throws IOException
 	{
 
 	}
 	
+	/**
+	 * E.g. append oauth params
+	 */
 	protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri)
 	{
 		return finalUri;

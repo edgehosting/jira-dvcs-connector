@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * ThreeLeggedOauthRemoteRequestor
@@ -25,9 +25,12 @@ public class ThreeLeggedOauthRemoteRequestor extends BaseRemoteRequestor
 	}
 	
 	@Override
-	protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method) throws IOException
+	protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri)
 	{
-		connection.addRequestProperty("access_token", accessToken);
+		Map<String, String> oauthParams = new HashMap<String, String>();
+		oauthParams.put("access_token", accessToken);
+		
+		return finalUri + paramsToString(oauthParams, finalUri.indexOf("?") != -1);
 	}
 }
 

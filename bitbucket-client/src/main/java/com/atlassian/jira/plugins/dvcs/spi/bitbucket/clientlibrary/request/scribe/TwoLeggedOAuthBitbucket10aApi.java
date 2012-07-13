@@ -6,8 +6,7 @@ import org.scribe.model.Token;
 import org.scribe.oauth.OAuthService;
 
 /**
- * Bitbucket10aApi
- * TODO it is staging for testing
+ * TwoLeggedOAuthBitbucket10aApi
  * 
  * <br />
  * <br />
@@ -17,12 +16,12 @@ import org.scribe.oauth.OAuthService;
  * @author jhocman@atlassian.com
  * 
  */
-public class Bitbucket10aApi extends DefaultApi10a
+public class TwoLeggedOAuthBitbucket10aApi extends DefaultApi10a
 {
 
 	private final String apiUrl;
 
-	public Bitbucket10aApi(String apiUrl)
+	public TwoLeggedOAuthBitbucket10aApi(String apiUrl)
 	{
 		this.apiUrl = apiUrl;
 	}

@@ -42,7 +42,7 @@ public class TwoLeggedOauthRemoteRequestor extends BaseRemoteRequestor
 		//
 		// generate oauth 1.0 params for 2LO - use scribe so far for that ...
 		//
-		OAuthService service = new ServiceBuilder().provider(new Bitbucket10aApi(apiUrl)).apiKey(key)
+		OAuthService service = new ServiceBuilder().provider(new TwoLeggedOAuthBitbucket10aApi(apiUrl)).apiKey(key)
 				.signatureType(SignatureType.Header).apiSecret(secret).build();
 		OAuthRequest request = new OAuthRequest(getScribeVerb(forMethod), finalUri);
 		service.signRequest(new EmptyToken(), request);
