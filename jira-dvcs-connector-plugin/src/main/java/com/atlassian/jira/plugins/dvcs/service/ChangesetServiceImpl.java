@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -97,8 +99,14 @@ public class ChangesetServiceImpl implements ChangesetService
     @Override
     public DvcsUser getUser(Repository repository, Changeset changeset)
     {
-        final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-        return communicator.getUser(repository, changeset.getAuthor());
+        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+        String username = changeset.getAuthor();
+        
+        if (StringUtils.isBlank(username))
+        {
+            return new DvcsUser(DvcsUser.UNKNOWN_USER.getUsername(), changeset.getRawAuthor(), DvcsUser.UNKNOWN_USER.getAvatar());
+        }
+        return communicator.getUser(repository, username);
     }
 
     @Override
