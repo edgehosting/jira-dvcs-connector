@@ -73,14 +73,16 @@ public class BaseRemoteRequestor implements RemoteRequestor
 	//--------------------------------------------------------------------------------------------------
 	// extension hooks
 	//--------------------------------------------------------------------------------------------------
-		
+	/**
+	 * E.g. append basic auth headers ... 
+	 */
 	protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method) throws IOException
 	{
 
 	}
 	
 	/**
-	 * E.g. append oauth params
+	 * E.g. append oauth params ...
 	 */
 	protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri)
 	{
