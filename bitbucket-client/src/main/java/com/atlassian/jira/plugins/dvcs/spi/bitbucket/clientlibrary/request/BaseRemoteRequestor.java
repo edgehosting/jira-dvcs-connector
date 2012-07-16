@@ -118,7 +118,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 		HttpURLConnection connection = null;
 		try
 		{
-			connection = createConnection(getOrDelete, uri + paramsToString(parameters, uri.indexOf("?") != -1));
+			connection = createConnection(getOrDelete, uri + paramsToString(parameters, uri.contains("?")));
 			return checkAndCreateRemoteResponse(connection);
 
 		} catch (Exception e)
@@ -158,9 +158,11 @@ public class BaseRemoteRequestor implements RemoteRequestor
 				Map.Entry<String, String> entry = iterator.next();
 				queryStringBuilder.append(encode(entry.getKey()));
 				queryStringBuilder.append("=");
-				queryStringBuilder.append(encode(String.valueOf(entry.getValue())));
+				queryStringBuilder.append(encode(entry.getValue()));
 				if (iterator.hasNext())
+                {
 					queryStringBuilder.append("&");
+                }
 			}
 		}
 		return queryStringBuilder.toString();
