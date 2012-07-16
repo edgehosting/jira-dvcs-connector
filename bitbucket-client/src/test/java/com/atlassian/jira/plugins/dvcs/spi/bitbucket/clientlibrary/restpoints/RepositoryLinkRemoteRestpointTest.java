@@ -9,7 +9,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.BitbucketClientException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
@@ -22,7 +21,6 @@ import static org.fest.assertions.api.Assertions.*;
  */
 public class RepositoryLinkRemoteRestpointTest
 {
-    private static final String BITBUCKET_URL           = "https://bitbucket.org";
     private static final String BITBUCKET_REPO_USERNAME = "jirabitbucketconnector";
     private static final String BITBUCKET_REPO_PASSWORD = "jirabitbucketconnector1";
     private static final String BITBUCKET_REPO_OWNER    = "jirabitbucketconnector";
@@ -41,7 +39,7 @@ public class RepositoryLinkRemoteRestpointTest
     public static void initializeRepositoryLinksREST()
     {
         BitbucketRemoteClient bitbucketRemoteClient =
-                new BitbucketRemoteClient(new BasicAuthAuthProvider(BITBUCKET_URL,
+                new BitbucketRemoteClient(new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
                                                                     BITBUCKET_REPO_USERNAME,
                                                                     BITBUCKET_REPO_PASSWORD));
         
@@ -49,7 +47,7 @@ public class RepositoryLinkRemoteRestpointTest
     }
     
     @AfterClass
-    public static void cleanupAddedRepositoryLinks() throws BitbucketClientException
+    public static void cleanupAddedRepositoryLinks()
     {
         for (Integer addedRepositoryLinkId : addedRepositoryLinksIds)
         {
@@ -59,13 +57,13 @@ public class RepositoryLinkRemoteRestpointTest
 
 
     @Test(timeout=5000)
-    public void gettingRepositoryLinks_ShouldNotThrowException() throws BitbucketClientException
+    public void gettingRepositoryLinks_ShouldNotThrowException()
     {
         repositoryLinkREST.getRepositoryLinks(BITBUCKET_REPO_OWNER, BITBUCKET_REPO_SLUG);
     }
 
     @Test(timeout=5000)
-    public void afterAddingRepositoryLink_ShouldBeAbleToQueryTheRepositoryLinkById() throws BitbucketClientException
+    public void afterAddingRepositoryLink_ShouldBeAbleToQueryTheRepositoryLinkById()
     {
         // needed because you cannot add repository link with the same KEY multiple times => 400 status code
         String repositoryLinkKey = BITBUCKET_REPO_LINK_KEY + new Random(System.currentTimeMillis()).nextInt();
@@ -86,7 +84,7 @@ public class RepositoryLinkRemoteRestpointTest
     }
     
     @Test(timeout=5000)
-    public void removingAlreadyAddedRepositoryLink_ShouldNotThrowException() throws BitbucketClientException
+    public void removingAlreadyAddedRepositoryLink_ShouldNotThrowException()
     {
         // needed because you cannot add repository link with the same KEY multiple times => 400 status code
         String repositoryLinkKey = BITBUCKET_REPO_LINK_KEY + new Random(System.currentTimeMillis()).nextInt();

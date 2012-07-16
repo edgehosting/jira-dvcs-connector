@@ -4,7 +4,6 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 import java.util.List;
 import java.util.Map;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.RepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
@@ -29,7 +28,7 @@ public class RepositoryLinkRemoteRestpoint
 	}
     
     
-    public List<RepositoryLink> getRepositoryLinks(String owner, String slug)
+    public List<BitbucketRepositoryLink> getRepositoryLinks(String owner, String slug)
     {
         String getRepositoryLinksUrl = String.format("/repositories/%s/%s/links", owner, slug);
         
