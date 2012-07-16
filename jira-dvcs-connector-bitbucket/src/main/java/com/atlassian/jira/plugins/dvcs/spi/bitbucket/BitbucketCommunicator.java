@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -67,6 +68,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
 	private final String pluginVersion;
 
+	private final BitbucketOAuth oauth;
+
 	/**
 	 * The Constructor.
 	 * 
@@ -76,11 +79,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	 *            the request helper
 	 */
 	public BitbucketCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper,
-			@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor)
+			@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor, BitbucketOAuth oauth)
 	{
 		this.authenticationFactory = authenticationFactory;
 		this.requestHelper = requestHelper;
 		this.bitbucketLinker = bitbucketLinker;
+		this.oauth = oauth;
 		pluginVersion = getPluginVersion(pluginAccessor);
 	}
 
@@ -98,16 +102,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		return BITBUCKET;
 	}
 
-	/**
-	 * Returns always <code>false</code> as we don't support OAuth for BB so far
-	 * ...
-	 * 
-	 * @return true, if checks if is oauth configured
-	 */
+	
 	@Override
 	public boolean isOauthConfigured()
 	{
-		return false;
+		return StringUtils.isNotBlank(oauth.getClientId())
+				&& StringUtils.isNotBlank(oauth.getClientSecret());
 	}
 
 	/**

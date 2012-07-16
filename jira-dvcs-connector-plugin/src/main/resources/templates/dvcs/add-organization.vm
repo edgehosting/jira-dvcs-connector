@@ -10,6 +10,7 @@
         
         var BASE_URL = "${baseurl}";
         var GH_REQUIRES_AUTH = "$!action.isGithubOauthRequired()";
+        var BB_REQUIRES_AUTH = "$!action.isBitbucketOauthRequired()";
         
 
         function init_repositories()
@@ -84,9 +85,8 @@
                       <div id="org-error" class="dvcs-error">This field is required.</div>
                     </div>
 				
-				## BB form section
-				<div id="bitbucket-form-section">
-	                <div class="field-group">
+				###### TMP while we havent functional BB oauth
+				<div class="field-group">
 	                   <label for="adminUsername">Admin Username:</label>
 	                   <input type="text" id="adminUsername" name="adminUsername" value="" onfocus="javascript: dvcsCopyOrganizationToUsername();"/>
 	                   <div id="admin-username-error" class="dvcs-error">This field is required.</div>
@@ -96,6 +96,22 @@
 	                   <input type="password" id="adminPassword" name="adminPassword" value=""/>
 	                   <div id="admin-password-error" class="dvcs-error">This field is required.</div>
 	                </div>
+	            ###### TMP
+	                
+				## BB form section
+				<div id="bitbucket-form-section" style="display:none">
+	                <input type="hidden" id="oauthBbRequired" name="oauthBbRequired" value="true" />
+                    <div class="field-group">
+	                   <label for="oauthClientId">OAuth Key:</label>
+	                   <input type="text" id="oauthClientId" name="oauthClientId" value=""/>
+	                   <div id="oauth-client-error" class="dvcs-error">This field is required.</div>
+	                   <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureBitbucketOAuth!default.jspa">find OAuth key and secret</a>?</div>
+	                </div>
+	                <div class="field-group">
+	                   <label for="oauthSecret">OAuth Secret:</label>
+	                   <input type="text" id="oauthSecret" name="oauthSecret" value=""/>
+	                   <div id="oauth-secret-error" class="dvcs-error">This field is required.</div>
+	                </div>
 	            </div>
 
 				## GH form section
@@ -103,13 +119,13 @@
 					<input type="hidden" id="oauthRequired" name="oauthRequired" value="true" />
                     <div class="field-group">
 	                   <label for="oauthClientId">OAuth Key:</label>
-	                   <input type="text" id="oauthClientId" name="oauthClientId" value=""/>
+	                   <input type="text" id="oauthBbClientId" name="oauthCBblientId" value=""/>
 	                   <div id="oauth-client-error" class="dvcs-error">This field is required.</div>
 	                   <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureGithubOAuth!default.jspa">find OAuth key and secret</a>?</div>
 	                </div>
 	                <div class="field-group">
 	                   <label for="oauthSecret">OAuth Secret:</label>
-	                   <input type="text" id="oauthSecret" name="oauthSecret" value=""/>
+	                   <input type="text" id="oauthBbSecret" name="oauthBbSecret" value=""/>
 	                   <div id="oauth-secret-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	            </div>
