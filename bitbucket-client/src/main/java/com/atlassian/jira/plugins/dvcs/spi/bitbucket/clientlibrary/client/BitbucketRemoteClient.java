@@ -30,6 +30,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Se
  */
 public class BitbucketRemoteClient
 {
+    public static final String BITBUCKET_URL = "https://bitbucket.org";
+    
+    
 	private final AuthProvider provider;
 	
 	public BitbucketRemoteClient(AuthProvider provider)
@@ -55,7 +58,7 @@ public class BitbucketRemoteClient
 	}
 	
 	public RepositoryLinkRemoteRestpoint getRepositoryLinksRest() {
-		return null;
+		return new RepositoryLinkRemoteRestpoint(provider.provideRequestor());
 	}
 
 	public AuthProvider getProvider()

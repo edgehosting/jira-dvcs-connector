@@ -198,7 +198,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	}
 
 	
-    public static String getApiUrl(String hostUrl)
+    private static String getApiUrl(String hostUrl)//TODO get rid of it...
 	{
 		return hostUrl + "/!api/1.0";
 	}

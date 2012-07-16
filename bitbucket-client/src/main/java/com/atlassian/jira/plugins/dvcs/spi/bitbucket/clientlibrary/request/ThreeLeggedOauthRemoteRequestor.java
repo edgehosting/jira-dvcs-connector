@@ -30,7 +30,7 @@ public class ThreeLeggedOauthRemoteRequestor extends BaseRemoteRequestor
 		Map<String, String> oauthParams = new HashMap<String, String>();
 		oauthParams.put("access_token", accessToken);
 		
-		return finalUri + paramsToString(oauthParams, finalUri.indexOf("?") != -1);
+		return finalUri + paramsToString(oauthParams, finalUri.contains("?"));
 	}
 }
 
