@@ -56,6 +56,7 @@ public class IssueKeyExtractorTest {
                 {"message~ABC-123~DEF-456~text",    new String[] {"ABC-123", "DEF-456"}}, // separated by tildas
                 
                 {"message without key",          new String[0]},
+                {"message ABC-A text",           new String[0]},
                 {"message M-123 invalid key",    new String[0]},
                 {"message MES- invalid key",     new String[0]},
                 {"message -123 invalid key",     new String[0]},
