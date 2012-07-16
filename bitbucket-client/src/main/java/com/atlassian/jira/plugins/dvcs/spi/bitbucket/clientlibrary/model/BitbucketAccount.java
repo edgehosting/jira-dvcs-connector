@@ -28,13 +28,13 @@ public class BitbucketAccount implements Serializable
     
 	private String username;
 	
-	private String first_name; 
+	private String firstName; 
 	
-	private String last_name;
+	private String lastName;
 	
 	private String avatar;
 	
-	private String resource_uri;
+	private String resourceUri;
 
 	public BitbucketAccount()
 	{
@@ -54,27 +54,27 @@ public class BitbucketAccount implements Serializable
 	}
 
 
-	public String getFirst_name()
+	public String getFirstName()
 	{
-		return first_name;
+		return firstName;
 	}
 
 
-	public void setFirst_name(String first_name)
+	public void setFirstName(String firstName)
 	{
-		this.first_name = first_name;
+		this.firstName = firstName;
 	}
 
 
-	public String getLast_name()
+	public String getLastName()
 	{
-		return last_name;
+		return lastName;
 	}
 
 
-	public void setLast_name(String last_name)
+	public void setLastName(String lastName)
 	{
-		this.last_name = last_name;
+		this.lastName = lastName;
 	}
 
 
@@ -90,15 +90,15 @@ public class BitbucketAccount implements Serializable
 	}
 
 
-	public String getResource_uri()
+	public String getResourceUri()
 	{
-		return resource_uri;
+		return resourceUri;
 	}
 
 
-	public void setResource_uri(String resource_uri)
+	public void setResource_uri(String resourceUri)
 	{
-		this.resource_uri = resource_uri;
+		this.resourceUri = resourceUri;
 	}
 }
 
