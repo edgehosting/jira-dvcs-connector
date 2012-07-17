@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Ch
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.GroupRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.SSHRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServicesRepositoryRemoteRestpoint;
 
 /**
@@ -42,25 +43,35 @@ public class BitbucketRemoteClient
 		this.provider = provider;
 	}
 	
-	public GroupRemoteRestpoint getGroupsRest() {
+	public GroupRemoteRestpoint getGroupsRest()
+    {
 		return new GroupRemoteRestpoint(provider.provideRequestor());
 	}
 	
-	public ChangesetRemoteRestpoint getChangesetsRest() {
+	public ChangesetRemoteRestpoint getChangesetsRest()
+    {
 		return new ChangesetRemoteRestpoint(provider.provideRequestor());
 	}
 	
-	public RepositoryRemoteRestpoint getRepositoriesRest() {
+	public RepositoryRemoteRestpoint getRepositoriesRest()
+    {
 		return new RepositoryRemoteRestpoint(provider.provideRequestor());
 	}
 	
-	public ServicesRepositoryRemoteRestpoint getServicesRest() {
+	public ServicesRepositoryRemoteRestpoint getServicesRest()
+    {
 		return new ServicesRepositoryRemoteRestpoint(provider.provideRequestor());
 	}
 	
-	public RepositoryLinkRemoteRestpoint getRepositoryLinksRest() {
+	public RepositoryLinkRemoteRestpoint getRepositoryLinksRest()
+    {
 		return new RepositoryLinkRemoteRestpoint(provider.provideRequestor());
 	}
+    
+    public SSHRemoteRestpoint getSSHRest()
+    {
+        return new SSHRemoteRestpoint(provider.provideRequestor());
+    }
     
     public AccountRemoteRestpoint getAccountRest()
     {
