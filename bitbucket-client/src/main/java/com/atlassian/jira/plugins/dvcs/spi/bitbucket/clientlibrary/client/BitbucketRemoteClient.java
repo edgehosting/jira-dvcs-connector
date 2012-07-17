@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.AccountRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ChangesetRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.GroupRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
@@ -60,6 +61,11 @@ public class BitbucketRemoteClient
 	public RepositoryLinkRemoteRestpoint getRepositoryLinksRest() {
 		return new RepositoryLinkRemoteRestpoint(provider.provideRequestor());
 	}
+    
+    public AccountRemoteRestpoint getAccountRest()
+    {
+        return new AccountRemoteRestpoint(provider.provideRequestor());
+    }
 
 	public AuthProvider getProvider()
 	{
