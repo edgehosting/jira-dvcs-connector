@@ -89,7 +89,7 @@ public class GithubCommunicatorTest
         
         assertThat(githubUser.getAvatar(), is("https://secure.gravatar.com/avatar/gravatarId?s=60"));
         assertThat(githubUser.getUsername(), is("Test GitHub user login"));
-        assertThat(githubUser.getLastName(), is("Test GitHub user name"));
+        assertThat(githubUser.getFullName(), is("Test GitHub user name"));
     }
 
     @Test
