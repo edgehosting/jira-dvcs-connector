@@ -1,20 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import net.java.ao.EntityStreamCallback;
-import net.java.ao.Query;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
@@ -28,6 +13,19 @@ import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
+import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ChangesetDaoImpl implements ChangesetDao
 {
@@ -103,7 +101,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 }
 
                 // add new
-                ChangesetMapping om;
+                ChangesetMapping chm;
 
                 final Map<String, Object> map = new HashMap<String, Object>();
                 map.put(ChangesetMapping.REPOSITORY_ID, changeset.getRepositoryId());
@@ -155,13 +153,12 @@ public class ChangesetDaoImpl implements ChangesetDao
 
                 map.put(ChangesetMapping.VERSION, ChangesetMapping.LATEST_VERSION);
 
-                om = activeObjects.create(ChangesetMapping.class, map);
+                chm = activeObjects.create(ChangesetMapping.class, map);
+                chm = activeObjects.find(ChangesetMapping.class, "ID = ?", chm.getID())[0];
 
-                return om;
+                return chm;
             }
         });
-        
-        activeObjects.flush(changesetMapping);
 
         return transform(changesetMapping);
         

@@ -1,8 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import net.java.ao.Entity;
+import net.java.ao.Preload;
 import net.java.ao.schema.Table;
 
+@Preload
 @Table("OrganizationMapping")
 public interface OrganizationMapping extends Entity
 {
@@ -16,7 +18,7 @@ public interface OrganizationMapping extends Entity
     public static final String ACCESS_TOKEN = "ACCESS_TOKEN";
     public static final String SMARTCOMMITS_FOR_NEW_REPOS = "SMARTCOMMITS_FOR_NEW_REPOS";
     public static final String DEFAULT_GROUPS_SLUGS = "DEFAULT_GROUPS_SLUGS"; // serialized, separated by ";"
-    
+
     String getHostUrl();
     String getName();
     String getDvcsType();
