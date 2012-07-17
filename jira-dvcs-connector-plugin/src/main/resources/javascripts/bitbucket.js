@@ -44,8 +44,20 @@ function switchDvcsDetailsInternal(dvcsType) {
 		// hide examples
 		AJS.$('#examples').hide();
 
-		//show username / password
-		AJS.$("#bitbucket-form-section").fadeIn();
+		if (BB_REQUIRES_AUTH == "true") {
+			
+			// we need oauth ...
+			
+			// hide examples
+			AJS.$('#examples').hide();
+			
+			AJS.$("#bitbucket-form-section").fadeIn();
+
+		} else {
+			
+			AJS.$("#oauthBbRequired").val("");
+
+		}
 		
 
 	} else if (dvcsType == 1) {

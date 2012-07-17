@@ -23,6 +23,7 @@ public class DefaultAuthenticationFactory implements AuthenticationFactory
 	public Authentication getAuthentication(Repository repository)
 	{
 		Credential credential = repository.getCredential();
+
 		// oAuth
 		if (StringUtils.isNotBlank(credential.getAccessToken()))
 		{

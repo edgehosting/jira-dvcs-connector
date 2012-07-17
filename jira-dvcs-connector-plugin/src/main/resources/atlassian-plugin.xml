@@ -155,6 +155,12 @@
         <description>githubOAuth</description>
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth</interface>
     </component>
+    
+       <component key="bitbucketOAuth" name="bitbucketOAuth"
+               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketOAuth">
+        <description>bitbucketOAuth</description>
+        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth</interface>
+    </component>
 
     <component key="organizationDao" name="organizationDao"
                class="com.atlassian.jira.plugins.dvcs.dao.impl.OrganizationDaoImpl">
@@ -202,7 +208,7 @@
     <component key="githubOauthUtils" class="com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils">
     	<description>Utils used i.e. to build GH redirect URLs etc.</description>
     </component>
-    
+
     <component key="webFragmentRenderer" name="webFragmentRenderer"
                class="com.atlassian.jira.plugins.dvcs.webfragments.DefaultWebfragmentRenderer">
         <interface>com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer</interface>
@@ -278,6 +284,10 @@
                     alias="ConfigureDefaultBitbucketGroups" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
+            
+            <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.ConfigureBitbucketOAuth" alias="ConfigureBitbucketOAuth">
+                <view name="input">/templates/dvcs/configure-bitbucket-oauth.vm</view>
+            </action>
 			
         </actions>
     </webwork1>
@@ -296,6 +306,14 @@
         <label>GitHub OAuth Settings</label>
         <name>GitHub Name Item</name>
         <link>/secure/admin/ConfigureGithubOAuth!default.jspa</link>
+        <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
+    </web-item>
+    
+        <web-item key="bitbucket_oauth" name="Bitbucket OAuth" section="admin_plugins_menu/source_control" weight="10">
+        <description>Static link to bitbucket.com.</description>
+        <label>Bitbucket OAuth Settings</label>
+        <name>Bitbucket Name Item</name>
+        <link>/secure/admin/ConfigureBitbucketOAuth!default.jspa</link>
         <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
     </web-item>
 

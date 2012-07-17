@@ -1,10 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.bitbucket;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +13,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
@@ -30,10 +26,10 @@ import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory;
 import com.atlassian.jira.plugins.dvcs.net.RequestHelper;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.sal.api.net.Request;
-import com.atlassian.sal.api.net.Request.MethodType;
 import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.ResponseException;
 
@@ -67,6 +63,10 @@ public class BitbucketCommunicatorTest
 	
 	@Mock
 	private PluginAccessor pluginAccessor;
+	
+	@Mock
+	private BitbucketOAuth oauth;
+
 
 	// tested object
 	private DvcsCommunicator communicator;
@@ -83,7 +83,7 @@ public class BitbucketCommunicatorTest
 		MockitoAnnotations.initMocks(this);
 		
         communicator = new BitbucketCommunicator(authenticationFactory, requestHelper,
-                bitbucketLinker, pluginAccessor)
+                bitbucketLinker, pluginAccessor, oauth)
         {
             @Override
             protected String getPluginVersion(PluginAccessor pluginAccessor)
