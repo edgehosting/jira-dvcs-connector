@@ -217,6 +217,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 							map.put(OrganizationMapping.AUTO_INVITE_NEW_USERS, organization.isAutoInviteNewUsers());
 
 							om = activeObjects.create(OrganizationMapping.class, map);
+                            om = activeObjects.find(OrganizationMapping.class, "ID = ?", om.getID())[0];
 						} else
 						{
 							om = activeObjects.get(OrganizationMapping.class, organization.getId());
@@ -236,8 +237,6 @@ public class OrganizationDaoImpl implements OrganizationDao
 						return om;
 					}
 				});
-
-		activeObjects.flush(organizationMapping);
 
 		return transform(organizationMapping);
 	}

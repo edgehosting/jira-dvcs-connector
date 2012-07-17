@@ -100,7 +100,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 }
 
                 // add new
-                ChangesetMapping om;
+                ChangesetMapping chm;
 
                 final Map<String, Object> map = new HashMap<String, Object>();
                 map.put(ChangesetMapping.REPOSITORY_ID, changeset.getRepositoryId());
@@ -147,13 +147,12 @@ public class ChangesetDaoImpl implements ChangesetDao
 
                 map.put(ChangesetMapping.VERSION, ChangesetMapping.LATEST_VERSION);
 
-                om = activeObjects.create(ChangesetMapping.class, map);
+                chm = activeObjects.create(ChangesetMapping.class, map);
+                chm = activeObjects.find(ChangesetMapping.class, "ID = ?", chm.getID())[0];
 
-                return om;
+                return chm;
             }
         });
-        
-        activeObjects.flush(changesetMapping);
 
         return transform(changesetMapping);
         
