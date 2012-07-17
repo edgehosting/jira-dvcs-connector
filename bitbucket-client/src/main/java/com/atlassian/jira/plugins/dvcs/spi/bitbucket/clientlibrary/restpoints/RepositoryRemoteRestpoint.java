@@ -32,9 +32,9 @@ public class RepositoryRemoteRestpoint
 		this.requestor = requestor;
 	}
 	
-	public List<BitbucketRepository> getAllRepositories(String forAccount)
+	public List<BitbucketRepository> getAllRepositories(String owner)
     {
-		String getAllRepositoriesUrl = String.format("/users/%s", forAccount);
+		String getAllRepositoriesUrl = String.format("/users/%s", owner);
         
 		RemoteResponse response = requestor.get(getAllRepositoriesUrl, null);
 
