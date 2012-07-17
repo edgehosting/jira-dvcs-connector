@@ -21,6 +21,7 @@ public class ClientUtils
 	{
 		GsonBuilder builder = new GsonBuilder();
 		builder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
+        builder.setDateFormat("yyyy-MM-DD HH:mm:ss"); // to parse 2011-12-21 15:17:37
 		return builder.create();
 	}
 
