@@ -17,36 +17,35 @@ public class ClientUtils
 	
 	public static final String UTF8 = "UTF-8";
 
-	private static final Gson createGson()
+	private static Gson createGson()
 	{
 		GsonBuilder builder = new GsonBuilder();
 		builder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
 		return builder.create();
 	}
 
-	public static final String toJson(Object object)
+	public static String toJson(Object object)
 	{
 		return GSON.toJson(object);
 	}
 
-	public static final <V> V fromJson(String json, Class<V> type)
+	public static <T> T fromJson(String json, Class<T> type)
 	{
 		return GSON.fromJson(json, type);
 	}
+    
+    public static <T> T fromJson(InputStream json, Class<T> type)
+    {
+        return GSON.fromJson(new BufferedReader(new InputStreamReader(json)), type);
+    }
 	
-	public static final <V> V fromJson(InputStream json, Type type)
+	public static <T> T fromJson(InputStream json, Type type)
 	{
 		try
 		{
-		
 			return GSON.fromJson(new BufferedReader(new InputStreamReader(json, UTF8)), type);
-		
 		} catch (Exception e) {
-			
 			throw new BitbucketRequestException("Cannot parse input stream.", e);
-
 		}
-		
 	}
-
 }
