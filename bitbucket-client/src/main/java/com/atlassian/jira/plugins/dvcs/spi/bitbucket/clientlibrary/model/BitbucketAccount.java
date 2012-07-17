@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 import java.io.Serializable;
 
 /**
- * BitbucketAccount
+ * BitbucketAccount represents both Bitbucket user and team.
  *
  * <pre>
  *      {
