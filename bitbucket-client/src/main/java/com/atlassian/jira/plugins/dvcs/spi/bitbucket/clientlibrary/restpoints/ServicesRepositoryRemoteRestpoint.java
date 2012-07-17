@@ -31,5 +31,12 @@ public class ServicesRepositoryRemoteRestpoint
         
         return ClientUtils.fromJson(response.getResponse(), BitbucketService.class);
     }
+    
+    public void deleteService(String owner, String slug, String serviceId)
+    {
+        String deleteServiceUrl = String.format("/repositories/%s/%s/services/%s", owner, slug, serviceId);
+        
+        requestor.delete(deleteServiceUrl);
+    }
 }
 
