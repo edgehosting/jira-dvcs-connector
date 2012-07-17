@@ -43,7 +43,7 @@ public class BitbucketRemoteClient
 	}
 	
 	public GroupRemoteRestpoint getGroupsRest() {
-		return null;
+		return new GroupRemoteRestpoint(provider.provideRequestor());
 	}
 	
 	public ChangesetRemoteRestpoint getChangesetsRest() {
