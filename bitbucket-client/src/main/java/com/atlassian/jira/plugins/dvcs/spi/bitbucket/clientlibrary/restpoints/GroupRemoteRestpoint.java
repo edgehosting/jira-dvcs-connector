@@ -26,6 +26,12 @@ public class GroupRemoteRestpoint
 	}
     
     
+    /**
+     * <b>Requires authorization.</b>
+     * 
+     * @param owner
+     * @return 
+     */
     public BitbucketGroup getGroup(String owner)
     {
         String getGroupUrl = String.format("/groups/%s", owner);
