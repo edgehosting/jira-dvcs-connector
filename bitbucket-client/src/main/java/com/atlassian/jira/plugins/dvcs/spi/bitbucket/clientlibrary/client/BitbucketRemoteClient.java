@@ -46,15 +46,15 @@ public class BitbucketRemoteClient
 	}
 	
 	public ChangesetRemoteRestpoint getChangesetsRest() {
-		return null;
+		return new ChangesetRemoteRestpoint(provider.provideRequestor());
 	}
 	
 	public RepositoryRemoteRestpoint getRepositoriesRest() {
-		return new RepositoryRemoteRestpoint (provider.provideRequestor());
+		return new RepositoryRemoteRestpoint(provider.provideRequestor());
 	}
 	
 	public ServicesRepositoryRemoteRestpoint getServicesRest() {
-		return null;
+		return new ServicesRepositoryRemoteRestpoint(provider.provideRequestor());
 	}
 	
 	public RepositoryLinkRemoteRestpoint getRepositoryLinksRest() {
