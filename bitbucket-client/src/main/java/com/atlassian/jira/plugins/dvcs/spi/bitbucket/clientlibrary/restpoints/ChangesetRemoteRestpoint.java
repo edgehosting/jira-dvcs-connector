@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
@@ -44,12 +46,14 @@ public class ChangesetRemoteRestpoint
     public List<BitbucketChangesetWithDiffstat> getChangesetDiffStat(String owner, String slug, String node, int limit)
     {
         String getChangesetDiffStatUrl = String.format("/repositories/%s/%s/changesets/%s/diffstat", owner, slug, node);
+        
+        Map<String, String> parameters = null;
         if (limit != DIFFSTAT_NO_LIMIT)
         {
-            getChangesetDiffStatUrl += ("?limit=" + limit);
+            parameters = Collections.singletonMap("limit", "" + limit);
         }
         
-        RemoteResponse response = requestor.get(getChangesetDiffStatUrl, null);
+        RemoteResponse response = requestor.get(getChangesetDiffStatUrl, parameters);
         
         return ClientUtils.fromJson(response.getResponse(),
                                     new TypeToken<List<BitbucketChangesetWithDiffstat>>(){}.getType());
