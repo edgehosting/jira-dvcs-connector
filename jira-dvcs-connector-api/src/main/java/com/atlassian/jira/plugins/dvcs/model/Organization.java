@@ -29,9 +29,11 @@ public class Organization
     private String defaultGroupsSlugsSerialized;
     
     private transient Credential credential;
-    // 1/ default groups - when configuring default groups
+    
+    // 2/ invitation groups - when adding new user as information holder for rendering form extension
     private transient List<Group> groups;
-    //2/ invitation groups - when adding new user as information holder for rendering form extension
+    
+    // 1/ default groups - when configuring default groups
     private transient List<Group> defaultGroupsSlugs;
  
     public Organization()
