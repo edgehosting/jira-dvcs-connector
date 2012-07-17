@@ -37,7 +37,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     {
 		this.projectManager = projectManager;
 		this.encryptor = encryptor;
-        this.baseUrl = applicationProperties.getBaseUrl();
+        baseUrl = applicationProperties.getBaseUrl();
     }
 
     @Override
