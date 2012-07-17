@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.List;
 
@@ -91,65 +93,34 @@ public class RepositoryLinksService
         return (RepositoryLink) bitbucketClient.post(resourceUrl, params, type);
     }
 
-
-    public static void main(String[] args) throws BitbucketClientException
+    public RepositoryLink addCustomRepositoryLink(String owner, String slug, String url) throws BitbucketClientException
     {
-        BitbucketClient bitbucketClient = new BitbucketClient("https://bitbucket.org/!api/1.0");
-        bitbucketClient.setAuthorisation("dusanhornik", "macicka");
-        RepositoryLinksService repositoryLinksService = new RepositoryLinksService(bitbucketClient);
+        
+    	Type type = new TypeToken<RepositoryLink>(){}.getType();
+    
+        String resourceUrl = "/repositories/" + owner + "/" + slug + "/links";
 
-        // list
-        List<RepositoryLink> repositoryLinks = repositoryLinksService.getRepositoryLinks("dusanhornik", "jira-bitbucket-connector");
-        System.out.println(repositoryLinks);
-
-        //add
-        RepositoryLink link1 = repositoryLinksService.addRepositoryLink("dusanhornik", "jira-bitbucket-connector", "jira", "http://localhost:1234/jira", "BBC");
-//        System.out.println(link1);
-
-        //add
-        RepositoryLink link2 = repositoryLinksService.addRepositoryLink("dusanhornik", "jira-bitbucket-connector", "jira", "http://localhost:1234/jira", "ABC");
-//        System.out.println(link2);
-
-        //list
-        repositoryLinks = repositoryLinksService.getRepositoryLinks("dusanhornik", "jira-bitbucket-connector");
-        System.out.println(repositoryLinks);
-
-        //remove
-        repositoryLinksService.removeRepositoryLink("dusanhornik", "jira-bitbucket-connector", link1.getId());
-
-        //list
-        repositoryLinks = repositoryLinksService.getRepositoryLinks("dusanhornik", "jira-bitbucket-connector");
-        System.out.println(repositoryLinks);
-
-        //remove
-        repositoryLinksService.removeRepositoryLink("dusanhornik", "jira-bitbucket-connector", link2.getId());
-
-        //list
-        repositoryLinks = repositoryLinksService.getRepositoryLinks("dusanhornik", "jira-bitbucket-connector");
-        System.out.println(repositoryLinks);
-
-//        long start = System.currentTimeMillis();
-//        List<RepositoryLink> links = Lists.newArrayList();
-//        for (int i = 0; i < 100; i++)
-//        {
-//            RepositoryLink link = repositoryLinksService.addRepositoryLink("dusanhornik", "jira-bitbucket-connector", "jira", "http://localhost:1234/jira", "ABC"+i);
-//            links.add(link);
-//        }
-//        System.out.println((System.currentTimeMillis()-start)/1000);
-//
-//        //list
-//        repositoryLinks = repositoryLinksService.getRepositoryLinks("dusanhornik", "jira-bitbucket-connector");
-//        System.out.println(repositoryLinks);
-//
-//        start = System.currentTimeMillis();
-//        for (RepositoryLink repositoryLink : links)
-//        {
-//            repositoryLinksService.removeRepositoryLink("dusanhornik", "jira-bitbucket-connector", repositoryLink.id);
-//        }
-//        System.out.println((System.currentTimeMillis()-start)/1000);
-//        //list
-//        repositoryLinks = repositoryLinksService.getRepositoryLinks("dusanhornik", "jira-bitbucket-connector");
-//        System.out.println(repositoryLinks);
-
+        List<String> params = Lists.newArrayList();
+        params.add("handler=custom");
+        params.add("link_url=" + normalize(url) + "\\1");
+        try
+		{
+			params.add("link_key=" + URLEncoder.encode("(?<!\\w)([A-Z|a-z]{2,}-\\d+)(?!\\w)", "UTF-8"));
+		} catch (UnsupportedEncodingException e)
+		{
+			// nop
+		}
+        
+        return (RepositoryLink) bitbucketClient.post(resourceUrl, params, type);
     }
+
+    private String normalize(String url)
+	{
+		if (url.endsWith("/")) {
+			return url + "browse/";
+		}
+
+		return url + "/browse/";
+	}
+    
 }
