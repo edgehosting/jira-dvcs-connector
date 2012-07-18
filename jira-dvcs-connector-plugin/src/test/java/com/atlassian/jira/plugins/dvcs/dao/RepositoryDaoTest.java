@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 import java.util.Date;
 import java.util.Map;
@@ -9,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -43,11 +43,6 @@ public class RepositoryDaoTest
 	// tested object
 	private RepositoryDao repositoryDao;
 
-	public RepositoryDaoTest()
-	{
-		super();
-	}
-
 	@Before
 	public void setup()
 	{
@@ -60,9 +55,9 @@ public class RepositoryDaoTest
 	{
 
 		Repository sampleRepository = createSampleRepository();
-		Mockito.when(activeObjects.get(Mockito.eq(OrganizationMapping.class), Mockito.eq(1))).thenReturn(
+		when(activeObjects.get(eq(OrganizationMapping.class), eq(1))).thenReturn(
 				organizationMapping);
-		Mockito.when(activeObjects.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(
+		when(activeObjects.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(
 				new Answer<Object>()
 				{
 					@SuppressWarnings("rawtypes")
@@ -72,13 +67,15 @@ public class RepositoryDaoTest
 						return ((TransactionCallback) invocationOnMock.getArguments()[0]).doInTransaction();
 					}
 				});
-		Mockito.when(activeObjects.create(Mockito.eq(RepositoryMapping.class), Mockito.isA(Map.class))).thenReturn(
-				repositoryMapping);
+		when(activeObjects.create(eq(RepositoryMapping.class), isA(Map.class))).thenReturn(
+		        repositoryMapping);
+		when(activeObjects.find(eq(RepositoryMapping.class), anyString(), any())).thenReturn(
+				new RepositoryMapping[]{repositoryMapping});
 
 		repositoryDao.save(sampleRepository);
 
-		Mockito.verify(activeObjects).create(Mockito.eq(RepositoryMapping.class),
-				Mockito.argThat(new ArgumentMatcher<Map<String, Object>>()
+		verify(activeObjects).create(eq(RepositoryMapping.class),
+				argThat(new ArgumentMatcher<Map<String, Object>>()
 				{
 					@Override
 					public boolean matches(Object argument)
@@ -102,11 +99,11 @@ public class RepositoryDaoTest
 		Repository sampleRepository = createSampleRepository();
 		sampleRepository.setId(85);
 
-		Mockito.when(activeObjects.get(Mockito.eq(RepositoryMapping.class), Mockito.eq(85))).thenReturn(
+		when(activeObjects.get(eq(RepositoryMapping.class), eq(85))).thenReturn(
 				repositoryMapping);
-		Mockito.when(activeObjects.get(Mockito.eq(OrganizationMapping.class), Mockito.eq(1))).thenReturn(
+		when(activeObjects.get(eq(OrganizationMapping.class), eq(1))).thenReturn(
 				organizationMapping);
-		Mockito.when(activeObjects.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(
+		when(activeObjects.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(
 				new Answer<Object>()
 				{
 					@SuppressWarnings("rawtypes")
@@ -116,18 +113,18 @@ public class RepositoryDaoTest
 						return ((TransactionCallback) invocationOnMock.getArguments()[0]).doInTransaction();
 					}
 				});
-		Mockito.when(activeObjects.create(Mockito.eq(RepositoryMapping.class), Mockito.isA(Map.class))).thenReturn(
+		when(activeObjects.create(eq(RepositoryMapping.class), isA(Map.class))).thenReturn(
 				repositoryMapping);
 
 		repositoryDao.save(sampleRepository);
 
-		Mockito.verify(repositoryMapping).setSlug(Mockito.eq("doesnotmatter-repo"));
-		Mockito.verify(repositoryMapping).setName(Mockito.eq("doesnotmatter_repo"));
-		Mockito.verify(repositoryMapping).setLastCommitDate(Mockito.eq(SAMPLE_DATE));
-		Mockito.verify(repositoryMapping).setLinked(Mockito.eq(true));
-		Mockito.verify(repositoryMapping).setDeleted(Mockito.eq(true));
+		verify(repositoryMapping).setSlug(eq("doesnotmatter-repo"));
+		verify(repositoryMapping).setName(eq("doesnotmatter_repo"));
+		verify(repositoryMapping).setLastCommitDate(eq(SAMPLE_DATE));
+		verify(repositoryMapping).setLinked(eq(true));
+		verify(repositoryMapping).setDeleted(eq(true));
 
-		Mockito.verify(repositoryMapping).save();
+		verify(repositoryMapping).save();
 	}
 
 	private Repository createSampleRepository()
