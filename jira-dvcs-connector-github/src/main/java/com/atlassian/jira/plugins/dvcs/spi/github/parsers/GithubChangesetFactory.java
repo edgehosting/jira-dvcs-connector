@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.User;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -43,11 +44,11 @@ public class GithubChangesetFactory
             date = repositoryCommit.getCommit().getAuthor().getDate();
         }
 
-        String login = "";
-        if (repositoryCommit.getAuthor() != null
-                && StringUtils.isNotBlank(repositoryCommit.getAuthor().getLogin()))
+        // try to get login from Author, if there is no Author try from Commiter
+        String login = getUserLogin(repositoryCommit.getAuthor());
+        if (StringUtils.isBlank(login))
         {
-            login = repositoryCommit.getAuthor().getLogin();
+            login = getUserLogin(repositoryCommit.getCommitter());
         }
 
         return new Changeset(
@@ -65,6 +66,15 @@ public class GithubChangesetFactory
                 changesetFiles.size()
         );
         
+    }
+
+    private static String getUserLogin(User user)
+    {
+        if (user!=null && user.getLogin()!=null)
+        {
+            return user.getLogin();
+        }
+        return "";
     }
 
     private static List<ChangesetFile> transformFiles(List<CommitFile> files)
