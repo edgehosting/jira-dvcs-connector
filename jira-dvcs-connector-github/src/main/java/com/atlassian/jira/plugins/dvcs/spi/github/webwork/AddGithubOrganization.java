@@ -109,7 +109,11 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 		{
 			addErrorMessage(sce.getMessage());
 			return INPUT;
-		}
+		
+		} catch (Exception e) {
+		    addErrorMessage("Error obtain access token.");
+            return INPUT;
+        }
 
 		return doAddOrganization();
 	}

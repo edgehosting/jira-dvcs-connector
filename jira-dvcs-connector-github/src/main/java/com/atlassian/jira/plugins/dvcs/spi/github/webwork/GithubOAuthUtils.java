@@ -1,18 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
-import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
-import com.atlassian.sal.api.ApplicationProperties;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
+import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.sal.api.ApplicationProperties;
 
 public class GithubOAuthUtils {
 
@@ -88,10 +89,12 @@ public class GithubOAuthUtils {
 			rd.close();
 
 		} catch (MalformedURLException e) {
-			log.error("Error obtain access token", e);
+			log.error("Error obtain access token.", e);
+			throw new SourceControlException("Error obtain access token.");
 
 		} catch (Exception e) {
-			log.error("Error obtain access token", e);
+			log.error("Error obtain access token. Please check your credentials.", e);
+			throw new SourceControlException("Error obtain access token. Please check your credentials.");
 		}
 
 		if (result.startsWith("error=")) {
