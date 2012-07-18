@@ -1,12 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -18,6 +11,12 @@ import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.net.ResponseException;
 import com.google.common.collect.Maps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class RepositoryServiceImpl implements RepositoryService
 {
@@ -166,6 +165,7 @@ public class RepositoryServiceImpl implements RepositoryService
 				localRepo.setName(remoteRepo.getName());
 				localRepo.setDeleted(false); // it could be deleted before and
 											 // now will be revived
+                log.debug("Undelete repository [{}]", localRepo);
 				repositoryDao.save(localRepo);
 			}
         }
@@ -249,6 +249,7 @@ public class RepositoryServiceImpl implements RepositoryService
 
 			addOrRemovePostcommitHook(repository);
 
+            log.debug("Enable repository [{}]", repository);
 			repositoryDao.save(repository);
 		}
 	}

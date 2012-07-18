@@ -38,6 +38,12 @@ public class RepositoryDaoImpl implements RepositoryDao
 
 	protected Repository transform(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
 	{
+        if (repositoryMapping == null || organizationMapping == null)
+        {
+            return null;
+        }
+
+        log.debug("Repository transformation: [{}] ", repositoryMapping);
 
 		Credential credential = new Credential(organizationMapping.getAdminUsername(),
 				organizationMapping.getAdminPassword(), organizationMapping.getAccessToken());
