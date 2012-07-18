@@ -51,6 +51,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
         if (!ObjectUtils.equals(lastCommitDate, repository.getLastCommitDate()))
         {
+            log.debug("Last commit date has been changed. Save repository: [{}]", repository);
             repositoryService.save(repository);
         }
     }
@@ -133,6 +134,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                         	markChangesetForSmartCommit(changesetForSave);
                         }
                         //--------------------------------------------
+                        log.debug("Save changeset [{}]", changesetForSave);
                         changesetService.save(changesetForSave);
                     } catch (SourceControlException e)
                     {
