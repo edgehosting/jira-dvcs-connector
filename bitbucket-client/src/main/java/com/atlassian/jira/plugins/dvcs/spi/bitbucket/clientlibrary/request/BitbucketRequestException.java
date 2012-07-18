@@ -35,5 +35,13 @@ public class BitbucketRequestException extends RuntimeException
 		super(message, cause);
 	}
 
+    
+    public static final class Unauthorized extends BitbucketRequestException
+    {
+    }
+    
+    public static final class NotFound extends BitbucketRequestException
+    {
+    }
 }
 

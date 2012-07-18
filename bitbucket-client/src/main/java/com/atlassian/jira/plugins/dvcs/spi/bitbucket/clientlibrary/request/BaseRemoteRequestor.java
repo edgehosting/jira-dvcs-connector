@@ -25,6 +25,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Client
  */
 public class BaseRemoteRequestor implements RemoteRequestor
 {
+    private static final short HTTP_STATUS_CODE_UNAUTHORIZED = 401;
+    private static final short HTTP_STATUS_CODE_NOT_FOUND    = 404;
+    
 
 	protected final String apiUrl;
 
@@ -106,7 +109,10 @@ public class BaseRemoteRequestor implements RemoteRequestor
 			}
 			return checkAndCreateRemoteResponse(connection);
 			
-		} catch (Exception e)
+		} catch (BitbucketRequestException e)
+        {
+            throw e; // Unauthorized or NotFound exceptions will be rethrown
+        }catch (Exception e)
 		{
 			// TODO log + message
 			throw new BitbucketRequestException("Failed to execute request " + connection, e);
@@ -132,9 +138,20 @@ public class BaseRemoteRequestor implements RemoteRequestor
 	{
 		RemoteResponse response = new RemoteResponse();
 		
-		if (connection.getResponseCode() >= 400) {
-			throw new BitbucketRequestException("Error response code during the request : " + connection.getResponseCode());
-		}
+        if (connection.getResponseCode() >= 400)
+        {
+            switch (connection.getResponseCode())
+            {
+                case HTTP_STATUS_CODE_UNAUTHORIZED:
+                    throw new BitbucketRequestException.Unauthorized();
+
+                case HTTP_STATUS_CODE_NOT_FOUND:
+                    throw new BitbucketRequestException.NotFound();
+
+                default:
+                    throw new BitbucketRequestException("Error response code during the request : " + connection.getResponseCode());
+            }
+        }
 		
 		response.setHttpStatusCode(connection.getResponseCode());
 		response.setResponse(connection.getInputStream());
