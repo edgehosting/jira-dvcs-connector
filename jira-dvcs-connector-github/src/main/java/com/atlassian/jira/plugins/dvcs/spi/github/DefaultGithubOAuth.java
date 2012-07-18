@@ -1,7 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import org.apache.commons.lang.StringUtils;
+
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 public class DefaultGithubOAuth implements GithubOAuth
 {
@@ -15,8 +16,13 @@ public class DefaultGithubOAuth implements GithubOAuth
     @Override
     public void setClient(String clientID, String clientSecret)
     {
-        pluginSettingsFactory.createGlobalSettings().put("githubRepositoryClientID", clientID);
-        pluginSettingsFactory.createGlobalSettings().put("githubRepositoryClientSecret", clientSecret);
+        pluginSettingsFactory.createGlobalSettings().put("githubRepositoryClientID", trim(clientID));
+        pluginSettingsFactory.createGlobalSettings().put("githubRepositoryClientSecret", trim(clientSecret));
+    }
+
+    private String trim(String string)
+    {
+        return string != null ? string.trim() : string;
     }
 
     @Override
