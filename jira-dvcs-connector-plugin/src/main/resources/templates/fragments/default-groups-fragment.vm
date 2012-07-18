@@ -2,7 +2,7 @@
 
 			 		<thead>
 				 		<tr>
-				 			<th>When adding new users, invite the user to join the following Bitbucket groups by default:</th>
+				 			<th>When adding new users to JIRA, by default invite the user to join the following Bitbucket groups:</th>
 				 		</tr>
 			 		</thead>
 			 		

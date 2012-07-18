@@ -244,9 +244,9 @@
 			        <tr>
                         <th>Enabled</th>
 			            <th>Repository</th>
-			            <th style="text-align: right;">Last Commit</th>   ## last commit
+			            <th style="text-align: right; white-space: nowrap;" >Last Commit</th>   ## last commit
 			            <th class="dvcs-centered">Sync Repo</th>   ## sync repo
-						<th class="dvcs-smartcommits-head">Smart Commits</th>
+						<th class="dvcs-smartcommits-head" style="white-space: nowrap;">Smart Commits</th>
 			        </tr>
 			    </thead>
 			    <tbody>
@@ -358,7 +358,7 @@
 
 #macro (printConfigureDefaultGroupsFormHidden)
 	
-	<div class="update-credentials" style="display:none">
+	<div style="display:none">
 	
 		<form id="configureDefaultGroupsForm" class="aui" method="post" action="$baseurl/secure/admin/ConfigureDefaultBitbucketGroups.jspa" >
 		

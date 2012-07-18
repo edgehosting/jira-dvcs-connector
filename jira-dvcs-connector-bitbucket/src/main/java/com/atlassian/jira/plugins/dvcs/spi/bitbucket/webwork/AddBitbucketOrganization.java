@@ -20,6 +20,8 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 	private static final long serialVersionUID = 4366205447417138381L;
 
 	private final Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
+	
+	public static final String DEFAULT_INVITATION_GROUP = "developers";
 
 	private String url;
 	private String organization;
@@ -46,6 +48,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 			newOrganization.setCredential(new Credential(adminUsername, adminPassword, null));
 			newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
 			newOrganization.setSmartcommitsOnNewRepos(true);
+			newOrganization.setDefaultGroupsSlugsSerialized(DEFAULT_INVITATION_GROUP);
 
             organizationService.save(newOrganization);
 

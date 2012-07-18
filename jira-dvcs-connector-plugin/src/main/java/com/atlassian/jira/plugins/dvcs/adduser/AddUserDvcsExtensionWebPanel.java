@@ -1,10 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.adduser;
 
-import java.io.IOException;
 import java.io.StringWriter;
-import java.io.Writer;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -15,122 +16,154 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.plugin.web.model.WebPanel;
+import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.web.model.AbstractWebPanel;
+import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
+import com.opensymphony.util.TextUtils;
 
 /**
- * This panel extends user-add form in JIRA. It appends
- * configured bitbucket accounts with theirs groups so administrator
- * can choose to which goups should be currently added user invited.
- *
+ * This panel extends user-add form in JIRA. It appends configured bitbucket
+ * accounts with theirs groups so administrator can choose to which goups should
+ * be currently added user invited.
+ * 
  * Error during rendering this panel has no effect to final add-user form.
  * 
- * <br /><br />
- * Created on 21.6.2012, 15:40:43
- * <br /><br />
+ * <br />
+ * <br />
+ * Created on 21.6.2012, 15:40:43 <br />
+ * <br />
+ * 
  * @author jhocman@atlassian.com
- *
+ * 
  */
-public class AddUserDvcsExtensionWebPanel implements WebPanel
+public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
 {
 
-	/** The Constant log. */
-	private static final Logger log = LoggerFactory.getLogger(AddUserDvcsExtensionWebPanel.class);
+    /** The Constant log. */
+    private static final Logger log = LoggerFactory.getLogger(AddUserDvcsExtensionWebPanel.class);
 
-	/** The template renderer. */
-	private final TemplateRenderer templateRenderer;
+    /** The template renderer. */
+    private final TemplateRenderer templateRenderer;
 
-	/** The organization service. */
-	private final OrganizationService organizationService;
+    /** The organization service. */
+    private final OrganizationService organizationService;
 
-	/** The communicator provider. */
-	private final DvcsCommunicatorProvider communicatorProvider;
+    /** The communicator provider. */
+    private final DvcsCommunicatorProvider communicatorProvider;
 
-	/**
-	 * Instantiates a new adds the user dvcs extension web panel.
-	 *
-	 * @param templateRenderer the template renderer
-	 * @param organizationService the organization service
-	 * @param communicatorProvider the communicator provider
-	 */
-	public AddUserDvcsExtensionWebPanel(TemplateRenderer templateRenderer, OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider)
-	{
-		this.templateRenderer = templateRenderer;
-		this.organizationService = organizationService;
-		this.communicatorProvider = communicatorProvider;
-	}
+    private final ApplicationProperties appProperties;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String getHtml(Map<String, Object> model)
-	{
+    /**
+     * Instantiates a new adds the user dvcs extension web panel.
+     * 
+     * @param templateRenderer
+     *            the template renderer
+     * @param organizationService
+     *            the organization service
+     * @param communicatorProvider
+     *            the communicator provider
+     */
+    public AddUserDvcsExtensionWebPanel(PluginAccessor pluginAccessor, OrganizationService organizationService,
+            DvcsCommunicatorProvider communicatorProvider, TemplateRenderer templateRenderer,
+            ApplicationProperties appProperties)
+    {
+        super(pluginAccessor);
+        this.organizationService = organizationService;
+        this.communicatorProvider = communicatorProvider;
+        this.templateRenderer = templateRenderer;
+        this.appProperties = appProperties;
+    }
 
-		StringWriter stringWriter = new StringWriter();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getHtml(Map<String, Object> model)
+    {
 
-		try
-		{
+        StringWriter stringWriter = new StringWriter();
 
-			addBitbucketOrganizations(model);
-			templateRenderer.render("/templates/dvcs/add-user-dvcs-extension.vm", model, stringWriter);
+        try
+        {
 
-		} catch (Exception e)
-		{
-			log.warn("Error while rendering DVCS extension fragment for add user form.", e);
-			stringWriter = new StringWriter(); // reset writer so no broken
-												// output goes out
-		}
+            addBitbucketOrganizations(model);
 
-		return stringWriter.toString();
-	}
+            model.put("textutils", new TextUtils());
+            model.put("baseurl", appProperties.getBaseUrl());
 
-	/**
-	 * Appends the bitbucket organizations to model.
-	 *
-	 * @param model the model
-	 * @return the list
-	 */
-	private List<Organization> addBitbucketOrganizations(Map<String, Object> model)
-	{
-		String dvcsType = "bitbucket";
+            templateRenderer.render("/templates/dvcs/add-user-dvcs-extension.vm", model, stringWriter);
 
-		List<Organization> all = organizationService.getAll(false, dvcsType);
-		DvcsCommunicator communicator = communicatorProvider.getCommunicator(dvcsType);
-		boolean groupFound = false;
-		
-		for (Organization organization : all)
-		{
-			try
-			{
-				List<Group> groups = communicator.getGroupsForOrganization(organization);
-				organization.setGroups(groups);
-				
-				groupFound |= CollectionUtils.isNotEmpty(groups);
-				
-			} catch (Exception e)
-			{
-				log.warn("Failed to get groups for organization {}. Cause message is {}", organization.getName(), e.getMessage());
-			}
-		}
+        } catch (Exception e)
+        {
+            log.warn("Error while rendering DVCS extension fragment for add user form.", e);
+            stringWriter = new StringWriter(); // reset writer so no broken
+                                               // output goes out
+        }
 
-		model.put("bbOrgaizations", all);
-		
-		// quick helper var to find out if we have som data to show
-		model.put("bbSupressRender", !groupFound);
+        return stringWriter.toString();
+    }
 
-		return all;
+    /**
+     * Appends the bitbucket organizations to model.
+     * 
+     * @param model
+     *            the model
+     * @return the list
+     */
+    private List<Organization> addBitbucketOrganizations(Map<String, Object> model)
+    {
+        String dvcsType = "bitbucket";
 
-	}
+        List<Organization> all = organizationService.getAll(false, dvcsType);
+        Map<Integer, Set<String>> defaultSlugs = new HashMap<Integer, Set<String>>();
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void writeHtml(Writer writer, Map<String, Object> model) throws IOException
-	{
+        DvcsCommunicator communicator = communicatorProvider.getCommunicator(dvcsType);
 
-	}
+        boolean groupFound = false;
+
+        for (Organization organization : all)
+        {
+            try
+            {
+                List<Group> groups = communicator.getGroupsForOrganization(organization);
+                organization.setGroups(groups);
+
+                groupFound |= CollectionUtils.isNotEmpty(groups);
+                
+                defaultSlugs.put(organization.getId(), extractSlugs(organization.getDefaultGroupsSlugs()));
+
+            } catch (Exception e)
+            {
+                log.warn("Failed to get groups for organization {}. Cause message is {}", organization.getName(),
+                        e.getMessage());
+            }
+        }
+
+        model.put("bbOrgaizations", all);
+        model.put("defaultSlugs", defaultSlugs);
+
+        // quick helper var to find out if we have som data to show
+        model.put("bbSupressRender", !groupFound);
+
+        return all;
+
+    }
+
+    private Set<String> extractSlugs(List<Group> groupSlugs)
+    {
+        Set<String> slugs = new HashSet<String>();
+
+        if (groupSlugs == null)
+        {
+            return slugs;
+        }
+
+        for (Group group : groupSlugs)
+        {
+            slugs.add(group.getSlug());
+        }
+        return slugs;
+    }
 
 }

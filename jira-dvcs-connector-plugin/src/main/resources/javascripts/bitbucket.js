@@ -394,7 +394,7 @@ function configureDefaultGroups(orgName, id) {
 	AJS.$("#configureDefaultGroupsContentWorking").show();
 	
 	var popup = new AJS.Dialog({
-		width: 540, 
+		width: 600, 
 		height: 400, 
 		id: "dvcs-default-groups-dialog"
 	});
