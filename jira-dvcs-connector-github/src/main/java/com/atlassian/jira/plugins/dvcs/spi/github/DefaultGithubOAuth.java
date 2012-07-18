@@ -16,13 +16,8 @@ public class DefaultGithubOAuth implements GithubOAuth
     @Override
     public void setClient(String clientID, String clientSecret)
     {
-        pluginSettingsFactory.createGlobalSettings().put("githubRepositoryClientID", trim(clientID));
-        pluginSettingsFactory.createGlobalSettings().put("githubRepositoryClientSecret", trim(clientSecret));
-    }
-
-    private String trim(String string)
-    {
-        return string != null ? string.trim() : string;
+        pluginSettingsFactory.createGlobalSettings().put("githubRepositoryClientID", StringUtils.trim(clientID));
+        pluginSettingsFactory.createGlobalSettings().put("githubRepositoryClientSecret", StringUtils.trim(clientSecret));
     }
 
     @Override
