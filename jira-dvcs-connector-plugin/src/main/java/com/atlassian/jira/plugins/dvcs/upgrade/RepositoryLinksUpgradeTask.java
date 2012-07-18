@@ -24,7 +24,7 @@ public class RepositoryLinksUpgradeTask implements PluginUpgradeTask
 
 	private final RepositoryService repositoryService;
 
-	public RepositoryLinksUpgradeTask(@Qualifier("bitbucketLinker") BitbucketLinker linker,
+	public RepositoryLinksUpgradeTask(@Qualifier("defferedBitbucketLinker") BitbucketLinker linker,
 			RepositoryService repositoryService)
 	{
 		super();
@@ -41,17 +41,7 @@ public class RepositoryLinksUpgradeTask implements PluginUpgradeTask
 	@Override
 	public Collection<Message> doUpgrade() throws Exception
 	{
-		new Thread("Thread___" + RepositoryLinksUpgradeTask.class.getSimpleName())
-		{
-
-			@Override
-			public void run()
-			{
-				doUpgradeInternal();
-			}
-
-		}.start();
-
+	    doUpgradeInternal();
 		return Lists.newLinkedList();
 	}
 
@@ -61,13 +51,16 @@ public class RepositoryLinksUpgradeTask implements PluginUpgradeTask
 		
 		for (Repository repository : allRepositories)
 		{
-			// do not use defferedBitbucketLinker as this invocations needs to go in order
-			
-			log.debug("UNLINKING {} repository.", repository.getName());
-			linker.unlinkRepository(repository);
-			
-			log.debug("LINKING {} repository.", repository.getName());
-			linker.linkRepository(repository);
+						
+			try
+            {
+                log.debug("LINKING {} repository.", repository.getName());
+                linker.linkRepository(repository);
+            
+            } catch (Exception e)
+            {
+                log.warn("Failed to link repository {}. " + e.getMessage(), repository.getName());
+            }
 		}
 	}
 
