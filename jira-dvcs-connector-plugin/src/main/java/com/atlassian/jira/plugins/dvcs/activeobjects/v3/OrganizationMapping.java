@@ -1,8 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import net.java.ao.Entity;
+import net.java.ao.Preload;
 import net.java.ao.schema.Table;
 
+@Preload
 @Table("OrganizationMapping")
 public interface OrganizationMapping extends Entity
 {
