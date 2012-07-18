@@ -61,7 +61,7 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
 
     private void addClientIdentifiers()
     {
-        githubOAuth.setClient(clientID, clientSecret);
+        githubOAuth.setClient(StringUtils.trim(clientID), StringUtils.trim(clientSecret));
         messages = "GitHub Client Identifiers Set Correctly";
     }
 
