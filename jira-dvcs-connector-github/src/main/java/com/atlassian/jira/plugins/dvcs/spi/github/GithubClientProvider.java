@@ -4,9 +4,8 @@ import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -15,9 +14,6 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 public class GithubClientProvider
 {
-    
-    private static final Logger log = LoggerFactory.getLogger(GithubClientProvider.class);
-
     private final AuthenticationFactory authenticationFactory;
 
     public GithubClientProvider(AuthenticationFactory authenticationFactory)
@@ -39,18 +35,15 @@ public class GithubClientProvider
     {
         GitHubClient client = GitHubClient.createClient(organization.getHostUrl());
 
-        try
+        Authentication authentication = authenticationFactory.getAuthentication(organization);
+        if (authentication instanceof OAuthAuthentication)
         {
-        
-            OAuthAuthentication auth = (OAuthAuthentication) authenticationFactory.getAuthentication(organization);
-            client.setOAuth2Token(auth.getAccessToken());
-        
-        } catch (ClassCastException cce)
+            OAuthAuthentication oAuth = (OAuthAuthentication) authentication;
+            client.setOAuth2Token(oAuth.getAccessToken());
+        } else
         {
-            log.error("Failed to get proper OAuth instance for client. Got {} ", authenticationFactory.getAuthentication(organization));
             throw new SourceControlException("Failed to get proper OAuth instance for github client.");
         }
-        
         return client;
     }
 
