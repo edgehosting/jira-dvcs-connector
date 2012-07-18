@@ -55,7 +55,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             // we are doing full sync, lets delete all existing changesets
             changesetService.removeAllInRepository(repository.getId());
             repository.setLastCommitDate(null);
-            repositoryService.save(repository);
         }
 
         int changesetCount = 0;
@@ -72,7 +71,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             {
                 lastCommitDate = changeset.getDate();
                 repository.setLastCommitDate(lastCommitDate);
-                repositoryService.save(repository);
             }
             changesetCount++;
             String message = changeset.getMessage();
