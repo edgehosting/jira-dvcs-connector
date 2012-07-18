@@ -1,12 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.Date;
-import java.util.Set;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -14,6 +7,13 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ObjectUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Date;
+import java.util.Set;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
@@ -41,11 +41,26 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         this.softSync = softSync;
     }
 
+
+
     @Override
     public void synchronise()
     {
+        Date lastCommitDate = repository.getLastCommitDate();
+        synchroniseInternal();
+
+        if (!ObjectUtils.equals(lastCommitDate, repository.getLastCommitDate()))
+        {
+            repositoryService.save(repository);
+        }
+    }
+
+
+
+    public void synchroniseInternal()
+    {
         Date lastCommitDate = null;
-       
+
         if (softSync)
         {
             lastCommitDate = repository.getLastCommitDate();
@@ -54,7 +69,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             // we are doing full sync, lets delete all existing changesets
             changesetService.removeAllInRepository(repository.getId());
             repository.setLastCommitDate(null);
-            repositoryService.save(repository);
         }
 
         int changesetCount = 0;
@@ -62,7 +76,9 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         int synchroErrorCount = 0;
 
         Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository, lastCommitDate);
-		
+
+
+
         for (Changeset changeset : allOrLatestChangesets)
         {
         	if (progress.isShouldStop())
@@ -73,7 +89,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             {
                 lastCommitDate = changeset.getDate();
                 repository.setLastCommitDate(lastCommitDate);
-                repositoryService.save(repository);
             }
             changesetCount++;
             String message = changeset.getMessage();
@@ -127,7 +142,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             }
             progress.inProgress(changesetCount, jiraCount, synchroErrorCount);
         }
-        
     }
 
 	private void markChangesetForSmartCommit(Changeset changesetForSave)
