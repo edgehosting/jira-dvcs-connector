@@ -229,7 +229,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 						RepositoryMapping rm;
 						if (repository.getId() == 0)
 						{
-							final Map<String, Object> map = new HashMap<String, Object>();
+							final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
 							map.put(RepositoryMapping.ORGANIZATION_ID, repository.getOrganizationId());
 							map.put(RepositoryMapping.SLUG, repository.getSlug());
 							map.put(RepositoryMapping.NAME, repository.getName());

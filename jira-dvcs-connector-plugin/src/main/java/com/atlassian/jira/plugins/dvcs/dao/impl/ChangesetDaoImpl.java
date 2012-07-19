@@ -103,7 +103,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 // add new
                 ChangesetMapping chm;
 
-                final Map<String, Object> map = new HashMap<String, Object>();
+                final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
                 map.put(ChangesetMapping.REPOSITORY_ID, changeset.getRepositoryId());
                 map.put(ChangesetMapping.ISSUE_KEY, changeset.getIssueKey());
                 map.put(ChangesetMapping.PROJECT_KEY, parseProjectKey(changeset.getIssueKey()));
