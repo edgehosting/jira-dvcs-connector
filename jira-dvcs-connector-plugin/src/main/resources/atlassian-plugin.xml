@@ -308,7 +308,7 @@
 
     <web-resource key="requiredResourceForAjaxCommitsTab" name="Resources That Needs To be Loaded On Issue View">
 		<context>jira.view.issue</context>
-		<dependency>jira.webresources:viewissue-components</dependency>
+		<dependency>jira.webresources:viewissue</dependency>
 		<resource type="download" name="css/issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
 	</web-resource>
 
