@@ -1,16 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -18,6 +7,16 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ObjectUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
@@ -58,6 +57,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         // repository.save() because of some weird performance issue BBC-219 
         if (!ObjectUtils.equals(lastCommitDate, repository.getLastCommitDate()))
         {
+            log.debug("Last commit date has been changed. Save repository: [{}]", repository);
             repositoryService.save(repository);
         }
     }
@@ -127,6 +127,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     {
                         Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
                         changesetForSave.setIssueKey(issueKey);
+                        log.debug("Save changeset [{}]", changesetForSave);
                         changesetService.save(changesetForSave);
                     } catch (SourceControlException e)
                     {
