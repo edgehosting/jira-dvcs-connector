@@ -16,7 +16,9 @@ import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 
 public class AddGithubOrganization extends CommonDvcsConfigurationAction
 {
-	private final Logger log = LoggerFactory.getLogger(AddGithubOrganization.class);
+    private static final long serialVersionUID = -5043563666764556942L;
+
+    private final Logger log = LoggerFactory.getLogger(AddGithubOrganization.class);
 
 	private String url;
 	private String organization;
@@ -66,7 +68,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	private String redirectUserToGithub()
 	{
 		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubOrganization",
-				url, getXsrfToken(), organization, getAutoLinking());
+				url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
 		return getRedirect(githubAuthorizeUrl);
 	}
@@ -122,7 +124,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 			newOrganization.setDvcsType("github");
 			newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
 			newOrganization.setCredential(new Credential(null, null, accessToken));
-			newOrganization.setSmartcommitsOnNewRepos(true);
+			newOrganization.setSmartcommitsOnNewRepos(hadAutolinkingChecked());
 			
 			organizationService.save(newOrganization);
 			

@@ -29,7 +29,7 @@ public class GithubOAuthUtils {
 	}
 
     public String createGithubRedirectUrl(String nextAction, String url, String xsrfToken,
-            String organization, String autoLinking)
+            String organization, String autoLinking, String autoSmartCommits)
     {
 		String encodedRepositoryUrl = encode(url);
 
@@ -38,7 +38,8 @@ public class GithubOAuthUtils {
 				+ "/secure/admin/" + nextAction + "!finish.jspa?url="
 				+ encodedRepositoryUrl + "&atl_token=" + xsrfToken
 				+ "&organization=" + organization + "&autoLinking="
-				+ autoLinking;
+				+ autoLinking + "&autoSmartCommits="
+		                + autoSmartCommits;
 		String encodedRedirectBackUrl = encode(redirectBackUrl);
 		//
 		// build URL to github

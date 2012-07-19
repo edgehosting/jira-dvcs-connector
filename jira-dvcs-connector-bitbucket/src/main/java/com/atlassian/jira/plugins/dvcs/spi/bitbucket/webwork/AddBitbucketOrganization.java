@@ -47,7 +47,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 			newOrganization.setDvcsType("bitbucket");
 			newOrganization.setCredential(new Credential(adminUsername, adminPassword, null));
 			newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
-			newOrganization.setSmartcommitsOnNewRepos(true);
+			newOrganization.setSmartcommitsOnNewRepos(hadAutoSmartCommitsChecked());
 			newOrganization.setDefaultGroupsSlugsSerialized(DEFAULT_INVITATION_GROUP);
 
             organizationService.save(newOrganization);

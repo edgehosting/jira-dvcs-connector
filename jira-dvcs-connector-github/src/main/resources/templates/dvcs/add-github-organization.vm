@@ -16,7 +16,8 @@
 	      <h4>New Github Account</h4>
 	      <input type="hidden" name="atl_token" value="$atl_token">
 	      <input type="hidden" name="autoLinking" id="autoLinking" value="$action.autoLinking">
-	      
+	       <input type="hidden" name="autoSmartCommits" id="autoSmartCommits" value="$action.autoSmartCommits">
+	       
 	        <fieldset>
 	         
 	          <div class="field-group">
@@ -54,6 +55,15 @@
 		      #else
 		      	 <input disabled="disabled" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
 		      #end
+		     </div>
+		     
+		      <div class="field-group" style="margin-top: 10px; clear: both" >
+				  <label for="autoSmartCommits">Enable Smart Commits:</label>
+		          #if($action.getAutoSmartCommits() == "true")
+			         <input disabled="disabled" checked="checked" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true"/>
+			      #else
+			      	 <input disabled="disabled" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true"/>
+			      #end
 		     </div>
 	         
 	        </fieldset>

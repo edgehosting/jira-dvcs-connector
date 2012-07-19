@@ -123,6 +123,11 @@
 	            	</div>
 	            	*#
 	            </div>
+	           
+	            <div style="margin-top: 10px;"  class="field-group">
+	                <label for="autoSmartCommits">Enable <a href="https://confluence.atlassian.com/display/FISHEYE/Using+Smart+Commits">Smart Commits</a>:</label>
+	                <input class="checkbox" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true" checked="checked" />
+	            </div>
      
                 <div id="bbCredentials"></div>
 

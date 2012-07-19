@@ -10,6 +10,7 @@ public class CommonDvcsConfigurationAction extends JiraWebActionSupport
 {
 
 	private String autoLinking = "";
+	private String autoSmartCommits = "";
 
 	private static final long serialVersionUID = 8695500426304238626L;
 
@@ -29,6 +30,11 @@ public class CommonDvcsConfigurationAction extends JiraWebActionSupport
 		return StringUtils.isNotBlank(autoLinking);
 	}
 
+	protected boolean hadAutoSmartCommitsChecked()
+	{
+	    return StringUtils.isNotBlank(autoSmartCommits);
+	}
+
 	public String getAutoLinking()
 	{
 		return autoLinking;
@@ -38,5 +44,16 @@ public class CommonDvcsConfigurationAction extends JiraWebActionSupport
 	{
 		this.autoLinking = autoLinking;
 	}
+
+    public String getAutoSmartCommits()
+    {
+        return autoSmartCommits;
+    }
+
+    public void setAutoSmartCommits(String autoSmartCommits)
+    {
+        this.autoSmartCommits = autoSmartCommits;
+    }
+    
 
 }
