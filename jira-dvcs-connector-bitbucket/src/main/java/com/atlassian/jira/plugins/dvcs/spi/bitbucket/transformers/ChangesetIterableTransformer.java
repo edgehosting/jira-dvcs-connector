@@ -21,7 +21,7 @@ public class ChangesetIterableTransformer {
     private ChangesetIterableTransformer() {}
 
     
-    public Iterable<Changeset> fromBitbucketChangesetIterable(final Repository repository,
+    public static Iterable<Changeset> fromBitbucketChangesetIterable(final Repository repository,
             final Iterable<BitbucketChangeset> bitbucketChangesets)
     {
         return new Iterable<Changeset>() {
