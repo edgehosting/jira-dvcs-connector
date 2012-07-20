@@ -65,7 +65,12 @@ public class ChangesetRemoteRestpoint
                                     new TypeToken<List<BitbucketChangesetWithDiffstat>>(){}.getType());
     }
     
-    public Iterable<BitbucketChangeset> getChangesets(final String owner, final String slug, final String lastChangesetNode)
+    public Iterable<BitbucketChangeset> getAllChangesets(final String owner, final String slug)
+    {
+        return getChangesets(owner, slug, null);
+    }
+    
+    public Iterable<BitbucketChangeset> getChangesets(String owner, String slug, String lastChangesetNode)
     {
         return getChangesets(owner, slug, lastChangesetNode, DEFAULT_CHANGESETS_LIMIT);
     }
@@ -164,6 +169,11 @@ public class ChangesetRemoteRestpoint
         
         private List<BitbucketChangeset> filterUntilChangesetNode(List<BitbucketChangeset> changesetsToFilter)
         {
+            if (lastChangesetNode == null)
+            {
+                return changesetsToFilter;
+            }
+            
             List<BitbucketChangeset> filteredChangesets = new ArrayList<BitbucketChangeset>();
             
             for (BitbucketChangeset bitbucketChangeset : changesetsToFilter)
