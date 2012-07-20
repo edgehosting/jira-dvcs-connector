@@ -36,11 +36,15 @@ public class BitbucketRequestException extends RuntimeException
 	}
 
     
-    public static final class Unauthorized extends BitbucketRequestException
+    public static final class Unauthorized_401 extends BitbucketRequestException
     {
     }
     
-    public static final class NotFound extends BitbucketRequestException
+    public static final class Forbidden_403 extends BitbucketRequestException
+    {
+    }
+    
+    public static final class NotFound_404 extends BitbucketRequestException
     {
     }
 }
