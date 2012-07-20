@@ -9,21 +9,25 @@ import java.util.List;
  * BitbucketChangeset
  * 
  * <pre>
- *       {
- *           "node": "21a24da68710",
- *           "files": [
- *               {
- *                   "type": "modified",
- *                   "file": "piston/oauth.py"
- *               }
- *           ],
- *           "author": "jespern",
- *           "timestamp": "2009-09-08 12:49:43",
- *           "branch": "default",
- *           "message": "oauth 1.0a spec ready oauth.py",
- *           "revision": 204,
- *           "size": 4166
- *       }, ...
+ *  {
+ *      "node": "8b2d4d092764",
+ *      "files": [
+ *          {
+ *              "type": "added",
+ *              "file": "test1 resource.txt"
+ *          }
+ *      ],
+ *      "raw_author": "jirabitbucketconnector",
+ *      "utctimestamp": "2011-12-21 14:17:37+00:00",
+ *      "author": "jirabitbucketconnector",
+ *      "timestamp": "2011-12-21 15:17:37",
+ *      "raw_node": "8b2d4d0927645c4f7bf59a817587e9006458c1b7",
+ *      "parents": [],
+ *      "branch": "default",
+ *      "message": "resource with space in name",
+ *      "revision": 0,
+ *      "size": -1
+ *  }, ...
  * 
  * </pre>
  *
@@ -36,7 +40,7 @@ import java.util.List;
  */
 public class BitbucketChangeset implements Serializable
 {
-
+//TODO timestamp vs utctimestamp
 	private static final long serialVersionUID = -1593016501516234658L;
 
 	private String node;
@@ -54,6 +58,14 @@ public class BitbucketChangeset implements Serializable
 	private Integer revision;
 	
 	private Long size;
+    
+    private String rawNode;
+    
+    private String rawAuthor;
+    
+    private Date utctimestamp;
+    
+    private List<String> parents;
 
 	public BitbucketChangeset()
 	{
@@ -139,5 +151,45 @@ public class BitbucketChangeset implements Serializable
 	{
 		this.size = size;
 	}
+
+    public String getRawNode()
+    {
+        return rawNode;
+    }
+
+    public void setRawNode(String rawNode)
+    {
+        this.rawNode = rawNode;
+    }
+
+    public String getRawAuthor()
+    {
+        return rawAuthor;
+    }
+
+    public void setRawAuthor(String rawAuthor)
+    {
+        this.rawAuthor = rawAuthor;
+    }
+
+    public Date getUtctimestamp()
+    {
+        return utctimestamp;
+    }
+
+    public void setUtctimestamp(Date utctimestamp)
+    {
+        this.utctimestamp = utctimestamp;
+    }
+
+    public List<String> getParents()
+    {
+        return parents;
+    }
+
+    public void setParents(List<String> parents)
+    {
+        this.parents = parents;
+    }
 }
 
