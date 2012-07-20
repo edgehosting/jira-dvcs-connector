@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -13,7 +12,7 @@ import com.google.gson.GsonBuilder;
 public class ClientUtils
 {
 
-	static Gson GSON = createGson();
+	private static Gson GSON = createGson();
 	
 	public static final String UTF8 = "UTF-8";
 
@@ -21,23 +20,43 @@ public class ClientUtils
 	{
 		GsonBuilder builder = new GsonBuilder();
 		builder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
-        builder.setDateFormat("yyyy-MM-DD HH:mm:ss"); // to parse 2011-12-21 15:17:37
+        builder.setDateFormat("yyyy-MM-dd HH:mm:ss"); // to parse 2011-12-21 15:17:37
 		return builder.create();
 	}
 
 	public static String toJson(Object object)
 	{
-		return GSON.toJson(object);
+        try
+        {
+            return GSON.toJson(object);
+        }
+        catch (Exception e)
+        {
+            throw new JsonParsingException(e);
+        }
 	}
 
 	public static <T> T fromJson(String json, Class<T> type)
 	{
-		return GSON.fromJson(json, type);
+        try
+        {
+            return GSON.fromJson(json, type);
+        }
+        catch (Exception e)
+        {
+            throw new JsonParsingException(e);
+        }
 	}
     
     public static <T> T fromJson(InputStream json, Class<T> type)
     {
-        return GSON.fromJson(new BufferedReader(new InputStreamReader(json)), type);
+        try
+        {
+            return GSON.fromJson(new BufferedReader(new InputStreamReader(json, UTF8)), type);
+        } catch (Exception e)
+        {
+            throw new JsonParsingException(e);
+        }
     }
 	
 	public static <T> T fromJson(InputStream json, Type type)
@@ -46,7 +65,7 @@ public class ClientUtils
 		{
 			return GSON.fromJson(new BufferedReader(new InputStreamReader(json, UTF8)), type);
 		} catch (Exception e) {
-			throw new BitbucketRequestException("Cannot parse input stream.", e);
+			throw new JsonParsingException(e);
 		}
 	}
 }
