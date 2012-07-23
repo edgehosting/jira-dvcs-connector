@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 
 /**
@@ -28,6 +31,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private static final short HTTP_STATUS_CODE_UNAUTHORIZED = 401;
     private static final short HTTP_STATUS_CODE_FORBIDDEN    = 403;
     private static final short HTTP_STATUS_CODE_NOT_FOUND    = 404;
+    
+    private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
     
 
 	protected final String apiUrl;
@@ -115,7 +120,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
             throw e; // Unauthorized or NotFound exceptions will be rethrown
         }catch (Exception e)
 		{
-			// TODO log + message
+			log.debug("Failed to execute request: " + connection, e);
 			throw new BitbucketRequestException("Failed to execute request " + connection, e);
 		}
 	}
@@ -130,7 +135,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
 		} catch (Exception e)
 		{
-			// TODO log + message
+			log.debug("Failed to execute request: " + connection, e);
 			throw new BitbucketRequestException("Failed to execute request " + connection, e);
 		}
 	}
