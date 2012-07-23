@@ -112,6 +112,8 @@ public class ChangesetRemoteRestpoint
         
         private Iterator<BitbucketChangeset> changesetsCurrentPage;
         private String nextChangesetNodeToQuery;
+        
+        private boolean foundLastChangesetNode = false;
 
         
         private BitbucketChangesetIterator(String owner, String slug, final String lastChangesetNode,
@@ -133,12 +135,12 @@ public class ChangesetRemoteRestpoint
         @Override
         public boolean hasNext()
         {
-            return changesetsCurrentPage.hasNext() || hasMorePages();
+            return changesetsCurrentPage.hasNext() || (!foundLastChangesetNode && hasMorePages());
         }
 
         @Override
         public BitbucketChangeset next()
-        {
+        {           
             return changesetsCurrentPage.next();
         }
 
@@ -150,7 +152,7 @@ public class ChangesetRemoteRestpoint
         
         private boolean hasMorePages()
         {
-            List<BitbucketChangeset> changesets = getChangesetsPrivate(owner, slug, nextChangesetNodeToQuery, changesetsLimit);
+            List<BitbucketChangeset> changesets = getChangesetsPrivate(owner, slug, nextChangesetNodeToQuery, changesetsLimit + 1);
             nextChangesetNodeToQuery = changesets.get(0).getNode();
             
             changesets.remove(changesets.size() - 1); // because the nextChangesetNodeToQuery is included as last item
@@ -180,6 +182,7 @@ public class ChangesetRemoteRestpoint
             {
                 if (lastChangesetNode.equals(bitbucketChangeset.getNode()))
                 {
+                    foundLastChangesetNode = true;
                     break;
                 }
                 else
