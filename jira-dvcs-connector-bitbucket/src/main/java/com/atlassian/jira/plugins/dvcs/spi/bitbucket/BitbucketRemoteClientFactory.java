@@ -4,6 +4,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.NoAuthAuthProvider;
 
 /**
@@ -25,7 +26,9 @@ public final class BitbucketRemoteClientFactory
     
     public static BitbucketRemoteClient fromRepository(Repository repository)
     {
-        AuthProvider authProvider = new NoAuthAuthProvider(repository.getOrgHostUrl());
+        AuthProvider authProvider = new BasicAuthAuthProvider(repository.getOrgHostUrl(),
+                                                              repository.getCredential().getAdminUsername(),
+                                                              repository.getCredential().getAdminPassword());
         
         return new BitbucketRemoteClient(authProvider);
     }
