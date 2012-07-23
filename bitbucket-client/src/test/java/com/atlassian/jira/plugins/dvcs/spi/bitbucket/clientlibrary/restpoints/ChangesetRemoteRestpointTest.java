@@ -23,7 +23,9 @@ public class ChangesetRemoteRestpointTest {
     
     private static final String BITBUCKET_OWNER = "jirabitbucketconnector";
     private static final String BITBUCKET_REPO  = "testrepo";
+
     private static final String THIRD_CHANGESET_NODE = "f3d8dff6360e";
+    private static final String TIP_CHANGESET_NODE   = "4444ae193a51";
     
     
     private static BitbucketRemoteClient bitbucketRemoteClient;
@@ -94,6 +96,15 @@ public class ChangesetRemoteRestpointTest {
         assertThat(changesetCounter).isEqualTo(3); // not only we got the exact number of changesets
         assertThat(changesetNodes).hasSize(3);     // but also they have to be unique
     }
-
-    //TODO test for latest changeset
+    
+    @Test
+    public void getAllChangesetsUntilTipNode_ShouldReturnZeroChangsets()
+    {
+        Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
+                                                                       .getChangesets(BITBUCKET_OWNER,
+                                                                                      BITBUCKET_REPO,
+                                                                                      TIP_CHANGESET_NODE);
+        
+        assertThat(changesets).hasSize(0);
+    }
 }
