@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -56,9 +57,8 @@ public class ChangesetIterableTransformer {
         public Changeset next()
         {
             BitbucketChangeset bitbucketChangeset = bitbucketIterator.next();
-            //TODO finish this one
-//            List<ChangesetFile> files =
-//                    ChangesetFileTransformer.fromBitbucketCahngeetWithDiffstat(bitbucketChangeset.getFiles());
+            List<ChangesetFile> files =
+                    ChangesetFileTransformer.fromBitbucketChangesetFile(bitbucketChangeset.getFiles());
             
 			Changeset changeset = new Changeset(repository.getId(),
                                                 bitbucketChangeset.getNode(),
@@ -70,8 +70,8 @@ public class ChangesetIterableTransformer {
                                                 bitbucketChangeset.getBranch(), // TODO if null, set to "default"?
                                                 bitbucketChangeset.getMessage(),
                                                 bitbucketChangeset.getParents(),
-                                                null,//files,
-                                                0//files.size()
+                                                files,
+                                                files.size()
             );
 			
 			changeset.setAuthorEmail(parseUsersEmailHgRcFormatOrNull(bitbucketChangeset.getRawAuthor()));

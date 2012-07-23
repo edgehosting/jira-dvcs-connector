@@ -18,7 +18,7 @@ public final class DetailedChangesetTransformer {
     public static Changeset fromChangesetAndBitbucketDiffstats(Changeset inputChangeset,
             List<BitbucketChangesetWithDiffstat> diffstats)
     {
-        List<ChangesetFile> files = ChangesetFileTransformer.fromBitbucketCahngeetWithDiffstat(diffstats);
+        List<ChangesetFile> files = ChangesetFileTransformer.fromBitbucketChangesetWithDiffstat(diffstats);
         
         Changeset changeset = copyChangeset(inputChangeset);
         changeset.setIssueKey(null); //TODO missing various other transformations for fields, did we forget?
