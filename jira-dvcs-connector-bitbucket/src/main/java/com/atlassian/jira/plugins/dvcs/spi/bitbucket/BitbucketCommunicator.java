@@ -55,7 +55,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	private final RequestHelper requestHelper;
 
 	/** The authentication factory. */
-	private final AuthenticationFactory authenticationFactory;
+//	private final AuthenticationFactory authenticationFactory;
 
 	private final BitbucketLinker bitbucketLinker;
 
@@ -74,7 +74,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	public BitbucketCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper,
 			@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor, BitbucketOAuth oauth)
 	{//TODO AuthProvider instead of Authentication factory ?
-		this.authenticationFactory = authenticationFactory;
+//		this.authenticationFactory = authenticationFactory;
 		this.requestHelper = requestHelper;
 		this.bitbucketLinker = bitbucketLinker;
 		this.oauth = oauth;
@@ -146,7 +146,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 //		} catch (ResponseException e)
 //		{
 //			log.debug(e.getMessage());
-//		} catch (JSONException e)//TODO get rid of json exception
+//		} catch (JSONException e)
 //		{
 //			log.debug("Error parsing json response: " + responseString + ". " + e.getMessage());
 //		}
@@ -223,10 +223,10 @@ public class BitbucketCommunicator implements DvcsCommunicator
 //	}
 
 	
-    public static String getApiUrl(String hostUrl)//TODO get rid of it...
-	{
-		return hostUrl + "/!api/1.0";
-	}
+//    public static String getApiUrl(String hostUrl)
+//	{
+//		return hostUrl + "/!api/1.0";
+//	}
 
 	/**
 	 * {@inheritDoc}
@@ -373,7 +373,9 @@ public class BitbucketCommunicator implements DvcsCommunicator
             Iterable<BitbucketChangeset> changesets =
                     remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(), //owner
                                                                    repository.getSlug(),
-                                                                   lastCommitDate);
+                                                                   //TODO !!!!! just to compile the stuff !!!!! changeset
+                                                                   // has to be changesetNode !!!
+                                                                   lastCommitDate.toString());
             
             return ChangesetIterableTransformer.fromBitbucketChangesetIterable(repository, changesets);
         }
@@ -631,7 +633,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
             // try to obtain user's ssh keys to know if credentials are OK
             // @ http://confluence.atlassian.com/display/BITBUCKET/SSH+Keys
-            //TODO authorization !!!
             remoteClient.getSSHRest().getSSHKeys(); // just to call the REST
             
             return true;
