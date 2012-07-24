@@ -39,21 +39,12 @@ import java.util.List;
  */
 public class BitbucketChangesetEnvelope implements Serializable
 {
-
 	private static final long serialVersionUID = 2124466515770630375L;
 	
 	private Integer count;
-	
 	private String start;
-	
 	private Integer limit;
-	
 	private List<BitbucketChangeset> changesets;
-
-	public BitbucketChangesetEnvelope()
-	{
-		super();
-	}
 
 	public Integer getCount()
 	{
@@ -95,4 +86,3 @@ public class BitbucketChangesetEnvelope implements Serializable
 		this.changesets = changesets;
 	}
 }
-

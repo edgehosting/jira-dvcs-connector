@@ -25,17 +25,10 @@ import java.io.Serializable;
  */
 public class BitbucketChangesetFile implements Serializable
 {
-
 	private static final long serialVersionUID = -5939877483032986046L;
 	
 	private String type;
-	
 	private String file;
-
-	public BitbucketChangesetFile()
-	{
-		super();
-	}
 
 	public String getType()
 	{
@@ -56,6 +49,4 @@ public class BitbucketChangesetFile implements Serializable
 	{
 		this.file = file;
 	}
-	
 }
-

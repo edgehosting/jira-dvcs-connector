@@ -20,17 +20,10 @@ import java.io.Serializable;
  */
 public class BitbucketServiceField implements Serializable
 {
-
 	private static final long serialVersionUID = -1942066377818593354L;
 	
 	private String name;
-	
 	private String value;
-
-	public BitbucketServiceField()
-	{
-		super();
-	}
 
 	public String getName()
 	{
@@ -52,4 +45,3 @@ public class BitbucketServiceField implements Serializable
 		this.value = value;
 	}
 }
-

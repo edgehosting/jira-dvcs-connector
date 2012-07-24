@@ -1,25 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
-import com.atlassian.jira.plugins.dvcs.auth.impl.BasicAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -27,22 +18,24 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler;
-import com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandler.ExtendedResponse;
 import com.atlassian.jira.plugins.dvcs.net.RequestHelper;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceEnvelope;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceField;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.parsers.BitbucketChangesetFactory;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.parsers.BitbucketRepositoriesParser;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.parsers.BitbucketUserFactory;
-import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
-import com.atlassian.jira.plugins.dvcs.util.Retryer;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetIterableTransformer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChangesetTransformer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DvcsUserTransformer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
 import com.atlassian.plugin.PluginAccessor;
-import com.atlassian.sal.api.net.Request.MethodType;
-import com.atlassian.sal.api.net.ResponseException;
 
 /**
  * The Class BitbucketCommunicator.
@@ -62,7 +55,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	private final RequestHelper requestHelper;
 
 	/** The authentication factory. */
-	private final AuthenticationFactory authenticationFactory;
+//	private final AuthenticationFactory authenticationFactory;
 
 	private final BitbucketLinker bitbucketLinker;
 
@@ -80,8 +73,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	 */
 	public BitbucketCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper,
 			@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor, BitbucketOAuth oauth)
-	{
-		this.authenticationFactory = authenticationFactory;
+	{//TODO AuthProvider instead of Authentication factory ?
+//		this.authenticationFactory = authenticationFactory;
 		this.requestHelper = requestHelper;
 		this.bitbucketLinker = bitbucketLinker;
 		this.oauth = oauth;
@@ -116,36 +109,48 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public AccountInfo getAccountInfo(String hostUrl, String accountName)
 	{
-		String responseString = null;
-		try
-		{
-			String accountUrl = "/users/" + accountName;
-			ExtendedResponseHandler.ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(null,
-					accountUrl, null, getApiUrl(hostUrl));
-			if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
-			{
-				return null; // user with that name doesn't exists
-			}
-			if (extendedResponse.isSuccessful())
-			{
+//		String responseString = null;
+        try
+        {
+            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromHostUrl(hostUrl);
+            remoteClient.getAccountRest().getUser(accountName); // just to call the rest
+            
+            return new AccountInfo(BitbucketCommunicator.BITBUCKET);
+        }
+        catch (BitbucketRequestException.NotFound_404 e)
+        {
+            return null;
+        }//TODO >>>>> naco bol dobry ten check na usera???
 
-				responseString = extendedResponse.getResponseString();
-
-				new JSONObject(responseString).has("user");
-				return new AccountInfo(BitbucketCommunicator.BITBUCKET);
-
-			} else
-			{
-				log.debug("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
-			}
-		} catch (ResponseException e)
-		{
-			log.debug(e.getMessage());
-		} catch (JSONException e)
-		{
-			log.debug("Error parsing json response: " + responseString + ". " + e.getMessage());
-		}
-		return null; // something went wrong, we don't have any account info.
+//		try
+//		{
+//			String accountUrl = "/users/" + accountName;
+//			ExtendedResponseHandler.ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(null,
+//					accountUrl, null, getApiUrl(hostUrl));
+//			if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
+//			{
+//				return null; // user with that name doesn't exists
+//			}
+//			if (extendedResponse.isSuccessful())
+//			{
+//
+//				responseString = extendedResponse.getResponseString();
+//
+//				new JSONObject(responseString).has("user");
+//				return new AccountInfo(BitbucketCommunicator.BITBUCKET);
+//
+//			} else
+//			{
+//				log.debug("Server response was not successful! Http Status Code: " + extendedResponse.getStatusCode());
+//			}
+//		} catch (ResponseException e)
+//		{
+//			log.debug(e.getMessage());
+//		} catch (JSONException e)
+//		{
+//			log.debug("Error parsing json response: " + responseString + ". " + e.getMessage());
+//		}
+//		return null; // something went wrong, we don't have any account info.
 
 	}
 
@@ -155,7 +160,27 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public List<Repository> getRepositories(Organization organization)
 	{
-		try
+        try
+        {
+            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromOrganization(organization);
+            
+            List<BitbucketRepository> repositories = remoteClient.getRepositoriesRest()
+                                                                 .getAllRepositories(organization.getName());
+            
+            return RepositoryTransformer.fromBitbucketRepositories(repositories);
+        }
+        catch(BitbucketRequestException.Unauthorized_401 e)
+        {
+            log.debug("Invalid credentials", e);
+            throw new SourceControlException.UnauthorisedException("Invalid credentials");
+        }
+        catch(BitbucketRequestException e)
+        {
+			log.debug(e.getMessage(), e);
+			throw new SourceControlException(e.getMessage());
+        }
+        
+		/*try
 		{
 			String listReposUrl = "/users/" + organization.getName();
 			final Authentication authentication = authenticationFactory.getAuthentication(organization);
@@ -183,25 +208,25 @@ public class BitbucketCommunicator implements DvcsCommunicator
 		{
 			log.debug(e.getMessage(), e);
 			throw new SourceControlException(e.getMessage());
-		}
+		}*/
 
 	}
 
-	private String getApiUrl(Organization organization)
-	{
-		return getApiUrl(organization.getHostUrl());
-	}
-
-	private String getApiUrl(Repository repository)
-	{
-		return getApiUrl(repository.getOrgHostUrl());
-	}
+//	private String getApiUrl(Organization organization)
+//	{
+//		return getApiUrl(organization.getHostUrl());
+//	}
+//
+//	private String getApiUrl(Repository repository)
+//	{
+//		return getApiUrl(repository.getOrgHostUrl());
+//	}
 
 	
-    public static String getApiUrl(String hostUrl)//TODO get rid of it...
-	{
-		return hostUrl + "/!api/1.0";
-	}
+//    public static String getApiUrl(String hostUrl)
+//	{
+//		return hostUrl + "/!api/1.0";
+//	}
 
 	/**
 	 * {@inheritDoc}
@@ -209,25 +234,41 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public Changeset getDetailChangeset(Repository repository, Changeset changeset)
 	{
-		try
-		{
-			String owner = repository.getOrgName();
-			String slug = repository.getSlug();
-			String node = changeset.getNode();
-
-			Authentication auth = authenticationFactory.getAuthentication(repository);
-
-			log.debug("Parse changeset [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, node });
-			final String urlPath = "/repositories/" + CustomStringUtils.encode(owner) + "/"
-					+ CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(node);
-			String responseFilesString = requestHelper.get(auth, urlPath + "/diffstat?limit="
-					+ Changeset.MAX_VISIBLE_FILES, null, getApiUrl(repository));
-			return BitbucketChangesetFactory.getChangesetWithStatistics(changeset, responseFilesString);
-		} catch (ResponseException e)
-		{
-			throw new SourceControlException("Could not get result", e);
-		}
-
+        try
+        {
+            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromRepository(repository);
+            List<BitbucketChangesetWithDiffstat> changesetDiffStat =
+                    remoteClient.getChangesetsRest().getChangesetDiffStat(repository.getOrgName(), // owner
+                                                                          repository.getSlug(),
+                                                                          changeset.getNode(),
+                                                                          Changeset.MAX_VISIBLE_FILES); // limit
+            
+            return DetailedChangesetTransformer.fromChangesetAndBitbucketDiffstats(changeset, changesetDiffStat);
+        }
+        catch (BitbucketRequestException e)
+        {
+            log.debug(e.getMessage(), e);
+            throw new SourceControlException("Could not get result", e);
+        }
+        
+//		try
+//		{
+//			String owner = repository.getOrgName();
+//			String slug = repository.getSlug();
+//			String node = changeset.getNode();
+//
+//			Authentication auth = authenticationFactory.getAuthentication(repository);
+//
+//			log.debug("Parse changeset [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, node });
+//			final String urlPath = "/repositories/" + CustomStringUtils.encode(owner) + "/"
+//					+ CustomStringUtils.encode(slug) + "/changesets/" + CustomStringUtils.encode(node);
+//			String responseFilesString = requestHelper.get(auth, urlPath + "/diffstat?limit="
+//					+ Changeset.MAX_VISIBLE_FILES, null, getApiUrl(repository));
+//			return BitbucketChangesetFactory.getChangesetWithStatistics(changeset, responseFilesString);
+//		} catch (ResponseException e)
+//		{
+//			throw new SourceControlException("Could not get result", e);
+//		}
 	}
 
 	/**
@@ -243,83 +284,83 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	 *            the last commit date
 	 * @return the changesets
 	 */
-	public List<Changeset> getChangesets(final Repository repository, final String startNode, final int limit,
-			final Date lastCommitDate)
-	{
-		return new Retryer<List<Changeset>>().retry(new Callable<List<Changeset>>()
-		{
-			@Override
-			public List<Changeset> call()
-			{
-				return getChangesetsInternal(repository, startNode, limit, lastCommitDate);
-			}
-		});
+//	public List<Changeset> getChangesets(final Repository repository, final String startNode, final int limit,
+//			final Date lastCommitDate)
+//	{
+//		return new Retryer<List<Changeset>>().retry(new Callable<List<Changeset>>()
+//		{
+//			@Override
+//			public List<Changeset> call()
+//			{
+//				return getChangesetsInternal(repository, startNode, limit, lastCommitDate);
+//			}
+//		});
+//
+//	}
 
-	}
-
-	private List<Changeset> getChangesetsInternal(final Repository repository, String startNode, int limit,
-			Date lastCommitDate)
-	{
-		String owner = repository.getOrgName();
-		String slug = repository.getSlug();
-
-		Authentication auth = authenticationFactory.getAuthentication(repository);
-
-		log.debug("Parse bitbucket changesets [ {} ] [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, startNode,
-				String.valueOf(limit) });
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("limit", String.valueOf(limit));
-		if (startNode != null)
-		{
-			params.put("start", startNode);
-		}
-
-		List<Changeset> changesets = new ArrayList<Changeset>();
-
-		try
-		{
-			ExtendedResponseHandler.ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth,
-					"/repositories/" + CustomStringUtils.encode(owner) + "/" + CustomStringUtils.encode(slug)
-							+ "/changesets", params, getApiUrl(repository));
-
-			if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
-			{
-				throw new SourceControlException("Incorrect credentials");
-			} else if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
-			{
-				// no more changesets
-				return Collections.emptyList();
-			}
-
-			if (extendedResponse.isSuccessful())
-			{
-				JSONArray list = new JSONObject(extendedResponse.getResponseString()).getJSONArray("changesets");
-				for (int i = 0; i < list.length(); i++)
-				{
-					JSONObject json = list.getJSONObject(i);
-
-					final Changeset changeset = BitbucketChangesetFactory.parse(repository.getId(), json);
-					if (lastCommitDate == null || lastCommitDate.before(changeset.getDate()))
-					{
-						changesets.add(changeset);
-					}
-				}
-			} else
-			{
-				throw new ResponseException("Server response was not successful! Http Status Code: "
-						+ extendedResponse.getStatusCode());
-			}
-		} catch (ResponseException e)
-		{
-			log.warn("Could not get changesets from node: {}", startNode);
-			throw new SourceControlException("Error requesting changesets. Node: " + startNode + ". [" + e.getMessage()
-					+ "]", e);
-		} catch (JSONException e)
-		{
-			throw new SourceControlException("Could not parse json object", e);
-		}
-		return changesets;
-	}
+//	private List<Changeset> getChangesetsInternal(final Repository repository, String startNode, int limit,
+//			Date lastCommitDate)
+//	{
+//		String owner = repository.getOrgName();
+//		String slug = repository.getSlug();
+//
+//		Authentication auth = authenticationFactory.getAuthentication(repository);
+//
+//		log.debug("Parse bitbucket changesets [ {} ] [ {} ] [ {} ] [ {} ]", new String[] { owner, slug, startNode,
+//				String.valueOf(limit) });
+//		Map<String, Object> params = new HashMap<String, Object>();
+//		params.put("limit", String.valueOf(limit));
+//		if (startNode != null)
+//		{
+//			params.put("start", startNode);
+//		}
+//
+//		List<Changeset> changesets = new ArrayList<Changeset>();
+//
+//		try
+//		{
+//			ExtendedResponseHandler.ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth,
+//					"/repositories/" + CustomStringUtils.encode(owner) + "/" + CustomStringUtils.encode(slug)
+//							+ "/changesets", params, getApiUrl(repository));
+//
+//			if (extendedResponse.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+//			{
+//				throw new SourceControlException("Incorrect credentials");
+//			} else if (extendedResponse.getStatusCode() == HttpStatus.SC_NOT_FOUND)
+//			{
+//				// no more changesets
+//				return Collections.emptyList();
+//			}
+//
+//			if (extendedResponse.isSuccessful())
+//			{
+//				JSONArray list = new JSONObject(extendedResponse.getResponseString()).getJSONArray("changesets");
+//				for (int i = 0; i < list.length(); i++)
+//				{
+//					JSONObject json = list.getJSONObject(i);
+//
+//					final Changeset changeset = BitbucketChangesetFactory.parse(repository.getId(), json);
+//					if (lastCommitDate == null || lastCommitDate.before(changeset.getDate()))
+//					{
+//						changesets.add(changeset);
+//					}
+//				}
+//			} else
+//			{
+//				throw new ResponseException("Server response was not successful! Http Status Code: "
+//						+ extendedResponse.getStatusCode());
+//			}
+//		} catch (ResponseException e)
+//		{
+//			log.warn("Could not get changesets from node: {}", startNode);
+//			throw new SourceControlException("Error requesting changesets. Node: " + startNode + ". [" + e.getMessage()
+//					+ "]", e);
+//		} catch (JSONException e)
+//		{
+//			throw new SourceControlException("Could not parse json object", e);
+//		}
+//		return changesets;
+//	}
 
 	/**
 	 * {@inheritDoc}
@@ -327,14 +368,31 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public Iterable<Changeset> getChangesets(final Repository repository, final Date lastCommitDate)
 	{
-		return new Iterable<Changeset>()
-		{
-			@Override
-			public Iterator<Changeset> iterator()
-			{
-				return new BitbucketChangesetIterator(BitbucketCommunicator.this, repository, lastCommitDate);
-			}
-		};
+        try {            
+            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromRepository(repository);
+            Iterable<BitbucketChangeset> changesets =
+                    remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(), //owner
+                                                                   repository.getSlug(),
+                                                                   //TODO !!!!! just to compile the stuff !!!!! changeset
+                                                                   // has to be changesetNode !!!
+                                                                   lastCommitDate.toString());
+            
+            return ChangesetIterableTransformer.fromBitbucketChangesetIterable(repository, changesets);
+        }
+        catch (BitbucketRequestException e)
+        {
+            log.debug(e.getMessage(), e);
+            throw new SourceControlException("Could not get changesets", e);
+        }
+        
+//		return new Iterable<Changeset>()
+//		{
+//			@Override
+//			public Iterator<Changeset> iterator()
+//			{
+//				return new BitbucketChangesetIterator(BitbucketCommunicator.this, repository, lastCommitDate);
+//			}
+//		};
 
 	}
 
@@ -344,20 +402,35 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public void setupPostcommitHook(Repository repository, String postCommitUrl)
 	{
-		String owner = repository.getOrgName();
-		String slug = repository.getSlug();
-		Authentication auth = authenticationFactory.getAuthentication(repository);
-
-		String urlPath = "/repositories/" + owner + "/" + slug + "/services";
-		String postData = "type=post&URL=" + postCommitUrl;
-		try
-		{
-			requestHelper.post(auth, urlPath, postData, getApiUrl(repository));
-		} catch (ResponseException e)
-		{
-			throw new SourceControlException("Could not add postcommit hook", e);
-		}
-		bitbucketLinker.linkRepository(repository);
+        try
+        {
+            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromRepository(repository);
+            remoteClient.getServicesRest().addPOSTService(repository.getOrgName(), //owner
+                                                          repository.getSlug(),
+                                                          postCommitUrl);
+            
+            bitbucketLinker.linkRepository(repository);
+        }
+        catch (BitbucketRequestException e)
+        {
+            log.debug("Could not add postcommit hook", e);
+            throw new SourceControlException("Could not add postcommit hook", e);
+        }
+        
+//		String owner = repository.getOrgName();
+//		String slug = repository.getSlug();
+//		Authentication auth = authenticationFactory.getAuthentication(repository);
+//
+//		String urlPath = "/repositories/" + owner + "/" + slug + "/services";
+//		String postData = "type=post&URL=" + postCommitUrl;
+//		try
+//		{
+//			requestHelper.post(auth, urlPath, postData, getApiUrl(repository));
+//		} catch (ResponseException e)
+//		{
+//			throw new SourceControlException("Could not add postcommit hook", e);
+//		}
+//		bitbucketLinker.linkRepository(repository);
 	}
 
 	/**
@@ -366,42 +439,79 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public void removePostcommitHook(Repository repository, String postCommitUrl)
 	{
-		bitbucketLinker.unlinkRepository(repository);
-
-		String owner = repository.getOrgName();
-		String slug = repository.getSlug();
-		Authentication auth = authenticationFactory.getAuthentication(repository);
-
-		String urlPath = "/repositories/" + owner + "/" + slug + "/services";
-		// Find the hook
-		try
-		{
-			String responseString = requestHelper.get(auth, urlPath, null, getApiUrl(repository));
-			JSONArray jsonArray = new JSONArray(responseString);
-			for (int i = 0; i < jsonArray.length(); i++)
-			{
-				JSONObject data = (JSONObject) jsonArray.get(i);
-				String id = data.getString("id");
-				JSONObject service = data.getJSONObject("service");
-				JSONArray fields = service.getJSONArray("fields");
-				JSONObject fieldData = (JSONObject) fields.get(0);
-				String name = fieldData.getString("name");
-				String value = fieldData.getString("value");
-				if ("URL".equals(name) && postCommitUrl.equals(value))
-				{
-					// We have the hook, lets remove it
-					requestHelper.delete(auth, getApiUrl(repository), urlPath + "/" + id);
-				}
-			}
-		} catch (ResponseException e)
-		{
-			log.warn("Error removing postcommit service [{}]", e.getMessage());
-			throw new SourceControlException(e);
-		} catch (JSONException e)
-		{
-			log.warn("Error removing postcommit service [{}]", e.getMessage());
-			throw new SourceControlException(e);
-		}
+        try
+        {
+            bitbucketLinker.unlinkRepository(repository);
+            
+            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromRepository(repository);
+            List<BitbucketServiceEnvelope> services =
+                    remoteClient.getServicesRest().getAllServices(repository.getOrgName(), //owner
+                                                                  repository.getSlug());
+            
+            for (BitbucketServiceEnvelope bitbucketServiceEnvelope : services)
+            {
+                boolean fieldNameIsUrl = false;
+                boolean fieldValueIsRequiredPostCommitUrl = false;
+                
+                for (BitbucketServiceField serviceField : bitbucketServiceEnvelope.getService().getFields())
+                {
+                    fieldNameIsUrl = serviceField.getName() .equals("name") &&
+                                     serviceField.getValue().equals("URL");
+                    
+                    fieldValueIsRequiredPostCommitUrl = serviceField.getName() .equals("value") &&
+                                                        serviceField.getValue().equals(postCommitUrl);
+                }
+                
+                if (fieldNameIsUrl && fieldValueIsRequiredPostCommitUrl)
+                {
+                    remoteClient.getServicesRest().deleteService(repository.getOrgName(), //owner
+                                                                 repository.getSlug(),
+                                                                 bitbucketServiceEnvelope.getId());
+                }
+            }
+        }
+        catch (BitbucketRequestException e)
+        {
+			log.debug("Could not remove postcommit hook", e);
+			throw new SourceControlException("Could not remove postcommit hook", e);
+        }
+        
+//		bitbucketLinker.unlinkRepository(repository);
+//
+//		String owner = repository.getOrgName();
+//		String slug = repository.getSlug();
+//		Authentication auth = authenticationFactory.getAuthentication(repository);
+//
+//		String urlPath = "/repositories/" + owner + "/" + slug + "/services";
+//		// Find the hook
+//		try
+//		{
+//			String responseString = requestHelper.get(auth, urlPath, null, getApiUrl(repository));
+//			JSONArray jsonArray = new JSONArray(responseString);
+//			for (int i = 0; i < jsonArray.length(); i++)
+//			{
+//				JSONObject data = (JSONObject) jsonArray.get(i);
+//				String id = data.getString("id");
+//				JSONObject service = data.getJSONObject("service");
+//				JSONArray fields = service.getJSONArray("fields");
+//				JSONObject fieldData = (JSONObject) fields.get(0);
+//				String name = fieldData.getString("name");
+//				String value = fieldData.getString("value");
+//				if ("URL".equals(name) && postCommitUrl.equals(value))
+//				{
+//					// We have the hook, lets remove it
+//					requestHelper.delete(auth, getApiUrl(repository), urlPath + "/" + id);
+//				}
+//			}
+//		} catch (ResponseException e)
+//		{
+//			log.warn("Error removing postcommit service [{}]", e.getMessage());
+//			throw new SourceControlException(e);
+//		} catch (JSONException e)
+//		{
+//			log.warn("Error removing postcommit service [{}]", e.getMessage());
+//			throw new SourceControlException(e);
+//		}
 
 	}
 
@@ -430,22 +540,36 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public DvcsUser getUser(Repository repository, String username)
 	{
-		try
-		{
-			log.debug("Parse user [ {} ]", username);
-
-			String responseString = requestHelper.get(Authentication.ANONYMOUS,
-					"/users/" + CustomStringUtils.encode(username), null, getApiUrl(repository));
-			return BitbucketUserFactory.parse(new JSONObject(responseString).getJSONObject("user"));
-		} catch (ResponseException e)
-		{
-			log.debug("Could not load user [ " + username + " ]");
+        try
+        {
+            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromRepository(repository);
+            
+            BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getUser(username);
+            
+            return DvcsUserTransformer.fromBitbucketAccount(bitbucketAccount);
+        }
+        catch (BitbucketRequestException e)
+        {
+			log.debug("Could not load user [" + username + "]", e);
 			return DvcsUser.UNKNOWN_USER;
-		} catch (JSONException e)
-		{
-			log.debug("Could not load user [ " + username + " ]");
-			return DvcsUser.UNKNOWN_USER;
-		}
+        }
+        
+//		try
+//		{
+//			log.debug("Parse user [ {} ]", username);
+//
+//			String responseString = requestHelper.get(Authentication.ANONYMOUS,
+//					"/users/" + CustomStringUtils.encode(username), null, getApiUrl(repository));
+//			return BitbucketUserFactory.parse(new JSONObject(responseString).getJSONObject("user"));
+//		} catch (ResponseException e)
+//		{
+//			log.debug("Could not load user [ " + username + " ]");
+//			return DvcsUser.UNKNOWN_USER;
+//		} catch (JSONException e)
+//		{
+//			log.debug("Could not load user [ " + username + " ]");
+//			return DvcsUser.UNKNOWN_USER;
+//		}
 	}
 
 	/**
@@ -463,24 +587,38 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public List<Group> getGroupsForOrganization(Organization organization)
 	{
-		List<Group> groups = new ArrayList<Group>();
-		String urlPath = "/groups/" + organization.getName();
-		Authentication auth = authenticationFactory.getAuthentication(organization);
-		try
-		{
-			String responseString = requestHelper.get(auth, urlPath, null, getApiUrl(organization));
-			JSONArray jsonArray = new JSONArray(responseString);
-			for (int i = 0; i < jsonArray.length(); i++)
-			{
-				JSONObject jsonGroup = (JSONObject) jsonArray.get(i);
-				groups.add(new Group(jsonGroup.getString("slug"), jsonGroup.getString("name")));
-			}
-		} catch (Exception e)
-		{
-			log.warn("Error getting groups for organization {} [{}]", organization.getName(), e.getMessage());
-			throw new SourceControlException(e);
-		}
-		return groups;
+        try
+        {
+            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromOrganization(organization);
+            
+            List<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
+            
+            return GroupTransformer.fromBitbucketGroups(groups);
+        }
+        catch (BitbucketRequestException e)
+        {
+            log.debug("Could not get groups for organization [" + organization.getName() + "]");
+            throw new SourceControlException(e);
+        }
+        
+//		List<Group> groups = new ArrayList<Group>();
+//		String urlPath = "/groups/" + organization.getName();
+//		Authentication auth = authenticationFactory.getAuthentication(organization);
+//		try
+//		{
+//			String responseString = requestHelper.get(auth, urlPath, null, getApiUrl(organization));
+//			JSONArray jsonArray = new JSONArray(responseString);
+//			for (int i = 0; i < jsonArray.length(); i++)
+//			{
+//				JSONObject jsonGroup = (JSONObject) jsonArray.get(i);
+//				groups.add(new Group(jsonGroup.getString("slug"), jsonGroup.getString("name")));
+//			}
+//		} catch (Exception e)
+//		{
+//			log.warn("Error getting groups for organization {} [{}]", organization.getName(), e.getMessage());
+//			throw new SourceControlException(e);
+//		}
+//		return groups;
 	}
 
 	/**
@@ -489,27 +627,51 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public boolean validateCredentials(Organization organization)
 	{
-		// try to obtain user's ssh keys to know if credentials are OK
-		// @ http://confluence.atlassian.com/display/BITBUCKET/SSH+Keys
-		String urlPath = "/ssh-keys/";
-		// need to create it directly because here we have
-		Authentication auth = new BasicAuthentication(organization.getCredential().getAdminUsername(), organization
-				.getCredential().getAdminPassword());
-		try
-		{
-			ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, urlPath,
-					Collections.<String, Object> emptyMap(), getApiUrl(organization));
-			int statusCode = extendedResponse.getStatusCode();
-			if (statusCode == 401 || statusCode == 403)
-			{
-				return false;
-			}
-		} catch (Exception e)
-		{
-			log.warn("Error getting groups for organization {} [{}]", organization.getName(), e.getMessage());
+        try
+        {
+            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromOrganization(organization);
+
+            // try to obtain user's ssh keys to know if credentials are OK
+            // @ http://confluence.atlassian.com/display/BITBUCKET/SSH+Keys
+            remoteClient.getSSHRest().getSSHKeys(); // just to call the REST
+            
+            return true;
+        }
+        catch (BitbucketRequestException.Unauthorized_401 e)
+        {
+            return false;
+        }
+        catch (BitbucketRequestException.Forbidden_403 e)
+        {
+            return  false;
+        }
+        catch (BitbucketRequestException e)
+        {
+			log.warn("Error validating credentials", e);
 			throw new SourceControlException(e);
-		}
-		return true;
+        }
+        
+//		// try to obtain user's ssh keys to know if credentials are OK
+//		// @ http://confluence.atlassian.com/display/BITBUCKET/SSH+Keys
+//		String urlPath = "/ssh-keys/";
+//		// need to create it directly because here we have
+//		Authentication auth = new BasicAuthentication(organization.getCredential().getAdminUsername(), organization
+//				.getCredential().getAdminPassword());
+//		try
+//		{
+//			ExtendedResponse extendedResponse = requestHelper.getExtendedResponse(auth, urlPath,
+//					Collections.<String, Object> emptyMap(), getApiUrl(organization));
+//			int statusCode = extendedResponse.getStatusCode();
+//			if (statusCode == 401 || statusCode == 403)
+//			{
+//				return false;
+//			}
+//		} catch (Exception e)
+//		{
+//			log.warn("Error getting groups for organization {} [{}]", organization.getName(), e.getMessage());
+//			throw new SourceControlException(e);
+//		}
+//		return true;
 	}
 
 	/**
@@ -527,35 +689,55 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail)
 	{
+        try
+        {
+            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromOrganization(organization);
+
+            for (String groupSlug : groupSlugs)
+            {
+				log.debug("Going invite " + userEmail + " to group " + groupSlug + " of bitbucket organization " + organization.getName());
+                
+                remoteClient.getAccountRest().inviteUser(organization.getName(),
+                                                         userEmail,
+                                                         organization.getName(),
+                                                         groupSlug);
+            }
+        }
+        catch (BitbucketRequestException exception)
+        {
+            log.warn("Failed to invite user {} to organization {}. Response HTTP code {}",
+                    new Object [] { userEmail, organization.getName(), exception.getClass().getName() } );
+        }
+        
 		
-		String apiUrl  = getApiUrl(organization);
-		String baseEndpointUrl  = "/users/" + organization.getName() + "/invitations/" + userEmail + "/" + organization.getName() + "/";
-		
-		for (String group : groupSlugs)
-		{
-			
-			try
-			{ 
-				log.debug("Going invite " + userEmail + " to group " + group + " of bitbucket organization " + organization.getName());
-				
-				ExtendedResponse response = requestHelper.runRequestGetExtendedResponse(MethodType.PUT,
-															apiUrl, 
-															baseEndpointUrl + group,
-															authenticationFactory.getAuthentication(organization),
-															null, null);
-				
-				if (!response.isSuccessful()) {
-					log.warn("Failed to invite user {} to organization {}. Response HTTP code {}",
-							new Object [] { userEmail, organization.getName(), response.getStatusCode() } );
-				}
-				
-			} catch (ResponseException e)
-			{ 
-				log.warn("Failed to invite user {} to organization {}. Cause error message is {}",
-						new Object [] { userEmail, organization.getName(), e.getMessage() } );
-			}
-			 
-		}
+//		String apiUrl  = getApiUrl(organization);
+//		String baseEndpointUrl  = "/users/" + organization.getName() + "/invitations/" + userEmail + "/" + organization.getName() + "/";
+//		
+//		for (String group : groupSlugs)
+//		{
+//			
+//			try
+//			{ 
+//				log.debug("Going invite " + userEmail + " to group " + group + " of bitbucket organization " + organization.getName());
+//				
+//				ExtendedResponse response = requestHelper.runRequestGetExtendedResponse(MethodType.PUT,
+//															apiUrl, 
+//															baseEndpointUrl + group,
+//															authenticationFactory.getAuthentication(organization),
+//															null, null);
+//				
+//				if (!response.isSuccessful()) {
+//					log.warn("Failed to invite user {} to organization {}. Response HTTP code {}",
+//							new Object [] { userEmail, organization.getName(), response.getStatusCode() } );
+//				}
+//				
+//			} catch (ResponseException e)
+//			{ 
+//				log.warn("Failed to invite user {} to organization {}. Cause error message is {}",
+//						new Object [] { userEmail, organization.getName(), e.getMessage() } );
+//			}
+//			 
+//		}
 
 	}
 

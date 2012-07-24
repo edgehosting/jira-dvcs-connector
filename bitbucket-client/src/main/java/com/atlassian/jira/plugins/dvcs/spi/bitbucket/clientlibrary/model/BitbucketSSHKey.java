@@ -14,11 +14,10 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
  *
  * @author Martin Skurla mskurla@atlassian.com
  */
-public class BitbucketSSHKey {
-
+public class BitbucketSSHKey 
+{
     private Integer pk;
     private String key;
-
     
     public Integer getPk()
     {

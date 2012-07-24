@@ -6,25 +6,14 @@ import java.net.URL;
 
 public enum HttpMethod implements ConnectionCreator
 {
-	GET
-	{
-	},
-
-	POST
-	{
-	},
-
-	DELETE
-	{
-	},
-	
-	PUT
-	{
-	};
-	
+	GET,
+	POST,
+	DELETE,
+	PUT;
 
 	@Override
-	public HttpURLConnection createConnection(String forUri) throws IOException {
+	public HttpURLConnection createConnection(String forUri) throws IOException 
+    {
 		URL url = new URL(forUri);
 	    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 	    connection.setRequestMethod(name());

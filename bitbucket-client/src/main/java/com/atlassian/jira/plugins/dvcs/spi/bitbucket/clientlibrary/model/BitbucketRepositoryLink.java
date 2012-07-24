@@ -27,17 +27,10 @@ import java.io.Serializable;
  */
 public class BitbucketRepositoryLink implements Serializable
 {
-
 	private static final long serialVersionUID = -2345157639006046210L;
 
 	private Integer id;
-	
 	private BitbucketRepositoryLinkHandler handler;
-
-	public BitbucketRepositoryLink()
-	{
-		super();
-	}
 
 	public Integer getId()
 	{
@@ -59,4 +52,3 @@ public class BitbucketRepositoryLink implements Serializable
 		this.handler = handler;
 	}
 }
-

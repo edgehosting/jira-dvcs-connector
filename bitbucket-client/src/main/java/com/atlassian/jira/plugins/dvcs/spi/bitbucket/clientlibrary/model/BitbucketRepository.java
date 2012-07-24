@@ -23,25 +23,14 @@ import java.io.Serializable;
  */
 public class BitbucketRepository implements Serializable
 {
-
 	private static final long serialVersionUID = -8326622495743697198L;
 	
 	private String slug;
-	
 	private String name;
-
 	private String resourceUri;
-
 	private Integer followersCount;
-
 	private String website;
-
 	private String description;
-
-	public BitbucketRepository()
-	{
-		super();
-	}
 
 	public String getSlug()
 	{
@@ -103,4 +92,3 @@ public class BitbucketRepository implements Serializable
 		this.description = description;
 	}
 }
-

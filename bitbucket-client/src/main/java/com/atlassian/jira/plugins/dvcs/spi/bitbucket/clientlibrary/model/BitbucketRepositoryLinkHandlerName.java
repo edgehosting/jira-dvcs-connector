@@ -11,7 +11,6 @@ public enum BitbucketRepositoryLinkHandlerName
     JENKINS,
     JIRA;
     
-    
     @Override
     public String toString() {
         return name().toLowerCase();

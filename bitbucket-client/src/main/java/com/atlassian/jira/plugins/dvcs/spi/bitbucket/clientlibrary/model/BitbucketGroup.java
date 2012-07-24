@@ -47,25 +47,14 @@ import java.util.List;
  */
 public class BitbucketGroup implements Serializable
 {
-	
 	private static final long serialVersionUID = 2971314710849466929L;
 
 	private String name;
-	
 	private String perission;
-	
 	private Boolean autoAdd;
-
 	private List<BitbucketAccount> members;
-	
 	private BitbucketAccount owner;
-	
 	private String slug;
-
-	public BitbucketGroup()
-	{
-		super();
-	}
 
 	public String getName()
 	{
@@ -127,4 +116,3 @@ public class BitbucketGroup implements Serializable
 		this.autoAdd = autoAdd;
 	}
 }
-

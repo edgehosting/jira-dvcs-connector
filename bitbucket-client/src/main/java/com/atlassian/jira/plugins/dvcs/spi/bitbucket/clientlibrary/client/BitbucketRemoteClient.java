@@ -35,30 +35,26 @@ public class BitbucketRemoteClient
 {
     public static final String BITBUCKET_URL = "https://bitbucket.org";
     
-    
-	private final AuthProvider provider;
-    private final AccountRemoteRestpoint        accountRemoteRestpoint;
-    private final ChangesetRemoteRestpoint      changesetRemoteRestpoint;
-    private final GroupRemoteRestpoint          groupRemoteRestpoint;
+    private final AccountRemoteRestpoint accountRemoteRestpoint;
+    private final ChangesetRemoteRestpoint changesetRemoteRestpoint;
+    private final GroupRemoteRestpoint groupRemoteRestpoint;
     private final RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint;
-    private final RepositoryRemoteRestpoint     repositoryRemoteRestpoint;
-    private final SSHRemoteRestpoint            sshRemoteRestpoint;
-    private final ServiceRemoteRestpoint        serviceRemoteRestpoint;
+    private final RepositoryRemoteRestpoint repositoryRemoteRestpoint;
+    private final SSHRemoteRestpoint sshRemoteRestpoint;
+    private final ServiceRemoteRestpoint serviceRemoteRestpoint;
     
 	
 	public BitbucketRemoteClient(AuthProvider provider)
 	{
-		this.provider = provider;
-        
         RemoteRequestor requestor = provider.provideRequestor();
-        
-        this.accountRemoteRestpoint        = new AccountRemoteRestpoint       (requestor);
-        this.changesetRemoteRestpoint      = new ChangesetRemoteRestpoint     (requestor);
-        this.groupRemoteRestpoint          = new GroupRemoteRestpoint         (requestor);
+
+        this.accountRemoteRestpoint = new AccountRemoteRestpoint(requestor);
+        this.changesetRemoteRestpoint = new ChangesetRemoteRestpoint(requestor);
+        this.groupRemoteRestpoint = new GroupRemoteRestpoint(requestor);
         this.repositoryLinkRemoteRestpoint = new RepositoryLinkRemoteRestpoint(requestor);
-        this.repositoryRemoteRestpoint     = new RepositoryRemoteRestpoint    (requestor);
-        this.sshRemoteRestpoint            = new SSHRemoteRestpoint           (requestor);
-        this.serviceRemoteRestpoint        = new ServiceRemoteRestpoint       (requestor);
+        this.repositoryRemoteRestpoint = new RepositoryRemoteRestpoint(requestor);
+        this.sshRemoteRestpoint = new SSHRemoteRestpoint(requestor);
+        this.serviceRemoteRestpoint = new ServiceRemoteRestpoint(requestor);
 	}
 	
     public AccountRemoteRestpoint getAccountRest()
@@ -95,10 +91,5 @@ public class BitbucketRemoteClient
     {
 		return serviceRemoteRestpoint;
 	}
-
-	public AuthProvider getProvider()
-	{
-		return provider;
-	}	
 }
 

@@ -15,7 +15,6 @@ import java.util.Map;
  */
 public class ThreeLeggedOauthRemoteRequestor extends BaseRemoteRequestor
 {
-
 	private final String accessToken;
 
 	public ThreeLeggedOauthRemoteRequestor(String apiUrl, String accessToken)

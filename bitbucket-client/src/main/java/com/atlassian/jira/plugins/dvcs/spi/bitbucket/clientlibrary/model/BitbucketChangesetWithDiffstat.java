@@ -18,13 +18,12 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
  *
  * @author Martin Skurla mskurla@atlassian.com
  */
-public class BitbucketChangesetWithDiffstat {
-
+public class BitbucketChangesetWithDiffstat 
+{
     private String type;
     private String file;
     private BitbucketDiffstat diffstat;
 
-    
     public String getType()
     {
         return type;

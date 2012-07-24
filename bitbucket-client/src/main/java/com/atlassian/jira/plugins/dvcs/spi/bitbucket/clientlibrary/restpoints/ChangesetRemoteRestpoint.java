@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
+import com.google.common.collect.Lists;
 import com.google.gson.reflect.TypeToken;
 
 /**
@@ -21,7 +23,7 @@ import com.google.gson.reflect.TypeToken;
  */
 public class ChangesetRemoteRestpoint
 {
-    private static final int DEFAULT_CHANGESETS_LIMIT = 5;
+    public static final int DEFAULT_CHANGESETS_LIMIT = 5;
     private static final int DIFFSTAT_NO_LIMIT = -1;
     
     private final RemoteRequestor requestor;
@@ -63,19 +65,30 @@ public class ChangesetRemoteRestpoint
                                     new TypeToken<List<BitbucketChangesetWithDiffstat>>(){}.getType());
     }
     
-    public Iterable<BitbucketChangeset> getChangesets(final String owner, final String slug)
+    public Iterable<BitbucketChangeset> getAllChangesets(final String owner, final String slug)
+    {
+        return getChangesets(owner, slug, null);
+    }
+    
+    public Iterable<BitbucketChangeset> getChangesets(String owner, String slug, String lastChangesetNode)
+    {
+        return getChangesets(owner, slug, lastChangesetNode, DEFAULT_CHANGESETS_LIMIT);
+    }
+    
+    public Iterable<BitbucketChangeset> getChangesets(final String owner, final String slug, final String lastChangesetNode,
+            final int changesetsLimit)
     {
         return new Iterable<BitbucketChangeset>() {
 
             @Override
             public Iterator<BitbucketChangeset> iterator()
             {
-                return new BitbucketChangesetIterator(owner, slug);
+                return new BitbucketChangesetIterator(owner, slug, lastChangesetNode, changesetsLimit);
             }
         };
     }
     
-    private List<BitbucketChangeset> getChangesets(String owner, String slug, String startNode, int limit)
+    private List<BitbucketChangeset> getChangesetsPrivate(String owner, String slug, String startNode, int limit)
     {
         String getChangesetsWithPageAndLimitUrl = String.format("/repositories/%s/%s/changesets", owner, slug);
 
@@ -94,31 +107,40 @@ public class ChangesetRemoteRestpoint
     private final class BitbucketChangesetIterator implements Iterator<BitbucketChangeset> {
         private final String owner;
         private final String slug;
+        private final String lastChangesetNode;
+        private final int    changesetsLimit;
         
         private Iterator<BitbucketChangeset> changesetsCurrentPage;
-        private BitbucketChangeset firstChangesetInPage;
+        private String nextChangesetNodeToQuery;
+        
+        private boolean foundLastChangesetNode = false;
 
         
-        private BitbucketChangesetIterator(String owner, String slug)
+        private BitbucketChangesetIterator(String owner, String slug, final String lastChangesetNode,
+                final int changesetsLimit)
         {
             this.owner = owner;
             this.slug = slug;
+            this.lastChangesetNode = lastChangesetNode;
+            this.changesetsLimit = changesetsLimit;
             
-            List<BitbucketChangeset> changesets = getChangesets(owner, slug, "tip", DEFAULT_CHANGESETS_LIMIT);
-            firstChangesetInPage = changesets.get(0);
-            changesetsCurrentPage = changesets.iterator();
+            List<BitbucketChangeset> changesets = getChangesetsPrivate(owner, slug, "tip", changesetsLimit);
+            nextChangesetNodeToQuery = changesets.get(0).getNode();
+            
+            changesets = reverse(changesets); // because changesets in every page will be returned with lowest date first
+            changesetsCurrentPage = filterUntilChangesetNode(changesets).iterator();
         }
 
         
         @Override
         public boolean hasNext()
         {
-            return changesetsCurrentPage.hasNext() || hasMorePages();
+            return changesetsCurrentPage.hasNext() || (!foundLastChangesetNode && hasMorePages());
         }
 
         @Override
         public BitbucketChangeset next()
-        {
+        {           
             return changesetsCurrentPage.next();
         }
 
@@ -130,13 +152,46 @@ public class ChangesetRemoteRestpoint
         
         private boolean hasMorePages()
         {
-            List<BitbucketChangeset> changesets = getChangesets(owner, slug, firstChangesetInPage.getNode(), DEFAULT_CHANGESETS_LIMIT);
-            firstChangesetInPage = changesets.get(0);
+            List<BitbucketChangeset> changesets = getChangesetsPrivate(owner, slug, nextChangesetNodeToQuery, changesetsLimit + 1);
+            nextChangesetNodeToQuery = changesets.get(0).getNode();
             
-            changesets.remove(changesets.size() - 1);
+            changesets.remove(changesets.size() - 1); // because the nextChangesetNodeToQuery is included as last item
+            
+            changesets = reverse(changesets); // because changesets in every page will be returned with lowest date first
+            changesets = filterUntilChangesetNode(changesets);
             changesetsCurrentPage = changesets.iterator();
             
             return !changesets.isEmpty();
+        }
+        
+        private List<BitbucketChangeset> reverse(List<BitbucketChangeset> bitbucketChangesets)
+        {
+            return Lists.reverse(bitbucketChangesets);
+        }
+        
+        private List<BitbucketChangeset> filterUntilChangesetNode(List<BitbucketChangeset> changesetsToFilter)
+        {
+            if (lastChangesetNode == null)
+            {
+                return changesetsToFilter;
+            }
+            
+            List<BitbucketChangeset> filteredChangesets = new ArrayList<BitbucketChangeset>();
+            
+            for (BitbucketChangeset bitbucketChangeset : changesetsToFilter)
+            {
+                if (lastChangesetNode.equals(bitbucketChangeset.getNode()))
+                {
+                    foundLastChangesetNode = true;
+                    break;
+                }
+                else
+                {
+                    filteredChangesets.add(bitbucketChangeset);
+                }
+            }
+            
+            return filteredChangesets;
         }
     }
 }
