@@ -49,7 +49,7 @@ public class ChangesetRemoteRestpointTest {
     }
     
    
-    @Test
+    @Test(timeOut=10000)
     public void getAllChangesets_ShouldReturnAllChangesets()
     {       
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
@@ -69,7 +69,7 @@ public class ChangesetRemoteRestpointTest {
         assertThat(changesetNodes).hasSize(6);     // but also they have to be unique
     }
     
-    @Test(dataProvider="provideVariousChangesetPaginations")
+    @Test(timeOut=1000, dataProvider="provideVariousChangesetPaginations")
     public void getAllChangesetsUntilChangesetNodeWithPagination_ShouldReturnCorrectChangesets(int pagination)
     {
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
@@ -97,7 +97,7 @@ public class ChangesetRemoteRestpointTest {
         assertThat(changesetNodes).hasSize(3);     // but also they have to be unique
     }
     
-    @Test
+    @Test(timeOut=10000)
     public void getAllChangesetsUntilTipNode_ShouldReturnZeroChangsets()
     {
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
