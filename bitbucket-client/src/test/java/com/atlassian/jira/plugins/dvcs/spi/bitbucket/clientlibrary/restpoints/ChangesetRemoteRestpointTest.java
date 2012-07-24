@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 
+import static org.fest.assertions.api.Assertions.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,8 +14,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Bitbuc
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.NoAuthAuthProvider;
-
-import static org.fest.assertions.api.Assertions.*;
 
 
 /**
@@ -69,7 +69,7 @@ public class ChangesetRemoteRestpointTest {
         assertThat(changesetNodes).hasSize(6);     // but also they have to be unique
     }
     
-    @Test(timeOut=1000, dataProvider="provideVariousChangesetPaginations")
+    @Test(timeOut=10000, dataProvider="provideVariousChangesetPaginations")
     public void getAllChangesetsUntilChangesetNodeWithPagination_ShouldReturnCorrectChangesets(int pagination)
     {
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
