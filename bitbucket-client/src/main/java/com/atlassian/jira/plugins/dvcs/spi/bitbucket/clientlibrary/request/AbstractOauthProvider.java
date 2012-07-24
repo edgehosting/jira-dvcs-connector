@@ -13,23 +13,17 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
  */
 public abstract class AbstractOauthProvider implements AuthProvider
 {
-
 	private final String hostUrl;
 	
 	public AbstractOauthProvider(String hostUrl)
 	{
-		super();
 		this.hostUrl = hostUrl;
 	}
 
-	@Override
+    @Override
 	public String getApiUrl()
 	{
-		if (hostUrl.endsWith("/")) {
-			return hostUrl + "api/1.0";
-		} else {
-			return hostUrl + "/api/1.0";
-		}
+		return hostUrl.replaceAll("/$", "") + "/api/1.0";
 	}
 
 }
