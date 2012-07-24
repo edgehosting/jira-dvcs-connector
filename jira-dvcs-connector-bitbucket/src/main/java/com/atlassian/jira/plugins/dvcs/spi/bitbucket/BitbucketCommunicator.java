@@ -18,7 +18,6 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.net.RequestHelper;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
@@ -51,17 +50,13 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
 	private static final String PLUGIN_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin";
 
-	/** The request helper. */
-	private final RequestHelper requestHelper;
-
-	/** The authentication factory. */
-//	private final AuthenticationFactory authenticationFactory;
-
 	private final BitbucketLinker bitbucketLinker;
 
 	private final String pluginVersion;
 
 	private final BitbucketOAuth oauth;
+
+    private final BitbucketClientRemoteFactory bitbucketClientRemoteFactory;
 
 	/**
 	 * The Constructor.
@@ -71,14 +66,16 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	 * @param requestHelper
 	 *            the request helper
 	 */
-	public BitbucketCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper,
-			@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor, BitbucketOAuth oauth)
-	{//TODO AuthProvider instead of Authentication factory ?
-//		this.authenticationFactory = authenticationFactory;
-		this.requestHelper = requestHelper;
+	public BitbucketCommunicator(AuthenticationFactory authenticationFactory,
+			@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
+			PluginAccessor pluginAccessor,
+			BitbucketOAuth oauth,
+			BitbucketClientRemoteFactory bitbucketClientRemoteFactory)
+	{
 		this.bitbucketLinker = bitbucketLinker;
 		this.oauth = oauth;
-		pluginVersion = getPluginVersion(pluginAccessor);
+        this.bitbucketClientRemoteFactory = bitbucketClientRemoteFactory;
+		this.pluginVersion = getPluginVersion(pluginAccessor);
 	}
 
 	protected String getPluginVersion(PluginAccessor pluginAccessor)
@@ -109,18 +106,19 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	@Override
 	public AccountInfo getAccountInfo(String hostUrl, String accountName)
 	{
-//		String responseString = null;
         try
         {
-            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromHostUrl(hostUrl);
-            remoteClient.getAccountRest().getUser(accountName); // just to call the rest
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getNoAuthClient(hostUrl);
+            
+            // just to call the rest
+            remoteClient.getAccountRest().getUser(accountName); 
             
             return new AccountInfo(BitbucketCommunicator.BITBUCKET);
         }
         catch (BitbucketRequestException.NotFound_404 e)
         {
             return null;
-        }//TODO >>>>> naco bol dobry ten check na usera???
+        }
 
 //		try
 //		{
@@ -162,7 +160,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	{
         try
         {
-            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromOrganization(organization);
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForOrganization(organization);
             
             List<BitbucketRepository> repositories = remoteClient.getRepositoriesRest()
                                                                  .getAllRepositories(organization.getName());
@@ -236,7 +234,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	{
         try
         {
-            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromRepository(repository);
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
             List<BitbucketChangesetWithDiffstat> changesetDiffStat =
                     remoteClient.getChangesetsRest().getChangesetDiffStat(repository.getOrgName(), // owner
                                                                           repository.getSlug(),
@@ -369,7 +367,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	public Iterable<Changeset> getChangesets(final Repository repository, final Date lastCommitDate)
 	{
         try {            
-            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromRepository(repository);
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
             Iterable<BitbucketChangeset> changesets =
                     remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(), //owner
                                                                    repository.getSlug(),
@@ -404,7 +402,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	{
         try
         {
-            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromRepository(repository);
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
             remoteClient.getServicesRest().addPOSTService(repository.getOrgName(), //owner
                                                           repository.getSlug(),
                                                           postCommitUrl);
@@ -443,7 +441,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             bitbucketLinker.unlinkRepository(repository);
             
-            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromRepository(repository);
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
             List<BitbucketServiceEnvelope> services =
                     remoteClient.getServicesRest().getAllServices(repository.getOrgName(), //owner
                                                                   repository.getSlug());
@@ -542,7 +540,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	{
         try
         {
-            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromRepository(repository);
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
             
             BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getUser(username);
             
@@ -589,7 +587,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	{
         try
         {
-            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromOrganization(organization);
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForOrganization(organization);
             
             List<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
             
@@ -629,7 +627,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	{
         try
         {
-            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromOrganization(organization);
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForOrganization(organization);
 
             // try to obtain user's ssh keys to know if credentials are OK
             // @ http://confluence.atlassian.com/display/BITBUCKET/SSH+Keys
@@ -691,7 +689,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 	{
         try
         {
-            BitbucketRemoteClient remoteClient = BitbucketRemoteClientFactory.fromOrganization(organization);
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForOrganization(organization);
 
             for (String groupSlug : groupSlugs)
             {

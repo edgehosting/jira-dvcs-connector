@@ -214,6 +214,11 @@
         <interface>com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer</interface>
     </component>
     
+    <component key="bitbucketRemoteClientFactory" name="Bitbucket Remote Client Factory"
+               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketRemoteClientFactory">
+        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory</interface>
+    </component>
+    
     
     <!-- Listener -->
     <component key="dvcsAddUserListener" class="com.atlassian.jira.plugins.dvcs.listener.DvcsAddUserListener" />

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketRemoteClientFactory;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLinkHandlerName;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
@@ -31,13 +31,15 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     private final String baseUrl;
 	private final ProjectManager projectManager;
 	private final Encryptor encryptor;
+    private final BitbucketClientRemoteFactory bitbucketClientRemoteFactory;
 
 	public BitbucketLinkerImpl(ApplicationProperties applicationProperties,
-	        ProjectManager projectManager, Encryptor encryptor)
+	        ProjectManager projectManager, Encryptor encryptor, BitbucketClientRemoteFactory bitbucketClientRemoteFactory)
     {
 		this.projectManager = projectManager;
 		this.encryptor = encryptor;
-        baseUrl = applicationProperties.getBaseUrl();
+        this.bitbucketClientRemoteFactory = bitbucketClientRemoteFactory;
+        this.baseUrl = applicationProperties.getBaseUrl();
     }
 
     @Override
@@ -88,7 +90,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 	private void addLinks(Repository repository, List<String> linksToAdd)
     {
         RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint =
-                BitbucketRemoteClientFactory.fromRepository(repository).getRepositoryLinksRest();
+                bitbucketClientRemoteFactory.getForRepository(repository).getRepositoryLinksRest();
         
         for (String key : linksToAdd)
         {
@@ -129,7 +131,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     public void removeLinks(Repository repository, List<BitbucketRepositoryLink> linksToRemove)
     {
         RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint =
-                BitbucketRemoteClientFactory.fromRepository(repository).getRepositoryLinksRest();
+                bitbucketClientRemoteFactory.getForRepository(repository).getRepositoryLinksRest();
 
         for (BitbucketRepositoryLink repositoryLink : linksToRemove)
         {
@@ -205,7 +207,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     private List<BitbucketRepositoryLink> getCurrentlyLinkedProjects(Repository repository)
     {
         RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint =
-                BitbucketRemoteClientFactory.fromRepository(repository).getRepositoryLinksRest();
+                bitbucketClientRemoteFactory.getForRepository(repository).getRepositoryLinksRest();
 
         try
         {
