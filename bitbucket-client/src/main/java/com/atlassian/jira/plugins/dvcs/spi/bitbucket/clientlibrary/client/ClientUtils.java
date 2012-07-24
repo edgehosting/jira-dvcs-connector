@@ -37,16 +37,21 @@ public class ClientUtils
     
     public static <T> T fromJson(InputStream json, Class<T> type)
     {
-        return GSON.fromJson(new BufferedReader(new InputStreamReader(json)), type);
+        return GSON.fromJson(asReader(json), type);
     }
-	
+
 	public static <T> T fromJson(InputStream json, Type type)
 	{
 		try
 		{
-			return GSON.fromJson(new BufferedReader(new InputStreamReader(json, UTF8)), type);
+			return GSON.fromJson(asReader(json), type);
 		} catch (Exception e) {
 			throw new BitbucketRequestException("Cannot parse input stream.", e);
 		}
 	}
+	
+	  private static BufferedReader asReader(InputStream json)
+	    {
+	        return new BufferedReader(new InputStreamReader(json));
+	    }
 }

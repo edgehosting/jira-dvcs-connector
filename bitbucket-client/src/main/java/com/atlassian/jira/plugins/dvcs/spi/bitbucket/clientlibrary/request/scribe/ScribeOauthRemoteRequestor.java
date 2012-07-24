@@ -21,7 +21,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpM
  * @author jhocman@atlassian.com
  * 
  */
-public class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
+public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
 {
     protected final String key;
 
@@ -36,10 +36,12 @@ public class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
 
     protected OAuthService createOauthService()
     {
-        return new ServiceBuilder().provider(new TwoLeggedOAuthBitbucket10aApi(apiUrl)).apiKey(key)
+        return new ServiceBuilder().provider(new OAuthBitbucket10aApi(apiUrl, isTwoLegged())).apiKey(key)
                 .signatureType(SignatureType.Header).apiSecret(secret).build();
     }
 
+    protected abstract boolean isTwoLegged();
+    
     protected Verb getScribeVerb(HttpMethod forMethod)
     {
         switch (forMethod)

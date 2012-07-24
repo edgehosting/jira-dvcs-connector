@@ -2,12 +2,16 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 
@@ -27,6 +31,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
 {
 
 	protected final String apiUrl;
+	
+	private static Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
 
 	public BaseRemoteRequestor(String apiUrl)
 	{
@@ -138,10 +144,41 @@ public class BaseRemoteRequestor implements RemoteRequestor
 		
 		response.setHttpStatusCode(connection.getResponseCode());
 		response.setResponse(connection.getInputStream());
+		
 		return response;
 	}
 
-	protected String paramsToString(Map<String, String> parameters, boolean urlAlreadyHasParams)
+	protected void logResponse(RemoteResponse response)
+    {
+	    log.debug("Got response with code {} and payload {} ", new Object [] { response.getHttpStatusCode(), streamToString(response.getResponse()) });
+    }
+	
+	private String streamToString(InputStream response)
+    {
+	    InputStreamReader in = new InputStreamReader(response);
+	    StringWriter out = new  StringWriter();
+	    char[] buffer = new char[4096];
+        int n = 0;
+        try
+        {
+            while (-1 != (n = in.read(buffer))) {
+                out.write(buffer, 0, n);
+            }
+            response.reset();
+        } catch (IOException e)
+        {
+            log.warn("Failed to read response input stream.", e);
+            throw new BitbucketRequestException("Failed to read response input stream.", e);
+        }
+	    return out.toString();
+    }
+
+    protected void logRequest(HttpURLConnection connection)
+    {
+        log.debug("[{} :: {}]");
+    }
+
+    protected String paramsToString(Map<String, String> parameters, boolean urlAlreadyHasParams)
 	{
 		StringBuilder queryStringBuilder = new StringBuilder();
 
@@ -177,8 +214,9 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
 		try
 		{
-			return URLEncoder.encode(str, "UTF-8");
-		} catch (UnsupportedEncodingException e)
+			// return URLEncoder.encode(str, "UTF-8");
+		    return str;
+		} catch (Exception e)
 		{
 			throw new BitbucketRequestException("Required encoding not found", e);
 		}

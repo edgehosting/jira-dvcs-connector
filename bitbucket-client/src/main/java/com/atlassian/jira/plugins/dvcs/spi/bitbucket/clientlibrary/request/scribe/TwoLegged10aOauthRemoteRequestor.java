@@ -42,6 +42,10 @@ public class TwoLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequestor
 		return finalUri + paramsToString(oauthParams, finalUri.indexOf("?") != -1);
 	}
 
-	
+	@Override
+	protected boolean isTwoLegged()
+	{
+	    return true;
+	}
 }
 
