@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -28,18 +28,16 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Client
  */
 public class BaseRemoteRequestor implements RemoteRequestor
 {
-    private static final short HTTP_STATUS_CODE_UNAUTHORIZED = 401;
-    private static final short HTTP_STATUS_CODE_FORBIDDEN    = 403;
-    private static final short HTTP_STATUS_CODE_NOT_FOUND    = 404;
+    private static final int HTTP_STATUS_CODE_UNAUTHORIZED = 401;
+    private static final int HTTP_STATUS_CODE_FORBIDDEN    = 403;
+    private static final int HTTP_STATUS_CODE_NOT_FOUND    = 404;
     
-    private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
-    
+    private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);    
 
 	protected final String apiUrl;
 
 	public BaseRemoteRequestor(String apiUrl)
 	{
-		super();
 		this.apiUrl = apiUrl;
 	}
 
@@ -52,7 +50,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 	@Override
 	public RemoteResponse delete(String uri)
 	{
-		return requestWithoutPayload(HttpMethod.DELETE, uri, new HashMap<String, String>());
+		return requestWithoutPayload(HttpMethod.DELETE, uri, Collections.<String, String>emptyMap());
 	}
 
 	@Override
@@ -118,7 +116,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 		} catch (BitbucketRequestException e)
         {
             throw e; // Unauthorized or NotFound exceptions will be rethrown
-        }catch (Exception e)
+        }catch (IOException e)
 		{
 			log.debug("Failed to execute request: " + connection, e);
 			throw new BitbucketRequestException("Failed to execute request " + connection, e);
@@ -133,7 +131,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 			connection = createConnection(getOrDelete, uri + paramsToString(parameters, uri.contains("?")));
 			return checkAndCreateRemoteResponse(connection);
 
-		} catch (Exception e)
+		} catch (IOException e)
 		{
 			log.debug("Failed to execute request: " + connection, e);
 			throw new BitbucketRequestException("Failed to execute request " + connection, e);
