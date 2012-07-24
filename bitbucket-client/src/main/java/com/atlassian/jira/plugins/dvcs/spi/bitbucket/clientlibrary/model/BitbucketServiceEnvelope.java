@@ -26,18 +26,11 @@ import java.io.Serializable;
  */
 public class BitbucketServiceEnvelope implements Serializable
 {
-
 	private static final long serialVersionUID = -4793873691309696707L;
 
 	private Integer id;
-	
 	private BitbucketService service;
 	
-	public BitbucketServiceEnvelope()
-	{
-		super();
-	}
-
 	public Integer getId()
 	{
 		return id;
@@ -58,4 +51,3 @@ public class BitbucketServiceEnvelope implements Serializable
 		this.service = service;
 	}
 }
-

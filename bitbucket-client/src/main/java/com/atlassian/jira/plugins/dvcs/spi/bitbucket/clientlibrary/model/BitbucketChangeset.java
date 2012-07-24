@@ -39,38 +39,21 @@ import java.util.List;
  *
  */
 public class BitbucketChangeset implements Serializable
-{
-//TODO timestamp vs utctimestamp
+{//TODO timestamp vs utctimestamp
 	private static final long serialVersionUID = -1593016501516234658L;
 
 	private String node;
-	
 	private List<BitbucketChangesetFile> files;
-	
 	private String author;
-	
 	private Date timestamp;
-	
 	private String branch;
-	
 	private String message;
-	
 	private Integer revision;
-	
 	private Long size;
-    
     private String rawNode;
-    
     private String rawAuthor;
-    
     private Date utctimestamp;
-    
     private List<String> parents;
-
-	public BitbucketChangeset()
-	{
-		super();
-	}
 
 	public String getNode()
 	{
@@ -192,4 +175,3 @@ public class BitbucketChangeset implements Serializable
         this.parents = parents;
     }
 }
-

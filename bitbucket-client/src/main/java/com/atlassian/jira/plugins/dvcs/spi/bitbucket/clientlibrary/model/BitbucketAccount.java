@@ -23,82 +23,61 @@ import java.io.Serializable;
  */
 public class BitbucketAccount implements Serializable
 {
-
 	private static final long serialVersionUID = 8025642439790445876L;
     
 	private String username;
-	
 	private String firstName; 
-	
 	private String lastName;
-	
 	private String avatar;
-	
 	private String resourceUri;
 
-	public BitbucketAccount()
-	{
-		super();
-	}
-
-
-	public String getUsername()
+    public String getUsername()
 	{
 		return username;
 	}
-
 
 	public void setUsername(String username)
 	{
 		this.username = username;
 	}
 
-
 	public String getFirstName()
 	{
 		return firstName;
 	}
-
 
 	public void setFirstName(String firstName)
 	{
 		this.firstName = firstName;
 	}
 
-
 	public String getLastName()
 	{
 		return lastName;
 	}
-
 
 	public void setLastName(String lastName)
 	{
 		this.lastName = lastName;
 	}
 
-
 	public String getAvatar()
 	{
 		return avatar;
 	}
-
 
 	public void setAvatar(String avatar)
 	{
 		this.avatar = avatar;
 	}
 
-
 	public String getResourceUri()
 	{
 		return resourceUri;
-	}
-
+    }
 
 	public void setResource_uri(String resourceUri)
 	{
 		this.resourceUri = resourceUri;
 	}
 }
-

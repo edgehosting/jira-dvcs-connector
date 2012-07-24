@@ -26,24 +26,14 @@ import java.io.Serializable;
  */
 public class BitbucketRepositoryLinkHandler implements Serializable
 {
-
 	private static final long serialVersionUID = -2345157639006046210L;
 	
 	private String url;
-	
 	private String displayFrom;
-	
 	private String name;
-	
 	private String key;
-	
 	private String displayTo;
 	
-	public BitbucketRepositoryLinkHandler()
-	{
-		super();
-	}
-
 	public String getUrl()
 	{
 		return url;
@@ -94,4 +84,3 @@ public class BitbucketRepositoryLinkHandler implements Serializable
 		this.displayTo = displayTo;
 	}
 }
-

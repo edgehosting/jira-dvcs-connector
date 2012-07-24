@@ -26,15 +26,9 @@ import java.util.List;
  */
 public class BitbucketRepositoryEnvelope implements Serializable
 {
-
 	private static final long serialVersionUID = -3901290942744823510L;
 
 	private List<BitbucketRepository> repositories;
-
-	public BitbucketRepositoryEnvelope()
-	{
-		super();
-	}
 
 	public List<BitbucketRepository> getRepositories()
 	{
@@ -45,7 +39,4 @@ public class BitbucketRepositoryEnvelope implements Serializable
 	{
 		this.repositories = repositories;
 	}
-
-	
 }
-

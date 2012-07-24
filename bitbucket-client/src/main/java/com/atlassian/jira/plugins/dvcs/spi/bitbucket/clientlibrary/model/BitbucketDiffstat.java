@@ -14,12 +14,11 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
  *
  * @author Martin Skurla mskurla@atlassian.com
  */
-public class BitbucketDiffstat {
-
+public class BitbucketDiffstat 
+{
     private Integer added;
     private Integer removed;
 
-    
     public Integer getAdded()
     {
         return added;

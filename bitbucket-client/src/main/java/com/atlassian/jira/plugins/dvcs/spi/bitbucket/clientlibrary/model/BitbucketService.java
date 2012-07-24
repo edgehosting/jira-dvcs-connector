@@ -26,18 +26,11 @@ import java.util.List;
  */
 public class BitbucketService implements Serializable
 {
-
 	private static final long serialVersionUID = 6652570895226582084L;
 
 	private String type;
-	
 	private List<BitbucketServiceField> fields;
 	
-	public BitbucketService()
-	{
-		super();
-	}
-
 	public String getType()
 	{
 		return type;
@@ -58,4 +51,3 @@ public class BitbucketService implements Serializable
 		this.fields = fields;
 	}
 }
-
