@@ -1,13 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.AccountRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ChangesetRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.GroupRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.SSHRemoteRestpoint;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServicesRepositoryRemoteRestpoint;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServiceRemoteRestpoint;
 
 /**
  * 
@@ -36,52 +37,68 @@ public class BitbucketRemoteClient
     
     
 	private final AuthProvider provider;
+    private final AccountRemoteRestpoint        accountRemoteRestpoint;
+    private final ChangesetRemoteRestpoint      changesetRemoteRestpoint;
+    private final GroupRemoteRestpoint          groupRemoteRestpoint;
+    private final RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint;
+    private final RepositoryRemoteRestpoint     repositoryRemoteRestpoint;
+    private final SSHRemoteRestpoint            sshRemoteRestpoint;
+    private final ServiceRemoteRestpoint        serviceRemoteRestpoint;
+    
 	
 	public BitbucketRemoteClient(AuthProvider provider)
 	{
-		super();
 		this.provider = provider;
+        
+        RemoteRequestor requestor = provider.provideRequestor();
+        
+        this.accountRemoteRestpoint        = new AccountRemoteRestpoint       (requestor);
+        this.changesetRemoteRestpoint      = new ChangesetRemoteRestpoint     (requestor);
+        this.groupRemoteRestpoint          = new GroupRemoteRestpoint         (requestor);
+        this.repositoryLinkRemoteRestpoint = new RepositoryLinkRemoteRestpoint(requestor);
+        this.repositoryRemoteRestpoint     = new RepositoryRemoteRestpoint    (requestor);
+        this.sshRemoteRestpoint            = new SSHRemoteRestpoint           (requestor);
+        this.serviceRemoteRestpoint        = new ServiceRemoteRestpoint       (requestor);
 	}
 	
-	public GroupRemoteRestpoint getGroupsRest()
+    public AccountRemoteRestpoint getAccountRest()
     {
-		return new GroupRemoteRestpoint(provider.provideRequestor());
-	}
-	
+        return accountRemoteRestpoint;
+    }
+    
 	public ChangesetRemoteRestpoint getChangesetsRest()
     {
-		return new ChangesetRemoteRestpoint(provider.provideRequestor());
+		return changesetRemoteRestpoint;
+	}
+    
+    public GroupRemoteRestpoint getGroupsRest()
+    {
+		return groupRemoteRestpoint;
+	}
+    
+	public RepositoryLinkRemoteRestpoint getRepositoryLinksRest()
+    {
+		return repositoryLinkRemoteRestpoint;
 	}
 	
 	public RepositoryRemoteRestpoint getRepositoriesRest()
     {
-		return new RepositoryRemoteRestpoint(provider.provideRequestor());
+		return repositoryRemoteRestpoint;
 	}
 	
-	public ServicesRepositoryRemoteRestpoint getServicesRest()
-    {
-		return new ServicesRepositoryRemoteRestpoint(provider.provideRequestor());
-	}
-	
-	public RepositoryLinkRemoteRestpoint getRepositoryLinksRest()
-    {
-		return new RepositoryLinkRemoteRestpoint(provider.provideRequestor());
-	}
-    
     public SSHRemoteRestpoint getSSHRest()
     {
-        return new SSHRemoteRestpoint(provider.provideRequestor());
+        return sshRemoteRestpoint;
     }
     
-    public AccountRemoteRestpoint getAccountRest()
+	public ServiceRemoteRestpoint getServicesRest()
     {
-        return new AccountRemoteRestpoint(provider.provideRequestor());
-    }
+		return serviceRemoteRestpoint;
+	}
 
 	public AuthProvider getProvider()
 	{
 		return provider;
-	}
-	
+	}	
 }
 

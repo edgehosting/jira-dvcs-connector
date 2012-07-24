@@ -75,7 +75,7 @@ public class ChangesetRemoteRestpoint
         };
     }
     
-    public List<BitbucketChangeset> getChangesets(String owner, String slug, String startNode, int limit)
+    private List<BitbucketChangeset> getChangesets(String owner, String slug, String startNode, int limit)
     {
         String getChangesetsWithPageAndLimitUrl = String.format("/repositories/%s/%s/changesets", owner, slug);
 

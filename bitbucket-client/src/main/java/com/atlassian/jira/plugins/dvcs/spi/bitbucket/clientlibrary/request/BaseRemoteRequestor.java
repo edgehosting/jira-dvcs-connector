@@ -27,6 +27,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Client
  */
 public class BaseRemoteRequestor implements RemoteRequestor
 {
+    private static final short HTTP_STATUS_CODE_UNAUTHORIZED = 401;
+    private static final short HTTP_STATUS_CODE_NOT_FOUND    = 404;
+    
 
     protected final String apiUrl;
 
@@ -97,58 +100,67 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // Helpers
     // --------------------------------------------------------------------------------------------------
 
-    private RemoteResponse requestWithPayload(HttpMethod postOrPut, String uri, Object params, boolean isJson)
-    {
-        HttpURLConnection connection = null;
-        try
+	private RemoteResponse requestWithPayload(HttpMethod postOrPut, String uri, Object params, boolean isJson)
+	{
+		HttpURLConnection connection = null;
+		try
+		{
+			connection = createConnection(postOrPut, uri);
+			if (isJson) {
+				setPayloadOrParams(connection, params, true);
+			} else {
+				setPayloadOrParams(connection, params, false);
+			}
+			return checkAndCreateRemoteResponse(connection);
+			
+		} catch (BitbucketRequestException e)
         {
-            connection = createConnection(postOrPut, uri);
-            if (isJson)
-            {
-                setPayloadOrParams(connection, params, true);
-            } else
-            {
-                setPayloadOrParams(connection, params, false);
-            }
-            return checkAndCreateRemoteResponse(connection);
+            throw e; // Unauthorized or NotFound exceptions will be rethrown
+        }catch (Exception e)
+		{
+			// TODO log + message
+			throw new BitbucketRequestException("Failed to execute request " + connection, e);
+		}
+	}
 
-        } catch (Exception e)
-        {
-            // TODO log + message
-            throw new BitbucketRequestException("Failed to execute request " + connection, e);
-        }
-    }
+	private RemoteResponse requestWithoutPayload(HttpMethod getOrDelete, String uri, Map<String, String> parameters)
+	{
+		HttpURLConnection connection = null;
+		try
+		{
+			connection = createConnection(getOrDelete, uri + paramsToString(parameters, uri.contains("?")));
+			return checkAndCreateRemoteResponse(connection);
 
-    private RemoteResponse requestWithoutPayload(HttpMethod getOrDelete, String uri, Map<String, String> parameters)
-    {
-        HttpURLConnection connection = null;
-        try
-        {
-            connection = createConnection(getOrDelete, uri + paramsToString(parameters, uri.contains("?")));
-            return checkAndCreateRemoteResponse(connection);
-
-        } catch (Exception e)
-        {
-            // TODO log + message
-            throw new BitbucketRequestException("Failed to execute request " + connection, e);
-        }
-    }
+		} catch (Exception e)
+		{
+			// TODO log + message
+			throw new BitbucketRequestException("Failed to execute request " + connection, e);
+		}
+	}
 
     private RemoteResponse checkAndCreateRemoteResponse(HttpURLConnection connection) throws IOException
-    {
-        RemoteResponse response = new RemoteResponse();
-
+	{
+		RemoteResponse response = new RemoteResponse();
+		
         if (connection.getResponseCode() >= 400)
         {
-            throw new BitbucketRequestException("Error response code during the request : "
-                    + connection.getResponseCode());
+            switch (connection.getResponseCode())
+            {
+                case HTTP_STATUS_CODE_UNAUTHORIZED:
+                    throw new BitbucketRequestException.Unauthorized();
+
+                case HTTP_STATUS_CODE_NOT_FOUND:
+                    throw new BitbucketRequestException.NotFound();
+
+                default:
+                    throw new BitbucketRequestException("Error response code during the request : " + connection.getResponseCode());
+            }
         }
-
-        response.setHttpStatusCode(connection.getResponseCode());
-        response.setResponse(connection.getInputStream());
-
-        return response;
-    }
+		
+		response.setHttpStatusCode(connection.getResponseCode());
+		response.setResponse(connection.getInputStream());
+		return response;
+	}
 
     protected void logRequest(HttpURLConnection connection)
     {

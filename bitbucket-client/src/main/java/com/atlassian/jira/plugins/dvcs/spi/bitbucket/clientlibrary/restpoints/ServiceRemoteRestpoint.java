@@ -8,12 +8,12 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 
-public class ServicesRepositoryRemoteRestpoint
+public class ServiceRemoteRestpoint
 {
     private RemoteRequestor requestor;
     
 
-	public ServicesRepositoryRemoteRestpoint(RemoteRequestor remoteRequestor)
+	public ServiceRemoteRestpoint(RemoteRequestor remoteRequestor)
 	{
 		this.requestor = remoteRequestor;
 	}
