@@ -69,7 +69,8 @@ public class TwoLeggedOauthRemoteRequestor extends BaseRemoteRequestor
 		}
 	}
 	
-	static class EmptyToken extends Token {
+	static class EmptyToken extends Token 
+    {
 		private static final long serialVersionUID = -3452471071058444368L;
 		public EmptyToken()
 		{
