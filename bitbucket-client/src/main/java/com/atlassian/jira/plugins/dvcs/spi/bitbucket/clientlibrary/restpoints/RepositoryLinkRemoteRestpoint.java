@@ -60,20 +60,20 @@ public class RepositoryLinkRemoteRestpoint
                                     new TypeToken<BitbucketRepositoryLink>(){}.getType());
     }
     
-//    public BitbucketRepositoryLink addCustomRepositoryLink(String owner, String slug, String handler, String linkUrl, String linkKey)
-//    {
-//        String addRepositoryUrl = String.format("/repositories/%s/%s/links", owner, slug);
-//
-//        Map<String, String> params = Maps.newHashMap();
-//        params.put("handler",  "custom");
-//        params.put("link_url", replacementUrl);//linkurl+/browse/\1
-//        params.put("link_key", regexp);//regex natvrdo
-//        
-//        RemoteResponse response = requestor.post(addRepositoryUrl, params);
-//
-//        return ClientUtils.fromJson(response.getResponse(),
-//                                    new TypeToken<BitbucketRepositoryLink>(){}.getType());
-//    }
+    public BitbucketRepositoryLink addCustomRepositoryLink(String owner, String slug, String replacementUrl, String rex)
+    {
+        String addRepositoryUrl = String.format("/repositories/%s/%s/links", owner, slug);
+
+        Map<String, String> params = Maps.newHashMap();
+        params.put("handler",  "custom");
+        params.put("link_url", replacementUrl); //linkurl+/browse/\1
+        params.put("link_key", rex);
+        
+        RemoteResponse response = requestor.post(addRepositoryUrl, params);
+
+        return ClientUtils.fromJson(response.getResponse(),
+                                    new TypeToken<BitbucketRepositoryLink>(){}.getType());
+    }
     
     BitbucketRepositoryLink getRepositoryLink(String owner, String slug, int id)
     {       

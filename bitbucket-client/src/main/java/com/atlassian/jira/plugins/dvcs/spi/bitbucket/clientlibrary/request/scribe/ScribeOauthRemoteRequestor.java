@@ -8,9 +8,12 @@ import org.scribe.model.SignatureType;
 import org.scribe.model.Token;
 import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BaseRemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpMethod;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 
 /**
  * ScribeOauthRemoteRequestor
@@ -26,6 +29,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpM
  */
 public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
 {
+
+    private static Logger log = LoggerFactory.getLogger(ScribeOauthRemoteRequestor.class);
+
     protected final String key;
 
     protected final String secret;
@@ -40,7 +46,7 @@ public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
     protected OAuthService createOauthService()
     {
         return new ServiceBuilder().provider(new OAuthBitbucket10aApi(apiUrl, isTwoLegged())).apiKey(key)
-                .signatureType(SignatureType.Header).apiSecret(secret).build();
+                .signatureType(SignatureType.Header).apiSecret(secret).debugStream(new DebugOutputStream(log)).build();
     }
     
     protected void addParametersForSigning(OAuthRequest request, Map<String, String> parameters)

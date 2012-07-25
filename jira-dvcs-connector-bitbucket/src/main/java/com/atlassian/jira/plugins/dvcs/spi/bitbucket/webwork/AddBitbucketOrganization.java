@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 
@@ -98,7 +99,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 	private OAuthService createBitbucketOAuthScribeService(String callbackUrl)
 	{
 		ServiceBuilder sb = new ServiceBuilder().apiKey(oauth.getClientId()).signatureType(SignatureType.Header)
-				.apiSecret(oauth.getClientSecret()).provider(new Bitbucket10aScribeApi(url)).debugStream(System.out);
+				.apiSecret(oauth.getClientSecret()).provider(new Bitbucket10aScribeApi(url)).debugStream(new DebugOutputStream(log));
 		
 		if (!StringUtils.isBlank(callbackUrl))
 		{

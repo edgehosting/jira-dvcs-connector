@@ -11,6 +11,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Client
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetEnvelope;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.google.common.collect.Lists;
@@ -88,7 +89,7 @@ public class ChangesetRemoteRestpoint
         };
     }
     
-    private List<BitbucketChangeset> getChangesetsPrivate(String owner, String slug, String startNode, int limit)
+    private List<BitbucketChangeset> getChangesetsInternal(String owner, String slug, String startNode, int limit)
     {
         String getChangesetsWithPageAndLimitUrl = String.format("/repositories/%s/%s/changesets", owner, slug);
 
@@ -96,7 +97,17 @@ public class ChangesetRemoteRestpoint
         parameters.put("start", startNode);
         parameters.put("limit", "" + limit);
         
-        RemoteResponse response = requestor.get(getChangesetsWithPageAndLimitUrl, parameters);
+        RemoteResponse response = null;
+       
+        try
+        {
+           response = requestor.get(getChangesetsWithPageAndLimitUrl, parameters);
+            
+        } catch (BitbucketRequestException.NotFound_404 notfound)
+        {
+            // bitbucket return 404 if there is no commit in repo
+            return new ArrayList<BitbucketChangeset>();
+        }
         
         BitbucketChangesetEnvelope bitbucketChangesetEnvelope = ClientUtils.fromJson(response.getResponse(),
                                                                                      BitbucketChangesetEnvelope.class);
@@ -124,11 +135,19 @@ public class ChangesetRemoteRestpoint
             this.lastChangesetNode = lastChangesetNode;
             this.changesetsLimit = changesetsLimit;
             
-            List<BitbucketChangeset> changesets = getChangesetsPrivate(owner, slug, "tip", changesetsLimit);
-            nextChangesetNodeToQuery = changesets.get(0).getNode();
+            List<BitbucketChangeset> changesets = getChangesetsInternal(owner, slug, "tip", changesetsLimit);
             
-            changesets = reverse(changesets); // because changesets in every page will be returned with lowest date first
-            changesetsCurrentPage = filterUntilChangesetNode(changesets).iterator();
+            if (changesets.isEmpty()) 
+            {
+                changesetsCurrentPage = Collections.EMPTY_LIST.iterator();
+                foundLastChangesetNode = true;
+            } else
+            {
+                nextChangesetNodeToQuery = changesets.get(0).getNode();
+                
+                changesets = reverse(changesets); // because changesets in every page will be returned with lowest date first
+                changesetsCurrentPage = filterUntilChangesetNode(changesets).iterator();
+            }
         }
 
         
@@ -152,7 +171,7 @@ public class ChangesetRemoteRestpoint
         
         private boolean hasMorePages()
         {
-            List<BitbucketChangeset> changesets = getChangesetsPrivate(owner, slug, nextChangesetNodeToQuery, changesetsLimit + 1);
+            List<BitbucketChangeset> changesets = getChangesetsInternal(owner, slug, nextChangesetNodeToQuery, changesetsLimit + 1);
             nextChangesetNodeToQuery = changesets.get(0).getNode();
             
             changesets.remove(changesets.size() - 1); // because the nextChangesetNodeToQuery is included as last item
