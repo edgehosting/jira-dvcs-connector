@@ -29,7 +29,7 @@ public class ConfigureBitbucketOAuth extends JiraWebActionSupport
     {
         if (StringUtils.isBlank(clientSecret) || StringUtils.isBlank(clientID))
         {
-            addErrorMessage("Please enter both the Bitbucket OAuth client ID and client Secret.");
+            addErrorMessage("Please enter both the Bitbucket OAuth Key and Secret.");
         }
     }
 
