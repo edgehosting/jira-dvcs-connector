@@ -12,8 +12,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
-
 /**
  * BaseRemoteRequestor
  * 
@@ -29,10 +27,10 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Client
 public class BaseRemoteRequestor implements RemoteRequestor
 {
     private static final int HTTP_STATUS_CODE_UNAUTHORIZED = 401;
-    private static final int HTTP_STATUS_CODE_FORBIDDEN    = 403;
-    private static final int HTTP_STATUS_CODE_NOT_FOUND    = 404;
-    
-    private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);    
+    private static final int HTTP_STATUS_CODE_FORBIDDEN = 403;
+    private static final int HTTP_STATUS_CODE_NOT_FOUND = 404;
+
+    private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
 
     protected final String apiUrl;
 
@@ -46,82 +44,69 @@ public class BaseRemoteRequestor implements RemoteRequestor
     {
         return requestWithoutPayload(HttpMethod.GET, uri, parameters);
     }
-    
+
     @Override
     public RemoteResponse delete(String uri)
     {
-        return requestWithoutPayload(HttpMethod.DELETE, uri, Collections.<String, String>emptyMap());
+        return requestWithoutPayload(HttpMethod.DELETE, uri, Collections.<String, String> emptyMap());
     }
 
     @Override
     public RemoteResponse post(String uri, Map<String, String> parameters)
     {
-        return requestWithPayload(HttpMethod.POST, uri, parameters, false);
-    }
-    
-    @Override
-    public RemoteResponse post(String uri, Object payload)
-    {
-        return requestWithPayload(HttpMethod.POST, uri, payload, true);
+        return requestWithPayload(HttpMethod.POST, uri, parameters);
     }
 
     @Override
     public RemoteResponse put(String uri, Map<String, String> parameters)
     {
-        return requestWithPayload(HttpMethod.PUT, uri, parameters, false);
+        return requestWithPayload(HttpMethod.PUT, uri, parameters);
     }
-    
-    @Override
-    public RemoteResponse put(String uri, Object payload)
-    {
-        return requestWithPayload(HttpMethod.PUT, uri, payload, true);
-    }
-    
-    //--------------------------------------------------------------------------------------------------
+
+    // --------------------------------------------------------------------------------------------------
     // extension hooks
-    //--------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------------
     /**
-     * E.g. append basic auth headers ... 
+     * E.g. append basic auth headers ...
      */
-    protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method) throws IOException
+    protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method, Map<String, String> params)
+            throws IOException
     {
 
     }
-    
+
     /**
      * E.g. append oauth params ...
      */
-    protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri)
+    protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri, Map<String, String> params)
     {
         return finalUri;
     }
 
-    //--------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------------
     // Helpers
-    //--------------------------------------------------------------------------------------------------
-    
+    // --------------------------------------------------------------------------------------------------
+
     protected void logRequest(HttpURLConnection connection)
     {
         log.debug("[{} :: {}]", new Object[] { connection.getRequestMethod(), connection.getURL() });
     }
 
-    private RemoteResponse requestWithPayload(HttpMethod postOrPut, String uri, Object params, boolean isJson)
+    private RemoteResponse requestWithPayload(HttpMethod postOrPut, String uri, Map<String, String> params)
     {
+
         HttpURLConnection connection = null;
         try
         {
-            connection = createConnection(postOrPut, uri);
-            if (isJson) {
-                setPayloadOrParams(connection, params, true);
-            } else {
-                setPayloadOrParams(connection, params, false);
-            }
+            connection = createConnection(postOrPut, uri, params);
+            setPayloadParams(connection, params);
+
             return checkAndCreateRemoteResponse(connection);
-            
+
         } catch (BitbucketRequestException e)
         {
             throw e; // Unauthorized or NotFound exceptions will be rethrown
-        }catch (IOException e)
+        } catch (IOException e)
         {
             log.debug("Failed to execute request: " + connection, e);
             throw new BitbucketRequestException("Failed to execute request " + connection, e);
@@ -133,7 +118,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         HttpURLConnection connection = null;
         try
         {
-            connection = createConnection(getOrDelete, uri + paramsToString(parameters, uri.contains("?")));
+            connection = createConnection(getOrDelete, uri + paramsToString(parameters, uri.contains("?")), parameters);
             return checkAndCreateRemoteResponse(connection);
 
         } catch (IOException e)
@@ -142,29 +127,30 @@ public class BaseRemoteRequestor implements RemoteRequestor
             throw new BitbucketRequestException("Failed to execute request " + connection, e);
         }
     }
-    
+
     private RemoteResponse checkAndCreateRemoteResponse(HttpURLConnection connection) throws IOException
     {
         RemoteResponse response = new RemoteResponse();
-        
+
         if (connection.getResponseCode() >= 400)
         {
             switch (connection.getResponseCode())
             {
-                case HTTP_STATUS_CODE_UNAUTHORIZED:
-                    throw new BitbucketRequestException.Unauthorized_401();
+            case HTTP_STATUS_CODE_UNAUTHORIZED:
+                throw new BitbucketRequestException.Unauthorized_401();
 
-                case HTTP_STATUS_CODE_FORBIDDEN:
-                    throw new BitbucketRequestException.Forbidden_403();
-                    
-                case HTTP_STATUS_CODE_NOT_FOUND:
-                    throw new BitbucketRequestException.NotFound_404();
+            case HTTP_STATUS_CODE_FORBIDDEN:
+                throw new BitbucketRequestException.Forbidden_403();
 
-                default:
-                    throw new BitbucketRequestException("Error response code during the request : " + connection.getResponseCode());
+            case HTTP_STATUS_CODE_NOT_FOUND:
+                throw new BitbucketRequestException.NotFound_404();
+
+            default:
+                throw new BitbucketRequestException("Error response code during the request : "
+                        + connection.getResponseCode());
             }
         }
-        
+
         response.setHttpStatusCode(connection.getResponseCode());
         response.setResponse(connection.getInputStream());
         return response;
@@ -179,22 +165,29 @@ public class BaseRemoteRequestor implements RemoteRequestor
             if (!urlAlreadyHasParams)
             {
                 queryStringBuilder.append("?");
-            } else {
+            } else
+            {
                 queryStringBuilder.append("&");
             }
-            for (Iterator<Map.Entry<String, String>> iterator = parameters.entrySet().iterator(); iterator.hasNext();)
-            {
-                Map.Entry<String, String> entry = iterator.next();
-                queryStringBuilder.append(encode(entry.getKey()));
-                queryStringBuilder.append("=");
-                queryStringBuilder.append(encode(entry.getValue()));
-                if (iterator.hasNext())
-                {
-                    queryStringBuilder.append("&");
-                }
-            }
+
+            paramsMapToString(parameters, queryStringBuilder);
         }
         return queryStringBuilder.toString();
+    }
+
+    private void paramsMapToString(Map<String, String> parameters, StringBuilder builder)
+    {
+        for (Iterator<Map.Entry<String, String>> iterator = parameters.entrySet().iterator(); iterator.hasNext();)
+        {
+            Map.Entry<String, String> entry = iterator.next();
+            builder.append(encode(entry.getKey()));
+            builder.append("=");
+            builder.append(encode(entry.getValue()));
+            if (iterator.hasNext())
+            {
+                builder.append("&");
+            }
+        }
     }
 
     private static String encode(String str)
@@ -213,36 +206,38 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
     }
 
-    private HttpURLConnection createConnection(HttpMethod method, String uri) throws IOException
+    private HttpURLConnection createConnection(HttpMethod method, String uri, Map<String, String> params)
+            throws IOException
     {
-        HttpURLConnection connection = method.createConnection(afterFinalUriConstructed(method, apiUrl + uri));
+        String finalUrl = afterFinalUriConstructed(method, apiUrl + uri, params);
+
+        HttpURLConnection connection = method.createConnection(finalUrl);
+
         //
         logRequest(connection);
         //
         //
         // something to extend
         //
-        onConnectionCreated(connection, method);
+        onConnectionCreated(connection, method, params);
 
         return connection;
     }
 
     @SuppressWarnings("all")
-    private void setPayloadOrParams(HttpURLConnection connection, Object params, boolean isJson) throws IOException
+    private void setPayloadParams(HttpURLConnection connection, Map<String, String> params) throws IOException
     {
         connection.setDoOutput(true);
-        
+
         if (params != null)
         {
-            byte[] data = new byte [] {};
+            byte[] data = new byte[] {};
 
-            if (isJson) {
-                connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                data = ClientUtils.toJson(params).getBytes("UTF-8");
-            } else {
-                // assuming post/put kind of "form" params
-                data = paramsToString((Map) params, true).getBytes("UTF-8");
-            }
+            // assuming post/put kind of "form" params
+            StringBuilder paramsAsString = new StringBuilder();
+            paramsMapToString(params, paramsAsString);
+
+            data = paramsAsString.toString().getBytes("UTF-8");
 
             connection.setFixedLengthStreamingMode(data.length);
             BufferedOutputStream output = new BufferedOutputStream(connection.getOutputStream());
@@ -251,7 +246,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
                 output.write(data);
                 output.flush();
-            
+
             } finally
             {
                 try
@@ -267,6 +262,5 @@ public class BaseRemoteRequestor implements RemoteRequestor
             connection.setFixedLengthStreamingMode(0);
         }
     }
-    
 
 }

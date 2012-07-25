@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scri
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.Map;
 
 import org.scribe.extractors.HeaderExtractorImpl;
 import org.scribe.model.OAuthConstants;
@@ -49,13 +50,17 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
     }
 
     @Override
-    protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method) throws IOException
+    protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method, Map<String, String> parameters)
+            throws IOException
     {
         //
         // generate oauth 1.0 params for 3LO - use scribe so far for that ...
         //
         OAuthService service = createOauthService();
         OAuthRequest request = new OAuthRequest(getScribeVerb(method), connection.getURL().toString());
+        
+        addParametersForSigning(request, parameters);
+        
         service.signRequest(generateAccessTokenObject(accessTokenWithSecret), request);
 
         String header = authHeaderCreator.extract(request);

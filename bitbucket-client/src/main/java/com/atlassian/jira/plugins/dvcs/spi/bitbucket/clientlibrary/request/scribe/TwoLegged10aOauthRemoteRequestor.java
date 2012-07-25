@@ -26,13 +26,16 @@ public class TwoLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequestor
 	}
 
 	@Override
-	protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri)
+	protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri, Map<String, String> parameters)
 	{
 		//
 		// generate oauth 1.0 params for 2LO - use scribe so far for that ...
 		//
 		OAuthService service = createOauthService();
 		OAuthRequest request = new OAuthRequest(getScribeVerb(forMethod), finalUri);
+		
+		addParametersForSigning(request, parameters);
+		
 		service.signRequest(new EmptyToken(), request);
 		Map<String, String> oauthParams = request.getOauthParameters();
 		//
@@ -42,7 +45,8 @@ public class TwoLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequestor
 		return finalUri + paramsToString(oauthParams, finalUri.indexOf("?") != -1);
 	}
 
-	@Override
+
+    @Override
 	protected boolean isTwoLegged()
 	{
 	    return true;

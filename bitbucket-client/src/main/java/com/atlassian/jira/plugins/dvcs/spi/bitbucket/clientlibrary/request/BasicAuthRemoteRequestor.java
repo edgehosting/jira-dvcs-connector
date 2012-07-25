@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -34,7 +35,7 @@ public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 	}
 
 	@Override
-	protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method) throws IOException
+	protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method, Map<String, String> params) throws IOException
 	{
 		connection.setRequestProperty(
 				"Authorization",

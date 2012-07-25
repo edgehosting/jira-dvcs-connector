@@ -1,6 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe;
 
+import java.util.Map;
+
 import org.scribe.builder.ServiceBuilder;
+import org.scribe.model.OAuthRequest;
 import org.scribe.model.SignatureType;
 import org.scribe.model.Token;
 import org.scribe.model.Verb;
@@ -38,6 +41,20 @@ public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
     {
         return new ServiceBuilder().provider(new OAuthBitbucket10aApi(apiUrl, isTwoLegged())).apiKey(key)
                 .signatureType(SignatureType.Header).apiSecret(secret).build();
+    }
+    
+    protected void addParametersForSigning(OAuthRequest request, Map<String, String> parameters)
+    {
+        Verb method = request.getVerb();
+        if (method == Verb.POST || method == Verb.PUT) {
+            
+            for (String paramName : parameters.keySet())
+            {
+                request.addBodyParameter(paramName, parameters.get(paramName));
+            }
+            
+        }
+        
     }
 
     protected abstract boolean isTwoLegged();

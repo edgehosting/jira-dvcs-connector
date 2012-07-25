@@ -24,7 +24,7 @@ public class ThreeLeggedOauthRemoteRequestor extends BaseRemoteRequestor
 	}
 	
 	@Override
-	protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri)
+	protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri, Map<String, String> parameters)
 	{
 		Map<String, String> oauthParams = new HashMap<String, String>();
 		oauthParams.put("access_token", accessToken);
