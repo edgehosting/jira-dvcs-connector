@@ -1,11 +1,15 @@
 package com.atlassian.jira.plugins.bitbucket.spi.github;
 
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.User;
 
 import com.atlassian.jira.plugins.bitbucket.api.Changeset;
 import com.atlassian.jira.plugins.bitbucket.api.ChangesetFile;
@@ -31,12 +35,35 @@ public class GithubChangesetFactory
     {
         final List<ChangesetFile> changesetFiles = transformFiles(repositoryCommit.getFiles());
 
-        return new DefaultChangeset(
+        String name = "";
+
+        Date date = Calendar.getInstance().getTime();
+        
+        if (repositoryCommit.getCommit() != null
+                && repositoryCommit.getCommit().getAuthor() != null)
+        {
+        	
+            if (StringUtils.isNotBlank(repositoryCommit.getCommit().getAuthor().getName()))
+            {
+                name = repositoryCommit.getCommit().getAuthor().getName();
+            }
+            
+            date = repositoryCommit.getCommit().getAuthor().getDate();
+        }
+
+        // try to get login from Author, if there is no Author try from Commiter
+        String login = getUserLogin(repositoryCommit.getAuthor());
+        if (StringUtils.isBlank(login))
+        {
+            login = getUserLogin(repositoryCommit.getCommitter());
+        }
+
+        Changeset changeset = new DefaultChangeset(
                 repositoryId,
                 repositoryCommit.getSha(),
-                repositoryCommit.getCommit().getAuthor().getName(),
-                repositoryCommit.getAuthor().getLogin(),
-                repositoryCommit.getCommit().getAuthor().getDate(),
+                name,
+                login,
+                date,
                 "", // todo: raw-node. what is it in github?
                 branch,
                 repositoryCommit.getCommit().getMessage(),
@@ -44,6 +71,17 @@ public class GithubChangesetFactory
                 changesetFiles,
                 changesetFiles.size()
         );
+
+		return changeset;
+    }
+    
+    private static String getUserLogin(User user)
+    {
+        if (user!=null && user.getLogin()!=null)
+        {
+            return user.getLogin();
+        }
+        return "";
     }
 
 

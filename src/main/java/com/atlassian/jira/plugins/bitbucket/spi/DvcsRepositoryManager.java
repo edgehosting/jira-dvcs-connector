@@ -1,6 +1,15 @@
 package com.atlassian.jira.plugins.bitbucket.spi;
 
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.bitbucket.IssueLinker;
@@ -15,14 +24,7 @@ import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public abstract class DvcsRepositoryManager implements RepositoryManager, RepositoryUriFactory
 {
@@ -139,6 +141,11 @@ public abstract class DvcsRepositoryManager implements RepositoryManager, Reposi
     @Override
     public SourceControlUser getUser(SourceControlRepository repository, String username)
     {
+        if (StringUtils.isBlank(username))
+        {
+            return SourceControlUser.UNKNOWN_USER;
+        }
+        
         return getCommunicator().getUser(repository, username);
     }
 
