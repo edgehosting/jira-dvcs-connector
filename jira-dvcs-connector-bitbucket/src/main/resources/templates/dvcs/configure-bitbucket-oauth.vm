@@ -41,6 +41,20 @@
 	        <li>
 	           After you create the consumer, Bitbucket will provide you with a <strong>Key</strong> and a <strong>Secret</strong> which you will need to enter below.
 	
+				<div>&nbsp;</div>
+	
+	            #if ($action.getMessages() != "")
+	                <div id="gh_messages" class="aui-message success">
+	                    <p class="title">$action.getMessages()</p>
+	                </div>
+	            #end
+	
+	            #foreach ($errorMessage in $action.getErrorMessages())
+	                <div class="aui-message error shadowed">
+	                    <p class="title">$errorMessage</p>
+	                </div>
+	            #end
+
 	            <table width="500px">
 	
 	                <tr>
@@ -86,19 +100,7 @@
 	                </tr>
 	
 	            </table>
-	
-	            #if ($action.getMessages() != "")
-	                <div id="gh_messages" class="aui-message success">
-	                    <p class="title">$action.getMessages()</p>
-	                </div>
-	            #end
-	
-	            #foreach ($errorMessage in $action.getErrorMessages())
-	                <div class="aui-message error shadowed">
-	                    <p class="title">$errorMessage</p>
-	                </div>
-	            #end
-	
+	            
 	        </li>
 	
 	
