@@ -4,6 +4,8 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 import static org.fest.assertions.api.Assertions.*;
 
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.testng.annotations.BeforeClass;
@@ -21,8 +23,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.NoAut
  */
 public class ChangesetRemoteRestpointTest {
     
-    private static final String BITBUCKET_OWNER = "jirabitbucketconnector";
-    private static final String BITBUCKET_REPO  = "testrepo";
+    private static final String BITBUCKET_OWNER      = "jirabitbucketconnector";
+    private static final String BITBUCKET_REPO       = "testrepo";
+    private static final String BITBUCKET_EMPTY_REPO = "testemptyrepo";
 
     private static final String THIRD_CHANGESET_NODE = "f3d8dff6360e";
     private static final String TIP_CHANGESET_NODE   = "4444ae193a51";
@@ -50,7 +53,7 @@ public class ChangesetRemoteRestpointTest {
     
    
     @Test(timeOut=10000)
-    public void getAllChangesets_ShouldReturnAllChangesets()
+    public void getChangesets_ShouldReturnAllChangesets()
     {       
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
                                                                        .getAllChangesets(BITBUCKET_OWNER,
@@ -70,7 +73,7 @@ public class ChangesetRemoteRestpointTest {
     }
     
     @Test(timeOut=10000, dataProvider="provideVariousChangesetPaginations")
-    public void getAllChangesetsUntilChangesetNodeWithPagination_ShouldReturnCorrectChangesets(int pagination)
+    public void getChangesetsUntilChangesetNodeWithPagination_ShouldReturnCorrectChangesets(int pagination)
     {
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
                                                                        .getChangesets(BITBUCKET_OWNER,
@@ -98,7 +101,7 @@ public class ChangesetRemoteRestpointTest {
     }
     
     @Test(timeOut=10000)
-    public void getAllChangesetsUntilTipNode_ShouldReturnZeroChangsets()
+    public void getChangesetsUntilTipNode_ShouldReturnZeroChangsets()
     {
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
                                                                        .getChangesets(BITBUCKET_OWNER,
@@ -106,5 +109,19 @@ public class ChangesetRemoteRestpointTest {
                                                                                       TIP_CHANGESET_NODE);
         
         assertThat(changesets).hasSize(0);
+    }
+    
+    @Test(timeOut=10000, expectedExceptions=NoSuchElementException.class)
+    public void getChangesetsFromEmptyRepository_ShouldReturnEmptyIterable()
+    {
+        Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
+                                                                       .getAllChangesets(BITBUCKET_OWNER,
+                                                                                         BITBUCKET_EMPTY_REPO);
+        Iterator<BitbucketChangeset> changesetIterator = changesets.iterator();
+        
+        assertThat(changesetIterator.hasNext()).isFalse();
+        
+        // should throw NoSuchElementException
+        changesetIterator.next();
     }
 }

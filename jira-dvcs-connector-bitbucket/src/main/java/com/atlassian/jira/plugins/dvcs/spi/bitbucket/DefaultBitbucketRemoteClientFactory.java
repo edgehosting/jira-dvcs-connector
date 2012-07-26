@@ -24,6 +24,7 @@ public final class DefaultBitbucketRemoteClientFactory implements BitbucketClien
         this.oauth = oauth;
     }
 
+    @Override
     public BitbucketRemoteClient getForOrganization(Organization organization)
     {
         AuthProvider authProvider = createProviderForOrganization(organization);
@@ -31,6 +32,7 @@ public final class DefaultBitbucketRemoteClientFactory implements BitbucketClien
         return new BitbucketRemoteClient(authProvider);
     }
 
+    @Override
     public BitbucketRemoteClient getForRepository(Repository repository)
     {
         AuthProvider authProvider = createProviderForRepository(repository);
