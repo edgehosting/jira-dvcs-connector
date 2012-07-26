@@ -1,5 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -11,12 +20,6 @@ import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.net.ResponseException;
 import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 public class RepositoryServiceImpl implements RepositoryService
 {
@@ -57,7 +60,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	}
 
 	@Override
-	public void syncRepositoryList(Organization organization)
+	public synchronized void syncRepositoryList(Organization organization)
 	{
 		log.debug("Synchronising list of repositories");
 		// get repositories from the dvcs hosting server
@@ -66,6 +69,8 @@ public class RepositoryServiceImpl implements RepositoryService
 		// get local repositories
 		List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
 
+		// BBC-231 somehow we ended up with duplicated repositories on QA-EACJ
+		removeDuplicateRepositories(organization, storedRepositories);
 		// update names of existing repositories in case their names changed
 		updateExistingRepositories(storedRepositories, remoteRepositories);
 		// repositories that are no longer on hosting server will be marked as deleted
@@ -76,6 +81,29 @@ public class RepositoryServiceImpl implements RepositoryService
 		// start asynchronous changesets synchronization for all linked repositories in organization
 		syncAllInOrganization(organization.getId());
 	}
+
+    /**
+     * Removes duplicated repositories.
+     * 
+     * @param organization
+     * @param storedRepositories
+     */
+    private void removeDuplicateRepositories(Organization organization, List<Repository> storedRepositories)
+    {
+        Set<String> existingRepositories = new HashSet<String>();
+        for (Repository repository : storedRepositories)
+        {
+            String slug = repository.getSlug();
+            if (existingRepositories.contains(slug))
+            {
+                log.warn("Repository " + organization.getName() + "/" + slug + " is duplicated. Will be deleted.");
+                remove(repository);
+            } else
+            {
+                existingRepositories.add(slug);
+            }
+        }
+    }
 
 	/**
 	 * @param storedRepositories
