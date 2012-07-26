@@ -11,9 +11,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.StringUtils;
@@ -42,8 +44,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import com.google.common.collect.Iterators;
 
 public class GithubCommunicator implements DvcsCommunicator
 {
@@ -104,23 +105,36 @@ public class GithubCommunicator implements DvcsCommunicator
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(organization);
         repositoryService.getClient().setOAuth2Token(organization.getCredential().getAccessToken());
+
+        // We don't know if this is team account or standard account. Let's first get repositories 
+        // by calling getOrgRepositories
+        
+        List<org.eclipse.egit.github.core.Repository> repositoriesFromOrganization;
         try
-        {           
-            List<org.eclipse.egit.github.core.Repository> publicRepositoriesFromOrganization
-                    = repositoryService.getRepositories(organization.getName());
-            List<org.eclipse.egit.github.core.Repository> allRepositoriesFromAuthorizedUser
-                    = repositoryService.getRepositories();
-            
-            Set<Repository> repositories = new LinkedHashSet<Repository>();
-            for (org.eclipse.egit.github.core.Repository ghRepository : publicRepositoriesFromOrganization)
+        {
+            repositoriesFromOrganization = repositoryService.getOrgRepositories(organization.getName());
+        } catch (IOException e)
+        {
+            // looks like this is not a team account but standard account
+            repositoriesFromOrganization = Collections.emptyList();
+        }
+        try
+        {
+            // for normal account
+            List<org.eclipse.egit.github.core.Repository> publicRepositoriesFromOrganization = repositoryService
+                    .getRepositories(organization.getName());
+            List<org.eclipse.egit.github.core.Repository> allRepositoriesFromAuthorizedUser = repositoryService
+                    .getRepositories();
+
+            Iterator<org.eclipse.egit.github.core.Repository> iterator = Iterators.concat(
+                    repositoriesFromOrganization.iterator(),
+                    publicRepositoriesFromOrganization.iterator(),
+                    allRepositoriesFromAuthorizedUser.iterator());
+
+            Set<Repository> repositories = new HashSet<Repository>();
+            while (iterator.hasNext())
             {
-                Repository repository = new Repository();
-                repository.setSlug(ghRepository.getName());
-                repository.setName(ghRepository.getName());
-                repositories.add(repository);
-            }
-            for (org.eclipse.egit.github.core.Repository ghRepository : allRepositoriesFromAuthorizedUser)
-            {
+                org.eclipse.egit.github.core.Repository ghRepository = (org.eclipse.egit.github.core.Repository) iterator.next();
                 if (StringUtils.equals(ghRepository.getOwner().getLogin(), organization.getName()))
                 {
                     Repository repository = new Repository();
@@ -129,8 +143,9 @@ public class GithubCommunicator implements DvcsCommunicator
                     repositories.add(repository);
                 }
             }
+
             log.debug("Found repositories: " + repositories.size());
-            return new ArrayList<Repository>(repositories);
+            return new ArrayList<Repository>((Set<Repository>) repositories);
         } catch (IOException e)
         {
             throw new SourceControlException("Error retrieving list of repositories", e);
