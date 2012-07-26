@@ -23,6 +23,4 @@
 //
 //	public abstract ExtendedResponse runRequestGetExtendedResponse(Request.MethodType methodType, String apiBaseUrl, String urlPath, Authentication auth,
 //			Map<String, Object> params, String postData) throws ResponseException;
-//}//TODO meno factory nesedi...
-////TODO payload bol vymazany, cize refactoring
-////TODO difference between request with and without payload
+//}
