@@ -84,7 +84,7 @@ public class ChangesetRemoteRestpoint
             @Override
             public Iterator<BitbucketChangeset> iterator()
             {
-                return new BitbucketChangesetIterator(owner, slug, lastChangesetNode, changesetsLimit);
+                return new BitbucketLastNodeChangesetIterator(owner, slug, lastChangesetNode, changesetsLimit);
             }
         };
     }
@@ -115,7 +115,7 @@ public class ChangesetRemoteRestpoint
         return bitbucketChangesetEnvelope.getChangesets();
     }
     
-    private final class BitbucketChangesetIterator implements Iterator<BitbucketChangeset> {
+    private final class BitbucketLastNodeChangesetIterator implements Iterator<BitbucketChangeset> {
         private final String owner;
         private final String slug;
         private final String lastChangesetNode;
@@ -127,7 +127,7 @@ public class ChangesetRemoteRestpoint
         private boolean foundLastChangesetNode = false;
 
         
-        private BitbucketChangesetIterator(String owner, String slug, final String lastChangesetNode,
+        private BitbucketLastNodeChangesetIterator(String owner, String slug, final String lastChangesetNode,
                 final int changesetsLimit)
         {
             this.owner = owner;

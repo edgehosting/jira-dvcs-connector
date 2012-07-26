@@ -42,11 +42,13 @@ public class BitbucketRemoteClient
     private final RepositoryRemoteRestpoint repositoryRemoteRestpoint;
     private final SSHRemoteRestpoint sshRemoteRestpoint;
     private final ServiceRemoteRestpoint serviceRemoteRestpoint;
+
+    private final RemoteRequestor requestor;
     
 	
 	public BitbucketRemoteClient(AuthProvider provider)
 	{
-        RemoteRequestor requestor = provider.provideRequestor();
+        requestor = provider.provideRequestor();
 
         this.accountRemoteRestpoint = new AccountRemoteRestpoint(requestor);
         this.changesetRemoteRestpoint = new ChangesetRemoteRestpoint(requestor);
@@ -91,5 +93,10 @@ public class BitbucketRemoteClient
     {
 		return serviceRemoteRestpoint;
 	}
+
+    public RemoteRequestor getRequestor()
+    {
+        return requestor;
+    }
 }
 

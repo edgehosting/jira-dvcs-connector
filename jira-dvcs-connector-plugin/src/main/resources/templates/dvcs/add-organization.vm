@@ -85,19 +85,6 @@
                       <div id="org-error" class="dvcs-error">This field is required.</div>
                     </div>
 				
-				###### TMP while we havent functional BB oauth
-				<div class="field-group">
-	                   <label for="adminUsername">Admin Username:</label>
-	                   <input type="text" id="adminUsername" name="adminUsername" value="" onfocus="javascript: dvcsCopyOrganizationToUsername();"/>
-	                   <div id="admin-username-error" class="dvcs-error">This field is required.</div>
-	                </div>
-	                <div class="field-group">
-	                   <label for="adminPassword">Admin Password:</label>
-	                   <input type="password" id="adminPassword" name="adminPassword" value=""/>
-	                   <div id="admin-password-error" class="dvcs-error">This field is required.</div>
-	                </div>
-	            ###### TMP
-	                
 				## BB form section
 				<div id="bitbucket-form-section" style="display:none">
 	                <input type="hidden" id="oauthBbRequired" name="oauthBbRequired" value="true" />
@@ -238,7 +225,7 @@
 								            
 								            <li class="dropdown-item">
 												 #if($org.dvcsType == "bitbucket")
-								            	<a href="#" onclick="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Credentials</a>
+												 <a  href="$baseurl/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 												 #else
 												 <a  href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 								            	 #end

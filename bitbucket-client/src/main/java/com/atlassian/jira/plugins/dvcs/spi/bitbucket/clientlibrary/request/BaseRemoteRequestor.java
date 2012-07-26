@@ -132,23 +132,25 @@ public class BaseRemoteRequestor implements RemoteRequestor
     {
         RemoteResponse response = new RemoteResponse();
 
-        if (connection.getResponseCode() >= 400)
+        if (connection.getResponseCode() >= 300)
         {
+            RuntimeException toBeThrown =  new BitbucketRequestException("Error response code during the request : "
+                    + connection.getResponseCode());
+            
             switch (connection.getResponseCode())
             {
             case HTTP_STATUS_CODE_UNAUTHORIZED:
-                throw new BitbucketRequestException.Unauthorized_401();
+                toBeThrown = new BitbucketRequestException.Unauthorized_401();
 
             case HTTP_STATUS_CODE_FORBIDDEN:
-                throw new BitbucketRequestException.Forbidden_403();
+                toBeThrown = new BitbucketRequestException.Forbidden_403();
 
             case HTTP_STATUS_CODE_NOT_FOUND:
-                throw new BitbucketRequestException.NotFound_404();
-
-            default:
-                throw new BitbucketRequestException("Error response code during the request : "
-                        + connection.getResponseCode());
+                toBeThrown = new BitbucketRequestException.NotFound_404();
             }
+            
+            // log.error("Failed to properly execute request [" + connection.getRequestMethod() + "] : " + connection, toBeThrown);
+            throw toBeThrown;
         }
 
         response.setHttpStatusCode(connection.getResponseCode());
@@ -262,5 +264,4 @@ public class BaseRemoteRequestor implements RemoteRequestor
             connection.setFixedLengthStreamingMode(0);
         }
     }
-
 }

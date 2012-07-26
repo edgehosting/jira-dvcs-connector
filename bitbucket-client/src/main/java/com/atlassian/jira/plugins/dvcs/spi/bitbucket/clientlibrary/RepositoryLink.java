@@ -29,6 +29,7 @@ public class RepositoryLink implements Serializable
     }
 
     public static final String TYPE_JIRA = "jira";
+    public static final String TYPE_CUSTOM = "custom";
     
     int id;
     private Handler handler;

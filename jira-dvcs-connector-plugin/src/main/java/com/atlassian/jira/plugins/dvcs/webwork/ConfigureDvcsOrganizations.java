@@ -76,7 +76,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 		return !communicatorProvider.getCommunicator("github").isOauthConfigured();
 	}
 	
-	public boolean isBitbucketRequired() {
+	public boolean isBitbucketOauthRequired() {
 		return !communicatorProvider.getCommunicator("bitbucket").isOauthConfigured();
 	}
 }
