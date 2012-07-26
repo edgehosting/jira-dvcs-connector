@@ -214,7 +214,7 @@
 								            </li>
 								            
 								            <li class="dropdown-item">
-								             	 <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh List</a>
+								             	 <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh list</a>
 								            </li>
 								            
  							            	#if($org.dvcsType == "bitbucket")
@@ -227,7 +227,7 @@
 								            
 								            <li class="dropdown-item">
 												 #if($org.dvcsType == "bitbucket")
-								            	<a href="#" onclick="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change Credentials</a>
+								            	<a href="#" onclick="javascript:changePassword('$textutils.htmlEncode($org.credential.adminUsername)', $org.id);">Change credentials</a>
 												 #else
 												 <a  href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 								            	 #end
