@@ -51,7 +51,13 @@ public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
     
     protected void addParametersForSigning(OAuthRequest request, Map<String, String> parameters)
     {
+        
+        if (parameters == null) {
+            return;
+        }
+        
         Verb method = request.getVerb();
+        
         if (method == Verb.POST || method == Verb.PUT) {
             
             for (String paramName : parameters.keySet())
