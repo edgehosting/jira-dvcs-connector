@@ -192,6 +192,7 @@
     </issue-tabpanel>
 
     <!-- The webwork1 plugin element is how you add new actions to JIRA -->
+    <!--  TODO move to RestResource? -->
     <webwork1 key="repositoryConfiguration" name="Repository Configuration" class="java.lang.Object">
         <!-- Note that HTML in the description element is ignored -->
         <description>
