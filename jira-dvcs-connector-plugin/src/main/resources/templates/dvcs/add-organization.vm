@@ -125,8 +125,9 @@
 	            </div>
 	           
 	            <div style="margin-top: 10px;"  class="field-group">
-	                <label for="autoSmartCommits">Enable <a href="https://confluence.atlassian.com/display/FISHEYE/Using+Smart+Commits">Smart Commits</a>:</label>
+	                <label for="autoSmartCommits">Enable Smart Commits:</label>
 	                <input class="checkbox" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true" checked="checked" />
+	                <div class="description"><a href="https://confluence.atlassian.com/display/FISHEYE/Using+Smart+Commits">Smart Commits </a>allow repository committers to perform actions like transitioning JIRA issues</div>
 	            </div>
      
                 <div id="bbCredentials"></div>
