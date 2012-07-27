@@ -90,10 +90,10 @@
         <interface>com.atlassian.jira.plugins.dvcs.webwork.IssueLinker</interface>
     </component>
 
-    <component key="responseHandlerFactory" name="responseHandlerFactory"
+    <!--component key="responseHandlerFactory" name="responseHandlerFactory"
             class="com.atlassian.jira.plugins.dvcs.net.DefaultExtendedResponseHandlerFactory">
         <interface>com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory</interface>
-    </component>
+    </component-->
 
     <component key="executorService" name="Executor Service Factory Component"
             class="com.atlassian.jira.plugins.dvcs.sync.impl.DefaultExecutorServiceFactoryBean">
@@ -123,10 +123,10 @@
         <interface>com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory</interface>
     </component>
 
-    <component key="requestHelper" name="requestHelper"
+    <!--component key="requestHelper" name="requestHelper"
             class="com.atlassian.jira.plugins.dvcs.net.DefaultRequestHelper">
         <interface>com.atlassian.jira.plugins.dvcs.net.RequestHelper</interface>
-    </component>
+    </component-->
 
     <component key="bitbucketCommunicator" name="bitbucketCommunicator"
                class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator">
