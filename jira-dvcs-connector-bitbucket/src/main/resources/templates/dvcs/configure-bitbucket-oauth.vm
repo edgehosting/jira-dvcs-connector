@@ -31,7 +31,7 @@
 
 			<li>
                 
-                Browse to <b>OAuth Consumers</b> menu item in your Bitbucket account settings.
+                Browse to <b>Integrated applications</b> menu item in your Bitbucket account settings.
 
                 <div id="gh_oauth_app_screenshot">
                 	<img alt='GitHub Configuration Screenshot' src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bb_oauth.png">
