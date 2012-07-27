@@ -18,6 +18,7 @@
 	      <input type="hidden" name="autoLinking" id="autoLinking" value="$action.autoLinking">
 	
 	      <fieldset>
+	      
 	         <div class="field-group">
 	              <label for="url">Url:</label>
 	              <span class="field-value">$textutils.htmlEncode($action.getUrl())</span>
@@ -30,6 +31,22 @@
 	            <input type="hidden" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 			  </div>
 			  
+			   #if($action.getOauthRequired() == "true")
+	          	<h3>OAuth Credentials</h3>
+	          	<input type="hidden" name="oauthRequired" value="true" />
+	          	<div class="field-group" >
+	          		<label for="oauthClientId">Key:</label>
+	            	<span class="field-value">$action.getOauthBbClientId()</span>
+	            	<input type="text" id="oauthClientId" name="oauthClientId" value="$textutils.htmlEncode($action.getOauthClientId())"/>
+			    </div>
+			  
+			   <div class="field-group" >
+	          		<label for="oauthSecret">Secret:</label>
+	            	<span class="field-value">$action.getOauthBbSecret()</span>
+	            	<input type="text" id="oauthSecret" name="oauthSecret" value="$textutils.htmlEncode($action.getOauthSecret())"/>
+			   </div>
+	          #end
+			  
 			 <div class="field-group" style="margin-top: 10px; clear: both" >
 				  <label for="autoLinking">Auto Link New Repositories:</label>
 		          #if($action.getAutoLinking() == "true")
@@ -39,19 +56,9 @@
 			      #end
 		     </div>
 	         
-	        </fieldset>
-
 	      </fieldset>
 	
-	      <div class="field-group">
-	        <label for="adminUsername">Admin Username:</label>
-	        <input type="text" name="adminUsername" id="adminUsername" value="$textutils.htmlEncode($action.getAdminUsername())">
-	      </div>  
-	      <div class="field-group">
-	        <label for="adminPassword">Admin Password:</label>
-	        <input type="password" name="adminPassword" id="adminPassword" value="">
-	      </div>  
-	
+	 
 	      <div id="aui-message-bar">
 	        #foreach ($errorMessage in $action.getErrorMessages())
 	        <div class="aui-message error">
