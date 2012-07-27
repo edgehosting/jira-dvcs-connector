@@ -16,8 +16,13 @@ public class DefaultBitbucketOAuth implements BitbucketOAuth
     @Override
     public void setClient(String clientID, String clientSecret)
     {
-        pluginSettingsFactory.createGlobalSettings().put("bitbucketRepositoryClientID", clientID);
-        pluginSettingsFactory.createGlobalSettings().put("bitbucketRepositoryClientSecret", clientSecret);
+        pluginSettingsFactory.createGlobalSettings().put("bitbucketRepositoryClientID", trim(clientID));
+        pluginSettingsFactory.createGlobalSettings().put("bitbucketRepositoryClientSecret", trim(clientSecret));
+    }
+
+    private String trim(String string)
+    {
+        return string != null ? string.trim() : string;
     }
 
     @Override
