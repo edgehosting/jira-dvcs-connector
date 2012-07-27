@@ -89,7 +89,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     protected void logRequest(HttpURLConnection connection)
     {
-        log.debug("[{} :: {}]", new Object[] { connection.getRequestMethod(), connection.getURL() });
+        log.debug("[{} : {} :: {}]", new Object[] { getClass().getSimpleName(), connection.getRequestMethod(),
+                connection.getURL() });
     }
 
     private RemoteResponse requestWithPayload(HttpMethod postOrPut, String uri, Map<String, String> params)

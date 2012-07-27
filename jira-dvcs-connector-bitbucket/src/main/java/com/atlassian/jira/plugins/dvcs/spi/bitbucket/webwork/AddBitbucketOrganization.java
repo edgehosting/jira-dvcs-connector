@@ -83,6 +83,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
 		} catch (Exception e)
 		{
+		    log.error("Error redirect user to bitbucket server.", e);
 			addErrorMessage("Cannot proceed authentication, check your OAuth credentials!");
 			return INPUT;
 		}
