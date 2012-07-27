@@ -51,31 +51,39 @@ public final class DefaultBitbucketRemoteClientFactory implements BitbucketClien
 
     private AuthProvider createProviderForOrganization(Organization organization)
     {
-        AuthProvider authProvider;
+        AuthProvider authProvider = new NoAuthAuthProvider(organization.getHostUrl());
+       
         if (StringUtils.isNotBlank(organization.getCredential().getAdminUsername()))
         {
             authProvider = new BasicAuthAuthProvider(organization.getHostUrl(), organization.getCredential()
                     .getAdminUsername(), organization.getCredential().getAdminPassword());
-        } else
+        } 
+        
+        else if (StringUtils.isNotBlank( organization.getCredential().getAccessToken()) )
         {
             authProvider = new ThreeLegged10aOauthProvider(organization.getHostUrl(), oauth.getClientId(),
                     oauth.getClientSecret(), organization.getCredential().getAccessToken());
         }
+
         return authProvider;
     }
     
     private AuthProvider createProviderForRepository(Repository repository)
     {
-        AuthProvider authProvider;
+        AuthProvider authProvider = new NoAuthAuthProvider(repository.getOrgHostUrl());
+        
         if (StringUtils.isNotBlank(repository.getCredential().getAdminUsername()))
         {
             authProvider = new BasicAuthAuthProvider(repository.getOrgHostUrl(), repository.getCredential()
                     .getAdminUsername(), repository.getCredential().getAdminPassword());
-        } else
+        }
+        
+        else  if (StringUtils.isNotBlank( repository.getCredential().getAccessToken()) )
         {
             authProvider = new ThreeLegged10aOauthProvider(repository.getOrgHostUrl(), oauth.getClientId(),
                     oauth.getClientSecret(), repository.getCredential().getAccessToken());
-        }
+        } 
+
         return authProvider;
     }
 }
