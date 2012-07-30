@@ -384,5 +384,24 @@ public class OrganizationDaoImpl implements OrganizationDao
 		return transformCollection(Arrays.asList(orgMappings));
 	}
 
+    @Override
+    public Organization findIntegratedAccount()
+    {
+
+        Query query = Query.select().where(OrganizationMapping.OAUTH_KEY + " IS NOT NULL AND " + OrganizationMapping.OAUTH_SECRET + " IS NOT NULL");
+        OrganizationMapping[] organizations = activeObjects.find(OrganizationMapping.class, query);
+        
+        if (organizations != null && organizations.length > 0) {
+        
+            return transform(organizations [0]);
+
+        } else {
+            
+            return null;
+
+        }
+    }
+
+	
 
 }
