@@ -1,0 +1,116 @@
+<html>
+<head>
+    <title>Bitbucket OAuth Settings</title>
+    
+    $webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
+
+    <meta name="admin.active.section" content="admin_plugins_menu/source_control"/>
+    <meta name="admin.active.tab" content="bitbucket_oauth"/>
+</head>
+
+<body>
+
+    #set($baseurl = $action.getBaseUrl())
+
+
+	<h3>Bitbucket OAuth Settings</h3>
+
+    	<div id='gh_config_link'>
+        	<a href="${baseurl}/secure/admin/ConfigureDvcsOrganizations!default.jspa">Bulk Configure Bitbucket and GitHub Accounts</a>
+		</div>
+
+	<h4 class="gh_config_h4">Setting up a Bitbucket OAuth Application</h4>
+	
+	<form class="aui" method="post" action="${baseurl}/secure/admin/ConfigureBitbucketOAuth.jspa">
+	  
+	    <input type="hidden" name="atl_token" value="$atl_token">
+	  
+	    For private Bitbucket repositories, complete the following steps:
+	
+	    <ol class="gh_steps">
+
+			<li>
+                
+                Browse to <b>Integrated applications</b> menu item in your Bitbucket account settings.
+
+                <div id="gh_oauth_app_screenshot">
+                	<img alt='GitHub Configuration Screenshot' src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bb_oauth.png">
+            	</div>
+			</li>
+	
+	        <li>
+	           After you create the consumer, Bitbucket will provide you with a <strong>Key</strong> and a <strong>Secret</strong> which you will need to enter below.
+	
+				<div>&nbsp;</div>
+	
+	            #if ($action.getMessages() != "")
+	                <div id="gh_messages" class="aui-message success">
+	                    <p class="title">$action.getMessages()</p>
+	                </div>
+	            #end
+	
+	            #foreach ($errorMessage in $action.getErrorMessages())
+	                <div class="aui-message error shadowed">
+	                    <p class="title">$errorMessage</p>
+	                </div>
+	            #end
+
+	            <table width="500px">
+	
+	                <tr>
+	                    <td>Key</td>
+	                </tr>
+	                <tr>
+	                    <td>
+	                        <input type="text"
+	                               class="text"
+	                               id="clientID"
+	                               name="clientID"
+	                               value="$textutils.htmlEncode($action.getSavedClientID())"
+	                               size="60"
+	                                />
+	
+	                    </td>
+	
+	                </tr>
+	
+	                <tr>
+	                    <td><label for='clientSecret'>Secret</label></td>
+	                </tr>
+	                <tr>
+	                    <td>
+	                        <input type="text"
+	                               class="text"
+	                               id="clientSecret"
+	                               name="clientSecret"
+	                               value="$textutils.htmlEncode($action.getSavedClientSecret())"
+	                               size="60"
+	                                />
+	
+	                    </td>
+	
+	                </tr>
+	
+	                <tr>
+	                    <td>
+	                        <input type="submit" name="Submit" id="Submit" value="Add/Update Keys"
+	                               class="spaced"
+	                                />
+	                    </td>
+	                </tr>
+	
+	            </table>
+	            
+	        </li>
+	
+	
+	        <li>
+	             Once you have completed the OAuth consumer setup, you can begin <a href="${baseurl}/secure/admin/ConfigureDvcsOrganizations!default.jspa">configuring your accounts</a>.
+	        </li>
+	
+	    </ol>
+	
+	</form>
+
+</body>
+</html>

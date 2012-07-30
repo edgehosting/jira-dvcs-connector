@@ -19,6 +19,7 @@
 	      <input type="hidden" name="autoSmartCommits" id="autoSmartCommits" value="$action.autoSmartCommits">
 	
 	      <fieldset>
+	      
 	         <div class="field-group">
 	              <label for="url">Url:</label>
 	              <span class="field-value">$textutils.htmlEncode($action.getUrl())</span>
@@ -30,6 +31,22 @@
 	            <span class="field-value">$textutils.htmlEncode($action.getOrganization())</span>
 	            <input type="hidden" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 			  </div>
+			  
+			   #if($action.getOauthBbRequired() == "true")
+	          	<h3>OAuth Credentials</h3>
+	          	<input type="hidden" name="oauthBbRequired" value="true" />
+	          	<div class="field-group" >
+	          		<label for="oauthBbClientId">Key:</label>
+	            	<span class="field-value">$action.getOauthBbClientId()</span>
+	            	<input type="text" id="oauthBbClientId" name="oauthBbClientId" value="$textutils.htmlEncode($action.getOauthBbClientId())"/>
+			    </div>
+			  
+			   <div class="field-group" >
+	          		<label for="oauthBbSecret">Secret:</label>
+	            	<span class="field-value">$action.getOauthBbSecret()</span>
+	            	<input type="text" id="oauthBbSecret" name="oauthBbSecret" value="$textutils.htmlEncode($action.getOauthBbSecret())"/>
+			   </div>
+	          #end
 			  
 			 <div class="field-group" style="margin-top: 10px; clear: both" >
 				  <label for="autoLinking">Auto Link New Repositories:</label>
@@ -49,19 +66,9 @@
 			      #end
 		     </div>
 	         
-	        </fieldset>
-
 	      </fieldset>
 	
-	      <div class="field-group">
-	        <label for="adminUsername">Admin Username:</label>
-	        <input type="text" name="adminUsername" id="adminUsername" value="$textutils.htmlEncode($action.getAdminUsername())">
-	      </div>  
-	      <div class="field-group">
-	        <label for="adminPassword">Admin Password:</label>
-	        <input type="password" name="adminPassword" id="adminPassword" value="">
-	      </div>  
-	
+	 
 	      <div id="aui-message-bar">
 	        #foreach ($errorMessage in $action.getErrorMessages())
 	        <div class="aui-message error">

@@ -52,7 +52,7 @@ public class BitbucketChangesetFactory
                     baseJson.getString("author"),
                     parseDate(baseJson.getString("utctimestamp")),
                     baseJson.getString("raw_node"),
-                    baseJson.getString("branch"),      // TODO if null, set to "default"?
+                    baseJson.getString("branch"),
                     baseJson.getString("message"),
                     stringList(baseJson.getJSONArray("parents")),
                     files,

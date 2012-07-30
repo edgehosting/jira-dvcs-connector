@@ -1,13 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 /**
  * An iterator that will load pages of changesets from the remote repository in pages transparently.

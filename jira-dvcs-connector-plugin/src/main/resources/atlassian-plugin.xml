@@ -100,10 +100,10 @@
         <interface>com.atlassian.jira.plugins.dvcs.webwork.IssueLinker</interface>
     </component>
 
-    <component key="responseHandlerFactory" name="responseHandlerFactory"
+    <!--component key="responseHandlerFactory" name="responseHandlerFactory"
             class="com.atlassian.jira.plugins.dvcs.net.DefaultExtendedResponseHandlerFactory">
         <interface>com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory</interface>
-    </component>
+    </component-->
 
     <component key="executorService" name="Executor Service Factory Component"
             class="com.atlassian.jira.plugins.dvcs.sync.impl.DefaultExecutorServiceFactoryBean">
@@ -133,10 +133,10 @@
         <interface>com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory</interface>
     </component>
 
-    <component key="requestHelper" name="requestHelper"
+    <!--component key="requestHelper" name="requestHelper"
             class="com.atlassian.jira.plugins.dvcs.net.DefaultRequestHelper">
         <interface>com.atlassian.jira.plugins.dvcs.net.RequestHelper</interface>
-    </component>
+    </component-->
 
     <component key="bitbucketCommunicator" name="bitbucketCommunicator"
                class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator">
@@ -164,6 +164,12 @@
                class="com.atlassian.jira.plugins.dvcs.spi.github.DefaultGithubOAuth">
         <description>githubOAuth</description>
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth</interface>
+    </component>
+    
+       <component key="bitbucketOAuth" name="bitbucketOAuth"
+               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketOAuth">
+        <description>bitbucketOAuth</description>
+        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth</interface>
     </component>
 
     <component key="organizationDao" name="organizationDao"
@@ -212,10 +218,15 @@
     <component key="githubOauthUtils" class="com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils">
     	<description>Utils used i.e. to build GH redirect URLs etc.</description>
     </component>
-    
+
     <component key="webFragmentRenderer" name="webFragmentRenderer"
                class="com.atlassian.jira.plugins.dvcs.webfragments.DefaultWebfragmentRenderer">
         <interface>com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer</interface>
+    </component>
+    
+    <component key="bitbucketRemoteClientFactory" name="Bitbucket Remote Client Factory"
+               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketRemoteClientFactory">
+        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory</interface>
     </component>
     
     
@@ -283,10 +294,19 @@
                     alias="RegenerateGithubOauthToken" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
+            
+            <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.RegenerateBitbucketOauthToken"
+                    alias="RegenerateBitbucketOauthToken" roles-required="admin">
+                <view name="input">/templates/dvcs/add-organization.vm</view>
+            </action>
 			
 			<action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.ConfigureDefaultBitbucketGroups"
                     alias="ConfigureDefaultBitbucketGroups" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
+            </action>
+            
+            <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.ConfigureBitbucketOAuth" alias="ConfigureBitbucketOAuth">
+                <view name="input">/templates/dvcs/configure-bitbucket-oauth.vm</view>
             </action>
 			
         </actions>
@@ -306,6 +326,14 @@
         <label>GitHub OAuth Settings</label>
         <name>GitHub Name Item</name>
         <link>/secure/admin/ConfigureGithubOAuth!default.jspa</link>
+        <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
+    </web-item>
+    
+        <web-item key="bitbucket_oauth" name="Bitbucket OAuth" section="admin_plugins_menu/source_control" weight="10">
+        <description>Static link to bitbucket.com.</description>
+        <label>Bitbucket OAuth Settings</label>
+        <name>Bitbucket Name Item</name>
+        <link>/secure/admin/ConfigureBitbucketOAuth!default.jspa</link>
         <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
     </web-item>
 

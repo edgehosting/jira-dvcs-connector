@@ -44,8 +44,20 @@ function switchDvcsDetailsInternal(dvcsType) {
 		// hide examples
 		AJS.$('#examples').hide();
 
-		//show username / password
-		AJS.$("#bitbucket-form-section").fadeIn();
+		if (BB_REQUIRES_AUTH == "true") {
+			
+			// we need oauth ...
+			
+			// hide examples
+			AJS.$('#examples').hide();
+			
+			AJS.$("#bitbucket-form-section").fadeIn();
+
+		} else {
+			
+			AJS.$("#oauthBbRequired").val("");
+
+		}
 		
 
 	} else if (dvcsType == 1) {
@@ -297,25 +309,35 @@ function validateAddOrganizationForm() {
 	
 }
 
-// TBD
 var dvcsSubmitFormAjaxHandler = {
 
 		"bitbucket": function(data){
 			
 			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
-
-			// hide url input box
-			AJS.$('#urlReadOnly').html(AJS.$('#url').val());
-			AJS.$('#urlSelect').hide(); 
-			AJS.$('#urlReadOnly').show();
 			
-			// hide examples
-			AJS.$('#examples').hide();
+			if (data.requiresOauth) {
+				
+				// we need oauth ...
+					
+				// hide url input box
+				AJS.$('#urlReadOnly').html(AJS.$('#url').val());
+				AJS.$('#urlSelect').hide(); 
+				AJS.$('#urlReadOnly').show();
+				
+				// hide examples
+				AJS.$('#examples').hide();
+	
+				//show username / password
+				AJS.$("#github-form-section").hide();
+				AJS.$("#bitbucket-form-section").fadeIn();
+				AJS.$("#adminUsername").focus().select();
+				
+			} else {
 
-			//show username / password
-			AJS.$("#github-form-section").hide();
-			AJS.$("#bitbucket-form-section").fadeIn();
-			AJS.$("#adminUsername").focus().select();
+				AJS.$("#oauthBbRequired").val("");
+				AJS.$('#repoEntry').submit();
+
+			}
 		}, 
 
 		"github": function(data) {

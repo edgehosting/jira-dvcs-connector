@@ -1,8 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.List;
 
@@ -93,34 +91,4 @@ public class RepositoryLinksService
         return (RepositoryLink) bitbucketClient.post(resourceUrl, params, type);
     }
 
-    public RepositoryLink addCustomRepositoryLink(String owner, String slug, String url) throws BitbucketClientException
-    {
-        
-    	Type type = new TypeToken<RepositoryLink>(){}.getType();
-    
-        String resourceUrl = "/repositories/" + owner + "/" + slug + "/links";
-
-        List<String> params = Lists.newArrayList();
-        params.add("handler=custom");
-        params.add("link_url=" + normalize(url) + "\\1");
-        try
-		{
-			params.add("link_key=" + URLEncoder.encode("(?<!\\w)([A-Z|a-z]{2,}-\\d+)(?!\\w)", "UTF-8"));
-		} catch (UnsupportedEncodingException e)
-		{
-			// nop
-		}
-        
-        return (RepositoryLink) bitbucketClient.post(resourceUrl, params, type);
-    }
-
-    private String normalize(String url)
-	{
-		if (url.endsWith("/")) {
-			return url + "browse/";
-		}
-
-		return url + "/browse/";
-	}
-    
 }
