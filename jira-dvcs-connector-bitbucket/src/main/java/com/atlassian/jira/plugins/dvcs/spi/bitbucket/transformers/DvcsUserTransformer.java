@@ -15,8 +15,7 @@ public class DvcsUserTransformer {
     public static DvcsUser fromBitbucketAccount(BitbucketAccount bitbucketAccount)
     {
         return new DvcsUser(bitbucketAccount.getUsername(),
-                            bitbucketAccount.getFirstName(),
-                            bitbucketAccount.getLastName(),
+                            bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName(),
                             bitbucketAccount.getAvatar());
     }
 }
