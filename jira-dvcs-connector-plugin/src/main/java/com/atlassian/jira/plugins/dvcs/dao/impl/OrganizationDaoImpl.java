@@ -1,5 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import net.java.ao.Query;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
@@ -11,19 +25,6 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import net.java.ao.Query;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * The Class OrganizationDaoImpl.
@@ -70,9 +71,13 @@ public class OrganizationDaoImpl implements OrganizationDao
 
         log.debug("Organization transformation: [{}]", organizationMapping);
 
+        // make credentials
 		Credential credential = new Credential(organizationMapping.getAdminUsername(),
 				organizationMapping.getAdminPassword(), organizationMapping.getAccessToken());
 
+		credential.setOauthKey(organizationMapping.getOauthKey());
+		credential.setOauthSecret(organizationMapping.getOauthSecret());
+		//
 		Organization organization = new Organization(organizationMapping.getID(), organizationMapping.getHostUrl(),
 				organizationMapping.getName(), organizationMapping.getDvcsType(),
 				organizationMapping.isAutolinkNewRepos(), credential);
@@ -242,6 +247,9 @@ public class OrganizationDaoImpl implements OrganizationDao
 							map.put(OrganizationMapping.ACCESS_TOKEN, organization.getCredential().getAccessToken());
 							map.put(OrganizationMapping.SMARTCOMMITS_FOR_NEW_REPOS, organization.isSmartcommitsOnNewRepos());
 							map.put(OrganizationMapping.DEFAULT_GROUPS_SLUGS, organization.getDefaultGroupsSlugsSerialized());
+							
+							map.put(OrganizationMapping.OAUTH_KEY, organization.getCredential().getOauthKey());
+							map.put(OrganizationMapping.OAUTH_SECRET, organization.getCredential().getOauthSecret());
 
 							om = activeObjects.create(OrganizationMapping.class, map);
                             om = activeObjects.find(OrganizationMapping.class, "ID = ?", om.getID())[0];
@@ -258,6 +266,9 @@ public class OrganizationDaoImpl implements OrganizationDao
 							om.setAccessToken(organization.getCredential().getAccessToken());
 							om.setSmartcommitsForNewRepos(organization.isSmartcommitsOnNewRepos());
 							om.setDefaultGroupsSlugs(organization.getDefaultGroupsSlugsSerialized());
+							
+							om.setOauthKey(organization.getCredential().getOauthKey());
+							om.setOauthSecret(organization.getCredential().getOauthSecret());
 
 							om.save();
 						}
@@ -283,7 +294,8 @@ public class OrganizationDaoImpl implements OrganizationDao
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void updateCredentials(int organizationId, String username, String plaintextPassword, String accessToken)
+    public void updateCredentials(int organizationId, String username, String plaintextPassword, String accessToken,
+            String oauthKey, String oauthSecret)
 	{
 
 		final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, organizationId);
@@ -305,6 +317,12 @@ public class OrganizationDaoImpl implements OrganizationDao
 		if (StringUtils.isNotBlank(accessToken))
 		{
 			organization.setAccessToken(accessToken);
+		}
+
+        if (StringUtils.isNotBlank(oauthKey) && StringUtils.isNotBlank(oauthSecret))
+        {
+            organization.setOauthKey(oauthKey);
+            organization.setOauthSecret(oauthSecret);
 		}
 
 		activeObjects.executeInTransaction(new TransactionCallback<Void>()

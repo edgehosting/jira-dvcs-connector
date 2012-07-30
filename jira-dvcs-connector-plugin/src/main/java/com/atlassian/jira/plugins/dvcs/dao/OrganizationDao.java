@@ -52,7 +52,7 @@ public interface OrganizationDao
 	 * @param accessToken the access token, null safe
 	 */
 	void updateCredentials(int organizationId, String username, String plaintextPassword,
-			String accessToken);
+			String accessToken, String oauthKey, String oauthSecret);
 
 	/**
 	 * Gets the all by ids.

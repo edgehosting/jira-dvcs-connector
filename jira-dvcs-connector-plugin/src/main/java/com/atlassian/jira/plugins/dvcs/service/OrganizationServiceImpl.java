@@ -140,7 +140,7 @@ public class OrganizationServiceImpl implements OrganizationService
 		organization.setCredential(new Credential(username, plaintextPassword, null));
 		checkCredentials(organization);
 		
-		organizationDao.updateCredentials(organizationId, username, plaintextPassword, null);
+		organizationDao.updateCredentials(organizationId, username, plaintextPassword, null, null, null);
 	}
 
 	@Override
@@ -154,9 +154,24 @@ public class OrganizationServiceImpl implements OrganizationService
 		checkCredentials(organization);
 		//
 		
-		organizationDao.updateCredentials(organizationId, null, null, accessToken);
+		organizationDao.updateCredentials(organizationId, null, null, accessToken, null, null);
 
 	}
+	
+    @Override
+    public void updateTwoLeggedOauthCredentials(int organizationId, String key, String secret)
+    {
+        // Check credentials
+        // create organization with plain credentials as we need all data like
+        // url, etc
+        //
+        Organization organization = organizationDao.get(organizationId);
+        organization.setCredential(new Credential(null, null, null, key, secret));
+        checkCredentials(organization);
+        //
+
+        organizationDao.updateCredentials(organizationId, null, null, null, key, secret);
+    }
 
 	@Override
 	public void enableAutolinkNewRepos(int orgId, boolean autolink)
@@ -220,6 +235,5 @@ public class OrganizationServiceImpl implements OrganizationService
 	{
 		organizationDao.setDefaultGroupsSlugs(orgId, groupsSlugs);
 	}
-
 
 }

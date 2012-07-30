@@ -70,6 +70,8 @@ public interface OrganizationService
 	 */
 	void updateCredentialsAccessToken(int organizationId, String accessToken);
 
+	void updateTwoLeggedOauthCredentials(int organizationId, String key, String secret);
+
 	/**
 	 * Enable autolink new repos.
 	 *

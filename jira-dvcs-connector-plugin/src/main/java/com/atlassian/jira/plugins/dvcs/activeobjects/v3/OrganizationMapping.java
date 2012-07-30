@@ -19,6 +19,9 @@ public interface OrganizationMapping extends Entity
     public static final String SMARTCOMMITS_FOR_NEW_REPOS = "SMARTCOMMITS_FOR_NEW_REPOS";
     public static final String DEFAULT_GROUPS_SLUGS = "DEFAULT_GROUPS_SLUGS"; // serialized, separated by ";"
 
+    public static final String OAUTH_KEY = "OAUTH_KEY";
+    public static final String OAUTH_SECRET = "OAUTH_SECRET";
+
     String getHostUrl();
     String getName();
     String getDvcsType();
@@ -28,6 +31,9 @@ public interface OrganizationMapping extends Entity
     String getAccessToken();
     boolean isSmartcommitsForNewRepos();
     String getDefaultGroupsSlugs();
+    
+    String getOauthKey();
+    String getOauthSecret();
 
     void setHostUrl(String hostUrl);
     void setName(String name);
@@ -38,4 +44,7 @@ public interface OrganizationMapping extends Entity
     void setAccessToken(String accessToken);
     void setSmartcommitsForNewRepos(boolean enabled);
     void setDefaultGroupsSlugs(String slugs);
+    
+    void setOauthKey(String key);
+    void setOauthSecret(String secret);
 }
