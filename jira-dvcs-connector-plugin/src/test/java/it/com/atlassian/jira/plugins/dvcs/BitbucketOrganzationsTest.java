@@ -22,6 +22,8 @@ import org.openqa.selenium.By;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddUserPage;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.util.json.JSONArray;
@@ -56,10 +58,22 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
             removePostCommitHook(extractedBitbucketServiceId);
         }
     }
+    
+    private void loginToBitbucketAndSetJiraOAuthCredentials()
+    {
+        jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
+        jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
+        
+        BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
+        oauthConfigPage.setCredentials("4QRzjT6XHGKwL55Bfd", "LnpGqtuGXzRXdnVdxkgP5sttHSE5AXAV");
+       
+        jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());        
+    }
 
 	@Test
 	public void addOrganization()
 	{
+        loginToBitbucketAndSetJiraOAuthCredentials();
 		BaseConfigureOrganizationsPage organizationsPage = configureOrganizations.addOrganizationSuccessfully(TEST_URL,
 				false);
 		PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
@@ -73,6 +87,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 	@Test
 	public void addOrganizationAutoSync()
 	{
+        loginToBitbucketAndSetJiraOAuthCredentials();
 		BaseConfigureOrganizationsPage organizationsPage = configureOrganizations.addOrganizationSuccessfully(TEST_URL,
 				true);
 		PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
@@ -83,6 +98,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 	@Test
 	public void addUrlThatDoesNotExist()
 	{
+        loginToBitbucketAndSetJiraOAuthCredentials();
 		configureOrganizations.addOrganizationFailingStep1(TEST_NOT_EXISTING_URL);
 
 		String errorMessage = configureOrganizations.getErrorStatusMessage();
@@ -94,6 +110,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 	@Test
 	public void testPostCommitHookAdded() throws Exception
 	{
+        loginToBitbucketAndSetJiraOAuthCredentials();
 		String servicesConfig;
 		String baseUrl = jira.getProductInstance().getBaseUrl();
 
@@ -127,6 +144,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 	@Test
 	public void addRepoCommitsAppearOnIssues()
 	{
+        loginToBitbucketAndSetJiraOAuthCredentials();
 		configureOrganizations.addOrganizationSuccessfully(TEST_URL, true);
 
 		assertThat(getCommitsForIssue("QA-2"),
@@ -138,6 +156,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 	@Test
 	public void testCommitStatistics()
 	{
+        loginToBitbucketAndSetJiraOAuthCredentials();
 		configureOrganizations.addOrganizationSuccessfully(TEST_URL, true);
 
 		// QA-2
