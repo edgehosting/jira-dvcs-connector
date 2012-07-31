@@ -8,6 +8,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.DashboardActivityStreamsPage;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.page.LoginPage;
@@ -84,11 +86,20 @@ public class ActivityStreamsTest
         page.setJira(jira);
     }
 
-
+    private void loginToBitbucketAndSetJiraOAuthCredentials()
+    {
+        jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
+        jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
+        
+        BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
+        oauthConfigPage.setCredentials("4QRzjT6XHGKwL55Bfd", "LnpGqtuGXzRXdnVdxkgP5sttHSE5AXAV");
+    }
+    
     @Test
     public void testActivityPresentedForQA5()
     {
         loginToJira();
+        loginToBitbucketAndSetJiraOAuthCredentials();
         addOrganization();
         goToDashboardPage();
 
@@ -127,6 +138,7 @@ public class ActivityStreamsTest
     public void testAnonymousAccess()
     {
         loginToJira();
+        loginToBitbucketAndSetJiraOAuthCredentials();
         setupAnonymousAccessAllowed();
         addOrganization();
         goToDashboardPage();
