@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang.StringUtils;
+import org.jfree.util.Log;
 
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -68,7 +69,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
 
     private void doNewAccount(AccountsConfig configuration)
     {
-        AccountInfo info = toInfo(configuration);
+        AccountInfo info = toInfoNewAccount(configuration);
         
         Organization newOrganization = new Organization();
         newOrganization.setName(info.accountName);
@@ -83,13 +84,23 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     
     private void doUpdateConfiguration(AccountsConfig configuration, Organization integratedNotNullAccount)
     {
-        AccountInfo info = toInfo(configuration);
+        AccountInfo info = toInfoExistingAccount(configuration);
         
+        if (info != null) {
+            
+            // modify :?
+            
+        } else {
+            //
+            // delete account
+            //
+            organizationService.remove(integratedNotNullAccount.getId());
+        }
         // TODO https://sdog.jira.com/wiki/pages/viewpage.action?pageId=47284285
         
     }
 
-    private AccountInfo toInfo(AccountsConfig configuration)
+    private AccountInfo toInfoNewAccount(AccountsConfig configuration)
     {
         try
         {
@@ -106,9 +117,9 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
             //
             //
             //
-            Assert.notNull(info.accountName, "accountName have to be provided");
-            Assert.notNull(info.oauthKey, "oauthKey have to be provided");
-            Assert.notNull(info.oauthSecret, "oauthSecret have to be provided");
+            assertNotBlank(info.accountName, "accountName have to be provided for new account");
+            assertNotBlank(info.oauthKey, "oauthKey have to be provided for new account");
+            assertNotBlank(info.oauthSecret, "oauthSecret have to be provided for new account");
             //
             return info;
             
@@ -117,7 +128,87 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
             throw new IllegalStateException("Wrong configuration.", e);
         }
     }
+    
+    private AccountInfo toInfoExistingAccount(AccountsConfig configuration)
+    {
+        //
+        // try to find configuration, otherwise assuming it is deletion of the integrated account
+        //
+        Links links = null;
+        try
+        {
+     
+            links = configuration.getSysadminApplicationLinks().get(0);
+        
+        } catch (Exception e)
+        {
+            Log.debug("Bitbucket links not present. " + e + ": " + e.getMessage());
+            //
+            return null;
+            //
+        }
+        
+        BitbucketAccountInfo bitbucketAccountInfo = null;
+        
+        if (links != null) {
+            try
+            {
+          
+                bitbucketAccountInfo = links.getBitbucket().get(0);
+           
+            } catch (Exception e)
+            {
+           
+                Log.debug("Bitbucket accounts info not present. " + e + ": " + e.getMessage());
+                //
+                return null;
+                //
+            }
+        }
+        
+        AccountInfo info = new AccountInfo();
+        
+        if (bitbucketAccountInfo != null) {
+            
+            info.accountName = bitbucketAccountInfo.getAccount();
+            info.oauthKey = bitbucketAccountInfo.getKey();
+            info.oauthSecret = bitbucketAccountInfo.getSecret();
 
+        }
+        //
+        if (isBlank(info.accountName)) {
+            Log.debug("accountName is empty assuming deletion");
+            //
+            return null;
+        }
+        if (isBlank(info.oauthKey)) {
+            Log.debug("oauthKey is empty assuming deletion");
+            //
+            return null;
+        }
+        if (isBlank(info.oauthSecret)) {
+            Log.debug("oauthSecret is empty assuming deletion");
+            //
+            return null;
+        }
+        //
+        //
+        return info;
+
+    }
+
+    private static void assertNotBlank(String string, String msg)
+    {
+        if(isBlank(string)) {
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
+    private static boolean isBlank(String string)
+    {
+        return StringUtils.isBlank(string);
+    }
+    
     private boolean supportsIntegratedAccounts()
     {
         return configProvider.supportsIntegratedAccounts();
