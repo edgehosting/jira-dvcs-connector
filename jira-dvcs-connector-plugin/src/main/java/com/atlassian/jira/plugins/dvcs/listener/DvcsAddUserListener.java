@@ -125,15 +125,6 @@ public class DvcsAddUserListener implements InitializingBean
         }
     }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void afterPropertiesSet() throws Exception
-	{
-		eventPublisher.register(this);
-	}
-
 	@PluginEventListener
     public void onPluginDisabled(PluginDisabledEvent event)
     {

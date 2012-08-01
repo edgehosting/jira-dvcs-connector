@@ -152,7 +152,7 @@ public class DefaultRequestHelper implements RequestHelper
 
 	private String getStatusCode(HttpMethod method)
 	{
-		return method.getStatusCode() > 0 ? method.getStatusCode() + "" : " [method not invoked yet] " ;
+		return method.getStatusLine()!=null ? method.getStatusLine().getStatusCode() + "" : " [method not invoked yet] " ;
 	}
     
     private static Map<String, String> parseParameters(String postData) {
