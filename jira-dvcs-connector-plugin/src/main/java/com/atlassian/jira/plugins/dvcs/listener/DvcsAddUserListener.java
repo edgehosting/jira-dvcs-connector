@@ -62,7 +62,6 @@ public class DvcsAddUserListener implements InitializingBean
 	public DvcsAddUserListener(EventPublisher eventPublisher, OrganizationService organizationService,
 			DvcsCommunicatorProvider communicatorProvider, ExecutorService executorService)
 	{
-		super();
 		this.eventPublisher = eventPublisher;
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
@@ -77,17 +76,13 @@ public class DvcsAddUserListener implements InitializingBean
 	@EventListener
 	public void onUserAddViaInterface(final UserAddedEvent event)
 	{
-		safeExecute(new OperationTask()
-		{
-			@Override
-			public Runnable getRunnable()
-			{
-				return new UserAddedViaInterfaceEventProcessor(event,
-						organizationService, communicatorProvider);
-			}
-
-		}, "Failed to handle add user via interface event [ " + event + ", params =  " + event.getRequestParameters()
-				+ "] ");
+        if (event == null)
+        {
+            return;
+        }
+		String onFailMessage = "Failed to handle add user via interface event [ " + event + ", params =  " + event.getRequestParameters() + "] ";
+		Runnable task = new UserAddedViaInterfaceEventProcessor(event, organizationService, communicatorProvider);
+        safeExecute(task, onFailMessage);
 	}
 
 	/**
@@ -96,51 +91,39 @@ public class DvcsAddUserListener implements InitializingBean
 	 * @param event the event object
 	 */
 	@EventListener
-	public void onUserAddViaCrowd(final UserEvent event)
+	public void onUserAddViaCrowd(UserEvent event)
 	{
-		safeExecute(new OperationTask()
-		{
-			@Override
-			public Runnable getRunnable()
-			{
-				if (Operation.CREATED != event.getOperation())
-				{
-					return null;
-				}
-				
-				return new UserAddedExternallyEventProcessor(event, organizationService, communicatorProvider);
-
-			}
-
-		}, "Failed to handle add user externally event [ " + event + ", user =  " + event.getUser()
-				+ "] ");
-
+	    if ((event==null) || Operation.CREATED != event.getOperation())
+	    {
+	        return;
+	    }
+        Runnable task = new UserAddedExternallyEventProcessor(event, organizationService, communicatorProvider);
+        String onFailMessage = "Failed to handle add user externally event [ " + event + ", user =  " + event.getUser() + "] ";
+        
+        safeExecute(task, onFailMessage);
 	}
 
 	/**
-	 * Wraps {@link OperationTask#getRunnable()} method
+	 * Wraps executorService.submit(task) method
 	 * invocation with <code>try-catch</code> block
 	 * to ensure that no exception is propagated up.
 	 *
-	 * @param closure the closure
+	 * @param task the task
 	 * @param onFailMessage the on fail message
 	 */
-	private void safeExecute(OperationTask closure, String onFailMessage)
-	{
-
-		try
-		{
-		    Runnable task = closure.getRunnable();
-		    
-		    if (task != null) {
-		        executorService.submit(task);
-		    }
-		    
-		} catch (Throwable t)
-		{
-			log.warn(onFailMessage, t);
-		}
-	}
+    private void safeExecute(Runnable task, String onFailMessage)
+    {
+        try
+        {
+            if (task != null)
+            {
+                executorService.submit(task);
+            }
+        } catch (Throwable t)
+        {
+            log.warn(onFailMessage, t);
+        }
+    }
 
 	/**
 	 * {@inheritDoc}
@@ -167,25 +150,10 @@ public class DvcsAddUserListener implements InitializingBean
 	{
 		try
 		{
-
 			eventPublisher.unregister(this);
-
 		} catch (Exception e)
 		{
 			log.warn("Failed to unregister " + this + ", cause message is " + e.getMessage());
 		}
 	}
-	/**
-	 * The Interface Closure.
-	 */
-	interface OperationTask
-	{
-
-		/**
-		 * Execute.
-		 */
-		Runnable getRunnable();
-
-	}
-
 }
