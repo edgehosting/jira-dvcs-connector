@@ -34,8 +34,7 @@ import com.atlassian.plugin.event.events.PluginUninstalledEvent;
  * @author jhocman@atlassian.com
  *
  */
-public class DvcsAddUserListener implements InitializingBean
-
+public class DvcsAddUserListener
 {
 	
 	/** The Constant log. */

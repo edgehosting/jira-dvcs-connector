@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
+import java.util.concurrent.ExecutorService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -17,13 +19,15 @@ public class UserAddListenerFactoryBean implements FactoryBean
     private EventPublisher eventPublisher;
     private OrganizationService organizationService;
     private DvcsCommunicatorProvider communicatorProvider;
+    private ExecutorService executorService;
     
     public Object getObject() throws Exception
     {        
         try
         {
             Class.forName("com.atlassian.jira.event.web.action.admin.UserAddedEvent");
-            DvcsAddUserListener dvcsAddUserListener = new DvcsAddUserListener(eventPublisher, organizationService, communicatorProvider);
+            DvcsAddUserListener dvcsAddUserListener = new DvcsAddUserListener(eventPublisher,
+                    organizationService, communicatorProvider, executorService);
             eventPublisher.register(dvcsAddUserListener);
             return dvcsAddUserListener;
         } catch (ClassNotFoundException e)
@@ -68,5 +72,15 @@ public class UserAddListenerFactoryBean implements FactoryBean
     public void setCommunicatorProvider(DvcsCommunicatorProvider communicatorProvider)
     {
         this.communicatorProvider = communicatorProvider;
+    }
+
+    public ExecutorService getExecutorService()
+    {
+        return executorService;
+    }
+
+    public void setExecutorService(ExecutorService executorService)
+    {
+        this.executorService = executorService;
     }
 }
