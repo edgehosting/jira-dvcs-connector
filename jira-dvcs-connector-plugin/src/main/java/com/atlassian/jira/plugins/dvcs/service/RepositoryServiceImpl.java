@@ -233,7 +233,7 @@ public class RepositoryServiceImpl implements RepositoryService
 				localRepo.setName(remoteRepo.getName());
 				localRepo.setDeleted(false); // it could be deleted before and
 											 // now will be revived
-                log.debug("Undelete repository [{}]", localRepo);
+                log.debug("Updating repository [{}]", localRepo);
 				repositoryDao.save(localRepo);
 			}
         }
