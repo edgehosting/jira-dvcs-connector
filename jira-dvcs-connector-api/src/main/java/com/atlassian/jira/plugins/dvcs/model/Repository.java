@@ -223,5 +223,9 @@ public class Repository
 		this.smartcommitsEnabled = smartcommitsEnabled;
 	}
 
-
+	@Override
+	public String toString()
+	{
+        return repositoryUrl + ", " + name + ", " + linked + ", " + deleted + ", " + smartcommitsEnabled;
+	}
 }
