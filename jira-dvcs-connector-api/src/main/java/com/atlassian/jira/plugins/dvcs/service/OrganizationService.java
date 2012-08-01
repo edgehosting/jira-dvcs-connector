@@ -37,7 +37,7 @@ public interface OrganizationService
      * @return organization
      */
     Organization get(int organizationId, boolean loadRepositories);
-
+    
 
     /**
      * save Organization to storage. If it's new object (without ID) after this operation it will have it assigned.
@@ -125,5 +125,7 @@ public interface OrganizationService
 	void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs);
 	
 	Organization findIntegratedAccount();
+	
+	Organization getByHostAndName(final String hostUrl, final String name);
 }
 

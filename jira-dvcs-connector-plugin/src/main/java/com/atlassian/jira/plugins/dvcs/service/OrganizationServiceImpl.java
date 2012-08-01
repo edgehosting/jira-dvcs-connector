@@ -241,6 +241,12 @@ public class OrganizationServiceImpl implements OrganizationService
     {
         return organizationDao.findIntegratedAccount();
     }
+
+    @Override
+    public Organization getByHostAndName(String hostUrl, String name)
+    {
+        return organizationDao.getByHostAndName(hostUrl, name);
+    }
 	
 	
 

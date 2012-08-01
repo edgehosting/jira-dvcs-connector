@@ -55,13 +55,23 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         //
         // new or update
         //
+
         if (integratedAccount == null) {
             
-            doNewAccount(configuration);
+            if (configuration != null) {
+                doNewAccount(configuration);
+            } else {
+                // probably not ondemand instance
+                Log.debug("No integrated account found and no configration is provided.");
+            }
             
         } else {
-            
-            doUpdateConfiguration(configuration, integratedAccount);
+            if (configuration != null) { // integrated account found
+                doUpdateConfiguration(configuration, integratedAccount);
+            } else {
+                Log.debug("Integrated account has been found and no configration is provided. Deleting integrated account.");
+                removeAccount(integratedAccount);
+            }
             
         }
         
@@ -70,34 +80,83 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     private void doNewAccount(AccountsConfig configuration)
     {
         AccountInfo info = toInfoNewAccount(configuration);
+        Organization userAddedAccount = organizationService.getByHostAndName(BITBUCKET_URL, info.accountName);
         
-        Organization newOrganization = new Organization();
-        newOrganization.setName(info.accountName);
-        newOrganization.setCredential(new Credential(null, null, null, info.oauthKey, info.oauthSecret));
-        newOrganization.setHostUrl(BITBUCKET_URL);
-        newOrganization.setDvcsType(BitbucketCommunicator.BITBUCKET);
-        newOrganization.setAutolinkNewRepos(true);
-        newOrganization.setSmartcommitsOnNewRepos(true);
+        Organization newOrganization = null;
+
+        if (userAddedAccount == null) {
+            // create brand new
+            newOrganization = createNewOrganization(info);
+      
+        } else {
+            // make integrated account from user-added account
+            newOrganization = copyValues(info, userAddedAccount);
+        }
 
         organizationService.save(newOrganization);
     }
-    
+
+    /**
+     * BL comes from https://sdog.jira.com/wiki/pages/viewpage.action?pageId=47284285 
+     */
     private void doUpdateConfiguration(AccountsConfig configuration, Organization integratedNotNullAccount)
     {
         AccountInfo info = toInfoExistingAccount(configuration);
         
         if (info != null) {
-            
+
             // modify :?
+            Organization userAddedAccount = organizationService.getByHostAndName(BITBUCKET_URL, info.accountName);
+            
+            if (userAddedAccount == null) {
+                
+                if (configHasChanged(integratedNotNullAccount, info)) {
+                    
+                    copyValues(info, integratedNotNullAccount);
+                    organizationService.save(integratedNotNullAccount);
+                    
+                } else if (accountNameHasChanged(integratedNotNullAccount, info)) {
+                    
+                    removeAccount(userAddedAccount);
+                    organizationService.save(createNewOrganization(info));
+                    
+                } else {
+                    // nothing has changed
+                    Log.debug("No changes detect on integrated account");
+                }
+                
+            } else {
+                // should not happened
+                // existing integrated account with the same name as user added
+                Log.warn("Detected existing integrated account with the same name as user added.");
+                removeAccount(userAddedAccount);
+            }
+            
             
         } else {
             //
             // delete account
             //
-            organizationService.remove(integratedNotNullAccount.getId());
+            removeAccount(integratedNotNullAccount);
         }
-        // TODO https://sdog.jira.com/wiki/pages/viewpage.action?pageId=47284285
         
+    }
+
+    private boolean configHasChanged(Organization integratedNotNullAccount, AccountInfo info)
+    {
+        return StringUtils.equals(info.accountName, integratedNotNullAccount.getName())
+                && (    !StringUtils.equals(info.oauthKey, integratedNotNullAccount.getCredential().getOauthKey())
+                    ||  !StringUtils.equals(info.oauthSecret, integratedNotNullAccount.getCredential().getOauthSecret()));
+    }
+    
+    private boolean accountNameHasChanged(Organization integratedNotNullAccount, AccountInfo info)
+    {
+        return StringUtils.equals(info.accountName, integratedNotNullAccount.getName());
+    }
+
+    private void removeAccount(Organization integratedNotNullAccount)
+    {
+        organizationService.remove(integratedNotNullAccount.getId());
     }
 
     private AccountInfo toInfoNewAccount(AccountsConfig configuration)
@@ -212,6 +271,25 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     private boolean supportsIntegratedAccounts()
     {
         return configProvider.supportsIntegratedAccounts();
+    }
+    
+    private Organization createNewOrganization(AccountInfo info)
+    {
+        Organization newOrganization = new Organization();
+        copyValues(info, newOrganization);
+        return newOrganization;
+    }
+
+    private Organization copyValues(AccountInfo info, Organization organization)
+    {
+        organization.setName(info.accountName);
+        organization.setCredential(new Credential(null, null, null, info.oauthKey, info.oauthSecret));
+        organization.setHostUrl(BITBUCKET_URL);
+        organization.setDvcsType(BitbucketCommunicator.BITBUCKET);
+        organization.setAutolinkNewRepos(true);
+        organization.setSmartcommitsOnNewRepos(true);
+        
+        return organization;
     }
 
     private static class AccountInfo {
