@@ -63,7 +63,7 @@
               
 	            
                     <div class="field-group" >
-                      <label for="urlSelect">Url:</label>
+                      <label for="urlSelect">Host:</label>
                       <select id="urlSelect" name="urlSelect" class="select" onchange="switchDvcsDetails(this)">
 	               		<option value="bitbucket">Bitbucket</option>
 	                	<option value="github">GitHub</option>
