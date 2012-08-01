@@ -220,7 +220,7 @@
     
     
     <!-- Listener -->
-    <component key="dvcsAddUserListener" class="com.atlassian.jira.plugins.dvcs.listener.DvcsAddUserListener" />
+    <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />    
 
     <issue-tabpanel key="dvcs-commits-tabpanel" name="Dvcs Changesets Tab Panel"
                     class="com.atlassian.jira.plugins.dvcs.webwork.DvcsTabPanel">

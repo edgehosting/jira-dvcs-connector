@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.listener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 import com.atlassian.crowd.model.event.Operation;
 import com.atlassian.crowd.model.event.UserEvent;
@@ -32,8 +31,7 @@ import com.atlassian.plugin.event.events.PluginUninstalledEvent;
  * @author jhocman@atlassian.com
  *
  */
-public class DvcsAddUserListener implements InitializingBean
-
+public class DvcsAddUserListener
 {
 	
 	/** The Constant log. */
@@ -152,15 +150,6 @@ public class DvcsAddUserListener implements InitializingBean
 	private String humanNameThread(Class<UserAddedViaInterfaceEventProcessor> klass)
 	{
 		return Thread.class.getSimpleName() + "___" + klass.getSimpleName();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void afterPropertiesSet() throws Exception
-	{
-		eventPublisher.register(this);
 	}
 
 	@PluginEventListener
