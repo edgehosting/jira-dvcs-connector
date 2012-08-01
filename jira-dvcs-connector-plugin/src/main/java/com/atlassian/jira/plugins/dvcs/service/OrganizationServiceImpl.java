@@ -236,4 +236,12 @@ public class OrganizationServiceImpl implements OrganizationService
 		organizationDao.setDefaultGroupsSlugs(orgId, groupsSlugs);
 	}
 
+    @Override
+    public Organization findIntegratedAccount()
+    {
+        return organizationDao.findIntegratedAccount();
+    }
+	
+	
+
 }

@@ -123,5 +123,7 @@ public interface OrganizationService
 	void enableSmartcommitsOnNewRepos(int id, boolean parseBoolean);
 	
 	void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs);
+	
+	Organization findIntegratedAccount();
 }
 

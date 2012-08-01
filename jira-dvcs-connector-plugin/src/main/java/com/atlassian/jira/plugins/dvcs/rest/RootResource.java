@@ -241,4 +241,21 @@ public class RootResource
 		}
 	}
 	
+	@GET
+	@Path("/integrated-accounts/reload")
+	public Response reloadIntegratedAccountConfig() {
+	    
+	    try {
+
+	        return Response.noContent().build();
+
+	    } catch (Exception e) {
+	        
+	        log.error("Failed to reload config.", e);
+
+	        return Response.serverError().build();
+
+        }
+	}
+	
 }
