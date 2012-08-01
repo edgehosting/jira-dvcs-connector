@@ -5,8 +5,8 @@
 	  <label>Bitbucket Accounts</label>
 
 	  #foreach ($bbOrg in $bbOrgaizations)
-	  
-	  	#if(!$bbOrg.getGroups().isEmpty())
+	    
+	  	#if($bbOrg.getGroups() && !$bbOrg.getGroups().isEmpty())
 	
 		  	<div class="checkbox" style="padding-left: 0px; margin-top: 2px; margin-bottom: 5px;">
 		    	
