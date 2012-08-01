@@ -232,9 +232,10 @@
 								            <li class="dropdown-item">
 												 #if($org.dvcsType == "bitbucket")
 								            	     #if ($action.isBitbucketOauthRequired())
-                                                         <a  href="$baseurl/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
-                                                     #else
                                                          <a  href="$baseurl/secure/admin/ConfigureBitbucketOAuth!default.jspa?atl_token=$atl_token">Configure OAuth</a>
+                                                     #else
+                                                         <a  href="$baseurl/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+                                                     #end
 												 #else
 												 <a  href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 								            	 #end
