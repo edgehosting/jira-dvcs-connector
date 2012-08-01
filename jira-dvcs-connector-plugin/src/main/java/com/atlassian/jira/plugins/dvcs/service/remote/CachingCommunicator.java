@@ -1,5 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -7,17 +16,9 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.google.common.base.Function;
-import com.google.common.collect.ComputationException;
-import com.google.common.collect.MapMaker;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
 
 /**
  * A {@link com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator} implementation that caches results for quicker subsequent lookup times
@@ -54,17 +55,52 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         }
 
     }
-
-    private final Map<UserKey, DvcsUser> userMap = new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(
-        new Function<UserKey, DvcsUser>()
+    
+    private class OrganisationKey
+    {
+        private final Organization organization;
+        public OrganisationKey(Organization organization)
         {
-            @Override
-            public DvcsUser apply(UserKey key)
-            {
-                return delegate.getUser(key.repository, key.username);
-            }
-        });
+            this.organization = organization;
+        }
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (obj == null) return false;
+            if (this == obj) return true;
+            if (this.getClass() != obj.getClass()) return false;
+            OrganisationKey that = (OrganisationKey) obj;
+            return new EqualsBuilder()
+                    .append(organization.getHostUrl(), that.organization.getHostUrl())
+                    .append(organization.getName(), that.organization.getName())                
+                    .isEquals();
+        }
+        @Override
+        public int hashCode()
+        {
+            return new HashCodeBuilder(17, 37).append(organization.getHostUrl()).append(organization.getName()).toHashCode();
+        }
+    }
 
+    private final Cache<UserKey, DvcsUser> usersCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(30, TimeUnit.MINUTES).build(new CacheLoader<UserKey, DvcsUser>()
+            {
+                public DvcsUser load(UserKey key)
+                {
+                    return delegate.getUser(key.repository, key.username);
+                }
+            });
+
+    private final Cache<OrganisationKey, List<Group>> groupsCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<OrganisationKey, List<Group>>()
+            {
+                public List<Group> load(OrganisationKey key)
+                {
+                    return delegate.getGroupsForOrganization(key.organization);
+                }
+            });
+    
+    
     public CachingCommunicator(DvcsCommunicator delegate)
     {
         this.delegate = delegate;
@@ -75,19 +111,18 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     {
         try
         {
-            return userMap.get(new UserKey(repository, username));
-        } catch (ComputationException e)
+            return usersCache.get(new UserKey(repository, username));
+        } catch (ExecutionException e)
         {
             throw unrollException(e);
         }
     }
 
-    private SourceControlException unrollException(ComputationException e)
+    private SourceControlException unrollException(ExecutionException e)
     {
         return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause() : new SourceControlException(e
                 .getCause());
     }
-
 
     @Override
     public String getUserUrl(Repository repository, Changeset changeset)
@@ -104,7 +139,13 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     @Override
     public List<Group> getGroupsForOrganization(Organization organization)
     {
-        return delegate.getGroupsForOrganization(organization);
+        try
+        {
+            return groupsCache.get(new OrganisationKey(organization));
+        } catch (ExecutionException e)
+        {
+            throw unrollException(e);
+        }
     }
 
     @Override
