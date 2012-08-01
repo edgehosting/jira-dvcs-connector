@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
+import java.util.concurrent.ExecutorService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -48,6 +50,8 @@ public class DvcsAddUserListener implements InitializingBean
 	/** The communicator provider. */
 	private final DvcsCommunicatorProvider communicatorProvider;
 
+    private final ExecutorService executorService;
+
 	/**
 	 * The Constructor.
 	 *
@@ -56,12 +60,13 @@ public class DvcsAddUserListener implements InitializingBean
 	 * @param communicatorProvider the communicator provider
 	 */
 	public DvcsAddUserListener(EventPublisher eventPublisher, OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider)
+			DvcsCommunicatorProvider communicatorProvider, ExecutorService executorService)
 	{
 		super();
 		this.eventPublisher = eventPublisher;
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
+        this.executorService = executorService;
 	}
 
 	/**
@@ -72,18 +77,13 @@ public class DvcsAddUserListener implements InitializingBean
 	@EventListener
 	public void onUserAddViaInterface(final UserAddedEvent event)
 	{
-		safeExecute(new Closure()
+		safeExecute(new OperationTask()
 		{
 			@Override
-			public void execute()
+			public Runnable getRunnable()
 			{
-				UserAddedViaInterfaceEventProcessor runnableProcessor = new UserAddedViaInterfaceEventProcessor(event,
+				return new UserAddedViaInterfaceEventProcessor(event,
 						organizationService, communicatorProvider);
-
-				Thread runnableThreadProcessor = new Thread(runnableProcessor,
-						humanNameThread(UserAddedViaInterfaceEventProcessor.class));
-
-				runnableThreadProcessor.start();
 			}
 
 		}, "Failed to handle add user via interface event [ " + event + ", params =  " + event.getRequestParameters()
@@ -98,23 +98,18 @@ public class DvcsAddUserListener implements InitializingBean
 	@EventListener
 	public void onUserAddViaCrowd(final UserEvent event)
 	{
-		safeExecute(new Closure()
+		safeExecute(new OperationTask()
 		{
 			@Override
-			public void execute()
+			public Runnable getRunnable()
 			{
 				if (Operation.CREATED != event.getOperation())
 				{
-					return;
+					return null;
 				}
 				
-				UserAddedExternallyEventProcessor runnableProcessor = new UserAddedExternallyEventProcessor(event,
-						organizationService, communicatorProvider);
+				return new UserAddedExternallyEventProcessor(event, organizationService, communicatorProvider);
 
-				Thread runnableThreadProcessor = new Thread(runnableProcessor,
-						humanNameThread(UserAddedViaInterfaceEventProcessor.class));
-
-				runnableThreadProcessor.start();
 			}
 
 		}, "Failed to handle add user externally event [ " + event + ", user =  " + event.getUser()
@@ -123,35 +118,28 @@ public class DvcsAddUserListener implements InitializingBean
 	}
 
 	/**
-	 * Wraps {@link Closure#execute()} method
+	 * Wraps {@link OperationTask#getRunnable()} method
 	 * invocation with <code>try-catch</code> block
 	 * to ensure that no exception is propagated up.
 	 *
 	 * @param closure the closure
 	 * @param onFailMessage the on fail message
 	 */
-	private void safeExecute(Closure closure, String onFailMessage)
+	private void safeExecute(OperationTask closure, String onFailMessage)
 	{
 
 		try
 		{
-			closure.execute();
-
+		    Runnable task = closure.getRunnable();
+		    
+		    if (task != null) {
+		        executorService.submit(task);
+		    }
+		    
 		} catch (Throwable t)
 		{
 			log.warn(onFailMessage, t);
 		}
-	}
-
-	/**
-	 * Create nice thread name. I.e. Thread___UserAddedExternallyEventProcessor
-	 *
-	 * @param klass the class name to be used
-	 * @return the string
-	 */
-	private String humanNameThread(Class<UserAddedViaInterfaceEventProcessor> klass)
-	{
-		return Thread.class.getSimpleName() + "___" + klass.getSimpleName();
 	}
 
 	/**
@@ -190,13 +178,13 @@ public class DvcsAddUserListener implements InitializingBean
 	/**
 	 * The Interface Closure.
 	 */
-	interface Closure
+	interface OperationTask
 	{
 
 		/**
 		 * Execute.
 		 */
-		void execute();
+		Runnable getRunnable();
 
 	}
 

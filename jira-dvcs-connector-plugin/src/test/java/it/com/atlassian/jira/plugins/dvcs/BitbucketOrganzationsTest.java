@@ -1,9 +1,5 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,6 +18,7 @@ import org.openqa.selenium.By;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddUserPage;
@@ -30,6 +27,10 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
+
+import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Test to verify behaviour when syncing bitbucket repository..
@@ -60,12 +61,16 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     }
     
     private void loginToBitbucketAndSetJiraOAuthCredentials()
-    {
+    {       
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
+               
+        jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
+        BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
+                jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class).addConsumer();
         
         BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
-        oauthConfigPage.setCredentials("4QRzjT6XHGKwL55Bfd", "LnpGqtuGXzRXdnVdxkgP5sttHSE5AXAV");
+        oauthConfigPage.setCredentials(oauthCredentials.oauthKey, oauthCredentials.oauthSecret);
        
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());        
     }
@@ -76,6 +81,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         loginToBitbucketAndSetJiraOAuthCredentials();
 		BaseConfigureOrganizationsPage organizationsPage = configureOrganizations.addOrganizationSuccessfully(TEST_URL,
 				false);
+        
 		PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
 		// first row is header row, than repos ...
 		Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
