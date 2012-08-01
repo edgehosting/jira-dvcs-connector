@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
@@ -18,10 +19,12 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scrib
 public final class DefaultBitbucketRemoteClientFactory implements BitbucketClientRemoteFactory
 {
     private final BitbucketOAuth oauth;
+    private final Encryptor encryptor;
 
-    public DefaultBitbucketRemoteClientFactory(BitbucketOAuth oauth)
+    public DefaultBitbucketRemoteClientFactory(BitbucketOAuth oauth, Encryptor encryptor)
     {
         this.oauth = oauth;
+        this.encryptor = encryptor;
     }
 
     @Override
@@ -55,8 +58,13 @@ public final class DefaultBitbucketRemoteClientFactory implements BitbucketClien
        
         if (StringUtils.isNotBlank(organization.getCredential().getAdminUsername()))
         {
-            authProvider = new BasicAuthAuthProvider(organization.getHostUrl(), organization.getCredential()
-                    .getAdminUsername(), organization.getCredential().getAdminPassword());
+            String decryptedPassword = encryptor.decrypt(organization.getCredential().getAdminPassword(),
+                                                         organization.getName(),
+                                                         organization.getHostUrl());
+            
+            authProvider = new BasicAuthAuthProvider(organization.getHostUrl(),
+                                                     organization.getCredential().getAdminUsername(),
+                                                     decryptedPassword);
         } 
         
         else if (StringUtils.isNotBlank( organization.getCredential().getAccessToken()) )
@@ -74,8 +82,13 @@ public final class DefaultBitbucketRemoteClientFactory implements BitbucketClien
         
         if (StringUtils.isNotBlank(repository.getCredential().getAdminUsername()))
         {
-            authProvider = new BasicAuthAuthProvider(repository.getOrgHostUrl(), repository.getCredential()
-                    .getAdminUsername(), repository.getCredential().getAdminPassword());
+            String decryptedPassword = encryptor.decrypt(repository.getCredential().getAdminPassword(),
+                                                         repository.getOrgName(),
+                                                         repository.getOrgHostUrl());
+            
+            authProvider = new BasicAuthAuthProvider(repository.getOrgHostUrl(),
+                                                     repository.getCredential().getAdminUsername(),
+                                                     decryptedPassword);
         }
         
         else  if (StringUtils.isNotBlank( repository.getCredential().getAccessToken()) )
