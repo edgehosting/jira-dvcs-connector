@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.listener.IPluginFeatureDetector;
+import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
@@ -28,10 +28,10 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	private final OrganizationService organizationService;
 	private final DvcsCommunicatorProvider communicatorProvider;
 
-    private final IPluginFeatureDetector featuresDetector;
+    private final PluginFeatureDetector featuresDetector;
 
 	public ConfigureDvcsOrganizations(OrganizationService organizationService,
-			FeatureManager featureManager, DvcsCommunicatorProvider communicatorProvider, IPluginFeatureDetector featuresDetector)
+			FeatureManager featureManager, DvcsCommunicatorProvider communicatorProvider, PluginFeatureDetector featuresDetector)
 	{
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;

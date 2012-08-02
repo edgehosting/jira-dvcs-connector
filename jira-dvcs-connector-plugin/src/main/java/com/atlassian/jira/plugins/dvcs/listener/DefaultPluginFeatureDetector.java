@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.listener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultPluginFeatureDetector implements IPluginFeatureDetector
+public class DefaultPluginFeatureDetector implements PluginFeatureDetector
 {
     
     private static final Logger log = LoggerFactory.getLogger(DefaultPluginFeatureDetector.class);
