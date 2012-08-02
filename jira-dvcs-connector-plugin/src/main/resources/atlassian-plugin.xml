@@ -355,9 +355,7 @@
     </rest>
 
     <resource type="download" name="images/" location="images/"/>
- 
     <resource type="i18n" name="bitbucket-i18n" location="i18n"/>
-
 
     <activity-streams-provider key="dvcs-streams-provider" name="Dvcs Streams Provider" i18n-name-key="Bitbucket Connector"
                        class="com.atlassian.jira.plugins.dvcs.streams.DvcsStreamsActivityProvider">

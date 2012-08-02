@@ -39,7 +39,6 @@ import com.opensymphony.util.TextUtils;
  */
 public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
 {
-
     /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(AddUserDvcsExtensionWebPanel.class);
 
@@ -81,24 +80,20 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
     @Override
     public String getHtml(Map<String, Object> model)
     {
-
         StringWriter stringWriter = new StringWriter();
-
         try
         {
-
             addBitbucketOrganizations(model);
 
             model.put("textutils", new TextUtils());
             model.put("baseurl", appProperties.getBaseUrl());
 
             templateRenderer.render("/templates/dvcs/add-user-dvcs-extension.vm", model, stringWriter);
-
         } catch (Exception e)
         {
             log.warn("Error while rendering DVCS extension fragment for add user form.", e);
             stringWriter = new StringWriter(); // reset writer so no broken
-                                               // output goes out
+                                               // output goes out TODO should we print the error message to the writer?
         }
 
         return stringWriter.toString();
@@ -126,7 +121,7 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
         {
             try
             {
-                List<Group> groups = communicator.getGroupsForOrganization(organization);
+                Set<Group> groups = communicator.getGroupsForOrganization(organization);
                 organization.setGroups(groups);
 
                 groupFound |= CollectionUtils.isNotEmpty(groups);
@@ -150,7 +145,7 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
 
     }
 
-    private Set<String> extractSlugs(List<Group> groupSlugs)
+    private Set<String> extractSlugs(Set<Group> groupSlugs)
     {
         Set<String> slugs = new HashSet<String>();
 

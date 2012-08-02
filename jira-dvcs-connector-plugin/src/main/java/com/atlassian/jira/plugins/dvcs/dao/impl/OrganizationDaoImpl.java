@@ -22,8 +22,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The Class OrganizationDaoImpl.
@@ -85,9 +87,9 @@ public class OrganizationDaoImpl implements OrganizationDao
 		return organization;
 	}
 
-	private List<Group> createGroupSlugs(String defaultGroupsSlugs)
+	private Set<Group> createGroupSlugs(String defaultGroupsSlugs)
 	{
-		List<Group> slugs = new ArrayList<Group>();
+	    Set<Group> slugs = new HashSet<Group>();
 		if (StringUtils.isNotBlank(defaultGroupsSlugs)) {
 			Iterable<String> groupsSlugs = Splitter.on(Organization.DEFAULT_GROUP_SLUGS_SEPARATOR).split(defaultGroupsSlugs);
 			for (String slug : groupsSlugs)

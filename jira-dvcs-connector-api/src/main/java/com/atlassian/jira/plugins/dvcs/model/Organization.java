@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -31,10 +32,10 @@ public class Organization
     private transient Credential credential;
     
     // 2/ invitation groups - when adding new user as information holder for rendering form extension
-    private transient List<Group> groups;
+    private transient Set<Group> groups;
     
     // 1/ default groups - when configuring default groups
-    private transient List<Group> defaultGroupsSlugs;
+    private transient Set<Group> defaultGroupsSlugs;
  
     public Organization()
 	{
@@ -150,12 +151,12 @@ public class Organization
                 .hashCode();
     }
 
-	public List<Group> getGroups()
+	public Set<Group> getGroups()
 	{
 		return groups;
 	}
 
-	public void setGroups(List<Group> groups)
+	public void setGroups(Set<Group> groups)
 	{
 		this.groups = groups;
 	}
@@ -170,12 +171,12 @@ public class Organization
 		this.organizationUrl = organizationUrl;
 	}
 
-	public List<Group> getDefaultGroupsSlugs()
+	public Set<Group> getDefaultGroupsSlugs()
 	{
 		return defaultGroupsSlugs;
 	}
 
-	public void setDefaultGroupsSlugs(List<Group> defaultGroupsSlugs)
+	public void setDefaultGroupsSlugs(Set<Group> defaultGroupsSlugs)
 	{
 		this.defaultGroupsSlugs = defaultGroupsSlugs;
 	}

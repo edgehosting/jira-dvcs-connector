@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service.remote;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -91,10 +92,10 @@ public class CachingCommunicator implements CachingDvcsCommunicator
                 }
             });
 
-    private final Cache<OrganisationKey, List<Group>> groupsCache = CacheBuilder.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<OrganisationKey, List<Group>>()
+    private final Cache<OrganisationKey, Set<Group>> groupsCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<OrganisationKey, Set<Group>>()
             {
-                public List<Group> load(OrganisationKey key)
+                public Set<Group> load(OrganisationKey key)
                 {
                     return delegate.getGroupsForOrganization(key.organization);
                 }
@@ -137,7 +138,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public List<Group> getGroupsForOrganization(Organization organization)
+    public Set<Group> getGroupsForOrganization(Organization organization)
     {
         try
         {

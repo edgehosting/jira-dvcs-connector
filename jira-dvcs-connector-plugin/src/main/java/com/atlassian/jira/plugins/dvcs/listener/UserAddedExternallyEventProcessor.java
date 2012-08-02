@@ -2,7 +2,9 @@ package com.atlassian.jira.plugins.dvcs.listener;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -82,8 +84,8 @@ class UserAddedExternallyEventProcessor implements Runnable
 
 		for (Organization organization : defaultOrganizations)
 		{
-			List<Group> groupSlugs = organization.getDefaultGroupsSlugs();
-			Collection<String> slugsStrings = extractSlugs(groupSlugs);
+		    Set<Group> groupSlugs = organization.getDefaultGroupsSlugs();
+			Set<String> slugsStrings = extractSlugs(groupSlugs);
 			
 			if (CollectionUtils.isNotEmpty(slugsStrings))
 			{
@@ -100,9 +102,9 @@ class UserAddedExternallyEventProcessor implements Runnable
 	 * @param groupSlugs the group slugs
 	 * @return the collection< string>
 	 */
-	private Collection<String> extractSlugs(List<Group> groupSlugs)
+	private Set<String> extractSlugs(Set<Group> groupSlugs)
 	{
-		List<String> slugs = new ArrayList<String>();
+	    Set<String> slugs = new HashSet<String>();
 		
 		if (groupSlugs == null) {
 			return slugs;
