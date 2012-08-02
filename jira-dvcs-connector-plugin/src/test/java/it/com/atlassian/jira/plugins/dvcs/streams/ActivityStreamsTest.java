@@ -22,6 +22,7 @@ import com.atlassian.webdriver.jira.page.DashboardPage;
 public class ActivityStreamsTest
 {
 	private static final String BB_TEST_URL = "https://bitbucket.org";
+    private static final String BB_TEST_ORGANIZATION = "jirabitbucketconnector";
 
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private DashboardActivityStreamsPage page;
@@ -37,7 +38,7 @@ public class ActivityStreamsTest
     {
     	BitBucketConfigureOrganizationsPage configureRepos = goToConfigPage();
         configureRepos.deleteAllOrganizations();
-        configureRepos.addOrganizationSuccessfully(BB_TEST_URL, true);
+        configureRepos.addOrganizationSuccessfully(BB_TEST_URL, BB_TEST_ORGANIZATION, true);
     }
 
 
@@ -90,11 +91,11 @@ public class ActivityStreamsTest
     {
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
-        
+
         BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
         oauthConfigPage.setCredentials("4QRzjT6XHGKwL55Bfd", "LnpGqtuGXzRXdnVdxkgP5sttHSE5AXAV");
     }
-    
+
     @Test
     public void testActivityPresentedForQA5()
     {
