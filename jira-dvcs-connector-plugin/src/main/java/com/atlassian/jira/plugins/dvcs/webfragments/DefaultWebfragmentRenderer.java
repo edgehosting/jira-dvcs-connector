@@ -5,7 +5,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -83,7 +82,7 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
 		
 		Organization organization = organizationService.get(orgId, false);
 		DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType());
-		List<Group> groups = communicator.getGroupsForOrganization(organization);
+		Set<Group> groups = communicator.getGroupsForOrganization(organization);
 		
 		//
 		HashMap<String, Object> model = new HashMap<String, Object>();

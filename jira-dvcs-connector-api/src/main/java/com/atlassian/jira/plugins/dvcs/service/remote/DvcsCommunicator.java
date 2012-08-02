@@ -1,15 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
@@ -60,7 +61,7 @@ public interface DvcsCommunicator
      * @param organization the organization
      * @return list of groups
      */
-    List<Group> getGroupsForOrganization(Organization organization);
+    Set<Group> getGroupsForOrganization(Organization organization);
     
     /**
      * Supports invitation.
