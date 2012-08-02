@@ -24,13 +24,13 @@
 	<component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
-	
- 	<!-- =============================================================================================================================== 
-		 smartcommits 
+
+ 	<!-- ===============================================================================================================================
+		 smartcommits
 	 	 =============================================================================================================================== -->
-	
+
 	<component-import key="issueManager" interface="com.atlassian.jira.issue.IssueManager" />
-		
+
 	<component key="smartcommitsService" name="DVCS Smartcommits Service Job"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsService" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsService</interface>
 	</component>
@@ -49,16 +49,16 @@
 	<component key="smartcommitsTransitionsHandler" name="DVCS Smartcommits workflow Transition Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommandHandler</interface>
 	</component>
-	
+
 	<component key="smartcommitsChangesetsProcessor" name="DVCS Smartcommits Changesets Processor"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsChangesetsProcessor" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor</interface>
 	</component>
-	
-	
-	<!-- =============================================================================================================================== 
-		 smartcommits 
+
+
+	<!-- ===============================================================================================================================
+		 smartcommits
 	 	 =============================================================================================================================== -->
-	    
+
    <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
@@ -71,9 +71,9 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.CleanupPluginSettings</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
     </ao>
-    
+
     <!--
-    	Upgrade Tasks 
+    	Upgrade Tasks
      -->
 
 	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task"
@@ -165,7 +165,7 @@
         <description>githubOAuth</description>
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth</interface>
     </component>
-    
+
        <component key="bitbucketOAuth" name="bitbucketOAuth"
                class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketOAuth">
         <description>bitbucketOAuth</description>
@@ -189,7 +189,7 @@
         <description>changesetDao</description>
         <interface>com.atlassian.jira.plugins.dvcs.dao.ChangesetDao</interface>
     </component>
-    
+
 
     <component key="organizationService" name="organizationService"
                class="com.atlassian.jira.plugins.dvcs.service.OrganizationServiceImpl">
@@ -208,7 +208,7 @@
         <description>changesetService</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetService</interface>
     </component>
-    
+
     <component key="changesetCache" name="changesetCache"
                class="com.atlassian.jira.plugins.dvcs.service.ChangesetCacheImpl">
         <description>changesetCache</description>
@@ -223,15 +223,19 @@
                class="com.atlassian.jira.plugins.dvcs.webfragments.DefaultWebfragmentRenderer">
         <interface>com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer</interface>
     </component>
-    
+
     <component key="bitbucketRemoteClientFactory" name="Bitbucket Remote Client Factory"
                class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketRemoteClientFactory">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory</interface>
     </component>
-    
-    
+
+     <component key="pluginFeatureDetector" name="pluginFeatureDetector"
+               class="com.atlassian.jira.plugins.dvcs.listener.DefaultPluginFeatureDetector">
+        <interface>com.atlassian.jira.plugins.dvcs.listener.IPluginFeatureDetector</interface>
+    </component>
+
     <!-- Listener -->
-    <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />    
+    <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />
 
     <issue-tabpanel key="dvcs-commits-tabpanel" name="Dvcs Changesets Tab Panel"
                     class="com.atlassian.jira.plugins.dvcs.webwork.DvcsTabPanel">
@@ -248,7 +252,7 @@
         <description>
         </description>
         <actions>
-        
+
         	<action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
                     alias="ConfigureDvcsOrganizations" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
@@ -259,22 +263,22 @@
             </action>
 
 			<!-- New organization driven actions -->
-			
+
 			<action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
                     alias="ConfigureDvcsOrganizations" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
-            
+
             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.AddGithubOrganization"
                     alias="AddGithubOrganization" roles-required="admin">
                 <view name="input">/templates/dvcs/add-github-organization.vm</view>
             </action>
-            
+
             <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.AddBitbucketOrganization"
                     alias="AddBitbucketOrganization" roles-required="admin">
                 <view name="input">/templates/dvcs/add-bitbucket-organization.vm</view>
             </action>
-           
+
             <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.UpdateBitbucketCredentials"
                     alias="UpdateBitbucketCredentials" roles-required="admin">
                 <view name="input">/templates/dvcs/update-bitbucket-password.vm</view>
@@ -294,21 +298,21 @@
                     alias="RegenerateGithubOauthToken" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
-            
+
             <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.RegenerateBitbucketOauthToken"
                     alias="RegenerateBitbucketOauthToken" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
-			
+
 			<action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.ConfigureDefaultBitbucketGroups"
                     alias="ConfigureDefaultBitbucketGroups" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
-            
+
             <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.ConfigureBitbucketOAuth" alias="ConfigureBitbucketOAuth">
                 <view name="input">/templates/dvcs/configure-bitbucket-oauth.vm</view>
             </action>
-			
+
         </actions>
     </webwork1>
 
@@ -328,7 +332,7 @@
         <link>/secure/admin/ConfigureGithubOAuth!default.jspa</link>
         <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
     </web-item>
-    
+
         <web-item key="bitbucket_oauth" name="Bitbucket OAuth" section="admin_plugins_menu/source_control" weight="10">
         <description>Static link to bitbucket.com.</description>
         <label>Bitbucket OAuth Settings</label>
@@ -364,5 +368,5 @@
 	<!-- Web Panels -->
 	<web-panel key="add-user-dvcs-extension" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />
 
- 
+
 </atlassian-plugin>
