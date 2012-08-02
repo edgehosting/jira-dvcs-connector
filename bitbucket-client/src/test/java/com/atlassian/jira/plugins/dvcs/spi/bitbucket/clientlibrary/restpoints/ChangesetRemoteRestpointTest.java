@@ -23,12 +23,12 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.NoAut
  */
 public class ChangesetRemoteRestpointTest {
     
-    private static final String BITBUCKET_OWNER      = "jirabitbucketconnector";
+    private static final String BITBUCKET_OWNER      = "dvcsconnectortest";
     private static final String BITBUCKET_REPO       = "testrepo";
     private static final String BITBUCKET_EMPTY_REPO = "testemptyrepo";
 
-    private static final String THIRD_CHANGESET_NODE = "f3d8dff6360e";
-    private static final String TIP_CHANGESET_NODE   = "4444ae193a51";
+    private static final String THIRD_CHANGESET_NODE_FROM_BOTTOM = "d2088255ee40";
+    private static final String TIP_CHANGESET_NODE               = "cf40601136f6";
     
     
     private static BitbucketRemoteClient bitbucketRemoteClient;
@@ -78,13 +78,13 @@ public class ChangesetRemoteRestpointTest {
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
                                                                        .getChangesets(BITBUCKET_OWNER,
                                                                                       BITBUCKET_REPO,
-                                                                                      THIRD_CHANGESET_NODE,
+                                                                                      THIRD_CHANGESET_NODE_FROM_BOTTOM,
                                                                                       pagination);
 
         Set<String> changesetNodes = new HashSet<String>();
         int changesetCounter = 0;
         String expectedCombinedChangesetNodes =
-                "_4444ae193a51_33ff867a9fc2_f9f584c8dbea";
+                "_cf40601136f6_de66ffafa5ca_b597361d8735";
         String combinedChangesetNodes = "";
         
         for (BitbucketChangeset bitbucketChangeset : changesets)
@@ -113,7 +113,7 @@ public class ChangesetRemoteRestpointTest {
     
     @Test(timeOut=10000, expectedExceptions=NoSuchElementException.class)
     public void getChangesetsFromEmptyRepository_ShouldReturnEmptyIterable()
-    {
+    {       
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
                                                                        .getAllChangesets(BITBUCKET_OWNER,
                                                                                          BITBUCKET_EMPTY_REPO);
