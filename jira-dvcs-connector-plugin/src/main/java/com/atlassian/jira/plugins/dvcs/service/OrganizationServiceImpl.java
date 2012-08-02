@@ -39,24 +39,17 @@ public class OrganizationServiceImpl implements OrganizationService
 	}
 
     @Override
-    public List<Organization> getAll(final boolean loadRepositories)
+    public List<Organization> getAll(boolean loadRepositories)
     {
         List<Organization> organizations = organizationDao.getAll();
 
         if (loadRepositories)
         {
-            CollectionUtils.transform(organizations, new Transformer()
+            for (Organization organization : organizations)
             {
-                @Override
-                public Object transform(Object o)
-                {
-                    Organization organization = (Organization) o;
-                    List<Repository> repositories = repositoryService
-                            .getAllByOrganization(organization.getId());
-                    organization.setRepositories(repositories);
-                    return organization;
-                }
-            });
+                List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+                organization.setRepositories(repositories);
+            }
         }
         return organizations;
     }
