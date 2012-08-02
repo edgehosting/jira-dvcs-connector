@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
@@ -18,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -81,8 +81,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * @param requestHelper
      *            the request helper
      */
-    public BitbucketCommunicator(AuthenticationFactory authenticationFactory,
-            @Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor,
+    public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor,
             BitbucketOAuth oauth, BitbucketClientRemoteFactory bitbucketClientRemoteFactory)
     {
         this.bitbucketLinker = bitbucketLinker;
@@ -402,13 +401,13 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public List<Group> getGroupsForOrganization(Organization organization)
+    public Set<Group> getGroupsForOrganization(Organization organization)
     {
         try
         {
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForOrganization(organization);
 
-            List<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
+            Set<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
 
             return GroupTransformer.fromBitbucketGroups(groups);
         } catch (BitbucketRequestException e)

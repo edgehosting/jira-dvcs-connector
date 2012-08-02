@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
@@ -19,6 +20,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthenticatio
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.google.common.collect.Sets;
 
 /**
  * Webwork action used to configure the bitbucket organization.
@@ -149,8 +151,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 			newOrganization.setCredential(new Credential(null, null, accessToken));
 			newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
 			newOrganization.setSmartcommitsOnNewRepos(hadAutoSmartCommitsChecked());
-			newOrganization.setDefaultGroupsSlugsSerialized(DEFAULT_INVITATION_GROUP);
-
+			newOrganization.setDefaultGroups(Sets.newHashSet(new Group(DEFAULT_INVITATION_GROUP)));
 			organizationService.save(newOrganization);
 
 		} catch (SourceControlException.UnauthorisedException e)

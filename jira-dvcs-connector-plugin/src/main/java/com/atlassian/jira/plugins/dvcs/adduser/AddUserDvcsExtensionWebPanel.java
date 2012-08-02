@@ -11,6 +11,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -54,6 +55,8 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
 
     private final ApplicationProperties appProperties;
 
+    private final PluginFeatureDetector featuresDetector;
+
     /**
      * Instantiates a new adds the user dvcs extension web panel.
      * 
@@ -66,13 +69,14 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
      */
     public AddUserDvcsExtensionWebPanel(PluginAccessor pluginAccessor, OrganizationService organizationService,
             DvcsCommunicatorProvider communicatorProvider, TemplateRenderer templateRenderer,
-            ApplicationProperties appProperties)
+            ApplicationProperties appProperties, PluginFeatureDetector featuresDetector)
     {
         super(pluginAccessor);
         this.organizationService = organizationService;
         this.communicatorProvider = communicatorProvider;
         this.templateRenderer = templateRenderer;
         this.appProperties = appProperties;
+        this.featuresDetector = featuresDetector;
     }
 
     /**
@@ -83,6 +87,11 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
     {
 
         StringWriter stringWriter = new StringWriter();
+        
+        if (!featuresDetector.isUserInvitationsEnabled()) 
+        {
+            return stringWriter.toString();
+        }
 
         try
         {
@@ -98,7 +107,7 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
         {
             log.warn("Error while rendering DVCS extension fragment for add user form.", e);
             stringWriter = new StringWriter(); // reset writer so no broken
-                                               // output goes out
+                                               // output goes out TODO should we print the error message to the writer?
         }
 
         return stringWriter.toString();
@@ -126,12 +135,12 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
         {
             try
             {
-                List<Group> groups = communicator.getGroupsForOrganization(organization);
+                Set<Group> groups = communicator.getGroupsForOrganization(organization);
                 organization.setGroups(groups);
 
                 groupFound |= CollectionUtils.isNotEmpty(groups);
                 
-                defaultSlugs.put(organization.getId(), extractSlugs(organization.getDefaultGroupsSlugs()));
+                defaultSlugs.put(organization.getId(), extractSlugs(organization.getDefaultGroups()));
 
             } catch (Exception e)
             {
@@ -150,7 +159,7 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
 
     }
 
-    private Set<String> extractSlugs(List<Group> groupSlugs)
+    private Set<String> extractSlugs(Set<Group> groupSlugs)
     {
         Set<String> slugs = new HashSet<String>();
 

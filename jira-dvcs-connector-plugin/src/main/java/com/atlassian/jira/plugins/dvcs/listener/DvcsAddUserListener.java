@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.plugin.event.PluginEventListener;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginUninstalledEvent;
+import com.atlassian.util.concurrent.ThreadFactories;
 
 /**
  * 
@@ -58,12 +60,12 @@ public class DvcsAddUserListener
 	 * @param communicatorProvider the communicator provider
 	 */
 	public DvcsAddUserListener(EventPublisher eventPublisher, OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider, ExecutorService executorService)
+			DvcsCommunicatorProvider communicatorProvider)
 	{
 		this.eventPublisher = eventPublisher;
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
-        this.executorService = executorService;
+        this.executorService = Executors.newFixedThreadPool(2, ThreadFactories.namedThreadFactory("DvcsAddUserListenerExecutorService"));
 	}
 
 	/**

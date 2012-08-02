@@ -348,9 +348,9 @@ public class GithubCommunicator implements DvcsCommunicator
 	}
 
 	@Override
-	public List<Group> getGroupsForOrganization(Organization organization)
+	public Set<Group> getGroupsForOrganization(Organization organization)
 	{
-		return Collections.emptyList();
+		return Collections.emptySet();
 	}
 
 	@Override
