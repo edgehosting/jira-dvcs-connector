@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
 import com.google.common.base.Function;
@@ -25,7 +27,7 @@ public class GroupTransformer
                     @Override
                     public Group apply(BitbucketGroup bitbucketGroup)
                     {
-                        return new Group(bitbucketGroup.getSlug(), bitbucketGroup.getName());
+                        return new Group(StringUtils.trim(bitbucketGroup.getSlug()));
                     }
                 });
         return new HashSet<Group>(collection);

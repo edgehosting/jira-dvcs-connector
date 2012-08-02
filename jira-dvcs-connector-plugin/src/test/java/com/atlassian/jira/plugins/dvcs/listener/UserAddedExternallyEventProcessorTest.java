@@ -3,13 +3,10 @@ package com.atlassian.jira.plugins.dvcs.listener;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
-import org.hsqldb.lib.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +56,8 @@ public class UserAddedExternallyEventProcessorTest
 	}
 	
 	@Before
-	public void setUp () {
+    public void setUp()
+    {
 	
 		processor = new UserAddedExternallyEventProcessor(sampleEvent(), organizationServiceMock, communicatorProviderMock);
 		
@@ -67,7 +65,8 @@ public class UserAddedExternallyEventProcessorTest
 	}
 	
 	@Test
-	public void testRunShouldInvite() {
+    public void testRunShouldInvite()
+    {
 		
 		when(organizationServiceMock.getAutoInvitionOrganizations()).thenReturn(sampleOrganizations());
 		
@@ -88,7 +87,8 @@ public class UserAddedExternallyEventProcessorTest
 	}
 
 	@Test
-	public void testRunNotCreatedEventTypeShouldntInvite() {
+    public void testRunNotCreatedEventTypeShouldntInvite()
+    {
 		
 		processor = new UserAddedExternallyEventProcessor(new UserEvent(Operation.UPDATED, null, null, null, null), organizationServiceMock, communicatorProviderMock);
 		 
@@ -99,7 +99,8 @@ public class UserAddedExternallyEventProcessorTest
 	}
 	
 	@Test
-	public void testRunNoDefaultGroupsShouldntInvite() {
+    public void testRunNoDefaultGroupsShouldntInvite()
+    {
 		
 		when(organizationServiceMock.getAutoInvitionOrganizations()).thenReturn(Collections.EMPTY_LIST);
 		
@@ -112,7 +113,7 @@ public class UserAddedExternallyEventProcessorTest
 	private List<Organization> sampleOrganizations()
 	{
 		Organization org = new Organization();
-        org.setDefaultGroupsSlugs(Sets.newHashSet(new Group("A"), new Group("B")));
+        org.setDefaultGroups(Sets.newHashSet(new Group("A"), new Group("B")));
 		return EasyList.build(org);
 	}
 

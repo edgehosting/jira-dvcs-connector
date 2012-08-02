@@ -15,7 +15,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class Organization
 {
 	
-	public static final String DEFAULT_GROUP_SLUGS_SEPARATOR = ";";
+	public static final String GROUP_SLUGS_SEPARATOR = ";";
 	  
     private int id;
     private String hostUrl;
@@ -27,7 +27,6 @@ public class Organization
     private String organizationUrl;
     
     private List<Repository> repositories;
-    private String defaultGroupsSlugsSerialized;
     
     private transient Credential credential;
     
@@ -35,14 +34,16 @@ public class Organization
     private transient Set<Group> groups;
     
     // 1/ default groups - when configuring default groups
-    private transient Set<Group> defaultGroupsSlugs;
+    private transient Set<Group> defaultGroups;
  
     public Organization()
 	{
     	super();
 	}
     
-    public Organization(int id, String hostUrl, String name, String dvcsType, boolean autolinkNewRepos, Credential credential)
+    public Organization(int id, String hostUrl, String name, String dvcsType,
+            boolean autolinkNewRepos, Credential credential, String organizationUrl,
+            boolean smartcommitsOnNewRepos, Set<Group> defaultGroups)
     {
         this.id = id;
         this.hostUrl = hostUrl;
@@ -50,8 +51,12 @@ public class Organization
         this.dvcsType = dvcsType;
         this.autolinkNewRepos = autolinkNewRepos;
         this.credential = credential;
+        this.organizationUrl = organizationUrl;
+        this.smartcommitsOnNewRepos = smartcommitsOnNewRepos;
+        this.defaultGroups = defaultGroups;
     }
 
+    // =============== getters ==========================
     public int getId()
     {
         return id;
@@ -82,35 +87,55 @@ public class Organization
         return credential;
     }
 
+    public Set<Group> getGroups()
+    {
+        return groups;
+    }
+
+    public String getOrganizationUrl()
+    {
+        return organizationUrl;
+    }
+
+    public Set<Group> getDefaultGroups()
+    {
+        return defaultGroups;
+    }
+
+    public boolean isSmartcommitsOnNewRepos()
+    {
+        return smartcommitsOnNewRepos;
+    }
+    // =============== setters ==========================
     public void setId(int id)
-	{
-		this.id = id;
-	}
+    {
+        this.id = id;
+    }
 
-	public void setHostUrl(String hostUrl)
-	{
-		this.hostUrl = hostUrl;
-	}
+    public void setHostUrl(String hostUrl)
+    {
+        this.hostUrl = hostUrl;
+    }
 
-	public void setName(String name)
-	{
-		this.name = name;
-	}
+    public void setName(String name)
+    {
+        this.name = name;
+    }
 
-	public void setDvcsType(String dvcsType)
-	{
-		this.dvcsType = dvcsType;
-	}
+    public void setDvcsType(String dvcsType)
+    {
+        this.dvcsType = dvcsType;
+    }
 
-	public void setAutolinkNewRepos(boolean autolinkNewRepos)
-	{
-		this.autolinkNewRepos = autolinkNewRepos;
-	}
+    public void setAutolinkNewRepos(boolean autolinkNewRepos)
+    {
+        this.autolinkNewRepos = autolinkNewRepos;
+    }
 
-	public void setCredential(Credential credential)
-	{
-		this.credential = credential;
-	}
+    public void setCredential(Credential credential)
+    {
+        this.credential = credential;
+    }
 
     public List<Repository> getRepositories()
     {
@@ -122,6 +147,26 @@ public class Organization
         this.repositories = repositories;
     }
 
+    public void setGroups(Set<Group> groups)
+    {
+        this.groups = groups;
+    }
+
+    public void setOrganizationUrl(String organizationUrl)
+    {
+        this.organizationUrl = organizationUrl;
+    }
+
+    public void setDefaultGroups(Set<Group> defaultGroups)
+    {
+        this.defaultGroups = defaultGroups;
+    }
+    
+    public void setSmartcommitsOnNewRepos(boolean smartcommitsOnNewRepos)
+    {
+        this.smartcommitsOnNewRepos = smartcommitsOnNewRepos;
+    }
+    
     @Override
     public boolean equals(Object o)
     {
@@ -151,54 +196,5 @@ public class Organization
                 .hashCode();
     }
 
-	public Set<Group> getGroups()
-	{
-		return groups;
-	}
-
-	public void setGroups(Set<Group> groups)
-	{
-		this.groups = groups;
-	}
-
-	public String getOrganizationUrl()
-	{
-		return organizationUrl;
-	}
-
-	public void setOrganizationUrl(String organizationUrl)
-	{
-		this.organizationUrl = organizationUrl;
-	}
-
-	public Set<Group> getDefaultGroupsSlugs()
-	{
-		return defaultGroupsSlugs;
-	}
-
-	public void setDefaultGroupsSlugs(Set<Group> defaultGroupsSlugs)
-	{
-		this.defaultGroupsSlugs = defaultGroupsSlugs;
-	}
-
-	public String getDefaultGroupsSlugsSerialized()
-	{
-		return defaultGroupsSlugsSerialized;
-	}
-
-	public void setDefaultGroupsSlugsSerialized(String defaultGroupsSlugsSerialized)
-	{
-		this.defaultGroupsSlugsSerialized = defaultGroupsSlugsSerialized;
-	}
-
-	public boolean isSmartcommitsOnNewRepos()
-	{
-		return smartcommitsOnNewRepos;
-	}
-
-	public void setSmartcommitsOnNewRepos(boolean smartcommitsOnNewRepos)
-	{
-		this.smartcommitsOnNewRepos = smartcommitsOnNewRepos;
-	}
 
 }

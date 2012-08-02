@@ -140,7 +140,7 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
 
                 groupFound |= CollectionUtils.isNotEmpty(groups);
                 
-                defaultSlugs.put(organization.getId(), extractSlugs(organization.getDefaultGroupsSlugs()));
+                defaultSlugs.put(organization.getId(), extractSlugs(organization.getDefaultGroups()));
 
             } catch (Exception e)
             {

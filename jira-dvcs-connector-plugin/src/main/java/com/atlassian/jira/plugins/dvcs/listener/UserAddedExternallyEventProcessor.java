@@ -84,7 +84,7 @@ class UserAddedExternallyEventProcessor implements Runnable
 
 		for (Organization organization : defaultOrganizations)
 		{
-		    Set<Group> groupSlugs = organization.getDefaultGroupsSlugs();
+		    Set<Group> groupSlugs = organization.getDefaultGroups();
 			Set<String> slugsStrings = extractSlugs(groupSlugs);
 			
 			if (CollectionUtils.isNotEmpty(slugsStrings))

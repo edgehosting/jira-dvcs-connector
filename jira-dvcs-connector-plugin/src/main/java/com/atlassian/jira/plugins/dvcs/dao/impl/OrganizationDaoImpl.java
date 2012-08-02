@@ -1,5 +1,20 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import net.java.ao.Query;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
@@ -11,21 +26,6 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import net.java.ao.Query;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * The Class OrganizationDaoImpl.
@@ -77,29 +77,32 @@ public class OrganizationDaoImpl implements OrganizationDao
 
 		Organization organization = new Organization(organizationMapping.getID(), organizationMapping.getHostUrl(),
 				organizationMapping.getName(), organizationMapping.getDvcsType(),
-				organizationMapping.isAutolinkNewRepos(), credential);
-		organization.setOrganizationUrl(createOrganizationUrl(organizationMapping));
-		organization.setSmartcommitsOnNewRepos(organizationMapping.isSmartcommitsForNewRepos());
-		
-		organization.setDefaultGroupsSlugs(createGroupSlugs(organizationMapping.getDefaultGroupsSlugs()));
-		organization.setDefaultGroupsSlugsSerialized(organizationMapping.getDefaultGroupsSlugs());
-		
+				organizationMapping.isAutolinkNewRepos(), credential, createOrganizationUrl(organizationMapping), 
+				organizationMapping.isSmartcommitsForNewRepos(), deserializeDefaultGroups(organizationMapping.getDefaultGroupsSlugs()));
 		return organization;
 	}
 
-	private Set<Group> createGroupSlugs(String defaultGroupsSlugs)
+	protected Set<Group> deserializeDefaultGroups(String defaultGroupsSlugs)
 	{
 	    Set<Group> slugs = new HashSet<Group>();
 		if (StringUtils.isNotBlank(defaultGroupsSlugs)) {
-			Iterable<String> groupsSlugs = Splitter.on(Organization.DEFAULT_GROUP_SLUGS_SEPARATOR).split(defaultGroupsSlugs);
+			Iterable<String> groupsSlugs = Splitter.on(Organization.GROUP_SLUGS_SEPARATOR).split(defaultGroupsSlugs);
 			for (String slug : groupsSlugs)
 			{
-				slugs.add(new Group(slug));
+			    if (StringUtils.isNotBlank(slug))
+				{
+			        slugs.add(new Group(StringUtils.trim(slug)));
+				}
 			}
 		}
 		return slugs;
 	}
-
+	
+	protected String serializeDefaultGroups(Set<Group> groups)
+    {
+	    return Joiner.on(Organization.GROUP_SLUGS_SEPARATOR).join(groups);
+    }
+	
 	private String createOrganizationUrl(OrganizationMapping organizationMapping)
 	{
 		String hostUrl = organizationMapping.getHostUrl();
@@ -243,7 +246,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 							map.put(OrganizationMapping.ADMIN_PASSWORD, adminPassword);
 							map.put(OrganizationMapping.ACCESS_TOKEN, organization.getCredential().getAccessToken());
 							map.put(OrganizationMapping.SMARTCOMMITS_FOR_NEW_REPOS, organization.isSmartcommitsOnNewRepos());
-							map.put(OrganizationMapping.DEFAULT_GROUPS_SLUGS, organization.getDefaultGroupsSlugsSerialized());
+							map.put(OrganizationMapping.DEFAULT_GROUPS_SLUGS, serializeDefaultGroups(organization.getDefaultGroups()));
 
 							om = activeObjects.create(OrganizationMapping.class, map);
                             om = activeObjects.find(OrganizationMapping.class, "ID = ?", om.getID())[0];
@@ -259,7 +262,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 							om.setAdminPassword(adminPassword);
 							om.setAccessToken(organization.getCredential().getAccessToken());
 							om.setSmartcommitsForNewRepos(organization.isSmartcommitsOnNewRepos());
-							om.setDefaultGroupsSlugs(organization.getDefaultGroupsSlugsSerialized());
+							om.setDefaultGroupsSlugs(serializeDefaultGroups(organization.getDefaultGroups()));
 
 							om.save();
 						}
@@ -330,7 +333,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 	{
 		String serializedGroups = null;
 		if (CollectionUtils.isNotEmpty(groupsSlugs)) {
-			serializedGroups = Joiner.on(Organization.DEFAULT_GROUP_SLUGS_SEPARATOR).join(groupsSlugs);
+			serializedGroups = Joiner.on(Organization.GROUP_SLUGS_SEPARATOR).join(groupsSlugs);
 		}
 
 		final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, orgId);
