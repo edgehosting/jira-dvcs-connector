@@ -1,5 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
@@ -13,19 +27,6 @@ import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import net.java.ao.EntityStreamCallback;
-import net.java.ao.Query;
-import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ChangesetDaoImpl implements ChangesetDao
 {
@@ -225,15 +226,6 @@ public class ChangesetDaoImpl implements ChangesetDao
 
         return transform(changesetMappings);
     }
-
-	@Override
-	public List<Changeset> getLatestChangesetsAvailableForSmartcommits()
-	{
-		Query query = createLatestChangesetsAvailableForSmartcommitQuery();
-		
-		ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
-		return transform( Arrays.asList(mappings) );
-	}
 
 	@Override
 	public void forEachLatestChangesetsAvailableForSmartcommitDo(final ForEachChangesetClosure closure)

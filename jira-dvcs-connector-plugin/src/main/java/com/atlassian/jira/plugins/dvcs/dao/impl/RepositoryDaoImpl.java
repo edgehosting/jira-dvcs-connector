@@ -68,9 +68,10 @@ public class RepositoryDaoImpl implements RepositoryDao
 	{
 		String hostUrl = organizationMapping.getHostUrl();
 		// normalize
-		if (hostUrl != null && hostUrl.endsWith("/")) {
-			hostUrl = hostUrl.substring(0, hostUrl.length() - 1);
-		}
+        if (hostUrl != null && hostUrl.endsWith("/"))
+        {
+            hostUrl = hostUrl.substring(0, hostUrl.length() - 1);
+        }
 		return hostUrl + "/" + organizationMapping.getName() + "/" + repositoryMapping.getSlug();
 	}
 

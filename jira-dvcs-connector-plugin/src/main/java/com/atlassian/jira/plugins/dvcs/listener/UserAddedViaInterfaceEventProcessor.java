@@ -31,10 +31,7 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 
 	/** The ORGANIZATIO n_ selecto r_ reques t_ param. */
 	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM = "dvcs_org_selector";
-	
-	/** The USERNAM e_ param. */
-	public static String USERNAME_PARAM = "username";
-	
+		
 	/** The EMAI l_ param. */
 	public static String EMAIL_PARAM = "email";
 
@@ -60,7 +57,6 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 	public UserAddedViaInterfaceEventProcessor(UserAddedEvent event, OrganizationService organizationService,
 			DvcsCommunicatorProvider communicatorProvider)
 	{
-		super();
 		this.event = event;
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
@@ -84,11 +80,10 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 		// ------------------------------------------------------------
 
 		Collection<Invitations> invitationsFor = toInvitations(organizationIdsAndGroupSlugs);
-		String username = parameters.get(USERNAME_PARAM)[0];
 		String email = parameters.get(EMAIL_PARAM)[0];
 
 		// invite
-		invite(username, email, invitationsFor);
+		invite(email, invitationsFor);
 
 	}
 
@@ -132,11 +127,10 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 	/**
 	 * Invite.
 	 *
-	 * @param username the username
 	 * @param email the email
 	 * @param invitations the invitations
 	 */
-	private void invite(String username, String email, Collection<Invitations> invitations)
+	private void invite( String email, Collection<Invitations> invitations)
 	{
 		if (CollectionUtils.isNotEmpty(invitations))
 		{
@@ -145,7 +139,7 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 			{
 				Collection<String> groupSlugs = invitation.groupSlugs;
 				Organization organizaton = invitation.organizaton;
-				invite(username, email, organizaton, groupSlugs);
+				invite(email, organizaton, groupSlugs);
 			}
 
 		}
@@ -154,12 +148,11 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 	/**
 	 * Invite.
 	 *
-	 * @param username the username
 	 * @param email the email
 	 * @param organization the organization
 	 * @param groupSlugs the group slugs
 	 */
-	private void invite(String username, String email, Organization organization, Collection<String> groupSlugs)
+	private void invite(String email, Organization organization, Collection<String> groupSlugs)
 	{
 		if (CollectionUtils.isNotEmpty(groupSlugs))
 		{

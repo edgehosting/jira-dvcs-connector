@@ -10,7 +10,6 @@ import java.util.Set;
 import net.java.ao.Query;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +22,7 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -151,18 +151,18 @@ public class OrganizationDaoImpl implements OrganizationDao
 	 *            the organization mappings
 	 * @return the list< organization>
 	 */
-	@SuppressWarnings("unchecked")
-	private List<Organization> transformCollection(final List<OrganizationMapping> organizationMappings)
-	{
-		return (List<Organization>) CollectionUtils.collect(organizationMappings, new Transformer()
-		{
-			@Override
-			public Object transform(Object o)
-			{
-				return OrganizationDaoImpl.this.transform((OrganizationMapping) o);
-			}
-		});
-	}
+    private List<Organization> transformCollection(List<OrganizationMapping> organizationMappings)
+    {
+        return Lists.transform(organizationMappings,
+                new Function<OrganizationMapping, Organization>()
+                {
+                    @Override
+                    public Organization apply(OrganizationMapping input)
+                    {
+                        return transform(input);
+                    }
+                });
+    }
 
 	/**
 	 * {@inheritDoc}
@@ -281,7 +281,6 @@ public class OrganizationDaoImpl implements OrganizationDao
 	public void remove(int organizationId)
 	{
 		activeObjects.delete(activeObjects.get(OrganizationMapping.class, organizationId));
-
 	}
 
 	/**
@@ -332,9 +331,10 @@ public class OrganizationDaoImpl implements OrganizationDao
 	public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
 	{
 		String serializedGroups = null;
-		if (CollectionUtils.isNotEmpty(groupsSlugs)) {
-			serializedGroups = Joiner.on(Organization.GROUP_SLUGS_SEPARATOR).join(groupsSlugs);
-		}
+        if (CollectionUtils.isNotEmpty(groupsSlugs))
+        {
+            serializedGroups = Joiner.on(Organization.GROUP_SLUGS_SEPARATOR).join(groupsSlugs);
+        }
 
 		final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, orgId);
 		organization.setDefaultGroupsSlugs(serializedGroups);

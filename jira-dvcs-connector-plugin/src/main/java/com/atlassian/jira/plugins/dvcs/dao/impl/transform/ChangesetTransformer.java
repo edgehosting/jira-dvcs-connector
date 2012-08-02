@@ -21,7 +21,8 @@ public class ChangesetTransformer
     public Changeset transform(ChangesetMapping changesetMapping)
     {
 
-        if (changesetMapping == null) {
+        if (changesetMapping == null)
+        {
             return null;
         }
 

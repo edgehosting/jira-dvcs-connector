@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +51,6 @@ class UserAddedExternallyEventProcessor implements Runnable
 	public UserAddedExternallyEventProcessor(UserEvent event, OrganizationService organizationService,
 			DvcsCommunicatorProvider communicatorProvider)
 	{
-		super();
 		this.event = event;
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;

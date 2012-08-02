@@ -10,7 +10,6 @@ import java.util.HashMap;
 public final class MapRemovingNullCharacterFromStringValues extends HashMap<String, Object>
 {
     private static final String NULL_CHARACTER = "\u0000";
-    
 
     @Override
     public Object put(String key, Object value)

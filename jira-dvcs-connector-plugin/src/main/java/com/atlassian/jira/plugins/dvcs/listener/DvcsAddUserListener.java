@@ -125,12 +125,14 @@ public class DvcsAddUserListener
         }
     }
 
-	@PluginEventListener
+	@SuppressWarnings("unused")
+    @PluginEventListener
     public void onPluginDisabled(PluginDisabledEvent event)
     {
        unregisterSelf();
     }
 
+	@SuppressWarnings("unused")
 	@PluginEventListener
 	public void onPluginUninstalled(PluginUninstalledEvent event)
 	{

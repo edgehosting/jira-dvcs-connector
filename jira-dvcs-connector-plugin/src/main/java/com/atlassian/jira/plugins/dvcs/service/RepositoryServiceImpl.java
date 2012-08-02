@@ -262,7 +262,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	@Override
 	public void sync(int repositoryId, boolean softSync)
 	{
-		final Repository repository = get(repositoryId);
+		Repository repository = get(repositoryId);
 		doSync(repository, softSync);
 	}
 
@@ -272,7 +272,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	@Override
 	public void syncAllInOrganization(int organizationId)
 	{
-		final List<Repository> repositories = getAllByOrganization(organizationId);
+		List<Repository> repositories = getAllByOrganization(organizationId);
 		for (Repository repository : repositories)
 		{
 			doSync(repository, true);
@@ -309,7 +309,7 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
     public boolean existsLinkedRepositories()
     {
-        final List<Repository> repositories = repositoryDao.getAll(false);
+        List<Repository> repositories = repositoryDao.getAll(false);
         for (Repository repository : repositories)
         {
             if (repository.isLinked())
@@ -326,7 +326,7 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
 	public void enableRepository(int repoId, boolean linked)
 	{
-		final Repository repository = repositoryDao.get(repoId);
+		Repository repository = repositoryDao.get(repoId);
 		if (repository != null)
 		{
 		    if (!linked)
@@ -335,7 +335,6 @@ public class RepositoryServiceImpl implements RepositoryService
 		    }
 
 			repository.setLinked(linked);
-
 			addOrRemovePostcommitHook(repository);
 
             log.debug("Enable repository [{}]", repository);
@@ -349,7 +348,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	@Override
 	public void enableRepositorySmartcommits(int repoId, boolean enabled)
 	{
-		final Repository repository = repositoryDao.get(repoId);
+		Repository repository = repositoryDao.get(repoId);
 		if (repository != null)
 		{
 		    if (!enabled)
@@ -371,8 +370,8 @@ public class RepositoryServiceImpl implements RepositoryService
 	 */
 	private void addOrRemovePostcommitHook(Repository repository)
 	{
-		final DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
-		final String postCommitUrl = getPostCommitUrl(repository);
+		DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+		String postCommitUrl = getPostCommitUrl(repository);
 
 		if (repository.isLinked())
 		{
@@ -400,8 +399,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	@Override
 	public void removeAllInOrganization(int organizationId)
 	{
-		final List<Repository> repositories = repositoryDao.getAllByOrganization(organizationId, true);
-
+		List<Repository> repositories = repositoryDao.getAllByOrganization(organizationId, true);
 		for (Repository repository : repositories)
 		{
 			remove(repository);
@@ -435,17 +433,14 @@ public class RepositoryServiceImpl implements RepositoryService
 	{
 		try
 		{
-			final DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
-			final String postCommitUrl = getPostCommitUrl(repository);
-
-
-			communicator.removePostcommitHook(repository, postCommitUrl);
+            DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+            String postCommitUrl = getPostCommitUrl(repository);
+            communicator.removePostcommitHook(repository, postCommitUrl);
 		} catch (Exception e)
 		{
-			log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId() + ", slug = "
-					+ repository.getSlug(), e);
+            log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId()
+                            + ", slug = " + repository.getSlug(), e);
 		}
 	}
-
 
 }

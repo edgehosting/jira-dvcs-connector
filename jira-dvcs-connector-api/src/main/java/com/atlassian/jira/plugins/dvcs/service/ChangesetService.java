@@ -41,8 +41,6 @@ public interface ChangesetService
     String getUserUrl(Repository repository, Changeset changeset);
 
     Iterable<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
-    
-    List<Changeset> getLatestChangesetsAvailableForSmartcommits();
-    
+        
     void markSmartcommitAvailability(int id, boolean available);
 }
