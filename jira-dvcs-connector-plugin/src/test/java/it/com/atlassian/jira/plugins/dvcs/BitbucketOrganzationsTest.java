@@ -42,6 +42,9 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 	private static final String ACCOUNT_ADMIN_LOGIN = "jirabitbucketconnector";
 	private static final String ACCOUNT_ADMIN_PASSWORD = "jirabitbucketconnector1";
 
+    private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
+
+
 	@Override
 	protected Class<BitBucketConfigureOrganizationsPage> getPageClass()
 	{
@@ -59,20 +62,28 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
             removePostCommitHook(extractedBitbucketServiceId);
         }
     }
-    
-    private void loginToBitbucketAndSetJiraOAuthCredentials()
-    {       
+
+    private void loginToBitbucketAndSetJiraOAuthCredentials() //TODO @Before vs not needed for every test method
+    {
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
-               
+
         jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
+        bitbucketIntegratedApplicationsPage = jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
+
         BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
-                jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class).addConsumer();
-        
+                bitbucketIntegratedApplicationsPage.addConsumer();
+
         BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
         oauthConfigPage.setCredentials(oauthCredentials.oauthKey, oauthCredentials.oauthSecret);
-       
-        jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());        
+
+        jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
+    }
+
+    private void removeOAuthConsumer() //TODO @After vs not needed for every method
+    {
+        jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
+        bitbucketIntegratedApplicationsPage.removeLastAdddedConsumer();
     }
 
 	@Test
@@ -81,13 +92,15 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         loginToBitbucketAndSetJiraOAuthCredentials();
 		BaseConfigureOrganizationsPage organizationsPage = configureOrganizations.addOrganizationSuccessfully(TEST_URL,
 				false);
-        
+
 		PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
 		// first row is header row, than repos ...
 		Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
-		
+
 		// check add user extension
 		jira.visit(JiraAddUserPage.class).checkPanelPresented();
+
+        removeOAuthConsumer();
 	}
 
 	@Test
@@ -99,6 +112,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 		PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
 		// first row is header row, than repos ...
 		Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
+
+        removeOAuthConsumer();
 	}
 
 	@Test
@@ -111,6 +126,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 		assertThat(errorMessage, containsString("is incorrect or the server is not responding."));
 
 		configureOrganizations.clearForm();
+
+        removeOAuthConsumer();
 	}
 
 	@Test
@@ -132,6 +149,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 		// check that postcommit hook is removed
 		servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, ACCOUNT_ADMIN_LOGIN, ACCOUNT_ADMIN_PASSWORD);
 		assertThat(servicesConfig, not(containsString(syncUrl)));
+
+        removeOAuthConsumer();
 	}
 
 	private String getBitbucketServices(String url, String username, String password) throws Exception
@@ -157,6 +176,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 				hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
 		assertThat(getCommitsForIssue("QA-3"),
 				hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+
+        removeOAuthConsumer();
 	}
 
 	@Test
@@ -187,6 +208,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 		Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
 		Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+3");
 		Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
+
+        removeOAuthConsumer();
 	}
 
 
@@ -223,7 +246,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         //        }
         //    }
         //]
-        
+
         try {
             JSONArray jsonArray = new JSONArray(listServicesResponseString);
             for (int i = 0; i < jsonArray.length(); i++)
