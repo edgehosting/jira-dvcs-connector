@@ -14,6 +14,7 @@ import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
@@ -27,6 +28,9 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 {
     @Inject
     PageBinder pageBinder;
+
+    @Inject
+    PageElementFinder elementFinder;
 
     @ElementBy(id = "linkRepositoryButton")
     PageElement linkRepositoryButton;
@@ -42,13 +46,13 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     @ElementBy(id = "organization")
     PageElement organization;
-    
+
     @ElementBy(id = "organization-list")
     PageElement organizationsElement;
-   
+
     @ElementBy(id = "autoLinking")
     PageElement autoLinkNewRepos;
-    
+
     @ElementBy(id = "urlSelect")
     SelectElement dvcsTypeSelect;
 
@@ -65,16 +69,16 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     public List<BitBucketOrganization> getOrganizations()
     {
         List<BitBucketOrganization> list = new ArrayList<BitBucketOrganization>();
-       
+
         for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-orgdata-container"))) {
-        	
+
         	// orgContainer.find(By.className("dvcs-org-container")).click();
         	 Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-org-container")).timed().isVisible());
-        	 
+
              list.add(pageBinder.bind(BitBucketOrganization.class, orgContainer));
-             
+
     	}
-    
+
         return list;
     }
 
@@ -86,7 +90,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         {
             orgs.get(0).delete();
         }
-    	
+
     	return this;
     }
 
@@ -137,9 +141,9 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     protected void checkSyncProcessSuccess()
     {
-    	
+
     	List<PageElement> allSyncMessages = organizationsElement.findAll(By.className("gh_messages"));
-    	
+
     	for (PageElement syncMessage : allSyncMessages)
 		{
     		// isPresent = true => repositories list is shown
@@ -150,12 +154,12 @@ public abstract class BaseConfigureOrganizationsPage implements Page
             if (syncMessage.timed().isVisible().now())
             {
                 TimedQuery<String> syncFinishedCond = syncMessage.timed().getText();
-                Poller.waitUntil("Expected sync status message", syncFinishedCond, new StringEndsWith("2012")); // last commit date 
+                Poller.waitUntil("Expected sync status message", syncFinishedCond, new StringEndsWith("2012")); // last commit date
             }
-            
+
 		}
-    	
-        
+
+
     }
 
     protected void waitFormBecomeVisible()
@@ -180,7 +184,8 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String url);
 
-    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String url, boolean autosync);
+    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String url, String organizationAccount,
+            boolean autosync);
 
 
     public void setJiraTestedProduct(JiraTestedProduct jiraTestedProduct)
@@ -191,6 +196,27 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     public void clearForm()
     {
 
+    }
+
+
+    public boolean containsRepositoryWithName(String askedRepositoryName)
+    {
+        // parsing following HTML:
+        // <td class="dvcs-org-reponame">
+        //     <a href="...">browsermob-proxy</a>
+        // </td>
+
+        for (PageElement repositoryNameTableRow : elementFinder.findAll(By.className("dvcs-org-reponame")))
+        {
+            String repositoryName = repositoryNameTableRow.find(By.tagName("a")).getText();
+
+            if (repositoryName.equals(askedRepositoryName))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }
