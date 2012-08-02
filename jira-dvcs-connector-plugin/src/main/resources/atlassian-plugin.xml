@@ -218,6 +218,10 @@
         <interface>com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer</interface>
     </component>
     
+     <component key="pluginFeatureDetector" name="pluginFeatureDetector"
+               class="com.atlassian.jira.plugins.dvcs.listener.DefaultPluginFeatureDetector">
+        <interface>com.atlassian.jira.plugins.dvcs.listener.IPluginFeatureDetector</interface>
+    </component>
     
     <!-- Listener -->
     <component key="dvcsAddUserListener" class="com.atlassian.jira.plugins.dvcs.listener.DvcsAddUserListener" />
