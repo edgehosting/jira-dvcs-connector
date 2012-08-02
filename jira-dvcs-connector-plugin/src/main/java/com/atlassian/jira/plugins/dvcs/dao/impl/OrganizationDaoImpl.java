@@ -100,6 +100,10 @@ public class OrganizationDaoImpl implements OrganizationDao
 	
 	protected String serializeDefaultGroups(Set<Group> groups)
     {
+	    if (CollectionUtils.isEmpty(groups))
+	    {
+	        return "";
+	    }
 	    return Joiner.on(Organization.GROUP_SLUGS_SEPARATOR).join(groups);
     }
 	
