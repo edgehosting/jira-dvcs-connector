@@ -218,7 +218,7 @@
 								             	 <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh list</a>
 								            </li>
 								            
- 							            	#if($org.dvcsType == "bitbucket")
+ 							            	#if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
    							            	   	<li class="dropdown-item">
 	   							                	<div class="dvcs-gearmenu-nohide">
 							 							<a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id);"> Configure default groups</a>

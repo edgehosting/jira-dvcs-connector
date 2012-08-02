@@ -11,6 +11,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.listener.IPluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -54,6 +55,8 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
 
     private final ApplicationProperties appProperties;
 
+    private final IPluginFeatureDetector featuresDetector;
+
     /**
      * Instantiates a new adds the user dvcs extension web panel.
      * 
@@ -66,13 +69,14 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
      */
     public AddUserDvcsExtensionWebPanel(PluginAccessor pluginAccessor, OrganizationService organizationService,
             DvcsCommunicatorProvider communicatorProvider, TemplateRenderer templateRenderer,
-            ApplicationProperties appProperties)
+            ApplicationProperties appProperties, IPluginFeatureDetector featuresDetector)
     {
         super(pluginAccessor);
         this.organizationService = organizationService;
         this.communicatorProvider = communicatorProvider;
         this.templateRenderer = templateRenderer;
         this.appProperties = appProperties;
+        this.featuresDetector = featuresDetector;
     }
 
     /**
@@ -83,6 +87,10 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
     {
 
         StringWriter stringWriter = new StringWriter();
+        
+        if (!featuresDetector.isUserInvitationsEnabled()) {
+            return stringWriter.toString();
+        }
 
         try
         {
