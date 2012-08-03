@@ -23,6 +23,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import com.atlassian.jira.web.util.CookieUtils;
+
 public class RepositoryDaoImpl implements RepositoryDao
 {
 
@@ -76,6 +80,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 		return hostUrl + "/" + organizationMapping.getName() + "/" + repositoryMapping.getSlug();
 	}
 
+    @SuppressWarnings("unchecked")
 	@Override
 	public List<Repository> getAllByOrganization(final int organizationId, final boolean includeDeleted)
 	{
@@ -101,17 +106,16 @@ public class RepositoryDaoImpl implements RepositoryDao
 
 		final OrganizationMapping organizationMapping = getOrganizationMapping(organizationId);
 
-		Collection<Repository> repositories = Collections2.transform(repositoryMappings,
-				new Function<RepositoryMapping, Repository>()
-				{
-					@Override
-					public Repository apply(RepositoryMapping repositoryMapping)
-					{
-						return transform(repositoryMapping, organizationMapping);
-					}
-				});
+        return (List<Repository>) CollectionUtils.collect(repositoryMappings, new Transformer() {
 
-		return new ArrayList<Repository>(repositories);
+            @Override
+            public Object transform(Object input)
+            {
+                RepositoryMapping repositoryMapping = (RepositoryMapping) input;
+                
+                return RepositoryDaoImpl.this.transform(repositoryMapping, organizationMapping);
+            }
+        });
 	}
 
 	@Override
@@ -175,21 +179,22 @@ public class RepositoryDaoImpl implements RepositoryDao
 	 * @param repositoriesToReturn the repositories to return
 	 * @return the collection< repository>
 	 */
+    @SuppressWarnings("unchecked")
 	private Collection<Repository> transformRepositories(
 			final Map<Integer, OrganizationMapping> idToOrganizationMapping,
 			final List<RepositoryMapping> repositoriesToReturn)
 	{
-		final Collection<Repository> repositories = Collections2.transform(repositoriesToReturn,
-				new Function<RepositoryMapping, Repository>()
-				{
-					@Override
-					public Repository apply(RepositoryMapping repositoryMapping)
-					{
-						return transform(repositoryMapping,
-								idToOrganizationMapping.get(repositoryMapping.getOrganizationId()));
-					}
-				});
-		return repositories;
+        return CollectionUtils.collect(repositoriesToReturn, new Transformer() {
+
+            @Override
+            public Object transform(Object input)
+            {
+                RepositoryMapping repositoryMapping = (RepositoryMapping) input;
+                
+                return RepositoryDaoImpl.this.transform(repositoryMapping,
+                        idToOrganizationMapping.get(repositoryMapping.getOrganizationId()));
+            }
+        });
 	}
 
 	@Override

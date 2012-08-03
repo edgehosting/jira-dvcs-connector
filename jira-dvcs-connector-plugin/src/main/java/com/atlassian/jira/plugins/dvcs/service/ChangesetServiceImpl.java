@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
@@ -122,19 +124,19 @@ public class ChangesetServiceImpl implements ChangesetService
         return Sets.newHashSet(changesets);
     }
 
+    @SuppressWarnings("unchecked")
     private List<Changeset> checkChangesetVersion(List<Changeset> changesets)
     {
-        Collection<Changeset> checkedChangesets = Collections2.transform(changesets,
-                new Function<Changeset, Changeset>()
-                {
-                    @Override
-                    public Changeset apply(Changeset changeset)
-                    {
-                        return checkChangesetVersion(changeset);
-                    }
-                });
+        return (List<Changeset>) CollectionUtils.collect(changesets, new Transformer() {
 
-        return new ArrayList<Changeset>(checkedChangesets);
+            @Override
+            public Object transform(Object input)
+            {
+                Changeset changeset = (Changeset) input;
+                
+                return ChangesetServiceImpl.this.checkChangesetVersion(changeset);                
+            }
+        });
     }
 
     /**

@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
 
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
@@ -53,7 +52,7 @@ public class OrganizationServiceImpl implements OrganizationService
         }
         return organizations;
     }
-	
+
 	@Override
 	public List<Organization> getAll(boolean loadRepositories, String type)
 	{
@@ -61,23 +60,15 @@ public class OrganizationServiceImpl implements OrganizationService
 
         if (loadRepositories)
         {
-            CollectionUtils.transform(organizations, new Transformer()
+            for (Organization organization : organizations)
             {
-                @Override
-                public Object transform(Object o)
-                {
-                    Organization organization = (Organization) o;
-                    List<Repository> repositories = repositoryService
-                            .getAllByOrganization(organization.getId());
-                    organization.setRepositories(repositories);
-                    return organization;
-                }
-            });
+                List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+                organization.setRepositories(repositories);
+            }
         }
 
 		return organizations;
 	}
-	
 
 	@Override
 	public Organization get(int organizationId, boolean loadRepositories)
@@ -97,13 +88,13 @@ public class OrganizationServiceImpl implements OrganizationService
 	public Organization save(Organization organization)
 	{
 		Organization org = organizationDao.getByHostAndName(organization.getHostUrl(), organization.getName());
-		if (org != null) 
+		if (org != null)
 		{
 			// nop;
 			// we've already have this organization, don't save another one
 			return org;
 		}
-		
+
 		//
 		// it's brand new organization. save it.
 		//
@@ -133,7 +124,7 @@ public class OrganizationServiceImpl implements OrganizationService
 		Organization organization = organizationDao.get(organizationId);
 		organization.setCredential(new Credential(username, plaintextPassword, null));
 		checkCredentials(organization);
-		
+
 		organizationDao.updateCredentials(organizationId, username, plaintextPassword, null);
 	}
 
@@ -147,7 +138,7 @@ public class OrganizationServiceImpl implements OrganizationService
 		organization.setCredential(new Credential(null, null, accessToken));
 		checkCredentials(organization);
 		//
-		
+
 		organizationDao.updateCredentials(organizationId, null, null, accessToken);
 
 	}
@@ -163,7 +154,7 @@ public class OrganizationServiceImpl implements OrganizationService
 		}
 	}
 
-	
+
 	@Override
 	public void enableSmartcommitsOnNewRepos(int id, boolean enabled)
 	{
@@ -173,7 +164,7 @@ public class OrganizationServiceImpl implements OrganizationService
 			organization.setSmartcommitsOnNewRepos(enabled);
 			organizationDao.save(organization);
 		}
-		
+
 	}
 
 	@Override
@@ -200,16 +191,16 @@ public class OrganizationServiceImpl implements OrganizationService
 		String bitbucketDvcsType = "bitbucket";
 
 		// validate just bitbucket credentials for now
-		if (bitbucketDvcsType.equalsIgnoreCase(forOrganizationWithPlainCredentials.getDvcsType())) 
+		if (bitbucketDvcsType.equalsIgnoreCase(forOrganizationWithPlainCredentials.getDvcsType()))
 		{
 			DvcsCommunicator bitbucket = dvcsCommunicatorProvider.getCommunicator(bitbucketDvcsType);
 			boolean valid = bitbucket.validateCredentials(forOrganizationWithPlainCredentials);
-			if (!valid) 
+			if (!valid)
 			{
 				throw new InvalidCredentialsException("Incorrect password");
 			}
 		}
-		
+
 	}
 
 	@Override

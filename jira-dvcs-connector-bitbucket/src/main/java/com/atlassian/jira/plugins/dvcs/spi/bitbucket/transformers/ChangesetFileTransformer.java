@@ -2,12 +2,13 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetFile;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 /**
  * ChangesetFileTransformer
@@ -17,16 +18,19 @@ import com.google.common.collect.Lists;
 public class ChangesetFileTransformer {
     private ChangesetFileTransformer() {}
 
-    
+
+    @SuppressWarnings("unchecked")
     public static List<ChangesetFile> fromBitbucketChangesetWithDiffstat(List<BitbucketChangesetWithDiffstat> diffstats)
     {
-        return Lists.transform(diffstats, new Function<BitbucketChangesetWithDiffstat, ChangesetFile>() {
+        return (List<ChangesetFile>) CollectionUtils.collect(diffstats, new Transformer() {
 
             @Override
-            public ChangesetFile apply(BitbucketChangesetWithDiffstat diffstat)
+            public Object transform(Object input)
             {
+                BitbucketChangesetWithDiffstat diffstat = (BitbucketChangesetWithDiffstat) input;
+
                 ChangesetFileAction fileAction = ChangesetFileAction.valueOf(diffstat.getType().toUpperCase());
-                
+
                 return new ChangesetFile(fileAction,
                                          diffstat.getFile(),
                                          diffstat.getDiffstat().getAdded(),
@@ -34,16 +38,19 @@ public class ChangesetFileTransformer {
             }
         });
     }
-    
+
+    @SuppressWarnings("unchecked")
     public static List<ChangesetFile> fromBitbucketChangesetFile(List<BitbucketChangesetFile> changesetFiles)
     {
-        return Lists.transform(changesetFiles, new Function<BitbucketChangesetFile, ChangesetFile>() {
+        return (List<ChangesetFile>) CollectionUtils.collect(changesetFiles, new Transformer() {
 
             @Override
-            public ChangesetFile apply(BitbucketChangesetFile changesetFile)
+            public Object transform(Object input)
             {
+                BitbucketChangesetFile changesetFile = (BitbucketChangesetFile) input;
+
                 ChangesetFileAction fileAction = ChangesetFileAction.valueOf(changesetFile.getType().toUpperCase());
-                
+
                 return new ChangesetFile(fileAction,
                                          changesetFile.getFile(),
                                          0,  // zero additions

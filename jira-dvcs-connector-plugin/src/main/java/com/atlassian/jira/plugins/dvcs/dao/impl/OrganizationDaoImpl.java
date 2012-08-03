@@ -10,6 +10,7 @@ import java.util.Set;
 import net.java.ao.Query;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ import com.google.common.collect.Lists;
 
 /**
  * The Class OrganizationDaoImpl.
- * 
+ *
  */
 public class OrganizationDaoImpl implements OrganizationDao
 {
@@ -43,7 +44,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 
 	/**
 	 * The Constructor.
-	 * 
+	 *
 	 * @param activeObjects
 	 *            the active objects
 	 * @param encryptor
@@ -57,7 +58,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 
 	/**
 	 * Transform.
-	 * 
+	 *
 	 * @param organizationMapping
 	 *            the organization mapping
 	 * @return the organization
@@ -77,7 +78,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 
 		Organization organization = new Organization(organizationMapping.getID(), organizationMapping.getHostUrl(),
 				organizationMapping.getName(), organizationMapping.getDvcsType(),
-				organizationMapping.isAutolinkNewRepos(), credential, createOrganizationUrl(organizationMapping), 
+				organizationMapping.isAutolinkNewRepos(), credential, createOrganizationUrl(organizationMapping),
 				organizationMapping.isSmartcommitsForNewRepos(), deserializeDefaultGroups(organizationMapping.getDefaultGroupsSlugs()));
 		return organization;
 	}
@@ -97,7 +98,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 		}
 		return slugs;
 	}
-	
+
 	protected String serializeDefaultGroups(Set<Group> groups)
     {
 	    if (CollectionUtils.isEmpty(groups))
@@ -106,7 +107,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 	    }
 	    return Joiner.on(Organization.GROUP_SLUGS_SEPARATOR).join(groups);
     }
-	
+
 	private String createOrganizationUrl(OrganizationMapping organizationMapping)
 	{
 		String hostUrl = organizationMapping.getHostUrl();
@@ -136,7 +137,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 
         return transformCollection(organizationMappings);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -150,23 +151,24 @@ public class OrganizationDaoImpl implements OrganizationDao
 
 	/**
 	 * Transform collection.
-	 * 
+	 *
 	 * @param organizationMappings
 	 *            the organization mappings
 	 * @return the list< organization>
 	 */
+    @SuppressWarnings("unchecked")
     private List<Organization> transformCollection(List<OrganizationMapping> organizationMappings)
     {
-        List<Organization> transform = Lists.transform(organizationMappings,
-                new Function<OrganizationMapping, Organization>()
-                {
-                    @Override
-                    public Organization apply(OrganizationMapping input)
-                    {
-                        return transform(input);
-                    }
-                });
-        return Lists.newArrayList(transform);  // lets move it to modifieble list
+        return (List<Organization>) CollectionUtils.collect(organizationMappings, new Transformer() {
+
+            @Override
+            public Object transform(Object input)
+            {
+                OrganizationMapping organizationMapping = (OrganizationMapping) input;
+
+                return OrganizationDaoImpl.this.transform(organizationMapping);
+            }
+        });
     }
 
 	/**
@@ -241,7 +243,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 								adminPassword = encryptor.encrypt(organization.getCredential().getAdminPassword(),
 										organization.getName(), organization.getHostUrl());
 							}
-							
+
 							final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
 							map.put(OrganizationMapping.HOST_URL, organization.getHostUrl());
 							map.put(OrganizationMapping.NAME, organization.getName());
@@ -302,7 +304,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 		{
 			organization.setAdminUsername(username);
 		}
-		
+
 		// password
 		if (StringUtils.isNotBlank(plaintextPassword))
 		{
@@ -328,7 +330,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 		});
 
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -355,7 +357,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 		});
 	}
 
-	
+
 	/**
 	 * {@inheritDoc}
 	 */

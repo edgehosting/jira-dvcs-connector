@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 
@@ -45,19 +47,19 @@ public class ChangesetDaoImpl implements ChangesetDao
         return transformer.transform(changesetMapping);
     }
 
+    @SuppressWarnings("unchecked")
     protected List<Changeset> transform(List<ChangesetMapping> changesetMappings)
     {
-        final Collection<Changeset> changesets = Collections2.transform(changesetMappings,
-                new Function<ChangesetMapping, Changeset>()
-                {
-                    @Override
-                    public Changeset apply(ChangesetMapping changesetMapping)
-                    {
-                        return transform(changesetMapping);
-                    }
-                });
+        return (List<Changeset>) CollectionUtils.collect(changesetMappings, new Transformer() {
 
-        return new ArrayList<Changeset>(changesets);
+            @Override
+            public Object transform(Object input)
+            {
+                ChangesetMapping changesetMapping = (ChangesetMapping) input;
+                
+                return ChangesetDaoImpl.this.transform(changesetMapping);
+            }
+        });
     }
 
 

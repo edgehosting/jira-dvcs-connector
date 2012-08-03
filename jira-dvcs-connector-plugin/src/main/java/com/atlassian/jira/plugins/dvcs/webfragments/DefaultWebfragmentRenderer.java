@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -91,19 +93,21 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
 		return model;
 	}
 	
+    @SuppressWarnings("unchecked")
 	private Set<String> createExistingSlugsSet(Organization organization)
 	{
-        Collection<String> transform = Collections2.transform(organization.getDefaultGroups(),
-                new Function<Group, String>()
-                {
-                    @Override
-                    public String apply(Group group)
-                    {
-                        return group.getSlug();
-                    }
-                });
-		
-		return new HashSet<String>(transform);
+        Collection<String> existingSlugs = CollectionUtils.collect(organization.getDefaultGroups(), new Transformer() {
+
+            @Override
+            public Object transform(Object input)
+            {
+                Group group = (Group) input;
+                
+                return group.getSlug();
+            }
+        });
+        
+        return new HashSet<String>(existingSlugs);
 	}
 
 	/**

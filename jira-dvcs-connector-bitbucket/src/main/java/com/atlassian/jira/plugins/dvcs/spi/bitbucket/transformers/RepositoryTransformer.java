@@ -3,10 +3,11 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 
 /**
@@ -17,19 +18,22 @@ import com.google.common.collect.Lists;
 public final class RepositoryTransformer {
     private RepositoryTransformer() {}
 
-    
+
+    @SuppressWarnings("unchecked")
     public static List<Repository> fromBitbucketRepositories(List<BitbucketRepository> bitbucketRepositories)
     {
-        return Lists.transform(bitbucketRepositories, new Function<BitbucketRepository, Repository>() {
+        return (List<Repository>) CollectionUtils.collect(bitbucketRepositories, new Transformer() {
 
             @Override
-            public Repository apply(BitbucketRepository bitbucketRepository)
+            public Object transform(Object input)
             {
+                BitbucketRepository bitbucketRepository = (BitbucketRepository) input;
+
                 Repository repository = new Repository();
-                
+
                 repository.setName(bitbucketRepository.getName());
                 repository.setSlug(bitbucketRepository.getSlug());
-                
+
                 return repository;
             }
         });
