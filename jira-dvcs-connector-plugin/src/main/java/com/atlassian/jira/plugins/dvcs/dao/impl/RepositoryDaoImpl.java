@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
@@ -59,7 +60,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 		repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
 		
 		// set sync progress
-		repository.setSync((Progress) synchronizer.getProgress(repository));
+		repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
 
 		return repository;
 	}
@@ -100,7 +101,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 
 		final OrganizationMapping organizationMapping = getOrganizationMapping(organizationId);
 
-		final Collection<Repository> repositories = Collections2.transform(repositoryMappings,
+		Collection<Repository> repositories = Collections2.transform(repositoryMappings,
 				new Function<RepositoryMapping, Repository>()
 				{
 					@Override

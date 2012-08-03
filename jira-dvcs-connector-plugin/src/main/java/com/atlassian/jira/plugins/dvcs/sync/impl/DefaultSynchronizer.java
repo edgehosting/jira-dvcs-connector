@@ -102,7 +102,7 @@ public class DefaultSynchronizer implements Synchronizer
     }
 
     @Override
-    public Progress getProgress(final Repository repository)
+    public Progress getProgress(Repository repository)
     {
 		return progressMap.get(repository);
     }

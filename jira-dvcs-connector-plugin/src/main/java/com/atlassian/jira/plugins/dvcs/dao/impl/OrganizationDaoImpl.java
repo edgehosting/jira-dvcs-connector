@@ -157,7 +157,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 	 */
     private List<Organization> transformCollection(List<OrganizationMapping> organizationMappings)
     {
-        return Lists.transform(organizationMappings,
+        List<Organization> transform = Lists.transform(organizationMappings,
                 new Function<OrganizationMapping, Organization>()
                 {
                     @Override
@@ -166,6 +166,7 @@ public class OrganizationDaoImpl implements OrganizationDao
                         return transform(input);
                     }
                 });
+        return Lists.newArrayList(transform);  // lets move it to modifieble list
     }
 
 	/**
