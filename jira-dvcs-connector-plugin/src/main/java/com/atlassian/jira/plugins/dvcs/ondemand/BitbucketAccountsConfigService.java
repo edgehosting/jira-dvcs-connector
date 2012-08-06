@@ -183,7 +183,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     
     private boolean accountNameHasChanged(Organization integratedNotNullAccount, AccountInfo info)
     {
-        return StringUtils.equals(info.accountName, integratedNotNullAccount.getName());
+        return !StringUtils.equals(info.accountName, integratedNotNullAccount.getName());
     }
 
     private void removeAccount(Organization integratedNotNullAccount)
