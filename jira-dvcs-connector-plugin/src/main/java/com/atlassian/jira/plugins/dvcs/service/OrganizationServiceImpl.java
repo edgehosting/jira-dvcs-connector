@@ -38,28 +38,21 @@ public class OrganizationServiceImpl implements OrganizationService
 		return dvcsCommunicatorProvider.getAccountInfo(hostUrl, accountName);
 	}
 
-	@Override
-	public List<Organization> getAll(final boolean loadRepositories)
-	{
-		final List<Organization> organizations = organizationDao.getAll();
+    @Override
+    public List<Organization> getAll(boolean loadRepositories)
+    {
+        List<Organization> organizations = organizationDao.getAll();
 
-		if (loadRepositories)
-		{
-			CollectionUtils.transform(organizations, new Transformer()
-			{
-				@Override
-				public Object transform(Object o)
-				{
-					Organization organization = (Organization) o;
-					final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
-					organization.setRepositories(repositories);
-					return organization;
-				}
-			});
-		}
-
-		return organizations;
-	}
+        if (loadRepositories)
+        {
+            for (Organization organization : organizations)
+            {
+                List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+                organization.setRepositories(repositories);
+            }
+        }
+        return organizations;
+    }
 	
 	@Override
 	public List<Organization> getAll(boolean loadRepositories, String type)
