@@ -26,6 +26,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.model.SentData;
+import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
@@ -54,6 +55,8 @@ public class RootResource
 	/** The webfragment renderer. */
 	private final WebfragmentRenderer webfragmentRenderer;
 
+    private final AccountsConfigService ondemandAccountConfig;
+
 	/**
 	 * The Constructor.
 	 * 
@@ -62,11 +65,12 @@ public class RootResource
 	 * @param repositoryService
 	 *            the repository service
 	 */
-	public RootResource(OrganizationService organizationService, RepositoryService repositoryService, WebfragmentRenderer webfragmentRenderer)
+	public RootResource(OrganizationService organizationService, RepositoryService repositoryService, WebfragmentRenderer webfragmentRenderer, AccountsConfigService ondemandAccountConfig)
 	{
 		this.organizationService = organizationService;
 		this.repositoryService = repositoryService;
 		this.webfragmentRenderer = webfragmentRenderer;
+        this.ondemandAccountConfig = ondemandAccountConfig;
 	}
 
 	/**
@@ -243,11 +247,14 @@ public class RootResource
 	
 	@GET
 	@Path("/integrated-accounts/reload")
+	@Consumes({MediaType.TEXT_PLAIN, MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces({MediaType.TEXT_PLAIN})
 	public Response reloadIntegratedAccountConfig() {
 	    
 	    try {
-
-	        return Response.noContent().build();
+	        
+	        ondemandAccountConfig.reload();
+	        return Response.ok("OK").build();
 
 	    } catch (Exception e) {
 	        

@@ -1,5 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.apache.commons.lang.StringUtils;
 import org.jfree.util.Log;
 
@@ -9,6 +12,7 @@ import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountI
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.Links;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.util.concurrent.ThreadFactories;
 
 /**
  * TODO implement sec. checks so int. account can not be i.e. deleted
@@ -30,18 +34,35 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     private final AccountsConfigProvider configProvider;
     private final OrganizationService organizationService;
 
+    private ExecutorService executorService;
+
     public BitbucketAccountsConfigService(AccountsConfigProvider configProvider,
                                         OrganizationService organizationService)
     {
         super();
         this.configProvider = configProvider;
         this.organizationService = organizationService;
+        this.executorService = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("BitbucketAccountsConfigService"));
     }
     
     @Override
     public void reload()
     {
+        
+        executorService.submit(new Runnable() {
 
+            @Override
+            public void run()
+            {
+                runInternal();
+            }
+            
+        });
+
+    }
+
+    private void runInternal()
+    {
         //
         // supported only at ondemand instances
         //
@@ -80,7 +101,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     private void doNewAccount(AccountsConfig configuration)
     {
         AccountInfo info = toInfoNewAccount(configuration);
-        Organization userAddedAccount = organizationService.getByHostAndName(BITBUCKET_URL, info.accountName);
+        Organization userAddedAccount = getUserAddedAccount(info);
         
         Organization newOrganization = null;
 
@@ -96,6 +117,17 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         organizationService.save(newOrganization);
     }
 
+    private Organization getUserAddedAccount(AccountInfo info)
+    {
+        Organization userAddedAccount = organizationService.getByHostAndName(BITBUCKET_URL, info.accountName);
+        if (userAddedAccount != null && (StringUtils.isBlank(userAddedAccount.getCredential().getOauthKey())
+                                     || StringUtils.isBlank(userAddedAccount.getCredential().getOauthSecret())) ) {
+            return userAddedAccount;
+        } else {
+            return null;
+        }
+    }
+
     /**
      * BL comes from https://sdog.jira.com/wiki/pages/viewpage.action?pageId=47284285 
      */
@@ -106,7 +138,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         if (info != null) {
 
             // modify :?
-            Organization userAddedAccount = organizationService.getByHostAndName(BITBUCKET_URL, info.accountName);
+            Organization userAddedAccount = getUserAddedAccount(info);
             
             if (userAddedAccount == null) {
                 
