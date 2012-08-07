@@ -4,7 +4,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.lang.StringUtils;
-import org.jfree.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -28,6 +29,8 @@ import com.atlassian.util.concurrent.ThreadFactories;
  */
 public class BitbucketAccountsConfigService implements AccountsConfigService
 {
+
+    private static final Logger log = LoggerFactory.getLogger(BitbucketAccountsConfigService.class);
     
     private static final String BITBUCKET_URL = "https://bitbucket.org";
     
@@ -35,7 +38,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     private final OrganizationService organizationService;
 
     private ExecutorService executorService;
-
+    
     public BitbucketAccountsConfigService(AccountsConfigProvider configProvider,
                                         OrganizationService organizationService)
     {
@@ -54,7 +57,13 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
             @Override
             public void run()
             {
-                runInternal();
+                try
+                {
+                    runInternal();
+                } catch (Exception e)
+                {
+                    log.error("", e);
+                }
             }
             
         });
@@ -83,14 +92,14 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
                 doNewAccount(configuration);
             } else {
                 // probably not ondemand instance
-                Log.debug("No integrated account found and no configration is provided.");
+                log.debug("No integrated account found and no configration is provided.");
             }
             
         } else {
             if (configuration != null) { // integrated account found
                 doUpdateConfiguration(configuration, integratedAccount);
             } else {
-                Log.debug("Integrated account has been found and no configration is provided. Deleting integrated account.");
+                log.debug("Integrated account has been found and no configration is provided. Deleting integrated account.");
                 removeAccount(integratedAccount);
             }
             
@@ -110,6 +119,9 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
             newOrganization = createNewOrganization(info);
       
         } else {
+            
+            removeAccount(userAddedAccount);
+
             // make integrated account from user-added account
             newOrganization = copyValues(info, userAddedAccount);
         }
@@ -154,13 +166,13 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
                     
                 } else {
                     // nothing has changed
-                    Log.debug("No changes detect on integrated account");
+                    log.debug("No changes detect on integrated account");
                 }
                 
             } else {
                 // should not happened
                 // existing integrated account with the same name as user added
-                Log.warn("Detected existing integrated account with the same name as user added.");
+                log.warn("Detected existing integrated account with the same name as user added.");
                 removeAccount(userAddedAccount);
             }
             
@@ -233,7 +245,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         
         } catch (Exception e)
         {
-            Log.debug("Bitbucket links not present. " + e + ": " + e.getMessage());
+            log.debug("Bitbucket links not present. " + e + ": " + e.getMessage());
             //
             return null;
             //
@@ -250,7 +262,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
             } catch (Exception e)
             {
            
-                Log.debug("Bitbucket accounts info not present. " + e + ": " + e.getMessage());
+                log.debug("Bitbucket accounts info not present. " + e + ": " + e.getMessage());
                 //
                 return null;
                 //
@@ -268,17 +280,17 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         }
         //
         if (isBlank(info.accountName)) {
-            Log.debug("accountName is empty assuming deletion");
+            log.debug("accountName is empty assuming deletion");
             //
             return null;
         }
         if (isBlank(info.oauthKey)) {
-            Log.debug("oauthKey is empty assuming deletion");
+            log.debug("oauthKey is empty assuming deletion");
             //
             return null;
         }
         if (isBlank(info.oauthSecret)) {
-            Log.debug("oauthSecret is empty assuming deletion");
+            log.debug("oauthSecret is empty assuming deletion");
             //
             return null;
         }
@@ -314,6 +326,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
 
     private Organization copyValues(AccountInfo info, Organization organization)
     {
+        organization.setId(0);
         organization.setName(info.accountName);
         organization.setCredential(new Credential(null, null, null, info.oauthKey, info.oauthSecret));
         organization.setHostUrl(BITBUCKET_URL);
