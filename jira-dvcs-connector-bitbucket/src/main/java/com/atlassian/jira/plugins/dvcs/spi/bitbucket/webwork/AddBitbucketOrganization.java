@@ -181,6 +181,13 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 		{
 			addErrorMessage("Invalid request, missing url or organization/account information.");
 		}
+		
+		if (StringUtils.isNotBlank(organization)) {
+		    Organization integratedAccount = organizationService.findIntegratedAccount();
+		    if (integratedAccount != null && organization.trim().equalsIgnoreCase(integratedAccount.getName())) {
+		        addErrorMessage("It is not possible to add the same account as the integrated one.");
+		    }
+		}
 	}
 
 	public String getAdminPassword()

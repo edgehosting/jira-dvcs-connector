@@ -36,6 +36,17 @@
             <p>Connect your <a href="http://confluence.atlassian.com/display/BITBUCKET/Using+the+JIRA+DVCS+Connector+Plugin" target="_blank">Bitbucket and GitHub accounts to JIRA</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
         #end
         <br/>
+	
+		#foreach ($errorMessage in $action.getErrorMessages())
+                <div class="aui-message error shadowed">
+                    <p class="title">
+                        <span class="aui-icon icon-error"></span>
+                        <strong>Error!</strong>
+                    </p>
+                    <p>$errorMessage</p>
+                </div>
+        #end
+		
 
         <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account &gt;&gt;" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account &gt;&gt;" />
 
@@ -44,16 +55,6 @@
             <span class="svg-icon close size-16 customClose" onclick="showAddRepoDetails(false);"></span>
 
             <h4 style="margin: 0px;">Add New Account</h4>
-
-            #foreach ($errorMessage in $action.getErrorMessages())
-                <div class="aui-message error shadowed">
-                    <p class="title">
-                        <span class="aui-icon icon-error"></span>
-                        <strong>Error!</strong>
-                    </p>
-                    <p>$errorMessage</p>
-                </div>
-            #end
 
             <form class="aui long-label" id="repoEntry" method="post"  >
 
@@ -183,7 +184,7 @@
 			#end
 	
 	<div class="dvcs-header-container">	
-		<h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a></h4>
+		<h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a> #if($org.isIntegratedAccount()) (integrated) #end </h4>
 		<div class="dvcs-org-container aui-toolbar">
 				
 				<ul class="toolbar-group">
