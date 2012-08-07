@@ -154,6 +154,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
             // modify :?
             Organization userAddedAccount = getUserAddedAccount(info);
             
+            // we have no user-added account with the same name
             if (userAddedAccount == null) {
                 
                 if (configHasChanged(integratedNotNullAccount, info)) {
@@ -163,14 +164,16 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
                     
                 } else if (accountNameHasChanged(integratedNotNullAccount, info)) {
                     
-                    log.debug("Detected integrated account name change.");
+                    log.info("Detected integrated account name change.");
                     removeAccount(integratedNotNullAccount);
                     organizationService.save(createNewOrganization(info));
                     
                 } else {
                     // nothing has changed
-                    log.info("No changes detect on integrated account");
+                    log.debug("No changes detect on integrated account");
                 }
+              
+                
                 
             } else {
                 // should not happened
