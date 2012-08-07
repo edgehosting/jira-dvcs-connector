@@ -8,6 +8,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.DashboardActivityStreamsPage;
@@ -26,6 +27,8 @@ public class ActivityStreamsTest
 
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private DashboardActivityStreamsPage page;
+    
+    private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
 
 
     private void loginToJira()
@@ -92,8 +95,20 @@ public class ActivityStreamsTest
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
 
+        jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
+        bitbucketIntegratedApplicationsPage = jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
+
+        BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
+                bitbucketIntegratedApplicationsPage.addConsumer();
+
         BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
-        oauthConfigPage.setCredentials("4QRzjT6XHGKwL55Bfd", "LnpGqtuGXzRXdnVdxkgP5sttHSE5AXAV");
+        oauthConfigPage.setCredentials(oauthCredentials.oauthKey, oauthCredentials.oauthSecret);
+    }
+    
+    private void removeOAuthConsumer()
+    {
+        jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
+        bitbucketIntegratedApplicationsPage.removeLastAdddedConsumer();
     }
 
     @Test
@@ -133,6 +148,8 @@ public class ActivityStreamsTest
         page.checkIssueActivityNotPresentedForQA5();
 
         logout();
+        
+        removeOAuthConsumer();
     }
 
     @Test
@@ -166,5 +183,7 @@ public class ActivityStreamsTest
         loginToJira();
         setupAnonymousAccessForbidden();
         logout();
+        
+        removeOAuthConsumer();
     }
 }
