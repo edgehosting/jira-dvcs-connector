@@ -232,6 +232,8 @@ public class OrganizationDaoImpl implements OrganizationDao
 										organization.getName(), organization.getHostUrl());
 							}
 							
+                            // we need to remove null characters '\u0000' because PostgreSQL cannot store String values
+                            // with such characters
 							final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
 							map.put(OrganizationMapping.HOST_URL, organization.getHostUrl());
 							map.put(OrganizationMapping.NAME, organization.getName());

@@ -229,6 +229,8 @@ public class RepositoryDaoImpl implements RepositoryDao
 						RepositoryMapping rm;
 						if (repository.getId() == 0)
 						{
+                            // we need to remove null characters '\u0000' because PostgreSQL cannot store String values
+                            // with such characters
 							final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
 							map.put(RepositoryMapping.ORGANIZATION_ID, repository.getOrganizationId());
 							map.put(RepositoryMapping.SLUG, repository.getSlug());
