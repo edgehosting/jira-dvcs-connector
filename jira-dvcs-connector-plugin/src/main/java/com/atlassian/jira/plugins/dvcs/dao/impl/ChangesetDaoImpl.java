@@ -102,7 +102,9 @@ public class ChangesetDaoImpl implements ChangesetDao
                 // add new
                 ChangesetMapping chm;
 
-                final Map<String, Object> map = new HashMap<String, Object>();
+                // we need to remove null characters '\u0000' because PostgreSQL cannot store String values with such
+                // characters
+                final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
                 map.put(ChangesetMapping.REPOSITORY_ID, changeset.getRepositoryId());
                 map.put(ChangesetMapping.ISSUE_KEY, changeset.getIssueKey());
                 map.put(ChangesetMapping.PROJECT_KEY, parseProjectKey(changeset.getIssueKey()));
