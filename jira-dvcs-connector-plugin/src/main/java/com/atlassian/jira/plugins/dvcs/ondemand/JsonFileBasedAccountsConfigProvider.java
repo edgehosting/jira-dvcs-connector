@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 
 public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvider
 {
@@ -27,9 +28,13 @@ public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvid
     public AccountsConfig provideConfiguration()
     {
 
-        File configFile = new File(absoluteConfigFilePath);
         try
         {
+            File configFile = new File(absoluteConfigFilePath);
+            if (!configFile.exists() || !configFile.canRead()) {
+                throw new IllegalStateException(absoluteConfigFilePath + " file can not be read.");
+            }
+            
             AccountsConfig config = null;
 
             GsonBuilder builder = new GsonBuilder();
@@ -39,8 +44,12 @@ public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvid
             config = gson.fromJson(new InputStreamReader(new FileInputStream(configFile)), AccountsConfig.class);
             
             return config;
-       
-        } catch (Exception e)
+        }
+        catch (JsonParseException json) {
+            log.error("Failed to parse config file " + absoluteConfigFilePath, json);
+            return null;
+        }
+        catch (Exception e)
         {
             log.debug("File not found, probably not ondemand instance or integrated account should be deleted. ", e);
             return null;
