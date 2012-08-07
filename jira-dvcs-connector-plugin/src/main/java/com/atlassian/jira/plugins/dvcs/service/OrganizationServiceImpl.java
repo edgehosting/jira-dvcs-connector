@@ -45,17 +45,11 @@ public class OrganizationServiceImpl implements OrganizationService
 
 		if (loadRepositories)
 		{
-			CollectionUtils.transform(organizations, new Transformer()
-			{
-				@Override
-				public Object transform(Object o)
-				{
-					Organization organization = (Organization) o;
-					final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
-					organization.setRepositories(repositories);
-					return organization;
-				}
-			});
+            for (Organization organization : organizations)
+            {
+                List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+                organization.setRepositories(repositories);
+            }
 		}
 
 		return organizations;
@@ -68,17 +62,11 @@ public class OrganizationServiceImpl implements OrganizationService
 
 		if (loadRepositories)
 		{
-			CollectionUtils.transform(organizations, new Transformer()
-			{
-				@Override
-				public Object transform(Object o)
-				{
-					Organization organization = (Organization) o;
-					final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
-					organization.setRepositories(repositories);
-					return organization;
-				}
-			});
+            for (Organization organization : organizations)
+            {
+                List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+                organization.setRepositories(repositories);
+            }
 		}
 
 		return organizations;
