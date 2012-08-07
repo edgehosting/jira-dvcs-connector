@@ -158,6 +158,21 @@ public class OrganizationServiceImpl implements OrganizationService
 
 	}
 	
+	@Override
+    public void updateCredentialsKeySecret(int organizationId, String key, String secret)
+    {
+        // Check credentials
+        // create organization with plain credentials as we need all data like url, etc
+        //
+        Organization organization = organizationDao.get(organizationId);
+        organization.setCredential(new Credential(null, null, null, key, secret));
+        checkCredentials(organization);
+        //
+        
+        organizationDao.updateCredentials(organizationId, null, null, null, key, secret);
+
+    }
+	
     @Override
     public void updateTwoLeggedOauthCredentials(int organizationId, String key, String secret)
     {

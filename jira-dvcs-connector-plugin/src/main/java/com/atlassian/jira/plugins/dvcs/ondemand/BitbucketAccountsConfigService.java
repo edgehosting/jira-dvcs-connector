@@ -157,7 +157,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
                 if (configHasChanged(integratedNotNullAccount, info)) {
                     
                     copyValues(info, integratedNotNullAccount);
-                    organizationService.save(integratedNotNullAccount);
+                    organizationService.updateCredentialsKeySecret(integratedNotNullAccount.getId(), info.oauthKey, info.oauthSecret);
                     
                 } else if (accountNameHasChanged(integratedNotNullAccount, info)) {
                     
