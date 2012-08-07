@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -198,6 +199,11 @@ public class Organization
 	public void setSmartcommitsOnNewRepos(boolean smartcommitsOnNewRepos)
 	{
 		this.smartcommitsOnNewRepos = smartcommitsOnNewRepos;
+	}
+	
+	public boolean isIntegratedAccount() {
+	    return credential != null && StringUtils.isNotBlank(credential.getOauthKey())
+	            && StringUtils.isNotBlank(credential.getOauthSecret());
 	}
 
 }
