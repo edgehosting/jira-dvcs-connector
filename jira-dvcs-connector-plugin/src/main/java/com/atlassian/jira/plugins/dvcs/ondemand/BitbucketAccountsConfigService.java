@@ -115,13 +115,15 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         Organization newOrganization = null;
 
         if (userAddedAccount == null) {
+
             // create brand new
+            log.info("Creating new integrated account.");
             newOrganization = createNewOrganization(info);
       
         } else {
             
+            log.info("Found the same user-added account.");
             removeAccount(userAddedAccount);
-
             // make integrated account from user-added account
             newOrganization = copyValues(info, userAddedAccount);
         }
@@ -156,17 +158,18 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
                 
                 if (configHasChanged(integratedNotNullAccount, info)) {
                     
-                    copyValues(info, integratedNotNullAccount);
+                    log.info("Detected credentials change.");
                     organizationService.updateCredentialsKeySecret(integratedNotNullAccount.getId(), info.oauthKey, info.oauthSecret);
                     
                 } else if (accountNameHasChanged(integratedNotNullAccount, info)) {
                     
-                    removeAccount(userAddedAccount);
+                    log.debug("Detected integrated account name change.");
+                    removeAccount(integratedNotNullAccount);
                     organizationService.save(createNewOrganization(info));
                     
                 } else {
                     // nothing has changed
-                    log.debug("No changes detect on integrated account");
+                    log.info("No changes detect on integrated account");
                 }
                 
             } else {
