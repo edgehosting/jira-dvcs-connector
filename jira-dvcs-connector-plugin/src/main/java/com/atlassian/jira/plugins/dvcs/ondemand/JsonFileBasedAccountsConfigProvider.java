@@ -62,4 +62,9 @@ public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvid
        return true;
     }
 
+    public void setAbsoluteConfigFilePath(String absoluteConfigFilePath)
+    {
+        this.absoluteConfigFilePath = absoluteConfigFilePath;
+    }
+    
 }
