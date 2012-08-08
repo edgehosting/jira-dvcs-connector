@@ -21,6 +21,13 @@ public class AccountsConfig
         this.sysadminApplicationLinks = sysadminApplicationLinks;
     }
     
+    public BitbucketAccountInfo getFirstBitbucketAccountConfig() {
+        
+        return sysadminApplicationLinks.get(0).getBitbucket().get(0);
+        
+    }
+    
+    
     public static class Links {
         
         private List<BitbucketAccountInfo> bitbucket;

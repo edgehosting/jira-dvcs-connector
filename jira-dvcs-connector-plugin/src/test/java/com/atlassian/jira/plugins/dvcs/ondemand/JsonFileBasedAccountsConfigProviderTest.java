@@ -20,7 +20,7 @@ public class JsonFileBasedAccountsConfigProviderTest
 
         AccountsConfig configuration = provider.provideConfiguration();
         
-        BitbucketAccountInfo linkConfig = configuration.getSysadminApplicationLinks().get(0).getBitbucket().get(0);
+        BitbucketAccountInfo linkConfig = configuration.getFirstBitbucketAccountConfig();
 
         Assert.assertEquals("mybucketbit", linkConfig.getAccount());
         Assert.assertEquals("verysecretkey", linkConfig.getKey());
@@ -35,7 +35,7 @@ public class JsonFileBasedAccountsConfigProviderTest
 
         AccountsConfig configuration = provider.provideConfiguration();
         
-        BitbucketAccountInfo linkConfig = configuration.getSysadminApplicationLinks().get(0).getBitbucket().get(0);
+        BitbucketAccountInfo linkConfig = configuration.getFirstBitbucketAccountConfig();
 
         Assert.assertEquals("mybucketbit", linkConfig.getAccount());
         Assert.assertEquals("verysecretkey", linkConfig.getKey());
