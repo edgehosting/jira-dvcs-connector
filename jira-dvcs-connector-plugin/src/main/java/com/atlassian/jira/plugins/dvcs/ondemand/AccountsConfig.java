@@ -2,6 +2,24 @@ package com.atlassian.jira.plugins.dvcs.ondemand;
 
 import java.util.List;
 
+/**
+ * <pre>
+ * {
+ *   "sysadmin-application-links": [
+ *       {
+ *           "bitbucket": [
+ *               {
+ *                   "account": "mybucketbit",
+ *                   "key": "verysecretkey",
+ *                   "secret": "verysecretsecret"
+ *               }
+ *           ]
+ *       }
+ *   ]
+ *  }
+ * </pre>
+ *
+ */
 public class AccountsConfig
 {
     private List<Links> sysadminApplicationLinks;
