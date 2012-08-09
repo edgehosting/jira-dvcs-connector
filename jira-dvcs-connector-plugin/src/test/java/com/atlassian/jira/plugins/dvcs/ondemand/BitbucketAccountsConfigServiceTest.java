@@ -28,80 +28,129 @@ public class BitbucketAccountsConfigServiceTest
 
     @Mock
     private OrganizationService organizationService;
-    
+
     @Mock
     private AccountsConfigProvider configProvider;
-    
+
     @Captor
     ArgumentCaptor<Organization> organizationCaptor;
-    
-    
+
     private BitbucketAccountsConfigService testedService;
-    
+
     public BitbucketAccountsConfigServiceTest()
     {
         super();
     }
-    
+
     @Before
-    public void setUp() {
-        
+    public void setUp()
+    {
+
         testedService = new BitbucketAccountsConfigService(configProvider, organizationService);
         testedService.setRunAsync(false);
-        
+
         when(configProvider.supportsIntegratedAccounts()).thenReturn(true);
     }
-    
+
     @Test
-    public void testAddNewAccountWithSuccess() {
-        
+    public void testAddNewAccountWithSuccess()
+    {
+
         AccountsConfig correctConfig = createCorrectConfig();
         when(configProvider.provideConfiguration()).thenReturn(correctConfig);
         when(organizationService.findIntegratedAccount()).thenReturn(null);
-        when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq ("A"))).thenReturn(null);
-        
+        when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(null);
+
         testedService.reload();
-        
+
         verify(organizationService).save(organizationCaptor.capture());
-        
+
         Organization savedOrg = organizationCaptor.getValue();
-        
+
         Assert.assertEquals("A", savedOrg.getName());
         Assert.assertEquals("K", savedOrg.getCredential().getOauthKey());
         Assert.assertEquals("S", savedOrg.getCredential().getOauthSecret());
     }
-    
+
     @Test
-    public void testAddNewAccountWrongConfig() {
-        
+    public void testAddNewAccountWrongConfig()
+    {
+
         when(configProvider.provideConfiguration()).thenReturn(null);
         when(organizationService.findIntegratedAccount()).thenReturn(null);
 
         testedService.reload();
-        
+
         verify(organizationService, times(0)).save(organizationCaptor.capture());
-        
+
     }
-    
+
     @Test
-    public void testUpdateAccountCredentialsWithSuccess() {
-        
+    public void testUpdateAccountCredentialsWithSuccess()
+    {
+
         AccountsConfig correctConfig = createCorrectConfig();
         when(configProvider.provideConfiguration()).thenReturn(correctConfig);
-     
-        Organization existingAccount = createExistingAccount("A", "B", "S");
+
+        Organization existingAccount = createSampleAccount("A", "B", "S");
         when(organizationService.findIntegratedAccount()).thenReturn(existingAccount);
-        
-        when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq ("A"))).thenReturn(null);
-        
+
+        when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(null);
+
         testedService.reload();
-        
+
         verify(organizationService).updateCredentialsKeySecret(eq(5), eq("K"), eq("S"));
 
     }
-    
 
-    private Organization createExistingAccount(String name, String key, String secret)
+    @Test
+    public void testUpdateAccountCredentialsWrongConfig_ShouldRemoveIntegratedAccount()
+    {
+
+        when(configProvider.provideConfiguration()).thenReturn(null);
+
+        Organization existingAccount = createSampleAccount("A", "B", "S");
+        when(organizationService.findIntegratedAccount()).thenReturn(existingAccount);
+
+        when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(null);
+
+        testedService.reload();
+
+        verify(organizationService).remove(eq(5));
+
+    }
+    
+    //--
+    
+    @Test
+    public void testAddNewAccountWithSuccess_UserAddedAccountExists()
+    {
+
+        AccountsConfig correctConfig = createCorrectConfig();
+        when(configProvider.provideConfiguration()).thenReturn(correctConfig);
+        
+        when(organizationService.findIntegratedAccount()).thenReturn(null);
+        
+        Organization userAddedAccount = createSampleAccount("A", null, null);
+        when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(userAddedAccount);
+
+        testedService.reload();
+        
+        verify(organizationService).remove(eq(5));
+
+        verify(organizationService).save(organizationCaptor.capture());
+
+        Organization savedOrg = organizationCaptor.getValue();
+
+        Assert.assertEquals("A", savedOrg.getName());
+        Assert.assertEquals("K", savedOrg.getCredential().getOauthKey());
+        Assert.assertEquals("S", savedOrg.getCredential().getOauthSecret());
+    }
+
+    //--
+    
+    
+    private Organization createSampleAccount(String name, String key, String secret)
     {
         Organization org = new Organization();
         org.setId(5);
@@ -114,7 +163,7 @@ public class BitbucketAccountsConfigServiceTest
     {
         return createConfig("A", "K", "S");
     }
-    
+
     private AccountsConfig createConfig(String account, String key, String secret)
     {
         AccountsConfig accountsConfig = new AccountsConfig();
@@ -128,9 +177,8 @@ public class BitbucketAccountsConfigServiceTest
         bbLinks.add(bbAccount);
         links.setBitbucket(bbLinks);
         sysadminApplicationLinks.add(links);
-        accountsConfig .setSysadminApplicationLinks(sysadminApplicationLinks);
+        accountsConfig.setSysadminApplicationLinks(sysadminApplicationLinks);
         return accountsConfig;
     }
-    
-}
 
+}
