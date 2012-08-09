@@ -39,6 +39,8 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
 
     private ExecutorService executorService;
     
+    private boolean runAsync = true;
+    
     public BitbucketAccountsConfigService(AccountsConfigProvider configProvider,
                                         OrganizationService organizationService)
     {
@@ -51,26 +53,37 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     @Override
     public void reload()
     {
-        
-        executorService.submit(new Runnable() {
-
-            @Override
-            public void run()
-            {
-                try
-                {
-                    runInternal();
-                } catch (Exception e)
-                {
-                    log.error("", e);
-                }
-            }
+        if (runAsync) {
             
-        });
+            executorService.submit(new Runnable() {
+    
+                @Override
+                public void run()
+                {
+                    doReload();
+                }
+            });
+            
+        } else {
+            doReload();
+        }
 
     }
+    
+    private void doReload()
+    {
+        try
+        {
+            
+            reloadInternal();
+            
+        } catch (Exception e)
+        {
+            log.error("", e);
+        }
+    }
 
-    private void runInternal()
+    private void reloadInternal()
     {
         //
         // supported only at ondemand instances
@@ -347,6 +360,11 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         String accountName;
         String oauthKey;
         String oauthSecret;
+    }
+
+    public void setRunAsync(boolean runAsync)
+    {
+        this.runAsync = runAsync;
     }
     
 }
