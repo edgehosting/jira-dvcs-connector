@@ -16,6 +16,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountInfo;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.Links;
@@ -68,6 +69,45 @@ public class BitbucketAccountsConfigServiceTest
         Assert.assertEquals("A", savedOrg.getName());
         Assert.assertEquals("K", savedOrg.getCredential().getOauthKey());
         Assert.assertEquals("S", savedOrg.getCredential().getOauthSecret());
+    }
+    
+    @Test
+    public void testAddNewAccountWrongConfig() {
+        
+        when(configProvider.provideConfiguration()).thenReturn(null);
+        when(organizationService.findIntegratedAccount()).thenReturn(null);
+
+        testedService.reload();
+        
+        verify(organizationService, times(0)).save(organizationCaptor.capture());
+        
+    }
+    
+    @Test
+    public void testUpdateAccountCredentialsWithSuccess() {
+        
+        AccountsConfig correctConfig = createCorrectConfig();
+        when(configProvider.provideConfiguration()).thenReturn(correctConfig);
+     
+        Organization existingAccount = createExistingAccount("A", "B", "S");
+        when(organizationService.findIntegratedAccount()).thenReturn(existingAccount);
+        
+        when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq ("A"))).thenReturn(null);
+        
+        testedService.reload();
+        
+        verify(organizationService).updateCredentialsKeySecret(eq(5), eq("K"), eq("S"));
+
+    }
+    
+
+    private Organization createExistingAccount(String name, String key, String secret)
+    {
+        Organization org = new Organization();
+        org.setId(5);
+        org.setName(name);
+        org.setCredential(new Credential(null, null, null, key, secret));
+        return org;
     }
 
     private AccountsConfig createCorrectConfig()
