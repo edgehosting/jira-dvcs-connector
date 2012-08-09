@@ -39,8 +39,6 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
 
     private ExecutorService executorService;
     
-    private boolean runAsync = true;
-    
     public BitbucketAccountsConfigService(AccountsConfigProvider configProvider,
                                         OrganizationService organizationService)
     {
@@ -51,7 +49,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     }
     
     @Override
-    public void reload()
+    public void reload(boolean runAsync)
     {
         if (runAsync) {
             
@@ -60,28 +58,16 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
                 @Override
                 public void run()
                 {
-                    doReload();
+                    reloadInternal();
                 }
             });
             
         } else {
-            doReload();
+            reloadInternal();
         }
 
     }
     
-    private void doReload()
-    {
-        try
-        {
-            
-            reloadInternal();
-            
-        } catch (Exception e)
-        {
-            log.error("", e);
-        }
-    }
 
     private void reloadInternal()
     {
@@ -94,12 +80,12 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         
         //
         AccountsConfig configuration = configProvider.provideConfiguration();
-        Organization integratedAccount = organizationService.findIntegratedAccount();
+        Organization existingAccount = organizationService.findIntegratedAccount();
         //
         // new or update
         //
 
-        if (integratedAccount == null) {
+        if (existingAccount == null) {
             
             if (configuration != null) {
                 doNewAccount(configuration);
@@ -108,12 +94,12 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
                 log.debug("No integrated account found and no configration is provided.");
             }
             
-        } else {
-            if (configuration != null) { // integrated account found
-                doUpdateConfiguration(configuration, integratedAccount);
+        } else { // integrated account found
+            if (configuration != null) {
+                doUpdateConfiguration(configuration, existingAccount);
             } else {
-                log.debug("Integrated account has been found and no configration is provided. Deleting integrated account.");
-                removeAccount(integratedAccount);
+                log.info("Integrated account has been found and no configration is provided. Deleting integrated account.");
+                removeAccount(existingAccount);
             }
             
         }
@@ -158,32 +144,32 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     /**
      * BL comes from https://sdog.jira.com/wiki/pages/viewpage.action?pageId=47284285 
      */
-    private void doUpdateConfiguration(AccountsConfig configuration, Organization integratedNotNullAccount)
+    private void doUpdateConfiguration(AccountsConfig configuration, Organization existingNotNullAccount)
     {
-        AccountInfo info = toInfoExistingAccount(configuration);
+        AccountInfo providedConfig = toInfoExistingAccount(configuration);
         
-        if (info != null) {
+        if (providedConfig != null) {
 
             // modify :?
-            Organization userAddedAccount = getUserAddedAccount(info);
+            Organization userAddedAccount = getUserAddedAccount(providedConfig);
             
             // we have no user-added account with the same name
             if (userAddedAccount == null) {
                 
-                if (configHasChanged(integratedNotNullAccount, info)) {
+                if (configHasChanged(existingNotNullAccount, providedConfig)) {
                     
                     log.info("Detected credentials change.");
-                    organizationService.updateCredentialsKeySecret(integratedNotNullAccount.getId(), info.oauthKey, info.oauthSecret);
+                    organizationService.updateCredentialsKeySecret(existingNotNullAccount.getId(), providedConfig.oauthKey, providedConfig.oauthSecret);
                     
-                } else if (accountNameHasChanged(integratedNotNullAccount, info)) {
+                } else if (accountNameHasChanged(existingNotNullAccount, providedConfig)) {
                     
                     log.info("Detected integrated account name change.");
-                    removeAccount(integratedNotNullAccount);
-                    organizationService.save(createNewOrganization(info));
+                    removeAccount(existingNotNullAccount);
+                    organizationService.save(createNewOrganization(providedConfig));
                     
                 } else {
                     // nothing has changed
-                    log.debug("No changes detect on integrated account");
+                    log.info("No changes detect on integrated account");
                 }
               
                 
@@ -191,7 +177,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
             } else {
                 // should not happened
                 // existing integrated account with the same name as user added
-                log.warn("Detected existing integrated account with the same name as user added.");
+                log.warn("Detected existing integrated account with the same name as user added. Removing user added account.");
                 removeAccount(userAddedAccount);
             }
             
@@ -200,21 +186,21 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
             //
             // delete account
             //
-            removeAccount(integratedNotNullAccount);
+            removeAccount(existingNotNullAccount);
         }
         
     }
 
-    private boolean configHasChanged(Organization integratedNotNullAccount, AccountInfo info)
+    private boolean configHasChanged(Organization existingNotNullAccount, AccountInfo info)
     {
-        return StringUtils.equals(info.accountName, integratedNotNullAccount.getName())
-                && (    !StringUtils.equals(info.oauthKey, integratedNotNullAccount.getCredential().getOauthKey())
-                    ||  !StringUtils.equals(info.oauthSecret, integratedNotNullAccount.getCredential().getOauthSecret()));
+        return StringUtils.equals(info.accountName, existingNotNullAccount.getName())
+                && (    !StringUtils.equals(info.oauthKey, existingNotNullAccount.getCredential().getOauthKey())
+                    ||  !StringUtils.equals(info.oauthSecret, existingNotNullAccount.getCredential().getOauthSecret()));
     }
     
-    private boolean accountNameHasChanged(Organization integratedNotNullAccount, AccountInfo info)
+    private boolean accountNameHasChanged(Organization existingNotNullAccount, AccountInfo providedConfig)
     {
-        return !StringUtils.equals(info.accountName, integratedNotNullAccount.getName());
+        return !StringUtils.equals(providedConfig.accountName, existingNotNullAccount.getName());
     }
 
     private void removeAccount(Organization integratedNotNullAccount)
@@ -362,10 +348,6 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         String oauthSecret;
     }
 
-    public void setRunAsync(boolean runAsync)
-    {
-        this.runAsync = runAsync;
-    }
     
 }
 

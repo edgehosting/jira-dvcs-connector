@@ -47,7 +47,6 @@ public class BitbucketAccountsConfigServiceTest
     {
 
         testedService = new BitbucketAccountsConfigService(configProvider, organizationService);
-        testedService.setRunAsync(false);
 
         when(configProvider.supportsIntegratedAccounts()).thenReturn(true);
     }
@@ -61,7 +60,7 @@ public class BitbucketAccountsConfigServiceTest
         when(organizationService.findIntegratedAccount()).thenReturn(null);
         when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(null);
 
-        testedService.reload();
+        testedService.reload(false);
 
         verify(organizationService).save(organizationCaptor.capture());
 
@@ -79,7 +78,7 @@ public class BitbucketAccountsConfigServiceTest
         when(configProvider.provideConfiguration()).thenReturn(null);
         when(organizationService.findIntegratedAccount()).thenReturn(null);
 
-        testedService.reload();
+        testedService.reload(false);
 
         verify(organizationService, times(0)).save(organizationCaptor.capture());
 
@@ -97,7 +96,7 @@ public class BitbucketAccountsConfigServiceTest
 
         when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(null);
 
-        testedService.reload();
+        testedService.reload(false);
 
         verify(organizationService).updateCredentialsKeySecret(eq(5), eq("K"), eq("S"));
 
@@ -114,7 +113,7 @@ public class BitbucketAccountsConfigServiceTest
 
         when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(null);
 
-        testedService.reload();
+        testedService.reload(false);
 
         verify(organizationService).remove(eq(5));
 
@@ -134,7 +133,7 @@ public class BitbucketAccountsConfigServiceTest
         Organization userAddedAccount = createSampleAccount("A", null, null);
         when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(userAddedAccount);
 
-        testedService.reload();
+        testedService.reload(false);
         
         verify(organizationService).remove(eq(5));
 

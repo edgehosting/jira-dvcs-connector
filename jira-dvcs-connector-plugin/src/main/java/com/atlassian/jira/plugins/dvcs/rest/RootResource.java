@@ -253,7 +253,7 @@ public class RootResource
 	    
 	    try {
 	        
-	        ondemandAccountConfig.reload();
+	        ondemandAccountConfig.reload(true);
 	        return Response.ok("OK").build();
 
 	    } catch (Exception e) {
