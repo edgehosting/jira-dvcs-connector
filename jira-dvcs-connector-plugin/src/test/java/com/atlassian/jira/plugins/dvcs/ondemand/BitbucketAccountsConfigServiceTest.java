@@ -72,7 +72,7 @@ public class BitbucketAccountsConfigServiceTest
     }
 
     @Test
-    public void testAddNewAccountWrongConfig()
+    public void testAddNewAccountEmptyConfig()
     {
 
         when(configProvider.provideConfiguration()).thenReturn(null);
@@ -85,7 +85,7 @@ public class BitbucketAccountsConfigServiceTest
     }
     
     @Test
-    public void testUpdateAccountWrongConfig()
+    public void testUpdateAccountEmptyConfig()
     {
 
         when(configProvider.provideConfiguration()).thenReturn(null);
@@ -119,7 +119,7 @@ public class BitbucketAccountsConfigServiceTest
     }
 
     @Test
-    public void testUpdateAccountCredentialsWrongConfig_ShouldRemoveIntegratedAccount()
+    public void testUpdateAccountCredentialsEmptyConfig_ShouldRemoveIntegratedAccount()
     {
 
         when(configProvider.provideConfiguration()).thenReturn(null);
