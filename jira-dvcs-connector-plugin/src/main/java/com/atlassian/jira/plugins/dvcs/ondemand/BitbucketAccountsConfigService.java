@@ -175,7 +175,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
                 
                 
             } else {
-                // should not happened
+                // should not happene
                 // existing integrated account with the same name as user added
                 log.warn("Detected existing integrated account with the same name as user added. Removing both.");
                 removeAccount(userAddedAccount);
