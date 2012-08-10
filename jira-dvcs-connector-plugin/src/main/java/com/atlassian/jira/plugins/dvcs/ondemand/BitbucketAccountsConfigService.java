@@ -177,8 +177,10 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
             } else {
                 // should not happened
                 // existing integrated account with the same name as user added
-                log.warn("Detected existing integrated account with the same name as user added. Removing user added account.");
+                log.warn("Detected existing integrated account with the same name as user added. Removing both.");
                 removeAccount(userAddedAccount);
+                // as provided config is null, remove also integrated account
+                removeAccount(existingNotNullAccount);
             }
             
             
@@ -203,9 +205,9 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         return !StringUtils.equals(providedConfig.accountName, existingNotNullAccount.getName());
     }
 
-    private void removeAccount(Organization integratedNotNullAccount)
+    private void removeAccount(Organization organizationAccount)
     {
-        organizationService.remove(integratedNotNullAccount.getId());
+        organizationService.remove(organizationAccount.getId());
     }
 
     private AccountInfo toInfoNewAccount(AccountsConfig configuration)
