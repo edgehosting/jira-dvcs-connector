@@ -83,6 +83,22 @@ public class BitbucketAccountsConfigServiceTest
         verify(organizationService, times(0)).save(organizationCaptor.capture());
 
     }
+    
+    @Test
+    public void testUpdateAccountWrongConfig()
+    {
+
+        when(configProvider.provideConfiguration()).thenReturn(null);
+        
+        Organization existingAccount = createSampleAccount("A", "B", "S");
+        when(organizationService.findIntegratedAccount()).thenReturn(existingAccount);
+
+        testedService.reload(false);
+
+        verify(organizationService, times(0)).save(organizationCaptor.capture());
+
+        verify(organizationService).remove(eq(5));
+    }
 
     @Test
     public void testUpdateAccountCredentialsWithSuccess()
