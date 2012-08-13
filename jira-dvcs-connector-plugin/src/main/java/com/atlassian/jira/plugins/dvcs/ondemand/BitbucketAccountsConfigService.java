@@ -51,6 +51,15 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     @Override
     public void reload(boolean runAsync)
     {
+        
+        //
+        // supported only at ondemand instances
+        //
+        if (!supportsIntegratedAccounts()) {
+            return;
+        }
+        
+
         if (runAsync) {
             
             executorService.submit(new Runnable() {
@@ -71,12 +80,6 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
 
     private void reloadInternal()
     {
-        //
-        // supported only at ondemand instances
-        //
-        if (!supportsIntegratedAccounts()) {
-            return;
-        }
         
         //
         AccountsConfig configuration = configProvider.provideConfiguration();
@@ -175,7 +178,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
                 
                 
             } else {
-                // should not happene
+                // should not happen
                 // existing integrated account with the same name as user added
                 log.warn("Detected existing integrated account with the same name as user added. Removing both.");
                 removeAccount(userAddedAccount);

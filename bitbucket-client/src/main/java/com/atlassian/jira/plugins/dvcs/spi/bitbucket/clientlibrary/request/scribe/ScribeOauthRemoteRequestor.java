@@ -30,7 +30,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOut
 public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
 {
 
-    private static Logger log = LoggerFactory.getLogger(ScribeOauthRemoteRequestor.class);
+    protected static Logger log = LoggerFactory.getLogger(ScribeOauthRemoteRequestor.class);
 
     protected final String key;
 

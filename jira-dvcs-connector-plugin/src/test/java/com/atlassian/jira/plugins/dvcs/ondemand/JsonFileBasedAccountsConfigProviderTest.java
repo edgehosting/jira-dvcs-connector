@@ -1,16 +1,35 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import com.atlassian.jira.config.CoreFeatures;
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountInfo;
 
+
+@RunWith(MockitoJUnitRunner.class)
 public class JsonFileBasedAccountsConfigProviderTest
 {
+
+    @Mock
+    private FeatureManager featureManager;
 
     public JsonFileBasedAccountsConfigProviderTest()
     {
         super();
+    }
+    
+    @Before
+    public void setUp(){
+        when(featureManager.isEnabled(isA(CoreFeatures.class))).thenReturn(Boolean.TRUE);
     }
     
     @Test
@@ -75,7 +94,7 @@ public class JsonFileBasedAccountsConfigProviderTest
     
     private AccountsConfigProvider getCustomProviderAbsolutePath(String absolutePath) {
 
-        JsonFileBasedAccountsConfigProvider provider = new JsonFileBasedAccountsConfigProvider();
+        JsonFileBasedAccountsConfigProvider provider = new JsonFileBasedAccountsConfigProvider(featureManager);
         provider.setAbsoluteConfigFilePath(absolutePath);
         return provider;
 

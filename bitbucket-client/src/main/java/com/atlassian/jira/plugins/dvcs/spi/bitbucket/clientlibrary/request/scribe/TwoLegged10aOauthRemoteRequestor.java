@@ -28,6 +28,7 @@ public class TwoLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequestor
 	@Override
 	protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri, Map<String, String> parameters)
 	{
+	    long start = System.currentTimeMillis();
 		//
 		// generate oauth 1.0 params for 2LO - use scribe so far for that ...
 		//
@@ -41,6 +42,7 @@ public class TwoLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequestor
 		//
 		//
 		//
+		log.debug("2LO signing took [{}] ms ", System.currentTimeMillis() - start);
 		
 		return finalUri + paramsToString(oauthParams, finalUri.indexOf("?") != -1);
 	}
