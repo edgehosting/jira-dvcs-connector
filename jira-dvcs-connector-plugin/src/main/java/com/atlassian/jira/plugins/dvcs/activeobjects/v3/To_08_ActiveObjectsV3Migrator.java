@@ -17,6 +17,8 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Map;
 
+import net.java.ao.RawEntity;
+
 /**
  *  Data migration from jira-github-connector plugin to jira-bitbucket-connector plugin
  *  
@@ -37,6 +39,9 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
     {
         log.debug("upgrade [ " + getModelVersion() + " ]");
         
+        deleteAllExistingTableContent(activeObjects, ChangesetMapping.class, OrganizationMapping.class,
+                RepositoryMapping.class);
+        
         activeObjects.migrate(ProjectMapping.class, IssueMapping.class, OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class);
         
         // old repositoryId to new repositoryId
@@ -44,6 +49,16 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         
         migrateOrganisationsAndRepositories(activeObjects, old2New);
         migrateChangesets(activeObjects,old2New);
+    }
+    
+    private <K> void deleteAllExistingTableContent(ActiveObjects activeObjects, Class<? extends RawEntity<K>>... entityTypes)
+    {
+        for (Class<? extends RawEntity<K>> entityType : entityTypes)
+        {
+            RawEntity<K>[] entities = activeObjects.find(entityType);
+            
+            activeObjects.delete(entities);//TODO update to use stream
+        }
     }
 
     private void migrateOrganisationsAndRepositories(ActiveObjects activeObjects, Map<Integer, Integer> old2New)
@@ -161,9 +176,15 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
             @Override
             public void onRowRead(IssueMapping issueMapping)
             {
+                final String issueKey = issueMapping.getIssueId();
+                if (issueKey == null)
+                {
+                    log.error("The following issue Mapping entity is ignored because of null issue key: " + issueMapping);
+                    return;
+                }
+                
                 Map<String, Object> changesetMap = Maps.newHashMap();
                 changesetMap.put(ChangesetMapping.REPOSITORY_ID, old2New.get(issueMapping.getRepositoryId()));
-                final String issueKey = issueMapping.getIssueId();
                 changesetMap.put(ChangesetMapping.ISSUE_KEY, issueKey);
                 changesetMap.put(ChangesetMapping.PROJECT_KEY, issueKey.substring(0, issueKey.indexOf("-")));
                 changesetMap.put(ChangesetMapping.NODE, issueMapping.getNode());
