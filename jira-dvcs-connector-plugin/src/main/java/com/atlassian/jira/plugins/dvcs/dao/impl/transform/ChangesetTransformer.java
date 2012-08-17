@@ -25,6 +25,8 @@ public class ChangesetTransformer
             return null;
         }
 
+        log.debug("Changeset transformation: [{}] ", changesetMapping);
+
         FileData fileData = parseFilesData(changesetMapping.getFilesData());
         List<String> parents = parseParentsData(changesetMapping.getParentsData());
 

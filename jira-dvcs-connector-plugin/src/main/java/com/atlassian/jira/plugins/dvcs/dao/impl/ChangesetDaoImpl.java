@@ -11,20 +11,18 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import net.java.ao.Query;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 
 public class ChangesetDaoImpl implements ChangesetDao
 {
@@ -43,19 +41,19 @@ public class ChangesetDaoImpl implements ChangesetDao
         return transformer.transform(changesetMapping);
     }
 
+    @SuppressWarnings("unchecked")
     protected List<Changeset> transform(List<ChangesetMapping> changesetMappings)
     {
-        final Collection<Changeset> changesets = Collections2.transform(changesetMappings,
-                new Function<ChangesetMapping, Changeset>()
-                {
-                    @Override
-                    public Changeset apply(ChangesetMapping changesetMapping)
-                    {
-                        return transform(changesetMapping);
-                    }
-                });
+        return (List<Changeset>) CollectionUtils.collect(changesetMappings, new Transformer() {
 
-        return new ArrayList<Changeset>(changesets);
+            @Override
+            public Object transform(Object input)
+            {
+                ChangesetMapping changesetMapping = (ChangesetMapping) input;
+
+                return ChangesetDaoImpl.this.transform(changesetMapping);
+            }
+        });
     }
 
 
@@ -100,9 +98,11 @@ public class ChangesetDaoImpl implements ChangesetDao
                 }
 
                 // add new
-                ChangesetMapping om;
+                ChangesetMapping chm;
 
-                final Map<String, Object> map = new HashMap<String, Object>();
+                // we need to remove null characters '\u0000' because PostgreSQL cannot store String values with such
+                // characters
+                final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
                 map.put(ChangesetMapping.REPOSITORY_ID, changeset.getRepositoryId());
                 map.put(ChangesetMapping.ISSUE_KEY, changeset.getIssueKey());
                 map.put(ChangesetMapping.PROJECT_KEY, parseProjectKey(changeset.getIssueKey()));
@@ -147,13 +147,12 @@ public class ChangesetDaoImpl implements ChangesetDao
 
                 map.put(ChangesetMapping.VERSION, ChangesetMapping.LATEST_VERSION);
 
-                om = activeObjects.create(ChangesetMapping.class, map);
+                chm = activeObjects.create(ChangesetMapping.class, map);
+                chm = activeObjects.find(ChangesetMapping.class, "ID = ?", chm.getID())[0];
 
-                return om;
+                return chm;
             }
         });
-        
-        activeObjects.flush(changesetMapping);
 
         return transform(changesetMapping);
         

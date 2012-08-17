@@ -8,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +47,23 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     @Override
     public void synchronise()
     {
+        // remember old lastcommit date
+        Date lastCommitDate = repository.getLastCommitDate();
+
+        synchroniseInternal();
+
+        // save lastcommitdate changed
+        // we are doing this obscure check in order to minimize number of calls to 
+        // repository.save() because of some weird performance issue BBC-219 
+        if (!ObjectUtils.equals(lastCommitDate, repository.getLastCommitDate()))
+        {
+            log.debug("Last commit date has been changed. Save repository: [{}]", repository);
+            repositoryService.save(repository);
+        }
+    }
+
+    public void synchroniseInternal()
+    {
         Date lastCommitDate = null;
         if (softSync)
         {
@@ -55,7 +73,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             // we are doing full sync, lets delete all existing changesets
             changesetService.removeAllInRepository(repository.getId());
             repository.setLastCommitDate(null);
-            repositoryService.save(repository);
         }
 
         int changesetCount = 0;
@@ -72,7 +89,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             {
                 lastCommitDate = changeset.getDate();
                 repository.setLastCommitDate(lastCommitDate);
-                repositoryService.save(repository);
             }
             changesetCount++;
             String message = changeset.getMessage();
@@ -111,6 +127,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     {
                         Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
                         changesetForSave.setIssueKey(issueKey);
+                        log.debug("Save changeset [{}]", changesetForSave);
                         changesetService.save(changesetForSave);
                     } catch (SourceControlException e)
                     {

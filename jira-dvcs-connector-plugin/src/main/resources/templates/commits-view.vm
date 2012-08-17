@@ -24,7 +24,7 @@
                         <div class="CommitButton">View full commit</div>
                     </a>
 
-                    <div class="Text">$issue_linker.createLinks($commit_message)</div>
+                    <div class="CommitText">$issue_linker.createLinks($commit_message)</div>
                 </div>
 
                 <div class="CommitBody">

@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -10,16 +12,15 @@ import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
@@ -97,8 +98,14 @@ public class ChangesetServiceImpl implements ChangesetService
     @Override
     public DvcsUser getUser(Repository repository, Changeset changeset)
     {
-        final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-        return communicator.getUser(repository, changeset.getAuthor());
+        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+        String username = changeset.getAuthor();
+        
+        if (StringUtils.isBlank(username))
+        {
+            return new DvcsUser(DvcsUser.UNKNOWN_USER.getUsername(), changeset.getRawAuthor(), DvcsUser.UNKNOWN_USER.getAvatar());
+        }
+        return communicator.getUser(repository, username);
     }
 
     @Override
@@ -116,19 +123,19 @@ public class ChangesetServiceImpl implements ChangesetService
         return Sets.newHashSet(changesets);
     }
 
+    @SuppressWarnings("unchecked")
     private List<Changeset> checkChangesetVersion(List<Changeset> changesets)
     {
-        final Collection<Changeset> checkedChangesets = Collections2.transform(changesets,
-                        new Function<Changeset, Changeset>()
-                        {
-                            @Override
-                            public Changeset apply(Changeset changeset)
-                            {
-                                return checkChangesetVersion(changeset);
-                            }
-                        });
+        return (List<Changeset>) CollectionUtils.collect(changesets, new Transformer() {
 
-        return new ArrayList<Changeset>(checkedChangesets);
+            @Override
+            public Object transform(Object input)
+            {
+                Changeset changeset = (Changeset) input;
+
+                return ChangesetServiceImpl.this.checkChangesetVersion(changeset);                
+            }
+        });
     }
 
     /**

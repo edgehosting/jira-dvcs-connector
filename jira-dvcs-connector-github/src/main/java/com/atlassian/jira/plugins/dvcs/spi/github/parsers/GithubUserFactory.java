@@ -16,7 +16,6 @@ public class GithubUserFactory
         
         return new DvcsUser(
                 login,
-                "",
                 StringUtils.isNotBlank(name) ? name : login,  // first and last name is together in github
                 gravatarUrl);
     }

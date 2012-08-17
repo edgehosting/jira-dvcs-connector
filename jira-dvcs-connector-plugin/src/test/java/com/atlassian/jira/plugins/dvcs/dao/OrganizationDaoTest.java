@@ -1,6 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
 
+
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+
 import java.util.Map;
 
 import org.junit.Before;
@@ -21,22 +26,17 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-
 @RunWith(MockitoJUnitRunner.class)
-public class OrganizationDaoTest {
-
+public class OrganizationDaoTest
+{
     @Mock
     private ActiveObjects activeObjectsMock;
-
     @Mock
     private OrganizationMapping organizationMappingMock;
-
+    @Mock
+    private OrganizationMapping organizationMapping;
     @Captor
     private ArgumentCaptor<Map<String, Object>> mapArgumentCaptor;
-
 
     private OrganizationDao organizationDao;
 
@@ -46,7 +46,6 @@ public class OrganizationDaoTest {
 	{
 		organizationDao = new OrganizationDaoImpl(activeObjectsMock, mock(Encryptor.class));
 	}
-
 
     @SuppressWarnings("unchecked")
     @Test
@@ -62,6 +61,10 @@ public class OrganizationDaoTest {
                 return ((TransactionCallback) invocationOnMock.getArguments()[0]).doInTransaction();
             }
         });
+        when(activeObjectsMock.create(eq(OrganizationMapping.class), isA(Map.class))).thenReturn(
+                organizationMapping);
+        when(activeObjectsMock.find(eq(OrganizationMapping.class), anyString(), any())).thenReturn(
+                new OrganizationMapping[]{organizationMapping});
 
         organizationDao.save(organization);
 

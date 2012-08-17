@@ -16,8 +16,6 @@ import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 
 public class AddGithubOrganization extends CommonDvcsConfigurationAction
 {
-	private static final long serialVersionUID = -2316358416248237835L;
-
 	private final Logger log = LoggerFactory.getLogger(AddGithubOrganization.class);
 
 	private String url;
@@ -50,10 +48,10 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	@RequiresXsrfCheck
 	protected String doExecute() throws Exception
 	{
-
-		if (isOAuthConfigurationRequired()) {
-			configureOAuth();
-		}
+        if (isOAuthConfigurationRequired())
+        {
+            configureOAuth();
+        }
 		
 		// then continue
 		return redirectUserToGithub();
@@ -76,7 +74,6 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	@Override
 	protected void doValidation()
 	{
-		
 		if (StringUtils.isNotBlank(oauthRequired))
 		{
 			if (StringUtils.isBlank(oauthClientId) || StringUtils.isBlank(oauthSecret))
@@ -89,27 +86,28 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 		{
 			addErrorMessage("Please provide both url and organization parameters.");
 		}
-
-
 	}
 	
-	protected boolean isOAuthConfigurationRequired() {
-		return StringUtils.isNotBlank(oauthRequired);
-	}
+    protected boolean isOAuthConfigurationRequired()
+    {
+        return StringUtils.isNotBlank(oauthRequired);
+    }
 
 	public String doFinish()
 	{
-
 		try
 		{
-
 			accessToken = requestAccessToken();
 
 		} catch (SourceControlException sce)
 		{
 			addErrorMessage(sce.getMessage());
 			return INPUT;
-		}
+		
+		} catch (Exception e) {
+		    addErrorMessage("Error obtain access token.");
+            return INPUT;
+        }
 
 		return doAddOrganization();
 	}
@@ -144,7 +142,6 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
 	private String requestAccessToken()
 	{
-
 		return githubOAuthUtils.requestAccessToken(code);
 	}
 

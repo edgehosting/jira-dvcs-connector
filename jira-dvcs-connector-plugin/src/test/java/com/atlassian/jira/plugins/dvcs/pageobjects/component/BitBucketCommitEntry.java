@@ -25,13 +25,13 @@ public class BitBucketCommitEntry
      */
     public String getCommitMessage()
     {
-        return div.findAll(By.className("Text")).get(0).getText();
+        return div.findAll(By.className("CommitText")).get(0).getText();
     }
 
     public List<String> getCommitMessageLinks()
     {
         List<String> linkTexts = new ArrayList<String>();
-        PageElement commitMessageDiv = div.find(By.className("Text"));
+        PageElement commitMessageDiv = div.find(By.className("CommitText"));
         List<PageElement> links = commitMessageDiv.findAll(By.tagName("a"));
         for (PageElement link : links)
         {

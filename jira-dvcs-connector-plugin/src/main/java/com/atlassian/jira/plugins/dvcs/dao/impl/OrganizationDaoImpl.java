@@ -12,6 +12,8 @@ import net.java.ao.Query;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +27,7 @@ import java.util.Map;
  */
 public class OrganizationDaoImpl implements OrganizationDao
 {
+    public static final Logger log = LoggerFactory.getLogger(OrganizationDaoImpl.class);
 
 	/** The active objects. */
 	private final ActiveObjects activeObjects;
@@ -60,6 +63,8 @@ public class OrganizationDaoImpl implements OrganizationDao
 		{
 			return null;
 		}
+
+        log.debug("Organization transformation: [{}]", organizationMapping);
 
 		Credential credential = new Credential(organizationMapping.getAdminUsername(),
 				organizationMapping.getAdminPassword(), organizationMapping.getAccessToken());
@@ -206,7 +211,9 @@ public class OrganizationDaoImpl implements OrganizationDao
 										organization.getName(), organization.getHostUrl());
 							}
 							
-							final Map<String, Object> map = new HashMap<String, Object>();
+                            // we need to remove null characters '\u0000' because PostgreSQL cannot store String values
+                            // with such characters
+							final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
 							map.put(OrganizationMapping.HOST_URL, organization.getHostUrl());
 							map.put(OrganizationMapping.NAME, organization.getName());
 							map.put(OrganizationMapping.DVCS_TYPE, organization.getDvcsType());
@@ -217,6 +224,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 							map.put(OrganizationMapping.AUTO_INVITE_NEW_USERS, organization.isAutoInviteNewUsers());
 
 							om = activeObjects.create(OrganizationMapping.class, map);
+                            om = activeObjects.find(OrganizationMapping.class, "ID = ?", om.getID())[0];
 						} else
 						{
 							om = activeObjects.get(OrganizationMapping.class, organization.getId());
@@ -236,8 +244,6 @@ public class OrganizationDaoImpl implements OrganizationDao
 						return om;
 					}
 				});
-
-		activeObjects.flush(organizationMapping);
 
 		return transform(organizationMapping);
 	}

@@ -5,8 +5,10 @@ import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
+import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
@@ -33,9 +35,15 @@ public class GithubClientProvider
     {
         GitHubClient client = GitHubClient.createClient(organization.getHostUrl());
 
-        OAuthAuthentication auth = (OAuthAuthentication) authenticationFactory.getAuthentication(organization);
-        client.setOAuth2Token(auth.getAccessToken());
-        
+        Authentication authentication = authenticationFactory.getAuthentication(organization);
+        if (authentication instanceof OAuthAuthentication)
+        {
+            OAuthAuthentication oAuth = (OAuthAuthentication) authentication;
+            client.setOAuth2Token(oAuth.getAccessToken());
+        } else
+        {
+            throw new SourceControlException("Failed to get proper OAuth instance for github client.");
+        }
         return client;
     }
 

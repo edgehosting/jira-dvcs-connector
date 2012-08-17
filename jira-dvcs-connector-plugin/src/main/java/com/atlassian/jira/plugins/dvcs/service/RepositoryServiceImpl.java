@@ -1,8 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +60,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	}
 
 	@Override
-	public void syncRepositoryList(Organization organization)
+	public synchronized void syncRepositoryList(Organization organization)
 	{
 		log.debug("Synchronising list of repositories");
 		// get repositories from the dvcs hosting server
@@ -67,6 +69,8 @@ public class RepositoryServiceImpl implements RepositoryService
 		// get local repositories
 		List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
 
+		// BBC-231 somehow we ended up with duplicated repositories on QA-EACJ
+		removeDuplicateRepositories(organization, storedRepositories);
 		// update names of existing repositories in case their names changed
 		updateExistingRepositories(storedRepositories, remoteRepositories);
 		// repositories that are no longer on hosting server will be marked as deleted
@@ -77,6 +81,29 @@ public class RepositoryServiceImpl implements RepositoryService
 		// start asynchronous changesets synchronization for all linked repositories in organization
 		syncAllInOrganization(organization.getId());
 	}
+
+    /**
+     * Removes duplicated repositories.
+     * 
+     * @param organization
+     * @param storedRepositories
+     */
+    private void removeDuplicateRepositories(Organization organization, List<Repository> storedRepositories)
+    {
+        Set<String> existingRepositories = new HashSet<String>();
+        for (Repository repository : storedRepositories)
+        {
+            String slug = repository.getSlug();
+            if (existingRepositories.contains(slug))
+            {
+                log.warn("Repository " + organization.getName() + "/" + slug + " is duplicated. Will be deleted.");
+                remove(repository);
+            } else
+            {
+                existingRepositories.add(slug);
+            }
+        }
+    }
 
 	/**
 	 * @param storedRepositories
@@ -166,6 +193,7 @@ public class RepositoryServiceImpl implements RepositoryService
 				localRepo.setName(remoteRepo.getName());
 				localRepo.setDeleted(false); // it could be deleted before and
 											 // now will be revived
+                log.debug("Undelete repository [{}]", localRepo);
 				repositoryDao.save(localRepo);
 			}
         }
@@ -249,6 +277,7 @@ public class RepositoryServiceImpl implements RepositoryService
 
 			addOrRemovePostcommitHook(repository);
 
+            log.debug("Enable repository [{}]", repository);
 			repositoryDao.save(repository);
 		}
 	}

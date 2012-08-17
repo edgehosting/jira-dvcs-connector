@@ -5,17 +5,17 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.User;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
-import com.atlassian.util.concurrent.Nullable;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 /**
  * Factory for {@link Changeset} implementations
@@ -43,11 +43,11 @@ public class GithubChangesetFactory
             date = repositoryCommit.getCommit().getAuthor().getDate();
         }
 
-        String login = "";
-        if (repositoryCommit.getAuthor() != null
-                && StringUtils.isNotBlank(repositoryCommit.getAuthor().getLogin()))
+        // try to get login from Author, if there is no Author try from Commiter
+        String login = getUserLogin(repositoryCommit.getAuthor());
+        if (StringUtils.isBlank(login))
         {
-            login = repositoryCommit.getAuthor().getLogin();
+            login = getUserLogin(repositoryCommit.getCommitter());
         }
 
         return new Changeset(
@@ -67,6 +67,16 @@ public class GithubChangesetFactory
         
     }
 
+    private static String getUserLogin(User user)
+    {
+        if (user!=null && user.getLogin()!=null)
+        {
+            return user.getLogin();
+        }
+        return "";
+    }
+
+    @SuppressWarnings("unchecked")
     private static List<ChangesetFile> transformFiles(List<CommitFile> files)
     {
         if (files == null)
@@ -74,11 +84,13 @@ public class GithubChangesetFactory
             return Collections.<ChangesetFile>emptyList();
         }
 
-        return Lists.transform(files, new Function<CommitFile, ChangesetFile>()
+        return (List<ChangesetFile>) CollectionUtils.collect(files, new Transformer()
         {
             @Override
-            public ChangesetFile apply(@Nullable CommitFile commitFile)
+            public Object transform(Object input)
             {
+                CommitFile commitFile = (CommitFile) input;
+
                 String filename = commitFile.getFilename();
                 String status = commitFile.getStatus();
                 int additions = commitFile.getAdditions();
@@ -90,6 +102,7 @@ public class GithubChangesetFactory
         });
     }
 
+    @SuppressWarnings("unchecked")
     private static List<String> transformParents(List<Commit> parents)
     {
         if (parents == null)
@@ -97,15 +110,15 @@ public class GithubChangesetFactory
             return Collections.<String>emptyList();
         }
 
-
-        return Lists.transform(parents, new Function<Commit, String>()
+        return (List<String>) CollectionUtils.collect(parents, new Transformer()
         {
             @Override
-            public String apply(@Nullable Commit commit)
+            public Object transform(Object input)
             {
+                Commit commit = (Commit) input;
+
                 return commit.getSha();
             }
         });
-    }
-    
+    }   
 }

@@ -103,17 +103,30 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public List<Repository> getRepositories(Organization organization)
     {
-        RepositoryService repositoryService = githubClientProvider
-                .getRepositoryService(organization);
+        RepositoryService repositoryService = githubClientProvider.getRepositoryService(organization);
         repositoryService.getClient().setOAuth2Token(organization.getCredential().getAccessToken());
+
+        // We don't know if this is team account or standard account. Let's first get repositories 
+        // by calling getOrgRepositories
+        List<org.eclipse.egit.github.core.Repository> repositoriesFromOrganization;
         try
         {
+            repositoriesFromOrganization = repositoryService.getOrgRepositories(organization.getName());
+        } catch (IOException e)
+        {
+            // looks like this is not a team account but standard account
+            repositoriesFromOrganization = Collections.emptyList();
+        }
+        try
+        {
+            // for normal account
             List<org.eclipse.egit.github.core.Repository> publicRepositoriesFromOrganization = repositoryService
                     .getRepositories(organization.getName());
             List<org.eclipse.egit.github.core.Repository> allRepositoriesFromAuthorizedUser = repositoryService
                     .getRepositories();
 
             Iterator<org.eclipse.egit.github.core.Repository> iterator = Iterators.concat(
+                    repositoriesFromOrganization.iterator(),
                     publicRepositoriesFromOrganization.iterator(),
                     allRepositoriesFromAuthorizedUser.iterator());
 

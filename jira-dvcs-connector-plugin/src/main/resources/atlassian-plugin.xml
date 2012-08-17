@@ -36,6 +36,16 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.CleanupPluginSettings</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
     </ao>
+    
+    <!--
+    	Upgrade Tasks 
+     -->
+
+	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task"
+		class="com.atlassian.jira.plugins.dvcs.upgrade.RepositoryLinksUpgradeTask"
+		public="true">
+		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
+	</component>
 
     <component key="bitbucketLinker" name="bitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinkerImpl">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
@@ -182,6 +192,7 @@
     </issue-tabpanel>
 
     <!-- The webwork1 plugin element is how you add new actions to JIRA -->
+    <!--  TODO move to RestResource? -->
     <webwork1 key="repositoryConfiguration" name="Repository Configuration" class="java.lang.Object">
         <!-- Note that HTML in the description element is ignored -->
         <description>
@@ -263,7 +274,7 @@
     
     <web-resource key="requiredResourceForAjaxCommitsTab" name="Resources That Needs To be Loaded On Issue View">
 		<context>jira.view.issue</context>
-		<dependency>jira.webresources:viewissue</dependency>
+		<dependency>jira.webresources:viewissue-components</dependency>
 		<resource type="download" name="css/issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
 	</web-resource>
 
