@@ -8,6 +8,7 @@ import java.util.Map;
 import net.java.ao.EntityStreamCallback;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,8 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.google.common.collect.Maps;
+
+import net.java.ao.Entity;
 
 /**
  *  Data migration from jira-github-connector plugin to jira-bitbucket-connector plugin
@@ -41,11 +44,21 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         
         activeObjects.migrate(ProjectMapping.class, IssueMapping.class, OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class);
         
+        deleteAllExistingTableContent(activeObjects, ChangesetMapping.class);
+        deleteAllExistingTableContent(activeObjects, OrganizationMapping.class);
+        deleteAllExistingTableContent(activeObjects, RepositoryMapping.class);
+        
         // old repositoryId to new repositoryId
         Map<Integer,Integer> old2New = Maps.newHashMap();
         
         migrateOrganisationsAndRepositories(activeObjects, old2New);
         migrateChangesets(activeObjects,old2New);
+    }
+    
+    private <T extends Entity> void deleteAllExistingTableContent(ActiveObjects activeObjects, Class<T> entityType)
+    {       
+        T[] foundEntities = activeObjects.find(entityType);
+        activeObjects.delete(foundEntities);
     }
 
     private void migrateOrganisationsAndRepositories(ActiveObjects activeObjects, Map<Integer, Integer> old2New)
@@ -165,9 +178,22 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
             @Override
             public void onRowRead(IssueMapping issueMapping)
             {
+                final String issueKey = issueMapping.getIssueId();
+                if (issueKey == null)
+                {
+                    log.error("Issue Mapping entity is ignored because of null issue key: " +
+                            ToStringBuilder.reflectionToString(issueMapping));
+                    return;
+                }
+                else if (!issueKey.contains("-"))
+                {
+                    log.error("Issue Mapping entity is ignored because it doesn't contain '-' character: " +
+                            ToStringBuilder.reflectionToString(issueMapping));
+                    return;
+                }
+
                 Map<String, Object> changesetMap = Maps.newHashMap();
                 changesetMap.put(ChangesetMapping.REPOSITORY_ID, old2New.get(issueMapping.getRepositoryId()));
-                final String issueKey = issueMapping.getIssueId();
                 changesetMap.put(ChangesetMapping.ISSUE_KEY, issueKey);
                 changesetMap.put(ChangesetMapping.PROJECT_KEY, issueKey.substring(0, issueKey.indexOf("-")));
                 changesetMap.put(ChangesetMapping.NODE, issueMapping.getNode());
