@@ -17,6 +17,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Map;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import net.java.ao.Entity;
 
 /**
@@ -182,7 +183,14 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
                 final String issueKey = issueMapping.getIssueId();
                 if (issueKey == null)
                 {
-                    log.error("The following issue Mapping entity is ignored because of null issue key: " + issueMapping);
+                    log.error("Issue Mapping entity is ignored because of null issue key: " +
+                            ToStringBuilder.reflectionToString(issueMapping));
+                    return;
+                }
+                else if (!issueKey.contains("-"))
+                {
+                    log.error("Issue Mapping entity is ignored because it doesn't contain '-' character: " +
+                            ToStringBuilder.reflectionToString(issueMapping));
                     return;
                 }
                 
