@@ -17,7 +17,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Map;
 
-import net.java.ao.RawEntity;
+import net.java.ao.Entity;
 
 /**
  *  Data migration from jira-github-connector plugin to jira-bitbucket-connector plugin
@@ -38,9 +38,10 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
         log.debug("upgrade [ " + getModelVersion() + " ]");
-        
-        deleteAllExistingTableContent(activeObjects, ChangesetMapping.class, OrganizationMapping.class,
-                RepositoryMapping.class);
+  
+        deleteAllExistingTableContent(activeObjects, ChangesetMapping.class);
+        deleteAllExistingTableContent(activeObjects, OrganizationMapping.class);
+        deleteAllExistingTableContent(activeObjects, RepositoryMapping.class);
         
         activeObjects.migrate(ProjectMapping.class, IssueMapping.class, OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class);
         
@@ -51,14 +52,16 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         migrateChangesets(activeObjects,old2New);
     }
     
-    private <K> void deleteAllExistingTableContent(ActiveObjects activeObjects, Class<? extends RawEntity<K>>... entityTypes)
-    {
-        for (Class<? extends RawEntity<K>> entityType : entityTypes)
-        {
-            RawEntity<K>[] entities = activeObjects.find(entityType);
-            
-            activeObjects.delete(entities);//TODO update to use stream
-        }
+    private <T extends Entity> void deleteAllExistingTableContent(final ActiveObjects activeObjects, Class<T> entityType)
+    {       
+        activeObjects.stream(entityType, new EntityStreamCallback<T, Integer>() {
+
+            @Override
+            public void onRowRead(T entity)
+            {
+                activeObjects.delete(entity);
+            }
+        });
     }
 
     private void migrateOrganisationsAndRepositories(ActiveObjects activeObjects, Map<Integer, Integer> old2New)
