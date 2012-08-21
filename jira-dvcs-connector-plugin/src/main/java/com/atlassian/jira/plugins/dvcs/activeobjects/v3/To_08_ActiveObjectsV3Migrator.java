@@ -39,12 +39,12 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
         log.debug("upgrade [ " + getModelVersion() + " ]");
-  
+        
+        activeObjects.migrate(ProjectMapping.class, IssueMapping.class, OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class);
+        
         deleteAllExistingTableContent(activeObjects, ChangesetMapping.class);
         deleteAllExistingTableContent(activeObjects, OrganizationMapping.class);
         deleteAllExistingTableContent(activeObjects, RepositoryMapping.class);
-        
-        activeObjects.migrate(ProjectMapping.class, IssueMapping.class, OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class);
         
         // old repositoryId to new repositoryId
         Map<Integer,Integer> old2New = Maps.newHashMap();
@@ -54,15 +54,9 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
     }
     
     private <T extends Entity> void deleteAllExistingTableContent(final ActiveObjects activeObjects, Class<T> entityType)
-    {       
-        activeObjects.stream(entityType, new EntityStreamCallback<T, Integer>() {
-
-            @Override
-            public void onRowRead(T entity)
-            {
-                activeObjects.delete(entity);
-            }
-        });
+    {
+        T[] foundEntities = activeObjects.find(entityType);
+        activeObjects.delete(foundEntities);
     }
 
     private void migrateOrganisationsAndRepositories(ActiveObjects activeObjects, Map<Integer, Integer> old2New)
