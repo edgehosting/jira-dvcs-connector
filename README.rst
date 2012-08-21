@@ -19,3 +19,4 @@ Features
 
 .. _`Install the JIRA DVCS Connector`: https://plugins.atlassian.com/plugin/details/311676
 .. _`30 second overview video`: http://www.youtube.com/watch?v=7Eeq_87y3NM
+
