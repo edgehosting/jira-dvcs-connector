@@ -1,5 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import net.java.ao.Entity;
+import net.java.ao.EntityStreamCallback;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
@@ -7,18 +21,6 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.google.common.collect.Maps;
-import net.java.ao.EntityStreamCallback;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.Map;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
-import net.java.ao.Entity;
 
 /**
  *  Data migration from jira-github-connector plugin to jira-bitbucket-connector plugin
@@ -28,6 +30,7 @@ import net.java.ao.Entity;
 public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
 {
     private static final Logger log = LoggerFactory.getLogger(To_08_ActiveObjectsV3Migrator.class);
+    private static final String ISSUE_KEY_REGEX = "([A-Z]{2,})-\\d+";
     private final PasswordReEncryptor passwordReEncryptor;
   
     public To_08_ActiveObjectsV3Migrator(PasswordReEncryptor passwordReEncryptor)
@@ -42,6 +45,8 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         
         activeObjects.migrate(ProjectMapping.class, IssueMapping.class, OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class);
         
+        // BBC-236 this upgrade used to fail midway leaving some inconsistent data in new tables. 
+        // We are starting migration again and need to delete those data.
         deleteAllExistingTableContent(activeObjects, ChangesetMapping.class);
         deleteAllExistingTableContent(activeObjects, OrganizationMapping.class);
         deleteAllExistingTableContent(activeObjects, RepositoryMapping.class);
@@ -53,10 +58,10 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         migrateChangesets(activeObjects,old2New);
     }
     
-    private <T extends Entity> void deleteAllExistingTableContent(final ActiveObjects activeObjects, Class<T> entityType)
+    private <T extends Entity> void deleteAllExistingTableContent(ActiveObjects activeObjects, Class<T> entityType)
     {
-        T[] foundEntities = activeObjects.find(entityType);
-        activeObjects.delete(foundEntities);
+        T[] allEntities = activeObjects.find(entityType);
+        activeObjects.delete(allEntities);
     }
 
     private void migrateOrganisationsAndRepositories(ActiveObjects activeObjects, Map<Integer, Integer> old2New)
@@ -174,24 +179,20 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
             @Override
             public void onRowRead(IssueMapping issueMapping)
             {
-                final String issueKey = issueMapping.getIssueId();
-                if (issueKey == null)
+                String projectKey = extractProjectKey(issueMapping.getIssueId());
+                if (StringUtils.isBlank(projectKey))
                 {
-                    log.error("Issue Mapping entity is ignored because of null issue key: " +
-                            ToStringBuilder.reflectionToString(issueMapping));
-                    return;
-                }
-                else if (!issueKey.contains("-"))
-                {
-                    log.error("Issue Mapping entity is ignored because it doesn't contain '-' character: " +
-                            ToStringBuilder.reflectionToString(issueMapping));
-                    return;
+                    log.warn("Unable to extract project key from issue key: "
+                            + issueMapping.getID() + ", " 
+                            + issueMapping.getNode() + ", "
+                            + issueMapping.getIssueId() + ", " 
+                            + issueMapping.getMessage());
                 }
                 
                 Map<String, Object> changesetMap = Maps.newHashMap();
                 changesetMap.put(ChangesetMapping.REPOSITORY_ID, old2New.get(issueMapping.getRepositoryId()));
-                changesetMap.put(ChangesetMapping.ISSUE_KEY, issueKey);
-                changesetMap.put(ChangesetMapping.PROJECT_KEY, issueKey.substring(0, issueKey.indexOf("-")));
+                changesetMap.put(ChangesetMapping.ISSUE_KEY, issueMapping.getIssueId());
+                changesetMap.put(ChangesetMapping.PROJECT_KEY, projectKey);
                 changesetMap.put(ChangesetMapping.NODE, issueMapping.getNode());
                 changesetMap.put(ChangesetMapping.RAW_AUTHOR, issueMapping.getRawAuthor());
                 changesetMap.put(ChangesetMapping.AUTHOR, issueMapping.getAuthor());
@@ -208,6 +209,21 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         });
     }
     
+    String extractProjectKey(String issueKey)
+    {
+        if (StringUtils.isBlank(issueKey))
+        {
+            return null;
+        }
+        Pattern projectKeyPattern = Pattern.compile(ISSUE_KEY_REGEX, Pattern.CASE_INSENSITIVE);
+        Matcher match = projectKeyPattern.matcher(issueKey);
+        if (match.find())
+        {
+            String projectKey = match.group(1);
+            return projectKey;
+        }
+        return null;
+    }
 
     /**
      * Repositories are no longer associated with the project, hence the encryption using
