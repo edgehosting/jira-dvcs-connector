@@ -158,7 +158,6 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         repositoryMap.put(RepositoryMapping.LAST_COMMIT_DATE, projectMapping.getLastCommitDate());
         repositoryMap.put(RepositoryMapping.LINKED, true);
         repositoryMap.put(RepositoryMapping.DELETED, false);
-        repositoryMap.put(RepositoryMapping.SMARTCOMMITS_ENABLED, false);
 
         log.debug("Migrating repository : " + repositoryMap);
         return repositoryMap;
