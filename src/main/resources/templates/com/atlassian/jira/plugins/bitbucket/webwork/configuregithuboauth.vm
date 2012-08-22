@@ -33,7 +33,7 @@
                    </li>
 
                    <li>
-                      Browse to <a href="https://github.com/account/applications" target="_blank">https://github.com/account/applications</a> to create a new GitHub OAuth Application.
+                      Browse to <a href="https://github.com/settings/applications" target="_blank">https://github.com/settings/applications</a> to create a new GitHub OAuth Application.
 
                        <div id="gh_oauth_app_screenshot">
                            <img alt='GitHub Configuration Screenshot' src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_oauth.jpg">
