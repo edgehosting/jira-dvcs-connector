@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.ondemand;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,28 +17,21 @@ import com.google.gson.JsonParseException;
 
 public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvider
 {
-
     private static Logger log = LoggerFactory.getLogger(JsonFileBasedAccountsConfigProvider.class);
-
-    private String absoluteConfigFilePath = "/data/jirastudio/home/ondemand.properties";
-    private URL configFileUrl = null;
-
+    private final String absoluteConfigFilePath = "/data/jirastudio/home/ondemand.properties";
     private final FeatureManager featureManager;
 
     public JsonFileBasedAccountsConfigProvider(FeatureManager featureManager)
     {
-        super();
         this.featureManager = featureManager;
     }
 
     @Override
     public AccountsConfig provideConfiguration()
     {
-
         try
         {
-            File configFile = configFileUrl != null ? new File(configFileUrl.toURI())
-                                                    : new File(absoluteConfigFilePath);
+            File configFile = getConfigFile();
             if (!configFile.exists() || !configFile.canRead())
             {
                 throw new IllegalStateException(absoluteConfigFilePath + " file can not be read.");
@@ -65,27 +57,17 @@ public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvid
         }
     }
 
+    File getConfigFile()
+    {
+        return new File(absoluteConfigFilePath);
+    }
+
     @Override
     public boolean supportsIntegratedAccounts()
     {
-        logFeaures();
-        return featureManager.isEnabled(CoreFeatures.ON_DEMAND) || JiraSystemProperties.isDevMode();
-    }
-
-    private void logFeaures()
-    {
         log.debug("ondemand = {} | devMode = {}", new Object[] { featureManager.isEnabled(CoreFeatures.ON_DEMAND),
                 JiraSystemProperties.isDevMode() });
-    }
-
-    public void setAbsoluteConfigFilePath(String absoluteConfigFilePath)
-    {
-        this.absoluteConfigFilePath = absoluteConfigFilePath;
+        return featureManager.isEnabled(CoreFeatures.ON_DEMAND) || JiraSystemProperties.isDevMode();
     }
     
-    public void setConfigFileUrl(URL configFileUrl)
-    {
-        this.configFileUrl = configFileUrl;
-    }
-
 }
