@@ -22,6 +22,7 @@ import org.openqa.selenium.By;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddUserPage;
@@ -64,8 +65,13 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
 
+        jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
+        BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
+                jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class).addConsumer();
+
+        
         BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
-        oauthConfigPage.setCredentials("4QRzjT6XHGKwL55Bfd", "LnpGqtuGXzRXdnVdxkgP5sttHSE5AXAV");
+        oauthConfigPage.setCredentials(oauthCredentials.oauthKey, oauthCredentials.oauthSecret);
 
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());        
     }

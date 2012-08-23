@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
+import javax.inject.Inject;
 import org.openqa.selenium.By;
 
+import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Conditions;
@@ -12,14 +14,19 @@ import com.atlassian.pageobjects.elements.query.Poller;
  */
 public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizationsPage
 {
+    @Inject
+    PageBinder pageBinder;
+
     @ElementBy(id = "oauthClientId")
     PageElement oauthKeyInput;
 
     @ElementBy(id = "oauthSecret")
     PageElement oauthSecretInput;
 
-    @ElementBy(id = "organization")
-    PageElement teamOrUserUserAccountInput;
+//    @ElementBy(id = "organization")
+//    PageElement teamOrUserUserAccountInput;
+    @ElementBy(tagName = "title")
+    PageElement htmlHeadTitle;
 
 
     @Override
@@ -38,6 +45,11 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         
         addOrgButton.click();
 
+        Poller.waitUntilTrue(htmlHeadTitle.timed().hasText("Bitbucket"));
+
+        pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grandAccess();
+
+        
         if (autoSync) {
         	checkSyncProcessSuccess();
         }
