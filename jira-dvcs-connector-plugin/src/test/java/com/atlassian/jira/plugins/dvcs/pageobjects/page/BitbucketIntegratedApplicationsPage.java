@@ -34,6 +34,8 @@ public class BitbucketIntegratedApplicationsPage implements Page
 
     @Inject
     PageElementFinder elementFinder;
+    
+    private String lastAddedConsumerName;
 
 
     @Override
@@ -50,16 +52,16 @@ public class BitbucketIntegratedApplicationsPage implements Page
         PageElement addOAuthConsumerDialogDiv = null;
         while (addOAuthConsumerDialogDiv == null)
         {
-            addOAuthConsumerDialogDiv = PageElementUtils.getVisibleElementByClassName(bodyElement, "ui-dialog");
+            addOAuthConsumerDialogDiv = PageElementUtils.findVisibleElementByClassName(bodyElement, "ui-dialog");
         }     
 
         BitbucketAddOAuthConsumerDialog addConsumerDialog =
                 pageBinder.bind(BitbucketAddOAuthConsumerDialog.class, addOAuthConsumerDialogDiv);
 
-        String consumerName = "Test OAuth";
+        lastAddedConsumerName = "Test OAuth [" + System.currentTimeMillis() + "]";
         String consumerDescription = "Test OAuth Description [" + System.currentTimeMillis() + "]";
 
-        addConsumerDialog.addConsumer(consumerName, consumerDescription);
+        addConsumerDialog.addConsumer(lastAddedConsumerName, consumerDescription);
 
         Poller.waitUntilFalse(addOAuthConsumerDialogDiv.timed().isVisible());
 
@@ -86,6 +88,21 @@ public class BitbucketIntegratedApplicationsPage implements Page
         return null;//TODO remove oauth consumers created because of tests
     }
 
+    public void removeLastAdddedConsumer()
+    {
+        PageElement oauthConsumerOrderedList = elementFinder.find(By.className("list-widget"));
+
+        for (PageElement oauthConsumerListItem : oauthConsumerOrderedList.findAll(By.tagName("li")))
+        {
+            PageElement expandConsumerLink = PageElementUtils.findTagWithAttribute(oauthConsumerListItem, "a", "class", "name");
+
+            if (lastAddedConsumerName.equals(expandConsumerLink.getText()))
+            {
+                PageElement deleteConsumerButton = PageElementUtils.findTagWithText(oauthConsumerListItem, "a", "Delete");
+                deleteConsumerButton.click();
+            }
+        }
+    }    
 
     public static final class OAuthCredentials
     {
