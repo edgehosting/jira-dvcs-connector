@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import static org.mockito.Matchers.*;
+import java.net.URL;
 import static org.mockito.Mockito.*;
 
 import org.junit.Assert;
@@ -77,7 +77,7 @@ public class JsonFileBasedAccountsConfigProviderTest
     public void testJsonReadFileNotFound() throws Throwable {
 
         
-        AccountsConfigProvider provider = getCustomProviderAbsolutePath("/ondemand/ondemand-NOTFOUND.properties");
+        AccountsConfigProvider provider = getCustomProvider("/ondemand/ondemand-NOTFOUND.properties");
 
         AccountsConfig configuration = provider.provideConfiguration();
         
@@ -88,21 +88,21 @@ public class JsonFileBasedAccountsConfigProviderTest
     
     private AccountsConfigProvider getCustomProvider(String pathWithinTestResources) {
 
-        return getCustomProviderAbsolutePath(getFilePath(pathWithinTestResources));
+        return getCustomProviderAbsolutePath(getFileURL(pathWithinTestResources));
 
     }
     
-    private AccountsConfigProvider getCustomProviderAbsolutePath(String absolutePath) {
+    private AccountsConfigProvider getCustomProviderAbsolutePath(URL configFileUrl) {
 
         JsonFileBasedAccountsConfigProvider provider = new JsonFileBasedAccountsConfigProvider(featureManager);
-        provider.setAbsoluteConfigFilePath(absolutePath);
+        provider.setConfigFileUrl(configFileUrl);
         return provider;
 
     }
     
-    private String getFilePath(String pathWithinTestResources) {
+    private URL getFileURL(String pathWithinTestResources) {
 
-        return getClass().getClassLoader().getResource(pathWithinTestResources).getPath();
+        return getClass().getClassLoader().getResource(pathWithinTestResources);
 
     }
     

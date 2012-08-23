@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.ondemand;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvid
     private static Logger log = LoggerFactory.getLogger(JsonFileBasedAccountsConfigProvider.class);
 
     private String absoluteConfigFilePath = "/data/jirastudio/home/ondemand.properties";
+    private URL configFileUrl = null;
 
     private final FeatureManager featureManager;
 
@@ -36,7 +38,8 @@ public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvid
 
         try
         {
-            File configFile = new File(absoluteConfigFilePath);
+            File configFile = configFileUrl != null ? new File(configFileUrl.toURI())
+                                                    : new File(absoluteConfigFilePath);
             if (!configFile.exists() || !configFile.canRead())
             {
                 throw new IllegalStateException(absoluteConfigFilePath + " file can not be read.");
@@ -78,6 +81,11 @@ public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvid
     public void setAbsoluteConfigFilePath(String absoluteConfigFilePath)
     {
         this.absoluteConfigFilePath = absoluteConfigFilePath;
+    }
+    
+    public void setConfigFileUrl(URL configFileUrl)
+    {
+        this.configFileUrl = configFileUrl;
     }
 
 }
