@@ -8,16 +8,13 @@ public class AccountsConfigLifecycler implements LifecycleAware
 
     public AccountsConfigLifecycler(AccountsConfigService configService)
     {
-        super();
         this.configService = configService;
     }
 
     @Override
     public void onStart()
     {
-
         configService.reload(true);
-
     }
 
 }
