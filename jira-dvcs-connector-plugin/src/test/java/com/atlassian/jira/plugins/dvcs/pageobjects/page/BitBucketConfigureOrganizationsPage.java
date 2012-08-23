@@ -12,14 +12,14 @@ import com.atlassian.pageobjects.elements.query.Poller;
  */
 public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizationsPage
 {
+    @ElementBy(id = "oauthClientId")
+    PageElement oauthKeyInput;
 
-    /** The admin username input. */
-    @ElementBy(id = "adminUsername")
-    PageElement adminUsernameInput;
+    @ElementBy(id = "oauthSecret")
+    PageElement oauthSecretInput;
 
-    /** The admin password input. */
-    @ElementBy(id = "adminPassword")
-    PageElement adminPasswordInput;
+    @ElementBy(id = "organization")
+    PageElement teamOrUserUserAccountInput;
 
 
     @Override
@@ -36,10 +36,6 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         	autoLinkNewRepos.click();
         }
         
-        Poller.waitUntilTrue(adminUsernameInput.timed().isVisible());
-        
-        adminUsernameInput.type("jirabitbucketconnector");
-        adminPasswordInput.type("jirabitbucketconnector1");
         addOrgButton.click();
 
         if (autoSync) {
@@ -82,7 +78,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
        
         organization.clear().type("https://bitbucket.org/someaccount");
         addOrgButton.click();
-        Poller.waitUntilTrue("Expected form for bitbucket repository admin login/password!", Conditions.and(adminUsernameInput.timed().isVisible(), adminPasswordInput.timed().isVisible()));
+        Poller.waitUntilTrue("Expected form for bitbucket repository admin login/password!", Conditions.and(oauthKeyInput.timed().isVisible(), oauthSecretInput.timed().isVisible()));
         
         return this;
     }
@@ -95,14 +91,4 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
     {
         return this;
     }
-
-    /**
-     * Links a public repository to the given JIRA project.
-     *
-     * @param projectKey The JIRA project key
-     * @param url        The url to the bitucket public repo
-     * @return BitBucketConfigureOrganizationsPage
-     */
-
-
 }
