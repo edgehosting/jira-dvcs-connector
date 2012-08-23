@@ -331,21 +331,16 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
             for (BitbucketServiceEnvelope bitbucketServiceEnvelope : services)
             {
-                boolean fieldNameIsUrl = false;
-                boolean fieldValueIsRequiredPostCommitUrl = false;
-
                 for (BitbucketServiceField serviceField : bitbucketServiceEnvelope.getService().getFields())
                 {
-                    fieldNameIsUrl = serviceField.getName().equals("name") && serviceField.getValue().equals("URL");
+                    boolean fieldNameIsUrl = serviceField.getName().equals("URL");
+                    boolean fieldValueIsRequiredPostCommitUrl = serviceField.getValue().equals(postCommitUrl);
 
-                    fieldValueIsRequiredPostCommitUrl = serviceField.getName().equals("value")
-                            && serviceField.getValue().equals(postCommitUrl);
-                }
-
-                if (fieldNameIsUrl && fieldValueIsRequiredPostCommitUrl)
-                {
-                    remoteClient.getServicesRest().deleteService(repository.getOrgName(), // owner
-                            repository.getSlug(), bitbucketServiceEnvelope.getId());
+                    if (fieldNameIsUrl && fieldValueIsRequiredPostCommitUrl)
+                    {
+                        remoteClient.getServicesRest().deleteService(repository.getOrgName(), // owner
+                                repository.getSlug(), bitbucketServiceEnvelope.getId());
+                    }
                 }
             }
         } catch (BitbucketRequestException e)
