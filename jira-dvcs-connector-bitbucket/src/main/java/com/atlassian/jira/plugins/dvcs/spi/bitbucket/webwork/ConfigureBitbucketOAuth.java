@@ -17,6 +17,8 @@ public class ConfigureBitbucketOAuth extends JiraWebActionSupport
 	final Logger logger = LoggerFactory.getLogger(ConfigureBitbucketOAuth.class);
     private final BitbucketOAuth bitbucketOAuth;
     private final ApplicationProperties applicationProperties;
+    
+    private String forceClear;
 
     public ConfigureBitbucketOAuth(@Qualifier("bitbucketOAuth") BitbucketOAuth bitbucketOAuth, ApplicationProperties applicationProperties)
     {
@@ -27,6 +29,13 @@ public class ConfigureBitbucketOAuth extends JiraWebActionSupport
     @Override
     protected void doValidation()
     {
+        if (StringUtils.isNotBlank(forceClear))
+        {
+            clientSecret = "";
+            clientID = "";
+            return;
+        }
+
         if (StringUtils.isBlank(clientSecret) || StringUtils.isBlank(clientID))
         {
             addErrorMessage("Please enter both the Bitbucket OAuth Key and Secret.");
@@ -90,6 +99,7 @@ public class ConfigureBitbucketOAuth extends JiraWebActionSupport
     // Confirmation Messages
     private String messages = "";
 
+
     public String getMessages()
     {
         return messages;
@@ -98,6 +108,16 @@ public class ConfigureBitbucketOAuth extends JiraWebActionSupport
     public String getBaseUrl()
     {
         return applicationProperties.getBaseUrl();
+    }
+
+    public String getForceClear()
+    {
+        return forceClear;
+    }
+
+    public void setForceClear(String forceClear)
+    {
+        this.forceClear = forceClear;
     }
 
 }
