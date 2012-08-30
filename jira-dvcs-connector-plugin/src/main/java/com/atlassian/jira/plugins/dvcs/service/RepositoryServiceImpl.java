@@ -262,7 +262,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	@Override
 	public void sync(int repositoryId, boolean softSync)
 	{
-		final Repository repository = get(repositoryId);
+		Repository repository = get(repositoryId);
 		doSync(repository, softSync);
 	}
 

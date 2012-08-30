@@ -37,7 +37,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     private final AccountsConfigProvider configProvider;
     private final OrganizationService organizationService;
 
-    private ExecutorService executorService;
+    private final ExecutorService executorService;
     
     public BitbucketAccountsConfigService(AccountsConfigProvider configProvider,
                                         OrganizationService organizationService)
@@ -50,7 +50,6 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     @Override
     public void reload(boolean runAsync)
     {
-        
         //
         // supported only at ondemand instances
         //
@@ -74,9 +73,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         {
             reloadInternal();
         }
-
     }
-    
 
     private void reloadInternal()
     {
@@ -89,7 +86,6 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
 
         if (existingAccount == null)
         {
-
             if (configuration != null)
             {
                 doNewAccount(configuration);
@@ -126,6 +122,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         } else
         {
             log.info("Found the same user-added account.");
+            // TODO - do we have remove it? Can we just mark it as integration?
             removeAccount(userAddedAccount);
             // make integrated account from user-added account
             newOrganization = copyValues(info, userAddedAccount);

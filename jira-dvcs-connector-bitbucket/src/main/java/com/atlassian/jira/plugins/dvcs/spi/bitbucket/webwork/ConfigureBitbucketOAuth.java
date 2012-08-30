@@ -14,7 +14,7 @@ public class ConfigureBitbucketOAuth extends JiraWebActionSupport
 {
 	private static final long serialVersionUID = 4351302596219869689L;
 
-	final Logger logger = LoggerFactory.getLogger(ConfigureBitbucketOAuth.class);
+	private final Logger logger = LoggerFactory.getLogger(ConfigureBitbucketOAuth.class);
     private final BitbucketOAuth bitbucketOAuth;
     private final ApplicationProperties applicationProperties;
     
