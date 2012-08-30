@@ -4,21 +4,19 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Map;
 
-import org.apache.commons.codec.binary.Base64;
-
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
 
 /**
  * BasicAuthRemoteRequestor
- * 
- * 
+ *
+ *
  * <br />
  * <br />
  * Created on 13.7.2012, 10:26:31 <br />
  * <br />
- * 
+ *
  * @author jhocman@atlassian.com
- * 
+ *
  */
 public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 {
@@ -39,7 +37,7 @@ public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 	{
 		connection.setRequestProperty(
 				"Authorization",
-				"Basic " + Base64.encodeBase64String((username + ":" + password).getBytes(ClientUtils.UTF8))
+				"Basic " + SystemUtils.encodeUsingBase64(username + ":" + password)
 								.replaceAll("\n", "").replaceAll("\r", ""));
 	}
 }
