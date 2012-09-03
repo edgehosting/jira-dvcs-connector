@@ -68,7 +68,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	}
 
     private void sort(List<Organization> allOrganizations)
-    {`
+    {
         // TODO add javadoc, this is to keep integrated account on the top of the list
         Collections.sort(allOrganizations, new Comparator<Organization>()
         {
