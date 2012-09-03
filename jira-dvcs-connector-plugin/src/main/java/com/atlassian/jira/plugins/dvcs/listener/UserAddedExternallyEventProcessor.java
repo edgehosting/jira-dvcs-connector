@@ -5,14 +5,15 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.LoggerFactory;
 
-import com.atlassian.crowd.model.event.Operation;
-import com.atlassian.crowd.model.event.UserEvent;
+import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.user.util.UserManager;
 
 /**
  * The Class UserAddedExternallyEventProcessor.
@@ -29,14 +30,17 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 class UserAddedExternallyEventProcessor implements Runnable
 {
 
-	/** The event. */
-	private final UserEvent event;
-
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(UserAddedExternallyEventProcessor.class);
+    
 	/** The organization service. */
 	private final OrganizationService organizationService;
-
+	
 	/** The communicator provider. */
 	private final DvcsCommunicatorProvider communicatorProvider;
+
+    private final UserManager userManager;
+
+    private final String username;
 
 	/**
 	 * The Constructor.
@@ -48,10 +52,11 @@ class UserAddedExternallyEventProcessor implements Runnable
 	 * @param communicatorProvider
 	 *            the communicator provider
 	 */
-	public UserAddedExternallyEventProcessor(UserEvent event, OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider)
+	public UserAddedExternallyEventProcessor(String username, OrganizationService organizationService,
+			DvcsCommunicatorProvider communicatorProvider, UserManager userManager)
 	{
-		this.event = event;
+		this.username = username;
+        this.userManager = userManager;
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
 	}
@@ -63,12 +68,12 @@ class UserAddedExternallyEventProcessor implements Runnable
 	public void run()
 	{
 
-		if (Operation.CREATED != event.getOperation())
-		{
-			return;
-		}
-
-		String email = event.getUser().getEmailAddress();
+	    User user = userManager.getUser(username);
+	    
+	    if (!user.isActive()) {
+	        log.debug("Skipping invitation of an iactive user " + username);
+	        return;
+	    }
 
 		List<Organization> defaultOrganizations = organizationService.getAutoInvitionOrganizations();
 
@@ -87,7 +92,7 @@ class UserAddedExternallyEventProcessor implements Runnable
 			if (CollectionUtils.isNotEmpty(slugsStrings))
 			{
 				DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-				communicator.inviteUser(organization, slugsStrings, email);
+				communicator.inviteUser(organization, slugsStrings, user.getEmailAddress());
 			}
 		}
 

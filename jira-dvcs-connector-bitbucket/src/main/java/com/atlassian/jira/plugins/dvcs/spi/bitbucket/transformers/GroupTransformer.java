@@ -29,7 +29,7 @@ public class GroupTransformer
             {
                 BitbucketGroup bitbucketGroup = (BitbucketGroup) input;
                 
-                return new Group(StringUtils.trim(bitbucketGroup.getSlug()));
+                return new Group(StringUtils.trim(bitbucketGroup.getSlug()), bitbucketGroup.getName());
             }
         });
 

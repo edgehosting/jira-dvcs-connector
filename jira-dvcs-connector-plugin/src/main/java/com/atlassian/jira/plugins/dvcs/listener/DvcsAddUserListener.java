@@ -1,116 +1,161 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.crowd.model.event.Operation;
+import com.atlassian.crowd.event.user.UserCreatedEvent;
 import com.atlassian.crowd.model.event.UserEvent;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.user.util.UserManager;
 import com.atlassian.plugin.event.PluginEventListener;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginUninstalledEvent;
 import com.atlassian.util.concurrent.ThreadFactories;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.RemovalCause;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 
 /**
  * 
  * Listens to user events (just for <code>CREATED</code> type).
- *
- * Handler methods run asynchronously and are safe to fail.
- * That means that it does not corrupt process of adding the user
- * because of some unexpected error at this place. 
+ * 
+ * Handler methods run asynchronously and are safe to fail. That means that it
+ * does not corrupt process of adding the user because of some unexpected error
+ * at this place.
  * 
  * @see #onUserAddViaInterface(UserAddedEvent)
  * @see #onUserAddViaCrowd(UserEvent)
- *
- * <br /><br />
- * Created on 21.6.2012, 14:07:34
- * <br /><br />
+ * 
+ * <br />
+ * <br />
+ *      Created on 21.6.2012, 14:07:34 <br />
+ * <br />
  * @author jhocman@atlassian.com
- *
+ * 
  */
 public class DvcsAddUserListener
 {
-	
-	/** The Constant log. */
-	private static final Logger log = LoggerFactory.getLogger(DvcsAddUserListener.class);
 
-	/** The event publisher. */
-	private final EventPublisher eventPublisher;
+    /** The Constant log. */
+    private static final Logger log = LoggerFactory.getLogger(DvcsAddUserListener.class);
 
-	/** The organization service. */
-	private final OrganizationService organizationService;
+    /** The event publisher. */
+    private final EventPublisher eventPublisher;
 
-	/** The communicator provider. */
-	private final DvcsCommunicatorProvider communicatorProvider;
+    /** The organization service. */
+    private final OrganizationService organizationService;
+
+    /** The communicator provider. */
+    private final DvcsCommunicatorProvider communicatorProvider;
 
     private final ExecutorService executorService;
 
-	/**
-	 * The Constructor.
-	 *
-	 * @param eventPublisher the event publisher
-	 * @param organizationService the organization service
-	 * @param communicatorProvider the communicator provider
-	 */
-	public DvcsAddUserListener(EventPublisher eventPublisher, OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider)
-	{
-		this.eventPublisher = eventPublisher;
-		this.organizationService = organizationService;
-		this.communicatorProvider = communicatorProvider;
-        this.executorService = Executors.newFixedThreadPool(2, ThreadFactories.namedThreadFactory("DvcsAddUserListenerExecutorService"));
-	}
+    private CacheTimer cacheTimer;
 
-	/**
-	 * Handler method for add user via interface.
-	 *
-	 * @param event the event object
-	 */
-	@EventListener
-	public void onUserAddViaInterface(final UserAddedEvent event)
-	{
+    private final UserManager userManager;
+
+    /**
+     * The Constructor.
+     * 
+     * @param eventPublisher
+     *            the event publisher
+     * @param organizationService
+     *            the organization service
+     * @param communicatorProvider
+     *            the communicator provider
+     */
+    public DvcsAddUserListener(EventPublisher eventPublisher, OrganizationService organizationService,
+            DvcsCommunicatorProvider communicatorProvider, UserManager userManager)
+    {
+        this.eventPublisher = eventPublisher;
+        this.organizationService = organizationService;
+        this.communicatorProvider = communicatorProvider;
+        this.userManager = userManager;
+        this.executorService = Executors.newFixedThreadPool(2,
+                ThreadFactories.namedThreadFactory("DvcsAddUserListenerExecutorService"));
+
+        cacheTimer = new CacheTimer(2);
+        initCacheTimer();
+
+    }
+
+    private void initCacheTimer()
+    {
+        cacheTimer.scheduleOnExpiration(new OnExpiredCallback()
+        {
+            @Override
+            public void execute(String key)
+            {
+                // user has been added externally
+                Runnable task = new UserAddedExternallyEventProcessor(key, organizationService, communicatorProvider, userManager);
+                safeExecute(task, "Failed to handle add user externally user =  " + key+ "]");
+            }
+        });
+    }
+
+    /**
+     * Handler method for add user via interface.
+     * 
+     * @param event
+     *            the event object
+     */
+    @EventListener
+    public void onUserAddViaInterface(final UserAddedEvent event)
+    {
         if (event == null)
         {
             return;
         }
-		String onFailMessage = "Failed to handle add user via interface event [ " + event + ", params =  " + event.getRequestParameters() + "] ";
-		Runnable task = new UserAddedViaInterfaceEventProcessor(event, organizationService, communicatorProvider);
-        safeExecute(task, onFailMessage);
-	}
 
-	/**
-	 * Handler method for add user externally; i.e
-	 *
-	 * @param event the event object
-	 */
-	@EventListener
-	public void onUserAddViaCrowd(UserEvent event)
-	{
-	    if ((event==null) || Operation.CREATED != event.getOperation())
-	    {
-	        return;
-	    }
-        Runnable task = new UserAddedExternallyEventProcessor(event, organizationService, communicatorProvider);
-        String onFailMessage = "Failed to handle add user externally event [ " + event + ", user =  " + event.getUser() + "] ";
-        
-        safeExecute(task, onFailMessage);
-	}
+        // invalidate user-added-externally event record from cache
+        cacheTimer.cancelSchedulerFor(event.getRequestParameters().get("username")[0]);
 
-	/**
-	 * Wraps executorService.submit(task) method
-	 * invocation with <code>try-catch</code> block
-	 * to ensure that no exception is propagated up.
-	 *
-	 * @param task the task
-	 * @param onFailMessage the on fail message
-	 */
+        String onFailMessage = "Failed to handle add user via interface event [ " + event + ", params =  "
+                + event.getRequestParameters() + "] ";
+        Runnable task = new UserAddedViaInterfaceEventProcessor(event, organizationService, communicatorProvider);
+        safeExecute(task, onFailMessage);
+    }
+
+    /**
+     * Handler method for add user externally;
+     * 
+     * This event is also fired when user is added via UI
+     * 
+     * @param event
+     *            the event object
+     */
+    @EventListener
+    public void onUserAddViaCrowdOrInterface(/* triggered before UserAddedEvent */ UserCreatedEvent event)
+    {
+
+        // schedule invitation, only UserAddedEvent (UI event) can discard scheduler
+        cacheTimer.add(event.getUser().getName());
+
+    }
+
+    /**
+     * Wraps executorService.submit(task) method invocation with
+     * <code>try-catch</code> block to ensure that no exception is propagated
+     * up.
+     * 
+     * @param task
+     *            the task
+     * @param onFailMessage
+     *            the on fail message
+     */
     private void safeExecute(Runnable task, String onFailMessage)
     {
         try
@@ -125,28 +170,122 @@ public class DvcsAddUserListener
         }
     }
 
-	@SuppressWarnings("unused")
     @PluginEventListener
     public void onPluginDisabled(PluginDisabledEvent event)
     {
-       unregisterSelf();
+        unregisterSelf();
     }
 
-	@SuppressWarnings("unused")
-	@PluginEventListener
-	public void onPluginUninstalled(PluginUninstalledEvent event)
-	{
-		unregisterSelf();
-	}
+    @PluginEventListener
+    public void onPluginUninstalled(PluginUninstalledEvent event)
+    {
+        unregisterSelf();
+    }
 
-	private void unregisterSelf()
-	{
-		try
-		{
-			eventPublisher.unregister(this);
-		} catch (Exception e)
-		{
-			log.warn("Failed to unregister " + this + ", cause message is " + e.getMessage());
-		}
-	}
+    private void unregisterSelf()
+    {
+        try
+        {
+            eventPublisher.unregister(this);
+        } catch (Exception e)
+        {
+            log.warn("Failed to unregister " + this + ", cause message is " + e.getMessage());
+        }
+    }
+
+    static class CacheTimer
+    {
+
+        private CacheBuilder<Object, Object> builder;
+        private OnExpiredCallback onExpired;
+        private Cache<String, Object> cache;
+
+        public CacheTimer(int seconds)
+        {
+            super();
+            this.builder = CacheBuilder.newBuilder().expireAfterWrite(seconds, TimeUnit.SECONDS);
+            init(seconds);
+        }
+
+        private void init(int seconds)
+        {
+
+            RemovalListener<String, Object> listener = new RemovalListener<String, Object>()
+            {
+                /**
+                 * i.e. invite users with default groups
+                 */
+                @Override
+                public void onRemoval(RemovalNotification<String, Object> notification)
+                {
+                    if (notification.getCause() == RemovalCause.EXPIRED && onExpired != null)
+                    {
+                        onExpired.execute(notification.getKey());
+                    }
+                }
+            };
+
+            this.cache = builder.removalListener(listener).build(new CacheLoader<String, Object>()
+            {
+                @Override
+                public String load(String key) throws Exception
+                {
+                    return key;
+                }
+            });
+
+            // schedule cache cleanup
+            int scheduleRate = seconds * 1000;
+
+            new Timer(CacheTimer.class.getName()).scheduleAtFixedRate(new TimerTask()
+            {
+                @Override
+                public void run()
+                {
+                    cache.cleanUp();
+                }
+            }, scheduleRate, scheduleRate);
+
+        }
+
+        void scheduleOnExpiration(OnExpiredCallback callback)
+        {
+            this.onExpired = callback;
+        }
+
+        void add(String key)
+        {
+
+            cache.getUnchecked(key);
+
+        }
+
+        void cancelSchedulerFor(String key)
+        {
+            cache.invalidate(key);
+        }
+
+    }
+
+    static interface OnExpiredCallback
+    {
+        void execute(String key);
+    }
+    
+    public static void main(String[] args) throws InterruptedException
+    {
+        CacheTimer timer = new CacheTimer(2);
+        
+        timer.scheduleOnExpiration(new OnExpiredCallback()
+        {
+            @Override
+            public void execute(String key)
+            {
+                System.out.println(key);
+            }
+        });
+        
+        timer.add("145");
+        
+    }
 }

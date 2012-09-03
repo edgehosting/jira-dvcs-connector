@@ -7,6 +7,7 @@ import org.springframework.beans.factory.FactoryBean;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.user.util.UserManager;
 
 /**
  */
@@ -17,6 +18,7 @@ public class UserAddListenerFactoryBean implements FactoryBean
     private EventPublisher eventPublisher;
     private OrganizationService organizationService;
     private DvcsCommunicatorProvider communicatorProvider;
+    private UserManager userManager;
     
     public Object getObject() throws Exception
     {        
@@ -24,7 +26,7 @@ public class UserAddListenerFactoryBean implements FactoryBean
         {
             Class.forName("com.atlassian.jira.event.web.action.admin.UserAddedEvent");
             DvcsAddUserListener dvcsAddUserListener = new DvcsAddUserListener(eventPublisher,
-                    organizationService, communicatorProvider);
+                    organizationService, communicatorProvider, userManager);
             eventPublisher.register(dvcsAddUserListener);
             return dvcsAddUserListener;
         } catch (ClassNotFoundException e)
@@ -69,6 +71,11 @@ public class UserAddListenerFactoryBean implements FactoryBean
     public void setCommunicatorProvider(DvcsCommunicatorProvider communicatorProvider)
     {
         this.communicatorProvider = communicatorProvider;
+    }
+
+    public void setUserManager(UserManager userManager)
+    {
+        this.userManager = userManager;
     }
 
 }
