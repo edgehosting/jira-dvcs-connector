@@ -14,29 +14,28 @@ public class BitbucketGrandOAuthAccessPage implements Page
 {    
     @ElementBy(tagName= "body")
     private PageElement bodyElement;
-  
-
+ 
+    
     @Override
     public String getUrl()
     {
         return "not really needed";
     }
-   
-
+    
+    
     public void grandAccess()
     {
         // <div class="submit">
         //     <input type="submit" value="Grant access">
         // </div>
-
+        
         PageElement grandAccessDiv = bodyElement.find(By.className("submit"));
-     
-
+        
         PageElement grandAccessButton = PageElementUtils.findTagWithAttribute(grandAccessDiv,
                                                                               "input",
                                                                               "value",
                                                                               "Grant access");
-
+        
         grandAccessButton.click();
     }
 }

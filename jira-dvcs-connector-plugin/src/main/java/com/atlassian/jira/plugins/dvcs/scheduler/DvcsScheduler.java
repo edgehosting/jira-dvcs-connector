@@ -38,7 +38,6 @@ public class DvcsScheduler implements LifecycleAware
     public void onStart()
     {
         log.debug("onStart");
-
         this.interval = SystemUtils.getSystemPropertyLong(PROPERTY_KEY, DEFAULT_INTERVAL);
         log.debug("Starting DVCSConnector Scheduler Job. interval=" + interval);
         reschedule();

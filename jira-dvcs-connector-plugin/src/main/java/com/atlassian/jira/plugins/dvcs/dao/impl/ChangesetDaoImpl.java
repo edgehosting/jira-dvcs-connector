@@ -1,5 +1,21 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
@@ -13,19 +29,6 @@ import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import net.java.ao.EntityStreamCallback;
-import net.java.ao.Query;
-import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ChangesetDaoImpl implements ChangesetDao
 {
@@ -44,19 +47,19 @@ public class ChangesetDaoImpl implements ChangesetDao
         return transformer.transform(changesetMapping);
     }
 
+    @SuppressWarnings("unchecked")
     protected List<Changeset> transform(List<ChangesetMapping> changesetMappings)
     {
-        final Collection<Changeset> changesets = Collections2.transform(changesetMappings,
-                new Function<ChangesetMapping, Changeset>()
-                {
-                    @Override
-                    public Changeset apply(ChangesetMapping changesetMapping)
-                    {
-                        return transform(changesetMapping);
-                    }
-                });
+        return (List<Changeset>) CollectionUtils.collect(changesetMappings, new Transformer() {
 
-        return new ArrayList<Changeset>(changesets);
+            @Override
+            public Object transform(Object input)
+            {
+                ChangesetMapping changesetMapping = (ChangesetMapping) input;
+                
+                return ChangesetDaoImpl.this.transform(changesetMapping);
+            }
+        });
     }
 
 
@@ -103,6 +106,8 @@ public class ChangesetDaoImpl implements ChangesetDao
                 // add new
                 ChangesetMapping chm;
 
+                // we need to remove null characters '\u0000' because PostgreSQL cannot store String values with such
+                // characters
                 final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
                 map.put(ChangesetMapping.REPOSITORY_ID, changeset.getRepositoryId());
                 map.put(ChangesetMapping.ISSUE_KEY, changeset.getIssueKey());
@@ -225,15 +230,6 @@ public class ChangesetDaoImpl implements ChangesetDao
 
         return transform(changesetMappings);
     }
-
-	@Override
-	public List<Changeset> getLatestChangesetsAvailableForSmartcommits()
-	{
-		Query query = createLatestChangesetsAvailableForSmartcommitQuery();
-		
-		ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
-		return transform( Arrays.asList(mappings) );
-	}
 
 	@Override
 	public void forEachLatestChangesetsAvailableForSmartcommitDo(final ForEachChangesetClosure closure)

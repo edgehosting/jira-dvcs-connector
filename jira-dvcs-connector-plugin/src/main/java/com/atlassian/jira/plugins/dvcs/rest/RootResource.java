@@ -189,7 +189,6 @@ public class RootResource
 	@Consumes({MediaType.APPLICATION_JSON})
 	public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, SentData autolink)
 	{
-
 		organizationService.enableAutolinkNewRepos(id, Boolean.parseBoolean(autolink.getPayload()));
 		return Response.noContent().build();
 	}
@@ -233,7 +232,6 @@ public class RootResource
 	{
 		try
 		{
-
 			String html = webfragmentRenderer.renderDefaultGroupsFragment(orgId);
 			return Response.ok(html).build();
 			

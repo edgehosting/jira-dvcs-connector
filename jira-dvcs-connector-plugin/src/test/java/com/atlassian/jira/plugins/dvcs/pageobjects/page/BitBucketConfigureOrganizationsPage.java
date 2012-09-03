@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import javax.inject.Inject;
+
 import org.openqa.selenium.By;
 
 import com.atlassian.pageobjects.PageBinder;
@@ -25,33 +26,34 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
 //    @ElementBy(id = "organization")
 //    PageElement teamOrUserUserAccountInput;
+
     @ElementBy(tagName = "title")
     PageElement htmlHeadTitle;
 
 
     @Override
-    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String url, boolean autoSync)
+    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String url, String organizationAccount,
+            boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
-        
+
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(0));
-        
-        organization.clear().type("jirabitbucketconnector");
-        
+
+        organization.clear().type(organizationAccount);
+
         if (!autoSync) {
-        	autoLinkNewRepos.click();
+            autoLinkNewRepos.click();
         }
-        
+
         addOrgButton.click();
 
         Poller.waitUntilTrue(htmlHeadTitle.timed().hasText("Bitbucket"));
 
         pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grandAccess();
 
-        
         if (autoSync) {
-        	checkSyncProcessSuccess();
+            checkSyncProcessSuccess();
         }
 
         return this;
@@ -69,13 +71,13 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
-        
+
         organization.clear().type(url);
 
         addOrgButton.click();
 
         Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed().hasText("Error!"));
-        
+
         return this;
     }
 
@@ -87,11 +89,11 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
-       
+
         organization.clear().type("https://bitbucket.org/someaccount");
         addOrgButton.click();
         Poller.waitUntilTrue("Expected form for bitbucket repository admin login/password!", Conditions.and(oauthKeyInput.timed().isVisible(), oauthSecretInput.timed().isVisible()));
-        
+
         return this;
     }
 

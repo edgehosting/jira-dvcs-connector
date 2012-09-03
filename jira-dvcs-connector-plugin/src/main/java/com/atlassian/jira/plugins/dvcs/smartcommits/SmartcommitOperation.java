@@ -27,7 +27,6 @@ public class SmartcommitOperation implements Runnable
 	 */
 	public SmartcommitOperation(ChangesetDao changesetDao, CommitMessageParser commitMessageParser, SmartcommitsService smartcommitsService)
 	{
-		super();
 		this.changesetDao = changesetDao;
 		this.commitMessageParser = commitMessageParser;
 		this.smartcommitsService = smartcommitsService;

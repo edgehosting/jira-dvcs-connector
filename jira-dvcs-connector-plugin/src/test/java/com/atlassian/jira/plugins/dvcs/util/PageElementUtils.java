@@ -13,7 +13,7 @@ public final class PageElementUtils
 
 
     public static PageElement findVisibleElementByClassName(PageElement sourceElement, String className)
-    {       
+    {
         for (PageElement pageElement : sourceElement.findAll(By.className(className)))
         {
             String styleAttributeValue = pageElement.getAttribute("style");
@@ -22,7 +22,7 @@ public final class PageElementUtils
             {
                 return pageElement;
             }
-        }  
+        }
 
         return null;
     }
@@ -36,11 +36,11 @@ public final class PageElementUtils
             {
                 return tag;
             }
-        }   
+        }
 
         return null;
     }
-    
+
     public static PageElement findTagWithText(PageElement sourceElement, String tagName, String expectedTagText)
     {
         for (PageElement tag : sourceElement.findAll(By.tagName(tagName)))

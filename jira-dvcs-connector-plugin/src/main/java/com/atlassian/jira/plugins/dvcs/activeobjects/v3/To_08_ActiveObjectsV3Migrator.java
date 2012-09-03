@@ -4,7 +4,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import net.java.ao.Entity;
 import net.java.ao.EntityStreamCallback;
 
 import org.apache.commons.lang.StringUtils;
@@ -27,6 +30,7 @@ import com.google.common.collect.Maps;
 public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
 {
     private static final Logger log = LoggerFactory.getLogger(To_08_ActiveObjectsV3Migrator.class);
+    private static final String ISSUE_KEY_REGEX = "([A-Z]{2,})-\\d+";
     private final PasswordReEncryptor passwordReEncryptor;
   
     public To_08_ActiveObjectsV3Migrator(PasswordReEncryptor passwordReEncryptor)
@@ -41,11 +45,23 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         
         activeObjects.migrate(ProjectMapping.class, IssueMapping.class, OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class);
         
+        // BBC-236 this upgrade used to fail midway leaving some inconsistent data in new tables. 
+        // We are starting migration again and need to delete those data.
+        deleteAllExistingTableContent(activeObjects, ChangesetMapping.class);
+        deleteAllExistingTableContent(activeObjects, OrganizationMapping.class);
+        deleteAllExistingTableContent(activeObjects, RepositoryMapping.class);
+        
         // old repositoryId to new repositoryId
         Map<Integer,Integer> old2New = Maps.newHashMap();
         
         migrateOrganisationsAndRepositories(activeObjects, old2New);
         migrateChangesets(activeObjects,old2New);
+    }
+    
+    private <T extends Entity> void deleteAllExistingTableContent(final ActiveObjects activeObjects, Class<T> entityType)
+    {
+        T[] allEntities = activeObjects.find(entityType);
+        activeObjects.delete(allEntities);
     }
 
     private void migrateOrganisationsAndRepositories(ActiveObjects activeObjects, Map<Integer, Integer> old2New)
@@ -142,7 +158,6 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         repositoryMap.put(RepositoryMapping.LAST_COMMIT_DATE, projectMapping.getLastCommitDate());
         repositoryMap.put(RepositoryMapping.LINKED, true);
         repositoryMap.put(RepositoryMapping.DELETED, false);
-        repositoryMap.put(RepositoryMapping.SMARTCOMMITS_ENABLED, false);
 
         log.debug("Migrating repository : " + repositoryMap);
         return repositoryMap;
@@ -165,11 +180,21 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
             @Override
             public void onRowRead(IssueMapping issueMapping)
             {
+                String projectKey = extractProjectKey(issueMapping.getIssueId());
+                if (StringUtils.isBlank(projectKey)) 
+                {
+                    log.warn("Unable to extract project key from issue key: " 
+                            + issueMapping.getID() + ", "
+                            + issueMapping.getNode() + ", "
+                            + issueMapping.getIssueId() + ", "
+                            + issueMapping.getMessage()
+                            );
+                }
+                
                 Map<String, Object> changesetMap = Maps.newHashMap();
                 changesetMap.put(ChangesetMapping.REPOSITORY_ID, old2New.get(issueMapping.getRepositoryId()));
-                final String issueKey = issueMapping.getIssueId();
-                changesetMap.put(ChangesetMapping.ISSUE_KEY, issueKey);
-                changesetMap.put(ChangesetMapping.PROJECT_KEY, issueKey.substring(0, issueKey.indexOf("-")));
+                changesetMap.put(ChangesetMapping.ISSUE_KEY, issueMapping.getIssueId());
+                changesetMap.put(ChangesetMapping.PROJECT_KEY, projectKey);
                 changesetMap.put(ChangesetMapping.NODE, issueMapping.getNode());
                 changesetMap.put(ChangesetMapping.RAW_AUTHOR, issueMapping.getRawAuthor());
                 changesetMap.put(ChangesetMapping.AUTHOR, issueMapping.getAuthor());
@@ -186,6 +211,22 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         });
     }
     
+    
+    String extractProjectKey(String issueKey)
+    {
+        if (StringUtils.isBlank(issueKey))
+        {
+            return null;
+        }
+        Pattern projectKeyPattern = Pattern.compile(ISSUE_KEY_REGEX, Pattern.CASE_INSENSITIVE);
+        Matcher match = projectKeyPattern.matcher(issueKey);
+        if (match.find())
+        {
+            String projectKey = match.group(1);
+            return projectKey;
+        }
+        return null;
+    }
 
     /**
      * Repositories are no longer associated with the project, hence the encryption using

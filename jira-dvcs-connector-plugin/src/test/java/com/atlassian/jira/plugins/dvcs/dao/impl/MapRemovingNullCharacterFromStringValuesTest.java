@@ -15,7 +15,8 @@ import static org.junit.Assert.*;
  * @author Martin Skurla mskurla@atlassian.com
  */
 @RunWith(Parameterized.class)
-public class MapRemovingNullCharacterFromStringValuesTest {
+public class MapRemovingNullCharacterFromStringValuesTest
+{
     
     private final String inputString;
     private final String expectedTransformedString;

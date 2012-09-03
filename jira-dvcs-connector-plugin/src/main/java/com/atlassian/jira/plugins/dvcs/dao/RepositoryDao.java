@@ -35,5 +35,8 @@ public interface RepositoryDao
      */
     Repository save(Repository repository);
 
+    /**
+     * @param repositoryId
+     */
     void remove(int repositoryId);
 }

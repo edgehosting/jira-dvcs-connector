@@ -33,12 +33,11 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public void startProcess() {
-
-		executor.execute(new SmartcommitOperation(changesetDao, commitParser, smartcommitService));
-		
-	}
+    @Override
+    public void startProcess()
+    {
+        executor.execute(new SmartcommitOperation(changesetDao, commitParser, smartcommitService));
+    }
 	
 }
 

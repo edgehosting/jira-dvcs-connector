@@ -1,32 +1,43 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-public enum CommandType {
-    TRANSITION("transition"),
-    COMMENT("comment"),
+import org.apache.commons.lang.StringUtils;
+
+public enum CommandType 
+{
+    TRANSITION("transition"), 
+    COMMENT("comment"), 
     LOG_WORK("time");
 
     private String name;
 
-    CommandType(String name) {
+    CommandType(String name)
+    {
         this.name = name;
     }
 
-    public static CommandType getCommandType(String commandString) {
-        String commandNameTrimmed = commandString == null ? null : commandString.trim();
-        if (commandNameTrimmed == null || commandNameTrimmed.equals("")) {
+    public static CommandType getCommandType(String commandString)
+    {
+        
+        String commandNameTrimmed = StringUtils.trim(commandString);
+        if (StringUtils.isBlank(commandNameTrimmed))
+        {
             return null;
         }
 
-        if (commandNameTrimmed.equalsIgnoreCase(LOG_WORK.name)) {
+        if (LOG_WORK.name.equalsIgnoreCase(commandNameTrimmed))
+        {
             return LOG_WORK;
-        } else if (commandNameTrimmed.equalsIgnoreCase(COMMENT.name)) {
+        } else if (COMMENT.name.equalsIgnoreCase(commandNameTrimmed))
+        {
             return COMMENT;
-        } else {
+        } else
+        {
             return TRANSITION;
         }
     }
 
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 }

@@ -41,6 +41,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 {
 
     private static final String TEST_URL = "https://github.com";
+    private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
     private static final String TEST_NOT_EXISTING_URL = "https://privategithub.com/myaccount";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
     private static final String REPO_ADMIN_PASSWORD = "jirabitbucketconnector1";
@@ -139,8 +140,17 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     @Test
     public void addOrganization()
     {
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, false);
+        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, false);
         assertThat(configureOrganizations.getOrganizations().size(), equalTo(1));
+    }
+
+    @Test
+    public void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount()
+    {
+        // we should see 'private-dvcs-connector-test' repo
+        configureOrganizations.addOrganizationSuccessfully(TEST_URL, "atlassian", false);
+
+        assertThat(configureOrganizations.containsRepositoryWithName("private-dvcs-connector-test"), is(true));
     }
 
     @Test
@@ -159,7 +169,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         String baseUrl = jira.getProductInstance().getBaseUrl();
 
         // add repository
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
 
         // check that it created postcommit hook
         String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/";
@@ -190,7 +200,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     @Test
     public void addRepoCommitsAppearOnIssues()
     {
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
 
         assertThat(getCommitsForIssue("QA-2"),
                 hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
@@ -202,7 +212,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     public void testCommitStatistics()
     {
         configureOrganizations.deleteAllOrganizations();
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3");
@@ -234,14 +244,14 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 
         goToGithubOAuthConfigPage().setCredentials(clientID, clientSecret);
     }
-     
+
     @Test
     public void addPrivateRepositoryWithValidOAuth() {
         GithubConfigureOrganizationsPage githubConfigPage = (GithubConfigureOrganizationsPage) goToConfigPage();
-        
+
         GithubConfigureOrganizationsPage githubConfigureOrganizationsPage =
                 githubConfigPage.addRepoToProjectForOrganization("dusanhornik", true);
-        
+
         assertThat(githubConfigureOrganizationsPage.getNumberOfVisibleRepositories(), is(3));
     }
 
@@ -282,7 +292,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         //    "id": 1
         //  }
         //]
-        
+
         try {
             JSONArray jsonArray = new JSONArray(listHooksResponseString);
 

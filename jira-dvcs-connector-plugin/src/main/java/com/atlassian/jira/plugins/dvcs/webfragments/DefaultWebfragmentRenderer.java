@@ -2,22 +2,22 @@ package com.atlassian.jira.plugins.dvcs.webfragments;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.templaterenderer.TemplateRenderer;
-import com.google.common.base.Splitter;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.opensymphony.util.TextUtils;
 
 /**
@@ -80,10 +80,9 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
 	 */
 	private Map<String, Object> createDefaultGroupsModel(int orgId)
 	{
-		
 		Organization organization = organizationService.get(orgId, false);
 		DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType());
-		List<Group> groups = communicator.getGroupsForOrganization(organization);
+		Set<Group> groups = communicator.getGroupsForOrganization(organization);
 		
 		//
 		HashMap<String, Object> model = new HashMap<String, Object>();
@@ -94,24 +93,21 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
 		return model;
 	}
 	
+    @SuppressWarnings("unchecked")
 	private Set<String> createExistingSlugsSet(Organization organization)
 	{
-		Iterable<String> slugs = new ArrayList<String>();
-		
-		if (StringUtils.isNotBlank(organization.getDefaultGroupsSlugsSerialized())) {
-			
-			slugs =
-			
-				Splitter.on(Organization.DEFAULT_GROUP_SLUGS_SEPARATOR).split(
-					organization.getDefaultGroupsSlugsSerialized()
-			);
-		}
-		HashSet<String> set = new HashSet<String>();
-		for (String slug : slugs)
-		{
-			set.add(slug);
-		}
-		return set;
+        Collection<String> existingSlugs = CollectionUtils.collect(organization.getDefaultGroups(), new Transformer() {
+
+            @Override
+            public Object transform(Object input)
+            {
+                Group group = (Group) input;
+                
+                return group.getSlug();
+            }
+        });
+        
+        return new HashSet<String>(existingSlugs);
 	}
 
 	/**

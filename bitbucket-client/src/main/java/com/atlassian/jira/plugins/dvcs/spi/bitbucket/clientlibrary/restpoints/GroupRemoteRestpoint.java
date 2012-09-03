@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
-import java.util.List;
+import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
@@ -35,14 +35,14 @@ public class GroupRemoteRestpoint
      * @param owner
      * @return 
      */
-    public List<BitbucketGroup> getGroups(String owner)
+    public Set<BitbucketGroup> getGroups(String owner)
     {
         String getGroupUrl = String.format("/groups/%s", owner);
         
         RemoteResponse response = requestor.get(getGroupUrl, null);
         
         return ClientUtils.fromJson(response.getResponse(),
-                                    new TypeToken<List<BitbucketGroup>>(){}.getType());
+                                    new TypeToken<Set<BitbucketGroup>>(){}.getType());
     }
 }
 

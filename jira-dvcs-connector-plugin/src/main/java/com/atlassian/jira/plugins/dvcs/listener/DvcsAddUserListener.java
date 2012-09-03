@@ -1,8 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 import com.atlassian.crowd.model.event.Operation;
 import com.atlassian.crowd.model.event.UserEvent;
@@ -14,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.plugin.event.PluginEventListener;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginUninstalledEvent;
+import com.atlassian.util.concurrent.ThreadFactories;
 
 /**
  * 
@@ -32,8 +35,7 @@ import com.atlassian.plugin.event.events.PluginUninstalledEvent;
  * @author jhocman@atlassian.com
  *
  */
-public class DvcsAddUserListener implements InitializingBean
-
+public class DvcsAddUserListener
 {
 	
 	/** The Constant log. */
@@ -48,6 +50,8 @@ public class DvcsAddUserListener implements InitializingBean
 	/** The communicator provider. */
 	private final DvcsCommunicatorProvider communicatorProvider;
 
+    private final ExecutorService executorService;
+
 	/**
 	 * The Constructor.
 	 *
@@ -58,10 +62,10 @@ public class DvcsAddUserListener implements InitializingBean
 	public DvcsAddUserListener(EventPublisher eventPublisher, OrganizationService organizationService,
 			DvcsCommunicatorProvider communicatorProvider)
 	{
-		super();
 		this.eventPublisher = eventPublisher;
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
+        this.executorService = Executors.newFixedThreadPool(2, ThreadFactories.namedThreadFactory("DvcsAddUserListenerExecutorService"));
 	}
 
 	/**
@@ -72,22 +76,13 @@ public class DvcsAddUserListener implements InitializingBean
 	@EventListener
 	public void onUserAddViaInterface(final UserAddedEvent event)
 	{
-		safeExecute(new Closure()
-		{
-			@Override
-			public void execute()
-			{
-				UserAddedViaInterfaceEventProcessor runnableProcessor = new UserAddedViaInterfaceEventProcessor(event,
-						organizationService, communicatorProvider);
-
-				Thread runnableThreadProcessor = new Thread(runnableProcessor,
-						humanNameThread(UserAddedViaInterfaceEventProcessor.class));
-
-				runnableThreadProcessor.start();
-			}
-
-		}, "Failed to handle add user via interface event [ " + event + ", params =  " + event.getRequestParameters()
-				+ "] ");
+        if (event == null)
+        {
+            return;
+        }
+		String onFailMessage = "Failed to handle add user via interface event [ " + event + ", params =  " + event.getRequestParameters() + "] ";
+		Runnable task = new UserAddedViaInterfaceEventProcessor(event, organizationService, communicatorProvider);
+        safeExecute(task, onFailMessage);
 	}
 
 	/**
@@ -96,79 +91,48 @@ public class DvcsAddUserListener implements InitializingBean
 	 * @param event the event object
 	 */
 	@EventListener
-	public void onUserAddViaCrowd(final UserEvent event)
+	public void onUserAddViaCrowd(UserEvent event)
 	{
-		safeExecute(new Closure()
-		{
-			@Override
-			public void execute()
-			{
-				if (Operation.CREATED != event.getOperation())
-				{
-					return;
-				}
-				
-				UserAddedExternallyEventProcessor runnableProcessor = new UserAddedExternallyEventProcessor(event,
-						organizationService, communicatorProvider);
-
-				Thread runnableThreadProcessor = new Thread(runnableProcessor,
-						humanNameThread(UserAddedViaInterfaceEventProcessor.class));
-
-				runnableThreadProcessor.start();
-			}
-
-		}, "Failed to handle add user externally event [ " + event + ", user =  " + event.getUser()
-				+ "] ");
-
+	    if ((event==null) || Operation.CREATED != event.getOperation())
+	    {
+	        return;
+	    }
+        Runnable task = new UserAddedExternallyEventProcessor(event, organizationService, communicatorProvider);
+        String onFailMessage = "Failed to handle add user externally event [ " + event + ", user =  " + event.getUser() + "] ";
+        
+        safeExecute(task, onFailMessage);
 	}
 
 	/**
-	 * Wraps {@link Closure#execute()} method
+	 * Wraps executorService.submit(task) method
 	 * invocation with <code>try-catch</code> block
 	 * to ensure that no exception is propagated up.
 	 *
-	 * @param closure the closure
+	 * @param task the task
 	 * @param onFailMessage the on fail message
 	 */
-	private void safeExecute(Closure closure, String onFailMessage)
-	{
+    private void safeExecute(Runnable task, String onFailMessage)
+    {
+        try
+        {
+            if (task != null)
+            {
+                executorService.submit(task);
+            }
+        } catch (Throwable t)
+        {
+            log.warn(onFailMessage, t);
+        }
+    }
 
-		try
-		{
-			closure.execute();
-
-		} catch (Throwable t)
-		{
-			log.warn(onFailMessage, t);
-		}
-	}
-
-	/**
-	 * Create nice thread name. I.e. Thread___UserAddedExternallyEventProcessor
-	 *
-	 * @param klass the class name to be used
-	 * @return the string
-	 */
-	private String humanNameThread(Class<UserAddedViaInterfaceEventProcessor> klass)
-	{
-		return Thread.class.getSimpleName() + "___" + klass.getSimpleName();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void afterPropertiesSet() throws Exception
-	{
-		eventPublisher.register(this);
-	}
-
-	@PluginEventListener
+	@SuppressWarnings("unused")
+    @PluginEventListener
     public void onPluginDisabled(PluginDisabledEvent event)
     {
        unregisterSelf();
     }
 
+	@SuppressWarnings("unused")
 	@PluginEventListener
 	public void onPluginUninstalled(PluginUninstalledEvent event)
 	{
@@ -179,25 +143,10 @@ public class DvcsAddUserListener implements InitializingBean
 	{
 		try
 		{
-
 			eventPublisher.unregister(this);
-
 		} catch (Exception e)
 		{
 			log.warn("Failed to unregister " + this + ", cause message is " + e.getMessage());
 		}
 	}
-	/**
-	 * The Interface Closure.
-	 */
-	interface Closure
-	{
-
-		/**
-		 * Execute.
-		 */
-		void execute();
-
-	}
-
 }

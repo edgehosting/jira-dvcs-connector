@@ -17,12 +17,17 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import com.atlassian.jira.web.util.CookieUtils;
 
 public class RepositoryDaoImpl implements RepositoryDao
 {
@@ -65,7 +70,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 		repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
 		
 		// set sync progress
-		repository.setSync((Progress) synchronizer.getProgress(repository));
+		repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
 
 		return repository;
 	}
@@ -74,12 +79,14 @@ public class RepositoryDaoImpl implements RepositoryDao
 	{
 		String hostUrl = organizationMapping.getHostUrl();
 		// normalize
-		if (hostUrl != null && hostUrl.endsWith("/")) {
-			hostUrl = hostUrl.substring(0, hostUrl.length() - 1);
-		}
+        if (hostUrl != null && hostUrl.endsWith("/"))
+        {
+            hostUrl = hostUrl.substring(0, hostUrl.length() - 1);
+        }
 		return hostUrl + "/" + organizationMapping.getName() + "/" + repositoryMapping.getSlug();
 	}
 
+    @SuppressWarnings("unchecked")
 	@Override
 	public List<Repository> getAllByOrganization(final int organizationId, final boolean includeDeleted)
 	{
@@ -105,17 +112,16 @@ public class RepositoryDaoImpl implements RepositoryDao
 
 		final OrganizationMapping organizationMapping = getOrganizationMapping(organizationId);
 
-		final Collection<Repository> repositories = Collections2.transform(repositoryMappings,
-				new Function<RepositoryMapping, Repository>()
-				{
-					@Override
-					public Repository apply(RepositoryMapping repositoryMapping)
-					{
-						return transform(repositoryMapping, organizationMapping);
-					}
-				});
+        return (List<Repository>) CollectionUtils.collect(repositoryMappings, new Transformer() {
 
-		return new ArrayList<Repository>(repositories);
+            @Override
+            public Object transform(Object input)
+            {
+                RepositoryMapping repositoryMapping = (RepositoryMapping) input;
+                
+                return RepositoryDaoImpl.this.transform(repositoryMapping, organizationMapping);
+            }
+        });
 	}
 
 	@Override
@@ -179,21 +185,22 @@ public class RepositoryDaoImpl implements RepositoryDao
 	 * @param repositoriesToReturn the repositories to return
 	 * @return the collection< repository>
 	 */
+    @SuppressWarnings("unchecked")
 	private Collection<Repository> transformRepositories(
 			final Map<Integer, OrganizationMapping> idToOrganizationMapping,
 			final List<RepositoryMapping> repositoriesToReturn)
 	{
-		final Collection<Repository> repositories = Collections2.transform(repositoriesToReturn,
-				new Function<RepositoryMapping, Repository>()
-				{
-					@Override
-					public Repository apply(RepositoryMapping repositoryMapping)
-					{
-						return transform(repositoryMapping,
-								idToOrganizationMapping.get(repositoryMapping.getOrganizationId()));
-					}
-				});
-		return repositories;
+        return CollectionUtils.collect(repositoriesToReturn, new Transformer() {
+
+            @Override
+            public Object transform(Object input)
+            {
+                RepositoryMapping repositoryMapping = (RepositoryMapping) input;
+                
+                return RepositoryDaoImpl.this.transform(repositoryMapping,
+                        idToOrganizationMapping.get(repositoryMapping.getOrganizationId()));
+            }
+        });
 	}
 
 	@Override
@@ -235,6 +242,8 @@ public class RepositoryDaoImpl implements RepositoryDao
 						RepositoryMapping rm;
 						if (repository.getId() == 0)
 						{
+                            // we need to remove null characters '\u0000' because PostgreSQL cannot store String values
+                            // with such characters
 							final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
 							map.put(RepositoryMapping.ORGANIZATION_ID, repository.getOrganizationId());
 							map.put(RepositoryMapping.SLUG, repository.getSlug());

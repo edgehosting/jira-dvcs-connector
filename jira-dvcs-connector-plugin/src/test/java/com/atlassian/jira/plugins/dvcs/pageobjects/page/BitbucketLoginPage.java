@@ -10,25 +10,25 @@ import com.atlassian.pageobjects.elements.PageElement;
 public class BitbucketLoginPage implements Page {
 
     public static String LOGIN_PAGE = "https://bitbucket.org/account/signin/?next=/";
-
+    
     
     @ElementBy(id = "id_username")
     PageElement usernameOrEmailInput;
-
+    
     @ElementBy(id = "id_password")
     PageElement passwordInput;
-
+    
     @ElementBy(name= "submit")
     PageElement loginButton;
-  
-
+    
+    
     @Override
     public String getUrl()
     {
         return LOGIN_PAGE;
     }
-  
 
+    
     public void doLogin()
     {
         usernameOrEmailInput.clear()

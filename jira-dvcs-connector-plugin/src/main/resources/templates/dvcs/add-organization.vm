@@ -64,7 +64,7 @@
               
 	            
                     <div class="field-group" >
-                      <label for="urlSelect">Url:</label>
+                      <label for="urlSelect">Host:</label>
                       <select id="urlSelect" name="urlSelect" class="select" onchange="switchDvcsDetails(this)">
 	               		<option value="bitbucket">Bitbucket</option>
 	                	<option value="github">GitHub</option>
@@ -222,7 +222,7 @@
 								             	 <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh list</a>
 								            </li>
 								            
- 							            	#if($org.dvcsType == "bitbucket")
+ 							            	#if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
    							            	   	<li class="dropdown-item">
 	   							                	<div class="dvcs-gearmenu-nohide">
 							 							<a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id);"> Configure default groups</a>
@@ -233,15 +233,22 @@
 								            #if( !$org.isIntegratedAccount() )
 									            
 									            <li class="dropdown-item">
+												
 													 #if($org.dvcsType == "bitbucket")
-									            	<a  href="$baseurl/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+												
+													   #if ($action.isBitbucketOauthRequired())
+                                                         <a href="$baseurl/secure/admin/ConfigureBitbucketOAuth!default.jspa?atl_token=$atl_token">Configure OAuth</a>
+                                                       #else
+                                                         <a href="$baseurl/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+	                                                   #end
+
 													 #else
-													 <a  href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+													   <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 									            	 #end
 						   			 	 		</li>
 					
 									            <li class="dropdown-item">
-									            	 <a  class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Delete</a>
+									            	  <a  class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Delete</a>
 									            </li>
 									            
 								            #end

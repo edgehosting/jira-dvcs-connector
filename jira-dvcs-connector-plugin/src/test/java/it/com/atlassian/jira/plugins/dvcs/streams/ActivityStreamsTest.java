@@ -22,7 +22,8 @@ import com.atlassian.webdriver.jira.page.DashboardPage;
  */
 public class ActivityStreamsTest
 {
-	private static final String BB_TEST_URL = "https://bitbucket.org";
+    private static final String BB_TEST_URL = "https://bitbucket.org";
+    private static final String BB_TEST_ORGANIZATION = "jirabitbucketconnector";
 
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private DashboardActivityStreamsPage page;
@@ -38,9 +39,9 @@ public class ActivityStreamsTest
 
     private void addOrganization()
     {
-    	BitBucketConfigureOrganizationsPage configureRepos = goToConfigPage();
+        BitBucketConfigureOrganizationsPage configureRepos = goToConfigPage();
         configureRepos.deleteAllOrganizations();
-        configureRepos.addOrganizationSuccessfully(BB_TEST_URL, true);
+        configureRepos.addOrganizationSuccessfully(BB_TEST_URL, BB_TEST_ORGANIZATION, true);
     }
 
 
@@ -71,7 +72,7 @@ public class ActivityStreamsTest
 
     private BitBucketConfigureOrganizationsPage goToConfigPage()
     {
-    	BitBucketConfigureOrganizationsPage configureRepos = jira.visit(BitBucketConfigureOrganizationsPage.class);
+        BitBucketConfigureOrganizationsPage configureRepos = jira.visit(BitBucketConfigureOrganizationsPage.class);
         configureRepos.setJiraTestedProduct(jira);
         return configureRepos;
     }
@@ -88,12 +89,12 @@ public class ActivityStreamsTest
         page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class);
         page.setJira(jira);
     }
-    
+
     private void loginToBitbucketAndSetJiraOAuthCredentials()
     {
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
-        
+
         jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
         bitbucketIntegratedApplicationsPage = jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
 
@@ -147,6 +148,7 @@ public class ActivityStreamsTest
         page.checkIssueActivityNotPresentedForQA5();
 
         logout();
+        
         removeOAuthConsumer();
     }
 
@@ -181,6 +183,7 @@ public class ActivityStreamsTest
         loginToJira();
         setupAnonymousAccessForbidden();
         logout();
+        
         removeOAuthConsumer();
     }
 }

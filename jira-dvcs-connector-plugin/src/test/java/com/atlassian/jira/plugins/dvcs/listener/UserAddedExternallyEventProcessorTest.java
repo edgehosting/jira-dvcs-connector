@@ -25,6 +25,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
@@ -55,7 +56,8 @@ public class UserAddedExternallyEventProcessorTest
 	}
 	
 	@Before
-	public void setUp () {
+    public void setUp()
+    {
 	
 		processor = new UserAddedExternallyEventProcessor(sampleEvent(), organizationServiceMock, communicatorProviderMock);
 		
@@ -63,7 +65,8 @@ public class UserAddedExternallyEventProcessorTest
 	}
 	
 	@Test
-	public void testRunShouldInvite() {
+    public void testRunShouldInvite()
+    {
 		
 		when(organizationServiceMock.getAutoInvitionOrganizations()).thenReturn(sampleOrganizations());
 		
@@ -84,7 +87,8 @@ public class UserAddedExternallyEventProcessorTest
 	}
 
 	@Test
-	public void testRunNotCreatedEventTypeShouldntInvite() {
+    public void testRunNotCreatedEventTypeShouldntInvite()
+    {
 		
 		processor = new UserAddedExternallyEventProcessor(new UserEvent(Operation.UPDATED, null, null, null, null), organizationServiceMock, communicatorProviderMock);
 		 
@@ -95,7 +99,8 @@ public class UserAddedExternallyEventProcessorTest
 	}
 	
 	@Test
-	public void testRunNoDefaultGroupsShouldntInvite() {
+    public void testRunNoDefaultGroupsShouldntInvite()
+    {
 		
 		when(organizationServiceMock.getAutoInvitionOrganizations()).thenReturn(Collections.EMPTY_LIST);
 		
@@ -108,7 +113,7 @@ public class UserAddedExternallyEventProcessorTest
 	private List<Organization> sampleOrganizations()
 	{
 		Organization org = new Organization();
-		org.setDefaultGroupsSlugs(EasyList.build(new Group("A"), new Group("B")));
+        org.setDefaultGroups(Sets.newHashSet(new Group("A"), new Group("B")));
 		return EasyList.build(org);
 	}
 

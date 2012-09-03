@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
@@ -402,13 +403,13 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public List<Group> getGroupsForOrganization(Organization organization)
+    public Set<Group> getGroupsForOrganization(Organization organization)
     {
         try
         {
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForOrganization(organization);
+            Set<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
 
-            List<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
 
             return GroupTransformer.fromBitbucketGroups(groups);
         } catch (BitbucketRequestException e)

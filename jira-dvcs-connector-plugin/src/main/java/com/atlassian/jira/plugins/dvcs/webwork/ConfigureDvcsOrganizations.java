@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
@@ -30,12 +31,15 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	private final OrganizationService organizationService;
 	private final DvcsCommunicatorProvider communicatorProvider;
 
+    private final PluginFeatureDetector featuresDetector;
+
 	public ConfigureDvcsOrganizations(OrganizationService organizationService,
-			FeatureManager featureManager, DvcsCommunicatorProvider communicatorProvider)
+			FeatureManager featureManager, DvcsCommunicatorProvider communicatorProvider, PluginFeatureDetector featuresDetector)
 	{
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
 		this.featureManager = featureManager;
+        this.featuresDetector = featuresDetector;
 	}
 
 	@Override
@@ -64,7 +68,8 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	}
 
     private void sort(List<Organization> allOrganizations)
-    {
+    {`
+        // TODO add javadoc, this is to keep integrated account on the top of the list
         Collections.sort(allOrganizations, new Comparator<Organization>()
         {
             @Override
@@ -98,6 +103,12 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	public boolean isOnDemandLicense()
 	{
 		return featureManager.isEnabled(CoreFeatures.ON_DEMAND);
+	}
+	
+	public boolean isUserInvitationsEnabled() {
+	    
+	    return featuresDetector.isUserInvitationsEnabled();
+	    
 	}
 	
 	public boolean isGithubOauthRequired() {

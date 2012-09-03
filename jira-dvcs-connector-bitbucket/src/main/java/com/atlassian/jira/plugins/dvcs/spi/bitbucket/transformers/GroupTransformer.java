@@ -1,30 +1,38 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 /**
  * GroupTransformer
- *
+ * 
  * @author Martin Skurla mskurla@atlassian.com
  */
-public class GroupTransformer {
-    private GroupTransformer() {}
+public class GroupTransformer
+{
 
-    
-    public static List<Group> fromBitbucketGroups(List<BitbucketGroup> bitbucketGroups)
+    @SuppressWarnings("unchecked")
+    public static Set<Group> fromBitbucketGroups(Set<BitbucketGroup> bitbucketGroups)
     {
-        return Lists.transform(bitbucketGroups, new Function<BitbucketGroup, Group>() {
+        Collection<Group> transformedGroups = CollectionUtils.collect(bitbucketGroups, new Transformer() {
 
             @Override
-            public Group apply(BitbucketGroup bitbucketGroup)
+            public Object transform(Object input)
             {
-                return new Group(bitbucketGroup.getSlug(), bitbucketGroup.getName());
+                BitbucketGroup bitbucketGroup = (BitbucketGroup) input;
+                
+                return new Group(StringUtils.trim(bitbucketGroup.getSlug()));
             }
         });
+
+        return new HashSet<Group>(transformedGroups);
     }
 }

@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
@@ -53,7 +55,6 @@ public class ChangesetServiceImpl implements ChangesetService
     public Iterable<Changeset> getChangesetsFromDvcs(Repository repository, Date lastCommitDate)
     {
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-
         return communicator.getChangesets(repository, lastCommitDate);
     }
 
@@ -61,34 +62,33 @@ public class ChangesetServiceImpl implements ChangesetService
     public Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset)
     {
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-
         return communicator.getDetailChangeset(repository, changeset);
     }
 
     @Override
     public List<Changeset> getByIssueKey(String issueKey)
     {
-        final List<Changeset> changesets = changesetDao.getByIssueKey(issueKey);
+        List<Changeset> changesets = changesetDao.getByIssueKey(issueKey);
         return checkChangesetVersion(changesets);
     }
 
     @Override
     public String getCommitUrl(Repository repository, Changeset changeset)
     {
-        final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
         return communicator.getCommitUrl(repository, changeset);
     }
 
     @Override
     public Map<ChangesetFile, String> getFileCommitUrls(Repository repository, Changeset changeset)
     {
-        final HashMap<ChangesetFile, String> fileCommitUrls = new HashMap<ChangesetFile, String>();
-        final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+        HashMap<ChangesetFile, String> fileCommitUrls = new HashMap<ChangesetFile, String>();
+        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
         for (int i = 0;  i < changeset.getFiles().size(); i++)
         {
             ChangesetFile changesetFile = changeset.getFiles().get(i);
-            final String fileCommitUrl = communicator.getFileCommitUrl(repository, changeset, changesetFile.getFile(), i);
+            String fileCommitUrl = communicator.getFileCommitUrl(repository, changeset, changesetFile.getFile(), i);
 
             fileCommitUrls.put(changesetFile, fileCommitUrl);
         }
@@ -112,7 +112,7 @@ public class ChangesetServiceImpl implements ChangesetService
     @Override
     public String getUserUrl(Repository repository, Changeset changeset)
     {
-        final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
         return communicator.getUserUrl(repository, changeset);
     }
 
@@ -124,19 +124,19 @@ public class ChangesetServiceImpl implements ChangesetService
         return Sets.newHashSet(changesets);
     }
 
+    @SuppressWarnings("unchecked")
     private List<Changeset> checkChangesetVersion(List<Changeset> changesets)
     {
-        final Collection<Changeset> checkedChangesets = Collections2.transform(changesets,
-                        new Function<Changeset, Changeset>()
-                        {
-                            @Override
-                            public Changeset apply(Changeset changeset)
-                            {
-                                return checkChangesetVersion(changeset);
-                            }
-                        });
+        return (List<Changeset>) CollectionUtils.collect(changesets, new Transformer() {
 
-        return new ArrayList<Changeset>(checkedChangesets);
+            @Override
+            public Object transform(Object input)
+            {
+                Changeset changeset = (Changeset) input;
+                
+                return ChangesetServiceImpl.this.checkChangesetVersion(changeset);                
+            }
+        });
     }
 
     /**
@@ -155,9 +155,9 @@ public class ChangesetServiceImpl implements ChangesetService
             if (!isLatestVersion)
             {
                 Repository repository = repositoryDao.get(changeset.getRepositoryId());
-                final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+                DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
-                final Changeset updatedChangeset = communicator.getDetailChangeset(repository, changeset);
+                Changeset updatedChangeset = communicator.getDetailChangeset(repository, changeset);
 
                 changeset.setRawAuthor(updatedChangeset.getRawAuthor());
                 changeset.setAuthor(updatedChangeset.getAuthor());
@@ -174,12 +174,6 @@ public class ChangesetServiceImpl implements ChangesetService
 
         return changeset;
     }
-
-	@Override
-	public List<Changeset> getLatestChangesetsAvailableForSmartcommits()
-	{
-		return changesetDao.getLatestChangesetsAvailableForSmartcommits();
-	}
 
 	@Override
 	public void markSmartcommitAvailability(int id, boolean available)

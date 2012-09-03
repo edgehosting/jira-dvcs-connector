@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
 
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
@@ -38,61 +37,47 @@ public class OrganizationServiceImpl implements OrganizationService
 		return dvcsCommunicatorProvider.getAccountInfo(hostUrl, accountName);
 	}
 
-	@Override
-	public List<Organization> getAll(final boolean loadRepositories)
-	{
-		final List<Organization> organizations = organizationDao.getAll();
+    @Override
+    public List<Organization> getAll(boolean loadRepositories)
+    {
+        List<Organization> organizations = organizationDao.getAll();
 
-		if (loadRepositories)
-		{
-			CollectionUtils.transform(organizations, new Transformer()
-			{
-				@Override
-				public Object transform(Object o)
-				{
-					Organization organization = (Organization) o;
-					final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
-					organization.setRepositories(repositories);
-					return organization;
-				}
-			});
-		}
+        if (loadRepositories)
+        {
+            for (Organization organization : organizations)
+            {
+                List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+                organization.setRepositories(repositories);
+            }
+        }
+        return organizations;
+    }
 
-		return organizations;
-	}
-	
 	@Override
 	public List<Organization> getAll(boolean loadRepositories, String type)
 	{
-		final List<Organization> organizations = organizationDao.getAllByType(type);
+        List<Organization> organizations = organizationDao.getAllByType(type);
 
-		if (loadRepositories)
-		{
-			CollectionUtils.transform(organizations, new Transformer()
-			{
-				@Override
-				public Object transform(Object o)
-				{
-					Organization organization = (Organization) o;
-					final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
-					organization.setRepositories(repositories);
-					return organization;
-				}
-			});
-		}
+        if (loadRepositories)
+        {
+            for (Organization organization : organizations)
+            {
+                List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+                organization.setRepositories(repositories);
+            }
+        }
 
 		return organizations;
 	}
-	
 
 	@Override
 	public Organization get(int organizationId, boolean loadRepositories)
 	{
-		final Organization organization = organizationDao.get(organizationId);
+		Organization organization = organizationDao.get(organizationId);
 
 		if (loadRepositories)
 		{
-			final List<Repository> repositories = repositoryService.getAllByOrganization(organizationId);
+			List<Repository> repositories = repositoryService.getAllByOrganization(organizationId);
 			organization.setRepositories(repositories);
 		}
 
@@ -103,13 +88,13 @@ public class OrganizationServiceImpl implements OrganizationService
 	public Organization save(Organization organization)
 	{
 		Organization org = organizationDao.getByHostAndName(organization.getHostUrl(), organization.getName());
-		if (org != null) {
+		if (org != null)
+		{
 			// nop;
 			// we've already have this organization, don't save another one
-			//
 			return org;
 		}
-		
+
 		//
 		// it's brand new organization. save it.
 		//
@@ -139,7 +124,7 @@ public class OrganizationServiceImpl implements OrganizationService
 		Organization organization = organizationDao.get(organizationId);
 		organization.setCredential(new Credential(username, plaintextPassword, null));
 		checkCredentials(organization);
-		
+
 		organizationDao.updateCredentials(organizationId, username, plaintextPassword, null, null, null);
 	}
 
@@ -153,7 +138,7 @@ public class OrganizationServiceImpl implements OrganizationService
 		organization.setCredential(new Credential(null, null, accessToken));
 		checkCredentials(organization);
 		//
-		
+
 		organizationDao.updateCredentials(organizationId, null, null, accessToken, null, null);
 
 	}
@@ -176,7 +161,7 @@ public class OrganizationServiceImpl implements OrganizationService
 	@Override
 	public void enableAutolinkNewRepos(int orgId, boolean autolink)
 	{
-		final Organization organization = organizationDao.get(orgId);
+		Organization organization = organizationDao.get(orgId);
 		if (organization != null)
 		{
 			organization.setAutolinkNewRepos(autolink);
@@ -184,17 +169,17 @@ public class OrganizationServiceImpl implements OrganizationService
 		}
 	}
 
-	
+
 	@Override
 	public void enableSmartcommitsOnNewRepos(int id, boolean enabled)
 	{
-		final Organization organization = organizationDao.get(id);
+		Organization organization = organizationDao.get(id);
 		if (organization != null)
 		{
 			organization.setSmartcommitsOnNewRepos(enabled);
 			organizationDao.save(organization);
 		}
-		
+
 	}
 
 	@Override
@@ -206,12 +191,13 @@ public class OrganizationServiceImpl implements OrganizationService
 	@Override
 	public List<Organization> getAllByIds(Collection<Integer> ids)
 	{
-		if (CollectionUtils.isNotEmpty(ids)) {
-			return organizationDao.getAllByIds(ids);
-		} else {
-			return Collections.emptyList();
-		}
-		
+        if (CollectionUtils.isNotEmpty(ids))
+        {
+            return organizationDao.getAllByIds(ids);
+        } else
+        {
+            return Collections.emptyList();
+        }
 	}
 
 	@Override
@@ -220,14 +206,16 @@ public class OrganizationServiceImpl implements OrganizationService
 		String bitbucketDvcsType = "bitbucket";
 
 		// validate just bitbucket credentials for now
-		if (bitbucketDvcsType.equalsIgnoreCase(forOrganizationWithPlainCredentials.getDvcsType())) {
+		if (bitbucketDvcsType.equalsIgnoreCase(forOrganizationWithPlainCredentials.getDvcsType()))
+		{
 			DvcsCommunicator bitbucket = dvcsCommunicatorProvider.getCommunicator(bitbucketDvcsType);
 			boolean valid = bitbucket.validateCredentials(forOrganizationWithPlainCredentials);
-			if (!valid) {
+			if (!valid)
+			{
 				throw new InvalidCredentialsException("Incorrect password");
 			}
 		}
-		
+
 	}
 
 	@Override
@@ -249,5 +237,4 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 	
 	
-
 }

@@ -28,35 +28,35 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
     @ElementBy(name = "commit")
     PageElement githubWebSubmitButton;
-    
+
     @ElementBy(id = "oauthClientId")
     PageElement clientId;
-    
+
     @ElementBy(id = "oauthSecret")
     PageElement secretId;
 
     @Override
-    public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String url, boolean autoSync)
+    public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String url, String organizationAccount, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
-        
-        organization.clear().type("jirabitbucketconnector");
-        
+
+        organization.clear().type(organizationAccount);
+
         setPageAsOld();
 
         if (!autoSync) {
         	autoLinkNewRepos.click();
         }
-        
+
         addOrgButton.click();
-        
+
         checkAndDoGithubLogin();
-        
+
         String githubWebLoginRedirectUrl = authorizeGithubAppIfRequired();
-       
+
         if (!githubWebLoginRedirectUrl.contains("/jira/"))
         {
             Assert.fail("Expected was Valid OAuth login and redirect to JIRA!");
@@ -65,12 +65,12 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         if (autoSync) {
         	checkSyncProcessSuccess();
         }
-        
+
         return this;
     }
 
 
- 
+
     @Override
     public GithubConfigureOrganizationsPage addOrganizationFailingStep1(String url)
     {
@@ -78,16 +78,16 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         waitFormBecomeVisible();
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
-        
+
         organization.clear().type(url);
-        
+
         setPageAsOld();
-        
+
         addOrgButton.click();
 
         Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed()
                 .hasText("Error!"));
-        
+
         return this;
     }
 
@@ -99,9 +99,9 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
         organization.clear().type("jirabitbucketconnector");
-        
+
         setPageAsOld();
-        
+
         addOrgButton.click();
 
         String currentUrl = checkAndDoGithubLogin();
@@ -116,9 +116,9 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
     private String checkAndDoGithubLogin()
     {
-        
+
     	waitWhileNewPageLaoded();
-        
+
         String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
         if (currentUrl.contains("https://github.com/login?"))
         {
@@ -149,7 +149,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     private String authorizeGithubAppIfRequired()
     {
         waitWhileNewPageLaoded();
-        
+
         String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
         if (currentUrl.contains("/github.com/login/oauth"))
         {
@@ -162,7 +162,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     public BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String url)
     {
         addRepoToProject(url, true);
-        
+
         assertThatErrorMessage(containsString("Error adding postcommit hook. Do you have admin rights to the repository?\n" +
                 "Repository was not added. [Could not add postcommit hook. ]"));
 
@@ -174,7 +174,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
-        
+
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
         organization.clear().type("jirabitbucketconnector");
 
@@ -190,12 +190,12 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         return this;
     }
-    
+
     public GithubConfigureOrganizationsPage addRepoToProjectForOrganization(String organizationString, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
-        
+
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
         organization.clear().type(organizationString);
 
@@ -211,7 +211,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         return this;
     }
-    
+
     public int getNumberOfVisibleRepositories()
     {
         List<WebElement> visibleRepositoryRows = jiraTestedProduct.getTester()
