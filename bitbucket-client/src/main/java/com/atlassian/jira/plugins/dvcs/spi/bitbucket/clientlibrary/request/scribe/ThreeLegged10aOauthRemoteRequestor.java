@@ -53,6 +53,7 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
     protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method, Map<String, String> parameters)
             throws IOException
     {
+        long start = System.currentTimeMillis();
         //
         // generate oauth 1.0 params for 3LO - use scribe so far for that ...
         //
@@ -65,6 +66,8 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
 
         String header = authHeaderCreator.extract(request);
         connection.setRequestProperty(OAuthConstants.HEADER, header);
+        
+        log.debug("3LO signing took [{}] ms ", System.currentTimeMillis() - start);
 
     }
 

@@ -16,7 +16,7 @@
 // */
 //public class URIEncoderTest
 //{
-//    
+//
 //    @DataProvider
 //    private static Object[][] dataProviderForParameterEncoding()
 //    {
@@ -26,7 +26,7 @@
 //            { mapFromKeyValuePairs("a", "1 2", "b", "3/4"), "a=1+2&b=3%2F4" }
 //        };
 //    }
-//    
+//
 //    @DataProvider
 //    private static Object[][] dataProviderForUriEncoding()
 //    {
@@ -39,37 +39,37 @@
 //                    }
 //        };
 //    }
-//    
+//
 //
 //    @Test(dataProvider="dataProviderForParameterEncoding")
 //    public void encodingHttpParameters_ShouldEncodeSpecialCharacters(Map<String, String> parameters,
 //            String expectedEncodedParameters)
 //    {
 //        String encodedParameters = URIEncoder.encodeHttpParameters(parameters, URIEncoder.UTF_8_ENCODING);
-//        
+//
 //        assertThat(encodedParameters).isEqualTo(expectedEncodedParameters);
 //    }
-//    
+//
 //    @Test(dataProvider="dataProviderForUriEncoding")
 //    public void encodingUri_ShouldEncodeBothUriAndParameters(String uriPath, Map<String, String> parameters,
 //            String expectedEncodedUri)
 //    {
 //        String encodedUri = URIEncoder.encodeURI(uriPath, parameters, URIEncoder.UTF_8_ENCODING);
-//        
+//
 //        assertThat(encodedUri).isEqualTo(expectedEncodedUri);
 //    }
-//    
-//    
+//
+//
 //    private static Map<String, String> mapFromKeyValuePairs(String... keysAndValues)
 //    {
 //        Map<String, String> map = new LinkedHashMap<String, String>(); // needed because order in assertions matters
-//        
+//
 //        for (int index = 0; index < keysAndValues.length; )
 //        {
 //            map.put(keysAndValues[index], keysAndValues[index + 1]);
 //            index += 2;
 //        }
-//        
+//
 //        return map;
 //    }
 //}

@@ -6,7 +6,7 @@
 	<parent>
    		<groupId>com.atlassian.jira.plugins</groupId>
     	<artifactId>jira-dvcs-connector-parent</artifactId>
-    	<version>1.0-SNAPSHOT</version>
+    	<version>1.2-SNAPSHOT</version>
 	</parent>
 
     <organization>
@@ -136,11 +136,6 @@
             <version>1.6</version>
             <scope>provided</scope>
         </dependency>
-		<dependency>
-			<groupId>com.atlassian.theplugin</groupId>
-			<artifactId>atlassian-plugin-commons</artifactId>
-			<version>1.8.0</version>
-		</dependency>
 		<dependency>
 			<groupId>org.eclipse.mylyn.github</groupId>
 			<artifactId>org.eclipse.egit.github.core</artifactId>

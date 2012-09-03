@@ -22,7 +22,7 @@ import com.atlassian.webdriver.jira.page.DashboardPage;
  */
 public class ActivityStreamsTest
 {
-	private static final String BB_TEST_URL = "https://bitbucket.org";
+    private static final String BB_TEST_URL = "https://bitbucket.org";
     private static final String BB_TEST_ORGANIZATION = "jirabitbucketconnector";
 
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
@@ -39,7 +39,7 @@ public class ActivityStreamsTest
 
     private void addOrganization()
     {
-    	BitBucketConfigureOrganizationsPage configureRepos = goToConfigPage();
+        BitBucketConfigureOrganizationsPage configureRepos = goToConfigPage();
         configureRepos.deleteAllOrganizations();
         configureRepos.addOrganizationSuccessfully(BB_TEST_URL, BB_TEST_ORGANIZATION, true);
     }
@@ -72,7 +72,7 @@ public class ActivityStreamsTest
 
     private BitBucketConfigureOrganizationsPage goToConfigPage()
     {
-    	BitBucketConfigureOrganizationsPage configureRepos = jira.visit(BitBucketConfigureOrganizationsPage.class);
+        BitBucketConfigureOrganizationsPage configureRepos = jira.visit(BitBucketConfigureOrganizationsPage.class);
         configureRepos.setJiraTestedProduct(jira);
         return configureRepos;
     }

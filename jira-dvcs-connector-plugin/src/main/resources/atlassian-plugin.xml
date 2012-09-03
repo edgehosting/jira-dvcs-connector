@@ -53,10 +53,23 @@
 	<component key="smartcommitsChangesetsProcessor" name="DVCS Smartcommits Changesets Processor"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsChangesetsProcessor" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor</interface>
 	</component>
-
-
-	<!-- ===============================================================================================================================
-		 smartcommits
+	
+	<!-- Integrated account -->
+	
+	<component key="accountsConfigLifecycler" name="Accounts Config Lifecycler" class="com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigLifecycler" public="true">
+        <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
+    </component>
+    <component key="bitbucketAccountsConfigService" name="Bitbucket Accounts Config Service" class="com.atlassian.jira.plugins.dvcs.ondemand.BitbucketAccountsConfigService" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService</interface>
+    </component>
+    <component key="jsonFileBasedAccountsConfigProvider" name="Json File Based Accounts Config Provider" class="com.atlassian.jira.plugins.dvcs.ondemand.JsonFileBasedAccountsConfigProvider" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigProvider</interface>
+    </component>
+	
+	
+	
+	<!-- =============================================================================================================================== 
+		 smartcommits 
 	 	 =============================================================================================================================== -->
 
    <ao key="ao-module" name="Active Objects Module">

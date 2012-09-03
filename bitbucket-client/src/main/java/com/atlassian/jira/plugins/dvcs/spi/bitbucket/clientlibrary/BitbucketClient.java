@@ -12,10 +12,10 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -179,7 +179,7 @@ public class BitbucketClient
     private void addAuthorisation(HttpURLConnection connection) throws UnsupportedEncodingException
     {
         connection.setRequestProperty("Authorization", "Basic "
-            + Base64.encodeBase64String((username + ":" + password).getBytes(UTF8)).replaceAll("\n", "").replaceAll("\r", ""));
+            + SystemUtils.encodeUsingBase64(username + ":" + password).replaceAll("\n", "").replaceAll("\r", ""));
     }
 
     /**

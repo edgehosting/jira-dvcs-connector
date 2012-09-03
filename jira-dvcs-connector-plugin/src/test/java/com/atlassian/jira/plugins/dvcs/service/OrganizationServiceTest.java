@@ -162,7 +162,7 @@ public class OrganizationServiceTest
 
 		//
 		Mockito.verify(organizationDao).updateCredentials(Mockito.eq(0), Mockito.eq("doesnotmatter_u"),
-				Mockito.eq("doesnotmatter_p"), (String) Mockito.isNull());
+				Mockito.eq("doesnotmatter_p"), (String) Mockito.isNull(),  (String) Mockito.isNull(),  (String) Mockito.isNull());
 
 	}
 
@@ -177,7 +177,7 @@ public class OrganizationServiceTest
 		organizationService.updateCredentialsAccessToken(0, "doesnotmatter_AT");
 
 		Mockito.verify(organizationDao).updateCredentials(Mockito.eq(0), (String) Mockito.isNull(),
-				(String) Mockito.isNull(), Mockito.eq("doesnotmatter_AT"));
+				(String) Mockito.isNull(), Mockito.eq("doesnotmatter_AT"),  (String) Mockito.isNull(),  (String) Mockito.isNull());
 
 	}
 

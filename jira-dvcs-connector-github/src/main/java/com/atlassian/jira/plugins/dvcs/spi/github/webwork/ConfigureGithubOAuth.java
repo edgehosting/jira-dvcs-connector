@@ -37,9 +37,12 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
     @Override
     protected void doValidation()
     {
-    	if (StringUtils.isNotBlank(forceClear)) {
-    		return;
-    	}
+        if (StringUtils.isNotBlank(forceClear))
+        {
+            clientSecret = "";
+            clientID = "";
+            return;
+        }
   
         if (StringUtils.isBlank(clientSecret) || StringUtils.isBlank(clientID))
         {

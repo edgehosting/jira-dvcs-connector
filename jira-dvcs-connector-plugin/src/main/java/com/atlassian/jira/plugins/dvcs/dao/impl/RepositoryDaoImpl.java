@@ -1,5 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.java.ao.Query;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
@@ -12,16 +24,6 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import net.java.ao.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
@@ -52,7 +54,11 @@ public class RepositoryDaoImpl implements RepositoryDao
 
 		Credential credential = new Credential(organizationMapping.getAdminUsername(),
 				organizationMapping.getAdminPassword(), organizationMapping.getAccessToken());
-
+		
+		credential.setOauthKey(organizationMapping.getOauthKey());
+		credential.setOauthSecret(organizationMapping.getOauthSecret());
+		//
+		
 		Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(),
 				organizationMapping.getDvcsType(), repositoryMapping.getSlug(), repositoryMapping.getName(),
 				repositoryMapping.getLastCommitDate(), repositoryMapping.isLinked(), repositoryMapping.isDeleted(),

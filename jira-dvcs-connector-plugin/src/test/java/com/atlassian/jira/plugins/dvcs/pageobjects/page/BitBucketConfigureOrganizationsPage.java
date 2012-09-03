@@ -43,7 +43,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         organization.clear().type(organizationAccount);
 
         if (!autoSync) {
-        	autoLinkNewRepos.click();
+            autoLinkNewRepos.click();
         }
 
         addOrgButton.click();
@@ -53,7 +53,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grandAccess();
 
         if (autoSync) {
-        	checkSyncProcessSuccess();
+            checkSyncProcessSuccess();
         }
 
         return this;

@@ -19,7 +19,7 @@ import com.atlassian.pageobjects.elements.query.Poller;
  * @author Martin Skurla mskurla@atlassian.com
  */
 public class BitbucketIntegratedApplicationsPage implements Page
-{
+{    
     public static final String PAGE_URL = "https://bitbucket.org/account/user/jirabitbucketconnector/api";
 
 
@@ -28,13 +28,13 @@ public class BitbucketIntegratedApplicationsPage implements Page
 
     @ElementBy(id = "add-consumer-link")
     private PageElement addConsumerButton;
-
+  
     @ElementBy(tagName= "body")
     private PageElement bodyElement;
 
     @Inject
     PageElementFinder elementFinder;
-
+    
     private String lastAddedConsumerName;
 
 
@@ -46,20 +46,20 @@ public class BitbucketIntegratedApplicationsPage implements Page
 
 
     public OAuthCredentials addConsumer()
-    {
+    {       
         addConsumerButton.click();
 
         PageElement addOAuthConsumerDialogDiv = null;
         while (addOAuthConsumerDialogDiv == null)
         {
             addOAuthConsumerDialogDiv = PageElementUtils.findVisibleElementByClassName(bodyElement, "ui-dialog");
-        }
+        }     
 
         BitbucketAddOAuthConsumerDialog addConsumerDialog =
                 pageBinder.bind(BitbucketAddOAuthConsumerDialog.class, addOAuthConsumerDialogDiv);
 
         lastAddedConsumerName = "Test OAuth [" + System.currentTimeMillis() + "]";
-        String consumerDescription = "Test OAuth Description";
+        String consumerDescription = "Test OAuth Description [" + System.currentTimeMillis() + "]";
 
         addConsumerDialog.addConsumer(lastAddedConsumerName, consumerDescription);
 
@@ -72,8 +72,7 @@ public class BitbucketIntegratedApplicationsPage implements Page
             // 1st <div> is description
             // 3rd <div> is key
             // 4th <div> is secret
-
-            List<PageElement> divElements = oauthConsumerListItem.findAll(By.tagName("div"));
+            List<PageElement> divElements = oauthConsumerListItem.findAll(By.tagName("div"));  
 
             boolean isRecentlyAddedConsumer = divElements.get(0).find(By.tagName("dd")).getText().equals(consumerDescription);
 
@@ -84,9 +83,9 @@ public class BitbucketIntegratedApplicationsPage implements Page
 
                 return new OAuthCredentials(generatedOauthKey, generatedOauthSecret);
             }
-        }
+        }  
 
-        return null;
+        return null;//TODO remove oauth consumers created because of tests
     }
 
     public void removeLastAdddedConsumer()
@@ -103,14 +102,12 @@ public class BitbucketIntegratedApplicationsPage implements Page
                 deleteConsumerButton.click();
             }
         }
-    }
-
+    }    
 
     public static final class OAuthCredentials
     {
         public final String oauthKey;
-        public final String oauthSecret;
-
+        public final String oauthSecret; 
 
         private OAuthCredentials(String oauthKey, String oauthSecret)
         {

@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthP
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.NoAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe.ThreeLegged10aOauthProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe.TwoLeggedOauthProvider;
 
 /**
  * BitbucketRemoteClientFactory
@@ -54,8 +55,10 @@ public final class DefaultBitbucketRemoteClientFactory implements BitbucketClien
 
     private AuthProvider createProviderForOrganization(Organization organization)
     {
+        // no auth
         AuthProvider authProvider = new NoAuthAuthProvider(organization.getHostUrl());
        
+        // basic
         if (StringUtils.isNotBlank(organization.getCredential().getAdminUsername()))
         {
             String decryptedPassword = encryptor.decrypt(organization.getCredential().getAdminPassword(),
@@ -67,11 +70,21 @@ public final class DefaultBitbucketRemoteClientFactory implements BitbucketClien
                                                      decryptedPassword);
         } 
         
+        // oauth 3LO - standard (10a)
         else if (StringUtils.isNotBlank( organization.getCredential().getAccessToken()) )
         {
             authProvider = new ThreeLegged10aOauthProvider(organization.getHostUrl(), oauth.getClientId(),
                     oauth.getClientSecret(), organization.getCredential().getAccessToken());
         }
+        
+        // oauth 2LO
+        else if (StringUtils.isNotBlank(organization.getCredential().getOauthKey())
+                && StringUtils.isNotBlank(organization.getCredential().getOauthSecret()))
+        {
+            authProvider = new TwoLeggedOauthProvider(organization.getHostUrl(), organization.getCredential()
+                    .getOauthKey(), organization.getCredential().getOauthSecret());
+        }
+        
 
         return authProvider;
     }
@@ -95,7 +108,14 @@ public final class DefaultBitbucketRemoteClientFactory implements BitbucketClien
         {
             authProvider = new ThreeLegged10aOauthProvider(repository.getOrgHostUrl(), oauth.getClientId(),
                     oauth.getClientSecret(), repository.getCredential().getAccessToken());
-        } 
+        }
+        
+        else if (StringUtils.isNotBlank(repository.getCredential().getOauthKey())
+                && StringUtils.isNotBlank(repository.getCredential().getOauthSecret()))
+        {
+            authProvider = new TwoLeggedOauthProvider(repository.getOrgHostUrl(), repository.getCredential()
+                    .getOauthKey(), repository.getCredential().getOauthSecret());
+        }
 
         return authProvider;
     }

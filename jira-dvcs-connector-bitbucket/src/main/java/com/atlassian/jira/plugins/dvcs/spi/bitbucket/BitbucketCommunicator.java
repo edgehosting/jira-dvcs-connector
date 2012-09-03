@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -81,7 +82,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * @param requestHelper
      *            the request helper
      */
-    public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor,
+    public BitbucketCommunicator(AuthenticationFactory authenticationFactory,
+            @Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor,
             BitbucketOAuth oauth, BitbucketClientRemoteFactory bitbucketClientRemoteFactory)
     {
         this.bitbucketLinker = bitbucketLinker;
@@ -334,7 +336,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 {
                     boolean fieldNameIsUrl = serviceField.getName().equals("URL");
                     boolean fieldValueIsRequiredPostCommitUrl = serviceField.getValue().equals(postCommitUrl);
-                    
+
                     if (fieldNameIsUrl && fieldValueIsRequiredPostCommitUrl)
                     {
                         remoteClient.getServicesRest().deleteService(repository.getOrgName(), // owner
@@ -406,8 +408,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForOrganization(organization);
+            Set<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
 
-            Set<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
 
             return GroupTransformer.fromBitbucketGroups(groups);
         } catch (BitbucketRequestException e)

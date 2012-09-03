@@ -37,7 +37,7 @@ public interface OrganizationService
      * @return organization
      */
     Organization get(int organizationId, boolean loadRepositories);
-
+    
 
     /**
      * save Organization to storage. If it's new object (without ID) after this operation it will have it assigned.
@@ -79,9 +79,9 @@ public interface OrganizationService
 	void enableAutolinkNewRepos(int orgId, boolean autolink);
 
 	/**
-	 * Gets the auto invition organizations.
+	 * Gets the auto invitation organizations.
 	 *
-	 * @return the auto invition organizations
+	 * @return the auto invitation organizations
 	 */
 	List<Organization> getAutoInvitionOrganizations();
 	
@@ -121,5 +121,11 @@ public interface OrganizationService
 	void enableSmartcommitsOnNewRepos(int id, boolean parseBoolean);
 	
 	void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs);
+	
+	Organization findIntegratedAccount();
+	
+	Organization getByHostAndName(final String hostUrl, final String name);
+
+    void updateCredentialsKeySecret(int organizationId, String key, String secret);
 }
 

@@ -101,7 +101,21 @@ public class RegenerateBitbucketOauthToken extends CommonDvcsConfigurationAction
     @Override
     protected void doValidation()
     {
+        if (StringUtils.isBlank(organization)) {
+            
+            addErrorMessage("No id has been provided, invalid request");
+            
+        } else {
+            
+            Organization integratedAccount = organizationService.findIntegratedAccount();
+            if (    integratedAccount != null 
+                &&  Integer.valueOf(organization).equals(integratedAccount.getId())) {
+                
+                addErrorMessage("Failed to regenerate token for an integrated account.");
+                
+            }
 
+        }
     }
 
     public String doFinish()
