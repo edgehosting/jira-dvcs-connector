@@ -13,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.user.util.UserManager;
 
 /**
@@ -27,7 +28,7 @@ import com.atlassian.jira.user.util.UserManager;
  * <br /><br />
  * @author jhocman@atlassian.com
  */
-class UserAddedExternallyEventProcessor implements Runnable
+class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor implements Runnable
 {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(UserAddedExternallyEventProcessor.class);
@@ -37,8 +38,6 @@ class UserAddedExternallyEventProcessor implements Runnable
 	
 	/** The communicator provider. */
 	private final DvcsCommunicatorProvider communicatorProvider;
-
-    private final UserManager userManager;
 
     private final String username;
 
@@ -53,10 +52,12 @@ class UserAddedExternallyEventProcessor implements Runnable
 	 *            the communicator provider
 	 */
 	public UserAddedExternallyEventProcessor(String username, OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider, UserManager userManager)
+			DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
 	{
+	    
+	    super(userManager, groupManager);
+	    
 		this.username = username;
-        this.userManager = userManager;
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
 	}
@@ -71,7 +72,7 @@ class UserAddedExternallyEventProcessor implements Runnable
 	    User user = userManager.getUser(username);
 	    
 	    if (!user.isActive()) {
-	        log.debug("Skipping invitation of an iactive user " + username);
+	        log.debug("Skipping invitation of an inactive user " + username);
 	        return;
 	    }
 
@@ -88,6 +89,10 @@ class UserAddedExternallyEventProcessor implements Runnable
 		{
 		    Set<Group> groupSlugs = organization.getDefaultGroups();
 			Set<String> slugsStrings = extractSlugs(groupSlugs);
+			
+			// log
+			logInvite(user, slugsStrings);
+			//
 			
 			if (CollectionUtils.isNotEmpty(slugsStrings))
 			{

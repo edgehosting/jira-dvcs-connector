@@ -12,6 +12,8 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.util.UserManager;
 
 /**
  * 
@@ -26,7 +28,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
  * @author jhocman@atlassian.com
  *
  */
-class UserAddedViaInterfaceEventProcessor implements Runnable
+class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventProcessor implements Runnable
 {
 
 	/** The ORGANIZATIO n_ selecto r_ reques t_ param. */
@@ -55,8 +57,10 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 	 * @param communicatorProvider the communicator provider
 	 */
 	public UserAddedViaInterfaceEventProcessor(UserAddedEvent event, OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider)
+			DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
 	{
+	    super(userManager, groupManager);
+	    
 		this.event = event;
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
@@ -82,6 +86,9 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 		Collection<Invitations> invitationsFor = toInvitations(organizationIdsAndGroupSlugs);
 		String email = parameters.get(EMAIL_PARAM)[0];
 
+		// log invite
+		logInvite(parameters.get("username")[0], invitationsFor);
+		
 		// invite
 		invite(email, invitationsFor);
 
@@ -172,5 +179,11 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 		
 		/** The group slugs. */
 		Collection<String> groupSlugs = new ArrayList<String>();
+		
+		@Override
+		public String toString()
+		{
+		    return organizaton.getName() + " : " + groupSlugs + "\n";
+		}
 	}
 }

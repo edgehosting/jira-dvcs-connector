@@ -16,6 +16,7 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.user.util.UserManager;
 import com.atlassian.plugin.event.PluginEventListener;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
@@ -67,6 +68,8 @@ public class DvcsAddUserListener
 
     private final UserManager userManager;
 
+    private final GroupManager groupManager;
+
     /**
      * The Constructor.
      * 
@@ -78,12 +81,13 @@ public class DvcsAddUserListener
      *            the communicator provider
      */
     public DvcsAddUserListener(EventPublisher eventPublisher, OrganizationService organizationService,
-            DvcsCommunicatorProvider communicatorProvider, UserManager userManager)
+            DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
     {
         this.eventPublisher = eventPublisher;
         this.organizationService = organizationService;
         this.communicatorProvider = communicatorProvider;
         this.userManager = userManager;
+        this.groupManager = groupManager;
         this.executorService = Executors.newFixedThreadPool(2,
                 ThreadFactories.namedThreadFactory("DvcsAddUserListenerExecutorService"));
 
@@ -100,7 +104,7 @@ public class DvcsAddUserListener
             public void execute(String key)
             {
                 // user has been added externally
-                Runnable task = new UserAddedExternallyEventProcessor(key, organizationService, communicatorProvider, userManager);
+                Runnable task = new UserAddedExternallyEventProcessor(key, organizationService, communicatorProvider, userManager, groupManager);
                 safeExecute(task, "Failed to handle add user externally user =  " + key+ "]");
             }
         });
@@ -125,7 +129,7 @@ public class DvcsAddUserListener
 
         String onFailMessage = "Failed to handle add user via interface event [ " + event + ", params =  "
                 + event.getRequestParameters() + "] ";
-        Runnable task = new UserAddedViaInterfaceEventProcessor(event, organizationService, communicatorProvider);
+        Runnable task = new UserAddedViaInterfaceEventProcessor(event, organizationService, communicatorProvider, userManager, groupManager);
         safeExecute(task, onFailMessage);
     }
 
@@ -170,15 +174,19 @@ public class DvcsAddUserListener
         }
     }
 
-    @PluginEventListener
+    // @PluginEventListener
     public void onPluginDisabled(PluginDisabledEvent event)
     {
+        log.info(event.getClass() + "");
+        
         unregisterSelf();
     }
 
     @PluginEventListener
     public void onPluginUninstalled(PluginUninstalledEvent event)
     {
+        log.info(event.getClass() + "");
+
         unregisterSelf();
     }
 
@@ -272,20 +280,8 @@ public class DvcsAddUserListener
         void execute(String key);
     }
     
-    public static void main(String[] args) throws InterruptedException
+    public void setCacheTimer(CacheTimer cacheTimer)
     {
-        CacheTimer timer = new CacheTimer(2);
-        
-        timer.scheduleOnExpiration(new OnExpiredCallback()
-        {
-            @Override
-            public void execute(String key)
-            {
-                System.out.println(key);
-            }
-        });
-        
-        timer.add("145");
-        
+        this.cacheTimer = cacheTimer;
     }
 }
