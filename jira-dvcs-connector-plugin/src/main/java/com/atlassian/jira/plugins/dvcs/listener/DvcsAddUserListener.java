@@ -1,18 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.crowd.event.user.UserAttributeStoredEvent;
 import com.atlassian.crowd.event.user.UserCreatedEvent;
 import com.atlassian.crowd.model.event.UserEvent;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.config.CoreFeatures;
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
@@ -69,6 +74,8 @@ public class DvcsAddUserListener
     private final UserManager userManager;
 
     private final GroupManager groupManager;
+    
+    private final FeatureManager featureManager;
 
     /**
      * The Constructor.
@@ -80,14 +87,19 @@ public class DvcsAddUserListener
      * @param communicatorProvider
      *            the communicator provider
      */
-    public DvcsAddUserListener(EventPublisher eventPublisher, OrganizationService organizationService,
-            DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
+    public DvcsAddUserListener(EventPublisher eventPublisher,
+                               OrganizationService organizationService,
+                               DvcsCommunicatorProvider communicatorProvider,
+                               UserManager userManager,
+                               GroupManager groupManager,
+                               FeatureManager featureManager)
     {
         this.eventPublisher = eventPublisher;
         this.organizationService = organizationService;
         this.communicatorProvider = communicatorProvider;
         this.userManager = userManager;
         this.groupManager = groupManager;
+        this.featureManager = featureManager;
         this.executorService = Executors.newFixedThreadPool(2,
                 ThreadFactories.namedThreadFactory("DvcsAddUserListenerExecutorService"));
 
@@ -109,6 +121,10 @@ public class DvcsAddUserListener
             }
         });
     }
+    
+    //---------------------------------------------------------------------------------------
+    // Handler methods
+    //---------------------------------------------------------------------------------------
 
     /**
      * Handler method for add user via interface.
@@ -136,19 +152,77 @@ public class DvcsAddUserListener
     /**
      * Handler method for add user externally;
      * 
-     * This event is also fired when user is added via UI
+     * This event is also fired when user is added via UI, so we need
+     * to do some tricks, means wait if UI event is also fired up. If yes
+     * it cancels the original invitation schedulement.
      * 
      * @param event
      *            the event object
      */
     @EventListener
-    public void onUserAddViaCrowdOrInterface(/* triggered before UserAddedEvent */ UserCreatedEvent event)
+    public void onUserAddViaCrowdOrInterface(/* triggered before UI's UserAddedEvent */ UserCreatedEvent event)
     {
 
         // schedule invitation, only UserAddedEvent (UI event) can discard scheduler
         cacheTimer.add(event.getUser().getName());
 
     }
+    
+    /**
+     * This way we are handling the google user from studio which has not been activated yet.
+     * They will get Bitbucket invitation after the last successful login.
+     *
+     * @param event the event
+     */
+    @SuppressWarnings("rawtypes")
+    @EventListener
+    public void onUserAttributeStore(final UserAttributeStoredEvent event)
+    {
+
+        // do this stuff just for the studio (i.e. google user first time logged in what imply 
+        // that it has just been activated)
+        
+        if (!featureManager.isEnabled(CoreFeatures.ON_DEMAND)) {
+            return;
+        }
+
+        safeExecute(new Runnable() {
+            @Override
+            public void run()
+            {
+                Set attributeNames = event.getAttributeNames();
+                String loginCountAttName = "login.count";
+
+                if (attributeNames.contains(loginCountAttName))
+                {
+
+                    Set<String> count = event.getAttributeValues(loginCountAttName);
+                    log.debug("Got {} as the 'login.count' values.", count);
+                  
+                    int loginCount = NumberUtils.toInt(count.iterator().next());
+
+                    // do the invitation for the first time login
+                    if (loginCount == 1)
+                    {
+                       new UserAddedExternallyEventProcessor(
+                               event.getUser().getName(), 
+                               organizationService,
+                               communicatorProvider,
+                               userManager,
+                               groupManager
+                       ).run();
+                    }
+                } else {
+                    // nop
+                }
+            }
+        }, "Failed to properly handle event " + event + " for user " + event.getUser().getName());
+        
+    }
+    
+    //---------------------------------------------------------------------------------------
+    // Handler methods end
+    //---------------------------------------------------------------------------------------
 
     /**
      * Wraps executorService.submit(task) method invocation with
@@ -174,7 +248,7 @@ public class DvcsAddUserListener
         }
     }
 
-    // @PluginEventListener
+    // @PluginEventListener // probably does some problems when reloading the plugin
     public void onPluginDisabled(PluginDisabledEvent event)
     {
         log.info(event.getClass() + "");

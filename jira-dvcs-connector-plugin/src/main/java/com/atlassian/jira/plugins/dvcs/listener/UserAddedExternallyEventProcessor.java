@@ -84,6 +84,11 @@ class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor i
 			return;
 		}
 		// ------------------------------------------------------
+		
+		if (!userIsMemberOfAnyGroup(user)) {
+		    log.debug("User " + username + " is not member of any group. Invitation cancelled.");
+		    return;
+		}
 
 		for (Organization organization : defaultOrganizations)
 		{
@@ -103,7 +108,12 @@ class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor i
 
 	}
 
-	/**
+	private boolean userIsMemberOfAnyGroup(User user)
+    {
+        return !groupManager.getGroupNamesForUser(user).isEmpty();
+    }
+
+    /**
 	 * Extract slugs.
 	 *
 	 * @param groupSlugs the group slugs
