@@ -1,116 +1,235 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.crowd.model.event.Operation;
+import com.atlassian.crowd.embedded.api.CrowdService;
+import com.atlassian.crowd.embedded.api.User;
+import com.atlassian.crowd.embedded.api.UserWithAttributes;
+import com.atlassian.crowd.event.user.UserAttributeStoredEvent;
+import com.atlassian.crowd.exception.OperationNotPermittedException;
+import com.atlassian.crowd.exception.runtime.OperationFailedException;
+import com.atlassian.crowd.exception.runtime.UserNotFoundException;
 import com.atlassian.crowd.model.event.UserEvent;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.util.UserManager;
 import com.atlassian.plugin.event.PluginEventListener;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginUninstalledEvent;
 import com.atlassian.util.concurrent.ThreadFactories;
+import com.google.common.base.Joiner;
 
 /**
  * 
  * Listens to user events (just for <code>CREATED</code> type).
- *
- * Handler methods run asynchronously and are safe to fail.
- * That means that it does not corrupt process of adding the user
- * because of some unexpected error at this place. 
+ * 
+ * Handler methods run asynchronously and are safe to fail. That means that it
+ * does not corrupt process of adding the user because of some unexpected error
+ * at this place.
  * 
  * @see #onUserAddViaInterface(UserAddedEvent)
  * @see #onUserAddViaCrowd(UserEvent)
- *
- * <br /><br />
- * Created on 21.6.2012, 14:07:34
- * <br /><br />
+ * 
+ * <br />
+ * <br />
+ *      Created on 21.6.2012, 14:07:34 <br />
+ * <br />
  * @author jhocman@atlassian.com
- *
+ * 
  */
 public class DvcsAddUserListener
 {
-	
-	/** The Constant log. */
-	private static final Logger log = LoggerFactory.getLogger(DvcsAddUserListener.class);
 
-	/** The event publisher. */
-	private final EventPublisher eventPublisher;
+    /** The Constant log. */
+    private static final Logger log = LoggerFactory.getLogger(DvcsAddUserListener.class);
 
-	/** The organization service. */
-	private final OrganizationService organizationService;
+    private static final String UI_USER_INVITATIONS_PARAM_NAME = "com.atlassian.jira.dvcs.invite.groups";
+    
+    /** The event publisher. */
+    private final EventPublisher eventPublisher;
 
-	/** The communicator provider. */
-	private final DvcsCommunicatorProvider communicatorProvider;
+    /** The organization service. */
+    private final OrganizationService organizationService;
+
+    /** The communicator provider. */
+    private final DvcsCommunicatorProvider communicatorProvider;
 
     private final ExecutorService executorService;
 
-	/**
-	 * The Constructor.
-	 *
-	 * @param eventPublisher the event publisher
-	 * @param organizationService the organization service
-	 * @param communicatorProvider the communicator provider
-	 */
-	public DvcsAddUserListener(EventPublisher eventPublisher, OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider)
-	{
-		this.eventPublisher = eventPublisher;
-		this.organizationService = organizationService;
-		this.communicatorProvider = communicatorProvider;
-        this.executorService = Executors.newFixedThreadPool(2, ThreadFactories.namedThreadFactory("DvcsAddUserListenerExecutorService"));
-	}
+    private final UserManager userManager;
 
-	/**
-	 * Handler method for add user via interface.
-	 *
-	 * @param event the event object
-	 */
-	@EventListener
-	public void onUserAddViaInterface(final UserAddedEvent event)
-	{
+    private final GroupManager groupManager;
+    
+    private final CrowdService crowd;
+
+    /**
+     * The Constructor.
+     * 
+     * @param eventPublisher
+     *            the event publisher
+     * @param organizationService
+     *            the organization service
+     * @param communicatorProvider
+     *            the communicator provider
+     */
+    public DvcsAddUserListener(EventPublisher eventPublisher,
+                               OrganizationService organizationService,
+                               DvcsCommunicatorProvider communicatorProvider,
+                               UserManager userManager,
+                               GroupManager groupManager,
+                               CrowdService crowd)
+    {
+        this.eventPublisher = eventPublisher;
+        this.organizationService = organizationService;
+        this.communicatorProvider = communicatorProvider;
+        this.userManager = userManager;
+        this.groupManager = groupManager;
+        this.crowd = crowd;
+        
+        this.executorService = Executors.newFixedThreadPool(2,
+                ThreadFactories.namedThreadFactory("DvcsAddUserListenerExecutorService"));
+
+    }
+    
+    //---------------------------------------------------------------------------------------
+    // Handler methods
+    //---------------------------------------------------------------------------------------
+
+    /**
+     * Handler method for add user via interface.
+     * 
+     * @param event
+     *            the event object
+     *            
+     * @throws OperationNotPermittedException 
+     * @throws OperationFailedException 
+     * @throws UserNotFoundException 
+     */
+    @EventListener
+    public void onUserAddViaInterface(final UserAddedEvent event) 
+    {
         if (event == null)
         {
             return;
         }
-		String onFailMessage = "Failed to handle add user via interface event [ " + event + ", params =  " + event.getRequestParameters() + "] ";
-		Runnable task = new UserAddedViaInterfaceEventProcessor(event, organizationService, communicatorProvider);
-        safeExecute(task, onFailMessage);
-	}
-
-	/**
-	 * Handler method for add user externally; i.e
-	 *
-	 * @param event the event object
-	 */
-	@EventListener
-	public void onUserAddViaCrowd(UserEvent event)
-	{
-	    if ((event==null) || Operation.CREATED != event.getOperation())
-	    {
-	        return;
-	    }
-        Runnable task = new UserAddedExternallyEventProcessor(event, organizationService, communicatorProvider);
-        String onFailMessage = "Failed to handle add user externally event [ " + event + ", user =  " + event.getUser() + "] ";
         
-        safeExecute(task, onFailMessage);
-	}
+        try
+        {
+            String username = event.getRequestParameters().get("username")[0];
+            String[] organizationIdsAndGroupSlugs = event.getRequestParameters().get(
+                    UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM);
+      
+            User user = userManager.getUser(username);
 
-	/**
-	 * Wraps executorService.submit(task) method
-	 * invocation with <code>try-catch</code> block
-	 * to ensure that no exception is propagated up.
-	 *
-	 * @param task the task
-	 * @param onFailMessage the on fail message
-	 */
+            crowd.setUserAttribute(
+                    user,
+                    UI_USER_INVITATIONS_PARAM_NAME,
+                    Collections.singleton(Joiner.on(
+                            UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).join(
+                            organizationIdsAndGroupSlugs)));
+       
+        } catch (UserNotFoundException e)
+        {
+            log.warn("UserNotFoundException : " + e.getMessage());
+        } catch (OperationFailedException e)
+        {
+            log.warn("UserNotFoundException : " + e.getMessage());
+        } catch (OperationNotPermittedException e)
+        {
+            log.warn("UserNotFoundException : " + e.getMessage());
+        } catch (Exception e) {
+            log.warn("Unexpected exception " + e.getClass() +  " : " + e.getMessage());
+        }
+
+    }
+   
+    /**
+     * This way we are handling the google user from studio which has not been activated yet.
+     * They will get Bitbucket invitation after the last successful login.
+     *
+     * @param event the event
+     */
+    @SuppressWarnings("rawtypes")
+    @EventListener
+    public void onUserAttributeStore(final UserAttributeStoredEvent event)
+    {
+
+        safeExecute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Set attributeNames = event.getAttributeNames();
+                String loginCountAttName = "login.count";
+
+                if (attributeNames.contains(loginCountAttName) && attributeNames.size() == 1)
+                {
+
+                    Set<String> count = event.getAttributeValues(loginCountAttName);
+                    log.debug("Got {} as the 'login.count' values.", count);
+
+                    int loginCount = NumberUtils.toInt(count.iterator().next());
+
+                    // do the invitation for the first time login
+                    if (loginCount == 1)
+                    {
+
+                        firstTimeLogin(event);
+
+                    }
+                }
+            }
+        }, "Failed to properly handle event " + event + " for user " + event.getUser().getName());
+
+    }
+
+    private void firstTimeLogin(final UserAttributeStoredEvent event)
+    {
+        String user = event.getUser().getName();
+        UserWithAttributes attributes = crowd.getUserWithAttributes(user);
+
+        String uiChoice = attributes.getValue(UI_USER_INVITATIONS_PARAM_NAME);
+        log.debug("UI choice for user " + event.getUser().getName() + " : " + uiChoice);
+
+        if (uiChoice == null)
+        {
+            // created by NON UI mechanism, e.g. google user
+            new UserAddedExternallyEventProcessor(user, organizationService, communicatorProvider, userManager,
+                    groupManager).run();
+
+        } else /* something has been choosed from UI */if (StringUtils.isNotBlank(uiChoice))
+        {
+            new UserAddedViaInterfaceEventProcessor(uiChoice, event.getUser(), organizationService,
+                    communicatorProvider, userManager, groupManager).run();
+        }
+    }
+    
+    //---------------------------------------------------------------------------------------
+    // Handler methods end
+    //---------------------------------------------------------------------------------------
+
+    /**
+     * Wraps executorService.submit(task) method invocation with
+     * <code>try-catch</code> block to ensure that no exception is propagated
+     * up.
+     * 
+     * @param task
+     *            the task
+     * @param onFailMessage
+     *            the on fail message
+     */
     private void safeExecute(Runnable task, String onFailMessage)
     {
         try
@@ -125,26 +244,31 @@ public class DvcsAddUserListener
         }
     }
 
-	@PluginEventListener
+    // @PluginEventListener // probably does some problems when reloading the plugin
     public void onPluginDisabled(PluginDisabledEvent event)
     {
-       unregisterSelf();
+        log.info(event.getClass() + "");
+        
+        unregisterSelf();
     }
 
-	@PluginEventListener
-	public void onPluginUninstalled(PluginUninstalledEvent event)
-	{
-		unregisterSelf();
-	}
+    @PluginEventListener
+    public void onPluginUninstalled(PluginUninstalledEvent event)
+    {
+        log.info(event.getClass() + "");
 
-	private void unregisterSelf()
-	{
-		try
-		{
-			eventPublisher.unregister(this);
-		} catch (Exception e)
-		{
-			log.warn("Failed to unregister " + this + ", cause message is " + e.getMessage());
-		}
-	}
+        unregisterSelf();
+    }
+
+    private void unregisterSelf()
+    {
+        try
+        {
+            eventPublisher.unregister(this);
+        } catch (Exception e)
+        {
+            log.warn("Failed to unregister " + this + ", cause message is " + e.getMessage());
+        }
+    }
+
 }

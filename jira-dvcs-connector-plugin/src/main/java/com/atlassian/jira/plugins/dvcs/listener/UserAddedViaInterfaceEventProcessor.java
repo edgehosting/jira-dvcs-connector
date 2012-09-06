@@ -6,12 +6,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 
-import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
+import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.util.UserManager;
+import com.google.common.base.Splitter;
 
 /**
  * 
@@ -26,29 +30,27 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
  * @author jhocman@atlassian.com
  *
  */
-class UserAddedViaInterfaceEventProcessor implements Runnable
+class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventProcessor implements Runnable
 {
 
-	/** The ORGANIZATIO n_ selecto r_ reques t_ param. */
 	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM = "dvcs_org_selector";
-	
-	/** The USERNAM e_ param. */
-	public static String USERNAME_PARAM = "username";
-	
-	/** The EMAI l_ param. */
+
+	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER = ";";
+		
 	public static String EMAIL_PARAM = "email";
 
 	/** The Constant SPLITTER. */
 	private static final String SPLITTER = ":";
 
-	/** The event. */
-	private final UserAddedEvent event;
-	
 	/** The organization service. */
 	private final OrganizationService organizationService;
 	
 	/** The communicator provider. */
 	private final DvcsCommunicatorProvider communicatorProvider;
+
+    private final String serializedGroupsUiChoice;
+
+    private final User user;
 
 	/**
 	 * Instantiates a new user added via interface event processor.
@@ -57,11 +59,14 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 	 * @param organizationService the organization service
 	 * @param communicatorProvider the communicator provider
 	 */
-	public UserAddedViaInterfaceEventProcessor(UserAddedEvent event, OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider)
+	public UserAddedViaInterfaceEventProcessor(String serializedGroupsUiChoice, User user ,OrganizationService organizationService,
+			DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
 	{
-		super();
-		this.event = event;
+	    super(userManager, groupManager);
+      
+	    this.serializedGroupsUiChoice = serializedGroupsUiChoice;
+        this.user = user;
+	    
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
 	}
@@ -73,22 +78,22 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 	public void run()
 	{
 
-		Map<String, String[]> parameters = event.getRequestParameters();
-		String[] organizationIdsAndGroupSlugs = parameters.get(ORGANIZATION_SELECTOR_REQUEST_PARAM);
-
+	    
 		// continue ? ------------------------------------------------
-		if (organizationIdsAndGroupSlugs == null || organizationIdsAndGroupSlugs.length == 0)
+		if (StringUtils.isBlank(serializedGroupsUiChoice))
 		{
 			return;
 		}
 		// ------------------------------------------------------------
 
-		Collection<Invitations> invitationsFor = toInvitations(organizationIdsAndGroupSlugs);
-		String username = parameters.get(USERNAME_PARAM)[0];
-		String email = parameters.get(EMAIL_PARAM)[0];
+		Collection<Invitations> invitationsFor = convertInvitations();
+		String email = user.getEmailAddress();
 
+		// log invite
+		logInvite(user, invitationsFor);
+		
 		// invite
-		invite(username, email, invitationsFor);
+		invite(email, invitationsFor);
 
 	}
 
@@ -98,12 +103,14 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 	 * @param organizationIdsAndGroupSlugs the organization ids and group slugs
 	 * @return the collection
 	 */
-	private Collection<Invitations> toInvitations(String[] organizationIdsAndGroupSlugs)
+	private Collection<Invitations> convertInvitations()
 	{
 
 		Map<Integer, Invitations> orgIdsToInvitations = new HashMap<Integer, Invitations>();
 
-		for (String requestParamToken : organizationIdsAndGroupSlugs)
+		Iterable<String> organizationIdsAndGroupSlugs = Splitter.on(ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).split(serializedGroupsUiChoice);
+		
+        for (String requestParamToken : organizationIdsAndGroupSlugs)
 		{
 
 			String[] tokens = requestParamToken.split(SPLITTER);
@@ -117,6 +124,11 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 			{
 				Invitations newInvitations = new Invitations();
 				newInvitations.organizaton = organizationService.get(orgId, false);
+				
+				if (newInvitations.organizaton == null) {
+				    continue;
+				}
+				
 				orgIdsToInvitations.put(orgId, newInvitations);
 
 				existingInvitations = newInvitations;
@@ -132,11 +144,10 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 	/**
 	 * Invite.
 	 *
-	 * @param username the username
 	 * @param email the email
 	 * @param invitations the invitations
 	 */
-	private void invite(String username, String email, Collection<Invitations> invitations)
+	private void invite( String email, Collection<Invitations> invitations)
 	{
 		if (CollectionUtils.isNotEmpty(invitations))
 		{
@@ -145,7 +156,7 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 			{
 				Collection<String> groupSlugs = invitation.groupSlugs;
 				Organization organizaton = invitation.organizaton;
-				invite(username, email, organizaton, groupSlugs);
+				invite(email, organizaton, groupSlugs);
 			}
 
 		}
@@ -154,12 +165,11 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 	/**
 	 * Invite.
 	 *
-	 * @param username the username
 	 * @param email the email
 	 * @param organization the organization
 	 * @param groupSlugs the group slugs
 	 */
-	private void invite(String username, String email, Organization organization, Collection<String> groupSlugs)
+	private void invite(String email, Organization organization, Collection<String> groupSlugs)
 	{
 		if (CollectionUtils.isNotEmpty(groupSlugs))
 		{
@@ -179,5 +189,11 @@ class UserAddedViaInterfaceEventProcessor implements Runnable
 		
 		/** The group slugs. */
 		Collection<String> groupSlugs = new ArrayList<String>();
+		
+		@Override
+		public String toString()
+		{
+		    return organizaton.getName() + " : " + groupSlugs + "\n";
+		}
 	}
 }

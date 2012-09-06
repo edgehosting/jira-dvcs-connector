@@ -5,14 +5,16 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.LoggerFactory;
 
-import com.atlassian.crowd.model.event.Operation;
-import com.atlassian.crowd.model.event.UserEvent;
+import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.util.UserManager;
 
 /**
  * The Class UserAddedExternallyEventProcessor.
@@ -26,92 +28,109 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
  * <br /><br />
  * @author jhocman@atlassian.com
  */
-class UserAddedExternallyEventProcessor implements Runnable
+class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor implements Runnable
 {
 
-	/** The event. */
-	private final UserEvent event;
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(UserAddedExternallyEventProcessor.class);
+    
+    /** The organization service. */
+    private final OrganizationService organizationService;
+    
+    /** The communicator provider. */
+    private final DvcsCommunicatorProvider communicatorProvider;
 
-	/** The organization service. */
-	private final OrganizationService organizationService;
+    private final String username;
 
-	/** The communicator provider. */
-	private final DvcsCommunicatorProvider communicatorProvider;
+    /**
+     * The Constructor.
+     * 
+     * @param event
+     *            the event
+     * @param organizationService
+     *            the organization service
+     * @param communicatorProvider
+     *            the communicator provider
+     */
+    public UserAddedExternallyEventProcessor(String username, OrganizationService organizationService,
+            DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
+    {
+        
+        super(userManager, groupManager);
+        
+        this.username = username;
+        this.organizationService = organizationService;
+        this.communicatorProvider = communicatorProvider;
+    }
 
-	/**
-	 * The Constructor.
-	 * 
-	 * @param event
-	 *            the event
-	 * @param organizationService
-	 *            the organization service
-	 * @param communicatorProvider
-	 *            the communicator provider
-	 */
-	public UserAddedExternallyEventProcessor(UserEvent event, OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider)
-	{
-		super();
-		this.event = event;
-		this.organizationService = organizationService;
-		this.communicatorProvider = communicatorProvider;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void run()
+    {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void run()
-	{
+        User user = userManager.getUser(username);
+        
+        if (!user.isActive()) {
+            log.debug("Skipping invitation of an inactive user " + username);
+            return;
+        }
 
-		if (Operation.CREATED != event.getOperation())
-		{
-			return;
-		}
+        List<Organization> defaultOrganizations = organizationService.getAutoInvitionOrganizations();
 
-		String email = event.getUser().getEmailAddress();
+        // continue ? ------------------------------------------
+        if (CollectionUtils.isEmpty(defaultOrganizations))
+        {
+            return;
+        }
+        // ------------------------------------------------------
+        
+        if (!userIsMemberOfAnyGroup(user)) {
+            log.debug("User " + username + " is not member of any group. Invitation cancelled.");
+            return;
+        }
 
-		List<Organization> defaultOrganizations = organizationService.getAutoInvitionOrganizations();
+        for (Organization organization : defaultOrganizations)
+        {
+            List<Group> groupSlugs = organization.getDefaultGroupsSlugs();
+            Collection<String> slugsStrings = extractSlugs(groupSlugs);
+            
+            // log
+            logInvite(user, slugsStrings);
+            //
+            
+            if (CollectionUtils.isNotEmpty(slugsStrings))
+            {
+                DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
+                communicator.inviteUser(organization, slugsStrings, user.getEmailAddress());
+            }
+        }
 
-		// continue ? ------------------------------------------
-		if (CollectionUtils.isEmpty(defaultOrganizations))
-		{
-			return;
-		}
-		// ------------------------------------------------------
+    }
 
-		for (Organization organization : defaultOrganizations)
-		{
-			List<Group> groupSlugs = organization.getDefaultGroupsSlugs();
-			Collection<String> slugsStrings = extractSlugs(groupSlugs);
-			
-			if (CollectionUtils.isNotEmpty(slugsStrings))
-			{
-				DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-				communicator.inviteUser(organization, slugsStrings, email);
-			}
-		}
+    private boolean userIsMemberOfAnyGroup(User user)
+    {
+        return !groupManager.getGroupNamesForUser(user).isEmpty();
+    }
 
-	}
-
-	/**
-	 * Extract slugs.
-	 *
-	 * @param groupSlugs the group slugs
-	 * @return the collection< string>
-	 */
-	private Collection<String> extractSlugs(List<Group> groupSlugs)
-	{
-		List<String> slugs = new ArrayList<String>();
-		
-		if (groupSlugs == null) {
-			return slugs;
-		}
-		
-		for (Group group : groupSlugs)
-		{
-			slugs.add(group.getSlug());
-		}
-		return slugs;
-	}
+    /**
+     * Extract slugs.
+     *
+     * @param groupSlugs the group slugs
+     * @return the collection< string>
+     */
+    private Collection<String> extractSlugs(List<Group> groupSlugs)
+    {
+        List<String> slugs = new ArrayList<String>();
+        
+        if (groupSlugs == null) {
+            return slugs;
+        }
+        
+        for (Group group : groupSlugs)
+        {
+            slugs.add(group.getSlug());
+        }
+        return slugs;
+    }
 }
