@@ -75,7 +75,7 @@ public class OrganizationServiceImpl implements OrganizationService
 	{
 		Organization organization = organizationDao.get(organizationId);
 
-		if (loadRepositories)
+		if (loadRepositories && organization != null)
 		{
 			List<Repository> repositories = repositoryService.getAllByOrganization(organizationId);
 			organization.setRepositories(repositories);

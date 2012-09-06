@@ -1,23 +1,25 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
+import java.util.Collections;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.crowd.embedded.api.CrowdService;
+import com.atlassian.crowd.embedded.api.User;
+import com.atlassian.crowd.embedded.api.UserWithAttributes;
 import com.atlassian.crowd.event.user.UserAttributeStoredEvent;
-import com.atlassian.crowd.event.user.UserCreatedEvent;
+import com.atlassian.crowd.exception.OperationNotPermittedException;
+import com.atlassian.crowd.exception.runtime.OperationFailedException;
+import com.atlassian.crowd.exception.runtime.UserNotFoundException;
 import com.atlassian.crowd.model.event.UserEvent;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.config.CoreFeatures;
-import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
@@ -27,12 +29,7 @@ import com.atlassian.plugin.event.PluginEventListener;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginUninstalledEvent;
 import com.atlassian.util.concurrent.ThreadFactories;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.RemovalCause;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
+import com.google.common.base.Joiner;
 
 /**
  * 
@@ -58,6 +55,8 @@ public class DvcsAddUserListener
     /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(DvcsAddUserListener.class);
 
+    private static final String UI_USER_INVITATIONS_PARAM_NAME = "com.atlassian.jira.dvcs.invite.groups";
+    
     /** The event publisher. */
     private final EventPublisher eventPublisher;
 
@@ -69,13 +68,11 @@ public class DvcsAddUserListener
 
     private final ExecutorService executorService;
 
-    private CacheTimer cacheTimer;
-
     private final UserManager userManager;
 
     private final GroupManager groupManager;
     
-    private final FeatureManager featureManager;
+    private final CrowdService crowd;
 
     /**
      * The Constructor.
@@ -92,34 +89,18 @@ public class DvcsAddUserListener
                                DvcsCommunicatorProvider communicatorProvider,
                                UserManager userManager,
                                GroupManager groupManager,
-                               FeatureManager featureManager)
+                               CrowdService crowd)
     {
         this.eventPublisher = eventPublisher;
         this.organizationService = organizationService;
         this.communicatorProvider = communicatorProvider;
         this.userManager = userManager;
         this.groupManager = groupManager;
-        this.featureManager = featureManager;
+        this.crowd = crowd;
+        
         this.executorService = Executors.newFixedThreadPool(2,
                 ThreadFactories.namedThreadFactory("DvcsAddUserListenerExecutorService"));
 
-        cacheTimer = new CacheTimer(2);
-        initCacheTimer();
-
-    }
-
-    private void initCacheTimer()
-    {
-        cacheTimer.scheduleOnExpiration(new OnExpiredCallback()
-        {
-            @Override
-            public void execute(String key)
-            {
-                // user has been added externally
-                Runnable task = new UserAddedExternallyEventProcessor(key, organizationService, communicatorProvider, userManager, groupManager);
-                safeExecute(task, "Failed to handle add user externally user =  " + key+ "]");
-            }
-        });
     }
     
     //---------------------------------------------------------------------------------------
@@ -131,43 +112,49 @@ public class DvcsAddUserListener
      * 
      * @param event
      *            the event object
+     *            
+     * @throws OperationNotPermittedException 
+     * @throws OperationFailedException 
+     * @throws UserNotFoundException 
      */
     @EventListener
-    public void onUserAddViaInterface(final UserAddedEvent event)
+    public void onUserAddViaInterface(final UserAddedEvent event) 
     {
         if (event == null)
         {
             return;
         }
+        
+        try
+        {
+            String username = event.getRequestParameters().get("username")[0];
+            String[] organizationIdsAndGroupSlugs = event.getRequestParameters().get(
+                    UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM);
+      
+            User user = userManager.getUser(username);
 
-        // invalidate user-added-externally event record from cache
-        cacheTimer.cancelSchedulerFor(event.getRequestParameters().get("username")[0]);
+            crowd.setUserAttribute(
+                    user,
+                    UI_USER_INVITATIONS_PARAM_NAME,
+                    Collections.singleton(Joiner.on(
+                            UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).join(
+                            organizationIdsAndGroupSlugs)));
+       
+        } catch (UserNotFoundException e)
+        {
+            log.warn("UserNotFoundException : " + e.getMessage());
+        } catch (OperationFailedException e)
+        {
+            log.warn("UserNotFoundException : " + e.getMessage());
+        } catch (OperationNotPermittedException e)
+        {
+            log.warn("UserNotFoundException : " + e.getMessage());
+        } catch (Exception e) {
+            log.warn("Unexpected exception " + e.getClass() +  " : " + e.getMessage());
+        }
 
-        String onFailMessage = "Failed to handle add user via interface event [ " + event + ", params =  "
-                + event.getRequestParameters() + "] ";
-        Runnable task = new UserAddedViaInterfaceEventProcessor(event, organizationService, communicatorProvider, userManager, groupManager);
-        safeExecute(task, onFailMessage);
     }
-
-    /**
-     * Handler method for add user externally;
-     * 
-     * This event is also fired when user is added via UI, so we need
-     * to do some tricks, means wait if UI event is also fired up. If yes
-     * it cancels the original invitation schedulement.
-     * 
-     * @param event
-     *            the event object
-     */
-    @EventListener
-    public void onUserAddViaCrowdOrInterface(/* triggered before UI's UserAddedEvent */ UserCreatedEvent event)
-    {
-
-        // schedule invitation, only UserAddedEvent (UI event) can discard scheduler
-        cacheTimer.add(event.getUser().getName());
-
-    }
-    
+   
     /**
      * This way we are handling the google user from studio which has not been activated yet.
      * They will get Bitbucket invitation after the last successful login.
@@ -179,45 +166,54 @@ public class DvcsAddUserListener
     public void onUserAttributeStore(final UserAttributeStoredEvent event)
     {
 
-        // do this stuff just for the studio (i.e. google user first time logged in what imply 
-        // that it has just been activated)
-        
-        if (!featureManager.isEnabled(CoreFeatures.ON_DEMAND)) {
-            return;
-        }
-
-        safeExecute(new Runnable() {
+        safeExecute(new Runnable()
+        {
             @Override
             public void run()
             {
                 Set attributeNames = event.getAttributeNames();
                 String loginCountAttName = "login.count";
 
-                if (attributeNames.contains(loginCountAttName))
+                if (attributeNames.contains(loginCountAttName) && attributeNames.size() == 1)
                 {
 
                     Set<String> count = event.getAttributeValues(loginCountAttName);
                     log.debug("Got {} as the 'login.count' values.", count);
-                  
+
                     int loginCount = NumberUtils.toInt(count.iterator().next());
 
                     // do the invitation for the first time login
                     if (loginCount == 1)
                     {
-                       new UserAddedExternallyEventProcessor(
-                               event.getUser().getName(), 
-                               organizationService,
-                               communicatorProvider,
-                               userManager,
-                               groupManager
-                       ).run();
+
+                        firstTimeLogin(event);
+
                     }
-                } else {
-                    // nop
                 }
             }
         }, "Failed to properly handle event " + event + " for user " + event.getUser().getName());
-        
+
+    }
+
+    private void firstTimeLogin(final UserAttributeStoredEvent event)
+    {
+        String user = event.getUser().getName();
+        UserWithAttributes attributes = crowd.getUserWithAttributes(user);
+
+        String uiChoice = attributes.getValue(UI_USER_INVITATIONS_PARAM_NAME);
+        log.debug("UI choice for user " + event.getUser().getName() + " : " + uiChoice);
+
+        if (uiChoice == null)
+        {
+            // created by NON UI mechanism, e.g. google user
+            new UserAddedExternallyEventProcessor(user, organizationService, communicatorProvider, userManager,
+                    groupManager).run();
+
+        } else /* something has been choosed from UI */if (StringUtils.isNotBlank(uiChoice))
+        {
+            new UserAddedViaInterfaceEventProcessor(uiChoice, event.getUser(), organizationService,
+                    communicatorProvider, userManager, groupManager).run();
+        }
     }
     
     //---------------------------------------------------------------------------------------
@@ -275,87 +271,4 @@ public class DvcsAddUserListener
         }
     }
 
-    static class CacheTimer
-    {
-
-        private CacheBuilder<Object, Object> builder;
-        private OnExpiredCallback onExpired;
-        private Cache<String, Object> cache;
-
-        public CacheTimer(int seconds)
-        {
-            super();
-            this.builder = CacheBuilder.newBuilder().expireAfterWrite(seconds, TimeUnit.SECONDS);
-            init(seconds);
-        }
-
-        private void init(int seconds)
-        {
-
-            RemovalListener<String, Object> listener = new RemovalListener<String, Object>()
-            {
-                /**
-                 * i.e. invite users with default groups
-                 */
-                @Override
-                public void onRemoval(RemovalNotification<String, Object> notification)
-                {
-                    if (notification.getCause() == RemovalCause.EXPIRED && onExpired != null)
-                    {
-                        onExpired.execute(notification.getKey());
-                    }
-                }
-            };
-
-            this.cache = builder.removalListener(listener).build(new CacheLoader<String, Object>()
-            {
-                @Override
-                public String load(String key) throws Exception
-                {
-                    return key;
-                }
-            });
-
-            // schedule cache cleanup
-            int scheduleRate = seconds * 1000;
-
-            new Timer(CacheTimer.class.getName()).scheduleAtFixedRate(new TimerTask()
-            {
-                @Override
-                public void run()
-                {
-                    cache.cleanUp();
-                }
-            }, scheduleRate, scheduleRate);
-
-        }
-
-        void scheduleOnExpiration(OnExpiredCallback callback)
-        {
-            this.onExpired = callback;
-        }
-
-        void add(String key)
-        {
-
-            cache.getUnchecked(key);
-
-        }
-
-        void cancelSchedulerFor(String key)
-        {
-            cache.invalidate(key);
-        }
-
-    }
-
-    static interface OnExpiredCallback
-    {
-        void execute(String key);
-    }
-    
-    public void setCacheTimer(CacheTimer cacheTimer)
-    {
-        this.cacheTimer = cacheTimer;
-    }
 }

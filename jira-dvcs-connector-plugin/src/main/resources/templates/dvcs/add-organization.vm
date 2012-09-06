@@ -173,6 +173,7 @@
 			
 			#if($org.isAutolinkNewRepos())
 				#set( $orgAutolink = "checked='checked'")
+				#set( $orgSmartcommitsOnNewReposDisabled = "")
 				#else
 				#set( $orgAutolink = "")
 				#set( $orgSmartcommitsOnNewReposDisabled = "disabled='disabled'")

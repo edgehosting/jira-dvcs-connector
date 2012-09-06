@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 
+import com.atlassian.crowd.embedded.api.CrowdService;
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
@@ -20,7 +20,7 @@ public class UserAddListenerFactoryBean implements FactoryBean
     private DvcsCommunicatorProvider communicatorProvider;
     private UserManager userManager;
     private GroupManager groupManager;
-    private FeatureManager featureManager;
+    private CrowdService crowdService;
     
     public Object getObject() throws Exception
     {        
@@ -29,7 +29,7 @@ public class UserAddListenerFactoryBean implements FactoryBean
             Class.forName("com.atlassian.jira.event.web.action.admin.UserAddedEvent");
             
             DvcsAddUserListener dvcsAddUserListener = new DvcsAddUserListener(eventPublisher,
-                    organizationService, communicatorProvider, userManager, groupManager, featureManager);
+                    organizationService, communicatorProvider, userManager, groupManager, crowdService);
             
             eventPublisher.register(dvcsAddUserListener);
             
@@ -89,9 +89,9 @@ public class UserAddListenerFactoryBean implements FactoryBean
         this.groupManager = groupManager;
     }
 
-    public void setFeatureManager(FeatureManager featureManager)
+    public void setCrowdService(CrowdService crowdService)
     {
-        this.featureManager = featureManager;
+        this.crowdService = crowdService;
     }
 
 }
