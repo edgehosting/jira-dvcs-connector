@@ -23,7 +23,7 @@
 					#end	    	 
 		    	 
 		    	 	<div style="margin-left: 25px; margin-bottom: 3px">
-		    	 		<input $!selectedGroup id="dvcs_org_selector_${bbOrg.id}_$group.slug" class="checkbox" type="checkbox" id="dvcs_org_selector_$group.slug" value="${bbOrg.id}:$group.slug" name="dvcs_org_selector" />
+		    	 		<input $!selectedGroup id="dvcs_org_selector_${bbOrg.id}_$group.slug" class="checkbox" type="checkbox" value="${bbOrg.id}:$group.slug" name="dvcs_org_selector" />
 		    	 		<label for="dvcs_org_selector_${bbOrg.id}_$group.slug"> $textutils.htmlEncode($group.niceName) </label>
 		    	 	</div>
 		    	 #end
