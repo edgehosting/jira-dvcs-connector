@@ -105,6 +105,12 @@ public class CommandsResults
 			errors.add(message);
 		}
 		
+		@Override
+		public String toString()
+		{
+		    return command + " :: " + errors;
+		}
+		
 	}
 
 	

@@ -59,7 +59,7 @@ public class SmartcommitOperation implements Runnable
 			
 		} catch (Exception e)
 		{
-			log.warn("Failed to process smartcommit operation. Cause message = " + e.getMessage());
+			log.warn("Failed to process smartcommit operation. Cause = " + e.getClass() + " : " + e.getMessage());
 		}
 	}
 

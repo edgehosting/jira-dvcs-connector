@@ -94,7 +94,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	 * {@inheritDoc}
 	 */
 	@Override
-	public synchronized void syncRepositoryList(Organization organization)
+	public synchronized void syncRepositoryList(Organization organization, boolean soft)
 	{
 		log.debug("Synchronising list of repositories");
 		// get repositories from the dvcs hosting server
@@ -113,8 +113,16 @@ public class RepositoryServiceImpl implements RepositoryService
 		addNewRepositories(storedRepositories, remoteRepositories, organization);
 
 		// start asynchronous changesets synchronization for all linked repositories in organization
-		syncAllInOrganization(organization.getId());
+		syncAllInOrganization(organization.getId(), soft);
 	}
+	
+	@Override
+	public void syncRepositoryList(Organization organization)
+	{
+	    syncRepositoryList(organization, true);
+	    
+	}
+	
 
 	/**
 	 * Removes duplicated repositories.
@@ -266,16 +274,17 @@ public class RepositoryServiceImpl implements RepositoryService
 		doSync(repository, softSync);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void syncAllInOrganization(int organizationId)
+    /**
+     * synchronization of changesets in all repositories which are in given organization
+     * @param organizationId organizationId
+     * @param soft 
+     */
+	private void syncAllInOrganization(int organizationId, boolean soft)
 	{
 		List<Repository> repositories = getAllByOrganization(organizationId);
 		for (Repository repository : repositories)
 		{
-			doSync(repository, true);
+			doSync(repository, soft);
 		}
 	}
 

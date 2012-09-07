@@ -58,9 +58,13 @@ public interface RepositoryService
      *    Retrieves list of repositories for organization and adds/removes local repositories accordingly.
      *    If autolinking is set to to true new repositories will be linked and they will start synchronizing.
      *    
+     * softsync is used by default
+     * 
      * @param organization organization
      */
     void syncRepositoryList(Organization organization);
+
+    void syncRepositoryList(Organization organization, boolean soft);
 
     /**
      * synchronization of changesets in given repository
@@ -68,12 +72,6 @@ public interface RepositoryService
      * @param softSync
      */
     void sync(int repositoryId, boolean softSync);
-
-    /**
-     * synchronization of changesets in all repositories which are in given organization
-     * @param organizationId organizationId
-     */
-    void syncAllInOrganization(int organizationId);
 
 	/**
 	 * Enables/links the repository to the jira projects. This will also

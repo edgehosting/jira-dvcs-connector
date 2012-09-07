@@ -131,7 +131,14 @@
 	            <div style="margin-top: 10px;"  class="field-group">
 	                <label for="autoSmartCommits">Enable Smart Commits:</label>
 	                <input class="checkbox" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true" checked="checked" />
-	                <div class="description"><a href="https://confluence.atlassian.com/display/FISHEYE/Using+Smart+Commits">Smart Commits </a>allow repository committers to perform actions like transitioning JIRA issues</div>
+	                <div class="description">
+	                	#if ($action.isOnDemandLicense())
+	                		<a href="https://confluence.atlassian.com/display/AOD/Processing+JIRA+issues+with+commit+messages" target="_blank">
+				        #else
+				        	<a href="https://confluence.atlassian.com/display/BITBUCKET/Processing+JIRA+issues+with+commit+messages" target="_blank">
+        				#end
+	                	Smart Commits</a> allow repository committers to perform actions like transitioning JIRA issues
+	                </div>
 	            </div>
      
                 <div id="bbCredentials"></div>
@@ -185,7 +192,7 @@
 			#end
 	
 	<div class="dvcs-header-container">	
-		<h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a> #if($org.isIntegratedAccount()) (integrated) #end </h4>
+		<h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a> #if($org.isIntegratedAccount())  - Configured By <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end </h4>
 		<div class="dvcs-org-container aui-toolbar">
 				
 				<ul class="toolbar-group">
@@ -261,6 +268,9 @@
 			<div class="dvcs-dclear"></div>
 	</div>				 
 
+				
+			   #if ($org.getRepositories().size() > 0)
+				
 			   <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
 			    <thead>
 			        <tr>
@@ -344,6 +354,14 @@
 			       
 			    </tbody>
 			</table>
+			
+			#else
+			
+			<span class="dvcs-no-repos">
+				No repositories.
+			</span>
+			
+			#end
 			
 			<div class="vert-space">&nbsp;</div>
 			<div class="vert-space">&nbsp;</div>
