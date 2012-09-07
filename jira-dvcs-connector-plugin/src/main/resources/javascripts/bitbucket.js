@@ -701,6 +701,12 @@ AJS.$(document).ready(function() {
 
     	// defined in macro
     	init_repositories();
+
+    	//
+    	if (window.location.hash == '#expand') {
+    		showAddRepoDetails(true);
+    	}
+    	
     }
 
 });

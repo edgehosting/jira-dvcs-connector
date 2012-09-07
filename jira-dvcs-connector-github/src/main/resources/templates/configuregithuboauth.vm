@@ -15,10 +15,6 @@
         
         <h3>GitHub OAuth Settings</h3>
 
-            <div id='gh_config_link'>
-                <a href="${baseurl}/secure/admin/ConfigureDvcsOrganizations!default.jspa">Bulk Configure Bitbucket and GitHub Accounts</a>
-            </div>
-
               <h4 class="gh_config_h4">Setting up a GitHub OAuth Application</h4>
 
                 <form class="aui" method="post" action="${baseurl}/secure/admin/ConfigureGithubOAuth.jspa">
@@ -110,7 +106,7 @@
                    </li>
 
                    <li>
-                       Once you have completed the OAuth Application setup, you can begin <a href="${baseurl}/secure/admin/ConfigureDvcsOrganizations!default.jspa">configuring your accounts</a>.
+                       Once you have completed the OAuth Application setup, you can begin <a href="${baseurl}/secure/admin/ConfigureDvcsOrganizations!default.jspa#expand">configuring your accounts</a>.
                    </li>
 
                   </ol>

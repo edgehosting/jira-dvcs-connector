@@ -96,7 +96,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 	private OAuthService createOAuthScribeService()
 	{
 		String redirectBackUrl = ap.getBaseUrl() + "/secure/admin/AddBitbucketOrganization!finish.jspa?organization="
-				+ organization + "&autoLinking=" + getAutoLinking() + "&url=" + url + "&atl_token=" + getXsrfToken();
+				+ organization + "&autoLinking=" + getAutoLinking() + "&url=" + url + "&autoSmartCommits=" + getAutoSmartCommits() + "&atl_token=" + getXsrfToken();
 
 		return createBitbucketOAuthScribeService(redirectBackUrl);
 	}

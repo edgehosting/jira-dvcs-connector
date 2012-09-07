@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.config.CoreFeatures;
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
@@ -15,15 +17,20 @@ public class ConfigureBitbucketOAuth extends JiraWebActionSupport
 	private static final long serialVersionUID = 4351302596219869689L;
 
 	private final Logger logger = LoggerFactory.getLogger(ConfigureBitbucketOAuth.class);
+	
     private final BitbucketOAuth bitbucketOAuth;
     private final ApplicationProperties applicationProperties;
     
     private String forceClear;
 
-    public ConfigureBitbucketOAuth(@Qualifier("bitbucketOAuth") BitbucketOAuth bitbucketOAuth, ApplicationProperties applicationProperties)
+    private final FeatureManager featureManager;
+
+    public ConfigureBitbucketOAuth(@Qualifier("bitbucketOAuth") BitbucketOAuth bitbucketOAuth,
+            ApplicationProperties applicationProperties, FeatureManager featureManager)
     {
         this.bitbucketOAuth = bitbucketOAuth;
         this.applicationProperties = applicationProperties;
+        this.featureManager = featureManager;
     }
 
     @Override
@@ -118,6 +125,11 @@ public class ConfigureBitbucketOAuth extends JiraWebActionSupport
     public void setForceClear(String forceClear)
     {
         this.forceClear = forceClear;
+    }
+    
+    public boolean isOnDemandLicense()
+    {
+        return featureManager.isEnabled(CoreFeatures.ON_DEMAND);
     }
 
 }
