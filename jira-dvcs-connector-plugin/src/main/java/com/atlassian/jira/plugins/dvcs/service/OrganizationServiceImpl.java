@@ -106,7 +106,7 @@ public class OrganizationServiceImpl implements OrganizationService
 		org = organizationDao.save(organization);
 
 		// sync repository list
-		repositoryService.syncRepositoryList(org);
+		repositoryService.syncRepositoryList(org, false);
 
 		return org;
 	}
