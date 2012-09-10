@@ -68,7 +68,7 @@ public class OrganizationServiceTest
 
 		Assert.assertTrue(sampleOrganization == saved);
 		//
-		Mockito.verify(repositoryService, Mockito.times(1)).syncRepositoryList(sampleOrganization);
+		Mockito.verify(repositoryService, Mockito.times(1)).syncRepositoryList(sampleOrganization, false);
 
 	}
 
