@@ -433,3 +433,22 @@ html[xmlns] .dvcs-dclear {
 #github-form-section {
 	margin-top: 10px;
 }
+
+.dvcs-account-ondemand {
+	width: 115px;
+     height: 28px;
+     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/ondemand_logo.png);
+     background-repeat: no-repeat;
+     display: inline-block;
+     position: relative;
+     top: -7px;
+}
+
+.dvcs-no-repos {
+	margin: 25px;
+	font-size: 1.1em;
+	font-style: italic;
+}
+.dvcs-bb-oauth-info {
+	margin-top: 20px;
+}
