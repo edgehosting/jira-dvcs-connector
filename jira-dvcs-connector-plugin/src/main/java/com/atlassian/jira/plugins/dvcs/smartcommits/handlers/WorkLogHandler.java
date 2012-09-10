@@ -19,63 +19,68 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.util.lang.Pair;
 
-public class WorkLogHandler implements CommandHandler<Worklog> {
+public class WorkLogHandler implements CommandHandler<Worklog>
+{
 
     private static CommandType CMD_TYPE = CommandType.LOG_WORK;
 
     private WorklogService worklogService;
 
     private Pattern IN_WORKLOG_PATTERN = Pattern.compile("((\\d+(w|d|h|m)\\s*)+)");
-    
-    public WorkLogHandler(WorklogService worklogService) {
+
+    public WorkLogHandler(WorklogService worklogService)
+    {
         this.worklogService = worklogService;
     }
 
-    public CommandType getCommandType() {
+    public CommandType getCommandType()
+    {
         return CMD_TYPE;
     }
 
-    public Either<CommitHookHandlerError, Worklog> handle(User user, MutableIssue issue, String commandName, List<String> args) {
-        
+    public Either<CommitHookHandlerError, Worklog> handle(User user, MutableIssue issue, String commandName,
+            List<String> args)
+    {
+
         JiraServiceContextImpl jiraServiceContext = new JiraServiceContextImpl(user);
-        
+
         String worklog = args.get(0);
         Pair<String, String> durationAndComment = splitWorklogToDurationAndComment(worklog);
 
         WorklogResult result = worklogService.validateCreate(
                 jiraServiceContext,
-                WorklogInputParametersImpl.builder()
-                        .issue(issue)
-                        .timeSpent(args.isEmpty() ? null : durationAndComment.first())
-                        .comment(durationAndComment.second())
-                        .startDate(new Date())
-                        .build());
-        
-        if (!jiraServiceContext.getErrorCollection().hasAnyErrors()) {
-            
-            return Either.value(worklogService.createAndAutoAdjustRemainingEstimate(
-                    jiraServiceContext, result, true));
-            
-        } else {
-            
-            return Either.error(CommitHookHandlerError.fromErrorCollection(
-                    CMD_TYPE.getName(), issue.getKey(), jiraServiceContext.getErrorCollection()));
+                WorklogInputParametersImpl.builder().issue(issue)
+                        .timeSpent(durationAndComment.first())
+                        .comment(durationAndComment.second()).startDate(new Date()).build());
+
+        if (!jiraServiceContext.getErrorCollection().hasAnyErrors())
+        {
+
+            return Either.value(worklogService.createAndAutoAdjustRemainingEstimate(jiraServiceContext, result, true));
+
+        } else
+        {
+
+            return Either.error(CommitHookHandlerError.fromErrorCollection(CMD_TYPE.getName(), issue.getKey(),
+                    jiraServiceContext.getErrorCollection()));
 
         }
     }
-    
-    private Pair<String, String> splitWorklogToDurationAndComment (String worklog) {
-        
+
+    private Pair<String, String> splitWorklogToDurationAndComment(String worklog)
+    {
+
         String worklogDuration = null;
         String worklogComment = "";
-        
+
         Matcher matcher = IN_WORKLOG_PATTERN.matcher(worklog);
         matcher.find();
 
         worklogDuration = matcher.group(0).trim();
-        
+
         String comment = matcher.replaceAll("");
-        if (StringUtils.isNotBlank(comment)) {
+        if (StringUtils.isNotBlank(comment))
+        {
             worklogComment = comment.trim();
         }
 
