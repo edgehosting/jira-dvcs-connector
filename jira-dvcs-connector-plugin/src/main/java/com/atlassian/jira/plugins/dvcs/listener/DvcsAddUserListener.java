@@ -1,9 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -28,7 +27,6 @@ import com.atlassian.jira.user.util.UserManager;
 import com.atlassian.plugin.event.PluginEventListener;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginUninstalledEvent;
-import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.base.Joiner;
 
 /**
@@ -66,8 +64,6 @@ public class DvcsAddUserListener
     /** The communicator provider. */
     private final DvcsCommunicatorProvider communicatorProvider;
 
-    private final ExecutorService executorService;
-
     private final UserManager userManager;
 
     private final GroupManager groupManager;
@@ -98,9 +94,6 @@ public class DvcsAddUserListener
         this.groupManager = groupManager;
         this.crowd = crowd;
         
-        this.executorService = Executors.newFixedThreadPool(2,
-                ThreadFactories.namedThreadFactory("DvcsAddUserListenerExecutorService"));
-
     }
     
     //---------------------------------------------------------------------------------------
@@ -145,10 +138,10 @@ public class DvcsAddUserListener
             log.warn("UserNotFoundException : " + e.getMessage());
         } catch (OperationFailedException e)
         {
-            log.warn("UserNotFoundException : " + e.getMessage());
+            log.warn("OperationFailedException : " + e.getMessage());
         } catch (OperationNotPermittedException e)
         {
-            log.warn("UserNotFoundException : " + e.getMessage());
+            log.warn("OperationNotPermittedException : " + e.getMessage());
         } catch (Exception e) {
             log.warn("Unexpected exception " + e.getClass() +  " : " + e.getMessage());
         }
@@ -157,7 +150,7 @@ public class DvcsAddUserListener
    
     /**
      * This way we are handling the google user from studio which has not been activated yet.
-     * They will get Bitbucket invitation after the last successful login.
+     * They will get Bitbucket invitation after the first successful login.
      *
      * @param event the event
      */
@@ -166,6 +159,11 @@ public class DvcsAddUserListener
     public void onUserAttributeStore(final UserAttributeStoredEvent event)
     {
 
+        if (event.getUser() == null)
+        {
+            return;
+        }
+        
         safeExecute(new Runnable()
         {
             @Override
@@ -174,13 +172,19 @@ public class DvcsAddUserListener
                 Set attributeNames = event.getAttributeNames();
                 String loginCountAttName = "login.count";
 
-                if (attributeNames.contains(loginCountAttName) && attributeNames.size() == 1)
+                if (attributeNames != null && 
+                    attributeNames.contains(loginCountAttName) && attributeNames.size() == 1)
                 {
 
                     Set<String> count = event.getAttributeValues(loginCountAttName);
                     log.debug("Got {} as the 'login.count' values.", count);
 
-                    int loginCount = NumberUtils.toInt(count.iterator().next());
+                    Iterator<String> countValueIterator = count.iterator();
+                    if (!countValueIterator.hasNext()) 
+                    {
+                        return;
+                    }
+                    int loginCount = NumberUtils.toInt(countValueIterator.next());
 
                     // do the invitation for the first time login
                     if (loginCount == 1)
@@ -236,7 +240,7 @@ public class DvcsAddUserListener
         {
             if (task != null)
             {
-                executorService.submit(task);
+               task.run();
             }
         } catch (Throwable t)
         {
@@ -247,7 +251,7 @@ public class DvcsAddUserListener
     // @PluginEventListener // probably does some problems when reloading the plugin
     public void onPluginDisabled(PluginDisabledEvent event)
     {
-        log.info(event.getClass() + "");
+        log.info(event.getClass() + " : DVCS connector plugin uninstalled.");
         
         unregisterSelf();
     }
@@ -255,7 +259,7 @@ public class DvcsAddUserListener
     @PluginEventListener
     public void onPluginUninstalled(PluginUninstalledEvent event)
     {
-        log.info(event.getClass() + "");
+        log.info(event.getClass() + " : DVCS connector plugin uninstalled.");
 
         unregisterSelf();
     }

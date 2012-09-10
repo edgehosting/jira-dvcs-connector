@@ -18,119 +18,107 @@ import com.atlassian.jira.user.util.UserManager;
 
 /**
  * The Class UserAddedExternallyEventProcessor.
- *
- * {@link Runnable} processor that handles logic beside
- * invitations for user added to JIRA i.e. via crowd so not via
- * user interface.
  * 
- * <br /><br />
- * Created on 21.6.2012, 15:22:43
- * <br /><br />
+ * {@link Runnable} processor that handles logic beside invitations for user
+ * added to JIRA i.e. via crowd so not via user interface.
+ * 
+ * <br />
+ * <br />
+ * Created on 21.6.2012, 15:22:43 <br />
+ * <br />
+ * 
  * @author jhocman@atlassian.com
  */
 class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor implements Runnable
 {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(UserAddedExternallyEventProcessor.class);
-    
-	/** The organization service. */
-	private final OrganizationService organizationService;
-	
-	/** The communicator provider. */
-	private final DvcsCommunicatorProvider communicatorProvider;
+
+    /** The organization service. */
+    private final OrganizationService organizationService;
+
+    /** The communicator provider. */
+    private final DvcsCommunicatorProvider communicatorProvider;
 
     private final String username;
 
-	/**
-	 * The Constructor.
-	 * 
-	 * @param event
-	 *            the event
-	 * @param organizationService
-	 *            the organization service
-	 * @param communicatorProvider
-	 *            the communicator provider
-	 */
-	public UserAddedExternallyEventProcessor(String username, OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
-	{
-	    
-	    super(userManager, groupManager);
-	    
-		this.username = username;
-		this.organizationService = organizationService;
-		this.communicatorProvider = communicatorProvider;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void run()
-	{
-
-	    User user = userManager.getUser(username);
-	    
-	    if (!user.isActive()) {
-	        log.debug("Skipping invitation of an inactive user " + username);
-	        return;
-	    }
-
-		List<Organization> defaultOrganizations = organizationService.getAutoInvitionOrganizations();
-
-		// continue ? ------------------------------------------
-		if (CollectionUtils.isEmpty(defaultOrganizations))
-		{
-			return;
-		}
-		// ------------------------------------------------------
-		
-		if (!userIsMemberOfAnyGroup(user)) {
-		    log.debug("User " + username + " is not member of any group. Invitation cancelled.");
-		    return;
-		}
-
-		for (Organization organization : defaultOrganizations)
-		{
-		    Set<Group> groupSlugs = organization.getDefaultGroups();
-			Set<String> slugsStrings = extractSlugs(groupSlugs);
-			
-			// log
-			logInvite(user, slugsStrings);
-			//
-			
-			if (CollectionUtils.isNotEmpty(slugsStrings))
-			{
-				DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-				communicator.inviteUser(organization, slugsStrings, user.getEmailAddress());
-			}
-		}
-
-	}
-
-	private boolean userIsMemberOfAnyGroup(User user)
+    /**
+     * The Constructor.
+     * 
+     * @param event
+     *            the event
+     * @param organizationService
+     *            the organization service
+     * @param communicatorProvider
+     *            the communicator provider
+     */
+    public UserAddedExternallyEventProcessor(String username, OrganizationService organizationService,
+            DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
     {
-        return !groupManager.getGroupNamesForUser(user).isEmpty();
+
+        super(userManager, groupManager);
+
+        this.username = username;
+        this.organizationService = organizationService;
+        this.communicatorProvider = communicatorProvider;
     }
 
     /**
-	 * Extract slugs.
-	 *
-	 * @param groupSlugs the group slugs
-	 * @return the collection< string>
-	 */
-	private Set<String> extractSlugs(Set<Group> groupSlugs)
-	{
-	    Set<String> slugs = new HashSet<String>();
-		
-		if (groupSlugs == null) {
-			return slugs;
-		}
-		
-		for (Group group : groupSlugs)
-		{
-			slugs.add(group.getSlug());
-		}
-		return slugs;
-	}
+     * {@inheritDoc}
+     */
+    @Override
+    public void run()
+    {
+
+        User user = userManager.getUser(username);
+
+        List<Organization> defaultOrganizations = organizationService.getAutoInvitionOrganizations();
+
+        // continue ? ------------------------------------------
+        if (CollectionUtils.isEmpty(defaultOrganizations))
+        {
+            return;
+        }
+        // ------------------------------------------------------
+
+        for (Organization organization : defaultOrganizations)
+        {
+            Set<Group> groupSlugs = organization.getDefaultGroups();
+            Set<String> slugsStrings = extractSlugs(groupSlugs);
+
+            // log
+            logInvite(user, slugsStrings);
+            //
+
+            if (CollectionUtils.isNotEmpty(slugsStrings))
+            {
+                DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
+                communicator.inviteUser(organization, slugsStrings, user.getEmailAddress());
+            }
+        }
+
+    }
+
+    /**
+     * Extract slugs.
+     * 
+     * @param groupSlugs
+     *            the group slugs
+     * @return the collection< string>
+     */
+    private Set<String> extractSlugs(Set<Group> groupSlugs)
+    {
+        Set<String> slugs = new HashSet<String>();
+
+        if (groupSlugs == null)
+        {
+            return slugs;
+        }
+
+        for (Group group : groupSlugs)
+        {
+            slugs.add(group.getSlug());
+        }
+        return slugs;
+    }
 }

@@ -125,7 +125,8 @@ class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventProcessor
 				Invitations newInvitations = new Invitations();
 				newInvitations.organizaton = organizationService.get(orgId, false);
 				
-				if (newInvitations.organizaton == null) {
+				if (newInvitations.organizaton == null) 
+				{
 				    continue;
 				}
 				

@@ -13,7 +13,7 @@ public class UserInviteCommonEventProcessor
 {
 
     private static Logger log = LoggerFactory.getLogger(UserInviteCommonEventProcessor.class);
-    
+
     protected final GroupManager groupManager;
 
     protected final UserManager userManager;
@@ -24,22 +24,23 @@ public class UserInviteCommonEventProcessor
         this.userManager = userManager;
         this.groupManager = groupManager;
     }
-    
-    public void logInvite(String username, Collection<? extends Object> bitbucketGroups) {
+
+    public void logInvite(String username, Collection<? extends Object> bitbucketGroups)
+    {
         User user = userManager.getUser(username);
         logInvite(user, bitbucketGroups);
     }
 
-    public void logInvite(User user,  Collection<? extends Object> bitbucketGroups) {
-       
-       if (log.isDebugEnabled()) {
-       
-           log.debug(" \n\t Inviting user " + user.getName() + 
-                    ", \n\t is active = " + user.isActive() + 
-                    ", \n\t member of groups " + groupManager.getGroupNamesForUser(user) + 
-                    ", \n\t to Bitbucket groups " + bitbucketGroups);
-           
-       }
+    public void logInvite(User user, Collection<? extends Object> bitbucketGroups)
+    {
+
+        if (log.isDebugEnabled())
+        {
+
+            log.debug(" \n\t Inviting user " + user.getName() + ", \n\t is active = " + user.isActive()
+                    + ", \n\t member of groups " + groupManager.getGroupNamesForUser(user)
+                    + ", \n\t to Bitbucket groups " + bitbucketGroups);
+
+        }
     }
 }
-

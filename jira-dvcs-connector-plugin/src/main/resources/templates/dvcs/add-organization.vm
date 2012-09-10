@@ -269,7 +269,7 @@
 	</div>				 
 
 				
-			   #if ($org.getRepositories().size() > 0)
+			   #if (!$org.getRepositories().isEmpty())
 				
 			   <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
 			    <thead>
