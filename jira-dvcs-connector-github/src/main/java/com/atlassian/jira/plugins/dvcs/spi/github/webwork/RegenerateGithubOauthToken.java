@@ -95,7 +95,7 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 			return INPUT;
 		}
 
-		return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + getXsrfToken());
+                return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
 	}
 
 	private String requestAccessToken()

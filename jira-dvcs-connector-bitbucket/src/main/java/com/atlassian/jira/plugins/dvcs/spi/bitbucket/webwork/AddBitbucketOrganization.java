@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 
@@ -70,7 +71,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 		}
 
 		// go back to main DVCS configuration page
-		return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + getXsrfToken());
+                return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
 	}
 
 	@Override
