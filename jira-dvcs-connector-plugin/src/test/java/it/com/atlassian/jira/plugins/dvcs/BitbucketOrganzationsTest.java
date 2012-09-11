@@ -28,6 +28,7 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
+import org.hamcrest.Matchers;
 
 /**
  * Test to verify behaviour when syncing bitbucket repository..
@@ -128,11 +129,11 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 	public void addRepoCommitsAppearOnIssues()
 	{
 		configureOrganizations.addOrganizationSuccessfully(TEST_URL, true);
-
+                
 		assertThat(getCommitsForIssue("QA-2"),
-				hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+				Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
 		assertThat(getCommitsForIssue("QA-3"),
-				hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+				Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
 	}
 
 	@Test
