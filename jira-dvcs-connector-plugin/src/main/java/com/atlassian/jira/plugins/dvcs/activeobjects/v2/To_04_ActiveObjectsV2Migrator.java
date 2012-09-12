@@ -47,8 +47,8 @@ public class To_04_ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask
 			map.put("PROJECT_KEY", projectKey);
             if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
             {
-                map.put("USERNAME", username);
-                map.put("PASSWORD", password);
+                map.put("ADMIN_USERNAME", username);
+                map.put("ADMIN_PASSWORD", password);
             }
             com.atlassian.jira.plugins.dvcs.activeobjects.v2.ProjectMapping pm = activeObjects.create(com.atlassian.jira.plugins.dvcs.activeobjects.v2.ProjectMapping.class, map);
 
