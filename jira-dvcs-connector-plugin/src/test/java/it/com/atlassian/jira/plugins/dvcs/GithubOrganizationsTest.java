@@ -10,6 +10,7 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -30,7 +31,6 @@ import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
@@ -203,9 +203,9 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
 
         assertThat(getCommitsForIssue("QA-2"),
-                hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+                Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
         assertThat(getCommitsForIssue("QA-3"),
-                hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+                Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
     }
 
     @Test

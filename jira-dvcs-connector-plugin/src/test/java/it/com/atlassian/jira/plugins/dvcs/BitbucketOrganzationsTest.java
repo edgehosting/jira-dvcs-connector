@@ -27,6 +27,7 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
+import org.hamcrest.Matchers;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
 import static org.hamcrest.MatcherAssert.*;
@@ -174,9 +175,9 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
 
         assertThat(getCommitsForIssue("QA-2"),
-                hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+                Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
         assertThat(getCommitsForIssue("QA-3"),
-                hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+                Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
 
         removeOAuthConsumer();
     }
