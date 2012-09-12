@@ -18,6 +18,7 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
+import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.google.common.collect.Sets;
@@ -172,7 +173,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 		}
 
 		// go back to main DVCS configuration page
-		return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + getXsrfToken());
+                return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
 	}
 
 	@Override

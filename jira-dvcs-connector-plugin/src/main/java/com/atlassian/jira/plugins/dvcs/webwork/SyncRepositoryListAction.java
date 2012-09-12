@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 
@@ -42,7 +43,7 @@ public class SyncRepositoryListAction extends JiraWebActionSupport
 		
     	repositoryService.syncRepositoryList(organization);
 
-        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + getXsrfToken());
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
     }
 
 

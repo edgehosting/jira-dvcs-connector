@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 
@@ -62,7 +63,7 @@ public class DeleteOrganizationAction extends JiraWebActionSupport
             logger.error("Failed to remove account " + organizationId, e);
         }
 		
-        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + getXsrfToken());
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
     }
 
 

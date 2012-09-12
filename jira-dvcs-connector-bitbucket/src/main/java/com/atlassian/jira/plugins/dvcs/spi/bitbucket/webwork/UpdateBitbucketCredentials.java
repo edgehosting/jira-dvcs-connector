@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 
@@ -63,7 +64,7 @@ public class UpdateBitbucketCredentials extends JiraWebActionSupport
 			return INPUT;
 		}
 
-        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + getXsrfToken());
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
     }
 
 
