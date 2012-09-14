@@ -2,16 +2,15 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +26,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 
 public class ChangesetDaoImpl implements ChangesetDao
 {
@@ -243,12 +240,34 @@ public class ChangesetDaoImpl implements ChangesetDao
 			}
 		});
 	}
-	
+
 	private Query createLatestChangesetsAvailableForSmartcommitQuery()
 	{
 		return Query.select("*").where(ChangesetMapping.SMARTCOMMIT_AVAILABLE + " = ? ", Boolean.TRUE)
 		.order(ChangesetMapping.DATE + " DESC");
 	}
+
+    @Override
+    public List<String> getOrderedProjectKeysByRepository(int repositoryId)
+    {
+
+        Query query = Query.select(ChangesetMapping.PROJECT_KEY).distinct().where(ChangesetMapping.REPOSITORY_ID + " = ? ", repositoryId).order(ChangesetMapping.PROJECT_KEY);
+
+        final List<String> projectKeys = new ArrayList<String>();
+        
+        activeObjects.stream(ChangesetMapping.class, query, new EntityStreamCallback<ChangesetMapping, Integer>()
+        {
+            @Override
+            public void onRowRead(ChangesetMapping mapping)
+            {
+                if (!projectKeys.contains(mapping.getProjectKey())) {
+                    projectKeys.add(mapping.getProjectKey());
+                }
+            }
+        });
+        
+        return projectKeys;
+    }
 
 	@Override
 	public void markSmartcommitAvailability(int id, boolean available)
@@ -265,5 +284,6 @@ public class ChangesetDaoImpl implements ChangesetDao
 			}
 		});
 	}
+
 
 }

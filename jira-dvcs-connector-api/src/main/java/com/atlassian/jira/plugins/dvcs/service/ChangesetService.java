@@ -43,4 +43,6 @@ public interface ChangesetService
     Iterable<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
         
     void markSmartcommitAvailability(int id, boolean available);
+    
+    List<String> getOrderedProjectKeysByRepository(int repositoryId);
 }

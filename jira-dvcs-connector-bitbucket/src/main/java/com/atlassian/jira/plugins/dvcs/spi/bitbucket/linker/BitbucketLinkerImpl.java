@@ -4,18 +4,24 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.RepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
+import com.atlassian.jira.project.Project;
+import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Implementation of BitbucketLinker that configures repository links on bitbucket repositories
@@ -27,18 +33,22 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     private final Logger log = LoggerFactory.getLogger(BitbucketLinkerImpl.class);
     private final String baseUrl;
     private final BitbucketClientRemoteFactory bitbucketClientRemoteFactory;
+    private final ProjectManager projectManager;
+    private final ChangesetService changesetService;
 
     public BitbucketLinkerImpl(BitbucketClientRemoteFactory bitbucketClientRemoteFactory,
-            ApplicationProperties applicationProperties)
+            ApplicationProperties applicationProperties, ProjectManager projectManager, ChangesetService changesetService)
     {
         this.bitbucketClientRemoteFactory = bitbucketClientRemoteFactory;
-        baseUrl = applicationProperties.getBaseUrl();
+        this.projectManager = projectManager;
+        this.changesetService = changesetService;
+        this.baseUrl = applicationProperties.getBaseUrl();
     }
 
     @Override
     public void unlinkRepository(Repository repository)
     {
-        List<BitbucketRepositoryLink> currentlyLinkedProjects = getCurrentlyLinkedProjects(repository);
+        List<BitbucketRepositoryLink> currentlyLinkedProjects = getCurrentLinks(repository);
         
         if (log.isDebugEnabled())
         {
@@ -52,24 +62,29 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     @Override
     public void linkRepository(Repository repository)
     {
-        List<BitbucketRepositoryLink> currentlyLinkedProjects = getCurrentlyLinkedProjects(repository);
+        List<BitbucketRepositoryLink> currentLinks = getCurrentLinks(repository);
 
-        List<BitbucketRepositoryLink> linksToRemove = calculateLinksToRemove(currentlyLinkedProjects);
+        List<BitbucketRepositoryLink> linksToRemove = calculateLinksToRemove(currentLinks);
     
         if (log.isDebugEnabled())
         {
             log.debug("Configuring links for " + repository.getRepositoryUrl() + ". " + "existingLinks: "
-                    + currentlyLinkedProjects + ", linksToRemove: " + linksToRemove);
+                    + currentLinks + ", linksToRemove: " + linksToRemove);
         }
 
         removeLinks(repository, linksToRemove);
-        addLink(repository);
+
+        List<String> projectsInChangesets = changesetService.getOrderedProjectKeysByRepository(repository.getId());
+        Set<String> projectKeysInJira = getProjectKeysInJira();
+        
+        // filter out just these JIRAs' projects
+        projectsInChangesets.retainAll(projectKeysInJira);
+        
+        addLink(repository, projectsInChangesets);
     }
-    
 
-    private void addLink(Repository repository)
+    private void addLink(Repository repository, List<String> forProjects)
     {
-
         try
         {
             RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint =
@@ -79,13 +94,18 @@ public class BitbucketLinkerImpl implements BitbucketLinker
                     repository.getOrgName(), 
                     repository.getSlug(), 
                     normalize(repository.getOrgHostUrl()),
-                    encode("(?<!\\w)([A-Z|a-z]{2,}-\\d+)(?!\\w)"));
+                    encode("(?<!\\w)(" + joinBy(forProjects, "|") + "-\\d+)(?!\\w)"));
 
         } catch (BitbucketRequestException e)
         {
             log.error("Error adding Repository Link [" + baseUrl + ", " + repository.getName() + "] to " + repository.getRepositoryUrl()
                     + ": " + e.getMessage());
         }
+    }
+
+    private String joinBy(List<String> collection, String separator)
+    {
+        return Joiner.on(separator).join(collection);
     }
 
     private String encode(String url)
@@ -122,7 +142,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             
         }
     }
-    
+
     private String normalize(String url)
     {
         if (url.endsWith("/")) {
@@ -154,8 +174,19 @@ public class BitbucketLinkerImpl implements BitbucketLinker
               RepositoryLink.TYPE_CUSTOM.equals(repositoryLink.getHandler().getName());
     }
 
+    private Set<String> getProjectKeysInJira()
+    {
+        // use gcache ?
+        Set<String> projectKeys = Sets.newHashSet();
+        List<Project> projectObjects = projectManager.getProjectObjects();
+        for (Project project : projectObjects)
+        {
+            projectKeys.add(project.getKey());
+        }
+        return projectKeys; 
+    }
  
-    private List<BitbucketRepositoryLink> getCurrentlyLinkedProjects(Repository repository)
+    private List<BitbucketRepositoryLink> getCurrentLinks(Repository repository)
     {
         
         RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint =

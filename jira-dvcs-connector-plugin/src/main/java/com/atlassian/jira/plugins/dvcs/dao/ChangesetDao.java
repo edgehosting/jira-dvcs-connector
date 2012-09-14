@@ -64,6 +64,14 @@ public interface ChangesetDao
     void markSmartcommitAvailability(int id, boolean available);
     
     /**
+     * Gets the project keys by repository.
+     *
+     * @param repositoryId the repository id
+     * @return the project keys by repository
+     */
+    List<String> getOrderedProjectKeysByRepository(int repositoryId);
+    
+    /**
      *
      */
     public interface ForEachChangesetClosure

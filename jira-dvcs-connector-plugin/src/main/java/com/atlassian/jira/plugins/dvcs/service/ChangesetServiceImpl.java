@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -21,8 +19,6 @@ import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 
 public class ChangesetServiceImpl implements ChangesetService
@@ -180,4 +176,12 @@ public class ChangesetServiceImpl implements ChangesetService
 	{
 		changesetDao.markSmartcommitAvailability(id, available);
 	}
+
+    @Override
+    public List<String> getOrderedProjectKeysByRepository(int repositoryId)
+    {
+        return changesetDao.getOrderedProjectKeysByRepository(repositoryId);
+    }
+	
+	
 }
