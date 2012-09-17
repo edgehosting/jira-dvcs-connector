@@ -243,8 +243,9 @@ public class RootResource
 		}
 	}
 	
-	@GET
-	@Path("/integrated-accounts/reload")
+    @GET
+    @AnonymousAllowed
+    @Path("/integrated-accounts/reload")
 	@Consumes({MediaType.TEXT_PLAIN, MediaType.APPLICATION_FORM_URLENCODED})
 	@Produces({MediaType.TEXT_PLAIN})
     public Response reloadIntegratedAccountConfig()
