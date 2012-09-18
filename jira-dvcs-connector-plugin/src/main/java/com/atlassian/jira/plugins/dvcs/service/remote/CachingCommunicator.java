@@ -220,4 +220,10 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     {
         return delegate.validateCredentials(organization);
     }
+
+    @Override
+    public void linkRepository(Repository repository, List<String> withProjectkeys)
+    {
+        delegate.linkRepository(repository, withProjectkeys);
+    }
 }

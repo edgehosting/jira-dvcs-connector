@@ -359,4 +359,11 @@ public class GithubCommunicator implements DvcsCommunicator
 		throw new UnsupportedOperationException("You can not invite users to github so far, ...");
 	}
 
+
+    @Override
+    public void linkRepository(Repository repository, List<String> withProjectkeys)
+    {
+        
+    }
+
 }

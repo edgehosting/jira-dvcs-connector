@@ -350,7 +350,7 @@ public class RepositoryServiceImpl implements RepositoryService
 			repositoryDao.save(repository);
 		}
 	}
-    
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -385,6 +385,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		if (repository.isLinked())
 		{
 			communicator.setupPostcommitHook(repository, postCommitUrl);
+			communicator.linkRepository(repository, changesetService.getOrderedProjectKeysByRepository(repository.getId()));
 		} else
 		{
 			communicator.removePostcommitHook(repository, postCommitUrl);

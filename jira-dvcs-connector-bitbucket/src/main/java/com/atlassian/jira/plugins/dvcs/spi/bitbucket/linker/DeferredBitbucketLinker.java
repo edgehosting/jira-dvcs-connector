@@ -1,9 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.slf4j.Logger;
@@ -32,20 +34,26 @@ public class DeferredBitbucketLinker implements BitbucketLinker
     }
 
 	@Override
-    public void linkRepository(Repository repository)
+    public void linkRepository(Repository repository,  List<String> projectsInChangesets )
     {
-		addTaskAtTheEndOfQueue(repository, true);
+		addTaskAtTheEndOfQueue(repository, null, projectsInChangesets, true);
     }
 
 	@Override
 	public void unlinkRepository(Repository repository)
 	{
-		addTaskAtTheEndOfQueue(repository, false);
+		addTaskAtTheEndOfQueue(repository, null, null, false);
+	}
+	
+	@Override
+	public void linkRepositoryIncremental(Repository repository, List<String> withProjectKeys)
+	{
+        addTaskAtTheEndOfQueue(repository, withProjectKeys, null, false);
 	}
 
-	private void addTaskAtTheEndOfQueue(Repository repository, boolean enableLinks)
+	private void addTaskAtTheEndOfQueue(Repository repository, List<String> incrementalProjectKeys, List<String> withAllProjectKeys, boolean enableLinks)
     {
-	    Runnable task = new BitbucketLinkingTask(repository, enableLinks);
+	    Runnable task = new BitbucketLinkingTask(repository, enableLinks, incrementalProjectKeys, withAllProjectKeys);
 	    executor.remove(task);
 		executor.execute(task);
 		log.debug("QUEUED:" + task);
@@ -55,21 +63,35 @@ public class DeferredBitbucketLinker implements BitbucketLinker
     {
 	    private final Repository repository;
 		private final boolean enableLinks;
+        private final List<String> withProjectKeysOrNull;
+        private final List<String> withAllProjectKeys;
 
-		private BitbucketLinkingTask(Repository repository, boolean enableLinks)
+		private BitbucketLinkingTask(Repository repository,
+		                             boolean enableLinks,
+		                             List<String> withProjectKeysOrNull,
+		                             List<String> withAllProjectKeys)
         {
 			this.repository = repository;
 			this.enableLinks = enableLinks;
+            this.withProjectKeysOrNull = withProjectKeysOrNull;
+            this.withAllProjectKeys = withAllProjectKeys;
         }
 
 		@Override
 		public void run()
 		{
 			log.debug("STARTING: " + toString());
-			if (enableLinks)
+			
+			if (CollectionUtils.isNotEmpty(withProjectKeysOrNull))
 			{
-				bitbucketLinker.linkRepository(repository);
-			} else
+			    bitbucketLinker.linkRepositoryIncremental(repository, withProjectKeysOrNull);
+			}
+			
+			else if (enableLinks && CollectionUtils.isNotEmpty(withAllProjectKeys))
+			{
+				bitbucketLinker.linkRepository(repository, withAllProjectKeys);
+			} 
+			else
 			{
 				bitbucketLinker.unlinkRepository(repository);
 			}

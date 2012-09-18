@@ -306,13 +306,26 @@ public class BitbucketCommunicator implements DvcsCommunicator
             remoteClient.getServicesRest().addPOSTService(repository.getOrgName(), // owner
                     repository.getSlug(), postCommitUrl);
 
-            bitbucketLinker.linkRepository(repository);
         } catch (BitbucketRequestException e)
         {
             log.debug("Could not add postcommit hook", e);
             throw new SourceControlException("Could not add postcommit hook", e);
         }
 
+    }
+    
+    @Override
+    public void linkRepository(Repository repository, List<String> withProjectkeys)
+    {
+        
+        try
+        {
+            bitbucketLinker.linkRepository(repository, withProjectkeys);
+        } catch (Exception e)
+        {
+           log.warn("Failed to link repository " + repository.getName() + " : " + e.getClass() + " :: " + e.getMessage());
+        }
+        
     }
 
     /**
@@ -467,5 +480,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         return hostUrl + "/!api/1.0";
     }
+
 
 }

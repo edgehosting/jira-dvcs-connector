@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
 import com.atlassian.sal.api.message.Message;
@@ -24,12 +25,15 @@ public class ProjectBasedRepositoryLinksUpgradeTask implements PluginUpgradeTask
 
     private final RepositoryService repositoryService;
 
+    private final ChangesetService changesetService;
+
     public ProjectBasedRepositoryLinksUpgradeTask(@Qualifier("defferedBitbucketLinker") BitbucketLinker linker,
-            RepositoryService repositoryService)
+            RepositoryService repositoryService, ChangesetService changesetService)
     {
         super();
         this.linker = linker;
         this.repositoryService = repositoryService;
+        this.changesetService = changesetService;
     }
 
     // -------------------------------------------------------------------------------
@@ -57,7 +61,8 @@ public class ProjectBasedRepositoryLinksUpgradeTask implements PluginUpgradeTask
                 if (repository.isLinked()) {
 
                     log.debug("LINKING {} repository.", repository.getName());
-                    linker.linkRepository(repository);
+                    linker.linkRepository(repository, 
+                            changesetService.getOrderedProjectKeysByRepository(repository.getId()));
                     
                 }
 

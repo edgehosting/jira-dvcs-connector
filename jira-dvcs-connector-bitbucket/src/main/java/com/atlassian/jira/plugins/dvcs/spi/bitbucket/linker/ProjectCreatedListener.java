@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -11,9 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.event.ProjectCreatedEvent;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 
 /**
  * Simple JIRA listener using the atlassian-event library and demonstrating
@@ -75,27 +71,7 @@ public class ProjectCreatedListener implements InitializingBean, DisposableBean
 	@EventListener
 	public void onProjectCreated(ProjectCreatedEvent projectCreatedEvent)
 	{
-		try
-		{
-			log.debug("New project [" + projectCreatedEvent.getId()
-			        + "] created, updating repository links");
-			
-			List<Repository> allRepositories = repositoryService.getAllRepositories();
-			
-			for (Repository repository : allRepositories)
-			{
-				if (repository.isLinked() &&
-						repository.getDvcsType() != null &&
-						repository.getDvcsType().trim().equalsIgnoreCase(BitbucketCommunicator.BITBUCKET))
-				{
-					bitbucketLinker.linkRepository(repository);
-				}
-			}
 		
-		} catch (Exception e)
-		{
-			log.warn("Failed to properly execute linking project to bitbucket.", e);
-		}
 	}
 
 }

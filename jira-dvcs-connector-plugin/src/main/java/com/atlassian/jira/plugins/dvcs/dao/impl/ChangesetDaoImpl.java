@@ -8,6 +8,9 @@ import java.util.Map;
 
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
+import net.java.ao.RawEntity;
+import net.java.ao.schema.PrimaryKey;
+import net.java.ao.schema.Table;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
@@ -255,10 +258,10 @@ public class ChangesetDaoImpl implements ChangesetDao
 
         final List<String> projectKeys = new ArrayList<String>();
         
-        activeObjects.stream(ChangesetMapping.class, query, new EntityStreamCallback<ChangesetMapping, Integer>()
+        activeObjects.stream(ProjectKey.class, query, new EntityStreamCallback<ProjectKey, String>()
         {
             @Override
-            public void onRowRead(ChangesetMapping mapping)
+            public void onRowRead(ProjectKey mapping)
             {
                 if (!projectKeys.contains(mapping.getProjectKey())) {
                     projectKeys.add(mapping.getProjectKey());
@@ -267,6 +270,15 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
         
         return projectKeys;
+    }
+    
+    @Table("ChangesetMapping")
+    static interface ProjectKey extends RawEntity<String> {
+        
+        @PrimaryKey(ChangesetMapping.PROJECT_KEY)
+        String getProjectKey();
+        
+        void setProjectKey();
     }
 
 	@Override
