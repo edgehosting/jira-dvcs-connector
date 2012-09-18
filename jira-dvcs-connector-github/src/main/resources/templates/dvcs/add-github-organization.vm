@@ -28,8 +28,7 @@
 	          
 	          <div class="field-group" >
 	          	<label for="organization">Team Account Username:</label>
-	            <span class="field-value">$textutils.htmlEncode($action.getOrganization())</span>
-	            <input type="hidden" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
+	            <input class="field-value" type="text" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 			  </div>
 	 			
 	          #if($action.getOauthRequired() == "true")

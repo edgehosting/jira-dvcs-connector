@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -88,6 +89,12 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 		{
 			addErrorMessage("Please provide both url and organization parameters.");
 		}
+
+        AccountInfo accountInfo = organizationService.getAccountInfo("https://github.com", organization);
+        if (accountInfo == null)
+        {
+            addErrorMessage("Invalid user/team account.");
+        }
 	}
 	
     protected boolean isOAuthConfigurationRequired()
