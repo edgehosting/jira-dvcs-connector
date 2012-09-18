@@ -366,4 +366,12 @@ public class GithubCommunicator implements DvcsCommunicator
         
     }
 
+    @Override
+    public void linkRepositoryIncremental(Repository repository, List<String> withPossibleNewProjectkeys)
+    {
+        
+    }
+    
+    
+
 }

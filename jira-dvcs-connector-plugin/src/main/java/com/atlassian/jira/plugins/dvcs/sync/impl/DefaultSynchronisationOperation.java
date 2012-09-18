@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -14,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
@@ -32,9 +35,12 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
      */
     private static int GH_CHANGESETS_SAVING_INTERVAL = 100;
 
-    public DefaultSynchronisationOperation(Repository repository, RepositoryService repositoryService, ChangesetService changesetService,
+    private final DvcsCommunicator communicator;
+
+    public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository, RepositoryService repositoryService, ChangesetService changesetService,
         boolean softSync)
     {
+        this.communicator = communicator;
         this.repository = repository;
         this.repositoryService = repositoryService;
         this.changesetService = changesetService;
@@ -80,18 +86,21 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository, lastCommitDate);
 
 
-
+        Set<String> extractedProjectKeys = new HashSet<String>();
+        
         for (Changeset changeset : allOrLatestChangesets)
         {
         	if (progress.isShouldStop())
         	{
         		return;
         	}
+        	
             if (lastCommitDate == null || lastCommitDate.before(changeset.getDate()))
             {
                 lastCommitDate = changeset.getDate();
                 repository.setLastCommitDate(lastCommitDate);
             }
+            
             changesetCount++;
             String message = changeset.getMessage();
             log.debug("syncing changeset [{}] [{}]", changeset.getNode(), changeset.getMessage());
@@ -111,6 +120,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
             // get detail changeset because in this response is not information about files
             Changeset detailChangeset = null;
+            
             if (CollectionUtils.isNotEmpty(extractedIssues))
             {
                 try
@@ -121,6 +131,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
                     synchroErrorCount++;
                 }
+                
                 for (String extractedIssue : extractedIssues)
                 {
                     jiraCount++;
@@ -131,12 +142,15 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                         changesetForSave.setIssueKey(issueKey);
                         //--------------------------------------------
                         // mark smart commit can be processed
+                        // + store extracted project key for incremental linking
                         if (softSync) {
                         	markChangesetForSmartCommit(changesetForSave);
+                        	addProjectKey(changeset, extractedProjectKeys);
                         }
                         //--------------------------------------------
                         log.debug("Save changeset [{}]", changesetForSave);
                         changesetService.save(changesetForSave);
+                    
                     } catch (SourceControlException e)
                     {
                         log.error("Error adding changeset " + changeset, e);
@@ -145,9 +159,30 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             }
             progress.inProgress(changesetCount, jiraCount, synchroErrorCount);
         }
+        
+        if (softSync) {
+            onSoftsyncFinish(extractedProjectKeys);
+        }
     }
 
-	private void markChangesetForSmartCommit(Changeset changesetForSave)
+	private void onSoftsyncFinish(Set<String> extractedProjectKeys)
+    {
+        if (!extractedProjectKeys.isEmpty()) {
+            communicator.linkRepositoryIncremental(repository, new ArrayList<String>(extractedProjectKeys));
+        }
+        
+    }
+
+
+
+    private void addProjectKey(Changeset changeset, Set<String> extractedProjectKeys)
+    {
+	    extractedProjectKeys.add(getProjectKey(changeset.getIssueKey()));
+    }
+
+
+
+    private void markChangesetForSmartCommit(Changeset changesetForSave)
 	{
 		if (repository.isSmartcommitsEnabled()) {
 			
@@ -157,6 +192,11 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
 		}
 	}
+
+    private String getProjectKey(String issueKey)
+    {
+        return issueKey.substring(0, issueKey.indexOf("-"));
+    }
 
 	private Set<String> extractIssueKeys(String message)
     {
