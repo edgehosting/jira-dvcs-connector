@@ -119,16 +119,19 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
             // create brand new
             log.info("Creating new integrated account.");
             newOrganization = createNewOrganization(info);
+            organizationService.save(newOrganization);
+
         } else
         {
             log.info("Found the same user-added account.");
-            // TODO - do we have remove it? Can we just mark it as integration?
-            removeAccount(userAddedAccount);
-            // make integrated account from user-added account
-            newOrganization = copyValues(info, userAddedAccount);
+            markAsIntegratedAccount(userAddedAccount, info);
         }
 
-        organizationService.save(newOrganization);
+    }
+
+    private void markAsIntegratedAccount(Organization userAddedAccount, AccountInfo info)
+    {
+        organizationService.updateCredentialsKeySecret(userAddedAccount.getId(), info.oauthKey, info.oauthSecret);
     }
 
     private Organization getUserAddedAccount(AccountInfo info)

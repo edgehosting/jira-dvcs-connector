@@ -348,6 +348,27 @@ public class OrganizationDaoImpl implements OrganizationDao
 		});
 
 	}
+	
+	@Override
+	public void updateCredentialsKeySecret(int organizationId, String oauthKey, String oauthSecret)
+	{
+	    final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, organizationId);
+
+	    organization.setOauthKey(oauthKey);
+        organization.setOauthSecret(oauthSecret);
+
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction()
+            {
+                organization.save();
+                return null;
+            }
+
+        });
+	}
+	
 
 	/**
 	 * {@inheritDoc}

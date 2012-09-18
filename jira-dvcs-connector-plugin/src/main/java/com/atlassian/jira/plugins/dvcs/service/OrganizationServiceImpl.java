@@ -154,7 +154,7 @@ public class OrganizationServiceImpl implements OrganizationService
         checkCredentials(organization);
         //
         
-        organizationDao.updateCredentials(organizationId, null, null, null, key, secret);
+        organizationDao.updateCredentialsKeySecret(organizationId, key, secret);
 
     }
 	
