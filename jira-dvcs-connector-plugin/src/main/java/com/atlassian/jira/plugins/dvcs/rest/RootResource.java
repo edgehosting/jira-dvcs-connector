@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -14,6 +15,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.slf4j.Logger;
@@ -128,11 +130,7 @@ public class RootResource
 	{
 		log.debug("Rest request to sync repository [{}] with payload [{}]", id, payload);
 
-		
-		repositoryService.sync(id, true);
-		return Response.ok().build();
-		
-        /*if (payload == null)
+        if (payload == null)
         {
             repositoryService.sync(id, false);
         } else
@@ -146,7 +144,7 @@ public class RootResource
 		UriBuilder ub = uriInfo.getBaseUriBuilder();
 		URI uri = ub.path("/repository/{id}").build(id);
 
-		return Response.seeOther(uri).build();*/
+		return Response.seeOther(uri).build();
 	}
 
 	/**
