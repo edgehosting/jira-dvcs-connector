@@ -21,6 +21,7 @@ import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
@@ -36,6 +37,9 @@ public final class TestDefaultSynchronizer
 
 	@Mock
 	private ChangesetService changesetServiceMock;
+	
+	@Mock
+	DvcsCommunicator communicatorMock;
 
 
 	@Mock
@@ -58,7 +62,7 @@ public final class TestDefaultSynchronizer
 		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(lastCommitDate))).thenReturn(
 				Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
-		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(repositoryMock,
+		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
 				mock(RepositoryService.class), changesetServiceMock, true); // soft sync
 
 		Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);

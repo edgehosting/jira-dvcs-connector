@@ -298,7 +298,9 @@ public class RepositoryServiceImpl implements RepositoryService
 	{
 		if (repository.isLinked())
 		{
-            DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(repository, this, changesetService, softSync);
+            DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
+                    communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService,
+                    softSync);
 			synchronizer.synchronize(repository, synchronisationOperation);
 		}
 	}

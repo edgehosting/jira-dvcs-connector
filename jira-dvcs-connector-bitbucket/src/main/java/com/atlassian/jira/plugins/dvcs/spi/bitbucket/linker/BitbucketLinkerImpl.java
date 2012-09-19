@@ -153,7 +153,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 
         List<BitbucketRepositoryLink> currentLinks = getCurrentLinks(repository);
         List<BitbucketRepositoryLink> linksToThisJira = calculateLinksToThisJira(currentLinks);
-        
+
         if (linksToThisJira.isEmpty()) {
             
             addLink(repository, withProjectKeys);
@@ -161,7 +161,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         } else {
             for (BitbucketRepositoryLink configuredLink : linksToThisJira)
             {
-                String projectKeysInLink = getProjectKeysFromLinkOrNull(configuredLink.getHandler().getKey());
+                String projectKeysInLink = getProjectKeysFromLinkOrNull(configuredLink.getHandler().getRawRegex());
                 
                 if (StringUtils.isNotBlank(projectKeysInLink)) {
                     
@@ -240,7 +240,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             // make sure that is of type jira or custom (new version of linking)
             if (isCustomOrJiraType(repositoryLink)
                     // remove links just to OUR jira instance
-                    && baseUrl.equals(repositoryLink.getHandler().getUrl()))
+                    && repositoryLink.getHandler().getReplacementUrl().startsWith(baseUrl))
             {
                 linksToRemove.add(repositoryLink);
             }

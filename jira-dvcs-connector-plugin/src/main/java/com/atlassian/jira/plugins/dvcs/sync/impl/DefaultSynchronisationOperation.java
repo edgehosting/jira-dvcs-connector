@@ -145,7 +145,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                         // + store extracted project key for incremental linking
                         if (softSync) {
                         	markChangesetForSmartCommit(changesetForSave);
-                        	addProjectKey(changeset, extractedProjectKeys);
+                        	addProjectKey(changesetForSave, extractedProjectKeys);
                         }
                         //--------------------------------------------
                         log.debug("Save changeset [{}]", changesetForSave);
@@ -162,13 +162,34 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         
         if (softSync) {
             onSoftsyncFinish(extractedProjectKeys);
+        } else {
+            onHardsyncFinish();
         }
     }
 
-	private void onSoftsyncFinish(Set<String> extractedProjectKeys)
+	private void onHardsyncFinish()
+    {
+	    try
+        {
+            communicator.linkRepository(repository, changesetService.getOrderedProjectKeysByRepository(repository.getId()));
+        } catch (Exception e)
+        {
+            log.warn("Failed to do links on repository {}", repository.getName());
+        }
+    }
+
+
+
+    private void onSoftsyncFinish(Set<String> extractedProjectKeys)
     {
         if (!extractedProjectKeys.isEmpty()) {
-            communicator.linkRepositoryIncremental(repository, new ArrayList<String>(extractedProjectKeys));
+            try
+            {
+                communicator.linkRepositoryIncremental(repository, new ArrayList<String>(extractedProjectKeys));
+            } catch (Exception e)
+            {
+                log.warn("Failed to do incremental link on repository {}", repository.getName());
+            }
         }
         
     }
@@ -179,7 +200,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     {
 	    extractedProjectKeys.add(getProjectKey(changeset.getIssueKey()));
     }
-
 
 
     private void markChangesetForSmartCommit(Changeset changesetForSave)
