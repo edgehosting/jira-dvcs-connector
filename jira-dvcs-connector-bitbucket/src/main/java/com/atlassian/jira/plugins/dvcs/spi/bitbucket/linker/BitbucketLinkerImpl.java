@@ -238,9 +238,10 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         for (BitbucketRepositoryLink repositoryLink : currentlyLinkedProjects)
         {
             // make sure that is of type jira or custom (new version of linking)
+            String replacementUrl = repositoryLink.getHandler().getReplacementUrl().toLowerCase();
             if (isCustomOrJiraType(repositoryLink)
                     // remove links just to OUR jira instance
-                    && repositoryLink.getHandler().getReplacementUrl().startsWith(baseUrl))
+                    && replacementUrl.startsWith(baseUrl.toLowerCase()))
             {
                 linksToRemove.add(repositoryLink);
             }
