@@ -151,15 +151,7 @@ public class BitbucketAccountsConfigServiceTest
 
         testedService.reload(false);
         
-        verify(organizationService).remove(eq(5));
-
-        verify(organizationService).save(organizationCaptor.capture());
-
-        Organization savedOrg = organizationCaptor.getValue();
-
-        Assert.assertEquals("A", savedOrg.getName());
-        Assert.assertEquals("K", savedOrg.getCredential().getOauthKey());
-        Assert.assertEquals("S", savedOrg.getCredential().getOauthSecret());
+        verify(organizationService).updateCredentialsKeySecret(userAddedAccount.getId(), "K", "S");
     }
 
     //--
