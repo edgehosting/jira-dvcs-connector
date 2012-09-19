@@ -102,6 +102,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         // check add user extension
         jira.visit(JiraAddUserPage.class).checkPanelPresented();
 
+        jira.getPageBinder().navigateToAndBind(getPageClass());
+        configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
 
@@ -115,6 +117,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         // first row is header row, than repos ...
         Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
 
+        jira.getPageBinder().navigateToAndBind(getPageClass());
+        configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
 
@@ -129,6 +133,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 
         configureOrganizations.clearForm();
 
+        jira.getPageBinder().navigateToAndBind(getPageClass());
+        configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
 
@@ -152,6 +158,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, ACCOUNT_ADMIN_LOGIN, ACCOUNT_ADMIN_PASSWORD);
         assertThat(servicesConfig, not(containsString(syncUrl)));
 
+        jira.getPageBinder().navigateToAndBind(getPageClass());
+        configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
 
@@ -179,6 +187,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         assertThat(getCommitsForIssue("QA-3"),
                 Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
 
+        jira.getPageBinder().navigateToAndBind(getPageClass());
+        configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
 
@@ -211,6 +221,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+3");
         Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
 
+        jira.getPageBinder().navigateToAndBind(getPageClass());
+        configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
 
