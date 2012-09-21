@@ -267,7 +267,7 @@
         </description>
         <actions>
 
-        	<action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
+			<action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
                     alias="ConfigureDvcsOrganizations" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
@@ -277,12 +277,6 @@
             </action>
 
 			<!-- New organization driven actions -->
-
-			<action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
-                    alias="ConfigureDvcsOrganizations" roles-required="admin">
-                <view name="input">/templates/dvcs/add-organization.vm</view>
-            </action>
-
             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.AddGithubOrganization"
                     alias="AddGithubOrganization" roles-required="admin">
                 <view name="input">/templates/dvcs/add-github-organization.vm</view>
