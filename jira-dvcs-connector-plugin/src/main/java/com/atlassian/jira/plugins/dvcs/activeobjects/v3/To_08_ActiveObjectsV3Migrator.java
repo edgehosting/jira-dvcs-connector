@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import net.java.ao.Entity;
 import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
 {
     private static final Logger log = LoggerFactory.getLogger(To_08_ActiveObjectsV3Migrator.class);
     private static final String ISSUE_KEY_REGEX = "([A-Z]{2,})-\\d+";
+    private static final int DELETION_WINDOW_SIZE = 15000;
     private final PasswordReEncryptor passwordReEncryptor;
   
     public To_08_ActiveObjectsV3Migrator(PasswordReEncryptor passwordReEncryptor)
@@ -60,8 +62,16 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
     
     private <T extends Entity> void deleteAllExistingTableContent(final ActiveObjects activeObjects, Class<T> entityType)
     {
-        T[] allEntities = activeObjects.find(entityType);
-        activeObjects.delete(allEntities);
+        //TODO: use activeObjects.deleteWithSQL() when AO update https://ecosystem.atlassian.net/browse/AO-348 is available.
+        log.info("Deleting type {}", entityType);
+        int remainingEntities = activeObjects.count(entityType);
+        while (remainingEntities > 0)
+        {
+            log.warn("Deleting up to {} entities of {} remaining.", DELETION_WINDOW_SIZE, remainingEntities);
+            T[] entities = activeObjects.find(entityType, Query.select().limit(DELETION_WINDOW_SIZE));
+            activeObjects.delete(entities);
+            remainingEntities = activeObjects.count(entityType);
+        }
     }
 
     private void migrateOrganisationsAndRepositories(ActiveObjects activeObjects, Map<Integer, Integer> old2New)
