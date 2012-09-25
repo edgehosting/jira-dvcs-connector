@@ -6,6 +6,10 @@ import static org.mockito.Mockito.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.PluginController;
+import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
+import com.atlassian.sal.api.scheduling.PluginScheduler;
 import junit.framework.Assert;
 
 import org.junit.Before;
@@ -13,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -32,6 +37,18 @@ public class BitbucketAccountsConfigServiceTest
     @Mock
     private AccountsConfigProvider configProvider;
 
+    @Mock
+    private PluginScheduler pluginScheduler;
+
+    @Mock
+    private PluginController pluginController;
+
+    @Mock
+    private PluginAccessor pluginAccessor;
+
+    @Mock
+    private WebFragmentModuleDescriptor webFragmentModuleDescriptor;
+
     @Captor
     ArgumentCaptor<Organization> organizationCaptor;
 
@@ -46,9 +63,10 @@ public class BitbucketAccountsConfigServiceTest
     public void setUp()
     {
 
-        testedService = new BitbucketAccountsConfigService(configProvider, organizationService);
+        testedService = new BitbucketAccountsConfigService(configProvider, organizationService, pluginScheduler, pluginController, pluginAccessor);
 
         when(configProvider.supportsIntegratedAccounts()).thenReturn(true);
+        when(pluginAccessor.getEnabledPluginModule(anyString())).thenReturn(webFragmentModuleDescriptor);
     }
 
     @Test

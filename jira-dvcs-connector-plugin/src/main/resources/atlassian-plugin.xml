@@ -53,26 +53,9 @@
 	<component key="smartcommitsChangesetsProcessor" name="DVCS Smartcommits Changesets Processor"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsChangesetsProcessor" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor</interface>
 	</component>
-	
-	<!-- Integrated account -->
-	
-	<component key="accountsConfigLifecycler" name="Accounts Config Lifecycler" class="com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigLifecycler" public="true">
-        <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
-    </component>
-    <component key="bitbucketAccountsConfigService" name="Bitbucket Accounts Config Service" class="com.atlassian.jira.plugins.dvcs.ondemand.BitbucketAccountsConfigService" public="true">
-        <interface>com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService</interface>
-    </component>
-    <component key="jsonFileBasedAccountsConfigProvider" name="Json File Based Accounts Config Provider" class="com.atlassian.jira.plugins.dvcs.ondemand.JsonFileBasedAccountsConfigProvider" public="true">
-        <interface>com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigProvider</interface>
-    </component>
-	
-	
-	
-	<!-- =============================================================================================================================== 
-		 smartcommits 
-	 	 =============================================================================================================================== -->
 
-   <ao key="ao-module" name="Active Objects Module">
+    <!-- Active Objects -->
+    <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
@@ -85,6 +68,24 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_09_SmartCommitsColumnsMigrator</upgradeTask>
     </ao>
+	
+	<!-- Integrated account -->
+
+    <navigation-link key="app-switcher-nav-link" menu-key="home" state="disabled">
+        <link>https://bitbucket.org</link>
+        <label key="bitbucket"/>
+        <description key="Git and Mercurial code hosting"/>
+    </navigation-link>
+    <component key="bitbucketAccountsConfigService" name="Bitbucket Accounts Config Service" class="com.atlassian.jira.plugins.dvcs.ondemand.BitbucketAccountsConfigService" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService</interface>
+    </component>
+    <component key="jsonFileBasedAccountsConfigProvider" name="Json File Based Accounts Config Provider" class="com.atlassian.jira.plugins.dvcs.ondemand.JsonFileBasedAccountsConfigProvider" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigProvider</interface>
+    </component>
+	<component key="accountsConfigLifecycler" name="Accounts Config Lifecycler" class="com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigLifecycler" public="true">
+        <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
+    </component>
+	
 
     <!--
     	Upgrade Tasks
@@ -375,6 +376,5 @@
 
 	<!-- Web Panels -->
 	<web-panel key="add-user-dvcs-extension" weight="2000" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />
-
 
 </atlassian-plugin>
