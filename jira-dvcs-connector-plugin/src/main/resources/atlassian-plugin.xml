@@ -73,7 +73,7 @@
 
     <navigation-link key="app-switcher-nav-link" menu-key="home" state="disabled">
         <link>https://bitbucket.org</link>
-        <label key="bitbucket"/>
+        <label key="Bitbucket"/>
         <description key="Git and Mercurial code hosting"/>
     </navigation-link>
     <component key="bitbucketAccountsConfigService" name="Bitbucket Accounts Config Service" class="com.atlassian.jira.plugins.dvcs.ondemand.BitbucketAccountsConfigService" public="true">

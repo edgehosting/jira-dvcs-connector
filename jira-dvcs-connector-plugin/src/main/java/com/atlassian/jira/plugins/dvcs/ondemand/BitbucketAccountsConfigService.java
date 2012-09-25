@@ -178,7 +178,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         Element link = element.addElement("link");
         link.addText(BITBUCKET_URL + "/" + accountName);
         Element label = element.addElement("label");
-        label.addAttribute("key", "bitbucket - " + accountName);
+        label.addAttribute("key", "Bitbucket - " + accountName);
         Element description = element.addElement("description");
         description.addAttribute("key", "Git and Mercurial code hosting");
         webFragmentModuleDescriptor.init(descriptor.getPlugin(), element);
