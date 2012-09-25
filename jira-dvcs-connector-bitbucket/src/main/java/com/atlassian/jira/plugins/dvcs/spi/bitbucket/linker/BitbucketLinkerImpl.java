@@ -169,6 +169,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
                     
                     if (isNewProjectLinksRequested(linkedProjectsAsList, withProjectKeys)) {
                         addLink(repository, uniqueUnion(linkedProjectsAsList, withProjectKeys));
+                    } else {
+                        return;
                     }
     
                     // do not search for other links
