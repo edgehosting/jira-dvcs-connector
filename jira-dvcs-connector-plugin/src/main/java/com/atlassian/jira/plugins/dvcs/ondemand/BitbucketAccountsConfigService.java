@@ -169,19 +169,24 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         log.info("Enabling app switcher plugin module");
         pluginController.enablePluginModule(APP_SWITCHER_LINK_MODULE_KEY);
         ModuleDescriptor descriptor = pluginAccessor.getEnabledPluginModule(APP_SWITCHER_LINK_MODULE_KEY);
-        WebFragmentModuleDescriptor webFragmentModuleDescriptor = (WebFragmentModuleDescriptor) descriptor;
+        // if the descriptor isn't the right type, it's probably because we are on an older version of JIRA that
+        // doesn't have the navigation-link plugin module type
+        if (descriptor instanceof WebFragmentModuleDescriptor)
+        {
+            WebFragmentModuleDescriptor webFragmentModuleDescriptor = (WebFragmentModuleDescriptor) descriptor;
 
-        Document document = DocumentHelper.createDocument();
-        Element element = document.addElement("navigation-link");
-        element.addAttribute("key", "app-switcher-nav-link");
-        element.addAttribute("menu-key", "home");
-        Element link = element.addElement("link");
-        link.addText(BITBUCKET_URL + "/" + accountName);
-        Element label = element.addElement("label");
-        label.addAttribute("key", "Bitbucket - " + accountName);
-        Element description = element.addElement("description");
-        description.addAttribute("key", "Git and Mercurial code hosting");
-        webFragmentModuleDescriptor.init(descriptor.getPlugin(), element);
+            Document document = DocumentHelper.createDocument();
+            Element element = document.addElement("navigation-link");
+            element.addAttribute("key", "app-switcher-nav-link");
+            element.addAttribute("menu-key", "home");
+            Element link = element.addElement("link");
+            link.addText(BITBUCKET_URL + "/" + accountName);
+            Element label = element.addElement("label");
+            label.addAttribute("key", "Bitbucket - " + accountName);
+            Element description = element.addElement("description");
+            description.addAttribute("key", "Git and Mercurial code hosting");
+            webFragmentModuleDescriptor.init(descriptor.getPlugin(), element);
+        }
     }
 
     private void disableAppSwitcherLink()
