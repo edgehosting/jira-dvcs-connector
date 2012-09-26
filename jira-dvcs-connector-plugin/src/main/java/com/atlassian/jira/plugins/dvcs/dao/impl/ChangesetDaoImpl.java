@@ -7,6 +7,9 @@ import java.util.Map;
 
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
+import net.java.ao.RawEntity;
+import net.java.ao.schema.PrimaryKey;
+import net.java.ao.schema.Table;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
@@ -239,12 +242,43 @@ public class ChangesetDaoImpl implements ChangesetDao
 			}
 		});
 	}
-	
+
 	private Query createLatestChangesetsAvailableForSmartcommitQuery()
 	{
 		return Query.select("*").where(ChangesetMapping.SMARTCOMMIT_AVAILABLE + " = ? ", Boolean.TRUE)
 		.order(ChangesetMapping.DATE + " DESC");
 	}
+
+    @Override
+    public List<String> getOrderedProjectKeysByRepository(int repositoryId)
+    {
+
+        Query query = Query.select(ChangesetMapping.PROJECT_KEY).distinct().where(ChangesetMapping.REPOSITORY_ID + " = ? ", repositoryId).order(ChangesetMapping.PROJECT_KEY);
+
+        final List<String> projectKeys = new ArrayList<String>();
+        
+        activeObjects.stream(ProjectKey.class, query, new EntityStreamCallback<ProjectKey, String>()
+        {
+            @Override
+            public void onRowRead(ProjectKey mapping)
+            {
+                if (!projectKeys.contains(mapping.getProjectKey())) {
+                    projectKeys.add(mapping.getProjectKey());
+                }
+            }
+        });
+        
+        return projectKeys;
+    }
+    
+    @Table("ChangesetMapping")
+    static interface ProjectKey extends RawEntity<String> {
+        
+        @PrimaryKey(ChangesetMapping.PROJECT_KEY)
+        String getProjectKey();
+        
+        void setProjectKey();
+    }
 
 	@Override
 	public void markSmartcommitAvailability(int id, boolean available)
@@ -261,5 +295,6 @@ public class ChangesetDaoImpl implements ChangesetDao
 			}
 		});
 	}
+
 
 }

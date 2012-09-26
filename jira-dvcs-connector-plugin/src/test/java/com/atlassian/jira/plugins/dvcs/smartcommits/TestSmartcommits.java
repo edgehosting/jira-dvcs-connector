@@ -21,6 +21,7 @@ import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
@@ -42,6 +43,9 @@ public final class TestSmartcommits
 	@Mock
 	private SmartcommitsChangesetsProcessor changesetsProcessorMock;
     
+	@Mock
+    DvcsCommunicator communicatorMock;
+	
 	@Captor
 	private ArgumentCaptor<Changeset> savedChangesetCaptor;
 
@@ -67,7 +71,7 @@ public final class TestSmartcommits
 		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(lastCommitDate))).thenReturn(
 				Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
-		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(repositoryMock,
+		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
 				mock(RepositoryService.class), changesetServiceMock, true); // soft sync
 
 		Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
@@ -95,7 +99,7 @@ public final class TestSmartcommits
 		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(lastCommitDate))).thenReturn(
 				Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
-		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(repositoryMock,
+		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
 				mock(RepositoryService.class), changesetServiceMock, true); // soft sync
 
 		Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);

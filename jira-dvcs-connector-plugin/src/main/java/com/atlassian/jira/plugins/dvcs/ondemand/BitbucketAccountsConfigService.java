@@ -1,9 +1,22 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
+import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import com.atlassian.plugin.ModuleDescriptor;
+import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.PluginController;
+import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
+import com.atlassian.sal.api.scheduling.PluginJob;
+import com.atlassian.sal.api.scheduling.PluginScheduler;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,17 +46,26 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     private static final Logger log = LoggerFactory.getLogger(BitbucketAccountsConfigService.class);
     
     private static final String BITBUCKET_URL = "https://bitbucket.org";
+    private static final String APP_SWITCHER_LINK_MODULE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:app-switcher-nav-link";
     
     private final AccountsConfigProvider configProvider;
     private final OrganizationService organizationService;
-
+    private final PluginScheduler pluginScheduler;
+    private final PluginController pluginController;
+    private final PluginAccessor pluginAccessor;
     private final ExecutorService executorService;
+
+    private volatile boolean firstAsyncReload = true;
     
     public BitbucketAccountsConfigService(AccountsConfigProvider configProvider,
-                                        OrganizationService organizationService)
+                                          OrganizationService organizationService, PluginScheduler pluginScheduler,
+                                          PluginController pluginController, PluginAccessor pluginAccessor)
     {
         this.configProvider = configProvider;
         this.organizationService = organizationService;
+        this.pluginScheduler = pluginScheduler;
+        this.pluginController = pluginController;
+        this.pluginAccessor = pluginAccessor;
         this.executorService = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("BitbucketAccountsConfigService"));
     }
     
@@ -56,19 +78,31 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         if (!supportsIntegratedAccounts())
         {
             return;
-        }        
+        }
 
         if (runAsync)
         {
-            executorService.submit(new Runnable()
+            if (firstAsyncReload)
             {
-                @Override
-                public void run()
+                // we use the scheduler because AO is not available in LifecycleAware.onStart()
+                Map<String, Object> data = Maps.newHashMap();
+                data.put("bitbucketAccountsConfigService", this);
+                data.put("pluginScheduler", pluginScheduler);
+                pluginScheduler.scheduleJob(BitbucketAccountsReloadJob.JOB_NAME, BitbucketAccountsReloadJob.class,
+                        data, new Date(), TimeUnit.HOURS.toMillis(1));
+                firstAsyncReload = false;
+            }
+            else
+            {
+                executorService.submit(new Runnable()
                 {
-                    reloadInternal();
-                }
-            });
-
+                    @Override
+                    public void run()
+                    {
+                        reloadInternal();
+                    }
+                });
+            }
         } else
         {
             reloadInternal();
@@ -101,7 +135,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
                 doUpdateConfiguration(configuration, existingAccount);
             } else
             {
-                log.info("Integrated account has been found and no configration is provided. Deleting integrated account.");
+                log.info("Integrated account has been found and no configuration is provided. Deleting integrated account.");
                 removeAccount(existingAccount);
             }
         }
@@ -110,6 +144,8 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
     private void doNewAccount(AccountsConfig configuration)
     {
         AccountInfo info = toInfoNewAccount(configuration);
+        enableAppSwitcherLink(info.accountName);
+
         Organization userAddedAccount = getUserAddedAccount(info);
         
         Organization newOrganization = null;
@@ -119,16 +155,49 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
             // create brand new
             log.info("Creating new integrated account.");
             newOrganization = createNewOrganization(info);
+            organizationService.save(newOrganization);
+
         } else
         {
             log.info("Found the same user-added account.");
-            // TODO - do we have remove it? Can we just mark it as integration?
-            removeAccount(userAddedAccount);
-            // make integrated account from user-added account
-            newOrganization = copyValues(info, userAddedAccount);
+            markAsIntegratedAccount(userAddedAccount, info);
         }
+    }
 
-        organizationService.save(newOrganization);
+    private void enableAppSwitcherLink(String accountName)
+    {
+        log.info("Enabling app switcher plugin module");
+        pluginController.enablePluginModule(APP_SWITCHER_LINK_MODULE_KEY);
+        ModuleDescriptor descriptor = pluginAccessor.getEnabledPluginModule(APP_SWITCHER_LINK_MODULE_KEY);
+        // if the descriptor isn't the right type, it's probably because we are on an older version of JIRA that
+        // doesn't have the navigation-link plugin module type
+        if (descriptor instanceof WebFragmentModuleDescriptor)
+        {
+            WebFragmentModuleDescriptor webFragmentModuleDescriptor = (WebFragmentModuleDescriptor) descriptor;
+
+            Document document = DocumentHelper.createDocument();
+            Element element = document.addElement("navigation-link");
+            element.addAttribute("key", "app-switcher-nav-link");
+            element.addAttribute("menu-key", "home");
+            Element link = element.addElement("link");
+            link.addText(BITBUCKET_URL + "/" + accountName);
+            Element label = element.addElement("label");
+            label.addAttribute("key", "Bitbucket - " + accountName);
+            Element description = element.addElement("description");
+            description.addAttribute("key", "Git and Mercurial code hosting");
+            webFragmentModuleDescriptor.init(descriptor.getPlugin(), element);
+        }
+    }
+
+    private void disableAppSwitcherLink()
+    {
+        log.info("Disabling app switcher plugin module");
+        pluginController.disablePluginModule(APP_SWITCHER_LINK_MODULE_KEY);
+    }
+
+    private void markAsIntegratedAccount(Organization userAddedAccount, AccountInfo info)
+    {
+        organizationService.updateCredentialsKeySecret(userAddedAccount.getId(), info.oauthKey, info.oauthSecret);
     }
 
     private Organization getUserAddedAccount(AccountInfo info)
@@ -173,6 +242,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
                     // nothing has changed
                     log.info("No changes detect on integrated account");
                 }
+                enableAppSwitcherLink(providedConfig.accountName);
             } else
             {
                 // should not happen
@@ -206,6 +276,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
 
     private void removeAccount(Organization organizationAccount)
     {
+        disableAppSwitcherLink();
         organizationService.remove(organizationAccount.getId());
     }
 

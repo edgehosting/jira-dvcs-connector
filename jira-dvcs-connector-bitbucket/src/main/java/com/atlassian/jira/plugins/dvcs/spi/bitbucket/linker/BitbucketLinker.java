@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 
@@ -15,7 +17,9 @@ public interface BitbucketLinker
 
 	 * @param repository
 	 */
-	public void linkRepository(Repository repository);
+	public void linkRepository(Repository repository, List<String> projectsInChangesets);
+
+	public void linkRepositoryIncremental(Repository repository, List<String> withProjectKeys);
 
 	/**
 	 * Removes all links that were previously configured by {@link #linkRepository(Repository)}

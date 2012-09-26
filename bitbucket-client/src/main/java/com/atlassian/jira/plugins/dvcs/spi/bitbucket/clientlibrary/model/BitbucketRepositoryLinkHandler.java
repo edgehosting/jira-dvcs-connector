@@ -34,6 +34,10 @@ public class BitbucketRepositoryLinkHandler implements Serializable
 	private String key;
 	private String displayTo;
 	
+	// for custom type can be also
+	private String replacementUrl;
+	private String rawRegex;
+	
 	public String getUrl()
 	{
 		return url;
@@ -83,4 +87,24 @@ public class BitbucketRepositoryLinkHandler implements Serializable
 	{
 		this.displayTo = displayTo;
 	}
+
+    public String getReplacementUrl()
+    {
+        return replacementUrl;
+    }
+
+    public void setReplacementUrl(String replacementUrl)
+    {
+        this.replacementUrl = replacementUrl;
+    }
+
+    public String getRawRegex()
+    {
+        return rawRegex;
+    }
+
+    public void setRawRegex(String rawRegex)
+    {
+        this.rawRegex = rawRegex;
+    }
 }

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -89,7 +90,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 		} catch (Exception e)
 		{
 		    log.error("Error redirect user to bitbucket server.", e);
-			addErrorMessage("Cannot proceed authentication, check your OAuth credentials!");
+			addErrorMessage("The authentication with Bitbucket has failed. Please check your OAuth settings.");
 			return INPUT;
 		}
 	}
@@ -191,6 +192,12 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
             {
                 addErrorMessage("It is not possible to add the same account as the integrated one.");
             }
+        }
+
+        AccountInfo accountInfo = organizationService.getAccountInfo("https://bitbucket.org", organization);
+        if (accountInfo == null)
+        {
+            addErrorMessage("Invalid user/team account.");
         }
     }
 

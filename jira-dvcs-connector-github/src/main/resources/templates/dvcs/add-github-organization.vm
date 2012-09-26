@@ -28,8 +28,7 @@
 	          
 	          <div class="field-group" >
 	          	<label for="organization">Team Account Username:</label>
-	            <span class="field-value">$textutils.htmlEncode($action.getOrganization())</span>
-	            <input type="hidden" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
+	            <input class="field-value" type="text" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 			  </div>
 	 			
 	          #if($action.getOauthRequired() == "true")
@@ -37,13 +36,11 @@
 	          	<input type="hidden" name="oauthRequired" value="true" />
 	          	<div class="field-group" >
 	          		<label for="oauthClientId">Key:</label>
-	            	<span class="field-value">$action.getOauthClientId()</span>
 	            	<input type="text" id="oauthClientId" name="oauthClientId" value="$textutils.htmlEncode($action.getOauthClientId())"/>
 			    </div>
 			  
 			   <div class="field-group" >
 	          		<label for="oauthSecret">Secret:</label>
-	            	<span class="field-value">$action.getOauthSecret()</span>
 	            	<input type="text" id="oauthSecret" name="oauthSecret" value="$textutils.htmlEncode($action.getOauthSecret())"/>
 			   </div>
 	          #end

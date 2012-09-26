@@ -28,8 +28,7 @@
 	          
 	          <div class="field-group" >
 	          	<label for="organization">Team Account Username:</label>
-	            <span class="field-value">$textutils.htmlEncode($action.getOrganization())</span>
-	            <input type="hidden" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
+                <input class="field-value" type="text" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 			  </div>
 			  
 			   #if($action.getOauthBbRequired() == "true")
@@ -37,13 +36,11 @@
 	          	<input type="hidden" name="oauthBbRequired" value="true" />
 	          	<div class="field-group" >
 	          		<label for="oauthBbClientId">Key:</label>
-	            	<span class="field-value">$action.getOauthBbClientId()</span>
 	            	<input type="text" id="oauthBbClientId" name="oauthBbClientId" value="$textutils.htmlEncode($action.getOauthBbClientId())"/>
 			    </div>
 			  
 			   <div class="field-group" >
 	          		<label for="oauthBbSecret">Secret:</label>
-	            	<span class="field-value">$action.getOauthBbSecret()</span>
 	            	<input type="text" id="oauthBbSecret" name="oauthBbSecret" value="$textutils.htmlEncode($action.getOauthBbSecret())"/>
 			   </div>
 	          #end

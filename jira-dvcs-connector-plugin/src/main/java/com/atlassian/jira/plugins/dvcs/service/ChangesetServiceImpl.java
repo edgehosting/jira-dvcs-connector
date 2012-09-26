@@ -176,4 +176,12 @@ public class ChangesetServiceImpl implements ChangesetService
 	{
 		changesetDao.markSmartcommitAvailability(id, available);
 	}
+
+    @Override
+    public List<String> getOrderedProjectKeysByRepository(int repositoryId)
+    {
+        return changesetDao.getOrderedProjectKeysByRepository(repositoryId);
+    }
+	
+	
 }

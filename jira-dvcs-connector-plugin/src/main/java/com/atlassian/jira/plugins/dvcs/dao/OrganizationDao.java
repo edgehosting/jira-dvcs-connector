@@ -53,6 +53,8 @@ public interface OrganizationDao
 	 */
 	void updateCredentials(int organizationId, String username, String plaintextPassword,
 			String accessToken, String oauthKey, String oauthSecret);
+	
+	void updateCredentialsKeySecret(int organizationId, String oauthKey, String oauthSecret);
 
 	/**
 	 * Gets the all by ids.

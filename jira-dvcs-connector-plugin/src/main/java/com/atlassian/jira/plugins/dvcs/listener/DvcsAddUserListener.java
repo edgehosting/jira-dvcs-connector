@@ -100,16 +100,6 @@ public class DvcsAddUserListener
     // Handler methods
     //---------------------------------------------------------------------------------------
 
-    /**
-     * Handler method for add user via interface.
-     * 
-     * @param event
-     *            the event object
-     *            
-     * @throws OperationNotPermittedException 
-     * @throws OperationFailedException 
-     * @throws UserNotFoundException 
-     */
     @EventListener
     public void onUserAddViaInterface(final UserAddedEvent event) 
     {

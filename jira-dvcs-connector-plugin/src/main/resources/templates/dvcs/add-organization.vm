@@ -192,7 +192,7 @@
 			#end
 	
 	<div class="dvcs-header-container">	
-		<h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a> #if($org.isIntegratedAccount())  - Configured By <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end </h4>
+		<h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a> #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end </h4>
 		<div class="dvcs-org-container aui-toolbar">
 				
 				<ul class="toolbar-group">

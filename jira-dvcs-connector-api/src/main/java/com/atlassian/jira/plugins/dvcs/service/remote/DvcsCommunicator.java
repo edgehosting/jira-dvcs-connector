@@ -29,6 +29,10 @@ public interface DvcsCommunicator
 
     void setupPostcommitHook(Repository repository, String postCommitUrl);
 
+    void linkRepository(Repository repository, List<String> withProjectkeys);
+    
+    void linkRepositoryIncremental(Repository repository, List<String> withPossibleNewProjectkeys);
+
     void removePostcommitHook(Repository repository, String postCommitUrl);
 
     String getCommitUrl(Repository repository, Changeset changeset);
