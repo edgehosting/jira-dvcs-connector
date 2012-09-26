@@ -12,7 +12,6 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 /**
  * Uses a plugin Settings Factory to store the state of the plugin
  */
-@SuppressWarnings("deprecation")
 public class DefaultBitbucketProjectSettings implements BitbucketProjectSettings
 {
     public static final String PROGRESS_TIP = "tip";

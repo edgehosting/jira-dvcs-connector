@@ -30,7 +30,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 {
 	private static final long serialVersionUID = 4366205447417138381L;
 
-	private final Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
+	private final static Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
 	
 	public static final String DEFAULT_INVITATION_GROUP = "developers";
 

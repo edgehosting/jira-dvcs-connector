@@ -19,4 +19,4 @@ public enum HttpMethod implements ConnectionCreator
 	    connection.setRequestMethod(name());
 		return connection;
 	}
-};
+}

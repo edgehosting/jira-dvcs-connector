@@ -25,7 +25,8 @@ public class CommitMessageMatcher extends TypeSafeMatcher<BitBucketCommitEntry>
         return bitBucketCommitEntry.getCommitMessage().equals(expectedCommitMessage);
     }
 
-    public void describeTo(Description description)
+    @Override
+	public void describeTo(Description description)
     {
         description.appendText("commit message was not as expected.");
     }

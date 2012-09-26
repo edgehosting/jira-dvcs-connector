@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v2;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -107,17 +106,17 @@ public class To_06_GithubRepositories implements ActiveObjectsUpgradeTask
         return commitUrl.replaceAll("(.*/|\\?.*)", "");
     }
     
-    public static void main(String[] args) throws MalformedURLException
-    {
-        String url = "https://github.com/api/v2/json/commits/show/owner/repo/jh783263h23kh?branch=mybranch";
-        String s1 = url.replaceAll("(.*/|\\?.*)", "");
-        System.out.println(s1);
-        
-        
-        String url1 = "https://github.com/user/repo/master/blah/asfsadfasd/asdfasdfsad/fasd/";
-        url1 = url1.replaceAll("(https://.*?/.*?/.*?)/.*", "$1");
-        System.out.println(url1);
-    }
+//    public static void main(String[] args) 
+//    {
+//        String url = "https://github.com/api/v2/json/commits/show/owner/repo/jh783263h23kh?branch=mybranch";
+//        String s1 = url.replaceAll("(.*/|\\?.*)", "");
+//        System.out.println(s1);
+//        
+//        
+//        String url1 = "https://github.com/user/repo/master/blah/asfsadfasd/asdfasdfsad/fasd/";
+//        url1 = url1.replaceAll("(https://.*?/.*?/.*?)/.*", "$1");
+//        System.out.println(url1);
+//    }
 
     private String fixUrl(String repository)
     {

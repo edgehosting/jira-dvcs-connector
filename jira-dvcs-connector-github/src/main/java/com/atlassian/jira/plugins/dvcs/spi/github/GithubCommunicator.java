@@ -134,7 +134,7 @@ public class GithubCommunicator implements DvcsCommunicator
             Set<Repository> repositories = new HashSet<Repository>();
             while (iterator.hasNext())
             {
-                org.eclipse.egit.github.core.Repository ghRepository = (org.eclipse.egit.github.core.Repository) iterator.next();
+                org.eclipse.egit.github.core.Repository ghRepository = iterator.next();
                 if (StringUtils.equals(ghRepository.getOwner().getLogin(), organization.getName()))
                 {
                     Repository repository = new Repository();

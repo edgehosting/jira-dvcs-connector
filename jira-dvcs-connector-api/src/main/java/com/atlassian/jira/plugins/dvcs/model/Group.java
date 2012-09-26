@@ -9,27 +9,26 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  */
 public class Group
 {
-	private final String slug;
-	
-	private String niceName;
-	
-	public Group(String slug)
-	{
-		this.slug = slug;
-	}
-	
-	public Group(String slug, String niceName)
+    private final String slug;
+    private String niceName;
+
+    public Group(String slug)
     {
-        super();
+        this.slug = slug;
+    }
+
+    public Group(String slug, String niceName)
+    {
         this.slug = slug;
         this.niceName = niceName;
     }
 
     public String getSlug()
-	{
-		return slug;
-	}
+    {
+        return slug;
+    }
 
+	@Override
 	public boolean equals(Object obj) 
 	{
         if (obj == null) return false;
@@ -37,17 +36,19 @@ public class Group
         if (this.getClass() != obj.getClass()) return false;
         Group that = (Group) obj;
         return new EqualsBuilder().append(slug, that.slug).isEquals();
-	};
+	}
+	
     @Override
     public int hashCode()
     {
         return new HashCodeBuilder(17, 37).append(slug).toHashCode();
     }
-	@Override
-	public String toString()
-	{
-	    return slug;
-	}
+
+    @Override
+    public String toString()
+    {
+        return slug;
+    }
 
     public String getNiceName()
     {

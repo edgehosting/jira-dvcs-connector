@@ -21,7 +21,8 @@ public class JiraViewIssuePage implements Page
         this.issueKey = issueKey;
     }
 
-    public String getUrl()
+    @Override
+	public String getUrl()
     {
         return "/browse/" + issueKey;
     }

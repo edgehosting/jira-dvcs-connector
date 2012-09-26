@@ -86,7 +86,8 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     private final Cache<UserKey, DvcsUser> usersCache = CacheBuilder.newBuilder()
             .expireAfterWrite(30, TimeUnit.MINUTES).build(new CacheLoader<UserKey, DvcsUser>()
             {
-                public DvcsUser load(UserKey key)
+                @Override
+				public DvcsUser load(UserKey key)
                 {
                     return delegate.getUser(key.repository, key.username);
                 }
@@ -95,7 +96,8 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     private final Cache<OrganisationKey, Set<Group>> groupsCache = CacheBuilder.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<OrganisationKey, Set<Group>>()
             {
-                public Set<Group> load(OrganisationKey key)
+                @Override
+				public Set<Group> load(OrganisationKey key)
                 {
                     return delegate.getGroupsForOrganization(key.organization);
                 }

@@ -10,14 +10,13 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
+
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.templaterenderer.TemplateRenderer;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.opensymphony.util.TextUtils;
 
 /**

@@ -92,7 +92,10 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         organization.clear().type("https://bitbucket.org/someaccount");
         addOrgButton.click();
-        Poller.waitUntilTrue("Expected form for bitbucket repository admin login/password!", Conditions.and(oauthKeyInput.timed().isVisible(), oauthSecretInput.timed().isVisible()));
+		Poller.waitUntilTrue(
+				"Expected form for bitbucket repository admin login/password!",
+				Conditions.and(oauthKeyInput.timed().isVisible(),
+						oauthSecretInput.timed().isVisible()));
 
         return this;
     }

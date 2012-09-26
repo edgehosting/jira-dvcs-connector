@@ -9,6 +9,8 @@ import java.util.Map;
 
 import net.java.ao.Query;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,16 +20,9 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
-import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-import com.atlassian.jira.web.util.CookieUtils;
 
 public class RepositoryDaoImpl implements RepositoryDao
 {

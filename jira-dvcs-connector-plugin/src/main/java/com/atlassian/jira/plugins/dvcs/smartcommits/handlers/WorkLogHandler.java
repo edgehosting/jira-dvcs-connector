@@ -33,12 +33,14 @@ public class WorkLogHandler implements CommandHandler<Worklog>
         this.worklogService = worklogService;
     }
 
-    public CommandType getCommandType()
+    @Override
+	public CommandType getCommandType()
     {
         return CMD_TYPE;
     }
 
-    public Either<CommitHookHandlerError, Worklog> handle(User user, MutableIssue issue, String commandName,
+    @Override
+	public Either<CommitHookHandlerError, Worklog> handle(User user, MutableIssue issue, String commandName,
             List<String> args)
     {
 

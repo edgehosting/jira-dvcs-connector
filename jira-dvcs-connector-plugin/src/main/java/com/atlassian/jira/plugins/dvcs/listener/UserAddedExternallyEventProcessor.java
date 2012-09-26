@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.crowd.embedded.api.User;
@@ -32,7 +33,7 @@ import com.atlassian.jira.user.util.UserManager;
 class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor implements Runnable
 {
 
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(UserAddedExternallyEventProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(UserAddedExternallyEventProcessor.class);
 
     /** The organization service. */
     private final OrganizationService organizationService;

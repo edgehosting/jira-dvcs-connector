@@ -11,7 +11,7 @@ import com.google.common.collect.Maps;
 
 public class RestUrlBuilder
 {
-    private static JiraTestedProduct jira;
+//    private static JiraTestedProduct jira;
 
     private final String path;
     private final Map<String, String> params = Maps.newHashMap();
@@ -70,7 +70,6 @@ public class RestUrlBuilder
     /**
      * This method should always return correct base url, but is pretty slow (it starts browser)
      * @return
-     */
     private String getBaseUrl()
     {
         if (jira == null)
@@ -79,4 +78,5 @@ public class RestUrlBuilder
         }
         return jira.getProductInstance().getBaseUrl();
     }
+     */
 }

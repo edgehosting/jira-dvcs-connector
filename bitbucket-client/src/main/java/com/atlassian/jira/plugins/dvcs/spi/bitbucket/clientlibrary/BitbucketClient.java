@@ -29,7 +29,7 @@ public class BitbucketClient
 
     private static final Type NO_RETURN_TYPE = new Type() {};
 
-    private static enum HttpMethod { GET, POST, DELETE };
+    private static enum HttpMethod { GET, POST, DELETE }
 
     private static enum HttpStatusCode {
         OK        ((short) 200),

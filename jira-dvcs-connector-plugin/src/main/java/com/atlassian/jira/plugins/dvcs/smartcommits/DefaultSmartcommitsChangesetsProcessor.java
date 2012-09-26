@@ -10,13 +10,8 @@ import com.atlassian.util.concurrent.ThreadFactories;
 public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChangesetsProcessor
 {
 	private final ThreadPoolExecutor executor;
-
-
 	private final SmartcommitsService smartcommitService;
-
 	private final CommitMessageParser commitParser;
-
-
 	private final ChangesetDao changesetDao;
 	
 	public DefaultSmartcommitsChangesetsProcessor(ChangesetDao changesetDao, SmartcommitsService smartcommitService, CommitMessageParser commitParser)
@@ -40,4 +35,3 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
     }
 	
 }
-

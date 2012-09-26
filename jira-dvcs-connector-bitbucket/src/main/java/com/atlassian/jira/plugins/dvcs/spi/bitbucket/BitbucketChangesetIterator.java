@@ -27,7 +27,8 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
         this.lastCommitDate = lastCommitDate;
     }
 
-    public boolean hasNext()
+    @Override
+	public boolean hasNext()
     {
         boolean pageHasMoreChangesets = getCurrentPage().hasNext();
         if (!pageHasMoreChangesets && followingChangset != null)
@@ -39,7 +40,8 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
         return pageHasMoreChangesets;
     }
 
-    public Changeset next()
+    @Override
+	public Changeset next()
     {
         // we have to call hasNext() here as that will retrieve additional
         // changesets from bitbucket if required
@@ -50,7 +52,8 @@ public class BitbucketChangesetIterator implements Iterator<Changeset>
         return getCurrentPage().next();
     }
 
-    public void remove()
+    @Override
+	public void remove()
     {
         throw new UnsupportedOperationException();
     }

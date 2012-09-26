@@ -22,7 +22,8 @@ public class UserAddListenerFactoryBean implements FactoryBean
     private GroupManager groupManager;
     private CrowdService crowdService;
     
-    public Object getObject() throws Exception
+    @Override
+	public Object getObject() throws Exception
     {        
         try
         {
@@ -43,12 +44,14 @@ public class UserAddListenerFactoryBean implements FactoryBean
         }
     }
 
-    public Class<DvcsAddUserListener> getObjectType()
+    @Override
+	public Class<DvcsAddUserListener> getObjectType()
     {
         return DvcsAddUserListener.class;
     }
 
-    public boolean isSingleton()
+    @Override
+	public boolean isSingleton()
     {
         return true;
     }
