@@ -27,6 +27,8 @@ public class UserAddListenerFactoryBean implements FactoryBean
     {        
         try
         {
+            log.info("Attempt to create and register DvcsAddUserListener listener");
+            
             Class.forName("com.atlassian.jira.event.web.action.admin.UserAddedEvent");
             
             DvcsAddUserListener dvcsAddUserListener = new DvcsAddUserListener(eventPublisher,

@@ -30,7 +30,7 @@ import com.atlassian.jira.user.util.UserManager;
  * 
  * @author jhocman@atlassian.com
  */
-class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor implements Runnable
+public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor implements Runnable
 {
 
     private static final Logger log = LoggerFactory.getLogger(UserAddedExternallyEventProcessor.class);
@@ -71,6 +71,8 @@ class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor i
     public void run()
     {
 
+        log.debug("Running UserAddedExternallyEventProcessor ...");
+        
         User user = userManager.getUser(username);
 
         List<Organization> defaultOrganizations = organizationService.getAutoInvitionOrganizations();

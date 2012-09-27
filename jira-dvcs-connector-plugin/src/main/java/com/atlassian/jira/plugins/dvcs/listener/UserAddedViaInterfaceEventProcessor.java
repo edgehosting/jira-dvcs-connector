@@ -30,7 +30,7 @@ import com.google.common.base.Splitter;
  * @author jhocman@atlassian.com
  *
  */
-class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventProcessor implements Runnable
+public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventProcessor implements Runnable
 {
 
 	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM = "dvcs_org_selector";
