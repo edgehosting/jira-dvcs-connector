@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.listener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
 
 import com.atlassian.crowd.embedded.api.CrowdService;
 import com.atlassian.event.api.EventPublisher;
@@ -12,7 +12,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.user.util.UserManager;
 
-public class UserAddListenerFactoryBean implements FactoryBean, DisposableBean
+public class UserAddListenerFactoryBean implements InitializingBean, DisposableBean
 {
     private static final Logger log = LoggerFactory.getLogger(UserAddListenerFactoryBean.class);
 
@@ -24,42 +24,6 @@ public class UserAddListenerFactoryBean implements FactoryBean, DisposableBean
     private CrowdService crowdService;
 
     private DvcsAddUserListener dvcsAddUserListener;
-    
-    @Override
-	public Object getObject() throws Exception
-    {        
-        try
-        {
-            log.info("Attempt to create and register DvcsAddUserListener listener");
-            
-            Class.forName("com.atlassian.jira.event.web.action.admin.UserAddedEvent");
-            
-            dvcsAddUserListener = new DvcsAddUserListener(eventPublisher,
-                    organizationService, communicatorProvider, userManager, groupManager, crowdService);
-            
-            eventPublisher.register(dvcsAddUserListener);
-            
-            return dvcsAddUserListener;
-            
-        } catch (ClassNotFoundException e)
-        {
-            // Looks like we are running JIRA 5.0 and UserAddedEvent is not available
-            log.warn("UserAddedEvent not available");
-            return null;
-        }
-    }
-
-    @Override
-	public Class<DvcsAddUserListener> getObjectType()
-    {
-        return DvcsAddUserListener.class;
-    }
-
-    @Override
-	public boolean isSingleton()
-    {
-        return true;
-    }
 
     // ------------------------------------------
     public EventPublisher getEventPublisher()
@@ -106,7 +70,28 @@ public class UserAddListenerFactoryBean implements FactoryBean, DisposableBean
     public void destroy() throws Exception
     {
         if (dvcsAddUserListener != null) {
-            dvcsAddUserListener.destroy();
+            dvcsAddUserListener.unregister();
+        }
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        try
+        {
+            log.info("Attempt to create and register DvcsAddUserListener listener");
+            
+            Class.forName("com.atlassian.jira.event.web.action.admin.UserAddedEvent");
+            
+            dvcsAddUserListener = new DvcsAddUserListener(eventPublisher,
+                    organizationService, communicatorProvider, userManager, groupManager, crowdService);
+            
+            dvcsAddUserListener.register();
+            
+        } catch (ClassNotFoundException e)
+        {
+            // Looks like we are running JIRA 5.0 and UserAddedEvent is not available
+            log.warn("UserAddedEvent not available");
         }
     }
 

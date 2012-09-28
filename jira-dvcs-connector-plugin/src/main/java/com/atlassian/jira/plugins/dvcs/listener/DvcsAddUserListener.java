@@ -249,10 +249,18 @@ public class DvcsAddUserListener
         }
     }
 
-    public void destroy() throws Exception
+    public void unregister() throws Exception
     {
-        log.info("Attempting to unregister plugin ... ");
+        log.info("Attempting to unregister listener ... ");
         unregisterSelf();
+    }
+
+    public void register() throws Exception
+    {
+        log.info("Attempting to register listener ... ");
+        
+        eventPublisher.register(this);
+
     }
 
 }
