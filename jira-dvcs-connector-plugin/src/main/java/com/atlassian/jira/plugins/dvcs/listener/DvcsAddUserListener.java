@@ -24,9 +24,6 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.user.util.UserManager;
-import com.atlassian.plugin.event.PluginEventListener;
-import com.atlassian.plugin.event.events.PluginDisabledEvent;
-import com.atlassian.plugin.event.events.PluginUninstalledEvent;
 import com.google.common.base.Joiner;
 
 /**
@@ -110,6 +107,8 @@ public class DvcsAddUserListener
         
         try
         {
+            log.debug("Running onUserAddViaInterface ...");
+            
             String username = event.getRequestParameters().get("username")[0];
             String[] organizationIdsAndGroupSlugs = event.getRequestParameters().get(
                     UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM);
@@ -238,31 +237,22 @@ public class DvcsAddUserListener
         }
     }
 
-    // @PluginEventListener // probably does some problems when reloading the plugin
-    public void onPluginDisabled(PluginDisabledEvent event)
-    {
-        log.info(event.getClass() + " : DVCS connector plugin uninstalled.");
-        
-        unregisterSelf();
-    }
-
-    @PluginEventListener
-    public void onPluginUninstalled(PluginUninstalledEvent event)
-    {
-        log.info(event.getClass() + " : DVCS connector plugin uninstalled.");
-
-        unregisterSelf();
-    }
-
     private void unregisterSelf()
     {
         try
         {
             eventPublisher.unregister(this);
+            log.info("Listener unregistered ...");
         } catch (Exception e)
         {
-            log.warn("Failed to unregister " + this + ", cause message is " + e.getMessage());
+            log.warn("Failed to unregister " + this + ", cause message is " + e.getMessage(), e);
         }
+    }
+
+    public void destroy() throws Exception
+    {
+        log.info("Attempting to unregister plugin ... ");
+        unregisterSelf();
     }
 
 }

@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.listener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 
 import com.atlassian.crowd.embedded.api.CrowdService;
@@ -11,7 +12,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.user.util.UserManager;
 
-public class UserAddListenerFactoryBean implements FactoryBean
+public class UserAddListenerFactoryBean implements FactoryBean, DisposableBean
 {
     private static final Logger log = LoggerFactory.getLogger(UserAddListenerFactoryBean.class);
 
@@ -21,6 +22,8 @@ public class UserAddListenerFactoryBean implements FactoryBean
     private UserManager userManager;
     private GroupManager groupManager;
     private CrowdService crowdService;
+
+    private DvcsAddUserListener dvcsAddUserListener;
     
     @Override
 	public Object getObject() throws Exception
@@ -31,7 +34,7 @@ public class UserAddListenerFactoryBean implements FactoryBean
             
             Class.forName("com.atlassian.jira.event.web.action.admin.UserAddedEvent");
             
-            DvcsAddUserListener dvcsAddUserListener = new DvcsAddUserListener(eventPublisher,
+            dvcsAddUserListener = new DvcsAddUserListener(eventPublisher,
                     organizationService, communicatorProvider, userManager, groupManager, crowdService);
             
             eventPublisher.register(dvcsAddUserListener);
@@ -97,6 +100,14 @@ public class UserAddListenerFactoryBean implements FactoryBean
     public void setCrowdService(CrowdService crowdService)
     {
         this.crowdService = crowdService;
+    }
+
+    @Override
+    public void destroy() throws Exception
+    {
+        if (dvcsAddUserListener != null) {
+            dvcsAddUserListener.destroy();
+        }
     }
 
 }
