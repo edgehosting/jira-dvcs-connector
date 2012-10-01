@@ -1,11 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
@@ -14,7 +17,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
-import com.google.common.collect.Lists;
 import com.google.gson.reflect.TypeToken;
 
 /**
@@ -185,7 +187,9 @@ public class ChangesetRemoteRestpoint
         
         private List<BitbucketChangeset> reverse(List<BitbucketChangeset> bitbucketChangesets)
         {
-            return Lists.reverse(bitbucketChangesets);
+            BitbucketChangeset[] changesetsArray = bitbucketChangesets.toArray(new BitbucketChangeset[] {});
+            CollectionUtils.reverseArray(changesetsArray);
+            return Arrays.asList(changesetsArray);
         }
         
         private List<BitbucketChangeset> filterUntilChangesetNode(List<BitbucketChangeset> changesetsToFilter)
