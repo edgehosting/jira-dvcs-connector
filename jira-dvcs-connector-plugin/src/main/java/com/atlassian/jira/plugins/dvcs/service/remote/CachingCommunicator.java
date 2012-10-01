@@ -3,8 +3,8 @@ package com.atlassian.jira.plugins.dvcs.service.remote;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -17,9 +17,9 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
+import com.google.common.base.Function;
+import com.google.common.collect.ComputationException;
+import com.google.common.collect.MapMaker;
 
 /**
  * A {@link com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator} implementation that caches results for quicker subsequent lookup times
@@ -83,26 +83,27 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         }
     }
 
-    private final Cache<UserKey, DvcsUser> usersCache = CacheBuilder.newBuilder()
-            .expireAfterWrite(30, TimeUnit.MINUTES).build(new CacheLoader<UserKey, DvcsUser>()
+    private final Map<UserKey, DvcsUser> usersCache =
+            new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(new Function<UserKey, DvcsUser>()
             {
                 @Override
-				public DvcsUser load(UserKey key)
+                public DvcsUser apply(UserKey key)
                 {
                     return delegate.getUser(key.repository, key.username);
                 }
+                
             });
 
-    private final Cache<OrganisationKey, Set<Group>> groupsCache = CacheBuilder.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<OrganisationKey, Set<Group>>()
-            {
-                @Override
-				public Set<Group> load(OrganisationKey key)
-                {
-                    return delegate.getGroupsForOrganization(key.organization);
-                }
-            });
-    
+    private final Map<OrganisationKey, Set<Group>> groupsCache =
+            new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(new Function<OrganisationKey, Set<Group>>()
+                    {
+                        @Override
+                        public Set<Group> apply(OrganisationKey key)
+                        {
+                            return delegate.getGroupsForOrganization(key.organization);
+                        }
+                        
+                    });
     
     public CachingCommunicator(DvcsCommunicator delegate)
     {
@@ -115,13 +116,13 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         try
         {
             return usersCache.get(new UserKey(repository, username));
-        } catch (ExecutionException e)
+        } catch (ComputationException e)
         {
             throw unrollException(e);
         }
     }
 
-    private SourceControlException unrollException(ExecutionException e)
+    private SourceControlException unrollException(ComputationException e)
     {
         return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause() : new SourceControlException(e
                 .getCause());
@@ -145,7 +146,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         try
         {
             return groupsCache.get(new OrganisationKey(organization));
-        } catch (ExecutionException e)
+        } catch (ComputationException e)
         {
             throw unrollException(e);
         }
