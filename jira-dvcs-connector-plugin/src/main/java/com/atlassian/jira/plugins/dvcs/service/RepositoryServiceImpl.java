@@ -271,7 +271,11 @@ public class RepositoryServiceImpl implements RepositoryService
 	public void sync(int repositoryId, boolean softSync)
 	{
 		Repository repository = get(repositoryId);
-		doSync(repository, softSync);
+                
+            if (repository != null)
+            {
+                doSync(repository, softSync);
+            }
 	}
 
     /**
