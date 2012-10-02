@@ -161,6 +161,10 @@ public class RootResource
 	@Path("/accountInfo")
 	public Response accountInfo(@QueryParam("server") String server, @QueryParam("account") String account)
 	{
+            if (server == null || account == null)
+            {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
 		AccountInfo accountInfo = organizationService.getAccountInfo(server, account);
 
 		if (accountInfo != null)
