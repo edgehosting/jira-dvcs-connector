@@ -84,7 +84,7 @@ public class RootResource
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/repository/{id}")
 	public Response getRepository(@PathParam("id") int id)
-	{
+	{        
 		Repository repository = repositoryService.get(id);
 		
 		if (repository != null) {
@@ -128,6 +128,11 @@ public class RootResource
 	@Path("/repository/{id}/sync")
 	public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
 	{
+        if (payload == null)
+        {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        
 		log.debug("Rest request to sync repository [{}] with payload [{}]", id, payload);
 
         if (payload == null)
@@ -161,10 +166,11 @@ public class RootResource
 	@Path("/accountInfo")
 	public Response accountInfo(@QueryParam("server") String server, @QueryParam("account") String account)
 	{
-            if (server == null || account == null)
-            {
-                return Response.status(Response.Status.BAD_REQUEST).build();
-            }
+        if (server == null || account == null)
+        {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
 		AccountInfo accountInfo = organizationService.getAccountInfo(server, account);
 
 		if (accountInfo != null)
@@ -181,7 +187,11 @@ public class RootResource
 	@Path("/organization/{id}/syncRepoList")
 	public Response syncRepoList(@PathParam("id") String organizationId)
 	{
-
+        if (organizationId == null)
+        {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        
 		Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
 		repositoryService.syncRepositoryList(organization);
 		return Response.noContent().build();
