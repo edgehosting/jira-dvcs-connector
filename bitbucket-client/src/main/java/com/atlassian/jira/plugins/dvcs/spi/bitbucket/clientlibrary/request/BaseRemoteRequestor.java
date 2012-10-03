@@ -87,10 +87,10 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // Helpers
     // --------------------------------------------------------------------------------------------------
 
-    protected void logRequest(HttpURLConnection connection)
+    protected void logRequest(HttpURLConnection connection, Map<String, String> params)
     {
-        log.debug("[{} : {} :: {}]", new Object[] { getClass().getSimpleName(), connection.getRequestMethod(),
-                connection.getURL() });
+        log.debug("[REST call {} : {} :: {}]", new Object[] { connection.getRequestMethod(), connection.getURL(),
+            params });
     }
 
     private RemoteResponse requestWithPayload(HttpMethod postOrPut, String uri, Map<String, String> params)
@@ -217,7 +217,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         HttpURLConnection connection = method.createConnection(finalUrl);
 
         //
-        logRequest(connection);
+        logRequest(connection, params);
         //
         //
         // something to extend
