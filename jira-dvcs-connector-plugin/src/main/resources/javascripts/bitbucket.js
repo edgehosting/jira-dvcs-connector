@@ -460,7 +460,7 @@ function configureDefaultGroups(orgName, id) {
 		
 	).error(function (err) { 
 			AJS.$("#configureDefaultGroupsContentWorking").show()
-			showError("Unexpected error occured. Please contact the server admnistrator.");
+			showError("Unexpected error occurred. Please contact the server administrator.");
 		});
 }
 
@@ -497,7 +497,7 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 			}
 		}
 	).error(function (err) { 
-				  showError("Unexpected error occured. Please contact the server admnistrator.");
+				  showError("Unexpected error occurred. Please contact the server administrator.");
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);
@@ -529,7 +529,7 @@ function enableSmartcommitsOnNewRepos(organizationId, checkboxId) {
 			}
 		}
 	  ).error(function (err) {
-				  showError("Unexpected error occured. Please contact the server admnistrator.");
+				  showError("Unexpected error occurred. Please contact the server administrator.");
 				  setChecked(checkboxId, !checkedValue);
 	  });
 }
@@ -606,7 +606,7 @@ function enableRepoSmartcommits(repoId, checkboxId) {
 		}
 	 
 	).error(function (err) { 
-				  showError("Unexpected error occured.");
+				  showError("Unexpected error occurred.");
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);

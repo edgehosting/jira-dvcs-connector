@@ -121,7 +121,7 @@
 	
 	
 	        <li>
-	        	 Once you have completed the OAuth consumer setup, you can <a href="${baseurl}/secure/admin/ConfigureDvcsOrganizations!default.jspa#expand">configuring you Bitbucket account integration with JIRA</a>.
+	        	 Once you have completed the OAuth consumer setup, you can <a href="${baseurl}/secure/admin/ConfigureDvcsOrganizations!default.jspa#expand">configure your Bitbucket account integration with JIRA</a>.
 	        </li>
 	
 	    </ol>
