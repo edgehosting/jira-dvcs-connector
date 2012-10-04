@@ -99,7 +99,22 @@ public class RepositoryServiceImpl implements RepositoryService
 		log.debug("Synchronising list of repositories");
 		// get repositories from the dvcs hosting server
 		DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-		List<Repository> remoteRepositories = communicator.getRepositories(organization);
+		
+        List<Repository> remoteRepositories = null;
+        try
+        {
+            remoteRepositories = communicator.getRepositories(organization);
+        }
+        catch (SourceControlException e)
+        {
+            // organization was loaded without repositories, so we need to load them
+            for (Repository repository : getAllByOrganization(organization.getId())) {
+                repository.setLinked(false);
+                repositoryDao.save(repository);
+            }
+            return;
+        }
+        
 		// get local repositories
 		List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
 
