@@ -128,11 +128,6 @@ public class RootResource
 	@Path("/repository/{id}/sync")
 	public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
 	{
-        if (payload == null)
-        {
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
-        
 		log.debug("Rest request to sync repository [{}] with payload [{}]", id, payload);
 
         if (payload == null)
