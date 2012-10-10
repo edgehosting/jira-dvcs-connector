@@ -43,7 +43,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	
 	/** The application properties. */
 	private final ApplicationProperties applicationProperties;
-
+    
 	/**
 	 * The Constructor.
 	 *
@@ -100,7 +100,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		// get repositories from the dvcs hosting server
 		DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
 		List<Repository> remoteRepositories = communicator.getRepositories(organization);
-		// get local repositories
+        // get local repositories
 		List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
 
 		// BBC-231 somehow we ended up with duplicated repositories on QA-EACJ
@@ -271,11 +271,12 @@ public class RepositoryServiceImpl implements RepositoryService
 	public void sync(int repositoryId, boolean softSync)
 	{
 		Repository repository = get(repositoryId);
-                
-            if (repository != null)
-            {
-                doSync(repository, softSync);
-            }
+        
+        // looks like repository was deleted before we started to synchronise it
+        if (repository != null)
+        {
+            doSync(repository, softSync);
+        }
 	}
 
     /**
