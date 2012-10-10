@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.github;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
