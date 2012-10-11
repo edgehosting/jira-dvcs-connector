@@ -10,7 +10,6 @@ import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginController;
 import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
-import com.atlassian.sal.api.scheduling.PluginJob;
 import com.atlassian.sal.api.scheduling.PluginScheduler;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
