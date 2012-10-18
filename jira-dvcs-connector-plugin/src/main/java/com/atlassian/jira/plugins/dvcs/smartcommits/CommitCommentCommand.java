@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * A parsed commit comment command
  */
-public class CommitCommentCommand
+public class CommitCommentCommand //TODO BBC-293 do we need this class?
 {
     private final List<String> issues;
     private final String action;
