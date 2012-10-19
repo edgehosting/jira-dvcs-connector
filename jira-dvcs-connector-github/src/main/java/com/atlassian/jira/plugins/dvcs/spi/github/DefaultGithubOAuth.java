@@ -14,8 +14,9 @@ public class DefaultGithubOAuth implements GithubOAuth
     }
 
     @Override
-    public void setClient(String clientID, String clientSecret)
+    public void setClient(String host, String clientID, String clientSecret)
     {
+    	pluginSettingsFactory.createGlobalSettings().put("githubHost", StringUtils.trim(host));
         pluginSettingsFactory.createGlobalSettings().put("githubRepositoryClientID", StringUtils.trim(clientID));
         pluginSettingsFactory.createGlobalSettings().put("githubRepositoryClientSecret", StringUtils.trim(clientSecret));
     }
@@ -32,6 +33,13 @@ public class DefaultGithubOAuth implements GithubOAuth
     {
         String savedClientSecret = (String) pluginSettingsFactory.createGlobalSettings().get("githubRepositoryClientSecret");
         return StringUtils.isBlank(savedClientSecret) ? "" : savedClientSecret;
+    }
+
+    @Override
+    public String getHost()
+    {
+        String savedGitHubHost = (String) pluginSettingsFactory.createGlobalSettings().get("githubHost");
+        return StringUtils.isBlank(savedGitHubHost) ? "" : savedGitHubHost;
     }
 
 }
