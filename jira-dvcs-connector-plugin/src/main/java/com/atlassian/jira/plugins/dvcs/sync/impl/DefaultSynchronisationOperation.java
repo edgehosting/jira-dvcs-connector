@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.sync.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -85,8 +84,8 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
         Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository, lastCommitDate);
 
-
         Set<String> extractedProjectKeys = new HashSet<String>();
+        Set<String> changesetRawNodesAlreadyMarkedForSmartCommits = new HashSet<String>();
         
         for (Changeset changeset : allOrLatestChangesets)
         {
@@ -132,6 +131,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     synchroErrorCount++;
                 }
                 
+                boolean changesetAlreadyMarkedForSmartCommits = false;
                 for (String extractedIssue : extractedIssues)
                 {
                     jiraCount++;
@@ -144,8 +144,11 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                         // mark smart commit can be processed
                         // + store extracted project key for incremental linking
                         if (softSync) {
-                        	markChangesetForSmartCommit(changesetForSave);
                         	addProjectKey(changesetForSave, extractedProjectKeys);
+                        } else if (softSync && !changesetAlreadyMarkedForSmartCommits)
+                        {
+                            markChangesetForSmartCommit(changesetForSave);
+                            changesetAlreadyMarkedForSmartCommits = true;
                         }
                         //--------------------------------------------
                         log.debug("Save changeset [{}]", changesetForSave);
