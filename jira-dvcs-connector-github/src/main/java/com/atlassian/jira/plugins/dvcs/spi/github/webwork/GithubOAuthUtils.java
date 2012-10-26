@@ -1,25 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
-
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.client.GitHubClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
-import com.atlassian.jira.util.UrlValidator;
 import com.atlassian.sal.api.ApplicationProperties;
 
 public class GithubOAuthUtils {
@@ -51,7 +44,7 @@ public class GithubOAuthUtils {
 		//
 		// build URL to github
 		//
-		String githubAuthorizeUrl = githubOAuth.getHost() + "/login/oauth/authorize?scope=repo&client_id="
+		String githubAuthorizeUrl = "https://github.com/login/oauth/authorize?scope=repo&client_id="
 				+ githubOAuth.getClientId()
 				+ "&redirect_uri="
 				+ encodedRedirectBackUrl;
@@ -76,7 +69,7 @@ public class GithubOAuthUtils {
 
         try
         {
-            String requestUrl = githubOAuth.getHost() + "/login/oauth/access_token?&client_id="
+            String requestUrl = "https://github.com/login/oauth/access_token?&client_id="
                     + githubOAuth.getClientId() + "&client_secret=" + githubOAuth.getClientSecret()
                     + "&code=" + code;
 
@@ -126,28 +119,4 @@ public class GithubOAuthUtils {
     {
         return CustomStringUtils.encode(url);
     }
-
-    /**
-     * Create a GitHubClient to connect to the api.
-     *
-     * It uses the right host in case we're calling the github.com api.
-     * It uses the right protocol in case we're calling the GitHub Enterprise api.
-     *
-     * @param url is the GitHub's oauth host.
-     * @return a GitHubClient
-     */
-    public static GitHubClient createClient(String url) {
-		try {
-			URL urlObject = new URL(url);
-			String host = urlObject.getHost();
-			
-			if (HOST_DEFAULT.equals(host) || HOST_GISTS.equals(host)) {
-				host = HOST_API;
-			}
-			
-			return new GitHubClient(host, -1, urlObject.getProtocol());
-		} catch (IOException e) {
-			throw new IllegalArgumentException(e);
-		}
-	}
 }

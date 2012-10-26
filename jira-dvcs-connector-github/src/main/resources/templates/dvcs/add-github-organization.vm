@@ -20,13 +20,11 @@
 	       
 	        <fieldset>
 	         
-	         #if($action.getOauthRequired() != "true")
 	          <div class="field-group">
 	              <label for="url">Url:</label>
 	              <span class="field-value">$textutils.htmlEncode($action.getUrl())</span>
 	              <input type="hidden" id="url" name="url" value="$textutils.htmlEncode($action.getUrl())"/>
 	          </div>
-	          #end
 	          
 	          <div class="field-group" >
 	          	<label for="organization">Team Account Username:</label>
@@ -37,17 +35,12 @@
 	          	<h3>OAuth Credentials</h3>
 	          	<input type="hidden" name="oauthRequired" value="true" />
 	          	<div class="field-group" >
-                    <label for="oauthClientId">Url:</label>
-                    <input type="text" id="oauthHost" name="oauthHost" value="$textutils.htmlEncode($action.getOauthHost())" placeholder="https://github.com"/>
-                </div>
-
-	          	<div class="field-group" >
-	          		<label for="oauthClientId">OAuth Key:</label>
+	          		<label for="oauthClientId">Key:</label>
 	            	<input type="text" id="oauthClientId" name="oauthClientId" value="$textutils.htmlEncode($action.getOauthClientId())"/>
 			    </div>
 			  
 			   <div class="field-group" >
-	          		<label for="oauthSecret">OAuth Secret:</label>
+	          		<label for="oauthSecret">Secret:</label>
 	            	<input type="text" id="oauthSecret" name="oauthSecret" value="$textutils.htmlEncode($action.getOauthSecret())"/>
 			   </div>
 	          #end

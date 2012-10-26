@@ -105,10 +105,6 @@
 				## GH form section
 				<div id="github-form-section" style="display:none">
 					<input type="hidden" id="oauthRequired" name="oauthRequired" value="true" />
-					<div class="field-group">
-                       <label for="oauthClientId">Url:</label>
-                       <input type="text" id="oauthHost" name="oauthHost" value="" placeholder="https://github.com"/>
-                    </div>
                     <div class="field-group">
 	                   <label for="oauthClientId">OAuth Key:</label>
 	                   <input type="text" id="oauthClientId" name="oauthClientId" value=""/>

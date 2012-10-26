@@ -1,14 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
-import static com.atlassian.jira.util.UrlValidator.isValid;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
-import com.atlassian.jira.util.UrlValidator;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
 
@@ -21,10 +18,7 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
 	private final GithubOAuth githubOAuth;
     private final ApplicationProperties applicationProperties;
     
-    // GitHub host, it might be a custom host if it's GitHub Enterprise.
-    private String host = "https://github.com";
-
-	// Client ID (from GitHub OAuth Application)
+    // Client ID (from GitHub OAuth Application)
     private String clientID = "";
     // Client Secret (from GitHub OAuth Application)
     private String clientSecret = "";
@@ -45,19 +39,9 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
     {
         if (StringUtils.isNotBlank(forceClear))
         {
-        	host = "";
             clientSecret = "";
             clientID = "";
             return;
-        }
-
-        if (StringUtils.isBlank(host))
-        {
-        	host = "https://github.com";
-        }
-        else if (!isValid(host))
-        {
-    		addErrorMessage("Please provide a valid url for the GitHub host");
         }
   
         if (StringUtils.isBlank(clientSecret) || StringUtils.isBlank(clientID))
@@ -80,7 +64,7 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
 
     private void addClientIdentifiers()
     {
-        githubOAuth.setClient(StringUtils.trim(host), StringUtils.trim(clientID), StringUtils.trim(clientSecret));
+        githubOAuth.setClient(StringUtils.trim(clientID), StringUtils.trim(clientSecret));
         messages = "GitHub Client Identifiers Set Correctly";
     }
 
@@ -92,11 +76,6 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
     public String getSavedClientID()
     {
         return githubOAuth.getClientId();
-    }
-
-    public String getSavedHost()
-    {
-    	return githubOAuth.getHost();
     }
 
     public void setClientID(String value)
@@ -139,16 +118,6 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
 	public void setForceClear(String forceClear)
 	{
 		this.forceClear = forceClear;
-	}
-	
-	public String getHost()
-	{
-		return host;
-	}
-
-	public void setHost(String host)
-	{
-		this.host = host;
 	}
 
 }
