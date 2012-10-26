@@ -247,20 +247,25 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             throw new SourceControlException("Incorrect credentials");
         } catch (BitbucketRequestException e)
-        {
-            log.warn("Could not get changesets from node: {}", startNode);
-            throw new SourceControlException("Error requesting changesets. Node: " + startNode + ". [" + e.getMessage()
-                    + "]", e);
+        {            
+            log.warn("Could not get changesets from node: {}", startNodeOrTip(startNode));
+            throw new SourceControlException("Error requesting changesets. Node: " + startNodeOrTip(startNode)
+                    + ". [" + e.getMessage() + "]", e);
         } catch (IOException ioe)
         {
-            log.warn("Could not get changesets from node: {}", startNode);
-            throw new SourceControlException("Error requesting changesets. Node: " + startNode + ". ["
+            log.warn("Could not get changesets from node: {}", startNodeOrTip(startNode));
+            throw new SourceControlException("Error requesting changesets. Node: " + startNodeOrTip(startNode) + ". ["
                     + ioe.getMessage() + "]", ioe);
         } catch (JSONException e)
         {
             throw new SourceControlException("Could not parse json object", e);
         }
         return changesets;
+    }
+    
+    private String startNodeOrTip(String startNode)
+    {
+        return startNode == null ? "tip" : startNode;
     }
 
     /**
@@ -436,7 +441,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForOrganization(organization);
-            Set<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
+
+            Set<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
 
 
             return GroupTransformer.fromBitbucketGroups(groups);

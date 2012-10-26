@@ -24,8 +24,8 @@ import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
-import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
@@ -43,6 +43,7 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
+import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.google.common.collect.Iterators;
 
@@ -69,7 +70,8 @@ public class GithubCommunicator implements DvcsCommunicator
 	@Override
 	public boolean isOauthConfigured()
 	{
-		return StringUtils.isNotBlank(githubOAuth.getClientId())
+		return StringUtils.isNotBlank(githubOAuth.getHost())
+				&& StringUtils.isNotBlank(githubOAuth.getClientId())
 				&& StringUtils.isNotBlank(githubOAuth.getClientSecret());
 	}
 
@@ -83,14 +85,24 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        UserService userService = new UserService(GitHubClient.createClient(hostUrl));
+        UserService userService = new UserService(GithubOAuthUtils.createClient(hostUrl));
+        boolean requiresOauth = !isOauthConfigured();
         try
         {
             userService.getUser(accountName);
-            boolean requiresOauth = StringUtils.isBlank(githubOAuth.getClientId()) || StringUtils.isBlank(githubOAuth.getClientSecret());
 
             return new AccountInfo(GithubCommunicator.GITHUB, requiresOauth);
 
+        } catch (RequestException e)
+        {
+        	log.debug("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(),
+                    hostUrl, accountName);
+
+        	// GitHub Enterprise returns a 403 status for unauthorized requests.
+        	if (e.getStatus() == 403)
+        	{
+        		return new AccountInfo(GithubCommunicator.GITHUB, requiresOauth);
+        	}
         } catch (IOException e)
         {
             log.debug("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(),

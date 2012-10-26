@@ -1,15 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.event.ProjectCreatedEvent;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 
 /**
  * Simple JIRA listener using the atlassian-event library and demonstrating
@@ -17,11 +13,7 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
  */
 public class ProjectCreatedListener implements InitializingBean, DisposableBean
 {
-	private static final Logger log = LoggerFactory.getLogger(ProjectCreatedListener.class);
-
 	private final EventPublisher eventPublisher;
-	private final BitbucketLinker bitbucketLinker;
-	private final RepositoryService repositoryService;
 	
 	/**
 	 * Constructor.
@@ -29,13 +21,9 @@ public class ProjectCreatedListener implements InitializingBean, DisposableBean
 	 *            injected {@code EventPublisher} implementation.
 	 * @param bitbucketLinker
 	 */
-	public ProjectCreatedListener(EventPublisher eventPublisher,
-	        @Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
-	        RepositoryService repositoryService)
+	public ProjectCreatedListener(EventPublisher eventPublisher)
 	{
 		this.eventPublisher = eventPublisher;
-		this.bitbucketLinker = bitbucketLinker;
-		this.repositoryService = repositoryService;
 	}
 
 	/**

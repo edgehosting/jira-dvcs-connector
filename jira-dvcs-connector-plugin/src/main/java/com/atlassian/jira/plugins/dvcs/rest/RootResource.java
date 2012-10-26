@@ -31,6 +31,7 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * The Class RootResource.
@@ -161,8 +162,11 @@ public class RootResource
 	@Path("/accountInfo")
 	public Response accountInfo(@QueryParam("server") String server, @QueryParam("account") String account)
 	{
-        if (server == null || account == null)
+        if (StringUtils.isEmpty(server) || StringUtils.isEmpty(account))
         {
+            log.debug("REST call /accountInfo contained empty server '{}' or account '{}' param",
+                    new Object[] {server, account});
+            
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 

@@ -29,7 +29,7 @@
                    </li>
 
                    <li>
-                      Browse to <a href="https://github.com/settings/applications" target="_blank">https://github.com/settings/applications</a> to create a new GitHub OAuth Application.
+                      Browse to <a href="https://github.com/settings/applications" target="_blank">https://github.com/settings/applications</a>, or the equivalent path on your GitHub Enterprise installation, to create a new GitHub OAuth Application.
 
                        <div id="gh_oauth_app_screenshot">
                            <img alt='GitHub Configuration Screenshot' src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_oauth.png">
@@ -60,8 +60,26 @@
 
                       <table width="500px">
 
+							   <tr>
+                                 <td>Url:</td>
+                               </tr>
                                <tr>
-                                 <td>Client ID</td>
+                                 <td>
+                                    <input type="text"
+                                    class="text"
+                                    id="host"
+                                    name="host"
+                                    value="$textutils.htmlEncode($action.getSavedHost())"
+                                    size="60"
+                                    placeholder="https://github.com"
+                                    />
+
+                                 </td>
+
+                               </tr>
+
+                               <tr>
+                                 <td>OAuth Key:</td>
                                </tr>
                                <tr>
                                  <td>
@@ -78,7 +96,7 @@
                                </tr>
 
                                  <tr>
-                                   <td><label for='clientSecret'>Client Secret</label></td>
+                                   <td><label for='clientSecret'>OAuth Secret:</label></td>
                                  </tr>
                                  <tr>
                                    <td>

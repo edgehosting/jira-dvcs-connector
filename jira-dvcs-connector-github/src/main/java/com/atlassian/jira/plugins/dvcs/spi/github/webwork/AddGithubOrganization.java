@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
+import static com.atlassian.jira.util.UrlValidator.isValid;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.jira.util.UrlValidator;
 
 public class AddGithubOrganization extends CommonDvcsConfigurationAction
 {
@@ -24,6 +27,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	private String url;
 	private String organization;
 
+	private String oauthHost;
 	private String oauthClientId;
 	private String oauthSecret;
 	private String oauthRequired;
@@ -63,7 +67,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
 	private void configureOAuth()
 	{
-		githubOAuth.setClient(oauthClientId, oauthSecret);
+		githubOAuth.setClient(oauthHost, oauthClientId, oauthSecret);
 	}
 
 	private String redirectUserToGithub()
@@ -77,24 +81,44 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	@Override
 	protected void doValidation()
 	{
+		boolean validGitHubHost = true;
 		if (StringUtils.isNotBlank(oauthRequired))
 		{
+			if (StringUtils.isBlank(oauthHost))
+	        {
+				oauthHost = "https://github.com";
+	        }
+
+			validGitHubHost = isValid(oauthHost);
+			if (!validGitHubHost)
+			{
+				addErrorMessage("Please provide a valid url for the GitHub host");
+			}
+			
 			if (StringUtils.isBlank(oauthClientId) || StringUtils.isBlank(oauthSecret))
 			{
 				addErrorMessage("Missing credentials.");
 			}
+			
+			url = oauthHost;
+		}
+		else
+		{
+			url = githubOAuth.getHost();
 		}
 		
-		if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
+		if (StringUtils.isBlank(organization))
 		{
-			addErrorMessage("Please provide both url and organization parameters.");
+			addErrorMessage("Please provide an organization.");
 		}
 
-        AccountInfo accountInfo = organizationService.getAccountInfo("https://github.com", organization);
-        if (accountInfo == null)
-        {
-            addErrorMessage("Invalid user/team account.");
-        }
+		if (validGitHubHost) {
+			AccountInfo accountInfo = organizationService.getAccountInfo(url, organization);
+	        if (accountInfo == null)
+	        {
+	            addErrorMessage("Invalid user/team account.");
+	        }
+		}
 	}
 	
     protected boolean isOAuthConfigurationRequired()
@@ -136,9 +160,10 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 			organizationService.save(newOrganization);
 			
 		} catch (SourceControlException e)
-		{
+		{		
 			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
 			log.debug("Failed adding the account: [" + e.getMessage() + "]");
+			e.printStackTrace();
 			return INPUT;
 		} catch (InvalidCredentialsException e)
 		{
@@ -147,7 +172,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 			return INPUT;
 		}
 
-                return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
 	}
 
 	private String requestAccessToken()
@@ -218,6 +243,16 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	public void setOauthRequired(String oauthRequired)
 	{
 		this.oauthRequired = oauthRequired;
+	}
+
+	public String getOauthHost()
+	{
+		return oauthHost;
+	}
+
+	public void setOauthHost(String oauthHost)
+	{
+		this.oauthHost = oauthHost;
 	}
 
 }
