@@ -11,6 +11,7 @@
         var BASE_URL = "${baseurl}";
         var GH_REQUIRES_AUTH = "$!action.isGithubOauthRequired()";
         var BB_REQUIRES_AUTH = "$!action.isBitbucketOauthRequired()";
+        var GHE_REQUIRES_AUTH = "$!action.isGithubEnterpriseOauthRequired()";
         
 
         function init_repositories()
@@ -68,6 +69,7 @@
                       <select id="urlSelect" name="urlSelect" class="select" onchange="switchDvcsDetails(this)">
 	               		<option value="bitbucket">Bitbucket</option>
 	                	<option value="github">GitHub</option>
+	                	<option value="githube">GitHub:entrerprise</option>
 	               	  </select>
                       <div class="fieldValue" id="urlReadOnly"></div>
                       <div id="url-error" class="dvcs-error">Choose URL.</div>
@@ -116,6 +118,28 @@
 	                   <input type="text" id="oauthSecret" name="oauthSecret" value=""/>
 	                   <div id="oauth-secret-error" class="dvcs-error">This field is required.</div>
 	                </div>
+	            </div>
+	            
+	            ## GHE form section
+				<div id="githube-form-section" style="display:none">
+					<input type="hidden" id="oauthRequiredGhe" name="oauthRequiredGhe" value="true" />
+                    <div class="field-group">
+	                   <label for="urlGhe">Host URL:</label>
+	                   <input type="text" id="urlGhe" name="urlGhe" value=""/>
+	                </div>
+	                <div id="githube-form-section-oauth" style="display:none">
+	                    <div class="field-group">
+		                   <label for="oauthClientIdGhe">OAuth Key:</label>
+		                   <input type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value=""/>
+		                   <div id="oauth-client-error" class="dvcs-error">This field is required.</div>
+		                   <div class="description"></div>
+		                </div>
+		                <div class="field-group">
+		                   <label for="oauthSecretGhe">OAuth Secret:</label>
+		                   <input type="text" id="oauthSecretGhe" name="oauthSecretGhe" value=""/>
+		                   <div id="oauth-secret-error" class="dvcs-error">This field is required.</div>
+		                </div>
+		            </div>
 	            </div>
 	            
 	            <div style="margin-top: 10px;"  class="field-group">

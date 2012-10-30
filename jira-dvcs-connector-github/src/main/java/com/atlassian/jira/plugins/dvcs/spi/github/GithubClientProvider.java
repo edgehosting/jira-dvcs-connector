@@ -11,6 +11,7 @@ import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 
 public class GithubClientProvider
 {
@@ -23,17 +24,17 @@ public class GithubClientProvider
 
     private GitHubClient createClient(Repository repository)
     {
-        GitHubClient client = GitHubClient.createClient(repository.getOrgHostUrl());
+        GitHubClient client = GithubOAuthUtils.createClient(repository.getOrgHostUrl());
         
         OAuthAuthentication auth = (OAuthAuthentication) authenticationFactory.getAuthentication(repository);
         client.setOAuth2Token(auth.getAccessToken());
         
         return client;
     }
-    
+
     private GitHubClient createClient(Organization organization)
     {
-        GitHubClient client = GitHubClient.createClient(organization.getHostUrl());
+        GitHubClient client = GithubOAuthUtils.createClient(organization.getHostUrl());
 
         Authentication authentication = authenticationFactory.getAuthentication(organization);
         if (authentication instanceof OAuthAuthentication)

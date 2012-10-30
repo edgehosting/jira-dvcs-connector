@@ -7,4 +7,13 @@ public interface GithubOAuth
     String getClientId();
 
     String getClientSecret();
+    
+    // enterprise credentials
+    
+    void setEnterpriseClient(String clientID, String clientSecret);
+
+    String getEnterpriseClientId();
+
+    String getEnterpriseClientSecret();
+    
 }

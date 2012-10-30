@@ -1,0 +1,90 @@
+<html>
+  <head>
+    <title>Add New Github:enterprise Account</title>
+
+	$webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
+
+    <meta name="admin.active.section" content="admin_plugins_menu/source_control"/>
+    <meta name="admin.active.tab" content="bitbucket_bulk_repo"/>
+  </head>
+
+  <body>
+  
+   <div class="aui-message shadowed" id="add-org-form-container">
+   
+	   <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddGithubEnterpriseOrganization.jspa" class="aui long-label">
+	      <h4>New Github:enterprise Account</h4>
+	      <input type="hidden" name="atl_token" value="$atl_token">
+	      <input type="hidden" name="autoLinking" id="autoLinking" value="$action.autoLinking">
+	       <input type="hidden" name="autoSmartCommits" id="autoSmartCommits" value="$action.autoSmartCommits">
+	       
+	        <fieldset>
+	         
+	          <div class="field-group">
+	              <label for="urlGhe">Url:</label>
+	              <span class="field-value">$textutils.htmlEncode($action.getUrl())</span>
+	              <input type="hidden" id="url" name="url" value="$textutils.htmlEncode($action.getUrlGhe())"/>
+	          </div>
+	          
+	          <div class="field-group" >
+	          	<label for="organization">Team Account Username:</label>
+	            <input class="field-value" type="text" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
+			  </div>
+	 			
+	          	<h3>OAuth Credentials</h3>
+	          	<input type="hidden" name="oauthRequiredGhe" value="true" />
+	          	<div class="field-group" >
+	          		<label for="oauthClientIdGhe">Key:</label>
+	            	<input type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value="$textutils.htmlEncode($action.getOauthClientIdGhe())"/>
+			    </div>
+			  
+			   <div class="field-group" >
+	          		<label for="oauthSecretGhe">Secret:</label>
+	            	<input type="text" id="oauthSecretGhe" name="oauthSecretGhe" value="$textutils.htmlEncode($action.getOauthSecretGhe())"/>
+			   </div>
+	         
+	         <div class="field-group" style="margin-top: 10px; clear: both" >
+			  <label for="autoLinking">Auto Link New Repositories:</label>
+	          #if($action.getAutoLinking() == "true")
+		         <input disabled="disabled" checked="checked" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
+		      #else
+		      	 <input disabled="disabled" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
+		      #end
+		     </div>
+		     
+		      <div class="field-group" style="margin-top: 10px; clear: both" >
+				  <label for="autoSmartCommits">Enable Smart Commits:</label>
+		          #if($action.getAutoSmartCommits() == "true")
+			         <input disabled="disabled" checked="checked" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true"/>
+			      #else
+			      	 <input disabled="disabled" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true"/>
+			      #end
+		     </div>
+	         
+	        </fieldset>
+	
+	      <div id="aui-message-bar">
+	        #foreach ($errorMessage in $action.getErrorMessages())
+	        <div class="aui-message error">
+	            <p class="title">
+	                <span class="aui-icon icon-error"></span>
+	                <strong>Error!</strong>
+	            </p>
+	            <p>$errorMessage</p>
+	        </div>                       
+	        #end
+	      </div>
+	
+	      <div class="buttons-container">
+	        <div class="buttons">
+	            <input class="button submit" type="submit" name="Submit" id="Submit" value="Try Again"/>
+	            <a class="cancel" href="${baseurl}/secure/admin/ConfigureDvcsOrganizations.jspa?atl_token=${atl_token}">Cancel</a>
+	        </div>
+	      </div>
+	    
+	  </form>
+  
+  </div>
+        
+  </body>
+</html>

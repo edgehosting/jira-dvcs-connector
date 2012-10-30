@@ -38,6 +38,7 @@ function switchDvcsDetailsInternal(dvcsType) {
 		
 		
 		AJS.$('#github-form-section').hide();
+		AJS.$('#githube-form-section').hide();
 		
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
 
@@ -63,6 +64,7 @@ function switchDvcsDetailsInternal(dvcsType) {
 	} else if (dvcsType == 1) {
 
 		AJS.$('#bitbucket-form-section').hide();
+		AJS.$('#githube-form-section').hide();
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
 		
 		if (GH_REQUIRES_AUTH == "true") {
@@ -77,6 +79,30 @@ function switchDvcsDetailsInternal(dvcsType) {
 		} else {
 			
 			AJS.$("#oauthRequired").val("");
+
+		}
+		
+		
+	}  else if (dvcsType == 2) {
+
+		AJS.$('#bitbucket-form-section').hide();
+		AJS.$('#github-form-section').hide();
+		AJS.$('#githube-form-section').show();
+
+		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubEnterpriseOrganization.jspa");
+		
+		if (GHE_REQUIRES_AUTH == "true") {
+			
+			// we need oauth ...
+			
+			// hide examples
+			AJS.$('#examples').hide();
+			
+			AJS.$("#githube-form-section-oauth").fadeIn();
+
+		} else {
+			
+			AJS.$("#oauthRequiredGhe").val("");
 
 		}
 		
@@ -643,7 +669,8 @@ function dvcsShowHidePanel(id) {
 var dvcsKnownUrls = {
 		
 		"bitbucket" : "https://bitbucket.org",
-		"github" : "https://github.com"
+		"github" : "https://github.com",
+		"githube" : "https://github.com"
 };
 
 function dvcsContainsSlash(stringType) {

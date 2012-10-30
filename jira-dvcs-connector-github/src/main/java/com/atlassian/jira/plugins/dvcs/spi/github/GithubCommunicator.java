@@ -53,9 +53,9 @@ public class GithubCommunicator implements DvcsCommunicator
     public static final String GITHUB = "github";
 
     private final ChangesetCache changesetCache;
-    private final GithubOAuth githubOAuth;
+    protected final GithubOAuth githubOAuth;
 
-    private final GithubClientProvider githubClientProvider;
+    protected final GithubClientProvider githubClientProvider;
 
     public GithubCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
             GithubClientProvider githubClientProvider)

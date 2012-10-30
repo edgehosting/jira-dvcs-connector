@@ -34,4 +34,27 @@ public class DefaultGithubOAuth implements GithubOAuth
         return StringUtils.isBlank(savedClientSecret) ? "" : savedClientSecret;
     }
 
+    @Override
+    public void setEnterpriseClient(String clientID, String clientSecret)
+    {
+        pluginSettingsFactory.createGlobalSettings().put("ghEnterpriseRepositoryClientID", StringUtils.trim(clientID));
+        pluginSettingsFactory.createGlobalSettings().put("ghEnterpriseRepositoryClientSecret", StringUtils.trim(clientSecret));
+    }
+
+    @Override
+    public String getEnterpriseClientId()
+    {
+        String savedClientSecret = (String) pluginSettingsFactory.createGlobalSettings().get("ghEnterpriseRepositoryClientID");
+        return StringUtils.isBlank(savedClientSecret) ? "" : savedClientSecret;
+    }
+
+    @Override
+    public String getEnterpriseClientSecret()
+    {
+        String savedClientSecret = (String) pluginSettingsFactory.createGlobalSettings().get("ghEnterpriseRepositoryClientSecret");
+        return StringUtils.isBlank(savedClientSecret) ? "" : savedClientSecret;
+    }
+    
+    
+
 }
