@@ -46,8 +46,10 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 
 	private String redirectUserToGithub()
 	{
-		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("RegenerateGithubOauthToken",
-				"", getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
+		String organizationUrl = organizationService.get(Integer.parseInt(organization), false).getHostUrl();
+
+        String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("RegenerateGithubOauthToken",
+				organizationUrl, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
 		return getRedirect(githubAuthorizeUrl);
 	}
