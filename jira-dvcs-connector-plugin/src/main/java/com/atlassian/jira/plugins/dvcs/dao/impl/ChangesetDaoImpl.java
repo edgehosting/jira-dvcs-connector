@@ -1,10 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
@@ -251,24 +252,25 @@ public class ChangesetDaoImpl implements ChangesetDao
 	}
 
     @Override
-    public List<String> getOrderedProjectKeysByRepository(int repositoryId)
+    public Set<String> getOrderedProjectKeysByRepository(int repositoryId)
     {
+        Query query = Query.select(ChangesetMapping.PROJECT_KEY).distinct()
+                .where(ChangesetMapping.REPOSITORY_ID + " = ? ", repositoryId).order(ChangesetMapping.PROJECT_KEY);
 
-        Query query = Query.select(ChangesetMapping.PROJECT_KEY).distinct().where(ChangesetMapping.REPOSITORY_ID + " = ? ", repositoryId).order(ChangesetMapping.PROJECT_KEY);
+        final Set<String> projectKeys = new HashSet<String>();
 
-        final List<String> projectKeys = new ArrayList<String>();
-        
         activeObjects.stream(ProjectKey.class, query, new EntityStreamCallback<ProjectKey, String>()
         {
             @Override
             public void onRowRead(ProjectKey mapping)
             {
-                if (!projectKeys.contains(mapping.getProjectKey())) {
+                if (!projectKeys.contains(mapping.getProjectKey()))
+                {
                     projectKeys.add(mapping.getProjectKey());
                 }
             }
         });
-        
+
         return projectKeys;
     }
     

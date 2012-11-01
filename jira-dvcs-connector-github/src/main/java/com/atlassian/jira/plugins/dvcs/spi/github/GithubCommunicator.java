@@ -145,7 +145,7 @@ public class GithubCommunicator implements DvcsCommunicator
             }
 
             log.debug("Found repositories: " + repositories.size());
-            return new ArrayList<Repository>((Set<Repository>) repositories);
+            return new ArrayList<Repository>(repositories);
         } catch (IOException e)
         {
             throw new SourceControlException("Error retrieving list of repositories", e);
@@ -361,13 +361,13 @@ public class GithubCommunicator implements DvcsCommunicator
 
 
     @Override
-    public void linkRepository(Repository repository, List<String> withProjectkeys)
+    public void linkRepository(Repository repository, Set<String> withProjectkeys)
     {
         
     }
 
     @Override
-    public void linkRepositoryIncremental(Repository repository, List<String> withPossibleNewProjectkeys)
+    public void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys)
     {
         
     }

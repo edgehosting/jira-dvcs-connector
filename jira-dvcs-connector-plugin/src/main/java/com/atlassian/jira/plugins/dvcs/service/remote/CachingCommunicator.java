@@ -225,13 +225,13 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public void linkRepository(Repository repository, List<String> withProjectkeys)
+    public void linkRepository(Repository repository, Set<String> withProjectkeys)
     {
         delegate.linkRepository(repository, withProjectkeys);
     }
 
     @Override
-    public void linkRepositoryIncremental(Repository repository, List<String> withPossibleNewProjectkeys)
+    public void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys)
     {
         delegate.linkRepositoryIncremental(repository, withPossibleNewProjectkeys);
     }

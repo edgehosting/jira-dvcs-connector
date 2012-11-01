@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -17,7 +17,6 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
-import java.util.HashSet;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
@@ -190,7 +189,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         if (!extractedProjectKeys.isEmpty()) {
             try
             {
-                communicator.linkRepositoryIncremental(repository, new ArrayList<String>(extractedProjectKeys));
+                communicator.linkRepositoryIncremental(repository, extractedProjectKeys);
             } catch (Exception e)
             {
                 log.warn("Failed to do incremental link on repository {}", repository.getName());

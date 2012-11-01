@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +34,7 @@ public class DeferredBitbucketLinker implements BitbucketLinker
     }
 
 	@Override
-    public void linkRepository(Repository repository,  List<String> projectsInChangesets )
+    public void linkRepository(Repository repository,  Set<String> projectsInChangesets )
     {
 		addTaskAtTheEndOfQueue(repository, null, projectsInChangesets, true);
     }
@@ -46,12 +46,12 @@ public class DeferredBitbucketLinker implements BitbucketLinker
 	}
 	
 	@Override
-	public void linkRepositoryIncremental(Repository repository, List<String> withProjectKeys)
+	public void linkRepositoryIncremental(Repository repository, Set<String> withProjectKeys)
 	{
         addTaskAtTheEndOfQueue(repository, withProjectKeys, null, false);
 	}
 
-	private void addTaskAtTheEndOfQueue(Repository repository, List<String> incrementalProjectKeys, List<String> withAllProjectKeys, boolean enableLinks)
+	private void addTaskAtTheEndOfQueue(Repository repository, Set<String> incrementalProjectKeys, Set<String> withAllProjectKeys, boolean enableLinks)
     {
 	    Runnable task = new BitbucketLinkingTask(repository, enableLinks, incrementalProjectKeys, withAllProjectKeys);
 	    executor.remove(task);
@@ -63,13 +63,13 @@ public class DeferredBitbucketLinker implements BitbucketLinker
     {
 	    private final Repository repository;
 		private final boolean enableLinks;
-        private final List<String> withProjectKeysOrNull;
-        private final List<String> withAllProjectKeys;
+        private final Set<String> withProjectKeysOrNull;
+        private final Set<String> withAllProjectKeys;
 
 		private BitbucketLinkingTask(Repository repository,
 		                             boolean enableLinks,
-		                             List<String> withProjectKeysOrNull,
-		                             List<String> withAllProjectKeys)
+		                             Set<String> withProjectKeysOrNull,
+		                             Set<String> withAllProjectKeys)
         {
 			this.repository = repository;
 			this.enableLinks = enableLinks;
@@ -86,7 +86,6 @@ public class DeferredBitbucketLinker implements BitbucketLinker
 			{
 			    bitbucketLinker.linkRepositoryIncremental(repository, withProjectKeysOrNull);
 			}
-			
 			else if (enableLinks && CollectionUtils.isNotEmpty(withAllProjectKeys))
 			{
 				bitbucketLinker.linkRepository(repository, withAllProjectKeys);
