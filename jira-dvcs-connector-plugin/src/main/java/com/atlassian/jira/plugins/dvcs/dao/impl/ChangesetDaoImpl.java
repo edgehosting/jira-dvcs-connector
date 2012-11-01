@@ -63,7 +63,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
     }
 
-
     @Override
     public void removeAllInRepository(final int repositoryId)
     {
@@ -80,7 +79,6 @@ public class ChangesetDaoImpl implements ChangesetDao
                 return null;
             }
         });
-
     }
 
     @Override
@@ -170,7 +168,8 @@ public class ChangesetDaoImpl implements ChangesetDao
         
     }
 
-    private String parseProjectKey(String issueKey) {
+    public static String parseProjectKey(String issueKey)
+    {
         return issueKey.substring(0, issueKey.indexOf("-"));
     }
 
