@@ -85,22 +85,19 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         Set<String> projectKeysInJira = getProjectKeysInJira();
         projectKeysToLink.retainAll(projectKeysInJira);
 
-        if (CollectionUtils.isEmpty(projectKeysToLink))
-        {
-            return;
-        }
-
         List<BitbucketRepositoryLink> currentLinks = getCurrentLinks(repository);
         // remove any existing ones
         removeLinks(repository, currentLinks);
-
         if (log.isDebugEnabled())
         {
             log.debug("Configuring links for " + repository.getRepositoryUrl() + ". Removing existing links: " + currentLinks);
         }
 
+        if (CollectionUtils.isNotEmpty(projectKeysToLink))
+        {
+            addLink(repository, projectKeysToLink);
+        }
         
-        addLink(repository, projectKeysToLink);
     }
 
     private void addLink(Repository repository, Set<String> forProjects)
