@@ -196,5 +196,4 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     {
         return softSync;
     }
-    
 }
