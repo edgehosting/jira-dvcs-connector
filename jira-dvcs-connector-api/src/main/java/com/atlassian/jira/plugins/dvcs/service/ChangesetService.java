@@ -45,5 +45,5 @@ public interface ChangesetService
         
     void markSmartcommitAvailability(int id, boolean available);
     
-    Set<String> getOrderedProjectKeysByRepository(int repositoryId);
+    Set<String> findReferencedProjects(int repositoryId);
 }

@@ -393,7 +393,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		{
 			communicator.setupPostcommitHook(repository, postCommitUrl);
 			// TODO: move linkRepository to setupPostcommitHook if possible
-			communicator.linkRepository(repository, changesetService.getOrderedProjectKeysByRepository(repository.getId()));
+			communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
 		} else
 		{
 			communicator.removePostcommitHook(repository, postCommitUrl);

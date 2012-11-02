@@ -57,7 +57,7 @@ public class ProjectBasedRepositoryLinksUpgradeTask implements PluginUpgradeTask
                 {
                     log.debug("LINKING {} repository.", repository.getName());
                     linker.linkRepository(repository,
-                            changesetService.getOrderedProjectKeysByRepository(repository.getId()));
+                            changesetService.findReferencedProjects(repository.getId()));
                 }
             } catch (Exception e)
             {

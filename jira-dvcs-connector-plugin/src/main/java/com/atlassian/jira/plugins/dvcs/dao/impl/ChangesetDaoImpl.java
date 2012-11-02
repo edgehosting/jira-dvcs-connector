@@ -251,22 +251,18 @@ public class ChangesetDaoImpl implements ChangesetDao
 	}
 
     @Override
-    public Set<String> getOrderedProjectKeysByRepository(int repositoryId)
+    public Set<String> findReferencedProjects(int repositoryId)
     {
         Query query = Query.select(ChangesetMapping.PROJECT_KEY).distinct()
                 .where(ChangesetMapping.REPOSITORY_ID + " = ? ", repositoryId).order(ChangesetMapping.PROJECT_KEY);
 
         final Set<String> projectKeys = new HashSet<String>();
-
         activeObjects.stream(ProjectKey.class, query, new EntityStreamCallback<ProjectKey, String>()
         {
             @Override
             public void onRowRead(ProjectKey mapping)
             {
-                if (!projectKeys.contains(mapping.getProjectKey()))
-                {
-                    projectKeys.add(mapping.getProjectKey());
-                }
+                projectKeys.add(mapping.getProjectKey());
             }
         });
 

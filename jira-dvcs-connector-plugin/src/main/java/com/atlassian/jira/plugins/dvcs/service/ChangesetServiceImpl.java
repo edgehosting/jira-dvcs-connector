@@ -177,9 +177,9 @@ public class ChangesetServiceImpl implements ChangesetService
 	}
 
     @Override
-    public Set<String> getOrderedProjectKeysByRepository(int repositoryId)
+    public Set<String> findReferencedProjects(int repositoryId)
     {
-        return changesetDao.getOrderedProjectKeysByRepository(repositoryId);
+        return changesetDao.findReferencedProjects(repositoryId);
     }
 	
 	
