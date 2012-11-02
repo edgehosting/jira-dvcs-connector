@@ -18,14 +18,14 @@ import com.atlassian.sal.api.upgrade.PluginUpgradeTask;
 /**
  * For Bitbucket.
  */
-public class ProjectBasedRepositoryLinksUpgradeTask implements PluginUpgradeTask
+public class To_02_ProjectBasedRepositoryLinksUpgradeTask implements PluginUpgradeTask
 {
-    private static final Logger log = LoggerFactory.getLogger(ProjectBasedRepositoryLinksUpgradeTask.class);
+    private static final Logger log = LoggerFactory.getLogger(To_02_ProjectBasedRepositoryLinksUpgradeTask.class);
     private final BitbucketLinker linker;
     private final RepositoryService repositoryService;
     private final ChangesetService changesetService;
 
-    public ProjectBasedRepositoryLinksUpgradeTask(@Qualifier("defferedBitbucketLinker") BitbucketLinker linker,
+    public To_02_ProjectBasedRepositoryLinksUpgradeTask(@Qualifier("defferedBitbucketLinker") BitbucketLinker linker,
             RepositoryService repositoryService, ChangesetService changesetService)
     {
         this.linker = linker;

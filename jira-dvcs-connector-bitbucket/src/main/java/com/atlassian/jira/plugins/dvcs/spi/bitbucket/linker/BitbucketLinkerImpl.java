@@ -71,7 +71,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         
         if (log.isDebugEnabled())
         {
-            log.debug("Configuring links for "+repository.getRepositoryUrl() + ". " +
+            log.debug("Configuring links for " + repository.getRepositoryUrl() + ". " +
                     "LinksToRemove: " + currentlyLinkedProjects);
         }
         

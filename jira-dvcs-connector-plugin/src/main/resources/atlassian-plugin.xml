@@ -87,13 +87,10 @@
     </component>
 	
 
-    <!--
-    	Upgrade Tasks
-     -->
+    <!-- Plugin upgrade Tasks -->
 
-	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task"
-		class="com.atlassian.jira.plugins.dvcs.upgrade.RepositoryLinksUpgradeTask"
-		public="true">
+	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task" public="true"
+		class="com.atlassian.jira.plugins.dvcs.upgrade.To_02_ProjectBasedRepositoryLinksUpgradeTask">
 		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
 	</component>
 
