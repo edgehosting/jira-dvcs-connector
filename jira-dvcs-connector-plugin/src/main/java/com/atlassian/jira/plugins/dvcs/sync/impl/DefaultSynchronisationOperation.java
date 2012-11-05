@@ -166,7 +166,13 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     {
         if (!extractedProjectKeys.isEmpty())
         {
-            communicator.linkRepositoryIncremental(repository, extractedProjectKeys);
+            if (softSync)
+            {
+                communicator.linkRepositoryIncremental(repository, extractedProjectKeys);
+            } else
+            {
+                communicator.linkRepository(repository, extractedProjectKeys);
+            }
         }
     }
 
