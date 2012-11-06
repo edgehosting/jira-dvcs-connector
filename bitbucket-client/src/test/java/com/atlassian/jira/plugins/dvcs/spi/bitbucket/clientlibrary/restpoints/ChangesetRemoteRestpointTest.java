@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,8 +21,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.NoAut
 /**
  * @author Martin Skurla mskurla@atlassian.com
  */
-public class ChangesetRemoteRestpointTest {
-    
+public class ChangesetRemoteRestpointTest
+{
     private static final String BITBUCKET_OWNER      = "dvcsconnectortest";
     private static final String BITBUCKET_REPO       = "testrepo";
     private static final String BITBUCKET_EMPTY_REPO = "testemptyrepo";
@@ -30,19 +30,16 @@ public class ChangesetRemoteRestpointTest {
     private static final String THIRD_CHANGESET_NODE_FROM_BOTTOM = "d2088255ee40";
     private static final String TIP_CHANGESET_NODE               = "cf40601136f6";
     
-    
     private static BitbucketRemoteClient bitbucketRemoteClient;
-    
     
     @BeforeClass
     public static void initializeBitbucketRemoteClient()
     {
         AuthProvider noAuthProvider = new NoAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL);
-        
         bitbucketRemoteClient = new BitbucketRemoteClient(noAuthProvider);        
     }
     
-    
+    @SuppressWarnings("unused")
     @DataProvider
     private Object[][] provideVariousChangesetPaginations()
     {
@@ -58,7 +55,6 @@ public class ChangesetRemoteRestpointTest {
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
                                                                        .getAllChangesets(BITBUCKET_OWNER,
                                                                                          BITBUCKET_REPO);
-
         Set<String> changesetNodes = new HashSet<String>();
         int changesetCounter = 0;
         
@@ -80,7 +76,6 @@ public class ChangesetRemoteRestpointTest {
                                                                                       BITBUCKET_REPO,
                                                                                       THIRD_CHANGESET_NODE_FROM_BOTTOM,
                                                                                       pagination);
-
         Set<String> changesetNodes = new HashSet<String>();
         int changesetCounter = 0;
         String expectedCombinedChangesetNodes =
@@ -107,7 +102,6 @@ public class ChangesetRemoteRestpointTest {
                                                                        .getChangesets(BITBUCKET_OWNER,
                                                                                       BITBUCKET_REPO,
                                                                                       TIP_CHANGESET_NODE);
-        
         assertThat(changesets).hasSize(0);
     }
     

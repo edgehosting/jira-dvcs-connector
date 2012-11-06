@@ -100,7 +100,6 @@
     <component key="defferedBitbucketLinker" name="defferedBitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.DeferredBitbucketLinker">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
     </component>
-    <component key="projectCreatedEventListener" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.ProjectCreatedListener" />
 
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
                class="com.atlassian.jira.plugins.dvcs.activeobjects.DefaultBitbucketProjectSettings">
