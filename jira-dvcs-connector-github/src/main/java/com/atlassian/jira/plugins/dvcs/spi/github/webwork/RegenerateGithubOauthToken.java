@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
@@ -88,14 +87,9 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
 			log.debug("Failed adding the account: [" + e.getMessage() + "]");
 			return INPUT;
-		} catch (InvalidCredentialsException e)
-		{
-			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
-			log.debug("Invalid credentials : Failed adding the account: [" + e.getMessage() + "]");
-			return INPUT;
 		}
 
-                return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
 	}
 
 	private String requestAccessToken()
