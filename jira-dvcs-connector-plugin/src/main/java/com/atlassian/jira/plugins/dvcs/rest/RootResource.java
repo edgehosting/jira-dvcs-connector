@@ -267,7 +267,7 @@ public class RootResource
         {
 
             Boolean onOffBoolean = BooleanUtils.toBoolean(onOff);
-            organizationService.onOffLinkers(onOffBoolean);
+            repositoryService.onOffLinkers(onOffBoolean);
 
             return Response.ok("OK").build();
 

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,9 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
+import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.collect.Maps;
 
 /**
@@ -43,6 +46,8 @@ public class RepositoryServiceImpl implements RepositoryService
 	
 	/** The application properties. */
 	private final ApplicationProperties applicationProperties;
+
+    private final PluginSettingsFactory settings;
     
 	/**
 	 * The Constructor.
@@ -54,13 +59,14 @@ public class RepositoryServiceImpl implements RepositoryService
 	 * @param applicationProperties the application properties
 	 */
 	public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
-        ChangesetService changesetService, ApplicationProperties applicationProperties)
+        ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory settings)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
         this.synchronizer = synchronizer;
         this.changesetService = changesetService;
         this.applicationProperties = applicationProperties;
+        this.settings = settings;
     }
 
     /**
@@ -460,5 +466,37 @@ public class RepositoryServiceImpl implements RepositoryService
                             + ", slug = " + repository.getSlug(), e);
 		}
 	}
+
+    @Override
+    public void onOffLinkers(boolean onOffBoolean)
+    {
+        log.debug("Enable bitbucket linkers : " + BooleanUtils.toStringYesNo(onOffBoolean));
+        settings.createGlobalSettings().put(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM, onOffBoolean + "");
+
+        List<Repository> allRepositories = getAllRepositories();
+        for (Repository repository : allRepositories)
+        {
+            linkUnlinkRepo(onOffBoolean, repository);
+
+        }
+
+    }
+
+    private void linkUnlinkRepo(boolean onOff, Repository repository)
+    {
+        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+
+        log.debug((onOff ? "" : "un") + "linking " + repository.getSlug());
+
+        if (onOff) {
+        
+            communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
+        
+        } else {
+            
+            communicator.unlinkRepository(repository);
+
+        }
+    }
 
 }

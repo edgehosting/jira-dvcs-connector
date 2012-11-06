@@ -235,5 +235,13 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     {
         delegate.linkRepositoryIncremental(repository, withPossibleNewProjectkeys);
     }
+
+    @Override
+    public void unlinkRepository(Repository repository)
+    {
+        delegate.unlinkRepository(repository);
+    }
+    
+    
     
 }

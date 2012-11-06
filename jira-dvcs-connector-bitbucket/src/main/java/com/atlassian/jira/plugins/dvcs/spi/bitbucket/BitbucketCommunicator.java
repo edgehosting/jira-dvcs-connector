@@ -318,7 +318,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         try
         {
-            bitbucketLinker.unlinkRepository(repository);
+            unlinkRepository(repository);
 
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
             List<BitbucketServiceEnvelope> services = remoteClient.getServicesRest().getAllServices(
@@ -344,6 +344,11 @@ public class BitbucketCommunicator implements DvcsCommunicator
             log.debug("Could not remove postcommit hook", e);
             throw new SourceControlException("Could not remove postcommit hook", e);
         }
+    }
+
+    public void unlinkRepository(Repository repository)
+    {
+        bitbucketLinker.unlinkRepository(repository);
     }
 
     /**

@@ -31,6 +31,8 @@ public interface DvcsCommunicator
 
     void linkRepository(Repository repository, Set<String> withProjectkeys);
     
+    void unlinkRepository(Repository repository);
+    
     void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys);
 
     void removePostcommitHook(Repository repository, String postCommitUrl);

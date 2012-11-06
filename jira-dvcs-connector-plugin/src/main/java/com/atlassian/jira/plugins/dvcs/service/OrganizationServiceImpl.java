@@ -5,9 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
@@ -17,26 +14,20 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 public class OrganizationServiceImpl implements OrganizationService
 {
 
-    private static final Logger log = LoggerFactory.getLogger(OrganizationServiceImpl.class);
-    
 	private final OrganizationDao organizationDao;
 	private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
 	private final RepositoryService repositoryService;
-    private final PluginSettingsFactory settings;
     
 	public OrganizationServiceImpl(OrganizationDao organizationDao, DvcsCommunicatorProvider dvcsCommunicatorProvider,
-        RepositoryService repositoryService, PluginSettingsFactory settings)
+        RepositoryService repositoryService)
     {
         this.organizationDao = organizationDao;
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
         this.repositoryService = repositoryService;
-        this.settings = settings;
     }
 
     @Override
@@ -244,12 +235,4 @@ public class OrganizationServiceImpl implements OrganizationService
         return organizationDao.getByHostAndName(hostUrl, name);
     }
 
-    @Override
-    public void onOffLinkers(boolean onOffBoolean)
-    {
-        log.debug("Enable bitbucket linkers : " + BooleanUtils.toStringYesNo(onOffBoolean) );
-        settings.createGlobalSettings().put(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM, onOffBoolean + "");
-
-    }
-	
 }
