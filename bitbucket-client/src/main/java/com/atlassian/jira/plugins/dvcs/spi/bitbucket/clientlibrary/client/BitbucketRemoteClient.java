@@ -7,7 +7,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Ch
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.GroupRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.SSHRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServiceRemoteRestpoint;
 
 /**
@@ -40,7 +39,6 @@ public class BitbucketRemoteClient
     private final GroupRemoteRestpoint groupRemoteRestpoint;
     private final RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint;
     private final RepositoryRemoteRestpoint repositoryRemoteRestpoint;
-    private final SSHRemoteRestpoint sshRemoteRestpoint;
     private final ServiceRemoteRestpoint serviceRemoteRestpoint;
 
     private final RemoteRequestor requestor;
@@ -55,7 +53,7 @@ public class BitbucketRemoteClient
         this.groupRemoteRestpoint = new GroupRemoteRestpoint(requestor);
         this.repositoryLinkRemoteRestpoint = new RepositoryLinkRemoteRestpoint(requestor);
         this.repositoryRemoteRestpoint = new RepositoryRemoteRestpoint(requestor);
-        this.sshRemoteRestpoint = new SSHRemoteRestpoint(requestor);
+//        this.sshRemoteRestpoint = new SSHRemoteRestpoint(requestor);
         this.serviceRemoteRestpoint = new ServiceRemoteRestpoint(requestor);
 	}
 	
@@ -83,12 +81,7 @@ public class BitbucketRemoteClient
     {
 		return repositoryRemoteRestpoint;
 	}
-	
-    public SSHRemoteRestpoint getSSHRest()
-    {
-        return sshRemoteRestpoint;
-    }
-    
+   
 	public ServiceRemoteRestpoint getServicesRest()
     {
 		return serviceRemoteRestpoint;
