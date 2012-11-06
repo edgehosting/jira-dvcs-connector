@@ -20,7 +20,7 @@ public class ChangesetFileTransformer {
 
 
     @SuppressWarnings("unchecked")
-    public static List<ChangesetFile> fromBitbucketChangesetWithDiffstat(List<BitbucketChangesetWithDiffstat> diffstats)
+    public static List<ChangesetFile> fromBitbucketChangesetsWithDiffstat(List<BitbucketChangesetWithDiffstat> diffstats)
     {
         return (List<ChangesetFile>) CollectionUtils.collect(diffstats, new Transformer() {
 
@@ -40,7 +40,7 @@ public class ChangesetFileTransformer {
     }
 
     @SuppressWarnings("unchecked")
-    public static List<ChangesetFile> fromBitbucketChangesetFile(List<BitbucketChangesetFile> changesetFiles)
+    public static List<ChangesetFile> fromBitbucketChangesetFiles(List<BitbucketChangesetFile> changesetFiles)
     {
         return (List<ChangesetFile>) CollectionUtils.collect(changesetFiles, new Transformer() {
 

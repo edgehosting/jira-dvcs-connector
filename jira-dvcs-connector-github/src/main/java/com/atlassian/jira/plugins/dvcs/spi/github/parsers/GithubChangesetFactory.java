@@ -68,12 +68,11 @@ public class GithubChangesetFactory
                 repositoryCommit.getCommit().getMessage(),
                 transformParents(repositoryCommit.getParents()),
                 changesetFiles,
-                changesetFiles.size()
+                changesetFiles.size(),
+                authorEmail
         );
 
-        changeset.setAuthorEmail(authorEmail);
 		return changeset;
-
     }
 
     private static String getUserLogin(User user)
