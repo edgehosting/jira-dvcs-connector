@@ -1,11 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.slf4j.Logger;
@@ -34,69 +33,62 @@ public class DeferredBitbucketLinker implements BitbucketLinker
     }
 
 	@Override
-    public void linkRepository(Repository repository,  List<String> projectsInChangesets )
+    public void linkRepository(final Repository repository, final Set<String> projectKeys)
     {
-		addTaskAtTheEndOfQueue(repository, null, projectsInChangesets, true);
+        addTaskAtTheEndOfQueue(new BitbucketLinkingTask(repository)
+        {
+            @Override
+            public void run()
+            {
+                bitbucketLinker.linkRepository(repository, projectKeys);
+            }
+        });
     }
 
 	@Override
-	public void unlinkRepository(Repository repository)
+	public void unlinkRepository(final Repository repository)
 	{
-		addTaskAtTheEndOfQueue(repository, null, null, false);
+	    addTaskAtTheEndOfQueue(new BitbucketLinkingTask(repository)
+        {
+            @Override
+            public void run()
+            {
+			    bitbucketLinker.unlinkRepository(repository);
+            }
+        });
 	}
 	
 	@Override
-	public void linkRepositoryIncremental(Repository repository, List<String> withProjectKeys)
+	public void linkRepositoryIncremental(final Repository repository, final Set<String> projectKeys)
 	{
-        addTaskAtTheEndOfQueue(repository, withProjectKeys, null, false);
+        addTaskAtTheEndOfQueue(new BitbucketLinkingTask(repository)
+        {
+            @Override
+            public void run()
+            {
+                bitbucketLinker.linkRepositoryIncremental(repository, projectKeys);
+            }
+        });
 	}
 
-	private void addTaskAtTheEndOfQueue(Repository repository, List<String> incrementalProjectKeys, List<String> withAllProjectKeys, boolean enableLinks)
+	private void addTaskAtTheEndOfQueue(Runnable task)
     {
-	    Runnable task = new BitbucketLinkingTask(repository, enableLinks, incrementalProjectKeys, withAllProjectKeys);
 	    executor.remove(task);
 		executor.execute(task);
 		log.debug("QUEUED:" + task);
     }
 
-	private class BitbucketLinkingTask implements Runnable
+	private abstract class BitbucketLinkingTask implements Runnable
     {
 	    private final Repository repository;
-		private final boolean enableLinks;
-        private final List<String> withProjectKeysOrNull;
-        private final List<String> withAllProjectKeys;
-
-		private BitbucketLinkingTask(Repository repository,
-		                             boolean enableLinks,
-		                             List<String> withProjectKeysOrNull,
-		                             List<String> withAllProjectKeys)
+		
+		private BitbucketLinkingTask(Repository repository)
         {
 			this.repository = repository;
-			this.enableLinks = enableLinks;
-            this.withProjectKeysOrNull = withProjectKeysOrNull;
-            this.withAllProjectKeys = withAllProjectKeys;
         }
 
 		@Override
-		public void run()
-		{
-			log.debug("STARTING: " + toString());
-			
-			if (CollectionUtils.isNotEmpty(withProjectKeysOrNull))
-			{
-			    bitbucketLinker.linkRepositoryIncremental(repository, withProjectKeysOrNull);
-			}
-			
-			else if (enableLinks && CollectionUtils.isNotEmpty(withAllProjectKeys))
-			{
-				bitbucketLinker.linkRepository(repository, withAllProjectKeys);
-			} 
-			else
-			{
-				bitbucketLinker.unlinkRepository(repository);
-			}
-			log.debug("FINISHED: " + toString());
-		}
+		public abstract void run();
 		
 		@Override
 		public boolean equals(Object obj)
@@ -122,7 +114,7 @@ public class DeferredBitbucketLinker implements BitbucketLinker
 		@Override
 		public String toString()
 		{
-			return "Configuring links on " + repository.getRepositoryUrl() + ", enableLinks:" + enableLinks;
+			return "Configuring links on " + repository.getRepositoryUrl();
 		}
     }
 }

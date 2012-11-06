@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
@@ -39,7 +40,6 @@ public class ChangesetServiceImpl implements ChangesetService
     {
         return changesetDao.save(changeset);
     }
-
 
     @Override
     public void removeAllInRepository(int repositoryId)
@@ -167,7 +167,6 @@ public class ChangesetServiceImpl implements ChangesetService
                 changeset = changesetDao.save(changeset);
             }
         }
-
         return changeset;
     }
 
@@ -178,9 +177,9 @@ public class ChangesetServiceImpl implements ChangesetService
 	}
 
     @Override
-    public List<String> getOrderedProjectKeysByRepository(int repositoryId)
+    public Set<String> findReferencedProjects(int repositoryId)
     {
-        return changesetDao.getOrderedProjectKeysByRepository(repositoryId);
+        return changesetDao.findReferencedProjects(repositoryId);
     }
 	
 	
