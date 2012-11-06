@@ -71,13 +71,9 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
-
         organization.clear().type(url);
-
         addOrgButton.click();
-
         Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed().hasText("Error!"));
-
         return this;
     }
 
