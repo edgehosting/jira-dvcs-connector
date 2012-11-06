@@ -336,12 +336,6 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
 	@Override
-	public boolean validateCredentials(Organization organization)
-	{
-		return true;
-	}
-
-	@Override
 	public boolean supportsInvitation(Organization organization)
 	{
 		return false;

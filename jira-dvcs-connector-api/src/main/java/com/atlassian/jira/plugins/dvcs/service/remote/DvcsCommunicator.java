@@ -45,13 +45,6 @@ public interface DvcsCommunicator
     
     boolean isOauthConfigured();
 
-    /**
-     * Validate credentials.
-     *
-     * @param organization the organization
-     * @return true, if given credentials are valid
-     */
-    boolean validateCredentials(Organization organization);
     //-----------------------------------------------------------------------
     // methods for invitation management on bitbucket
     //-----------------------------------------------------------------------
