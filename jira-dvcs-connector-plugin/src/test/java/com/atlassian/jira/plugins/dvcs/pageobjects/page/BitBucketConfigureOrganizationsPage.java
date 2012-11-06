@@ -48,9 +48,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         addOrgButton.click();
 
-        Poller.waitUntilTrue(htmlHeadTitle.timed().hasText("Bitbucket"));
-
-        pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grandAccess();
+        pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grantAccess();
 
         if (autoSync) {
             checkSyncProcessSuccess();

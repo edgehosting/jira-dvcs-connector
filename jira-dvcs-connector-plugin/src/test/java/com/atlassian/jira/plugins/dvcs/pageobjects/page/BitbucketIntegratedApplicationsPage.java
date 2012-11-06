@@ -26,8 +26,8 @@ public class BitbucketIntegratedApplicationsPage implements Page
     @Inject
     PageBinder pageBinder;
 
-    @ElementBy(id = "add-consumer-link")
-    private PageElement addConsumerButton;
+    @ElementBy(id = "oauth-consumers")
+    private PageElement consumersConfg;
   
     @ElementBy(tagName= "body")
     private PageElement bodyElement;
@@ -47,12 +47,13 @@ public class BitbucketIntegratedApplicationsPage implements Page
 
     public OAuthCredentials addConsumer()
     {       
-        addConsumerButton.click();
+        
+        addConsumerButton().click();
 
         PageElement addOAuthConsumerDialogDiv = null;
         while (addOAuthConsumerDialogDiv == null)
         {
-            addOAuthConsumerDialogDiv = PageElementUtils.findVisibleElementByClassName(bodyElement, "ui-dialog");
+            addOAuthConsumerDialogDiv = bodyElement.find(By.id("bb-add-consumer-dialog"));
         }     
 
         BitbucketAddOAuthConsumerDialog addConsumerDialog =
@@ -65,28 +66,40 @@ public class BitbucketIntegratedApplicationsPage implements Page
 
         Poller.waitUntilFalse(addOAuthConsumerDialogDiv.timed().isVisible());
 
-        PageElement oauthConsumerOrderedList = elementFinder.find(By.className("list-widget"));
+        List<PageElement> allConsumers = elementFinder.findAll(By.className("extra-info"));
+        PageElement consumer = allConsumers.get(allConsumers.size() - 1);
+        String key = getKey(consumer);
+        String secret = getSecret(consumer);
 
-        for (PageElement oauthConsumerListItem : oauthConsumerOrderedList.findAll(By.tagName("li")))
-        {
-            // 1st <div> is description
-            // 3rd <div> is key
-            // 4th <div> is secret
-            List<PageElement> divElements = oauthConsumerListItem.findAll(By.tagName("div"));  
-
-            boolean isRecentlyAddedConsumer = divElements.get(0).find(By.tagName("dd")).getText().equals(consumerDescription);
-
-            if (isRecentlyAddedConsumer)
-            {
-                String generatedOauthKey    = divElements.get(2).find(By.tagName("dd")).getText();
-                String generatedOauthSecret = divElements.get(3).find(By.tagName("dd")).getText();
-
-                return new OAuthCredentials(generatedOauthKey, generatedOauthSecret);
-            }
-        }  
-
-        return null;//TODO remove oauth consumers created because of tests
+        return new OAuthCredentials(key, secret);
+ 
     }
+
+    private String getSecret(PageElement consumer)
+    {
+        return consumer.findAll(By.tagName("span")).get(3).getText();
+    }
+
+
+    private String getKey(PageElement consumer)
+    {
+        return consumer.findAll(By.tagName("span")).get(2).getText();
+    }
+
+
+    private PageElement addConsumerButton()
+    {
+        List<PageElement> all = consumersConfg.findAll(By.tagName("a"));
+        for (PageElement pageElement : all)
+        {
+            if ("#add-consumer".equals(pageElement.getAttribute("href"))) {
+                return pageElement;
+            }
+        }
+        
+        throw new IllegalStateException("Add consumer button not found.");
+    }
+
 
     public void removeLastAdddedConsumer()
     {
