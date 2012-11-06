@@ -40,8 +40,7 @@ import com.atlassian.plugin.PluginAccessor;
 
 /**
  * The Class BitbucketCommunicator.
- * 
- * TODO get changesets remains in 'old-style'
+ *
  */
 public class BitbucketCommunicator implements DvcsCommunicator
 {

@@ -44,7 +44,7 @@ import java.util.List;
  *
  */
 public class BitbucketChangeset implements Serializable
-{//TODO timestamp vs utctimestamp
+{
 	private static final long serialVersionUID = -1593016501516234658L;
 
 	private String node;
