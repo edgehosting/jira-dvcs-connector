@@ -47,7 +47,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	/** The application properties. */
 	private final ApplicationProperties applicationProperties;
 
-    private final PluginSettingsFactory settings;
+    private final PluginSettingsFactory pluginSettingsFactory;
     
 	/**
 	 * The Constructor.
@@ -59,14 +59,14 @@ public class RepositoryServiceImpl implements RepositoryService
 	 * @param applicationProperties the application properties
 	 */
 	public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
-        ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory settings)
+        ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
         this.synchronizer = synchronizer;
         this.changesetService = changesetService;
         this.applicationProperties = applicationProperties;
-        this.settings = settings;
+        this.pluginSettingsFactory = pluginSettingsFactory;
     }
 
     /**
@@ -468,34 +468,31 @@ public class RepositoryServiceImpl implements RepositoryService
 	}
 
     @Override
-    public void onOffLinkers(boolean onOffBoolean)
+    public void onOffLinkers(boolean enableLinkers)
     {
-        log.debug("Enable bitbucket linkers : " + BooleanUtils.toStringYesNo(onOffBoolean));
-        settings.createGlobalSettings().put(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM, onOffBoolean + "");
+        log.debug("Enable linkers : " + BooleanUtils.toStringYesNo(enableLinkers));
 
-        List<Repository> allRepositories = getAllRepositories();
-        for (Repository repository : allRepositories)
+        // remove the variable first so adding and removing linkers works
+        pluginSettingsFactory.createGlobalSettings().remove(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM);
+
+        // add or remove linkers 
+        for (Repository repository : getAllRepositories())
         {
-            linkUnlinkRepo(onOffBoolean, repository);
-
-        }
-
-    }
-
-    private void linkUnlinkRepo(boolean onOff, Repository repository)
-    {
-        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
-
-        log.debug((onOff ? "" : "un") + "linking " + repository.getSlug());
-
-        if (onOff) {
-        
-            communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
-        
-        } else {
+            log.debug((enableLinkers ? "Adding" : "Removing") + " linkers for" + repository.getSlug());
             
-            communicator.unlinkRepository(repository);
-
+            DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+            if (enableLinkers)
+            {
+                communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
+            } else
+            {
+                communicator.linkRepository(repository, new HashSet<String>());
+            }
+        }
+        
+        if (!enableLinkers)
+        {
+            pluginSettingsFactory.createGlobalSettings().put(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM, Boolean.FALSE.toString());
         }
     }
 

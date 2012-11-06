@@ -75,30 +75,27 @@ public class RootResource
         this.ondemandAccountConfig = ondemandAccountConfig;
 	}
 
-	/**
-	 * Gets the repository.
-	 * 
-	 * @param id
-	 *            the id
-	 * @return the repository
-	 */
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	@Path("/repository/{id}")
-	public Response getRepository(@PathParam("id") int id)
-	{        
-		Repository repository = repositoryService.get(id);
-		
-		if (repository != null) {
-
-			return Response.ok(repository).build();
-		
-		} else {
-			
-			return Response.noContent().build();
-		}
-
-	}
+    /**
+     * Gets the repository.
+     * 
+     * @param id
+     *            the id
+     * @return the repository
+     */
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @Path("/repository/{id}")
+    public Response getRepository(@PathParam("id") int id)
+    {
+        Repository repository = repositoryService.get(id);
+        if (repository != null)
+        {
+            return Response.ok(repository).build();
+        } else
+        {
+            return Response.noContent().build();
+        }
+    }
 
 	/**
 	 * Gets the all repositories.
@@ -111,7 +108,6 @@ public class RootResource
 	public Response getAllRepositories()
 	{
 		List<Repository> activeRepositories = repositoryService.getAllRepositories();
-
 		return Response.ok(new RepositoryList(activeRepositories)).build();
 	}
 
@@ -257,7 +253,7 @@ public class RootResource
 		}
 	}
 
-    @GET
+    @POST
     @Path("/linkers/{onoff}")
     @Consumes({ MediaType.TEXT_PLAIN})
     @Produces({ MediaType.TEXT_PLAIN })
@@ -265,12 +261,9 @@ public class RootResource
     {
         try
         {
-
-            Boolean onOffBoolean = BooleanUtils.toBoolean(onOff);
+            boolean onOffBoolean = BooleanUtils.toBoolean(onOff);
             repositoryService.onOffLinkers(onOffBoolean);
-
             return Response.ok("OK").build();
-
         } catch (Exception e)
         {
             log.error("Failed to reload config.", e);
