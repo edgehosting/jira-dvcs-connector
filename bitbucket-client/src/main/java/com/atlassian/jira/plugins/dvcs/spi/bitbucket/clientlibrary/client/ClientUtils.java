@@ -4,10 +4,19 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 
 public class ClientUtils
 {
@@ -20,7 +29,7 @@ public class ClientUtils
     {
         GsonBuilder builder = new GsonBuilder();
         builder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
-        builder.setDateFormat("yyyy-MM-dd HH:mm:ss"); // to parse 2011-12-21 15:17:37
+        builder.registerTypeAdapter(Date.class, new GsonDateTypeAdapter());
         return builder.create();
     }
 
@@ -66,6 +75,33 @@ public class ClientUtils
             return GSON.fromJson(new BufferedReader(new InputStreamReader(json, UTF8)), type);
         } catch (Exception e) {
             throw new JsonParsingException(e);
+        }
+    }
+
+    private static final class GsonDateTypeAdapter implements JsonDeserializer<Date>
+    {
+
+        private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        {
+            {
+                setTimeZone(TimeZone.getTimeZone("Zulu"));
+            }
+        };
+
+        @Override
+        public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException
+        {
+            String dateString = json.getAsString();
+
+            try
+            {
+                return dateFormat.parse(dateString);
+            }
+            catch (ParseException e)
+            {
+                throw new JsonParseException("Not parseable datetime string: '" + dateString + "'");
+            }
         }
     }
 }
