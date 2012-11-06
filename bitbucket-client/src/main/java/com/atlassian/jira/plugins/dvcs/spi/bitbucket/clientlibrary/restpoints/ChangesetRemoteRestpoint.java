@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -68,7 +69,7 @@ public class ChangesetRemoteRestpoint
                                     new TypeToken<List<BitbucketChangesetWithDiffstat>>(){}.getType());
     }
     
-    public Iterable<BitbucketChangeset> getAllChangesets(final String owner, final String slug)
+    public Iterable<BitbucketChangeset> getChangesets(final String owner, final String slug)
     {
         return getChangesets(owner, slug, null);
     }
@@ -161,14 +162,21 @@ public class ChangesetRemoteRestpoint
 
         @Override
         public BitbucketChangeset next()
-        {           
-            return changesetsCurrentPage.next();
+        {
+            if (hasNext())
+            {
+                return changesetsCurrentPage.next();
+            }
+            else
+            {
+                throw new NoSuchElementException();
+            }
         }
 
         @Override
         public void remove()
         {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Remove operation not supported.");
         }
         
         private boolean hasMorePages()
