@@ -1,19 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
-import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,24 +23,19 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceEnvelope;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceField;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.parsers.BitbucketChangesetFactory;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DvcsUserTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
-import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
-import com.atlassian.jira.plugins.dvcs.util.Retryer;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.plugin.PluginAccessor;
 
 /**
@@ -182,121 +170,29 @@ public class BitbucketCommunicator implements DvcsCommunicator
             log.debug(e.getMessage(), e);
             throw new SourceControlException("Could not get result", e);
         }
-
-    }
-
-    public List<Changeset> getChangesets(final Repository repository, final String startNode, final int limit,
-            final Date lastCommitDate)
-    {
-        return new Retryer<List<Changeset>>().retry(new Callable<List<Changeset>>()
-        {
-            @Override
-            public List<Changeset> call()
-            {
-                return getChangesetsInternal(repository, startNode, limit, lastCommitDate);
-            }
-        });
-
-    }
-
-    private List<Changeset> getChangesetsInternal(final Repository repository, String startNode, int limit,
-            Date lastCommitDate)
-    {
-        String owner = repository.getOrgName();
-        String slug = repository.getSlug();
-
-        BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
-
-        log.debug("Parse bitbucket changesets [ {} ] [ {} ] [ {} ] [ {} ]", new Object[] { owner, slug, startNode,
-                limit });
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("limit", String.valueOf(limit));
-
-        if (startNode != null)
-        {
-            params.put("start", startNode);
-        }
-
-        List<Changeset> changesets = new ArrayList<Changeset>();
-
-        try
-        {
-            RemoteResponse remoteResponse = remoteClient.getRequestor().get(
-                    "/repositories/" + CustomStringUtils.encode(owner) + "/" + CustomStringUtils.encode(slug)
-                            + "/changesets", params);
-
-            JSONArray list = new JSONObject(IOUtils.toString(remoteResponse.getResponse())).getJSONArray("changesets");
-            for (int i = 0; i < list.length(); i++)
-            {
-                JSONObject json = list.getJSONObject(i);
-
-                final Changeset changeset = BitbucketChangesetFactory.parse(repository.getId(), json);
-                if (lastCommitDate == null || lastCommitDate.before(changeset.getDate()))
-                {
-                    changesets.add(changeset);
-                }
-            }
-
-        }
-
-        catch (BitbucketRequestException.NotFound_404 e)
-        {
-            return Collections.emptyList();
-        } catch (BitbucketRequestException.Unauthorized_401 e)
-        {
-            throw new SourceControlException("Incorrect credentials");
-        } catch (BitbucketRequestException e)
-        {            
-            log.warn("Could not get changesets from node: {}", startNodeOrTip(startNode));
-            throw new SourceControlException("Error requesting changesets. Node: " + startNodeOrTip(startNode)
-                    + ". [" + e.getMessage() + "]", e);
-        } catch (IOException ioe)
-        {
-            log.warn("Could not get changesets from node: {}", startNodeOrTip(startNode));
-            throw new SourceControlException("Error requesting changesets. Node: " + startNodeOrTip(startNode) + ". ["
-                    + ioe.getMessage() + "]", ioe);
-        } catch (JSONException e)
-        {
-            throw new SourceControlException("Could not parse json object", e);
-        }
-        return changesets;
-    }
-    
-    private String startNodeOrTip(String startNode)
-    {
-        return startNode == null ? "tip" : startNode;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Iterable<Changeset> getChangesets(final Repository repository, final Date lastCommitDate)
+    public Iterable<Changeset> getChangesets(Repository repository, Date lastCommitDate)
     {
-        /*
-         * try { BitbucketRemoteClient remoteClient =
-         * bitbucketClientRemoteFactory.getForRepository(repository);
-         * Iterable<BitbucketChangeset> changesets =
-         * remoteClient.getChangesetsRest
-         * ().getChangesets(repository.getOrgName(), //owner
-         * repository.getSlug(), null);
-         * 
-         * return
-         * ChangesetIterableTransformer.fromBitbucketChangesetIterable(repository
-         * , changesets); } catch (BitbucketRequestException e) {
-         * log.debug(e.getMessage(), e); throw new
-         * SourceControlException("Could not get changesets", e); }
-         */
-        return new Iterable<Changeset>()
+        try
         {
-            @Override
-            public Iterator<Changeset> iterator()
-            {
-                return new BitbucketChangesetIterator(BitbucketCommunicator.this, repository, lastCommitDate);
-            }
-        };
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
+            Iterable<BitbucketChangeset> bitbucketChangesets =
+                    remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
+                                                                   repository.getSlug(),
+                                                                   null);//TODO lastChangesetNode from database
 
+            return new ChangesetIterableAdapter(repository, bitbucketChangesets);
+        }
+        catch (BitbucketRequestException e)
+        {
+            log.debug(e.getMessage(), e);
+            throw new SourceControlException("Could not get result", e);
+        }
     }
 
     /**
@@ -318,11 +214,13 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
 
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void linkRepository(Repository repository, List<String> withProjectkeys)
     {
-        
         try
         {
             bitbucketLinker.linkRepository(repository, withProjectkeys);
@@ -330,13 +228,14 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
            log.warn("Failed to link repository " + repository.getName() + " : " + e.getClass() + " :: " + e.getMessage());
         }
-        
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void linkRepositoryIncremental(Repository repository, List<String> withPossibleNewProjectkeys)
     {
-       
         try
         {
             bitbucketLinker.linkRepositoryIncremental(repository, withPossibleNewProjectkeys);
@@ -344,7 +243,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
            log.warn("Failed to do incremental repository linking " + repository.getName() + " : " + e.getClass() + " :: " + e.getMessage());
         }
-        
     }
 
     
@@ -444,22 +342,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
             Set<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
 
-
             return GroupTransformer.fromBitbucketGroups(groups);
         } catch (BitbucketRequestException e)
         {
             log.debug("Could not get groups for organization [" + organization.getName() + "]");
             throw new SourceControlException(e);
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean validateCredentials(Organization organization)
-    {
-        return true;
     }
 
     /**
@@ -494,7 +382,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
             log.warn("Failed to invite user {} to organization {}. Response HTTP code {}", new Object[] { userEmail,
                     organization.getName(), exception.getClass().getName() });
         }
-
     }
 
     public static String getApiUrl(String hostUrl)
@@ -503,4 +390,38 @@ public class BitbucketCommunicator implements DvcsCommunicator
     }
 
 
+    private static final class ChangesetIterableAdapter implements Iterable<Changeset>, Iterator<Changeset>
+    {
+        private final Iterator<BitbucketChangeset> bitbucketChangesetIterator;
+        private final int repositoryId;
+
+
+        private ChangesetIterableAdapter(Repository repository, Iterable<BitbucketChangeset> bitbucketChangesetIterable)
+        {
+            this.bitbucketChangesetIterator = bitbucketChangesetIterable.iterator();
+            this.repositoryId = repository.getId();
+        }
+
+
+        @Override
+        public boolean hasNext() {
+            return bitbucketChangesetIterator.hasNext();
+        }
+
+        @Override
+        public Changeset next() {
+            return ChangesetTransformer.fromBitbucketChangeset(repositoryId,
+                                                               bitbucketChangesetIterator.next());
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("Remove operation not supported.");
+        }
+
+        @Override
+        public Iterator<Changeset> iterator() {
+            return this;
+        }
+    }
 }
