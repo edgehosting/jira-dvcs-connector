@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 /**
  * The Class OrganizationServiceTest.
@@ -35,6 +36,9 @@ public class OrganizationServiceTest
 
 	@Mock
 	private DvcsCommunicator bitbucketCommunicator;
+	
+	@Mock
+    private PluginSettingsFactory settings;
 
 	// tested object
 	private OrganizationService organizationService;
@@ -51,7 +55,7 @@ public class OrganizationServiceTest
 	public void setup()
 	{
 		MockitoAnnotations.initMocks(this);
-		organizationService = new OrganizationServiceImpl(organizationDao, dvcsCommunicatorProvider, repositoryService);
+		organizationService = new OrganizationServiceImpl(organizationDao, dvcsCommunicatorProvider, repositoryService, settings);
 	}
 
 	@Test
