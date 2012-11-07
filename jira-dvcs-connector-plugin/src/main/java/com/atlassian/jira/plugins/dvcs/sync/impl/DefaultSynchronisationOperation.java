@@ -141,8 +141,11 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                         // + store extracted project key for incremental linking
                         if (softSync && !changesetAlreadyMarkedForSmartCommits)
                         {
-                            markChangesetForSmartCommit(changesetForSave);
+                            markChangesetForSmartCommit(changesetForSave, true);
                             changesetAlreadyMarkedForSmartCommits = true;
+                        } else
+                        {
+                            markChangesetForSmartCommit(changesetForSave, false);
                         }
                         
                         foundProjectKeys.add(ChangesetDaoImpl.parseProjectKey(issueKey));
@@ -176,12 +179,12 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         }
     }
 
-    private void markChangesetForSmartCommit(Changeset changesetForSave)
+    private void markChangesetForSmartCommit(Changeset changesetForSave, boolean mark)
 	{
         if (repository.isSmartcommitsEnabled())
         {
             log.debug("Marking changeset node = {} to be processed by smart commits", changesetForSave.getRawNode());
-            changesetForSave.setSmartcommitAvaliable(Boolean.TRUE);
+            changesetForSave.setSmartcommitAvaliable(mark);
         }
 	}
 
