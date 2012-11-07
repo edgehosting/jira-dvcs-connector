@@ -103,16 +103,18 @@ public class BitbucketIntegratedApplicationsPage implements Page
 
     public void removeLastAdddedConsumer()
     {
-        PageElement oauthConsumerOrderedList = elementFinder.find(By.className("list-widget"));
-
-        for (PageElement oauthConsumerListItem : oauthConsumerOrderedList.findAll(By.tagName("li")))
+        PageElement oauthConsumersSection = elementFinder.find(By.id("oauth-consumers"));
+        
+        for (PageElement oauthConsumerRow : oauthConsumersSection.findAll(By.tagName("tr")))
         {
-            PageElement expandConsumerLink = PageElementUtils.findTagWithAttribute(oauthConsumerListItem, "a", "class", "name");
-
-            if (lastAddedConsumerName.equals(expandConsumerLink.getText()))
+            PageElement oauthConsumerNameSpan = oauthConsumerRow.find(By.tagName("span"));
+            
+            if (oauthConsumerNameSpan.isPresent() && // first row is table head not containing span
+                oauthConsumerNameSpan.getText().equals(lastAddedConsumerName))
             {
-                PageElement deleteConsumerButton = PageElementUtils.findTagWithText(oauthConsumerListItem, "a", "Delete");
+                PageElement deleteConsumerButton = PageElementUtils.findTagWithAttribute(oauthConsumerRow, "a", "href", "#delete");
                 deleteConsumerButton.click();
+                break;
             }
         }
     }    
