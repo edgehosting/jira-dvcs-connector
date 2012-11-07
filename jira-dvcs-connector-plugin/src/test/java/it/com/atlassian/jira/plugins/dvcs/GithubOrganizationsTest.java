@@ -1,5 +1,8 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
+import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.*;
+import static org.fest.assertions.api.Assertions.*;
+
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,9 +32,6 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
 
-import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.*;
-import static org.fest.assertions.api.Assertions.*;
-
 /**
  * Test to verify behaviour when syncing  github repository.
  */
@@ -40,7 +40,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 
     private static final String TEST_URL = "https://github.com";
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
-    private static final String TEST_NOT_EXISTING_URL = "https://privategithub.com/myaccount";
+    private static final String TEST_NOT_EXISTING_URL = "mynotexistingaccount124";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
     private static final String REPO_ADMIN_PASSWORD = "jirabitbucketconnector1";
 
