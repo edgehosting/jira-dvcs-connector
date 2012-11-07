@@ -6,7 +6,6 @@ import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.pageobjects.elements.query.Poller;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com
@@ -16,8 +15,6 @@ public class BitbucketGrandOAuthAccessPage implements Page
     @ElementBy(tagName= "body")
     private PageElement bodyElement;
 
-    @ElementBy(tagName= "title")
-    private PageElement title;
  
     
     @Override
@@ -33,11 +30,9 @@ public class BitbucketGrandOAuthAccessPage implements Page
         //     <input type="submit" value="Grant access">
         // </div>
         
-        Poller.waitUntilTrue(title.timed().hasText("Bitbucket"));
+        PageElement buttonsDiv = bodyElement.find(By.className("buttons"));
         
-        PageElement grandAccessDiv = bodyElement.find(By.className("submit"));
-        
-        PageElement grandAccessButton = PageElementUtils.findTagWithAttribute(grandAccessDiv,
+        PageElement grandAccessButton = PageElementUtils.findTagWithAttribute(buttonsDiv,
                                                                               "button",
                                                                               "type",
                                                                               "submit");
