@@ -1,5 +1,12 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
+import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.withMessage;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,10 +36,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
-
-import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
 
 /**
  * Test to verify behaviour when syncing  github repository.
@@ -111,11 +114,10 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     @Before
     public void removeExistingPostCommitHooks()
     {
-        String[] githubRepositories = {"repo1", "test-project"};
-
-        for (String githubRepositoryId : githubRepositories) {
+        String[] githubRepositories = { "repo1", "test-project" };
+        for (String githubRepositoryId : githubRepositories)
+        {
             Set<String> extractedGithubHookIds = extractGithubHookIdsForRepositoryToRemove(githubRepositoryId);
-
             for (String extractedGithubHookId : extractedGithubHookIds)
             {
                 removePostCommitHook(githubRepositoryId, extractedGithubHookId);
@@ -159,7 +161,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationFailingStep1(TEST_NOT_EXISTING_URL);
 
         String errorMessage = configureOrganizations.getErrorStatusMessage();
-        assertThat(errorMessage, containsString("is incorrect or the server is not responding."));
+        assertThat(errorMessage, containsString("Invalid user/team account."));
         configureOrganizations.clearForm();
     }
 
@@ -246,11 +248,12 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     }
 
     @Test
-    public void addPrivateRepositoryWithValidOAuth() {
+    public void addPrivateRepositoryWithValidOAuth()
+    {
         GithubConfigureOrganizationsPage githubConfigPage = (GithubConfigureOrganizationsPage) goToConfigPage();
 
-        GithubConfigureOrganizationsPage githubConfigureOrganizationsPage =
-                githubConfigPage.addRepoToProjectForOrganization("dusanhornik", true);
+        GithubConfigureOrganizationsPage githubConfigureOrganizationsPage = githubConfigPage
+                .addRepoToProjectForOrganization("dusanhornik");
 
         assertThat(githubConfigureOrganizationsPage.getNumberOfVisibleRepositories(), is(3));
     }

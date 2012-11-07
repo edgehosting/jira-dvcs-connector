@@ -9,7 +9,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +19,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.RepositoryLin
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
-import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.sal.api.ApplicationProperties;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -44,14 +41,12 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     private final ProjectManager projectManager;
 
     private final static Pattern PATTERN_PROJECTS_IN_LINK_REX = Pattern.compile("[A-Z|a-z]{2,}(|)+");
-    private final PluginSettingsFactory settings;
 
     public BitbucketLinkerImpl(BitbucketClientRemoteFactory bitbucketClientRemoteFactory,
-            ApplicationProperties applicationProperties, ProjectManager projectManager, PluginSettingsFactory settings)
+            ApplicationProperties applicationProperties, ProjectManager projectManager)
     {
         this.bitbucketClientRemoteFactory = bitbucketClientRemoteFactory;
         this.projectManager = projectManager;
-        this.settings = settings;
         this.baseUrl = normaliseBaseUrl(applicationProperties.getBaseUrl());
     }
 
@@ -88,13 +83,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     @Override
     public void linkRepository(Repository repository, Set<String> projectKeysToLink)
     {
-        //
-        if (!isLinkersEnabled())
-        {
-            logLinkersDisabled();
-            return;
-        }
-        //
+
         // remove keys for nonexisting projects
         Set<String> projectKeysInJira = getProjectKeysInJira();
         projectKeysToLink.retainAll(projectKeysInJira);
@@ -161,12 +150,6 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     @Override
     public void linkRepositoryIncremental(Repository repository, Set<String> newProjectKeys)
     {
-        //
-        if (!isLinkersEnabled())
-        {
-            logLinkersDisabled();
-            return;
-        }
         //
         if (CollectionUtils.isEmpty(newProjectKeys))
         {
@@ -290,24 +273,4 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         return linksToThisJira;
     }
 
-    private boolean isLinkersEnabled()
-    {
-
-        String setting = (String) settings.createGlobalSettings().get(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM);
-
-        if (setting != null)
-        {
-
-            return BooleanUtils.toBoolean(setting);
-
-        } else
-        {
-            return true;
-        }
-    }
-
-    private void logLinkersDisabled()
-    {
-        log.debug("Linkers disabled.");
-    }
 }

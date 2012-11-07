@@ -5,6 +5,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.slf4j.Logger;
@@ -12,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.util.concurrent.ThreadFactories;
 
 public class DeferredBitbucketLinker implements BitbucketLinker
@@ -21,10 +25,14 @@ public class DeferredBitbucketLinker implements BitbucketLinker
 	private final BitbucketLinker bitbucketLinker;
 	private final ThreadPoolExecutor executor;
 
-	public DeferredBitbucketLinker(@Qualifier("bitbucketLinker") BitbucketLinker bitbucketLinker)
+    private final PluginSettingsFactory pluginSettingsFactory;
+
+    public DeferredBitbucketLinker(@Qualifier("bitbucketLinker") BitbucketLinker bitbucketLinker,
+            PluginSettingsFactory pluginSettingsFactory)
     {
 
 		this.bitbucketLinker = bitbucketLinker;
+        this.pluginSettingsFactory = pluginSettingsFactory;
 		// would be nice to have 2-3 threads but that doesn't seem to be trivial task: 
 		// http://stackoverflow.com/questions/3419380/threadpoolexecutor-policy
 		executor = new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS,
@@ -73,9 +81,26 @@ public class DeferredBitbucketLinker implements BitbucketLinker
 
 	private void addTaskAtTheEndOfQueue(Runnable task)
     {
-	    executor.remove(task);
-		executor.execute(task);
-		log.debug("QUEUED:" + task);
+        if (!isLinkersEnabled())
+        {
+            log.debug("Linkers disabled.");
+            return;
+        }
+        executor.remove(task);
+        executor.execute(task);
+        log.debug("QUEUED:" + task);
+    }
+	
+    private boolean isLinkersEnabled()
+    {
+        String setting = (String) pluginSettingsFactory.createGlobalSettings().get(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM);
+        if (StringUtils.isNotBlank(setting))
+        {
+            return BooleanUtils.toBoolean(setting);
+        } else
+        {
+            return true;
+        }
     }
 
 	private abstract class BitbucketLinkingTask implements Runnable

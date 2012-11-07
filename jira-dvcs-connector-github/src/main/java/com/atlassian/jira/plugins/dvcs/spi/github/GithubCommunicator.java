@@ -377,11 +377,4 @@ public class GithubCommunicator implements DvcsCommunicator
     {
 
     }
-
-    @Override
-    public void unlinkRepository(Repository repository)
-    {
-        
-    }
-
 }
