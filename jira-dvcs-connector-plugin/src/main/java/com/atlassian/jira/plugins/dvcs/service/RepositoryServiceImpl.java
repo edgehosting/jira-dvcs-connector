@@ -481,7 +481,7 @@ public class RepositoryServiceImpl implements RepositoryService
             log.debug((enableLinkers ? "Adding" : "Removing") + " linkers for" + repository.getSlug());
             
             DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
-            if (enableLinkers)
+            if (enableLinkers && repository.isLinked())
             {
                 communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
             } else
