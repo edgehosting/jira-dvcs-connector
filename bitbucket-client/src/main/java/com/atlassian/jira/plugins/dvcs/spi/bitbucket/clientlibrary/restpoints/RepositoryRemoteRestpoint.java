@@ -42,8 +42,9 @@ public class RepositoryRemoteRestpoint
             @Override
             public List<BitbucketRepository> onResponse(RemoteResponse response)
             {
-                return  ClientUtils.fromJson(response.getResponse(),
+                BitbucketRepositoryEnvelope envelope = ClientUtils.fromJson(response.getResponse(),
                         new TypeToken<BitbucketRepositoryEnvelope>(){}.getType());
+                return  envelope.getRepositories();
             }
 		    
         });
