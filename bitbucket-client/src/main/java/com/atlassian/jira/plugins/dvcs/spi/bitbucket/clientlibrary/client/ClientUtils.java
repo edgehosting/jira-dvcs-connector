@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
@@ -13,14 +14,15 @@ public class ClientUtils
 {
 
     private static Gson GSON = createGson();
-    
+
     public static final String UTF8 = "UTF-8";
 
     private static Gson createGson()
     {
         GsonBuilder builder = new GsonBuilder();
         builder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
-        builder.setDateFormat("yyyy-MM-dd HH:mm:ss"); // to parse 2011-12-21 15:17:37
+        builder.setDateFormat("yyyy-MM-dd HH:mm:ss"); // to parse 2011-12-21
+                                                      // 15:17:37
         return builder.create();
     }
 
@@ -29,8 +31,7 @@ public class ClientUtils
         try
         {
             return GSON.toJson(object);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             throw new JsonParsingException(e);
         }
@@ -41,31 +42,54 @@ public class ClientUtils
         try
         {
             return GSON.fromJson(json, type);
-        }
-        catch (Exception e)
-        {
-            throw new JsonParsingException(e);
-        }
-    }
-    
-    public static <T> T fromJson(InputStream json, Class<T> type)
-    {
-        try
-        {
-            return GSON.fromJson(new BufferedReader(new InputStreamReader(json, UTF8)), type);
         } catch (Exception e)
         {
             throw new JsonParsingException(e);
         }
     }
-    
-    public static <T> T fromJson(InputStream json, Type type)
+
+    public static <T> T fromJson(InputStream json, Class<T> type)
+    {
+        BufferedReader reader = null;
+        try
+        {
+            reader = new BufferedReader(new InputStreamReader(json, UTF8));
+            return GSON.fromJson(reader, type);
+        } catch (Exception e)
+        {
+            throw new JsonParsingException(e);
+        } finally
+        {
+            closeReader(reader);
+        }
+    }
+
+    private static void closeReader(BufferedReader reader)
     {
         try
         {
-            return GSON.fromJson(new BufferedReader(new InputStreamReader(json, UTF8)), type);
-        } catch (Exception e) {
+            if (reader != null)
+            {
+                reader.close();
+            }
+        } catch (IOException e)
+        {
+        }
+    }
+
+    public static <T> T fromJson(InputStream json, Type type)
+    {
+        BufferedReader reader = null;
+        try
+        {
+            reader = new BufferedReader(new InputStreamReader(json, UTF8));
+            return GSON.fromJson(reader, type);
+        } catch (Exception e)
+        {
             throw new JsonParsingException(e);
+        } finally
+        {
+            closeReader(reader);
         }
     }
 }
