@@ -6,33 +6,42 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Client
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketSSHKey;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.google.gson.reflect.TypeToken;
 
 /**
  * SSHRemoteRestpoint
- *
+ * 
  * @author Martin Skurla mskurla@atlassian.com
  */
 public class SSHRemoteRestpoint
 {
     private final RemoteRequestor requestor;
 
-    
     public SSHRemoteRestpoint(RemoteRequestor requestor)
     {
         this.requestor = requestor;
     }
-    
-    
+
     /**
      * <b>Requires authorization.</b>
      * 
-     * @return 
+     * @return
      */
     public List<BitbucketSSHKey> getSSHKeys()
     {
-        RemoteResponse response = requestor.get("/ssh-keys", null);
-        
-        return ClientUtils.fromJson(response.getResponse(), new TypeToken<List<BitbucketSSHKey>>(){}.getType());
+        return requestor.get("/ssh-keys", null, new ResponseCallback<List<BitbucketSSHKey>>()
+        {
+
+            @Override
+            public List<BitbucketSSHKey> onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), new TypeToken<List<BitbucketSSHKey>>()
+                {
+                }.getType());
+            }
+
+        });
+
     }
 }
