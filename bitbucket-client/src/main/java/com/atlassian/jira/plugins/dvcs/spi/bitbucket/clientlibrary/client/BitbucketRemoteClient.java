@@ -53,7 +53,6 @@ public class BitbucketRemoteClient
         this.groupRemoteRestpoint = new GroupRemoteRestpoint(requestor);
         this.repositoryLinkRemoteRestpoint = new RepositoryLinkRemoteRestpoint(requestor);
         this.repositoryRemoteRestpoint = new RepositoryRemoteRestpoint(requestor);
-//        this.sshRemoteRestpoint = new SSHRemoteRestpoint(requestor);
         this.serviceRemoteRestpoint = new ServiceRemoteRestpoint(requestor);
 	}
 	

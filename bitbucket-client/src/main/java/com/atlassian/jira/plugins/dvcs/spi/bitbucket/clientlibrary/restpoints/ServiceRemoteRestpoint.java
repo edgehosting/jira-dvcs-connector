@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class ServiceRemoteRestpoint
     {
         String deleteServiceUrl = String.format("/repositories/%s/%s/services/%d", owner, slug, serviceId);
         
-        requestor.delete(deleteServiceUrl);
+        requestor.delete(deleteServiceUrl, Collections.<String, String> emptyMap());
     }
     
     public List<BitbucketServiceEnvelope> getAllServices(String owner, String slug)

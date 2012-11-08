@@ -46,9 +46,9 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     @Override
-    public RemoteResponse delete(String uri)
+    public RemoteResponse delete(String uri, Map<String, String> parameters)
     {
-        return requestWithoutPayload(HttpMethod.DELETE, uri, Collections.<String, String> emptyMap());
+        return requestWithoutPayload(HttpMethod.DELETE, uri, parameters);
     }
 
     @Override

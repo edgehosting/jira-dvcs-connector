@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class RepositoryLinkRemoteRestpoint
     {
         String removeRepositoryLinkUrl = String.format("/repositories/%s/%s/links/%d", owner, slug, id);
 
-        requestor.delete(removeRepositoryLinkUrl);
+        requestor.delete(removeRepositoryLinkUrl, Collections.<String, String> emptyMap());
     }
     
     public BitbucketRepositoryLink addRepositoryLink(String owner, String slug, String handler, String linkUrl, String linkKey)

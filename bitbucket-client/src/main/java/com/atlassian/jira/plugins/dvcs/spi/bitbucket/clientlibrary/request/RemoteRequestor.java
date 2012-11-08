@@ -11,7 +11,7 @@ public interface RemoteRequestor
 	
 	RemoteResponse put(String uri, Map<String, String> parameters);
 	
-	RemoteResponse delete(String uri); 
+	RemoteResponse delete(String uri, Map<String, String> parameters);
 	
 }
 
