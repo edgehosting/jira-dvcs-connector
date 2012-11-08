@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
@@ -58,23 +57,7 @@ public class ClientUtils
         } catch (Exception e)
         {
             throw new JsonParsingException(e);
-        } finally
-        {
-            closeReader(reader);
-        }
-    }
-
-    private static void closeReader(BufferedReader reader)
-    {
-        try
-        {
-            if (reader != null)
-            {
-                reader.close();
-            }
-        } catch (IOException e)
-        {
-        }
+        } 
     }
 
     public static <T> T fromJson(InputStream json, Type type)
@@ -87,9 +70,6 @@ public class ClientUtils
         } catch (Exception e)
         {
             throw new JsonParsingException(e);
-        } finally
-        {
-            closeReader(reader);
         }
     }
 }
