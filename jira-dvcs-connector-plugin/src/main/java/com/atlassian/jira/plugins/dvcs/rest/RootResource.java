@@ -18,6 +18,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +33,6 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * The Class RootResource.
@@ -74,30 +75,27 @@ public class RootResource
         this.ondemandAccountConfig = ondemandAccountConfig;
 	}
 
-	/**
-	 * Gets the repository.
-	 * 
-	 * @param id
-	 *            the id
-	 * @return the repository
-	 */
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	@Path("/repository/{id}")
-	public Response getRepository(@PathParam("id") int id)
-	{        
-		Repository repository = repositoryService.get(id);
-		
-		if (repository != null) {
-
-			return Response.ok(repository).build();
-		
-		} else {
-			
-			return Response.noContent().build();
-		}
-
-	}
+    /**
+     * Gets the repository.
+     * 
+     * @param id
+     *            the id
+     * @return the repository
+     */
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @Path("/repository/{id}")
+    public Response getRepository(@PathParam("id") int id)
+    {
+        Repository repository = repositoryService.get(id);
+        if (repository != null)
+        {
+            return Response.ok(repository).build();
+        } else
+        {
+            return Response.noContent().build();
+        }
+    }
 
 	/**
 	 * Gets the all repositories.
@@ -110,7 +108,6 @@ public class RootResource
 	public Response getAllRepositories()
 	{
 		List<Repository> activeRepositories = repositoryService.getAllRepositories();
-
 		return Response.ok(new RepositoryList(activeRepositories)).build();
 	}
 
@@ -255,7 +252,25 @@ public class RootResource
 
 		}
 	}
-	
+
+    @POST
+    @Path("/linkers/{onoff}")
+    @Consumes({ MediaType.TEXT_PLAIN})
+    @Produces({ MediaType.TEXT_PLAIN })
+    public Response onOffLinkers(@PathParam("onoff") String onOff)
+    {
+        try
+        {
+            boolean onOffBoolean = BooleanUtils.toBoolean(onOff);
+            repositoryService.onOffLinkers(onOffBoolean);
+            return Response.ok("OK").build();
+        } catch (Exception e)
+        {
+            log.error("Failed to reload config.", e);
+            return Response.serverError().build();
+        }
+    }
+
     @GET
     @AnonymousAllowed
     @Path("/integrated-accounts/reload")
@@ -273,5 +288,5 @@ public class RootResource
             return Response.serverError().build();
         }
     }
-	
+    
 }

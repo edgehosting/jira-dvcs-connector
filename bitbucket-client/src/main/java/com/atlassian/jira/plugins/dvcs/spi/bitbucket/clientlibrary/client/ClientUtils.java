@@ -22,7 +22,7 @@ public class ClientUtils
 {
 
     private static Gson GSON = createGson();
-    
+
     public static final String UTF8 = "UTF-8";
 
     private static Gson createGson()
@@ -30,6 +30,7 @@ public class ClientUtils
         GsonBuilder builder = new GsonBuilder();
         builder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
         builder.registerTypeAdapter(Date.class, new GsonDateTypeAdapter());
+                                                      // 15:17:37
         return builder.create();
     }
 
@@ -56,24 +57,29 @@ public class ClientUtils
             throw new JsonParsingException(e);
         }
     }
-    
+
     public static <T> T fromJson(InputStream json, Class<T> type)
     {
+        BufferedReader reader = null;
         try
         {
-            return GSON.fromJson(new BufferedReader(new InputStreamReader(json, UTF8)), type);
+            reader = new BufferedReader(new InputStreamReader(json, UTF8));
+            return GSON.fromJson(reader, type);
         } catch (Exception e)
         {
             throw new JsonParsingException(e);
         }
     }
-    
+
     public static <T> T fromJson(InputStream json, Type type)
     {
+        BufferedReader reader = null;
         try
         {
-            return GSON.fromJson(new BufferedReader(new InputStreamReader(json, UTF8)), type);
-        } catch (Exception e) {
+            reader = new BufferedReader(new InputStreamReader(json, UTF8));
+            return GSON.fromJson(reader, type);
+        } catch (Exception e)
+        {
             throw new JsonParsingException(e);
         }
     }

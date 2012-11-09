@@ -21,8 +21,7 @@ public class OrganizationServiceImpl implements OrganizationService
 	private final OrganizationDao organizationDao;
 	private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
 	private final RepositoryService repositoryService;
-
-
+    
 	public OrganizationServiceImpl(OrganizationDao organizationDao, DvcsCommunicatorProvider dvcsCommunicatorProvider,
         RepositoryService repositoryService)
     {
@@ -212,4 +211,5 @@ public class OrganizationServiceImpl implements OrganizationService
     {
         return organizationDao.getByHostAndName(hostUrl, name);
     }
+
 }

@@ -40,27 +40,27 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     @Override
-    public RemoteResponse get(String uri, Map<String, String> parameters)
+    public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        return requestWithoutPayload(HttpMethod.GET, uri, parameters);
+        return requestWithoutPayload(HttpMethod.GET, uri, parameters, callback);
     }
 
     @Override
-    public RemoteResponse delete(String uri, Map<String, String> parameters)
+    public <T> T delete(String uri, ResponseCallback<T> callback)
     {
-        return requestWithoutPayload(HttpMethod.DELETE, uri, parameters);
+        return requestWithoutPayload(HttpMethod.DELETE, uri, Collections.<String, String> emptyMap(), callback);
     }
 
     @Override
-    public RemoteResponse post(String uri, Map<String, String> parameters)
+    public  <T> T post(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        return requestWithPayload(HttpMethod.POST, uri, parameters);
+        return requestWithPayload(HttpMethod.POST, uri, parameters, callback);
     }
 
     @Override
-    public RemoteResponse put(String uri, Map<String, String> parameters)
+    public <T> T put(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        return requestWithPayload(HttpMethod.PUT, uri, parameters);
+        return requestWithPayload(HttpMethod.PUT, uri, parameters, callback);
     }
 
     // --------------------------------------------------------------------------------------------------
@@ -89,20 +89,26 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     protected void logRequest(HttpURLConnection connection, Map<String, String> params)
     {
+
+        log.debug("[Headers {}]", connection.getRequestProperties());
         log.debug("[REST call {} : {} :: {}]", new Object[] { connection.getRequestMethod(), connection.getURL(),
             params });
     }
 
-    private RemoteResponse requestWithPayload(HttpMethod postOrPut, String uri, Map<String, String> params)
+    private <T> T requestWithPayload(HttpMethod postOrPut, String uri, Map<String, String> params, ResponseCallback<T> callback)
     {
 
         HttpURLConnection connection = null;
+        RemoteResponse response = null;
+       
         try
         {
             connection = createConnection(postOrPut, uri, params);
             setPayloadParams(connection, params);
 
-            return checkAndCreateRemoteResponse(connection);
+            response = checkAndCreateRemoteResponse(connection);
+            
+            return callback.onResponse(response);
 
         } catch (BitbucketRequestException e)
         {
@@ -111,21 +117,40 @@ public class BaseRemoteRequestor implements RemoteRequestor
         {
             log.debug("Failed to execute request: " + connection, e);
             throw new BitbucketRequestException("Failed to execute request " + connection, e);
+        } finally
+        {
+            closeResponse(response);
         }
     }
 
-    private RemoteResponse requestWithoutPayload(HttpMethod getOrDelete, String uri, Map<String, String> parameters)
+    private void closeResponse(RemoteResponse response)
+    {
+        if (response != null)
+        {
+            response.close();
+        }
+    }
+
+    private <T> T requestWithoutPayload(HttpMethod getOrDelete, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
         HttpURLConnection connection = null;
+        RemoteResponse response = null;
+       
         try
         {
             connection = createConnection(getOrDelete, uri + paramsToString(parameters, uri.contains("?")), parameters);
-            return checkAndCreateRemoteResponse(connection);
+            response = checkAndCreateRemoteResponse(connection);
+            
+            return callback.onResponse(response);
 
         } catch (IOException e)
         {
             log.debug("Failed to execute request: " + connection, e);
             throw new BitbucketRequestException("Failed to execute request " + connection, e);
+            
+        } finally
+        {
+            closeResponse(response);
         }
     }
 
@@ -156,6 +181,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
         response.setHttpStatusCode(connection.getResponseCode());
         response.setResponse(connection.getInputStream());
+        response.setConnection(connection);
         return response;
     }
 

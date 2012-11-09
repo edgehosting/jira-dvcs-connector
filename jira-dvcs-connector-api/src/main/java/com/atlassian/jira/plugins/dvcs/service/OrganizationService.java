@@ -116,5 +116,6 @@ public interface OrganizationService
 	Organization getByHostAndName(final String hostUrl, final String name);
 
     void updateCredentialsKeySecret(int organizationId, String key, String secret);
+
 }
 

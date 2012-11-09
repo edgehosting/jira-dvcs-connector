@@ -60,19 +60,17 @@ public class GithubCommunicator implements DvcsCommunicator
     public GithubCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
             GithubClientProvider githubClientProvider)
     {
-	    this.changesetCache = changesetCache;
-	    this.githubOAuth = githubOAuth;
+        this.changesetCache = changesetCache;
+        this.githubOAuth = githubOAuth;
         this.githubClientProvider = githubClientProvider;
     }
-    
 
-	@Override
-	public boolean isOauthConfigured()
-	{
-		return StringUtils.isNotBlank(githubOAuth.getClientId())
-				&& StringUtils.isNotBlank(githubOAuth.getClientSecret());
-	}
-
+    @Override
+    public boolean isOauthConfigured()
+    {
+        return StringUtils.isNotBlank(githubOAuth.getClientId())
+                && StringUtils.isNotBlank(githubOAuth.getClientSecret());
+    }
 
     @Override
     public String getDvcsType()
@@ -87,14 +85,15 @@ public class GithubCommunicator implements DvcsCommunicator
         try
         {
             userService.getUser(accountName);
-            boolean requiresOauth = StringUtils.isBlank(githubOAuth.getClientId()) || StringUtils.isBlank(githubOAuth.getClientSecret());
+            boolean requiresOauth = StringUtils.isBlank(githubOAuth.getClientId())
+                    || StringUtils.isBlank(githubOAuth.getClientSecret());
 
             return new AccountInfo(GithubCommunicator.GITHUB, requiresOauth);
 
         } catch (IOException e)
         {
-            log.debug("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(),
-                    hostUrl, accountName);
+            log.debug("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(), hostUrl,
+                    accountName);
         }
         return null;
 
@@ -106,9 +105,10 @@ public class GithubCommunicator implements DvcsCommunicator
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(organization);
         repositoryService.getClient().setOAuth2Token(organization.getCredential().getAccessToken());
 
-        // We don't know if this is team account or standard account. Let's first get repositories 
+        // We don't know if this is team account or standard account. Let's
+        // first get repositories
         // by calling getOrgRepositories
-        
+
         List<org.eclipse.egit.github.core.Repository> repositoriesFromOrganization;
         try
         {
@@ -127,8 +127,7 @@ public class GithubCommunicator implements DvcsCommunicator
                     .getRepositories();
 
             Iterator<org.eclipse.egit.github.core.Repository> iterator = Iterators.concat(
-                    repositoriesFromOrganization.iterator(),
-                    publicRepositoriesFromOrganization.iterator(),
+                    repositoriesFromOrganization.iterator(), publicRepositoriesFromOrganization.iterator(),
                     allRepositoriesFromAuthorizedUser.iterator());
 
             Set<Repository> repositories = new HashSet<Repository>();
@@ -145,16 +144,16 @@ public class GithubCommunicator implements DvcsCommunicator
             }
 
             log.debug("Found repositories: " + repositories.size());
-            return new ArrayList<Repository>((Set<Repository>) repositories);
+            return new ArrayList<Repository>(repositories);
         } catch (IOException e)
         {
             throw new SourceControlException("Error retrieving list of repositories", e);
         }
     }
 
-	@Override
-	public Changeset getDetailChangeset(Repository repository, Changeset changeset)
-	{
+    @Override
+    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    {
         CommitService commitService = githubClientProvider.getCommitService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
@@ -167,7 +166,7 @@ public class GithubCommunicator implements DvcsCommunicator
             throw new SourceControlException("could not get result", e);
         }
     }
-    
+
     public PageIterator<RepositoryCommit> getPageIterator(final Repository repository, final String branch)
     {
         return new Retryer<PageIterator<RepositoryCommit>>().retry(new Callable<PageIterator<RepositoryCommit>>()
@@ -178,19 +177,22 @@ public class GithubCommunicator implements DvcsCommunicator
                 return getPageIteratorInternal(repository, branch);
             }
         });
-        
+
     }
 
     private PageIterator<RepositoryCommit> getPageIteratorInternal(Repository repository, String branch)
     {
         final CommitService commitService = githubClientProvider.getCommitService(repository);
-        
-        return commitService.pageCommits(RepositoryId.create(repository.getOrgName(), repository.getSlug()), doTheUtfEncoding(branch), null);
-        
+
+        return commitService.pageCommits(RepositoryId.create(repository.getOrgName(), repository.getSlug()),
+                doTheUtfEncoding(branch), null);
+
     }
 
     /**
-     * The git library is encoding parameters using ISO-8859-1. Lets trick it and encode UTF-8 instead
+     * The git library is encoding parameters using ISO-8859-1. Lets trick it
+     * and encode UTF-8 instead
+     * 
      * @param branch
      * @return
      */
@@ -200,15 +202,14 @@ public class GithubCommunicator implements DvcsCommunicator
         try
         {
             String utfEncoded = URLEncoder.encode(branch, "UTF-8");
-            isoDecoded = URLDecoder.decode(utfEncoded,"ISO-8859-1");
+            isoDecoded = URLDecoder.decode(utfEncoded, "ISO-8859-1");
         } catch (UnsupportedEncodingException e)
         {
             log.warn("Error encoding branch name: " + branch + e.getMessage());
         }
         return isoDecoded;
     }
-    
-    
+
     @Override
     public Iterable<Changeset> getChangesets(final Repository repository, final Date lastCommitDate)
     {
@@ -218,10 +219,16 @@ public class GithubCommunicator implements DvcsCommunicator
             public Iterator<Changeset> iterator()
             {
                 List<String> branches = getBranches(repository);
-                return new GithubChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches, lastCommitDate);
+                // TODO if there are more than X (20?) branches then we should
+                // do something smarter...
+                // maybe search for new commits in scheduler job only? (once an
+                // hour)
+                return new GithubChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches,
+                        lastCommitDate);
             }
         };
     }
+
     @Override
     public void setupPostcommitHook(Repository repository, String postCommitUrl)
     {
@@ -250,7 +257,7 @@ public class GithubCommunicator implements DvcsCommunicator
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
-        
+
         try
         {
             final List<RepositoryHook> hooks = repositoryService.getHooks(repositoryId);
@@ -264,13 +271,14 @@ public class GithubCommunicator implements DvcsCommunicator
         } catch (IOException e)
         {
             log.warn("Error removing postcommit service [{}]", e.getMessage());
-        }    }
+        }
+    }
 
     @Override
     public String getCommitUrl(Repository repository, Changeset changeset)
     {
-        return MessageFormat.format("{0}/{1}/{2}/commit/{3}", repository.getOrgHostUrl(),
-                        repository.getOrgName(), repository.getSlug(), changeset.getNode());
+        return MessageFormat.format("{0}/{1}/{2}/commit/{3}", repository.getOrgHostUrl(), repository.getOrgName(),
+                repository.getSlug(), changeset.getNode());
     }
 
     @Override
@@ -278,7 +286,6 @@ public class GithubCommunicator implements DvcsCommunicator
     {
         return MessageFormat.format("{0}#diff-{1}", getCommitUrl(repository, changeset), index);
     }
-
 
     @Override
     public DvcsUser getUser(Repository repository, String username)
@@ -296,8 +303,7 @@ public class GithubCommunicator implements DvcsCommunicator
             return DvcsUser.UNKNOWN_USER;
         }
     }
-    
-    
+
     @Override
     public String getUserUrl(Repository repository, Changeset changeset)
     {
@@ -311,15 +317,16 @@ public class GithubCommunicator implements DvcsCommunicator
         List<String> branches = new ArrayList<String>();
         try
         {
-            final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(repository.getOrgName(), repository.getSlug()));
+            final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(
+                    repository.getOrgName(), repository.getSlug()));
             log.debug("Found branches: " + ghBranches.size());
 
-            for (RepositoryBranch ghBranch: ghBranches)
+            for (RepositoryBranch ghBranch : ghBranches)
             {
                 final String branchName = ghBranch.getName();
                 if (branchName.equalsIgnoreCase("master"))
                 {
-                    branches.add(0,branchName);
+                    branches.add(0, branchName);
                 } else
                 {
                     branches.add(branchName);
@@ -335,37 +342,34 @@ public class GithubCommunicator implements DvcsCommunicator
         return branches;
     }
 
-	@Override
-	public boolean supportsInvitation(Organization organization)
-	{
-		return false;
-	}
-
-	@Override
-	public Set<Group> getGroupsForOrganization(Organization organization)
-	{
-		return Collections.emptySet();
-	}
-
-	@Override
-	public void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail)
-	{
-		throw new UnsupportedOperationException("You can not invite users to github so far, ...");
-	}
-
-
     @Override
-    public void linkRepository(Repository repository, List<String> withProjectkeys)
+    @Override
+    public boolean supportsInvitation(Organization organization)
     {
-        
+        return false;
     }
 
     @Override
-    public void linkRepositoryIncremental(Repository repository, List<String> withPossibleNewProjectkeys)
+    public Set<Group> getGroupsForOrganization(Organization organization)
     {
-        
+        return Collections.emptySet();
     }
-    
-    
 
+    @Override
+    public void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail)
+    {
+        throw new UnsupportedOperationException("You can not invite users to github so far, ...");
+    }
+
+    @Override
+    public void linkRepository(Repository repository, Set<String> withProjectkeys)
+    {
+
+    }
+
+    @Override
+    public void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys)
+    {
+
+    }
 }

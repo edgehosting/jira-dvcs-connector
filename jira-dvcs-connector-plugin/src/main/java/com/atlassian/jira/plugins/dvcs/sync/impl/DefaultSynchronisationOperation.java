@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -9,6 +9,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -17,14 +18,13 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
-import java.util.HashSet;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
     private static final Logger log = LoggerFactory.getLogger(DefaultSynchronisationOperation.class);
 
-    protected final Repository repository;
-    protected final RepositoryService repositoryService;
+    private final Repository repository;
+    private final RepositoryService repositoryService;
     private final DefaultProgress progress;
     private final ChangesetService changesetService;
     private final boolean softSync;
@@ -44,11 +44,9 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         this.repository = repository;
         this.repositoryService = repositoryService;
         this.changesetService = changesetService;
-        progress = new DefaultProgress();
+        this.progress = new DefaultProgress();
         this.softSync = softSync;
     }
-
-
 
     @Override
     public void synchronise()
@@ -62,8 +60,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             repositoryService.save(repository);
         }
     }
-
-
 
     public void synchroniseInternal()
     {
@@ -85,7 +81,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
         Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository, lastCommitDate);
 
-        Set<String> extractedProjectKeys = new HashSet<String>();
+        Set<String> foundProjectKeys = new HashSet<String>();
 
         boolean lastChangesetNodeUpdated = false;
         for (Changeset changeset : allOrLatestChangesets)
@@ -112,8 +108,8 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
             Set<String> extractedIssues = extractIssueKeys(message);
 
-
             // see GH_CHANGESETS_SAVING_INTERVAL javadoc
+            // TODO: I think this can be now removed 
             if ("github".equals(repository.getDvcsType()) &&
                     (changesetCount % GH_CHANGESETS_SAVING_INTERVAL) == 0 &&
                     CollectionUtils.isEmpty(extractedIssues))
@@ -151,13 +147,14 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                         // + store extracted project key for incremental linking
                         if (softSync && !changesetAlreadyMarkedForSmartCommits)
                         {
-                            markChangesetForSmartCommit(changesetForSave);
+                            markChangesetForSmartCommit(changesetForSave, true);
                             changesetAlreadyMarkedForSmartCommits = true;
+                        } else
+                        {
+                            markChangesetForSmartCommit(changesetForSave, false);
                         }
                         
-                        if (softSync) {
-                        	addProjectKey(changesetForSave, extractedProjectKeys);
-                        }
+                        foundProjectKeys.add(ChangesetDaoImpl.parseProjectKey(issueKey));
                         //--------------------------------------------
                         log.debug("Save changeset [{}]", changesetForSave);
                         changesetService.save(changesetForSave);
@@ -171,66 +168,35 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             progress.inProgress(changesetCount, jiraCount, synchroErrorCount);
         }
         
-        if (softSync) {
-            onSoftsyncFinish(extractedProjectKeys);
-        } else {
-            onHardsyncFinish();
-        }
+        setupNewLinkers(foundProjectKeys);
     }
 
-	private void onHardsyncFinish()
+    private void setupNewLinkers(Set<String> extractedProjectKeys)
     {
-	    try
+        if (!extractedProjectKeys.isEmpty())
         {
-            communicator.linkRepository(repository, changesetService.getOrderedProjectKeysByRepository(repository.getId()));
-        } catch (Exception e)
-        {
-            log.warn("Failed to do links on repository {}", repository.getName());
-        }
-    }
-
-
-
-    private void onSoftsyncFinish(Set<String> extractedProjectKeys)
-    {
-        if (!extractedProjectKeys.isEmpty()) {
-            try
+            if (softSync)
             {
-                communicator.linkRepositoryIncremental(repository, new ArrayList<String>(extractedProjectKeys));
-            } catch (Exception e)
+                communicator.linkRepositoryIncremental(repository, extractedProjectKeys);
+            } else
             {
-                log.warn("Failed to do incremental link on repository {}", repository.getName());
+                communicator.linkRepository(repository, extractedProjectKeys);
             }
         }
-        
     }
 
-
-
-    private void addProjectKey(Changeset changeset, Set<String> extractedProjectKeys)
-    {
-	    extractedProjectKeys.add(getProjectKey(changeset.getIssueKey()));
-    }
-
-
-    private void markChangesetForSmartCommit(Changeset changesetForSave)
+    private void markChangesetForSmartCommit(Changeset changesetForSave, boolean mark)
 	{
-		if (repository.isSmartcommitsEnabled()) {
-			
-			log.debug("Marking changeset node = {} to be processed by smart commits", changesetForSave.getRawNode());
-			
-			changesetForSave.setSmartcommitAvaliable(Boolean.TRUE);
-
-		}
+        if (repository.isSmartcommitsEnabled())
+        {
+            log.debug("Marking changeset node = {} to be processed by smart commits", changesetForSave.getRawNode());
+            changesetForSave.setSmartcommitAvaliable(mark);
+        }
 	}
-
-    private String getProjectKey(String issueKey)
-    {
-        return issueKey.substring(0, issueKey.indexOf("-"));
-    }
 
 	private Set<String> extractIssueKeys(String message)
     {
+	    // TODO check if these issues actually exists...
         return IssueKeyExtractor.extractIssueKeys(message);
     }
 
@@ -245,5 +211,4 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     {
         return softSync;
     }
-    
 }

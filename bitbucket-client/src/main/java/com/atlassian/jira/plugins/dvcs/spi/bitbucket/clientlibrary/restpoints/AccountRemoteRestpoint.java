@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoriesEnvelope;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 
 /**
  * AccountRemoteRestpoint
@@ -25,9 +26,16 @@ public class AccountRemoteRestpoint {
     {
         String getUserUrl = String.format("/users/%s", owner);
         
-        RemoteResponse response = requestor.get(getUserUrl, null);
+        return requestor.get(getUserUrl, null, new ResponseCallback<BitbucketAccount>()
+        {
+            @Override
+            public BitbucketAccount onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), BitbucketRepositoriesEnvelope.class).getUser();
+            }
+            
+        });
         
-        return ClientUtils.fromJson(response.getResponse(), BitbucketRepositoriesEnvelope.class).getUser();
     }
     
     /**
@@ -46,6 +54,6 @@ public class AccountRemoteRestpoint {
                                              repositoryOwnerToInvite,
                                              repositorySlugToInvite);
         
-        requestor.put(inviteUserUrl, null);
+        requestor.put(inviteUserUrl, null, ResponseCallback.EMPTY);
     }
 }

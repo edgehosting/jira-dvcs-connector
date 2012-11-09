@@ -35,7 +35,7 @@ public class OrganizationServiceTest
 
 	@Mock
 	private DvcsCommunicator bitbucketCommunicator;
-
+	
 	// tested object
 	private OrganizationService organizationService;
 

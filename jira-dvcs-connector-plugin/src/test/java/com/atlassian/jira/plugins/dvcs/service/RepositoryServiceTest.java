@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 public class RepositoryServiceTest
 {
@@ -39,6 +40,9 @@ public class RepositoryServiceTest
 	@Mock
 	private DvcsCommunicator bitbucketCommunicator;
 
+	@Mock
+	private PluginSettingsFactory settings;
+
 	// tested object
 	private RepositoryService repositoryService;
 
@@ -52,7 +56,7 @@ public class RepositoryServiceTest
 	{
 		MockitoAnnotations.initMocks(this);
 		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer,
-				changesetService, applicationProperties);
+				changesetService, applicationProperties, settings);
 
 	}
 
