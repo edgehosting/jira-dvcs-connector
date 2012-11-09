@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 
 /**
  * @author Martin Skurla
@@ -28,7 +29,7 @@ public class BitbucketRepositoriesRemoteRestpoint
         createRepoPostData.put("name", repositoryName);
         createRepoPostData.put("scm",  scm);
 
-		requestor.post("/repositories", createRepoPostData);
+		requestor.post("/repositories", createRepoPostData, ResponseCallback.EMPTY);
 	}
 
     public void removeExistingRepository(String repositoryName, String owner)
@@ -39,6 +40,6 @@ public class BitbucketRepositoriesRemoteRestpoint
 
         String removeRepositoryUrl = String.format("/repositories/%s/%s", owner, repositoryName);
 
-        requestor.delete(removeRepositoryUrl, removeRepoPostData);
+        requestor.delete(removeRepositoryUrl, ResponseCallback.EMPTY);
     }
 }

@@ -29,7 +29,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceEnvelope;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceField;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChangesetTransformer;
@@ -158,46 +157,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
             log.debug(e.getMessage(), e);
             throw new SourceControlException("Could not get result", e);
         }
-    private List<Changeset> getChangesetsInternal(final Repository repository, final String startNode, int limit,
-            final Date lastCommitDate)
-        final List<Changeset> changesets = new ArrayList<Changeset>();
-            return remoteClient.getRequestor().get(
-                            + "/changesets", params, new ResponseCallback<List<Changeset>>()
-                    {
-                        @Override
-                        public List<Changeset> onResponse(RemoteResponse response)
-                        {
-                            try
-                            {
-                                JSONArray list = new JSONObject(IOUtils.toString(response.getResponse()))
-                                        .getJSONArray("changesets");
-                                for (int i = 0; i < list.length(); i++)
-                                {
-                                    JSONObject json = list.getJSONObject(i);
-                                    final Changeset changeset = BitbucketChangesetFactory.parse(repository.getId(),
-                                            json);
-                                    if (lastCommitDate == null || lastCommitDate.before(changeset.getDate()))
-                                    {
-                                        changesets.add(changeset);
-                                    }
-                                }
-                                return changesets;
-                            } catch (IOException ioe)
-                            {
-                                log.warn("Could not get changesets from node: {}", startNodeOrTip(startNode));
-                                throw new SourceControlException("Error requesting changesets. Node: "
-                                        + startNodeOrTip(startNode) + ". [" + ioe.getMessage() + "]", ioe);
-                            } catch (JSONException e)
-                            {
-                                throw new SourceControlException("Could not parse json object", e);
-                            }
-                        }
-                    });
-
-        } catch (BitbucketRequestException.NotFound_404 e)
-        {
-                    + e.getMessage() + "]", e);
-
     }
 
     /**

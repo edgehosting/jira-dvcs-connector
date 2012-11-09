@@ -343,7 +343,6 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    @Override
     public boolean supportsInvitation(Organization organization)
     {
         return false;
