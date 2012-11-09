@@ -86,13 +86,19 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository, lastCommitDate);
 
         Set<String> extractedProjectKeys = new HashSet<String>();
-        
+
+        boolean lastChangesetNodeUpdated = false;
         for (Changeset changeset : allOrLatestChangesets)
         {
         	if (progress.isShouldStop())
         	{
         		return;
         	}
+            if (!lastChangesetNodeUpdated)
+            {
+                repository.setLastChangesetNode(changeset.getRawNode());
+                lastChangesetNodeUpdated = true;
+            }
         	
             if (lastCommitDate == null || lastCommitDate.before(changeset.getDate()))
             {

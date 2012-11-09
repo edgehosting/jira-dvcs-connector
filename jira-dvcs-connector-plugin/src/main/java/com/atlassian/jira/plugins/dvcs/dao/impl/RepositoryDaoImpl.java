@@ -52,12 +52,11 @@ public class RepositoryDaoImpl implements RepositoryDao
 		
 		credential.setOauthKey(organizationMapping.getOauthKey());
 		credential.setOauthSecret(organizationMapping.getOauthSecret());
-		//
 		
 		Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(),
 				organizationMapping.getDvcsType(), repositoryMapping.getSlug(), repositoryMapping.getName(),
-				repositoryMapping.getLastCommitDate(), repositoryMapping.isLinked(), repositoryMapping.isDeleted(),
-				credential);
+				repositoryMapping.getLastCommitDate(), repositoryMapping.getLastChangesetNode(),
+                repositoryMapping.isLinked(), repositoryMapping.isDeleted(), credential);
 
 		repository.setOrgHostUrl(organizationMapping.getHostUrl());
 		repository.setOrgName(organizationMapping.getName());
@@ -244,6 +243,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 							map.put(RepositoryMapping.SLUG, repository.getSlug());
 							map.put(RepositoryMapping.NAME, repository.getName());
 							map.put(RepositoryMapping.LAST_COMMIT_DATE, repository.getLastCommitDate());
+                            map.put(RepositoryMapping.LAST_CHANGESET_NODE, repository.getLastChangesetNode());
 							map.put(RepositoryMapping.LINKED, repository.isLinked());
 							map.put(RepositoryMapping.DELETED, repository.isDeleted());
 							map.put(RepositoryMapping.SMARTCOMMITS_ENABLED, repository.isSmartcommitsEnabled());
@@ -257,6 +257,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 							rm.setSlug(repository.getSlug());
 							rm.setName(repository.getName());
 							rm.setLastCommitDate(repository.getLastCommitDate());
+                            rm.setLastChangesetNode(repository.getLastChangesetNode());
 							rm.setLinked(repository.isLinked());
 							rm.setDeleted(repository.isDeleted());
 							rm.setSmartcommitsEnabled(repository.isSmartcommitsEnabled());
