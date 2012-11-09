@@ -183,7 +183,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             Iterable<BitbucketChangeset> bitbucketChangesets =
                     remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
                                                                    repository.getSlug(),
-                                                                   null);//TODO lastChangesetNode from database
+                                                                   repository.getLastChangesetNode());
 
             return new ChangesetIterableAdapter(repository, bitbucketChangesets);
         }
