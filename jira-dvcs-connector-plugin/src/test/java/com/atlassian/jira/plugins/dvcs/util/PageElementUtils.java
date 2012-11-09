@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.util;
 import org.openqa.selenium.By;
 
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.webdriver.AtlassianWebDriver;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com
@@ -52,5 +53,35 @@ public final class PageElementUtils
         }
 
         return null;
+    }
+
+    public static void waitUntilPageUrlDoesNotContain(AtlassianWebDriver webDriver, String string)
+    {
+        String pageUrl = webDriver.getCurrentUrl();
+
+        while (pageUrl.contains(string))
+        {
+            try
+            {
+                Thread.sleep(100);
+                pageUrl = webDriver.getCurrentUrl();
+            }
+            catch (InterruptedException e) {} // does not matter
+        }
+    }
+
+    public static void waitUntilPageUrlContains(AtlassianWebDriver webDriver, String string)
+    {
+        String pageUrl = webDriver.getCurrentUrl();
+
+        while (!pageUrl.contains(string))
+        {
+            try
+            {
+                Thread.sleep(100);
+                pageUrl = webDriver.getCurrentUrl();
+            }
+            catch (InterruptedException e) {} // does not matter
+        }
     }
 }
