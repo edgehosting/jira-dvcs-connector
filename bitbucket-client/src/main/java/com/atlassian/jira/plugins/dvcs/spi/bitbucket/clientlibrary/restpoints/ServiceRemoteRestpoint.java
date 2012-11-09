@@ -47,7 +47,7 @@ public class ServiceRemoteRestpoint
     {
         String deleteServiceUrl = String.format("/repositories/%s/%s/services/%d", owner, slug, serviceId);
 
-        requestor.delete(deleteServiceUrl, ResponseCallback.EMPTY);
+        requestor.delete(deleteServiceUrl, Collections.<String, String>emptyMap(), ResponseCallback.EMPTY);
 
     }
 

@@ -40,6 +40,6 @@ public class BitbucketRepositoriesRemoteRestpoint
 
         String removeRepositoryUrl = String.format("/repositories/%s/%s", owner, repositoryName);
 
-        requestor.delete(removeRepositoryUrl, ResponseCallback.EMPTY);
+        requestor.delete(removeRepositoryUrl, removeRepoPostData, ResponseCallback.EMPTY);
     }
 }

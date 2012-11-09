@@ -49,7 +49,7 @@ public class RepositoryLinkRemoteRestpoint
     {
         String removeRepositoryLinkUrl = String.format("/repositories/%s/%s/links/%d", owner, slug, id);
 
-        requestor.delete(removeRepositoryLinkUrl, ResponseCallback.EMPTY);
+        requestor.delete(removeRepositoryLinkUrl, Collections.<String, String>emptyMap(), ResponseCallback.EMPTY);
     }
 
     public BitbucketRepositoryLink addRepositoryLink(String owner, String slug, String handler, String linkUrl,
