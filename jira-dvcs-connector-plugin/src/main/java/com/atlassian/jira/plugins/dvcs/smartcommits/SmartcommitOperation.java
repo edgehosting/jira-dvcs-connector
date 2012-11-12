@@ -40,12 +40,17 @@ public class SmartcommitOperation implements Runnable
 	{
 		try
 		{
+			log.debug("Running SmartcommitOperation ... ");
+
 			changesetDao.forEachLatestChangesetsAvailableForSmartcommitDo(new ForEachChangesetClosure()
 			{
 				@Override
 				public void execute(Changeset changeset)
 				{
-					// first mark as processed 
+					log.debug("Processing message \n {} \n for smartcommits. Changeset id = {}.", new Object[]
+					{ changeset.getMessage(), changeset.getId() });
+
+					// first mark as processed
 					changesetDao.markSmartcommitAvailability(changeset.getId(), false);
 					// parse message
 					CommitCommands commands = commitMessageParser.parseCommitComment(changeset.getMessage());
