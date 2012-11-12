@@ -13,7 +13,7 @@ public final class PageElementUtils
     private PageElementUtils() {}
 
 
-    public static PageElement findVisibleElementByClassName(PageElement sourceElement, String className)
+    public static PageElement findVisibleElementByClassName(PageElement sourceElement, String className)//TODO remove
     {
         for (PageElement pageElement : sourceElement.findAll(By.className(className)))
         {
@@ -22,6 +22,19 @@ public final class PageElementUtils
             if (!styleAttributeValue.contains("display: none;"))
             {
                 return pageElement;
+            }
+        }
+
+        return null;
+    }
+
+    public static PageElement findTagWithAttribute(PageElement sourceElement, String tagName, String attributeName)
+    {
+        for (PageElement tag : sourceElement.findAll(By.tagName(tagName)))
+        {
+            if (tag.getAttribute(attributeName) != null)
+            {
+                return tag;
             }
         }
 

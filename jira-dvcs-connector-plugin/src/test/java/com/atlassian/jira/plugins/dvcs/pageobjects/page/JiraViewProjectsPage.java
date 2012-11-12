@@ -37,7 +37,7 @@ public class JiraViewProjectsPage implements Page
                                                                            "data-project-key",
                                                                            projectNameAndKey);
 
-        if (jiraProjectRow.isPresent())
+        if (jiraProjectRow != null && jiraProjectRow.isPresent())
         {
             PageElement deleteProjectLink = PageElementUtils.findTagWithText(jiraProjectRow, "a", "Delete");
             deleteProjectLink.click();
@@ -52,6 +52,9 @@ public class JiraViewProjectsPage implements Page
 
     public static class DeleteProjectPage implements Page
     {
+        @Inject
+        AtlassianWebDriver atlassianWebDriver;
+        
         @ElementBy(id = "delete_submit")
         PageElement deleteProjectButton;
 
@@ -63,6 +66,8 @@ public class JiraViewProjectsPage implements Page
         private void deleteProject()
         {
             deleteProjectButton.click();
+            
+            PageElementUtils.waitUntilPageUrlDoesNotContain(atlassianWebDriver, "DeleteProject!default.jspa");
         }
     }
 }

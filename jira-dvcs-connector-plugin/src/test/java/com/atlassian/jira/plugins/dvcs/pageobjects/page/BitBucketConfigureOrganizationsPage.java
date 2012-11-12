@@ -30,7 +30,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
     @Override
     public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String url, String organizationAccount,
-            boolean autoSync)
+            boolean autoSync)//TODO why url?
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();

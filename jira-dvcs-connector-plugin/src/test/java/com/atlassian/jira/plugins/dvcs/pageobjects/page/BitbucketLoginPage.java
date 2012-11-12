@@ -28,13 +28,18 @@ public class BitbucketLoginPage implements Page {
         return LOGIN_PAGE;
     }
 
-    
+
     public void doLogin()
     {
+        doLogin("jirabitbucketconnector", "jirabitbucketconnector1");
+    }
+
+    public void doLogin(String username, String password)
+    {
         usernameOrEmailInput.clear()
-                            .type("jirabitbucketconnector");
+                            .type(username);
         passwordInput.clear()
-                     .type("jirabitbucketconnector1");
+                     .type(password);
         
         loginButton.click();
     }
