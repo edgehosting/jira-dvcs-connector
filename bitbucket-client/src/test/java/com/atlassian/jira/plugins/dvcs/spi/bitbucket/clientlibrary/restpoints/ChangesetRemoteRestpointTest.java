@@ -153,4 +153,29 @@ public class ChangesetRemoteRestpointTest
             assertThat(changesetCounter).isEqualTo(NUMBER_OF_ALL_CHANGESETS);
         }
     }
+
+    @Test
+    public void gettingChangesetsFromIterable_ShouldWorkWithMultipleHasNextCallsOnAfterTheOther()
+    {
+        Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
+                                                                       .getChangesets(BITBUCKET_OWNER,
+                                                                                      BITBUCKET_REPO);
+
+        Iterator<BitbucketChangeset> changesetIterator = changesets.iterator();
+
+        int changesetCounter = 0;
+        while (changesetIterator.hasNext())
+        {
+            changesetIterator.hasNext();
+            changesetIterator.hasNext();
+
+            System.out.println(changesetIterator.next().getNode());
+            changesetCounter++;
+
+            changesetIterator.hasNext();
+            changesetIterator.hasNext();
+        }
+
+        assertThat(changesetCounter).isEqualTo(NUMBER_OF_ALL_CHANGESETS);
+    }
 }
