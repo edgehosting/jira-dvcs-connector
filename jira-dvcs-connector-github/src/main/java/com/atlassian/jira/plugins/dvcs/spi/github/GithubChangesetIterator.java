@@ -1,58 +1,58 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Stack;
 
-import org.eclipse.egit.github.core.RepositoryCommit;
-import org.eclipse.egit.github.core.client.PageIterator;
+import org.apache.commons.collections.CollectionUtils;
+import org.eclipse.egit.github.core.RepositoryBranch;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
+import com.google.common.collect.Lists;
 
 
 public class GithubChangesetIterator implements Iterator<Changeset>
 {
-    private ListIterator<Changeset> inPageChangesetsIterator = Collections.<Changeset>emptyList().listIterator();
-    private StopablePageIterator pagesIterator;
-
+    private ChangesetIterator changesetIterator;
+    
     private final BranchesIterator branchesIterator;
 
     private final Repository repository;
 
-    private Changeset nextChangeset = null;
-    private final Date lastCommitDate;
+    private Changeset nextChangeset;
 	private ChangesetCache changesetCache;
 
     public GithubChangesetIterator(ChangesetCache changesetCache, GithubCommunicator githubCommunicator,
-                                   Repository repository, List<String> branches, Date lastCommitDate)
+                                   Repository repository, List<RepositoryBranch> branches, Date lastCommitDate)
     {
         this.changesetCache = changesetCache;
         this.repository = repository;
-        this.lastCommitDate = lastCommitDate;
 
         branchesIterator = new BranchesIterator(branches, githubCommunicator, repository);
-        pagesIterator = branchesIterator.next();
+        if ( branchesIterator.hasNext() )
+        {
+            changesetIterator = branchesIterator.next();
+        }
     }
 
     @Override
     public boolean hasNext()
     {
-        final boolean hasNext = inPageChangesetsIterator.hasNext() || (pagesIterator != null && pagesIterator.hasNext()) || branchesIterator.hasNext();
-        if (hasNext)
+        final boolean hasNext = changesetIterator != null && ( changesetIterator.hasNext() || branchesIterator.hasNext() );
+        if (hasNext && nextChangeset == null)
         {
             nextChangeset = internalNext();
             if (shoudStopBranchIteration())
             {
-                inPageChangesetsIterator = Collections.<Changeset>emptyList().listIterator();
-                pagesIterator.stop();
+                changesetIterator.stop();
+                nextChangeset = null;
                 return hasNext();
             }
 
@@ -62,22 +62,17 @@ public class GithubChangesetIterator implements Iterator<Changeset>
 
     private boolean shoudStopBranchIteration()
     {
-        boolean changesetOlderThanLastCommitDate = lastCommitDate != null && lastCommitDate.after(nextChangeset.getDate());
-        boolean changesetAlreadySynchronized = changesetCache.isCached(repository.getId(), nextChangeset.getNode());
-        return changesetOlderThanLastCommitDate || changesetAlreadySynchronized;
+        return changesetCache.isCached(repository.getId(), nextChangeset.getNode());
     }
  
-    private Changeset internalNext() {
-        if (inPageChangesetsIterator.hasNext())
+    private Changeset internalNext()
+    {
+        if (changesetIterator.hasNext())
         {
-            return inPageChangesetsIterator.next();
-        } else if (pagesIterator.hasNext())
-        {
-            inPageChangesetsIterator = pagesIterator.next();
-            return internalNext();
+            return changesetIterator.next();
         } else if (branchesIterator.hasNext())
         {
-            pagesIterator = branchesIterator.next();
+            changesetIterator = branchesIterator.next();
             return internalNext();
         }
 
@@ -105,85 +100,36 @@ public class GithubChangesetIterator implements Iterator<Changeset>
     }
 }
 
-class StopablePageIterator implements Iterator<ListIterator<Changeset>>
-{
-    private final PageIterator<RepositoryCommit> pageIterator;
-    private final Repository repository;
-    private final String branch;
-
-    private boolean stoped = false;
-
-    StopablePageIterator(PageIterator<RepositoryCommit> pageIterator, Repository repository, String branch)
-    {
-        this.pageIterator = pageIterator;
-        this.repository = repository;
-        this.branch = branch;
-    }
-    
-    @Override
-    public boolean hasNext()
-    {
-        return !stoped && pageIterator.hasNext();
-    }
-    
-
-    @Override
-    public ListIterator<Changeset> next()
-    {
-        final ArrayList<Changeset> changesets = new ArrayList<Changeset>();
-        final Collection<RepositoryCommit> page = pageIterator.next();
-        for (Object obj : page)
-        {
-            RepositoryCommit repositoryCommit = (RepositoryCommit) obj;
-            Changeset changeset = GithubChangesetFactory.transform(repositoryCommit, repository.getId(), branch);
-            changesets.add(changeset);
-        }
-        return changesets.listIterator();
-    }
-
-
-    @Override
-    public void remove()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public void stop() 
-	{
-        this.stoped = true;
-    }
-}
-
-class BranchesIterator implements Iterator<StopablePageIterator>
+class BranchesIterator implements Iterator<ChangesetIterator>
 {
 
-    private ListIterator<String> branchNamesIterator = Collections.<String>emptyList().listIterator();
+    private ListIterator<RepositoryBranch> branchesIterator = Collections.<RepositoryBranch>emptyList().listIterator();
     private final GithubCommunicator githubCommunicator;
     private final Repository repository;
 
-    BranchesIterator(List<String> branches, GithubCommunicator githubCommunicator, Repository repository)
+    BranchesIterator(List<RepositoryBranch> branches, GithubCommunicator githubCommunicator, Repository repository)
     {
         this.githubCommunicator = githubCommunicator;
         this.repository = repository;
-        this.branchNamesIterator = branches.listIterator();
+        this.branchesIterator = branches.listIterator();
     }
 
     @Override
     public boolean hasNext()
     {
-        return branchNamesIterator.hasNext();
+        return branchesIterator.hasNext();
     }
 
     @Override
-    public StopablePageIterator next()
+    public ChangesetIterator next()
     {
         if (!hasNext())
         {
             return null;
         }
 
-        final String branch = branchNamesIterator.next();
-        return new StopablePageIterator(githubCommunicator.getPageIterator(repository, branch), repository, branch);
+        final RepositoryBranch branch = branchesIterator.next();
+        return new ChangesetIterator(githubCommunicator, repository, branch);
        }
 
     @Override
@@ -193,3 +139,63 @@ class BranchesIterator implements Iterator<StopablePageIterator>
     }
 }
 
+class ChangesetIterator implements Iterator<Changeset>
+{
+    private final GithubCommunicator githubCommunicator;
+    private final Repository repository;
+    private final Stack<String> changesetStack= new Stack<String>(); 
+    private final String branch;
+    private  List<String> nextChangesets;
+    
+	public ChangesetIterator(GithubCommunicator githubCommunicator, Repository repository, RepositoryBranch branch)
+	{
+	    this.githubCommunicator = githubCommunicator;
+	    this.repository = repository;
+	    this.branch = branch.getName();
+	    nextChangesets = Arrays.asList(branch.getCommit().getSha());
+	}
+
+	@Override
+	public boolean hasNext()
+	{
+	    return CollectionUtils.isNotEmpty(nextChangesets) || !changesetStack.isEmpty();
+	}
+
+	@Override
+	public Changeset next()
+	{
+        if ( CollectionUtils.isNotEmpty(nextChangesets) )
+        {
+            // we place next changesets on the top of the stack
+            for ( String parent : Lists.reverse(nextChangesets) )
+            {
+                changesetStack.push(parent);
+            }
+        }
+        
+        if ( !changesetStack.isEmpty() ) 
+        {
+            String node = changesetStack.pop();
+            Changeset currentChangeset = githubCommunicator.getDetailChangeset(repository, branch, node);
+            nextChangesets = currentChangeset.getParents();
+            return currentChangeset;
+        } 
+
+        throw new NoSuchElementException();
+	}
+
+	@Override
+	public void remove()
+	{
+		throw new UnsupportedOperationException();
+	}
+	
+	public void stop()
+	{
+	    // we need to clean next changesets as we don't want to process them
+	    nextChangesets = null;
+	}
+}
+
+
+	

@@ -6,7 +6,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -154,19 +153,23 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public Changeset getDetailChangeset(Repository repository, Changeset changeset)
     {
+        return getDetailChangeset(repository, changeset.getBranch(), changeset.getNode());
+    }
+
+    public Changeset getDetailChangeset(Repository repository, String branch, String node) {
         CommitService commitService = githubClientProvider.getCommitService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
         try
         {
-            RepositoryCommit commit = commitService.getCommit(repositoryId, changeset.getNode());
-            return GithubChangesetFactory.transform(commit, repository.getId(), changeset.getBranch());
+            RepositoryCommit commit = commitService.getCommit(repositoryId, node);
+            return GithubChangesetFactory.transform(commit, repository.getId(), branch);
         } catch (IOException e)
         {
             throw new SourceControlException("could not get result", e);
         }
     }
-
+    
     public PageIterator<RepositoryCommit> getPageIterator(final Repository repository, final String branch)
     {
         return new Retryer<PageIterator<RepositoryCommit>>().retry(new Callable<PageIterator<RepositoryCommit>>()
@@ -218,7 +221,7 @@ public class GithubCommunicator implements DvcsCommunicator
             @Override
             public Iterator<Changeset> iterator()
             {
-                List<String> branches = getBranches(repository);
+                List<RepositoryBranch> branches = getBranches(repository);
                 // TODO if there are more than X (20?) branches then we should
                 // do something smarter...
                 // maybe search for new commits in scheduler job only? (once an
@@ -310,11 +313,11 @@ public class GithubCommunicator implements DvcsCommunicator
         return MessageFormat.format("{0}/{1}", repository.getOrgHostUrl(), changeset.getAuthor());
     }
 
-    private List<String> getBranches(Repository repository)
+    private List<RepositoryBranch> getBranches(Repository repository)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
 
-        List<String> branches = new ArrayList<String>();
+        List<RepositoryBranch> branches = new ArrayList<RepositoryBranch>();
         try
         {
             final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(
@@ -323,21 +326,21 @@ public class GithubCommunicator implements DvcsCommunicator
 
             for (RepositoryBranch ghBranch : ghBranches)
             {
-                final String branchName = ghBranch.getName();
-                if (branchName.equalsIgnoreCase("master"))
+                if ( "master".equalsIgnoreCase(ghBranch.getName()) )
                 {
-                    branches.add(0, branchName);
+                    branches.add(0, ghBranch);
                 } else
                 {
-                    branches.add(branchName);
+                    branches.add(ghBranch);
                 }
             }
 
         } catch (IOException e)
         {
             log.info("Can not obtain branches list from repository [ {} ]", repository.getSlug());
-            // we have to use at least master branch
-            return Arrays.asList("master");
+            // we need tip changeset of the branch
+            
+            return Collections.emptyList();
         }
         return branches;
     }
