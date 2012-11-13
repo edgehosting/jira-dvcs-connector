@@ -111,7 +111,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
         pushBitbucketHgRepository(_1ST_BITBUCKET_REPO_ZIP_TO_PUSH);
 
         loginToBitbucketAndSetJiraOAuthCredentials();
-        configureOrganizations.addOrganizationSuccessfully(null, BITBUCKET_OWNER, true);
+        configureOrganizations.addOrganizationSuccessfully(BITBUCKET_OWNER, true);
 
         assertThat(getCommitsForIssue("MC-1")).hasSize(3);
 

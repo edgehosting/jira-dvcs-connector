@@ -23,8 +23,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
 
     @Override
-    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String url, String organizationAccount,
-            boolean autoSync)//TODO why url?
+    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -75,7 +74,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
      * {@inheritDoc}
      */
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String url)
+    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2()
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();

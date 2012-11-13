@@ -38,7 +38,6 @@ import static org.fest.assertions.api.Assertions.*;
  */
 public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 {
-    private static final String TEST_URL = "https://bitbucket.org";
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
     private static final String TEST_NOT_EXISTING_URL = "https://privatebitbucket.org/someaccount";
     private static final String ACCOUNT_ADMIN_LOGIN = "jirabitbucketconnector";
@@ -93,7 +92,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     {
         loginToBitbucketAndSetJiraOAuthCredentials();
         BaseConfigureOrganizationsPage organizationsPage =
-                configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, false);
+                configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, false);
 
         PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
         // first row is header row, than repos ...
@@ -112,7 +111,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     {
         loginToBitbucketAndSetJiraOAuthCredentials();
         BaseConfigureOrganizationsPage organizationsPage =
-                configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+                configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
         PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
         // first row is header row, than repos ...
         Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
@@ -146,7 +145,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         String baseUrl = jira.getProductInstance().getBaseUrl();
 
         // add account
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
         // check that it created postcommit hook
         String syncUrl = baseUrl + "/rest/bitbucket/1.0/repository/";
         String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
@@ -180,7 +179,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     public void addRepoCommitsAppearOnIssues()
     {
         loginToBitbucketAndSetJiraOAuthCredentials();
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         assertThat(getCommitsForIssue("QA-2")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -194,7 +193,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     public void testCommitStatistics()
     {
         loginToBitbucketAndSetJiraOAuthCredentials();
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");

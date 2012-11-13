@@ -181,12 +181,11 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     public abstract BaseConfigureOrganizationsPage addOrganizationFailingStep1(String url);
 
-    public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String url);
+    public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingStep2();
 
     public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String url);
 
-    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String url, String organizationAccount,
-            boolean autosync);
+    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autosync);
 
 
     public void setJiraTestedProduct(JiraTestedProduct jiraTestedProduct)

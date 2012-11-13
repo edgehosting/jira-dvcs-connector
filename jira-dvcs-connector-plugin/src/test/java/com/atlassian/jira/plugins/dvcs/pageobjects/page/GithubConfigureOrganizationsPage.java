@@ -32,7 +32,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     PageElement githubWebSubmitButton;
 
     @Override
-    public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String url, String organizationAccount, boolean autoSync)
+    public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -88,7 +88,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     }
 
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String url)
+    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2()
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
