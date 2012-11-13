@@ -31,12 +31,6 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     @ElementBy(name = "commit")
     PageElement githubWebSubmitButton;
 
-    @ElementBy(id = "oauthClientId")
-    PageElement clientId;
-
-    @ElementBy(id = "oauthSecret")
-    PageElement secretId;
-
     @Override
     public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String url, String organizationAccount, boolean autoSync)
     {
