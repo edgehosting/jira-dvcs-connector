@@ -11,10 +11,10 @@ import org.apache.commons.httpclient.methods.PostMethod;
 public class PostCommitHookCallSimulatingRemoteRestpoint
 {
 
-	public static int simulate(String repositoryId) throws IOException
+	public static int simulate(String jiraInstanceURL, String repositoryId) throws IOException
     {
         String postCommitHookURL =
-                String.format("http://localhost:2990/jira/rest/bitbucket/1.0/repository/%s/sync", repositoryId);
+                String.format("%s/rest/bitbucket/1.0/repository/%s/sync", jiraInstanceURL, repositoryId);
         
         PostMethod post = new PostMethod(postCommitHookURL);
         NameValuePair[] data = {

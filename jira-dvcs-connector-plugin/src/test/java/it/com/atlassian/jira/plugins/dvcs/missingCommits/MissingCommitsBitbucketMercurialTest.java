@@ -17,9 +17,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Bitbuc
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
-import com.atlassian.pageobjects.TestedProductFactory;
-import com.atlassian.webdriver.jira.JiraTestedProduct;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -41,8 +40,6 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
     private static final String _2nd_BITBUCKET_REPO_ZIP_TI_PUSH = "missingCommits/bitbucket/hg2 after merge.zip";
 
     private static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
-
-    private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     
     private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
 
@@ -148,6 +145,8 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
                                                   .start();
 
         hgPushProcess.waitFor();
+
+        FileUtils.deleteDirectory(extractedRepoDir);
     }
 
     private File extractRepoZipIntoTempDir(String pathToRepoZip) throws IOException, URISyntaxException
@@ -168,7 +167,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
                 jira.getPageBinder().navigateToAndBind(BitBucketConfigureOrganizationsPage.class);
         String repositoryId = configureOrganizationsPage.getRepositoryIdFromRepositoryName(MISSING_COMMITS_REPOSITORY_NAME);
 
-        PostCommitHookCallSimulatingRemoteRestpoint.simulate(repositoryId);
+        PostCommitHookCallSimulatingRemoteRestpoint.simulate(jira.getProductInstance().getBaseUrl(), repositoryId);
     }
 
 
