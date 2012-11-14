@@ -21,7 +21,7 @@ import com.atlassian.sal.api.upgrade.PluginUpgradeTask;
 public class To_02_ProjectBasedRepositoryLinksUpgradeTask implements PluginUpgradeTask
 {
     private static final Logger log = LoggerFactory.getLogger(To_02_ProjectBasedRepositoryLinksUpgradeTask.class);
-    private final BitbucketLinker linker;
+    private final BitbucketLinker linker;//TODO should not depend on Bitbucket module => BBC-331
     private final RepositoryService repositoryService;
     private final ChangesetService changesetService;
 
