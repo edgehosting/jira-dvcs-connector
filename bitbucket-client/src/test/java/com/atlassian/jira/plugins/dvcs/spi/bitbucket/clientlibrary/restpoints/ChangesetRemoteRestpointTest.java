@@ -169,7 +169,6 @@ public class ChangesetRemoteRestpointTest
             changesetIterator.hasNext();
             changesetIterator.hasNext();
 
-            System.out.println(changesetIterator.next().getNode());
             changesetCounter++;
 
             changesetIterator.hasNext();

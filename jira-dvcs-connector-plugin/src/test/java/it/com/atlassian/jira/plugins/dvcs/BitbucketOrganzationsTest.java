@@ -41,7 +41,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
     private static final String TEST_NOT_EXISTING_URL = "https://privatebitbucket.org/someaccount";
     private static final String ACCOUNT_ADMIN_LOGIN = "jirabitbucketconnector";
-    private static final String ACCOUNT_ADMIN_PASSWORD = "jirabitbucketconnector1";
+    private static final String ACCOUNT_ADMIN_PASSWORD = System.getProperty("jirabitbucketconnectorPassword");
 
     private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
 

@@ -30,7 +30,7 @@ public class GithubLoginPage implements Page
     public void doLogin()
     {
         githubWebLoginField.type("jirabitbucketconnector");
-        githubWebPasswordField.type("jirabitbucketconnector1");
+        githubWebPasswordField.type(System.getProperty("jirabitbucketconnectorPassword"));
         githubWebSubmitButton.click();
     }
 }

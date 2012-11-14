@@ -21,9 +21,8 @@ import static org.fest.assertions.api.Assertions.*;
  */
 public class RepositoryLinkRemoteRestpointTest
 {
-    private static final String BITBUCKET_REPO_USERNAME = "jirabitbucketconnector";
-    private static final String BITBUCKET_REPO_PASSWORD = "jirabitbucketconnector1";
     private static final String BITBUCKET_REPO_OWNER    = "jirabitbucketconnector";
+    private static final String BITBUCKET_REPO_PASSWORD = System.getProperty("jirabitbucketconnectorPassword");
     private static final String BITBUCKET_REPO_SLUG     = "public-hg-repo";
     
     private static final String BITBUCKET_REPO_LINK_HANDLER = "jira";
@@ -40,7 +39,7 @@ public class RepositoryLinkRemoteRestpointTest
     {
         BitbucketRemoteClient bitbucketRemoteClient =
                 new BitbucketRemoteClient(new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
-                                                                    BITBUCKET_REPO_USERNAME,
+                                                                    BITBUCKET_REPO_OWNER,
                                                                     BITBUCKET_REPO_PASSWORD));
         
         repositoryLinkREST = bitbucketRemoteClient.getRepositoryLinksRest();

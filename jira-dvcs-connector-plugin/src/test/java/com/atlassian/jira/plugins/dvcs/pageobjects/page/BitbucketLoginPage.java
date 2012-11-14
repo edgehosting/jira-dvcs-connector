@@ -31,7 +31,7 @@ public class BitbucketLoginPage implements Page {
 
     public void doLogin()
     {
-        doLogin("jirabitbucketconnector", "jirabitbucketconnector1");
+        doLogin("jirabitbucketconnector", System.getProperty("jirabitbucketconnectorPassword"));
     }
 
     public void doLogin(String username, String password)

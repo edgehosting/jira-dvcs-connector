@@ -31,7 +31,8 @@ import static org.fest.assertions.api.Assertions.*;
  */
 public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
 {
-    private static final String BITBUCKET_OWNER = "dvcsconnectortest";
+    private static final String BITBUCKET_REPO_OWNER = "dvcsconnectortest";
+    private static final String BITBUCKET_REPO_PASSWORD = System.getProperty("dvcsconnectortestPassword");
     private static final String MISSING_COMMITS_REPOSITORY_NAME = "missingcommitsfixproof";
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
@@ -48,8 +49,8 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
     public static void initializeRepositoriesREST()
     {
         AuthProvider basicAuthProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
-                                                                   BITBUCKET_OWNER,
-                                                                   BITBUCKET_OWNER); // password same as username
+                                                                   BITBUCKET_REPO_OWNER,
+                                                                   BITBUCKET_REPO_PASSWORD);
         bitbucketRepositoriesREST = new BitbucketRepositoriesRemoteRestpoint(basicAuthProvider.provideRequestor());
     }
 
@@ -65,7 +66,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
     {
         try
         {
-            bitbucketRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME, BITBUCKET_OWNER);
+            bitbucketRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME, BITBUCKET_REPO_OWNER);
         }
         catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
 
@@ -84,7 +85,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
     private void loginToBitbucketAndSetJiraOAuthCredentials()
     {
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
-        jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin(BITBUCKET_OWNER, BITBUCKET_OWNER); // password same as username
+        jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin(BITBUCKET_REPO_OWNER, BITBUCKET_REPO_PASSWORD);
 
         jira.getTester().gotoUrl("https://bitbucket.org/account/user/dvcsconnectortest/api");
         bitbucketIntegratedApplicationsPage = jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
@@ -111,7 +112,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
         pushBitbucketHgRepository(_1ST_BITBUCKET_REPO_ZIP_TO_PUSH);
 
         loginToBitbucketAndSetJiraOAuthCredentials();
-        configureOrganizations.addOrganizationSuccessfully(BITBUCKET_OWNER, true);
+        configureOrganizations.addOrganizationSuccessfully(BITBUCKET_REPO_OWNER, true);
 
         assertThat(getCommitsForIssue("MC-1")).hasSize(3);
 
@@ -137,7 +138,8 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
     {
         File extractedRepoDir = extractRepoZipIntoTempDir(pathToRepoZip);
 
-        String hgPushUrl = String.format("https://%1$s:%1$s@bitbucket.org/%1$s/%2$s", BITBUCKET_OWNER,
+        String hgPushUrl = String.format("https://%1$s:%2$s@bitbucket.org/%1$s/%2$s", BITBUCKET_REPO_OWNER,
+                                                                                      BITBUCKET_REPO_PASSWORD,
                                                                                       MISSING_COMMITS_REPOSITORY_NAME);
 
         Process hgPushProcess = new ProcessBuilder("hg", "push", hgPushUrl)
