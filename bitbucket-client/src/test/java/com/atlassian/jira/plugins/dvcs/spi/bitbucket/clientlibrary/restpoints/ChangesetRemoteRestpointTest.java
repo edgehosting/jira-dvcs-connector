@@ -154,7 +154,7 @@ public class ChangesetRemoteRestpointTest
         }
     }
 
-    @Test
+    @Test(timeOut=10000)
     public void gettingChangesetsFromIterable_ShouldWorkWithMultipleHasNextCallsOnAfterTheOther()
     {
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
@@ -169,6 +169,7 @@ public class ChangesetRemoteRestpointTest
             changesetIterator.hasNext();
             changesetIterator.hasNext();
 
+            changesetIterator.next();
             changesetCounter++;
 
             changesetIterator.hasNext();
