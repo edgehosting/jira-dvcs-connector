@@ -11,26 +11,26 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Respo
  */
 public class BitbucketRepositoriesRemoteRestpoint
 {
-	private final RemoteRequestor requestor;
+    private final RemoteRequestor requestor;
 
-	public BitbucketRepositoriesRemoteRestpoint(RemoteRequestor requestor)
-	{
-		this.requestor = requestor;
-	}
+    public BitbucketRepositoriesRemoteRestpoint(RemoteRequestor requestor)
+    {
+        this.requestor = requestor;
+    }
 
     public void createHgRepository(String repositoryName)
     {
         createRepository(repositoryName, "hg");
     }
 
-	private void createRepository(String repositoryName, String scm)
+    private void createRepository(String repositoryName, String scm)
     {
         Map<String, String> createRepoPostData = new HashMap<String, String>();
         createRepoPostData.put("name", repositoryName);
         createRepoPostData.put("scm",  scm);
 
-		requestor.post("/repositories", createRepoPostData, ResponseCallback.EMPTY);
-	}
+        requestor.post("/repositories", createRepoPostData, ResponseCallback.EMPTY);
+    }
 
     public void removeExistingRepository(String repositoryName, String owner)
     {
