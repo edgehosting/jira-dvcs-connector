@@ -138,7 +138,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
     {
         File extractedRepoDir = extractRepoZipIntoTempDir(pathToRepoZip);
 
-        String hgPushUrl = String.format("https://%1$s:%2$s@bitbucket.org/%1$s/%2$s", BITBUCKET_REPO_OWNER,
+        String hgPushUrl = String.format("https://%1$s:%2$s@bitbucket.org/%1$s/%3$s", BITBUCKET_REPO_OWNER,
                                                                                       BITBUCKET_REPO_PASSWORD,
                                                                                       MISSING_COMMITS_REPOSITORY_NAME);
 
