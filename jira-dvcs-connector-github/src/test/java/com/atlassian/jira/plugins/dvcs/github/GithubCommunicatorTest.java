@@ -366,7 +366,7 @@ public class GithubCommunicatorTest
             changesetCache.add(changeset.getNode());
             changesetCounter++;
         }
-        assertThat(changesetCounter, is(14));
+        assertThat(changesetCounter, is(15));
     }
     
     private void createBranchWithTwoNodes(RepositoryId repositoryId) throws IOException
@@ -407,16 +407,18 @@ public class GithubCommunicatorTest
         RepositoryBranch master = createMockRepositoryBranch("MASTER", "MASTER-SHA");
         RepositoryBranch branch1 = createMockRepositoryBranch("branch1", "BRANCH-SHA");    
         RepositoryBranch branch2 = createMockRepositoryBranch("branch2", "BRANCH2-SHA");
-               
+        RepositoryBranch branch3 = createMockRepositoryBranch("branch3", "BRANCH3-SHA");
+        
+//  B3   M  B1   B2     
 //               14
 //          13   |
 //          |    12    
 //       10 11  /
-//        |/| >9
-//        8 7
-//      / |/
-//     4  6
-//     |  |
+//      / |/| >9
+//     /  8 7
+//    / / |/
+//  15 4  6
+//   \ |  |
 //     3  5
 //      \ |
 //        2
@@ -426,6 +428,7 @@ public class GithubCommunicatorTest
      // Changeset
         RepositoryCommit node8;
         RepositoryCommit node2;
+        RepositoryCommit node3;
         RepositoryCommit node6;
         RepositoryCommit node7;
         RepositoryCommit node9;
@@ -433,12 +436,14 @@ public class GithubCommunicatorTest
         mockRepositoryCommit(repositoryId, "MASTER-SHA", "ABC-123 node 10 fix",
         node8 = mockRepositoryCommit(repositoryId, "NODE-8", "ABC-123 node 8 fix",
                         mockRepositoryCommit(repositoryId, "NODE-4", "ABC-123 node 4 fix",
-                                mockRepositoryCommit(repositoryId, "NODE-3", "ABC-123 node 3 fix",
+                        node3 = mockRepositoryCommit(repositoryId, "NODE-3", "ABC-123 node 3 fix",
                                 node2 = mockRepositoryCommit(repositoryId, "NODE-2", "ABC-123 node 2 fix",
                                                 mockRepositoryCommit(repositoryId, "NODE-1", "ABC-123 node 1 fix")))),
                 node6 = mockRepositoryCommit(repositoryId, "NODE-6", "ABC-123 node 6 fix",
                                 mockRepositoryCommit(repositoryId, "NODE-5", "ABC-123 node 5 fix",
-                                        node2))));
+                                        node2))),
+                mockRepositoryCommit(repositoryId, "BRANCH3-SHA", "ABC-123 node 15 fix",
+                        node3));
         
         
         mockRepositoryCommit(repositoryId, "BRANCH-SHA", "ABC-123 node 13 fix",
@@ -452,8 +457,8 @@ public class GithubCommunicatorTest
         mockRepositoryCommit(repositoryId, "BRANCH2-SHA", "ABC-123 node 14 fix",
                 mockRepositoryCommit(repositoryId, "NODE-12", "ABC-123 node 12 fix",
                         node9));
-                            
-        when(repositoryService.getBranches(repositoryId)).thenReturn(Arrays.asList(master, branch1, branch2));
+        
+        when(repositoryService.getBranches(repositoryId)).thenReturn(Arrays.asList(master, branch1, branch2, branch3));
     }
     
     private RepositoryBranch createMockRepositoryBranch(final String name, final String topNode)
