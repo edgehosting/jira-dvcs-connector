@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.zip.ZipFile;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
@@ -17,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Bitbuc
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
+import com.atlassian.plugin.util.zip.FileUnzipper;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -38,7 +38,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
 
     private static final String _1ST_BITBUCKET_REPO_ZIP_TO_PUSH = "missingCommits/bitbucket/hg1_2nd_push.zip";
-    private static final String _2nd_BITBUCKET_REPO_ZIP_TI_PUSH = "missingCommits/bitbucket/hg2_after_merge.zip";
+    private static final String _2ND_BITBUCKET_REPO_ZIP_TO_PUSH = "missingCommits/bitbucket/hg2_after_merge.zip";
 
     private static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
     
@@ -126,7 +126,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
         // | Martin Skurla | 8b32e32 | MC-1 5th commit + 2nd push {user1} [10:47] |
         // | Martin Skurla | ccdd16b | MC-1 2nd commit + 1st push {user1} [10:38] |
         // | Martin Skurla | 792d8d6 | MC-1 1st commit {user1} [10:37]            |
-        pushBitbucketHgRepository(_2nd_BITBUCKET_REPO_ZIP_TI_PUSH);
+        pushBitbucketHgRepository(_2ND_BITBUCKET_REPO_ZIP_TO_PUSH);
         
         simulatePostCommitHookCall();
         Thread.sleep(5000); // to catch up with soft sync
@@ -158,7 +158,8 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
         File tempDir = new File(System.getProperty("java.io.tmpdir"), "" + System.currentTimeMillis());
         tempDir.mkdir();
 
-        ZipUtils.unzipFileIntoDirectory(new ZipFile(new File(repoZipResource.toURI())), tempDir);
+        FileUnzipper fileUnzipper = new FileUnzipper(new File(repoZipResource.toURI()), tempDir);
+        fileUnzipper.unzip();
 
         return tempDir;
     }
