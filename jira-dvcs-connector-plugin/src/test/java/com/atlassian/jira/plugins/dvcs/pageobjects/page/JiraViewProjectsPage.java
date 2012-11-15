@@ -59,7 +59,8 @@ public class JiraViewProjectsPage implements Page
         PageElement deleteProjectButton;
 
         @Override
-        public String getUrl() {
+        public String getUrl()
+        {
             return "/secure/project/DeleteProject!default.jspa";
         }
 
