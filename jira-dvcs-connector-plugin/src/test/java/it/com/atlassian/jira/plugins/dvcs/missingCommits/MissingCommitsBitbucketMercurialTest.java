@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Bitbuc
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
+import com.atlassian.plugin.util.zip.FileUnzipper;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -158,7 +159,8 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
         File tempDir = new File(System.getProperty("java.io.tmpdir"), "" + System.currentTimeMillis());
         tempDir.mkdir();
 
-        ZipUtils.unzipFileIntoDirectory(new ZipFile(new File(repoZipResource.toURI())), tempDir);
+        FileUnzipper fileUnzipper = new FileUnzipper(new File(repoZipResource.toURI()), tempDir);
+        fileUnzipper.unzip();
 
         return tempDir;
     }
