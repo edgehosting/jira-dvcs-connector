@@ -29,12 +29,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     private final ChangesetService changesetService;
     private final boolean softSync;
 
-    /**
-     * performance improvement for syncing GH large repositories with changesets which doesn't contain issue keys.
-     * changeset after this step will be stored even if it has no issue key
-     */
-    private static int GH_CHANGESETS_SAVING_INTERVAL = 100;
-
     private final DvcsCommunicator communicator;
 
     public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository, RepositoryService repositoryService, ChangesetService changesetService,
@@ -107,12 +101,9 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             log.debug("syncing changeset [{}] [{}]", changeset.getNode(), changeset.getMessage());
 
             Set<String> extractedIssues = extractIssueKeys(message);
-
-            // see GH_CHANGESETS_SAVING_INTERVAL javadoc
-            // TODO: I think this can be now removed 
-            if ("github".equals(repository.getDvcsType()) &&
-                    (changesetCount % GH_CHANGESETS_SAVING_INTERVAL) == 0 &&
-                    CollectionUtils.isEmpty(extractedIssues))
+            //final boolean github = "github".equals(repository.getDvcsType());
+            if ( /*github &&*/ CollectionUtils.isEmpty(extractedIssues) ) // storing only issues without issueKeys as
+                // those would be stored below
             {
                 changeset.setIssueKey("NON_EXISTING-0");
                 changesetService.save(changeset);
@@ -122,15 +113,22 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             // get detail changeset because in this response is not information about files
             Changeset detailChangeset = null;
             
-            if (CollectionUtils.isNotEmpty(extractedIssues))
+            if (CollectionUtils.isNotEmpty(extractedIssues) ) 
             {
-                try
+                if ( /*github*/ "github".equals(repository.getDvcsType()) )
                 {
-                    detailChangeset = changesetService.getDetailChangesetFromDvcs(repository, changeset);
-                } catch (Exception e)
+                    // we have requested detail changesets for github
+                    detailChangeset = changeset;
+                } else
                 {
-                    log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
-                    synchroErrorCount++;
+                    try
+                    {
+                        detailChangeset = changesetService.getDetailChangesetFromDvcs(repository, changeset);
+                    } catch (Exception e)
+                    {
+                        log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
+                        synchroErrorCount++;
+                    }
                 }
                 
                 boolean changesetAlreadyMarkedForSmartCommits = false;
@@ -170,7 +168,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         
         setupNewLinkers(foundProjectKeys);
     }
-
+    
     private void setupNewLinkers(Set<String> extractedProjectKeys)
     {
         if (!extractedProjectKeys.isEmpty())
