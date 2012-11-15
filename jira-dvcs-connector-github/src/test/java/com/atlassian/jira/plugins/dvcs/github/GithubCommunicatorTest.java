@@ -408,7 +408,7 @@ public class GithubCommunicatorTest
         RepositoryBranch branch1 = createMockRepositoryBranch("branch1", "BRANCH-SHA");    
         RepositoryBranch branch2 = createMockRepositoryBranch("branch2", "BRANCH2-SHA");
                
-//              Ê14
+//               14
 //          13   |
 //          |    12    
 //       10 11  /
