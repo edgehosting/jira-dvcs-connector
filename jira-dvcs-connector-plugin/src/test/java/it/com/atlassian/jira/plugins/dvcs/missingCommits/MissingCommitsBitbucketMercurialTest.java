@@ -37,8 +37,8 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
 
-    private static final String _1ST_BITBUCKET_REPO_ZIP_TO_PUSH = "missingCommits/bitbucket/hg1 2nd push.zip";
-    private static final String _2nd_BITBUCKET_REPO_ZIP_TI_PUSH = "missingCommits/bitbucket/hg2 after merge.zip";
+    private static final String _1ST_BITBUCKET_REPO_ZIP_TO_PUSH = "missingCommits/bitbucket/hg1_2nd_push.zip";
+    private static final String _2nd_BITBUCKET_REPO_ZIP_TI_PUSH = "missingCommits/bitbucket/hg2_after_merge.zip";
 
     private static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
     
