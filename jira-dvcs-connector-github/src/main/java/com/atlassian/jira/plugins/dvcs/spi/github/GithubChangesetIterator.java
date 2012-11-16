@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -25,8 +24,8 @@ public class GithubChangesetIterator implements Iterator<Changeset>
     private final GithubCommunicator githubCommunicator;
     private final Repository repository;
 
-    public GithubChangesetIterator(final ChangesetCache changesetCache, final GithubCommunicator githubCommunicator,
-            					   final Repository repository, final List<RepositoryBranch> branches, final Date lastCommitDate)
+    public GithubChangesetIterator(ChangesetCache changesetCache, GithubCommunicator githubCommunicator,
+            					   Repository repository, List<RepositoryBranch> branches)
     {
         this.changesetCache = changesetCache;
         this.githubCommunicator = githubCommunicator;

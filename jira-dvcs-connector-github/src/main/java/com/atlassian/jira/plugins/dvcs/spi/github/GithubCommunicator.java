@@ -226,8 +226,7 @@ public class GithubCommunicator implements DvcsCommunicator
                 // do something smarter...
                 // maybe search for new commits in scheduler job only? (once an
                 // hour)
-                return new GithubChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches,
-                        lastCommitDate);
+                return new GithubChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
             }
         };
     }
