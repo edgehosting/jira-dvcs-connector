@@ -108,6 +108,11 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     {
         try
         {
+        	log.debug("Attempt to add link for {}", forProjects);
+        	if (CollectionUtils.isEmpty(forProjects))
+        	{
+        		return;
+        	}
             //
             // post the link to bitbucket
             //
