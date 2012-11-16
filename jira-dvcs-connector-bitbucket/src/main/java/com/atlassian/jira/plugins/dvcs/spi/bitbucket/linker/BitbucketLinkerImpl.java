@@ -108,23 +108,6 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     {
         try
         {
-        	/*// remove keys for nonexisting projects
-        	//
-            Set<String> projectKeysInJira = getProjectKeysInJira();
-            //
-            log.debug("Requested links for projects {}.", forProjects);
-            log.debug("Projects in JIRA {}.", projectKeysInJira);
-            //
-            // intersection
-            //
-            forProjects.retainAll(projectKeysInJira);
-            //
-            if (forProjects.isEmpty()) 
-            {
-            	log.debug("No projects to link");
-            	return;
-            }*/
-            
             //
             // post the link to bitbucket
             //
