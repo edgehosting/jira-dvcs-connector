@@ -83,7 +83,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     @Override
     public void linkRepository(Repository repository, Set<String> projectKeysToLink)
     {
-
+    	//
         // remove keys for nonexisting projects
         Set<String> projectKeysInJira = getProjectKeysInJira();
         projectKeysToLink.retainAll(projectKeysInJira);
@@ -108,6 +108,26 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     {
         try
         {
+        	/*// remove keys for nonexisting projects
+        	//
+            Set<String> projectKeysInJira = getProjectKeysInJira();
+            //
+            log.debug("Requested links for projects {}.", forProjects);
+            log.debug("Projects in JIRA {}.", projectKeysInJira);
+            //
+            // intersection
+            //
+            forProjects.retainAll(projectKeysInJira);
+            //
+            if (forProjects.isEmpty()) 
+            {
+            	log.debug("No projects to link");
+            	return;
+            }*/
+            
+            //
+            // post the link to bitbucket
+            //
             RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientRemoteFactory
                     .getForRepository(repository).getRepositoryLinksRest();
 
@@ -150,6 +170,9 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     @Override
     public void linkRepositoryIncremental(Repository repository, Set<String> newProjectKeys)
     {
+    	Set<String> projectKeysInJira = getProjectKeysInJira();
+    	newProjectKeys.retainAll(projectKeysInJira);
+        
         //
         if (CollectionUtils.isEmpty(newProjectKeys))
         {
@@ -168,7 +191,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             Set<String> existingProjectKeys = getProjectKeysFromLinkOrNull(currentLinks.get(0));
             if (existingProjectKeys.containsAll(newProjectKeys))
             {
-                // these projects are already linked
+                // these projects are already linked, no change detected
                 return;
             }
             existingProjectKeys.addAll(newProjectKeys);
@@ -191,16 +214,17 @@ public class BitbucketLinkerImpl implements BitbucketLinker
      */
     private HashSet<String> getProjectKeysFromLinkOrNull(BitbucketRepositoryLink bitbucketRepositoryLink)
     {
+    	String regexp = null;
         try
         {
-            String regexp = bitbucketRepositoryLink.getHandler().getRawRegex();
+            regexp = bitbucketRepositoryLink.getHandler().getRawRegex();
             Matcher matcher = PATTERN_PROJECTS_IN_LINK_REX.matcher(regexp);
             matcher.find();
             String pipedProjectKeys = matcher.group(0);
             return Sets.newHashSet(Splitter.on("|").split(pipedProjectKeys));
         } catch (Exception e)
         {
-            // TODO Add logging
+            log.debug("Failed to parse expression " + regexp + ", cause = " + e.getMessage());
             return null;
         }
     }
@@ -272,5 +296,5 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         }
         return linksToThisJira;
     }
-
+    
 }
