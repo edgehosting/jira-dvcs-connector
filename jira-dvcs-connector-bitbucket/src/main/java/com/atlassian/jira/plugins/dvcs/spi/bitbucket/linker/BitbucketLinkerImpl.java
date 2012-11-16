@@ -85,8 +85,6 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     {
     	//
         // remove keys for nonexisting projects
-        /*Set<String> projectKeysInJira = getProjectKeysInJira();
-        projectKeysToLink.retainAll(projectKeysInJira);*/
 
         List<BitbucketRepositoryLink> currentLinks = getCurrentLinks(repository);
         // remove any existing ones
@@ -168,7 +166,6 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     }
 
     @Override
-    //@SuppressWarnings("unchecked")
     public void linkRepositoryIncremental(Repository repository, Set<String> newProjectKeys)
     {
     	
