@@ -85,8 +85,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     {
     	//
         // remove keys for nonexisting projects
-        Set<String> projectKeysInJira = getProjectKeysInJira();
-        projectKeysToLink.retainAll(projectKeysInJira);
+        /*Set<String> projectKeysInJira = getProjectKeysInJira();
+        projectKeysToLink.retainAll(projectKeysInJira);*/
 
         List<BitbucketRepositoryLink> currentLinks = getCurrentLinks(repository);
         // remove any existing ones
@@ -108,11 +108,23 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     {
         try
         {
-        	log.debug("Attempt to add link for {}", forProjects);
-        	if (CollectionUtils.isEmpty(forProjects))
-        	{
-        		return;
-        	}
+        	// remove keys for nonexisting projects
+        	//
+            Set<String> projectKeysInJira = getProjectKeysInJira();
+            //
+            log.debug("Requested links for projects {}.", forProjects);
+            log.debug("Projects in JIRA {}.", projectKeysInJira);
+            //
+            // intersection
+            //
+            forProjects.retainAll(projectKeysInJira);
+            //
+            if (forProjects.isEmpty()) 
+            {
+            	log.debug("No projects to link");
+            	return;
+            }
+            
             //
             // post the link to bitbucket
             //
@@ -125,7 +137,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         } catch (BitbucketRequestException e)
         {
             log.error("Error adding Repository Link [" + baseUrl + ", " + repository.getName() + "] to "
-                    + repository.getRepositoryUrl() + ": " + e.getMessage());
+                    + repository.getRepositoryUrl() + ": " + e.getMessage() + " REX: " + constructProjectsRex(forProjects));
         }
     }
 
@@ -156,11 +168,10 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     }
 
     @Override
+    //@SuppressWarnings("unchecked")
     public void linkRepositoryIncremental(Repository repository, Set<String> newProjectKeys)
     {
-    	Set<String> projectKeysInJira = getProjectKeysInJira();
-    	newProjectKeys.retainAll(projectKeysInJira);
-        
+    	
         //
         if (CollectionUtils.isEmpty(newProjectKeys))
         {
@@ -183,15 +194,17 @@ public class BitbucketLinkerImpl implements BitbucketLinker
                 return;
             }
             existingProjectKeys.addAll(newProjectKeys);
+
             // todo add logging
+            removeLinks(repository, currentLinks);
             addLink(repository, existingProjectKeys);
         } else
         {
             // todo add logging
+        	removeLinks(repository, currentLinks);
             addLink(repository, newProjectKeys);
         }
-        // todo add logging
-        removeLinks(repository, currentLinks);
+
     }
 
     /**
