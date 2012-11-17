@@ -1,13 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 
-import static org.fest.assertions.api.Assertions.assertThat;
-
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Set;
-
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -16,6 +11,10 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Bitbuc
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.NoAuthAuthProvider;
+
+import org.fest.assertions.api.Assertions;
+
+import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.BitbucketChangesetIterableAssert.*;
 
 
 /**
@@ -59,52 +58,30 @@ public class ChangesetRemoteRestpointTest
     @Test(timeOut=10000, dataProvider="provideVariousChangesetPaginations")
     public void gettingChangesetsWithPagination_ShouldReturnAllChangesets(int pagination)
     {       
-        Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
-                                                                       .getChangesets(BITBUCKET_OWNER,
-                                                                                      BITBUCKET_REPO,
-                                                                                      null,
-                                                                                      pagination);
-        Set<String> changesetNodes = new HashSet<String>();
-        int changesetCounter = 0;
-        String combinedChangesetNodes = "";
-        
-        for (BitbucketChangeset bitbucketChangeset : changesets)
-        {
-            changesetCounter++;
-            changesetNodes.add(bitbucketChangeset.getNode());
-            combinedChangesetNodes += bitbucketChangeset.getNode();
-        }
-       
-        assertThat(changesetCounter).isEqualTo(NUMBER_OF_ALL_CHANGESETS); // not only we got the exact number of changesets
-        assertThat(changesetNodes).hasSize(NUMBER_OF_ALL_CHANGESETS);     // but also their nodes have to be unique
+        Iterable<BitbucketChangeset> changesetIterable = bitbucketRemoteClient.getChangesetsRest()
+                                                                              .getChangesets(BITBUCKET_OWNER,
+                                                                                             BITBUCKET_REPO,
+                                                                                             null,
+                                                                                             pagination);
 
-        assertThat(combinedChangesetNodes).isEqualTo(TIP_CHANGESET_NODE  + _5TH_CHANGESET_NODE + _4TH_CHANGESET_NODE +
-                                                     _3RD_CHANGESET_NODE + _2ND_CHANGESET_NODE + _1ST_CHANGESET_NODE);
+        assertThat(changesetIterable).hasNumberOfChangesets      (NUMBER_OF_ALL_CHANGESETS)
+                                     .hasNumberOfUniqueChangesets(NUMBER_OF_ALL_CHANGESETS)
+                                     .hasChangesetsWithNodesInOrder(TIP_CHANGESET_NODE,  _5TH_CHANGESET_NODE, _4TH_CHANGESET_NODE,
+                                                                    _3RD_CHANGESET_NODE, _2ND_CHANGESET_NODE, _1ST_CHANGESET_NODE);
     }
     
     @Test(timeOut=10000, dataProvider="provideVariousChangesetPaginations")
     public void gettingChangesetsUntilChangesetNodeWithPagination_ShouldReturnCorrectChangesets(int pagination)
     {
-        Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
-                                                                       .getChangesets(BITBUCKET_OWNER,
-                                                                                      BITBUCKET_REPO,
-                                                                                      _3RD_CHANGESET_NODE,
-                                                                                      pagination);
-        Set<String> changesetNodes = new HashSet<String>();
-        int changesetCounter = 0;
-        String combinedChangesetNodes = "";      
-        
-        for (BitbucketChangeset bitbucketChangeset : changesets)
-        {
-            changesetCounter++;
-            changesetNodes.add(bitbucketChangeset.getNode());
-            combinedChangesetNodes += bitbucketChangeset.getNode();
-        }
-       
-        assertThat(changesetCounter).isEqualTo(3); // not only we got the exact number of changesets
-        assertThat(changesetNodes).hasSize(3);     // but also their nodes have to be unique
+        Iterable<BitbucketChangeset> changesetIterable = bitbucketRemoteClient.getChangesetsRest()
+                                                                              .getChangesets(BITBUCKET_OWNER,
+                                                                                             BITBUCKET_REPO,
+                                                                                             _3RD_CHANGESET_NODE,
+                                                                                             pagination);
 
-        assertThat(combinedChangesetNodes).isEqualTo(TIP_CHANGESET_NODE + _5TH_CHANGESET_NODE + _4TH_CHANGESET_NODE);
+        assertThat(changesetIterable).hasNumberOfChangesets      (3)
+                                     .hasNumberOfUniqueChangesets(3)
+                                     .hasChangesetsWithNodesInOrder(TIP_CHANGESET_NODE,  _5TH_CHANGESET_NODE, _4TH_CHANGESET_NODE);
     }
     
     @Test(timeOut=10000)
@@ -125,7 +102,7 @@ public class ChangesetRemoteRestpointTest
                                                                                       BITBUCKET_EMPTY_REPO);
         Iterator<BitbucketChangeset> changesetIterator = changesets.iterator();
         
-        assertThat(changesetIterator.hasNext()).isFalse();
+        Assertions.assertThat(changesetIterator.hasNext()).isFalse();
         
         // should throw NoSuchElementException
         changesetIterator.next();
@@ -150,7 +127,7 @@ public class ChangesetRemoteRestpointTest
         }
         catch (NoSuchElementException e)
         {
-            assertThat(changesetCounter).isEqualTo(NUMBER_OF_ALL_CHANGESETS);
+            Assertions.assertThat(changesetCounter).isEqualTo(NUMBER_OF_ALL_CHANGESETS);
         }
     }
 
@@ -176,6 +153,6 @@ public class ChangesetRemoteRestpointTest
             changesetIterator.hasNext();
         }
 
-        assertThat(changesetCounter).isEqualTo(NUMBER_OF_ALL_CHANGESETS);
+        Assertions.assertThat(changesetCounter).isEqualTo(NUMBER_OF_ALL_CHANGESETS);
     }
 }
