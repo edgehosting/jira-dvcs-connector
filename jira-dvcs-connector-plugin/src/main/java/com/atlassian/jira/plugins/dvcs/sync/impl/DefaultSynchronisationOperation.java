@@ -1,11 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +30,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     private final DvcsCommunicator communicator;
 
     public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository, RepositoryService repositoryService, ChangesetService changesetService,
-        boolean softSync)
+            boolean softSync)
     {
         this.communicator = communicator;
         this.repository = repository;
@@ -47,28 +45,10 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     {
     	log.debug("Operation going to sync repo " + repository.getSlug() + " softs sync = " + softSync );
 
-        Date lastCommitDate = repository.getLastCommitDate();
-        synchroniseInternal();
-
-        if (!ObjectUtils.equals(lastCommitDate, repository.getLastCommitDate()))
-        {
-            log.debug("Last commit date has been changed. Save repository: [{}]", repository);
-            repositoryService.save(repository);
-        }
-    }
-
-    public void synchroniseInternal()
-    {
-        Date lastCommitDate = null;
-
-        if (!softSync)
-        {
-            lastCommitDate = repository.getLastCommitDate();
-        } else
+    	if (!softSync)
         {
             // we are doing full sync, lets delete all existing changesets
             changesetService.removeAllInRepository(repository.getId());
-            repository.setLastCommitDate(null);
         }
 
         int changesetCount = 0;
@@ -89,23 +69,17 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             if (!lastChangesetNodeUpdated)
             {
                 repository.setLastChangesetNode(changeset.getRawNode());
+                repositoryService.save(repository);
                 lastChangesetNodeUpdated = true;
             }
         	
-            if (lastCommitDate == null || lastCommitDate.before(changeset.getDate()))
-            {
-                lastCommitDate = changeset.getDate();
-                repository.setLastCommitDate(lastCommitDate);
-            }
-            
             changesetCount++;
             String message = changeset.getMessage();
             log.debug("syncing changeset [{}] [{}]", changeset.getNode(), changeset.getMessage());
 
             Set<String> extractedIssues = extractIssueKeys(message);
-            //final boolean github = "github".equals(repository.getDvcsType());
-            if ( /*github &&*/ CollectionUtils.isEmpty(extractedIssues) ) // storing only issues without issueKeys as
-                // those would be stored below
+
+            if (CollectionUtils.isEmpty(extractedIssues) ) // storing only issues without issueKeys as
             {
                 changeset.setIssueKey("NON_EXISTING-0");
                 changesetService.save(changeset);
