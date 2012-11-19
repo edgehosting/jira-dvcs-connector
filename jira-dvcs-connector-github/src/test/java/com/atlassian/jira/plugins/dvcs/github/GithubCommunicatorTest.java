@@ -151,7 +151,7 @@ public class GithubCommunicatorTest
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock, new Date()).iterator();
+        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
         assertFalse(changesetIterator.hasNext());
         assertFalse(changesetIterator.hasNext());
         
@@ -177,7 +177,7 @@ public class GithubCommunicatorTest
         
         createSampleBranches(repositoryId);
         
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock, new Date()).iterator();
+        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
         
         int changesetCounter = 0;
         
@@ -211,7 +211,7 @@ public class GithubCommunicatorTest
         
         createBranchWithTwoNodes(repositoryId);
         
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock, new Date()).iterator();
+        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
 
         changesetIterator.next();
         
@@ -232,7 +232,7 @@ public class GithubCommunicatorTest
         
         createBranchWithTwoNodes(repositoryId);
         
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock, new Date()).iterator();
+        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
         
         changesetCache.add("NODE-1");
         
@@ -251,7 +251,7 @@ public class GithubCommunicatorTest
         
         createBranchWithTwoNodes(repositoryId);
         
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock, new Date()).iterator();
+        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
         
         changesetCache.add("MASTER-SHA");
         
@@ -280,7 +280,7 @@ public class GithubCommunicatorTest
         
         createSampleBranches(repositoryId);
         
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock, new Date()).iterator();
+        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
         
         // we stop master branch
         changesetCache.add("MASTER-SHA");
@@ -304,7 +304,7 @@ public class GithubCommunicatorTest
         
         createSampleBranches(repositoryId);
         
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock, new Date()).iterator();
+        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
         
         int changesetCounter = 0;
         
@@ -341,7 +341,7 @@ public class GithubCommunicatorTest
         
         int changesetCounter = 0;
         
-        for ( Changeset changeset : communicator.getChangesets(repositoryMock, new Date()) )
+        for ( Changeset changeset : communicator.getChangesets(repositoryMock) )
         {
             changesetCache.add(changeset.getNode());
             changesetCounter++;
@@ -361,7 +361,7 @@ public class GithubCommunicatorTest
         
         int changesetCounter = 0;
         
-        for ( Changeset changeset : communicator.getChangesets(repositoryMock, new Date()) )
+        for ( Changeset changeset : communicator.getChangesets(repositoryMock) )
         {
             changesetCache.add(changeset.getNode());
             changesetCounter++;

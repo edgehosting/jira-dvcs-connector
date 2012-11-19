@@ -59,7 +59,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     {
         Date lastCommitDate = null;
 
-        if (softSync)
+        if (!softSync)
         {
             lastCommitDate = repository.getLastCommitDate();
         } else
@@ -73,7 +73,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         int jiraCount = 0;
         int synchroErrorCount = 0;
 
-        Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository, lastCommitDate);
+        Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository);
 
         Set<String> foundProjectKeys = new HashSet<String>();
 

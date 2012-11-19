@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +21,7 @@ public interface ChangesetService
 
     void removeAllInRepository(int repositoryId);
 
-    Iterable<Changeset> getChangesetsFromDvcs(Repository repository, Date lastCommitDate);
+    Iterable<Changeset> getChangesetsFromDvcs(Repository repository);
 
     Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset);
 

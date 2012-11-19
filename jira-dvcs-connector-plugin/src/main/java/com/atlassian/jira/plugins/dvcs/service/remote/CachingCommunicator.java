@@ -189,9 +189,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(Repository repository, Date lastCommitDate)
+    public Iterable<Changeset> getChangesets(Repository repository)
     {
-        return delegate.getChangesets(repository, lastCommitDate);
+        return delegate.getChangesets(repository);
     }
 
     @Override

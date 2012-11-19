@@ -214,7 +214,7 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(final Repository repository, final Date lastCommitDate)
+    public Iterable<Changeset> getChangesets(final Repository repository)
     {
         return new Iterable<Changeset>()
         {

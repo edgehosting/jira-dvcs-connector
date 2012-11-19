@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -163,7 +162,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public Iterable<Changeset> getChangesets(Repository repository, Date lastCommitDate)
+    public Iterable<Changeset> getChangesets(Repository repository)
     {
         try
         {
