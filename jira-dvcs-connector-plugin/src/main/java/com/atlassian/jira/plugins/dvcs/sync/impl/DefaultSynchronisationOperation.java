@@ -53,6 +53,8 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     @Override
     public void synchronise()
     {
+    	log.debug("Operation going to sync repo " + repository.getSlug() + " softs sync = " + softSync );
+
         Date lastCommitDate = repository.getLastCommitDate();
         synchroniseInternal();
 
