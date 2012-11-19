@@ -9,7 +9,7 @@ import com.google.common.collect.Lists;
 /**
  * For Bitbucket.
  * 
- * Disabled - As {@link ProjectBasedRepositoryLinksUpgradeTask} will do the job.
+ * Disabled - As {@link To_02_ProjectBasedRepositoryLinksUpgradeTask} will do the job.
  * Will be deleted later.
  */
 @Deprecated

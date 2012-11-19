@@ -103,4 +103,11 @@ public interface RepositoryService
      * @param repository
      */
     void remove(Repository repository);
+    
+    /**
+     * Turn On or off linkers.
+     *
+     * @param onOffBoolean the on off boolean
+     */
+    void onOffLinkers(boolean onOffBoolean);
 }

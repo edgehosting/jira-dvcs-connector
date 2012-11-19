@@ -27,11 +27,11 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
-import org.hamcrest.Matchers;
 
-import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.*;
+import static org.fest.assertions.api.Assertions.*;
+
+
 
 /**
  * Test to verify behaviour when syncing bitbucket repository..
@@ -129,7 +129,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationFailingStep1(TEST_NOT_EXISTING_URL);
 
         String errorMessage = configureOrganizations.getErrorStatusMessage();
-        assertThat(errorMessage, containsString("is incorrect or the server is not responding."));
+        assertThat(errorMessage).contains("Invalid user/team account");
 
         configureOrganizations.clearForm();
 
@@ -151,12 +151,12 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         String syncUrl = baseUrl + "/rest/bitbucket/1.0/repository/";
         String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
         servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, ACCOUNT_ADMIN_LOGIN, ACCOUNT_ADMIN_PASSWORD);
-        assertThat(servicesConfig, containsString(syncUrl));
+        assertThat(servicesConfig).contains(syncUrl);
         // delete repository
         configureOrganizations.deleteAllOrganizations();
         // check that postcommit hook is removed
         servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, ACCOUNT_ADMIN_LOGIN, ACCOUNT_ADMIN_PASSWORD);
-        assertThat(servicesConfig, not(containsString(syncUrl)));
+        assertThat(servicesConfig).doesNotContain(syncUrl);
 
         jira.getPageBinder().navigateToAndBind(getPageClass());
         configureOrganizations.deleteAllOrganizations();
@@ -182,10 +182,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         loginToBitbucketAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
 
-        assertThat(getCommitsForIssue("QA-2"),
-                Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
-        assertThat(getCommitsForIssue("QA-3"),
-                Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+        assertThat(getCommitsForIssue("QA-2")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-3")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
 
         jira.getPageBinder().navigateToAndBind(getPageClass());
         configureOrganizations.deleteAllOrganizations();

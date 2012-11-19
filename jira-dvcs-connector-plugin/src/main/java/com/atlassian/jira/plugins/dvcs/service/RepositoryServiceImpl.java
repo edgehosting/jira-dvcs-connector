@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,9 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
+import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.collect.Maps;
 
 /**
@@ -43,6 +46,8 @@ public class RepositoryServiceImpl implements RepositoryService
 	
 	/** The application properties. */
 	private final ApplicationProperties applicationProperties;
+
+    private final PluginSettingsFactory pluginSettingsFactory;
     
 	/**
 	 * The Constructor.
@@ -54,13 +59,14 @@ public class RepositoryServiceImpl implements RepositoryService
 	 * @param applicationProperties the application properties
 	 */
 	public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
-        ChangesetService changesetService, ApplicationProperties applicationProperties)
+        ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
         this.synchronizer = synchronizer;
         this.changesetService = changesetService;
         this.applicationProperties = applicationProperties;
+        this.pluginSettingsFactory = pluginSettingsFactory;
     }
 
     /**
@@ -281,6 +287,9 @@ public class RepositoryServiceImpl implements RepositoryService
         if (repository != null)
         {
             doSync(repository, softSync);
+        } else
+        {
+        	log.warn("Sync requested but repository with id {} does not exist anymore.", repositoryId);
         }
 	}
 
@@ -409,7 +418,8 @@ public class RepositoryServiceImpl implements RepositoryService
 		if (repository.isLinked())
 		{
 			communicator.setupPostcommitHook(repository, postCommitUrl);
-			communicator.linkRepository(repository, changesetService.getOrderedProjectKeysByRepository(repository.getId()));
+			// TODO: move linkRepository to setupPostcommitHook if possible
+			communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
 		} else
 		{
 			communicator.removePostcommitHook(repository, postCommitUrl);
@@ -477,4 +487,33 @@ public class RepositoryServiceImpl implements RepositoryService
 		}
 	}
 	
+    @Override
+    public void onOffLinkers(boolean enableLinkers)
+    {
+        log.debug("Enable linkers : " + BooleanUtils.toStringYesNo(enableLinkers));
+
+        // remove the variable first so adding and removing linkers works
+        pluginSettingsFactory.createGlobalSettings().remove(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM);
+
+        // add or remove linkers 
+        for (Repository repository : getAllRepositories())
+        {
+            log.debug((enableLinkers ? "Adding" : "Removing") + " linkers for" + repository.getSlug());
+            
+            DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+            if (enableLinkers && repository.isLinked())
+            {
+                communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
+            } else
+            {
+                communicator.linkRepository(repository, new HashSet<String>());
+            }
+        }
+        
+        if (!enableLinkers)
+        {
+            pluginSettingsFactory.createGlobalSettings().put(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM, Boolean.FALSE.toString());
+        }
+    }
+
 }

@@ -24,11 +24,8 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
     @ElementBy(id = "oauthSecret")
     PageElement oauthSecretInput;
 
-//    @ElementBy(id = "organization")
-//    PageElement teamOrUserUserAccountInput;
-
-    @ElementBy(tagName = "title")
-    PageElement htmlHeadTitle;
+    @ElementBy(id = "atlassian-token")
+    PageElement atlassianTokenMeta;
 
 
     @Override
@@ -48,9 +45,8 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         addOrgButton.click();
 
-        Poller.waitUntilTrue(htmlHeadTitle.timed().hasText("Bitbucket"));
-
-        pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grandAccess();
+        Poller.waitUntilFalse(atlassianTokenMeta.timed().isPresent());
+        pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grantAccess();
 
         if (autoSync) {
             checkSyncProcessSuccess();

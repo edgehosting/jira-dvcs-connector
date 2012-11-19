@@ -53,6 +53,7 @@ import com.atlassian.util.concurrent.Nullable;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import java.util.HashSet;
 
 public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 {
@@ -87,9 +88,11 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         this.repositoryService = repositoryService;
     }
 
-    public Iterable<StreamsEntry> transformEntries(Iterable<Changeset> changesetEntries, AtomicBoolean cancelled) throws StreamsException
+    private Iterable<StreamsEntry> transformEntries(Iterable<Changeset> changesetEntries, AtomicBoolean cancelled) throws StreamsException
     {
         List<StreamsEntry> entries = new ArrayList<StreamsEntry>();
+        Set<String> alreadyAddedChangesetRawNodes = new HashSet<String>(entries.size(), 1.0F);
+        
         for (Changeset changeset : changesetEntries)
         {
             if (cancelled.get()) {
@@ -97,13 +100,17 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
             	throw new CancelledException();
 
             } else {
-            	
-            	StreamsEntry streamsEntry = toStreamsEntry(changeset);
-				if (streamsEntry != null)
-				{
-					entries.add(streamsEntry);
-				}
-            
+                // https://sdog.jira.com/browse/BBC-308; without this check we would be adding visually same items
+                // to activity stream
+            	if (!alreadyAddedChangesetRawNodes.contains(changeset.getRawNode()))
+                {
+                    StreamsEntry streamsEntry = toStreamsEntry(changeset);
+                    if (streamsEntry != null)
+                    {
+                        entries.add(streamsEntry);
+                        alreadyAddedChangesetRawNodes.add(changeset.getRawNode());
+                    }
+                }
             }
         }
         return entries;

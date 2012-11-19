@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
 import org.openqa.selenium.By;
 
-import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.elements.PageElement;
 
 /**
@@ -29,10 +28,8 @@ public class BitbucketAddOAuthConsumerDialog
         PageElement consumerNameInput = addOAuthConsumerDialog.find(By.id("consumer-name"));        
         consumerNameInput.click().type(consumerName);
        
-        PageElement addConsumerButton = PageElementUtils.findTagWithAttribute(addOAuthConsumerDialog,
-                                                                              "input",
-                                                                              "type",
-                                                                              "submit");
+        PageElement addConsumerButton = addOAuthConsumerDialog.find(By.className("button-panel-button"));
+
         addConsumerButton.click();
     }
 }

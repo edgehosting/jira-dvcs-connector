@@ -1,5 +1,8 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
+import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.*;
+import static org.fest.assertions.api.Assertions.*;
+
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -10,7 +13,6 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -30,10 +32,6 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
 
-import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
 /**
  * Test to verify behaviour when syncing  github repository.
  */
@@ -42,7 +40,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 
     private static final String TEST_URL = "https://github.com";
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
-    private static final String TEST_NOT_EXISTING_URL = "https://privategithub.com/myaccount";
+    private static final String TEST_NOT_EXISTING_URL = "mynotexistingaccount124";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
     private static final String REPO_ADMIN_PASSWORD = "dvcsconnector23";
 
@@ -111,11 +109,10 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     @Before
     public void removeExistingPostCommitHooks()
     {
-        String[] githubRepositories = {"repo1", "test-project"};
-
-        for (String githubRepositoryId : githubRepositories) {
+        String[] githubRepositories = { "repo1", "test-project" };
+        for (String githubRepositoryId : githubRepositories)
+        {
             Set<String> extractedGithubHookIds = extractGithubHookIdsForRepositoryToRemove(githubRepositoryId);
-
             for (String extractedGithubHookId : extractedGithubHookIds)
             {
                 removePostCommitHook(githubRepositoryId, extractedGithubHookId);
@@ -141,7 +138,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     public void addOrganization()
     {
         configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, false);
-        assertThat(configureOrganizations.getOrganizations().size(), equalTo(1));
+        assertThat(configureOrganizations.getOrganizations()).hasSize(1);
     }
 
     @Test
@@ -150,7 +147,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         // we should see 'private-dvcs-connector-test' repo
         configureOrganizations.addOrganizationSuccessfully(TEST_URL, "atlassian", false);
 
-        assertThat(configureOrganizations.containsRepositoryWithName("private-dvcs-connector-test"), is(true));
+        assertThat(configureOrganizations.containsRepositoryWithName("private-dvcs-connector-test")).isTrue();
     }
 
     @Test
@@ -159,7 +156,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationFailingStep1(TEST_NOT_EXISTING_URL);
 
         String errorMessage = configureOrganizations.getErrorStatusMessage();
-        assertThat(errorMessage, containsString("is incorrect or the server is not responding."));
+        assertThat(errorMessage).contains("Invalid user/team account.");
         configureOrganizations.clearForm();
     }
 
@@ -175,13 +172,13 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/";
         String hooksURL = "https://github.com/jirabitbucketconnector/test-project/admin/hooks";
         String hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
-        assertThat(hooksPage, containsString(githubServiceConfigUrlPath));
+        assertThat(hooksPage).contains(githubServiceConfigUrlPath);
         goToConfigPage();
         // delete repository
         configureOrganizations.deleteAllOrganizations();
         // check that postcommit hook is removed
         hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
-        assertThat(hooksPage, not(containsString(githubServiceConfigUrlPath)));
+        assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
     }
 
     private String getGithubServices(String url, String username, String password) throws Exception
@@ -202,10 +199,8 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     {
         configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
 
-        assertThat(getCommitsForIssue("QA-2"),
-                Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
-        assertThat(getCommitsForIssue("QA-3"),
-                Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+        assertThat(getCommitsForIssue("QA-2")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-3")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
 
     @Test
@@ -246,13 +241,14 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     }
 
     @Test
-    public void addPrivateRepositoryWithValidOAuth() {
+    public void addPrivateRepositoryWithValidOAuth()
+    {
         GithubConfigureOrganizationsPage githubConfigPage = (GithubConfigureOrganizationsPage) goToConfigPage();
 
-        GithubConfigureOrganizationsPage githubConfigureOrganizationsPage =
-                githubConfigPage.addRepoToProjectForOrganization("dusanhornik", true);
+        GithubConfigureOrganizationsPage githubConfigureOrganizationsPage = githubConfigPage
+                .addRepoToProjectForOrganization("dusanhornik");
 
-        assertThat(githubConfigureOrganizationsPage.getNumberOfVisibleRepositories(), is(3));
+        assertThat(githubConfigureOrganizationsPage.getNumberOfVisibleRepositories()).isEqualTo(3);
     }
 
     private static Set<String> extractGithubHookIdsForRepositoryToRemove(String repositoryId)

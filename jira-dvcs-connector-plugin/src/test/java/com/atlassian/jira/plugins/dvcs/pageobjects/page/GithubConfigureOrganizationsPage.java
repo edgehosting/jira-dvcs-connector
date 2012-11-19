@@ -1,15 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+
+import java.util.List;
+
 import junit.framework.Assert;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import java.util.List;
-import org.openqa.selenium.WebElement;
 
 /**
  * Represents the page to link repositories to projects
@@ -191,7 +193,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         return this;
     }
 
-    public GithubConfigureOrganizationsPage addRepoToProjectForOrganization(String organizationString, boolean autoSync)
+    public GithubConfigureOrganizationsPage addRepoToProjectForOrganization(String organizationString)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
