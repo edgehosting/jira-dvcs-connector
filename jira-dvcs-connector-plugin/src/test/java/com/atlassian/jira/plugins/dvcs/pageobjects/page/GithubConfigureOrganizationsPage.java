@@ -123,7 +123,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         if (currentUrl.contains("https://github.com/login?"))
         {
             githubWebLoginField.type("jirabitbucketconnector");
-            githubWebPasswordField.type("jirabitbucketconnector1");
+            githubWebPasswordField.type("dvcsconnector23");
             setPageAsOld();
             githubWebSubmitButton.click();
         }

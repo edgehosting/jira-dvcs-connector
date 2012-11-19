@@ -34,7 +34,7 @@ public class BitbucketLoginPage implements Page {
         usernameOrEmailInput.clear()
                             .type("jirabitbucketconnector");
         passwordInput.clear()
-                     .type("jirabitbucketconnector1");
+                     .type("dvcsconnector23");
         
         loginButton.click();
     }

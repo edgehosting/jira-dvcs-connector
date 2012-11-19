@@ -44,7 +44,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
     private static final String TEST_NOT_EXISTING_URL = "https://privategithub.com/myaccount";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
-    private static final String REPO_ADMIN_PASSWORD = "jirabitbucketconnector1";
+    private static final String REPO_ADMIN_PASSWORD = "dvcsconnector23";
 
     private static String clientID;
     private static String clientSecret;
