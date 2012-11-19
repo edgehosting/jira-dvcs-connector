@@ -29,8 +29,13 @@ public class GithubLoginPage implements Page
 
     public void doLogin()
     {
-        githubWebLoginField.type("jirabitbucketconnector");
-        githubWebPasswordField.type(System.getProperty("jirabitbucketconnectorPassword"));
+        doLogin("jirabitbucketconnector", System.getProperty("jirabitbucketconnectorPassword"));
+    }
+    
+    public void doLogin(String username, String password)
+    {
+        githubWebLoginField.type(username);
+        githubWebPasswordField.type(password);
         githubWebSubmitButton.click();
     }
 }
