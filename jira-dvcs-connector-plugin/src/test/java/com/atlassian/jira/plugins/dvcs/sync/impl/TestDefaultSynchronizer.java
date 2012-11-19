@@ -9,10 +9,15 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.Executors;
 
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -69,10 +74,11 @@ public final class TestDefaultSynchronizer
 		synchronizer.synchronize(repositoryMock, synchronisationOperation);
 
 		waitUntilProgressEnds(synchronizer);
-       
-		verify(changesetServiceMock, times(1)).save(savedChangesetCaptor.capture());
+       	
+		verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
         
-		assertThat(savedChangesetCaptor.getValue().getIssueKey(), is("MES-123"));
+		assertThat(savedChangesetCaptor.getAllValues().get(0).getIssueKey(), is("MES-123"));
+		assertThat(savedChangesetCaptor.getAllValues().get(1).getIssueKey(), is("NON_EXISTING-0"));
 	}
     
 	private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException

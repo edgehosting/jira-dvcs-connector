@@ -81,9 +81,10 @@ public final class TestSmartcommits
        
 		
 		verify(changesetsProcessorMock).startProcess();
-		verify(changesetServiceMock, times(1)).save(savedChangesetCaptor.capture());
+		verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
 		
-		assertThat(savedChangesetCaptor.getValue().isSmartcommitAvaliable(), is(true));
+		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable(), is(true));
+		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable(), is((Boolean)null));
 	}
     
 
@@ -109,9 +110,10 @@ public final class TestSmartcommits
        
 		
 		verify(changesetsProcessorMock).startProcess();
-		verify(changesetServiceMock, times(1)).save(savedChangesetCaptor.capture());
+		verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
 		
-		assertThat(savedChangesetCaptor.getValue().isSmartcommitAvaliable(), is((Boolean)null));
+		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable(), is((Boolean)null));
+		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable(), is((Boolean)null));
 	}
     
 	private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException
