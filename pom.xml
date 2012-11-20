@@ -34,22 +34,21 @@
 		
 		<jira.compile.version>5.2-rotp4</jira.compile.version>
 		
-	 
-		
 		<jira.version>5.2-rotp4</jira.version>
 		<jira.data.version>5.2-rotp4</jira.data.version>
 		 
-	<!--		 
-		 
-		<jira.version>5.0</jira.version>
-		<jira.data.version>5.0</jira.data.version>
+	<!--
+		<jira.version>5.0.1</jira.version>
+		<jira.data.version>5.0.1</jira.data.version>
 	-->
+        
         <!--<jira.compile.version>5.2-m05-1</jira.compile.version>-->
         <!--<jira.version>5.2-m05-1</jira.version>-->
         <!--<jira.data.version>5.2-m05-1</jira.data.version>-->
 
 		<ao.version>0.19.7</ao.version>
 		<streams.version>5.0.1</streams.version>
+		<greenhopper.version>6.0.7</greenhopper.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
