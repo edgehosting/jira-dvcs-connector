@@ -21,6 +21,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPa
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddProjectPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewProjectsPage;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.plugin.util.zip.FileUnzipper;
 
 /**
@@ -30,7 +31,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
 {
     private static final String GITHUB_URL = "api.github.com";
     private static final String GITHUB_REPO_OWNER = "dvcsconnectortest";
-    private static final String GITHUB_REPO_PASSWORD = System.getProperty("dvcsconnectortestPassword");
+    private static final String GITHUB_REPO_PASSWORD = PasswordUtil.getPassword("dvcsconnectortest");
     private static final String MISSING_COMMITS_REPOSITORY_NAME = "missingcommitsfixproof";
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits

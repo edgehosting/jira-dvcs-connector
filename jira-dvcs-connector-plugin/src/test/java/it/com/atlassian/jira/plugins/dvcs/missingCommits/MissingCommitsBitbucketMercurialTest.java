@@ -1,9 +1,17 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
@@ -16,15 +24,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Bitbuc
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.plugin.util.zip.FileUnzipper;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest;
-
-import static org.fest.assertions.api.Assertions.*;
 
 /**
  * @author Martin Skurla
@@ -32,7 +33,7 @@ import static org.fest.assertions.api.Assertions.*;
 public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
 {
     private static final String BITBUCKET_REPO_OWNER = "dvcsconnectortest";
-    private static final String BITBUCKET_REPO_PASSWORD = System.getProperty("dvcsconnectortestPassword");
+    private static final String BITBUCKET_REPO_PASSWORD = PasswordUtil.getPassword("dvcsconnectortest");
     private static final String MISSING_COMMITS_REPOSITORY_NAME = "missingcommitsfixproof";
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits

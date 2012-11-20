@@ -9,6 +9,7 @@ import junit.framework.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
@@ -119,7 +120,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         if (currentUrl.contains("https://github.com/login?"))
         {
             githubWebLoginField.type("jirabitbucketconnector");
-            githubWebPasswordField.type(System.getProperty("jirabitbucketconnectorPassword"));
+            githubWebPasswordField.type(PasswordUtil.getPassword("jirabitbucketconnector"));
             setPageAsOld();
             githubWebSubmitButton.click();
         }

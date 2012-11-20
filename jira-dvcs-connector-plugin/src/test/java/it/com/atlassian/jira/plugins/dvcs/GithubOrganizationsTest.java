@@ -1,7 +1,7 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.*;
-import static org.fest.assertions.api.Assertions.*;
+import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -27,6 +27,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -41,7 +42,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
     private static final String TEST_NOT_EXISTING_URL = "mynotexistingaccount124";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
-    private static final String REPO_ADMIN_PASSWORD = System.getProperty("jirabitbucketconnectorPassword");
+    private static final String REPO_ADMIN_PASSWORD = PasswordUtil.getPassword("jirabitbucketconnector");
 
     private static String clientID;
     private static String clientSecret;

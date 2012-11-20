@@ -177,8 +177,8 @@
 						<baseurl.jira>http://localhost:2990/jira</baseurl.jira>
 						<http.jira.port>2990</http.jira.port>
 						<context.jira.path>jira</context.jira.path>
-                        <jirabitbucketconnectorPassword>${jirabitbucketconnector.password}</jirabitbucketconnectorPassword>
-                        <dvcsconnectortestPassword>${dvcsconnectortest.password}</dvcsconnectortestPassword>
+                        <jirabitbucketconnector.password>${jirabitbucketconnector.password}</jirabitbucketconnector.password>
+                        <dvcsconnectortest.password>${dvcsconnectortest.password}</dvcsconnectortest.password>
 					</systemPropertyVariables>
 					<productVersion>${jira.version}</productVersion>
 					<testResourcesVersion>${jira.data.version}</testResourcesVersion>
