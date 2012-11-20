@@ -1,24 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.plugin.PluginParseException;
-import com.atlassian.plugin.web.ContextProvider;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
+import com.atlassian.plugin.PluginParseException;
+import com.atlassian.plugin.web.ContextProvider;
 
 public class DvcsTabPanelContextProvider implements ContextProvider {
 
     private final Logger logger = LoggerFactory.getLogger(DvcsTabPanelContextProvider.class);
+    
+    private static final String DEFAULT_MESSAGE = "There are no commits";
 
     private final ChangesetService changesetService;
     private final ChangesetRenderer changesetRenderer;
@@ -57,6 +56,12 @@ public class DvcsTabPanelContextProvider implements ContextProvider {
         }
 
         HashMap<String, Object> params = new HashMap<String, Object>();
+        
+        if (sb.length() == 0)
+        {
+        	sb.append("<div class=\"ghx-container\"><p class=\"ghx-fa\">" + DEFAULT_MESSAGE + "</p></div>");
+        }
+        
         params.put("renderedChangesetsWithHtml", sb.toString());
         params.put("atl.gh.issue.details.tab.count", items);
 
