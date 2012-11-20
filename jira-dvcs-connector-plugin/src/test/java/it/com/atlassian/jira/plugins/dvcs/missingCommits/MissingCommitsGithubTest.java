@@ -135,23 +135,37 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
         File extractedRepoDir = extractRepoZipIntoTempDir(pathToRepoZip);
 
         String gitPushUrl = String.format("https://%1$s:%2$s@github.com/%1$s/%3$s.git", GITHUB_REPO_OWNER,
-                                                                                      GITHUB_REPO_PASSWORD,
                                                                                       MISSING_COMMITS_REPOSITORY_NAME);
+        String gitCommand = getGitCommand();
         
-        
-        executeCommand(extractedRepoDir, "git", "remote", "remove", "origin");
-        executeCommand(extractedRepoDir, "git", "remote", "add", "origin", gitPushUrl);
-        executeCommand(extractedRepoDir, "git", "push", "-u", "origin", "master");
+        executeCommand(extractedRepoDir, gitCommand, "remote", "rm", "origin");
+        executeCommand(extractedRepoDir, gitCommand, "remote", "add", "origin", gitPushUrl);
+        executeCommand(extractedRepoDir, gitCommand, "push", "-u", "origin", "master");
 
         FileUtils.deleteDirectory(extractedRepoDir);
     }
+    
+    public static String getGitCommand()
+    {
+        Process process;
+        try
+        {
+            process = new ProcessBuilder("git").start();
+            process.waitFor();
+            return "git";
+        } catch (Exception e)
+        {
+            return "/usr/local/git/bin/git";
+        }
+    }
 
+    
     private void executeCommand(File directory, String... command) throws IOException, InterruptedException
     {
         Process gitPushProcess = new ProcessBuilder(command)
         .directory(directory)
         .start();
-
+        
         
         gitPushProcess.waitFor();
     }
