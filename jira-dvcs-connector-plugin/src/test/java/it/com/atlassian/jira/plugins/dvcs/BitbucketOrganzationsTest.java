@@ -23,6 +23,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddUserPage;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -41,7 +42,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
     private static final String TEST_NOT_EXISTING_URL = "https://privatebitbucket.org/someaccount";
     private static final String ACCOUNT_ADMIN_LOGIN = "jirabitbucketconnector";
-    private static final String ACCOUNT_ADMIN_PASSWORD = System.getProperty("jirabitbucketconnectorPassword");
+    private static final String ACCOUNT_ADMIN_PASSWORD = PasswordUtil.getPassword("jirabitbucketconnector");
 
     private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
 
