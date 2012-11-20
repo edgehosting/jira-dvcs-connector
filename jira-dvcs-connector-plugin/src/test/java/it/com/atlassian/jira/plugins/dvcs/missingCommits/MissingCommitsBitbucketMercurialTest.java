@@ -20,6 +20,8 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddProjectPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewProjectsPage;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;

@@ -11,10 +11,12 @@ import com.atlassian.pageobjects.elements.PageElement;
 public class GithubLoginPage implements Page
 {
     public static final String PAGE_URL = "https://github.com/login";
-    public static final String LOGOUT_ACTION_URL = "https://github.com/logout";
 
     @ElementBy(id = "login_field")
     PageElement githubWebLoginField;
+    
+    @ElementBy(id = "logout")
+    PageElement githubWebLogoutLink;
 
     @ElementBy(id = "password")
     PageElement githubWebPasswordField;
@@ -38,5 +40,14 @@ public class GithubLoginPage implements Page
         githubWebLoginField.type(username);
         githubWebPasswordField.type(password);
         githubWebSubmitButton.click();
+    }
+    
+    /**
+     * Logout is done by POST method. It's not enough to go to /logout page. We
+     * need to submit a form that gets us there
+     */
+    public void doLogout()
+    {
+        githubWebLogoutLink.click();
     }
 }

@@ -1,4 +1,4 @@
-package it.com.atlassian.jira.plugins.dvcs.missingCommits;
+package com.atlassian.jira.plugins.dvcs.remoterestpoint;
 
 import java.io.IOException;
 

@@ -70,8 +70,8 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         registeredOAuthAppsPage.parseClientIdAndSecret(oauthAppName);
         oauthAppLink = registeredOAuthAppsPage.getOauthAppUrl();
         jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
-        jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
-
+        ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
+        ghLoginPage.doLogout();
 
         GithubOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(GithubOAuthConfigPage.class);
         oauthConfigPage.setCredentials(clientID, clientSecret);
@@ -95,7 +95,9 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
         registerAppPage.deleteOAuthApp();
 
-        jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
+        jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
+        GithubLoginPage ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
+        ghLoginPage.doLogout();
     }
 
     @Before

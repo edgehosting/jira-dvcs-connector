@@ -1,8 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
+import javax.inject.Inject;
+
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.webdriver.AtlassianWebDriver;
 
 /**
  * @author Martin Skurla
@@ -18,6 +21,8 @@ public class JiraAddProjectPage implements Page
     @ElementBy(id = "add-project-submit")
     PageElement addProjectButton;
 
+    @Inject
+    AtlassianWebDriver atlassianWebDriver;
 
     @Override
     public String getUrl()
@@ -32,6 +37,15 @@ public class JiraAddProjectPage implements Page
         projectKeyInput .type(projectNameAndKey);
         projectNameInput.type(projectNameAndKey);
 
+        try
+        {
+            // TODO get rid of this.
+            Thread.sleep(1000);
+        } catch (InterruptedException e)
+        {
+            // ignore
+            e.printStackTrace();
+        }
         addProjectButton.click();
     }
 }
