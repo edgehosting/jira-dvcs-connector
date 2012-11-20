@@ -1,9 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import javax.inject.Inject;
-
 import com.atlassian.pageobjects.Page;
-import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.SelectElement;
@@ -13,9 +10,6 @@ import com.atlassian.pageobjects.elements.query.Poller;
  * @author Martin Skurla mskurla@atlassian.com
  */
 public class BitbucketOAuthConfigPage implements Page {
-
-    @Inject
-    PageBinder pageBinder;
 
     @ElementBy(id = "Submit")
     PageElement submitButton;

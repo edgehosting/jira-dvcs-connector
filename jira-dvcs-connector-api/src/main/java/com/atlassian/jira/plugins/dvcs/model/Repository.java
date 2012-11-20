@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import java.util.Date;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -20,7 +18,7 @@ public class Repository
 	private String dvcsType;
 	private String slug;
 	private String name;
-	private Date lastCommitDate;
+    private String lastChangesetNode;
 	private boolean linked;
     private boolean deleted;
     private boolean smartcommitsEnabled;
@@ -39,15 +37,15 @@ public class Repository
 		super();
 	}
 
-	public Repository(int id, int organizationId, String dvcsType, String slug, String name, Date lastCommitDate,
-			boolean linked, boolean deleted, Credential credential)
+	public Repository(int id, int organizationId, String dvcsType, String slug, String name,
+			String lastChangesetNode, boolean linked, boolean deleted, Credential credential)
 	{
 		this.id = id;
 		this.organizationId = organizationId;
 		this.dvcsType = dvcsType;
 		this.slug = slug;
 		this.name = name;
-		this.lastCommitDate = lastCommitDate;
+        this.lastChangesetNode = lastChangesetNode;
 		this.linked = linked;
         this.deleted = deleted;
         this.credential = credential;
@@ -103,14 +101,12 @@ public class Repository
         this.name = name;
     }
 
-    public Date getLastCommitDate()
-    {
-        return lastCommitDate;
+    public String getLastChangesetNode() {
+        return lastChangesetNode;
     }
 
-    public void setLastCommitDate(Date lastCommitDate)
-    {
-        this.lastCommitDate = lastCommitDate;
+    public void setLastChangesetNode(String lastChangesetNode) {
+        this.lastChangesetNode = lastChangesetNode;
     }
 
     public boolean isLinked()

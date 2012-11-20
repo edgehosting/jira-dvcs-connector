@@ -9,26 +9,31 @@ import java.util.List;
  * BitbucketChangeset
  * 
  * <pre>
- *  {
- *      "node": "8b2d4d092764",
- *      "files": [
- *          {
- *              "type": "added",
- *              "file": "test1 resource.txt"
- *          }
- *      ],
- *      "raw_author": "jirabitbucketconnector",
- *      "utctimestamp": "2011-12-21 14:17:37+00:00",
- *      "author": "jirabitbucketconnector",
- *      "timestamp": "2011-12-21 15:17:37",
- *      "raw_node": "8b2d4d0927645c4f7bf59a817587e9006458c1b7",
- *      "parents": [],
- *      "branch": "default",
- *      "message": "resource with space in name",
- *      "revision": 0,
- *      "size": -1
- *  }, ...
- * 
+ * {
+ *     "node": "abdeaf1b2b4a",
+ *     "files": [
+ *         {
+ *             "type": "added",
+ *             "file": "AnotherFile.txt"
+ *         },
+ *         {
+ *             "type": "modified",
+ *             "file": "Readme"
+ *         }
+ *     ],
+ *     "raw_author": "Mary Anthony <manthony@172-28-13-105.staff.sf.atlassian.com>",
+ *     "utctimestamp": "2012-07-23 22:26:36+00:00",
+ *     "author": "Mary Anthony",
+ *     "timestamp": "2012-07-24 00:26:36",
+ *     "raw_node": "abdeaf1b2b4a6b9ddf742c1e1754236380435a62",
+ *     "parents": [
+ *         "86432202a2d5"
+ *     ],
+ *     "branch": "master",
+ *     "message": "making some changes\n",
+ *     "revision": null,
+ *     "size": -1
+ * }, ...
  * </pre>
  *
  * 
@@ -39,19 +44,19 @@ import java.util.List;
  *
  */
 public class BitbucketChangeset implements Serializable
-{//TODO timestamp vs utctimestamp
+{
 	private static final long serialVersionUID = -1593016501516234658L;
 
 	private String node;
 	private List<BitbucketChangesetFile> files;
 	private String author;
-	private Date timestamp;
 	private String branch;
 	private String message;
 	private Integer revision;
 	private Long size;
     private String rawNode;
     private String rawAuthor;
+    // timestamp parameter is not used because Gson SimpleDateFormat pattern is set to parse utc times only
     private Date utctimestamp;
     private List<String> parents;
 
@@ -83,16 +88,6 @@ public class BitbucketChangeset implements Serializable
 	public void setAuthor(String author)
 	{
 		this.author = author;
-	}
-
-	public Date getTimestamp()
-	{
-		return timestamp;
-	}
-
-	public void setTimestamp(Date timestamp)
-	{
-		this.timestamp = timestamp;
 	}
 
 	public String getBranch()

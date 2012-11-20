@@ -1,10 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import javax.inject.Inject;
-
 import org.openqa.selenium.By;
 
-import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Conditions;
@@ -15,9 +12,6 @@ import com.atlassian.pageobjects.elements.query.Poller;
  */
 public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizationsPage
 {
-    @Inject
-    PageBinder pageBinder;
-
     @ElementBy(id = "oauthClientId")
     PageElement oauthKeyInput;
 
@@ -29,8 +23,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
 
     @Override
-    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String url, String organizationAccount,
-            boolean autoSync)
+    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -81,7 +74,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
      * {@inheritDoc}
      */
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String url)
+    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2()
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();

@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.service;
 import java.util.Collection;
 import java.util.List;
 
-import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 
@@ -101,16 +100,6 @@ public interface OrganizationService
 	 * @return the all
 	 */
 	List<Organization> getAll(boolean loadRepositories, String type);
-	
-	/**
-	 * Check credentials.
-	 *
-	 * @param forOrganization the for organization
-	 * @throws InvalidCredentialsException the invalid credentials exception if credentials seems
-	 * to be invalid
-	 */
-	void checkCredentials(Organization forOrganizationWithPlainCredentials) throws InvalidCredentialsException;
-
 	
 	/**
 	 * Enable smartcommits on new repos.

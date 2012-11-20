@@ -1,11 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,16 +27,10 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     private final ChangesetService changesetService;
     private final boolean softSync;
 
-    /**
-     * performance improvement for syncing GH large repositories with changesets which doesn't contain issue keys.
-     * changeset after this step will be stored even if it has no issue key
-     */
-    private static int GH_CHANGESETS_SAVING_INTERVAL = 100;
-
     private final DvcsCommunicator communicator;
 
     public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository, RepositoryService repositoryService, ChangesetService changesetService,
-        boolean softSync)
+            boolean softSync)
     {
         this.communicator = communicator;
         this.repository = repository;
@@ -53,62 +45,41 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     {
     	log.debug("Operation going to sync repo " + repository.getSlug() + " softs sync = " + softSync );
 
-        Date lastCommitDate = repository.getLastCommitDate();
-        synchroniseInternal();
-
-        if (!ObjectUtils.equals(lastCommitDate, repository.getLastCommitDate()))
-        {
-            log.debug("Last commit date has been changed. Save repository: [{}]", repository);
-            repositoryService.save(repository);
-        }
-    }
-
-    public void synchroniseInternal()
-    {
-        Date lastCommitDate = null;
-
-        if (softSync)
-        {
-            lastCommitDate = repository.getLastCommitDate();
-        } else
+    	if (!softSync)
         {
             // we are doing full sync, lets delete all existing changesets
             changesetService.removeAllInRepository(repository.getId());
-            repository.setLastCommitDate(null);
         }
 
         int changesetCount = 0;
         int jiraCount = 0;
         int synchroErrorCount = 0;
 
-        Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository, lastCommitDate);
+        Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository);
 
         Set<String> foundProjectKeys = new HashSet<String>();
-        
+
+        boolean lastChangesetNodeUpdated = false;
         for (Changeset changeset : allOrLatestChangesets)
         {
         	if (progress.isShouldStop())
         	{
         		return;
         	}
-        	
-            if (lastCommitDate == null || lastCommitDate.before(changeset.getDate()))
+            if (!lastChangesetNodeUpdated)
             {
-                lastCommitDate = changeset.getDate();
-                repository.setLastCommitDate(lastCommitDate);
+                repository.setLastChangesetNode(changeset.getRawNode());
+                repositoryService.save(repository);
+                lastChangesetNodeUpdated = true;
             }
-            
+        	
             changesetCount++;
             String message = changeset.getMessage();
             log.debug("syncing changeset [{}] [{}]", changeset.getNode(), changeset.getMessage());
 
             Set<String> extractedIssues = extractIssueKeys(message);
 
-            // see GH_CHANGESETS_SAVING_INTERVAL javadoc
-            // TODO: I think this can be now removed 
-            if ("github".equals(repository.getDvcsType()) &&
-                    (changesetCount % GH_CHANGESETS_SAVING_INTERVAL) == 0 &&
-                    CollectionUtils.isEmpty(extractedIssues))
+            if (CollectionUtils.isEmpty(extractedIssues) ) // storing only issues without issueKeys as
             {
                 changeset.setIssueKey("NON_EXISTING-0");
                 changesetService.save(changeset);
@@ -118,15 +89,22 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             // get detail changeset because in this response is not information about files
             Changeset detailChangeset = null;
             
-            if (CollectionUtils.isNotEmpty(extractedIssues))
+            if (CollectionUtils.isNotEmpty(extractedIssues) ) 
             {
-                try
+                if ( /*github*/ "github".equals(repository.getDvcsType()) )
                 {
-                    detailChangeset = changesetService.getDetailChangesetFromDvcs(repository, changeset);
-                } catch (Exception e)
+                    // we have requested detail changesets for github
+                    detailChangeset = changeset;
+                } else
                 {
-                    log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
-                    synchroErrorCount++;
+                    try
+                    {
+                        detailChangeset = changesetService.getDetailChangesetFromDvcs(repository, changeset);
+                    } catch (Exception e)
+                    {
+                        log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
+                        synchroErrorCount++;
+                    }
                 }
                 
                 boolean changesetAlreadyMarkedForSmartCommits = false;
@@ -166,7 +144,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         
         setupNewLinkers(foundProjectKeys);
     }
-
+    
     private void setupNewLinkers(Set<String> extractedProjectKeys)
     {
         if (!extractedProjectKeys.isEmpty())

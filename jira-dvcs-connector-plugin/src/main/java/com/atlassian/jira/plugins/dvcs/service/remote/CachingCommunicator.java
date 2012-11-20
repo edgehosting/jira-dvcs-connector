@@ -189,9 +189,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(Repository repository, Date lastCommitDate)
+    public Iterable<Changeset> getChangesets(Repository repository)
     {
-        return delegate.getChangesets(repository, lastCommitDate);
+        return delegate.getChangesets(repository);
     }
 
     @Override
@@ -219,12 +219,6 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public boolean validateCredentials(Organization organization)
-    {
-        return delegate.validateCredentials(organization);
-    }
-
-    @Override
     public void linkRepository(Repository repository, Set<String> withProjectkeys)
     {
         delegate.linkRepository(repository, withProjectkeys);
@@ -236,5 +230,4 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         delegate.linkRepositoryIncremental(repository, withPossibleNewProjectkeys);
     }
 
-    
 }

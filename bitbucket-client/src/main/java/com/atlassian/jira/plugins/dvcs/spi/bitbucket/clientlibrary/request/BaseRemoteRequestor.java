@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -46,9 +45,9 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     @Override
-    public <T> T delete(String uri, ResponseCallback<T> callback)
+    public <T> T delete(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        return requestWithoutPayload(HttpMethod.DELETE, uri, Collections.<String, String> emptyMap(), callback);
+        return requestWithoutPayload(HttpMethod.DELETE, uri, parameters, callback);
     }
 
     @Override
@@ -62,7 +61,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     {
         return requestWithPayload(HttpMethod.PUT, uri, parameters, callback);
     }
-    
+
     // --------------------------------------------------------------------------------------------------
     // extension hooks
     // --------------------------------------------------------------------------------------------------

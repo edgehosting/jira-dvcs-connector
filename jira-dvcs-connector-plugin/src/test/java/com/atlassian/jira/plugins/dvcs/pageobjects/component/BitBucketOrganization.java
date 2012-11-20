@@ -20,9 +20,6 @@ public class BitBucketOrganization
     @Inject
     PageElementFinder elementFinder;
     
-    @ElementBy(className = "dvcs-org-container")
-    PageElement showSettings;
-
     @ElementBy(tagName = "table")
     PageElement repositoriesTable;
   

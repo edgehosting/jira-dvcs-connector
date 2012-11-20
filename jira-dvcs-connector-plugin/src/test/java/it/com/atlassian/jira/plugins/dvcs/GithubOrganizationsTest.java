@@ -1,7 +1,7 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.*;
-import static org.fest.assertions.api.Assertions.*;
+import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -27,6 +27,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -38,11 +39,10 @@ import com.atlassian.pageobjects.elements.PageElement;
 public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 {
 
-    private static final String TEST_URL = "https://github.com";
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
     private static final String TEST_NOT_EXISTING_URL = "mynotexistingaccount124";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
-    private static final String REPO_ADMIN_PASSWORD = "dvcsconnector23";
+    private static final String REPO_ADMIN_PASSWORD = PasswordUtil.getPassword("jirabitbucketconnector");
 
     private static String clientID;
     private static String clientSecret;
@@ -70,8 +70,8 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         registeredOAuthAppsPage.parseClientIdAndSecret(oauthAppName);
         oauthAppLink = registeredOAuthAppsPage.getOauthAppUrl();
         jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
-        jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
-
+        ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
+        ghLoginPage.doLogout();
 
         GithubOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(GithubOAuthConfigPage.class);
         oauthConfigPage.setCredentials(clientID, clientSecret);
@@ -92,18 +92,12 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 
         jira.getTester().gotoUrl(oauthAppLink);
 
-    	try
-		{
-			jira.getTester().getDriver().switchTo().alert().accept();
-		} catch (Exception e)
-		{
-			// nop, probably no leave page alert
-		}
-
         GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
         registerAppPage.deleteOAuthApp();
 
-        jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
+        jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
+        GithubLoginPage ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
+        ghLoginPage.doLogout();
     }
 
     @Before
@@ -137,7 +131,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     @Test
     public void addOrganization()
     {
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, false);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, false);
         assertThat(configureOrganizations.getOrganizations()).hasSize(1);
     }
 
@@ -145,7 +139,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     public void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount()
     {
         // we should see 'private-dvcs-connector-test' repo
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, "atlassian", false);
+        configureOrganizations.addOrganizationSuccessfully("atlassian", false);
 
         assertThat(configureOrganizations.containsRepositoryWithName("private-dvcs-connector-test")).isTrue();
     }
@@ -166,7 +160,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         String baseUrl = jira.getProductInstance().getBaseUrl();
 
         // add repository
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         // check that it created postcommit hook
         String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/";
@@ -197,7 +191,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     @Test
     public void addRepoCommitsAppearOnIssues()
     {
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         assertThat(getCommitsForIssue("QA-2")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -207,7 +201,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     public void testCommitStatistics()
     {
         configureOrganizations.deleteAllOrganizations();
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3");
@@ -235,7 +229,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 
         goToConfigPage();
 
-        configureOrganizations.addRepoToProjectFailingStep2(TEST_URL);
+        configureOrganizations.addRepoToProjectFailingStep2();
 
         goToGithubOAuthConfigPage().setCredentials(clientID, clientSecret);
     }

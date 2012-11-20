@@ -44,7 +44,8 @@ public class GithubChangesetFactory
             {
                 name = repositoryCommit.getCommit().getAuthor().getName();
             }
-
+            // TODO commit date is in getCommt().getCommitter().getDate(), should we use this instead
+            // after git commit --ammend command, the dates were different
             date = repositoryCommit.getCommit().getAuthor().getDate();
             authorEmail = repositoryCommit.getCommit().getAuthor().getEmail();
         }
@@ -68,12 +69,11 @@ public class GithubChangesetFactory
                 repositoryCommit.getCommit().getMessage(),
                 transformParents(repositoryCommit.getParents()),
                 changesetFiles,
-                changesetFiles.size()
+                changesetFiles.size(),
+                authorEmail
         );
 
-        changeset.setAuthorEmail(authorEmail);
 		return changeset;
-
     }
 
     private static String getUserLogin(User user)

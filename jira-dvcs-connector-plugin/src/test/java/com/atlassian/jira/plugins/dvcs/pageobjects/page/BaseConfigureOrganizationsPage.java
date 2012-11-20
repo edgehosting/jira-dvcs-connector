@@ -10,6 +10,7 @@ import org.hamcrest.text.StringEndsWith;
 import org.openqa.selenium.By;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketOrganization;
+import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
@@ -180,12 +181,11 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     public abstract BaseConfigureOrganizationsPage addOrganizationFailingStep1(String url);
 
-    public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String url);
+    public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingStep2();
 
     public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String url);
 
-    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String url, String organizationAccount,
-            boolean autosync);
+    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autosync);
 
 
     public void setJiraTestedProduct(JiraTestedProduct jiraTestedProduct)
@@ -219,4 +219,26 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         return false;
     }
 
+
+    public String getRepositoryIdFromRepositoryName(String queriedRepositoryName)
+    {
+        for (PageElement repositoryRow : elementFinder.findAll(By.className("dvcs-repo-row")))
+        {
+            String repositoryName = repositoryRow.find(By.className("dvcs-org-reponame")).find(By.tagName("a")).getText();
+
+            if (repositoryName.equals(queriedRepositoryName))
+            {
+                PageElement syncRepoLink = PageElementUtils.findTagWithAttribute(repositoryRow, "a", "onclick");
+                
+                String onclickAttributeValue = syncRepoLink.getAttribute("onclick");
+                // parsing: onclick="forceSync(90); AJS.$('.gh_messages.repository90').slideDown(); return false;"
+                int openBraceIndex  = onclickAttributeValue.indexOf('(');
+                int closeBraceIndex = onclickAttributeValue.indexOf(')');
+
+                return onclickAttributeValue.substring(openBraceIndex + 1, closeBraceIndex);
+            }
+        }
+
+        return null;
+    }
 }
