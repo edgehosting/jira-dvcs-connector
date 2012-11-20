@@ -92,14 +92,6 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 
         jira.getTester().gotoUrl(oauthAppLink);
 
-    	try
-		{
-			jira.getTester().getDriver().switchTo().alert().accept();
-		} catch (Exception e)
-		{
-			// nop, probably no leave page alert
-		}
-
         GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
         registerAppPage.deleteOAuthApp();
 
