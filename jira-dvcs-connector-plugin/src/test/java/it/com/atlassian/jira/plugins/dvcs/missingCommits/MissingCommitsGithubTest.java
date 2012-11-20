@@ -135,7 +135,8 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
         File extractedRepoDir = extractRepoZipIntoTempDir(pathToRepoZip);
 
         String gitPushUrl = String.format("https://%1$s:%2$s@github.com/%1$s/%3$s.git", GITHUB_REPO_OWNER,
-                                                                                      MISSING_COMMITS_REPOSITORY_NAME);
+                GITHUB_REPO_PASSWORD, MISSING_COMMITS_REPOSITORY_NAME);
+        
         String gitCommand = getGitCommand();
         
         executeCommand(extractedRepoDir, gitCommand, "remote", "rm", "origin");
