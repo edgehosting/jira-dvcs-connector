@@ -138,8 +138,8 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
                                                                                       GITHUB_REPO_PASSWORD,
                                                                                       MISSING_COMMITS_REPOSITORY_NAME);
         
-        
-        executeCommand(extractedRepoDir, "git", "remote", "remove", "origin");
+        // be sure that git is on some path in PATH variable
+        executeCommand(extractedRepoDir, "git", "remote", "rm", "origin");
         executeCommand(extractedRepoDir, "git", "remote", "add", "origin", gitPushUrl);
         executeCommand(extractedRepoDir, "git", "push", "-u", "origin", "master");
 
