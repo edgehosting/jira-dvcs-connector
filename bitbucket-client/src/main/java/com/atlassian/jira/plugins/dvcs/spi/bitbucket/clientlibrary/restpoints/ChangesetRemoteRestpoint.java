@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetEnvelope;
@@ -170,7 +169,7 @@ public class ChangesetRemoteRestpoint
         public boolean hasNext() // hasNext() cannot modify the state of queue, otherwise multiple calls would cause side-effect !!!
         {           
             return !(changesetQueue.isEmpty() || // the queue is empty when we iterated over all changesets or repository is empty
-                   changesetQueue.peek().getNode().equals(lastChangesetNode));
+                   changesetQueue.peek().getRawNode().equals(lastChangesetNode));
         }//TODO node vs rawNode => preco vobec existuje node ak vsetko sa da robit cez rawNode??? dat prec aby nevznikli chyby
 
         @Override

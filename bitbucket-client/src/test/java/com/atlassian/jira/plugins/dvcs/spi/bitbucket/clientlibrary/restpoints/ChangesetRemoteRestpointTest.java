@@ -1,8 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 
+import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.BitbucketChangesetIterableAssert.assertThat;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+
+import org.fest.assertions.api.Assertions;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -11,10 +15,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Bitbuc
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.NoAuthAuthProvider;
-
-import org.fest.assertions.api.Assertions;
-
-import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.BitbucketChangesetIterableAssert.*;
 
 
 /**
@@ -27,12 +27,12 @@ public class ChangesetRemoteRestpointTest
     private static final String BITBUCKET_EMPTY_REPO = "testemptyrepo";
 
     // all 6 changesets are numbered from bottom of the same page
-    private static final String TIP_CHANGESET_NODE  = "cf40601136f6";
-    private static final String _5TH_CHANGESET_NODE = "de66ffafa5ca";
-    private static final String _4TH_CHANGESET_NODE = "b597361d8735";
-    private static final String _3RD_CHANGESET_NODE = "d2088255ee40";
-    private static final String _2ND_CHANGESET_NODE = "7c029943eb97";
-    private static final String _1ST_CHANGESET_NODE = "c02f3167afcc";
+    private static final String TIP_CHANGESET_NODE  = "cf40601136f64613a3eaf4607e92b3a44b5b4fe8";
+    private static final String _5TH_CHANGESET_NODE = "de66ffafa5ca9cceef7d46f04c3d1c0a679866f2";
+    private static final String _4TH_CHANGESET_NODE = "b597361d87353e0d0ecabe69ad37fdcda706f973";
+    private static final String _3RD_CHANGESET_NODE = "d2088255ee407de438d8e2d895e611bde6d4878a";
+    private static final String _2ND_CHANGESET_NODE = "7c029943eb977dedda6742bd4306f1f45b5e0982";
+    private static final String _1ST_CHANGESET_NODE = "c02f3167afccfa6468cb584c5563d22b20a2b61e";
 
     private static final int NUMBER_OF_ALL_CHANGESETS = 6;
     
@@ -70,7 +70,7 @@ public class ChangesetRemoteRestpointTest
                                                                     _3RD_CHANGESET_NODE, _2ND_CHANGESET_NODE, _1ST_CHANGESET_NODE);
     }
     
-    @Test(timeOut=10000, dataProvider="provideVariousChangesetPaginations")
+    @Test(dataProvider="provideVariousChangesetPaginations")
     public void gettingChangesetsUntilChangesetNodeWithPagination_ShouldReturnCorrectChangesets(int pagination)
     {
         Iterable<BitbucketChangeset> changesetIterable = bitbucketRemoteClient.getChangesetsRest()
