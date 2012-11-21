@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.dao;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Date;
 import java.util.Map;
 
 import org.junit.Before;
@@ -39,6 +40,8 @@ public class RepositoryDaoTest
 
 	// tested object
 	private RepositoryDao repositoryDao;
+	
+	private static final Date SAMPLE_DATE = new Date();
 
     private static final String LAST_CHANGESET_NODE = "ljksdfhklsdahfk";
 
@@ -84,6 +87,7 @@ public class RepositoryDaoTest
 						val = values.get(RepositoryMapping.ORGANIZATION_ID).equals(1)
 								&& values.get(RepositoryMapping.SLUG).equals("doesnotmatter-repo")
 								&& values.get(RepositoryMapping.NAME).equals("doesnotmatter_repo")
+								&& values.get(RepositoryMapping.LAST_COMMIT_DATE).equals(SAMPLE_DATE)
 								&& values.get(RepositoryMapping.LAST_CHANGESET_NODE).equals(LAST_CHANGESET_NODE)
 								&& values.get(RepositoryMapping.LINKED).equals(true)
 								&& values.get(RepositoryMapping.DELETED).equals(true);
@@ -119,6 +123,7 @@ public class RepositoryDaoTest
 
 		verify(repositoryMapping).setSlug(eq("doesnotmatter-repo"));
 		verify(repositoryMapping).setName(eq("doesnotmatter_repo"));
+		verify(repositoryMapping).setLastCommitDate(eq(SAMPLE_DATE));
 		verify(repositoryMapping).setLastChangesetNode(eq(LAST_CHANGESET_NODE));
 		verify(repositoryMapping).setLinked(eq(true));
 		verify(repositoryMapping).setDeleted(eq(true));
@@ -133,6 +138,7 @@ public class RepositoryDaoTest
 		repository.setDvcsType("bitbucket");
 		repository.setOrganizationId(1);
 		repository.setSlug("doesnotmatter-repo");
+	    repository.setLastCommitDate(SAMPLE_DATE);
 	    repository.setLastChangesetNode(LAST_CHANGESET_NODE);
 		repository.setLinked(true);
 		repository.setDeleted(true);

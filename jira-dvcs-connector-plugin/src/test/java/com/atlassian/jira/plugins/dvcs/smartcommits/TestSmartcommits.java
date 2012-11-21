@@ -87,8 +87,6 @@ public final class TestSmartcommits
 	@Test
 	public void softSynchronization_ShouldnotMarkSmartcommit() throws InterruptedException
 	{
-		Date lastCommitDate = new Date();
-
 		when(repositoryMock.isSmartcommitsEnabled()).thenReturn(Boolean.FALSE);
 
 		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(

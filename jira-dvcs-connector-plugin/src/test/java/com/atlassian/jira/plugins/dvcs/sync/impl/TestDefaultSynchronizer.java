@@ -53,7 +53,7 @@ public final class TestDefaultSynchronizer
 			new Date());
 
 	@Test
-	public void softSynchronization_ShouldSaveOneChangeset() throws InterruptedException
+	public void softSynchronization_ShouldSaveOneChangesetWithIssueKey() throws InterruptedException
 	{
 		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(
 				Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
@@ -68,6 +68,7 @@ public final class TestDefaultSynchronizer
        	
 		verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
         
+		// one changeset is saved with issue key, another without
 		assertThat(savedChangesetCaptor.getAllValues().get(0).getIssueKey(), is("MES-123"));
 		assertThat(savedChangesetCaptor.getAllValues().get(1).getIssueKey(), is("NON_EXISTING-0"));
 	}
