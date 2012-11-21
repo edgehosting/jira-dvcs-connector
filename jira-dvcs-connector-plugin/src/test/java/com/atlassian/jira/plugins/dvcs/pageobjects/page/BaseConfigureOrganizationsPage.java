@@ -6,7 +6,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.hamcrest.Matcher;
-import org.hamcrest.text.StringEndsWith;
 import org.openqa.selenium.By;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketOrganization;
@@ -18,8 +17,6 @@ import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.pageobjects.elements.query.TimedCondition;
-import com.atlassian.pageobjects.elements.query.TimedQuery;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
 
 /**
@@ -142,25 +139,47 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     protected void checkSyncProcessSuccess()
     {
-
-    	List<PageElement> allSyncMessages = organizationsElement.findAll(By.className("gh_messages"));
-
-    	for (PageElement syncMessage : allSyncMessages)
-		{
-    		// isPresent = true => repositories list is shown
-            TimedCondition isMsgVisibleCond = syncMessage.timed().isPresent();
-            Poller.waitUntilTrue("Expected sync status message to appear.", isMsgVisibleCond);
-
-            // isVisible = true => started sync => we will wait for result
-            if (syncMessage.timed().isVisible().now())
+        // maybe we should do the rest call to server
+        // to find out the status of syncing
+        boolean syncFinished;
+        do {
+            // TODO the idea for waiting for all icons not to have "running" class doesn't work because
+            // the javascript doesn't run onLoad stuff. 
+            // The onload is broken by Raphael trying to do something with svg icons.
+            // The error in the js console:
+            //    this.join is not a function
+            //    [Break on this error] return this.join(",").replace(p2s, "$1"); 
+            sleep(1000);
+            syncFinished = true;
+            List<PageElement> syncIcons = organizationsElement.findAll(By.className("syncrepoicon"));
+            System.out.println("Found some syncicons: " +syncIcons.size());
+            
+            for (PageElement syncIcon : syncIcons)
             {
-                TimedQuery<String> syncFinishedCond = syncMessage.timed().getText();
-                Poller.waitUntil("Expected sync status message", syncFinishedCond, new StringEndsWith("2012")); // last commit date
+                if (syncIcon.hasClass("running"))
+                {
+                    syncFinished = false;
+                    System.out.println("Running");
+                } else
+                {
+                    System.out.println("Not Running");
+                }
             }
+            
+        } while (!syncFinished);
+        // syncing is now finished. TODO check for errors
+    }
 
-		}
 
-
+    private void sleep(long milis)
+    {
+        try
+        {
+            Thread.sleep(milis);
+        } catch (InterruptedException e)
+        {
+            // ignore
+        }
     }
 
     protected void waitFormBecomeVisible()

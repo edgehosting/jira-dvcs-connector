@@ -32,7 +32,8 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         organization.clear().type(organizationAccount);
 
-        if (!autoSync) {
+        if (!autoSync)
+        {
             autoLinkNewRepos.click();
         }
 
@@ -41,7 +42,8 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         Poller.waitUntilFalse(atlassianTokenMeta.timed().isPresent());
         pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grantAccess();
 
-        if (autoSync) {
+        if (autoSync)
+        {
             checkSyncProcessSuccess();
         }
 
