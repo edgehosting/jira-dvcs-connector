@@ -49,6 +49,8 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         {
             // we are doing full sync, lets delete all existing changesets
             changesetService.removeAllInRepository(repository.getId());
+            repository.setLastChangesetNode(null);
+            repositoryService.save(repository);
         }
 
         int changesetCount = 0;
@@ -141,6 +143,8 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             }
             progress.inProgress(changesetCount, jiraCount, synchroErrorCount);
         }
+        
+        // TODO, update last commit day (or display something else in UI)
         
         setupNewLinkers(foundProjectKeys);
     }
