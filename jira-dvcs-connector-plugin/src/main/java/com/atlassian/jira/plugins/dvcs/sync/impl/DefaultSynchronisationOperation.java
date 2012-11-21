@@ -44,12 +44,13 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     public void synchronise()
     {
     	log.debug("Operation going to sync repo " + repository.getSlug() + " softs sync = " + softSync );
-
-    	if (!softSync)
+    	
+    	if (!softSync) 
         {
             // we are doing full sync, lets delete all existing changesets
             changesetService.removeAllInRepository(repository.getId());
             repository.setLastChangesetNode(null);
+            repository.setLastCommitDate(null);
             repositoryService.save(repository);
         }
 
@@ -75,6 +76,12 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                 lastChangesetNodeUpdated = true;
             }
         	
+            if (repository.getLastCommitDate() == null || repository.getLastCommitDate().before(changeset.getDate()))
+            {
+                repository.setLastCommitDate(changeset.getDate());
+                repositoryService.save(repository);
+            }
+
             changesetCount++;
             String message = changeset.getMessage();
             log.debug("syncing changeset [{}] [{}]", changeset.getNode(), changeset.getMessage());
@@ -143,8 +150,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             }
             progress.inProgress(changesetCount, jiraCount, synchroErrorCount);
         }
-        
-        // TODO, update last commit day (or display something else in UI)
         
         setupNewLinkers(foundProjectKeys);
     }

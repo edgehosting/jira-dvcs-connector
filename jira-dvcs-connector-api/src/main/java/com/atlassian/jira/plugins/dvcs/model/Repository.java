@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import java.util.Date;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -18,6 +20,7 @@ public class Repository
 	private String dvcsType;
 	private String slug;
 	private String name;
+	private Date lastCommitDate;
     private String lastChangesetNode;
 	private boolean linked;
     private boolean deleted;
@@ -37,7 +40,7 @@ public class Repository
 		super();
 	}
 
-	public Repository(int id, int organizationId, String dvcsType, String slug, String name,
+	public Repository(int id, int organizationId, String dvcsType, String slug, String name, Date lastCommitDate,
 			String lastChangesetNode, boolean linked, boolean deleted, Credential credential)
 	{
 		this.id = id;
@@ -45,6 +48,7 @@ public class Repository
 		this.dvcsType = dvcsType;
 		this.slug = slug;
 		this.name = name;
+		this.lastCommitDate = lastCommitDate;
         this.lastChangesetNode = lastChangesetNode;
 		this.linked = linked;
         this.deleted = deleted;
@@ -99,6 +103,16 @@ public class Repository
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public Date getLastCommitDate()
+    {
+        return lastCommitDate;
+    }
+
+    public void setLastCommitDate(Date lastCommitDate)
+    {
+        this.lastCommitDate = lastCommitDate;
     }
 
     public String getLastChangesetNode() {
