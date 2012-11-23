@@ -139,37 +139,24 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     protected void checkSyncProcessSuccess()
     {
+        String currentUrl =  jiraTestedProduct.getTester().getDriver().getCurrentUrl();
         // maybe we should do the rest call to server
         // to find out the status of syncing
-        boolean syncFinished;
-        do {
-            // TODO the idea for waiting for all icons not to have "running" class doesn't work because
-            // the javascript doesn't run onLoad stuff. 
-            // The onload is broken by Raphael trying to do something with svg icons.
-            // The error in the js console:
-            //    this.join is not a function
-            //    [Break on this error] return this.join(",").replace(p2s, "$1"); 
+        do { 
             sleep(1000);
-            syncFinished = true;
-            List<PageElement> syncIcons = organizationsElement.findAll(By.className("syncrepoicon"));
-            System.out.println("Found some syncicons: " +syncIcons.size());
-            
-            for (PageElement syncIcon : syncIcons)
-            {
-                if (syncIcon.hasClass("running"))
-                {
-                    syncFinished = false;
-                    System.out.println("Running");
-                } else
-                {
-                    System.out.println("Not Running");
-                }
-            }
-            
-        } while (!syncFinished);
+        } while (!isSyncFinished());
         // syncing is now finished. TODO check for errors
+        
+        jiraTestedProduct.getTester().gotoUrl(currentUrl);
     }
 
+    private boolean isSyncFinished()
+    {
+        jiraTestedProduct.getTester().gotoUrl(jiraTestedProduct.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repositories");
+        String pageSource = jiraTestedProduct.getTester().getDriver().getPageSource();
+
+        return !pageSource.contains("finished=\"false\"");
+    }
 
     private void sleep(long milis)
     {
