@@ -12,7 +12,6 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 public class GithubRepositoriesRemoteRestpoint
 {
     private final GitHubClient gitHubClient;
-    private RepositoryService repositoryService;
     
     public GithubRepositoriesRemoteRestpoint(GitHubClient gitHubClient)
     {
@@ -50,11 +49,6 @@ public class GithubRepositoriesRemoteRestpoint
     
     private RepositoryService getRepositoryService()
     {
-        if (repositoryService == null)
-        {
-            repositoryService = new RepositoryService(gitHubClient);
-        }
-        
-        return repositoryService;
+        return new RepositoryService(gitHubClient);
     }
 }
