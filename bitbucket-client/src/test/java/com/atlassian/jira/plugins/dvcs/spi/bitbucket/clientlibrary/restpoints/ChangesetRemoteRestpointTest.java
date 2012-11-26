@@ -70,7 +70,7 @@ public class ChangesetRemoteRestpointTest
                                                                     _3RD_CHANGESET_NODE, _2ND_CHANGESET_NODE, _1ST_CHANGESET_NODE);
     }
     
-    @Test(dataProvider="provideVariousChangesetPaginations")
+    @Test(timeOut=10000, dataProvider="provideVariousChangesetPaginations")
     public void gettingChangesetsUntilChangesetNodeWithPagination_ShouldReturnCorrectChangesets(int pagination)
     {
         Iterable<BitbucketChangeset> changesetIterable = bitbucketRemoteClient.getChangesetsRest()
