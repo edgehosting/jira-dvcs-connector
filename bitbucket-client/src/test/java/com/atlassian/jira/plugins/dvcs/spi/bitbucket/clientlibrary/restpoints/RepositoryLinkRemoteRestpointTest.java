@@ -22,7 +22,7 @@ import static org.fest.assertions.api.Assertions.*;
 public class RepositoryLinkRemoteRestpointTest
 {
     private static final String BITBUCKET_REPO_OWNER    = "jirabitbucketconnector";
-    private static final String BITBUCKET_REPO_PASSWORD = System.getProperty("jirabitbucketconnectorPassword");
+    private static final String BITBUCKET_REPO_PASSWORD = System.getProperty("jirabitbucketconnector.password");
     private static final String BITBUCKET_REPO_SLUG     = "public-hg-repo";
     
     private static final String BITBUCKET_REPO_LINK_HANDLER = "jira";

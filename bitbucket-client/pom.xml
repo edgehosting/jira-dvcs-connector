@@ -14,6 +14,22 @@
     <name>Bitbucket Client Java library</name>
     <description>Bitbucket Client Java library</description>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <jirabitbucketconnector.password>${jirabitbucketconnector.password}</jirabitbucketconnector.password>
+                        <dvcsconnectortest.password>${dvcsconnectortest.password}</dvcsconnectortest.password>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -39,12 +55,6 @@
             <version>1.4</version>
             <scope>provided</scope>
         </dependency>
-        <!--dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
-            <scope>compile</scope>
-        </dependency-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
