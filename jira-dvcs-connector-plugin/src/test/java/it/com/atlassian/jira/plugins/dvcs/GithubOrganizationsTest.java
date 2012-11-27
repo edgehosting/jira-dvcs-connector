@@ -15,7 +15,6 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -205,20 +204,20 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3");
-        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        assertThat(commitMessages).hasSize(1);
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+1");
-        Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+1");
+        assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
 
         // QA-4
         commitMessages = getCommitsForIssue("QA-4");
-        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        assertThat(commitMessages).hasSize(1);
         commitMessage = commitMessages.get(0);
         statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertTrue("Expected commit resource Added: 1", commitMessage.isAdded(statistics.get(0)));
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
     }
 
 

@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.smartcommits;
 import java.util.Arrays;
 import static org.mockito.Mockito.*;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +18,8 @@ import com.atlassian.jira.bc.issue.worklog.WorklogInputParametersImpl;
 import com.atlassian.jira.bc.issue.worklog.WorklogService;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler;
+
+import static org.fest.assertions.api.Assertions.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WorkLogHandlerTest
@@ -55,9 +56,9 @@ public class WorkLogHandlerTest
 
         WorklogInputParametersImpl worklogParams = worklogParamsCaptor.getValue();
 
-        Assert.assertEquals("1h 44m", worklogParams.getTimeSpent());
-        Assert.assertEquals("", worklogParams.getComment());
-        Assert.assertEquals(sampleIssue, worklogParams.getIssue());
+        assertThat(worklogParams.getTimeSpent()).isEqualTo("1h 44m");
+        assertThat(worklogParams.getComment()).isEmpty();
+        assertThat(worklogParams.getIssue()).isEqualTo(sampleIssue);
     }
     
     @Test
@@ -72,9 +73,9 @@ public class WorkLogHandlerTest
 
         WorklogInputParametersImpl worklogParams = worklogParamsCaptor.getValue();
 
-        Assert.assertEquals("2w 3d 1h 44m", worklogParams.getTimeSpent());
-        Assert.assertEquals("Total work logged in !!!", worklogParams.getComment());
-        Assert.assertEquals(sampleIssue, worklogParams.getIssue());
+        assertThat(worklogParams.getTimeSpent()).isEqualTo("2w 3d 1h 44m");
+        assertThat(worklogParams.getComment()).isEqualTo("Total work logged in !!!");
+        assertThat(worklogParams.getIssue()).isEqualTo(sampleIssue);
     }
 
     private MutableIssue sampleIssue()

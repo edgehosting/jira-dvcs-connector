@@ -8,8 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.fest.assertions.api.Assertions.*;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com
@@ -51,6 +50,6 @@ public class MapRemovingNullCharacterFromStringValuesTest
         Map<String, String> map = (Map<String, String>) (Map<?,?>) new MapRemovingNullCharacterFromStringValues();
         map.put("key", inputString);
         
-        assertThat(map.get("key"), is(expectedTransformedString));
+        assertThat(map.get("key")).isEqualTo(expectedTransformedString);
     }
 }

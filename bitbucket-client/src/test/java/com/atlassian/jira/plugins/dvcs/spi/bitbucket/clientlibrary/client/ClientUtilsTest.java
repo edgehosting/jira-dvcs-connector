@@ -1,8 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client;
 
 
-
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;

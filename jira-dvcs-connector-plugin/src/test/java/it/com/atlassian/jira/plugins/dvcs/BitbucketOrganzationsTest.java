@@ -10,7 +10,6 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -31,8 +30,6 @@ import com.atlassian.pageobjects.elements.PageElement;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.*;
 import static org.fest.assertions.api.Assertions.*;
-
-
 
 /**
  * Test to verify behaviour when syncing bitbucket repository..
@@ -97,7 +94,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 
         PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
         // first row is header row, than repos ...
-        Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
+        assertThat(repositoriesTable.findAll(By.tagName("tr")).size()).isGreaterThan(2);
 
         // check add user extension
         jira.visit(JiraAddUserPage.class).checkPanelPresented();
@@ -115,7 +112,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
                 configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
         PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
         // first row is header row, than repos ...
-        Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
+        assertThat(repositoriesTable.findAll(By.tagName("tr")).size()).isGreaterThan(2);
 
         jira.getPageBinder().navigateToAndBind(getPageClass());
         configureOrganizations.deleteAllOrganizations();
@@ -198,26 +195,26 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");
-        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        assertThat(commitMessages).hasSize(1);
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertTrue("Expected Added", commitMessage.isAdded(statistics.get(0)));
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
 
         // QA-3
         commitMessages = getCommitsForIssue("QA-3");
-        Assert.assertEquals("Expected 2 commits", 2, commitMessages.size());
+        assertThat(commitMessages).hasSize(2);
         // commit 1
         commitMessage = commitMessages.get(0);
         statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertTrue("Expected Added", commitMessage.isAdded(statistics.get(0)));
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
         // commit 2
         commitMessage = commitMessages.get(1);
         statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+3");
-        Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+3");
+        assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
 
         jira.getPageBinder().navigateToAndBind(getPageClass());
         configureOrganizations.deleteAllOrganizations();

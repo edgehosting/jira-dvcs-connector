@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -26,6 +23,8 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer;
+
+import static org.fest.assertions.api.Assertions.*;
 
 /**
  * @author Martin Skurla
@@ -79,8 +78,8 @@ public final class TestSmartcommits
 		verify(changesetsProcessorMock).startProcess();
 		verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
 		
-		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable(), is(true));
-		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable(), is((Boolean)null));
+		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isTrue();
+		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isNull();
 	}
     
 
@@ -104,8 +103,8 @@ public final class TestSmartcommits
 		verify(changesetsProcessorMock).startProcess();
 		verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
 		
-		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable(), is((Boolean)null));
-		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable(), is((Boolean)null));
+		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isNull();
+		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isNull();
 	}
     
 	private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException

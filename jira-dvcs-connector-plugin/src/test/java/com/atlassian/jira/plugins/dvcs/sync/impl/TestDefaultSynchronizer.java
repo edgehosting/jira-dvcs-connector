@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -25,6 +22,8 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+
+import static org.fest.assertions.api.Assertions.*;
 
 /**
  * @author Martin Skurla
@@ -69,8 +68,8 @@ public final class TestDefaultSynchronizer
 		verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
         
 		// one changeset is saved with issue key, another without
-		assertThat(savedChangesetCaptor.getAllValues().get(0).getIssueKey(), is("MES-123"));
-		assertThat(savedChangesetCaptor.getAllValues().get(1).getIssueKey(), is("NON_EXISTING-0"));
+		assertThat(savedChangesetCaptor.getAllValues().get(0).getIssueKey()).isEqualTo("MES-123");
+		assertThat(savedChangesetCaptor.getAllValues().get(1).getIssueKey()).isEqualTo("NON_EXISTING-0");
 	}
     
 	private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException

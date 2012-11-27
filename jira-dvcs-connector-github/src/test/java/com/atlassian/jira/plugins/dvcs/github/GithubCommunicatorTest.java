@@ -1,8 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.github;
 
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -150,8 +148,8 @@ public class GithubCommunicatorTest
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         
         Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-        assertFalse(changesetIterator.hasNext());
-        assertFalse(changesetIterator.hasNext());
+        assertThat(changesetIterator.hasNext()).isFalse();
+        assertThat(changesetIterator.hasNext()).isFalse();
         
         // this should throw an exception
         try
@@ -214,8 +212,8 @@ public class GithubCommunicatorTest
         changesetIterator.next();
         
         // we are on the last node
-        assertTrue(changesetIterator.hasNext());
-        assertTrue(changesetIterator.hasNext());
+        assertThat(changesetIterator.hasNext()).isTrue();
+        assertThat(changesetIterator.hasNext()).isTrue();
     }
     
     @Test
@@ -235,8 +233,8 @@ public class GithubCommunicatorTest
         changesetCache.add("NODE-1");
         
         changesetIterator.next();
-        assertFalse(changesetIterator.hasNext());
-        assertFalse(changesetIterator.hasNext());
+        assertThat(changesetIterator.hasNext()).isFalse();
+        assertThat(changesetIterator.hasNext()).isFalse();
     }
     
     @Test
@@ -253,8 +251,8 @@ public class GithubCommunicatorTest
         
         changesetCache.add("MASTER-SHA");
         
-        assertFalse(changesetIterator.hasNext());
-        assertFalse(changesetIterator.hasNext());
+        assertThat(changesetIterator.hasNext()).isFalse();
+        assertThat(changesetIterator.hasNext()).isFalse();
        
         // this should throw an exception
         try
@@ -284,8 +282,8 @@ public class GithubCommunicatorTest
         changesetCache.add("MASTER-SHA");
         
         // we stopped the master branch, it should iterate branch1
-        assertTrue(changesetIterator.hasNext());
-        assertTrue(changesetIterator.hasNext());
+        assertThat(changesetIterator.hasNext()).isTrue();
+        assertThat(changesetIterator.hasNext()).isTrue();
        
         Changeset detailChangeset = changesetIterator.next();
         assertThat(detailChangeset.getBranch()).isEqualTo("branch1");

@@ -1,13 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -29,6 +27,8 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.user.util.UserManager;
 import com.google.common.collect.Sets;
+
+import static org.fest.assertions.api.Assertions.*;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
@@ -83,17 +83,12 @@ public class UserAddedExternallyEventProcessorTest
 		processor.run();
 		
 		verify(communicatorMock).inviteUser(isA(Organization.class), slugsCaptor.capture(), emailCaptor.capture());
-		
-		Assert.assertTrue(slugsCaptor.getAllValues().size() == 1 &&
-				slugsCaptor.getAllValues().get(0).contains("A") &&
-				slugsCaptor.getAllValues().get(0).contains("B")
-				);
-		
 
-		Assert.assertTrue(emailCaptor.getAllValues().size() == 1 &&
-				emailCaptor.getAllValues().get(0).equals("principal@example.com") 
-				);
-		
+        assertThat(slugsCaptor.getAllValues()).hasSize(1);
+        assertThat(slugsCaptor.getAllValues().get(0)).contains("A", "B");	
+
+        assertThat(emailCaptor.getAllValues()).hasSize(1);
+        assertThat(emailCaptor.getAllValues().get(0)).isEqualTo("principal@example.com");
 	}
 
 	
