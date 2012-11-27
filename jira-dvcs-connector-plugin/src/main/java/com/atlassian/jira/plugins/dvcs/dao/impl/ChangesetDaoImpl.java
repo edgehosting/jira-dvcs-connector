@@ -71,11 +71,15 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public Object doInTransaction()
             {
-                final ChangesetMapping[] changesetMappings = activeObjects.find(ChangesetMapping.class, ChangesetMapping.REPOSITORY_ID+" = ?", repositoryId);
+                Query query = Query.select().where(ChangesetMapping.REPOSITORY_ID + " = ?", repositoryId);
+                log.debug("deleting changesets from repository with id = [ {} ]", new String[]{String.valueOf(repositoryId)});
 
-                log.debug("deleting [ {} ] changesets from repository with id = [ {} ]", new String[]{String.valueOf(changesetMappings.length), String.valueOf(repositoryId)});
-
-                activeObjects.delete(changesetMappings);
+                activeObjects.stream(ChangesetMapping.class,query, new EntityStreamCallback<ChangesetMapping, Integer>(){
+                    public void onRowRead(ChangesetMapping changeset)
+                    {
+                        activeObjects.delete(activeObjects.get(ChangesetMapping.class, changeset.getID()));
+                    }
+                });
                 return null;
             }
         });
