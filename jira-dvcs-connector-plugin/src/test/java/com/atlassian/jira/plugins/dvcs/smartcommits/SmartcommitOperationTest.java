@@ -66,8 +66,6 @@ public class SmartcommitOperationTest
 
 		}).when(activeObjectsMock).stream(Mockito.isA(Class.class), Mockito.isA(Query.class), Mockito.isA(EntityStreamCallback.class));
 		
-		//
-		
 		ChangesetMapping sampleChangesetMapping = (ChangesetMapping) sampleChangesetMapping();
 
 		when (activeObjectsMock.get(eq( ChangesetMapping.class ), eq (1) )).thenReturn(sampleChangesetMapping);

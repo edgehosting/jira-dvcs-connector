@@ -5,14 +5,10 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.atlassian.pageobjects.TestedProductFactory;
-import com.atlassian.webdriver.jira.JiraTestedProduct;
 import com.google.common.collect.Maps;
 
 public class RestUrlBuilder
 {
-//    private static JiraTestedProduct jira;
-
     private final String path;
     private final Map<String, String> params = Maps.newHashMap();
 
@@ -30,7 +26,6 @@ public class RestUrlBuilder
     public String build()
     {
         StringBuilder url = new StringBuilder();
-//        url.append(getBaseUrl());
         url.append(getBaseUrlFast());
         url.append(path);
         url.append(url.indexOf("?") != -1 ? "&" : "?");
@@ -66,17 +61,4 @@ public class RestUrlBuilder
             throw new RuntimeException(e);
         }
     }
-    
-    /**
-     * This method should always return correct base url, but is pretty slow (it starts browser)
-     * @return
-    private String getBaseUrl()
-    {
-        if (jira == null)
-        {
-            jira = TestedProductFactory.create(JiraTestedProduct.class);
-        }
-        return jira.getProductInstance().getBaseUrl();
-    }
-     */
 }

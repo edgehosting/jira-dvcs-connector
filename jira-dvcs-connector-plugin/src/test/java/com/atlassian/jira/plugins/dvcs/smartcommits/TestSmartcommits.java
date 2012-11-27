@@ -52,12 +52,6 @@ public final class TestSmartcommits
 	private final Changeset changesetWithoutJIRAIssue = new Changeset(123, "node", "message without JIRA issue",
 			new Date());
 
-	/**
-	 * @throws InterruptedException
-	 */
-	/**
-	 * @throws InterruptedException
-	 */
 	@Test
 	public void softSynchronization_ShouldMarkSmartcommit() throws InterruptedException
 	{

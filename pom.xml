@@ -122,12 +122,12 @@
         </dependency>
     </dependencies>
     <profiles>
-    	<profile>
-    		<id>jira5</id>
-				<properties>
-					<jira.version>5.0</jira.version>
-            		<jira.data.version>5.0</jira.data.version>
-				</properties>
-    	</profile>
+        <profile>
+            <id>jira5</id>
+            <properties>
+                <jira.version>5.0</jira.version>
+                <jira.data.version>5.0</jira.data.version>
+            </properties>
+        </profile>
     </profiles>
 </project>

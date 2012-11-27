@@ -70,7 +70,6 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
         for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-orgdata-container"))) {
 
-        	// orgContainer.find(By.className("dvcs-org-container")).click();
         	 Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-org-container")).timed().isVisible());
 
              list.add(pageBinder.bind(BitBucketOrganization.class, orgContainer));
@@ -91,46 +90,6 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     	return this;
     }
-
-    /**
-     * Whether a repository is currently linked to a given project
-     *
-     * @param projectKey The JIRA project key
-     * @param url        The repository url
-     * @return True if repository is linked, false otherwise
-     */
-   /* public boolean isRepositoryPresent(String projectKey, String url)
-    {
-        boolean commitFound = false;
-        for (BitBucketRepository repo : getRepositories())
-        {
-            if (repo.getProjectKey().equals(projectKey) && repo.getUrl().equals(url))
-            {
-                commitFound = true;
-                break;
-            }
-        }
-
-        return commitFound;
-    }*/
-
-    /**
-     * @param matcher
-     */
-//    public void assertThatSyncMessage(Matcher<String> matcher)
-//    {
-//        Poller.waitUntil(syncStatusDiv.timed().getText(), matcher);
-//    }
-
-//    public void assertThatSuccessMessage(Matcher<String> matcher)
-//    {
-//        Poller.waitUntil(messageBarDiv.find(By.className("success")).timed().getText(), matcher);
-//    }
-
-//    public void assertThatWarningMessage(Matcher<String> matcher)
-//    {
-//        Poller.waitUntil(messageBarDiv.find(By.className("warning")).timed().getText(), matcher);
-//    }
 
     public void assertThatErrorMessage(Matcher<String> matcher)
     {
