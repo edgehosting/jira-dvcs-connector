@@ -24,12 +24,8 @@ import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -41,6 +37,10 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.sal.api.net.ResponseException;
 
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import static org.fest.assertions.api.Assertions.*;
 
 
@@ -48,7 +48,6 @@ import static org.fest.assertions.api.Assertions.*;
  * @author Martin Skurla
  * @author Miroslav Stencel mstencel@atlassian.com
  */
-@RunWith(MockitoJUnitRunner.class)
 public class GithubCommunicatorTest
 {
 	@Mock
@@ -85,8 +84,13 @@ public class GithubCommunicatorTest
             cache.add(node);
         }
 	}
+
+    @BeforeClass
+    public void initializeMocks() {
+        MockitoAnnotations.initMocks(this);
+    }
 	
-	@Before
+	@BeforeMethod
 	public void initializeGithubCommunicator()
     {
         communicator = new GithubCommunicator(changesetCache = new ChangesetCacheImpl(), mock(GithubOAuth.class), githubClientProvider);

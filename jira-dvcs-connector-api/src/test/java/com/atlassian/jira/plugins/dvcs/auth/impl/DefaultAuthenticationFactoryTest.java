@@ -5,10 +5,11 @@ import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -16,7 +17,6 @@ import static org.mockito.Mockito.*;
 /**
  * @author Martin Skurla
  */
-@RunWith(MockitoJUnitRunner.class)
 public final class DefaultAuthenticationFactoryTest {
 
     @Mock
@@ -27,6 +27,12 @@ public final class DefaultAuthenticationFactoryTest {
 
     @Mock
     private Encryptor  encryptorMock;
+
+
+    @BeforeClass
+    public void initializeMocks() {
+        MockitoAnnotations.initMocks(this);
+    }
 
 
     @Test

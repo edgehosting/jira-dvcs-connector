@@ -5,9 +5,9 @@ import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
@@ -55,13 +55,13 @@ public class RepositoryLinkRemoteRestpointTest
     }
 
 
-    @Test(timeout=5000)
+    @Test(timeOut=5000)
     public void gettingRepositoryLinks_ShouldNotThrowException()
     {
         repositoryLinkREST.getRepositoryLinks(BITBUCKET_REPO_OWNER, BITBUCKET_REPO_SLUG);
     }
 
-    @Test(timeout=5000)
+    @Test(timeOut=5000)
     public void afterAddingRepositoryLink_ShouldBeAbleToQueryTheRepositoryLinkById()
     {
         // needed because you cannot add repository link with the same KEY multiple times => 400 status code
@@ -82,7 +82,7 @@ public class RepositoryLinkRemoteRestpointTest
         assertThat(addedRepositoryLink.getHandler()).isEqualsToByComparingFields(queriedRepositoryLink.getHandler());
     }
     
-    @Test(timeout=5000)
+    @Test(timeOut=5000)
     public void removingAlreadyAddedRepositoryLink_ShouldNotThrowException()
     {
         // needed because you cannot add repository link with the same KEY multiple times => 400 status code
