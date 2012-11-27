@@ -1,11 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.github;
 
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -14,7 +11,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -46,6 +42,8 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.sal.api.net.ResponseException;
+
+import static org.fest.assertions.api.Assertions.*;
 
 
 /**
@@ -120,9 +118,9 @@ public class GithubCommunicatorTest
         
         DvcsUser githubUser = communicator.getUser(repositoryMock, "USER-NAME");
         
-        assertThat(githubUser.getAvatar(), is("https://secure.gravatar.com/avatar/gravatarId?s=60"));
-        assertThat(githubUser.getUsername(), is("Test GitHub user login"));
-        assertThat(githubUser.getFullName(), is("Test GitHub user name"));
+        assertThat(githubUser.getAvatar())  .isEqualTo("https://secure.gravatar.com/avatar/gravatarId?s=60");
+        assertThat(githubUser.getUsername()).isEqualTo("Test GitHub user login");
+        assertThat(githubUser.getFullName()).isEqualTo("Test GitHub user name");
     }
 
     @Test
@@ -141,13 +139,13 @@ public class GithubCommunicatorTest
         
         verify(commitService).getCommit(Matchers.<IRepositoryIdProvider>anyObject(),anyString());
 
-        assertThat(detailChangeset.getMessage(), is("ABC-123 fix"));
+        assertThat(detailChangeset.getMessage()).isEqualTo("ABC-123 fix");
     }
     
     @Test
     public void getChangesets_noBranches()
     {
-     // Repository
+        // Repository
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         
@@ -196,7 +194,7 @@ public class GithubCommunicatorTest
             }
         }
         
-        assertThat(changesetCounter, is(5));
+        assertThat(changesetCounter).isEqualTo(5);
     }
     
     @Test
@@ -290,8 +288,8 @@ public class GithubCommunicatorTest
         assertTrue(changesetIterator.hasNext());
        
         Changeset detailChangeset = changesetIterator.next();
-        assertThat(detailChangeset.getBranch(), is("branch1"));
-        assertThat(detailChangeset.getNode(), is("BRANCH-SHA"));
+        assertThat(detailChangeset.getBranch()).isEqualTo("branch1");
+        assertThat(detailChangeset.getNode())  .isEqualTo("BRANCH-SHA");
     }
     
     @Test
@@ -323,7 +321,7 @@ public class GithubCommunicatorTest
             changesetIterator.hasNext();
         }
         
-        assertThat(changesetCounter, is(5));
+        assertThat(changesetCounter).isEqualTo(5);
     }
     
     @Test
@@ -346,7 +344,7 @@ public class GithubCommunicatorTest
             changesetCache.add(changeset.getNode());
             changesetCounter++;
         }
-        assertThat(changesetCounter, is(3));
+        assertThat(changesetCounter).isEqualTo(3);
     }
     
     @Test
@@ -366,7 +364,7 @@ public class GithubCommunicatorTest
             changesetCache.add(changeset.getNode());
             changesetCounter++;
         }
-        assertThat(changesetCounter, is(15));
+        assertThat(changesetCounter).isEqualTo(15);
     }
     
     private void createBranchWithTwoNodes(RepositoryId repositoryId) throws IOException

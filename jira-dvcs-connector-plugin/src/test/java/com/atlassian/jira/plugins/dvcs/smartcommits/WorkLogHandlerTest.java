@@ -1,9 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-import static org.mockito.Matchers.*;
+import java.util.Arrays;
 import static org.mockito.Mockito.*;
 
-import org.fest.util.Collections;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +49,7 @@ public class WorkLogHandlerTest
 
         MutableIssue sampleIssue = sampleIssue();
        
-        handler.handle(sampleUser(), sampleIssue, "time", Collections.list("1h 44m"));
+        handler.handle(sampleUser(), sampleIssue, "time", Arrays.asList("1h 44m"));
 
         verify(worklogService).validateCreate(any(JiraServiceContext.class), worklogParamsCaptor.capture());
 
@@ -67,7 +66,7 @@ public class WorkLogHandlerTest
 
         MutableIssue sampleIssue = sampleIssue();
        
-        handler.handle(sampleUser(), sampleIssue, "time", Collections.list("2w 3d 1h 44m   Total work logged in !!!  "));
+        handler.handle(sampleUser(), sampleIssue, "time", Arrays.asList("2w 3d 1h 44m   Total work logged in !!!  "));
 
         verify(worklogService).validateCreate(any(JiraServiceContext.class), worklogParamsCaptor.capture());
 
