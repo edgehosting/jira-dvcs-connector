@@ -38,7 +38,6 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.sal.api.net.ResponseException;
 
 import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import static org.fest.assertions.api.Assertions.*;
@@ -85,14 +84,11 @@ public class GithubCommunicatorTest
         }
 	}
 
-    @BeforeClass
-    public void initializeMocks() {
-        MockitoAnnotations.initMocks(this);
-    }
-	
 	@BeforeMethod
-	public void initializeGithubCommunicator()
+	public void initializeMocksAndGithubCommunicator()
     {
+        MockitoAnnotations.initMocks(this);
+
         communicator = new GithubCommunicator(changesetCache = new ChangesetCacheImpl(), mock(GithubOAuth.class), githubClientProvider);
         when(githubClientProvider.getRepositoryService(repositoryMock)).thenReturn(repositoryService);
         when(githubClientProvider.getUserService(repositoryMock)).thenReturn(userService);

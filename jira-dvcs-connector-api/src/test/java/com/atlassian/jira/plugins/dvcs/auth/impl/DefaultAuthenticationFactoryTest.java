@@ -8,7 +8,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.fest.assertions.api.Assertions.*;
@@ -29,7 +29,7 @@ public final class DefaultAuthenticationFactoryTest {
     private Encryptor  encryptorMock;
 
 
-    @BeforeClass
+    @BeforeMethod
     public void initializeMocks() {
         MockitoAnnotations.initMocks(this);
     }
