@@ -92,7 +92,7 @@ public class BitbucketIntegratedApplicationsPage implements Page
         List<PageElement> all = consumersConfg.findAll(By.tagName("a"));
         for (PageElement pageElement : all)
         {
-            if ("#add-consumer".equals(pageElement.getAttribute("href"))) {
+            if (pageElement.getAttribute("href").endsWith("#add-consumer")) {
                 return pageElement;
             }
         }
@@ -112,7 +112,8 @@ public class BitbucketIntegratedApplicationsPage implements Page
             if (oauthConsumerNameSpan.isPresent() && // first row is table head not containing span
                 oauthConsumerNameSpan.getText().equals(lastAddedConsumerName))
             {
-                PageElement deleteConsumerButton = PageElementUtils.findTagWithAttribute(oauthConsumerRow, "a", "href", "#delete");
+                PageElement deleteConsumerButton =
+                        PageElementUtils.findTagWithAttributeValueEndingWith(oauthConsumerRow, "a", "href", "#delete");
                 deleteConsumerButton.click();
                 break;
             }

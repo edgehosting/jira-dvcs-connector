@@ -32,10 +32,10 @@ public class JiraViewProjectsPage implements Page
 
     public void deleteProject(String projectNameAndKey)
     {
-        PageElement jiraProjectRow = PageElementUtils.findTagWithAttribute(projectListTable,
-                                                                           "tr",
-                                                                           "data-project-key",
-                                                                           projectNameAndKey);
+        PageElement jiraProjectRow = PageElementUtils.findTagWithAttributeValue(projectListTable,
+                                                                                "tr",
+                                                                                "data-project-key",
+                                                                                projectNameAndKey);
 
         if (jiraProjectRow != null && jiraProjectRow.isPresent())
         {
