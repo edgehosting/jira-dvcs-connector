@@ -62,6 +62,12 @@
             <artifactId>jira-func-tests</artifactId>
             <version>${jira.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>junit-dep</artifactId>
+                    <groupId>junit</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.atlassian.crowd</groupId>
@@ -75,6 +81,12 @@
             <artifactId>atlassian-webdriver-jira</artifactId>
             <version>2.1.0.m3</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>junit</artifactId>
+                    <groupId>junit</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
