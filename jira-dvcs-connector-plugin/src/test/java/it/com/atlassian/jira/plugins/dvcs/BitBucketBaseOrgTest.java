@@ -18,10 +18,10 @@ import org.testng.annotations.BeforeMethod;
 /**
  * Base class for BitBucket integration tests. Initializes the JiraTestedProduct and logs admin in.
  */
-public abstract class BitBucketBaseOrgTest
+public abstract class BitBucketBaseOrgTest<T extends BaseConfigureOrganizationsPage>
 {
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
-    protected BaseConfigureOrganizationsPage configureOrganizations;
+    protected T configureOrganizations;
 
     public static class AnotherLoginPage extends JiraLoginPage
     {
@@ -46,17 +46,16 @@ public abstract class BitBucketBaseOrgTest
         }
     }
 
-    @SuppressWarnings("unchecked")
     @BeforeMethod
     public void loginToJira()
     {
-        configureOrganizations = (BaseConfigureOrganizationsPage) jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(getPageClass());
+        jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(getConfigureOrganizationsPageClass());
+        configureOrganizations = jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.setJiraTestedProduct(jira);
         configureOrganizations.deleteAllOrganizations();
     }
 
-    @SuppressWarnings("rawtypes")
-    protected abstract Class getPageClass();
+    protected abstract Class<T> getConfigureOrganizationsPageClass();
 
     @AfterMethod
     public void logout()
@@ -79,7 +78,7 @@ public abstract class BitBucketBaseOrgTest
 
     protected BaseConfigureOrganizationsPage goToConfigPage()
     {
-        configureOrganizations = (BaseConfigureOrganizationsPage) jira.visit(getPageClass());
+        configureOrganizations = jira.visit(getConfigureOrganizationsPageClass());
         configureOrganizations.setJiraTestedProduct(jira);
         return configureOrganizations;
     }

@@ -30,7 +30,7 @@ import org.testng.annotations.Test;
 /**
  * @author Miroslav Stencel
  */
-public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
+public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigureOrganizationsPage>
 {
     private static final String GITHUB_URL = "api.github.com";
     private static final String GITHUB_REPO_OWNER = "dvcsconnectortest";
@@ -198,7 +198,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
 
 
     @Override
-    protected Class getPageClass()
+    protected Class<GithubConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return GithubConfigureOrganizationsPage.class;
     }

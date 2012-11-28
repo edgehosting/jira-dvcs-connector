@@ -52,7 +52,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         String githubWebLoginRedirectUrl = authorizeGithubAppIfRequired();
 
-        if (!githubWebLoginRedirectUrl.contains("/jira/"))
+        if (!githubWebLoginRedirectUrl.contains("jira"))
         {
             throw new AssertionError("Expected was Valid OAuth login and redirect to JIRA!");
         }

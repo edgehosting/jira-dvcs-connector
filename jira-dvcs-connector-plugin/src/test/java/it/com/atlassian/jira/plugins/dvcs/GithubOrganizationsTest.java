@@ -36,7 +36,7 @@ import org.testng.annotations.Test;
 /**
  * Test to verify behaviour when syncing  github repository.
  */
-public class GithubOrganizationsTest extends BitBucketBaseOrgTest
+public class GithubOrganizationsTest extends BitBucketBaseOrgTest<GithubConfigureOrganizationsPage>
 {
 
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
@@ -73,7 +73,8 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
         ghLoginPage.doLogout();
 
-        GithubOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(GithubOAuthConfigPage.class);
+        jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(GithubOAuthConfigPage.class);
+        GithubOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(GithubOAuthConfigPage.class);
         oauthConfigPage.setCredentials(clientID, clientSecret);
 
         // logout jira
@@ -121,9 +122,8 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         configureOrganizations.deleteAllOrganizations();
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    protected Class getPageClass()
+    protected Class<GithubConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return GithubConfigureOrganizationsPage.class;
     }

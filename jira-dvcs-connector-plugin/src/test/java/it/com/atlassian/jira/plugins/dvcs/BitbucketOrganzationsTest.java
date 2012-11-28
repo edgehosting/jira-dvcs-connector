@@ -34,7 +34,7 @@ import static org.fest.assertions.api.Assertions.*;
 /**
  * Test to verify behaviour when syncing bitbucket repository..
  */
-public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
+public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketConfigureOrganizationsPage>
 {
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
     private static final String TEST_NOT_EXISTING_URL = "https://privatebitbucket.org/someaccount";
@@ -45,7 +45,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 
 
     @Override
-    protected Class<BitBucketConfigureOrganizationsPage> getPageClass()
+    protected Class<BitBucketConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return BitBucketConfigureOrganizationsPage.class;
     }
@@ -99,7 +99,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         // check add user extension
         jira.visit(JiraAddUserPage.class).checkPanelPresented();
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
@@ -114,7 +114,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         // first row is header row, than repos ...
         assertThat(repositoriesTable.findAll(By.tagName("tr")).size()).isGreaterThan(2);
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
@@ -126,11 +126,11 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationFailingStep1(TEST_NOT_EXISTING_URL);
 
         String errorMessage = configureOrganizations.getErrorStatusMessage();
-        assertThat(errorMessage).contains("Invalid user/team account");
+        assertThat(errorMessage).contains("is incorrect or the server is not responding");
 
         configureOrganizations.clearForm();
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
@@ -155,7 +155,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, ACCOUNT_ADMIN_LOGIN, ACCOUNT_ADMIN_PASSWORD);
         assertThat(servicesConfig).doesNotContain(syncUrl);
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
@@ -182,7 +182,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         assertThat(getCommitsForIssue("QA-2")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
@@ -216,7 +216,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+3");
         assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }

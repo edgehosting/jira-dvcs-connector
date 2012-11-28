@@ -33,7 +33,7 @@ import org.testng.annotations.Test;
 /**
  * @author Martin Skurla
  */
-public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
+public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest<BitBucketConfigureOrganizationsPage>
 {
     private static final String BITBUCKET_REPO_OWNER = "dvcsconnectortest";
     private static final String BITBUCKET_REPO_PASSWORD = PasswordUtil.getPassword("dvcsconnectortest");
@@ -179,7 +179,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
 
 
     @Override
-    protected Class getPageClass()
+    protected Class<BitBucketConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return BitBucketConfigureOrganizationsPage.class;
     }
