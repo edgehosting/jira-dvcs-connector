@@ -5,9 +5,10 @@ import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
-import junit.framework.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+
+import static org.fest.assertions.api.Assertions.*;
 
 /**
  *
@@ -32,7 +33,6 @@ public class DashboardActivityStreamsPage implements Page
     @Override
     public String getUrl()
     {
-//        return "/secure/Dashboard.jspa";
         return "/secure/admin/EditDefaultDashboard!default.jspa";
     }
 
@@ -62,7 +62,7 @@ public class DashboardActivityStreamsPage implements Page
     }
 
     private void showFilter(){
-        Assert.assertTrue(filterIconElm.isVisible());
+        assertThat(filterIconElm.isVisible()).isTrue();
         filterIconElm.click();
     }
 

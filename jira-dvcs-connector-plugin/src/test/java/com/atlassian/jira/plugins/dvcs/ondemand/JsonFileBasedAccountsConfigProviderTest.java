@@ -5,28 +5,28 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import static org.mockito.Mockito.*;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountInfo;
 
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import static org.fest.assertions.api.Assertions.*;
 
 
-@RunWith(MockitoJUnitRunner.class)
 public class JsonFileBasedAccountsConfigProviderTest
 {
     @Mock
     private FeatureManager featureManager;
     
-    @Before
+    @BeforeMethod
     public void setUp()
     {
+        MockitoAnnotations.initMocks(this);
+
         when(featureManager.isEnabled(isA(CoreFeatures.class))).thenReturn(Boolean.TRUE);
     }
     

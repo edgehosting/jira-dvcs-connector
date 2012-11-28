@@ -9,9 +9,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
@@ -28,6 +25,10 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Basic
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.plugin.util.zip.FileUnzipper;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  * @author Martin Skurla
@@ -58,7 +59,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
     }
 
 
-    @Before
+    @BeforeMethod
     public void prepareHgRepositoryAndJiraProjectWithIssue()
     {
         removeHgRepositoryAndJiraProject();

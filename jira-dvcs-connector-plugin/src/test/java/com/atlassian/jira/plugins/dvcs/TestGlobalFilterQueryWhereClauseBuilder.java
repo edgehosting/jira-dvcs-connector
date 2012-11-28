@@ -2,11 +2,10 @@ package com.atlassian.jira.plugins.dvcs;
 
 import java.util.Arrays;
 
-import org.junit.Test;
-
 import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 
+import org.testng.annotations.Test;
 import static org.fest.assertions.api.Assertions.*;
 
 /**

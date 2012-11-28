@@ -1,16 +1,17 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import static junit.framework.Assert.*;
-
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.junit.Test;
 
 import com.atlassian.jira.plugins.dvcs.RestUrlBuilder;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.UniformInterfaceException;
+
+import org.testng.annotations.Test;
+
+import static org.fest.assertions.api.Assertions.*;
 
 public class TestAccountInfoDetection
 {
@@ -28,7 +29,7 @@ public class TestAccountInfoDetection
             .accept(MediaType.APPLICATION_XML_TYPE)
             .get(AccountInfo.class);
         
-        assertEquals("bitbucket", accountInfo.getDvcsType());
+        assertThat(accountInfo.getDvcsType()).isEqualTo("bitbucket");
     }
 
     @Test
@@ -49,7 +50,7 @@ public class TestAccountInfoDetection
             fail("Expected 404 Not found");
         } catch (UniformInterfaceException e)
         {
-            assertEquals("Expecting 404 Not found",HttpStatus.SC_NOT_FOUND, e.getResponse().getStatus());
+            assertThat(e.getResponse().getStatus()).isEqualTo(HttpStatus.SC_NOT_FOUND);
         }
 
     }
@@ -67,7 +68,7 @@ public class TestAccountInfoDetection
             .accept(MediaType.APPLICATION_XML_TYPE)
             .get(AccountInfo.class);
 
-        assertEquals("github", accountInfo.getDvcsType());
+        assertThat(accountInfo.getDvcsType()).isEqualTo("github");
     }
 
     @Test
@@ -87,7 +88,7 @@ public class TestAccountInfoDetection
             fail("Expected 404 Not found");
         } catch (UniformInterfaceException e)
         {
-            assertEquals("Expecting 404 Not found",HttpStatus.SC_NOT_FOUND, e.getResponse().getStatus());
+            assertThat(e.getResponse().getStatus()).isEqualTo(HttpStatus.SC_NOT_FOUND);
         }
     }
 

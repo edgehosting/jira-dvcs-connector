@@ -2,17 +2,19 @@ package it.com.atlassian.jira.plugins.dvcs;
 
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
 import org.openqa.selenium.By;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.webdriver.jira.JiraTestedProduct;
 import com.atlassian.webdriver.jira.page.JiraLoginPage;
+
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 
 /**
  * Base class for BitBucket integration tests. Initializes the JiraTestedProduct and logs admin in.
@@ -46,7 +48,7 @@ public abstract class BitBucketBaseOrgTest
     }
 
     @SuppressWarnings("unchecked")
-    @Before
+    @BeforeMethod
     public void loginToJira()
     {
         configureOrganizations = (BaseConfigureOrganizationsPage) jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(getPageClass());
@@ -57,7 +59,7 @@ public abstract class BitBucketBaseOrgTest
     @SuppressWarnings("rawtypes")
     protected abstract Class getPageClass();
 
-    @After
+    @AfterMethod
     public void logout()
     {
         jira.getTester().getDriver().manage().deleteAllCookies();

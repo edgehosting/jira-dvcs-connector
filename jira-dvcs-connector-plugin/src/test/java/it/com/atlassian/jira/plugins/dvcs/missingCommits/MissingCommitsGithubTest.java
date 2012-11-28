@@ -10,9 +10,6 @@ import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.egit.github.core.client.GitHubClient;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
@@ -25,6 +22,10 @@ import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteR
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.plugin.util.zip.FileUnzipper;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  * @author Miroslav Stencel
@@ -55,7 +56,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
     }
 
 
-    @Before
+    @BeforeMethod
     public void prepareGitRepositoryAndJiraProjectWithIssue()
     {
         removeGitRepositoryAndJiraProject();

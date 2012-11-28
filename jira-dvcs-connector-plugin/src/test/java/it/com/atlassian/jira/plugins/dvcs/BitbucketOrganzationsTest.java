@@ -10,8 +10,6 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.junit.Before;
-import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
@@ -28,6 +26,8 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
 
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.*;
 import static org.fest.assertions.api.Assertions.*;
 
@@ -51,7 +51,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     }
 
 
-    @Before
+    @BeforeMethod
     public void removeExistingPostCommitHooks()
     {
         Set<String> extractedBitbucketServiceIds = extractBitbucketServiceIdsToRemove();

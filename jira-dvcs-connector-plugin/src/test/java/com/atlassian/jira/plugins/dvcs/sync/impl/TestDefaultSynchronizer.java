@@ -6,12 +6,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.Executors;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -23,12 +20,14 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProces
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import static org.fest.assertions.api.Assertions.*;
 
 /**
  * @author Martin Skurla
  */
-@RunWith(MockitoJUnitRunner.class)
 public final class TestDefaultSynchronizer
 {
 	@Mock
@@ -50,6 +49,12 @@ public final class TestDefaultSynchronizer
 	private final Changeset changesetWithJIRAIssue = new Changeset(123, "node", "message MES-123 text", new Date());
 	private final Changeset changesetWithoutJIRAIssue = new Changeset(123, "node", "message without JIRA issue",
 			new Date());
+
+    @BeforeMethod
+    private void initializeMocks()
+    {
+        MockitoAnnotations.initMocks(this);
+    }
 
 	@Test
 	public void softSynchronization_ShouldSaveOneChangesetWithIssueKey() throws InterruptedException

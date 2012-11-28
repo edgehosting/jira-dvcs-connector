@@ -3,14 +3,10 @@ package com.atlassian.jira.plugins.dvcs.smartcommits;
 import java.util.Arrays;
 import static org.mockito.Mockito.*;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.JiraServiceContext;
@@ -19,9 +15,11 @@ import com.atlassian.jira.bc.issue.worklog.WorklogService;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler;
 
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import static org.fest.assertions.api.Assertions.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class WorkLogHandlerTest
 {
 
@@ -38,9 +36,11 @@ public class WorkLogHandlerTest
         super();
     }
 
-    @Before
+    @BeforeMethod
     public void setUp()
     {
+        MockitoAnnotations.initMocks(this);
+
         handler = new WorkLogHandler(worklogService);
     }
 
