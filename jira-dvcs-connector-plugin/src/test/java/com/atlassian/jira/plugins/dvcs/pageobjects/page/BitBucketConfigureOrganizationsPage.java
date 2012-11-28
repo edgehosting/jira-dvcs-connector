@@ -41,6 +41,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         Poller.waitUntilFalse(atlassianTokenMeta.timed().isPresent());
         pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grantAccess();
+        Poller.waitUntilTrue(atlassianTokenMeta.timed().isPresent());
 
         if (autoSync)
         {
