@@ -28,7 +28,7 @@ public class GithubRegisteredOAuthAppsPage implements Page
     	
     	List<PageElement> applications = pageBodyElm.findAll(By.cssSelector("li.linked-item a"));
     	PageElement lastApplication = applications.get(applications.size() - 1);
-    	oauthAppUrl = "https://github.com" + lastApplication.getAttribute("href");
+    	oauthAppUrl = lastApplication.getAttribute("href");
 
     }
 

@@ -21,8 +21,8 @@ public class JiraAddProjectPage implements Page
     @ElementBy(id = "add-project-submit")
     PageElement addProjectButton;
 
-    @Inject
-    AtlassianWebDriver atlassianWebDriver;
+//    @Inject
+//    AtlassianWebDriver atlassianWebDriver;
 
     @Override
     public String getUrl()

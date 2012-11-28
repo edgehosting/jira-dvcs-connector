@@ -4,7 +4,7 @@ import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.webdriver.jira.JiraTestedProduct;
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -75,7 +75,7 @@ public class DashboardActivityStreamsPage implements Page
         addFilterLinkElm.click();
 
         WebElement ruleSelectkElm = jira.getTester().getDriver().findElement(By.className("rule"));
-        ruleSelectkElm.findElement(By.xpath("//option[text() = 'JIRA Issue Key']")).setSelected();
+        ruleSelectkElm.findElement(By.xpath("//option[text() = 'JIRA Issue Key']")).click();
 
 
         WebElement issueKeyInputElm = jira.getTester().getDriver().findElement(By.name("streams-issue-key-is"));

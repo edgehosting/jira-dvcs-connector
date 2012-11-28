@@ -12,8 +12,8 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.DashboardActivityStreamsPage;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.page.LoginPage;
-import com.atlassian.webdriver.jira.JiraTestedProduct;
-import com.atlassian.webdriver.jira.page.DashboardPage;
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.pageobjects.pages.DashboardPage;
 
 import org.testng.annotations.Test;
 
@@ -57,7 +57,7 @@ public class ActivityStreamsTest
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + "/secure/admin/AddPermission!default.jspa?schemeId=0&permissions=10");
         jira.getTester().getDriver().waitUntilElementIsVisible(By.id("type_group"));
         jira.getTester().getDriver().waitUntilElementIsVisible(By.id("add_submit"));
-        jira.getTester().getDriver().findElement(By.id("type_group")).setSelected();
+        jira.getTester().getDriver().findElement(By.id("type_group")).click();
         jira.getTester().getDriver().findElement(By.id("add_submit")).click();
     }
 

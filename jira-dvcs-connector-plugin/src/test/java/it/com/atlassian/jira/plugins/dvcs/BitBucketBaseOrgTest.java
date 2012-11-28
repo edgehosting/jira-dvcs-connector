@@ -8,10 +8,9 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntr
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
-import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
-import com.atlassian.webdriver.jira.JiraTestedProduct;
-import com.atlassian.webdriver.jira.page.JiraLoginPage;
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.pageobjects.pages.JiraLoginPage;
 
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;

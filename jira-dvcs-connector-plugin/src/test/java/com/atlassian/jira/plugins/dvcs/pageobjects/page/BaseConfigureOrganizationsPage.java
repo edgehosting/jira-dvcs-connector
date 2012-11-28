@@ -17,7 +17,7 @@ import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.webdriver.jira.JiraTestedProduct;
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 
 /**
  * Represents the page to link repositories to projects
