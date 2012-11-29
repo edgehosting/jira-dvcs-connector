@@ -1,6 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.pageobjects.components.JiraHeader;
+import com.atlassian.jira.pageobjects.dialogs.quickedit.CreateIssueDialog;
+import com.atlassian.jira.pageobjects.pages.DashboardPage;
 import com.atlassian.jira.pageobjects.project.AddProjectDialog;
 import com.atlassian.jira.pageobjects.project.DeleteProjectPage;
 import com.atlassian.jira.pageobjects.project.ViewProjectsPage;
@@ -36,5 +39,15 @@ public class JiraPageUtils
 
         AddProjectDialog addProjectDialog = viewProjectsPage.openCreateProjectDialog();
         addProjectDialog.createProjectSuccess(projectKey, projectName, null); // no leader
+    }
+
+    public static void createIssue(JiraTestedProduct jira, String projectName)
+    {
+        JiraHeader jiraHeader = jira.getPageBinder().navigateToAndBind(DashboardPage.class).getHeader();
+        CreateIssueDialog createIssueDialog = jiraHeader.createIssue();
+
+        createIssueDialog.selectProject(projectName);
+        createIssueDialog.fill("summary", "Missing commits fix demonstration");
+        createIssueDialog.submit(DashboardPage.class);
     }
 }

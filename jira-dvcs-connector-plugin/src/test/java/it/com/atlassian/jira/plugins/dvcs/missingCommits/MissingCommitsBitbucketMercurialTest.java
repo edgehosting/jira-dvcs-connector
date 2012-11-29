@@ -14,7 +14,6 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrgani
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
@@ -84,7 +83,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest<B
         bitbucketRepositoriesREST.createHgRepository(MISSING_COMMITS_REPOSITORY_NAME);
 
         JiraPageUtils.createProject(jira, JIRA_PROJECT_NAME_AND_KEY, JIRA_PROJECT_NAME_AND_KEY);
-        jira.getPageBinder().navigateToAndBind(JiraAddIssuePage.class).createIssue();
+        JiraPageUtils.createIssue(jira, JIRA_PROJECT_NAME_AND_KEY);
     }
 
     private void loginToBitbucketAndSetJiraOAuthCredentials()

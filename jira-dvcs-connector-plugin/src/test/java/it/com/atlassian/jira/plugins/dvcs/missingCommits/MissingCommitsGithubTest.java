@@ -15,7 +15,6 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizat
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
@@ -77,7 +76,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
         githubRepositoriesREST.createGithubRepository(MISSING_COMMITS_REPOSITORY_NAME);
 
         JiraPageUtils.createProject(jira, JIRA_PROJECT_NAME_AND_KEY, JIRA_PROJECT_NAME_AND_KEY);
-        jira.getPageBinder().navigateToAndBind(JiraAddIssuePage.class).createIssue();
+        JiraPageUtils.createIssue(jira, JIRA_PROJECT_NAME_AND_KEY);
     }
 
     private void loginToGithubAndSetJiraOAuthCredentials()

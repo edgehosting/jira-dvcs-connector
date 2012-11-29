@@ -3,10 +3,6 @@ package com.atlassian.jira.plugins.dvcs.util;
 import org.openqa.selenium.By;
 
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.webdriver.AtlassianWebDriver;
-import com.google.common.base.Function;
-
-import org.openqa.selenium.WebDriver;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com
@@ -56,29 +52,5 @@ public final class PageElementUtils
         }
 
         return null;
-    }
-
-    public static void waitUntilPageUrlDoesNotContain(AtlassianWebDriver webDriver, final String urlPart)//TODO remove
-    {
-        webDriver.waitUntil(new WebdriverPageUrlContainsPredicate(urlPart, false));
-    }
-
-    private static final class WebdriverPageUrlContainsPredicate implements Function<WebDriver, Boolean>
-    {
-        private final String urlPart;
-        private final boolean contains; // contains or does not contain
-
-        private WebdriverPageUrlContainsPredicate(String urlPart, boolean contains)
-        {
-            this.urlPart  = urlPart;
-            this.contains = contains;
-        }
-
-        @Override
-        public Boolean apply(WebDriver webDriver)
-        {
-            return contains ?  webDriver.getCurrentUrl().contains(urlPart)
-                            : !webDriver.getCurrentUrl().contains(urlPart);
-        }
     }
 }
