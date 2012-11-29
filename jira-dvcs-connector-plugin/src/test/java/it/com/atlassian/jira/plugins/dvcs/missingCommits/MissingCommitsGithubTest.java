@@ -17,7 +17,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddProjectPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewProjectsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
@@ -67,7 +67,10 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
     {
         githubRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME, GITHUB_REPO_OWNER);
 
-        jira.getPageBinder().navigateToAndBind(JiraViewProjectsPage.class).deleteProject(JIRA_PROJECT_NAME_AND_KEY);
+        if (JiraPageUtils.jiraProjectExists(jira, JIRA_PROJECT_NAME_AND_KEY))
+        {
+            JiraPageUtils.deleteProject(jira, JIRA_PROJECT_NAME_AND_KEY);
+        }
     }
 
     private void createGitRepositoryAndJiraProjectWithIssue()

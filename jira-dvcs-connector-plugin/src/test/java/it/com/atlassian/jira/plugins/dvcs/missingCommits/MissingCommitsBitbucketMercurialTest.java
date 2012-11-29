@@ -16,7 +16,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddProjectPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewProjectsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
@@ -74,8 +74,10 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest<B
         }
         catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
 
-
-        jira.getPageBinder().navigateToAndBind(JiraViewProjectsPage.class).deleteProject(JIRA_PROJECT_NAME_AND_KEY);
+        if (JiraPageUtils.jiraProjectExists(jira, JIRA_PROJECT_NAME_AND_KEY))
+        {
+            JiraPageUtils.deleteProject(jira, JIRA_PROJECT_NAME_AND_KEY);
+        }
     }
 
     private void createHgRepositoryAndJiraProjectWithIssue()

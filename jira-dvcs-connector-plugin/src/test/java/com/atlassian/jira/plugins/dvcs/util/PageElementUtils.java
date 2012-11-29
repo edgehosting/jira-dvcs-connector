@@ -58,27 +58,9 @@ public final class PageElementUtils
         return null;
     }
 
-    public static PageElement findTagWithText(PageElement sourceElement, String tagName, String expectedTagText)
-    {
-        for (PageElement tag : sourceElement.findAll(By.tagName(tagName)))
-        {
-            if (expectedTagText.equals(tag.getText()))
-            {
-                return tag;
-            }
-        }
-
-        return null;
-    }
-
     public static void waitUntilPageUrlDoesNotContain(AtlassianWebDriver webDriver, final String urlPart)//TODO remove
     {
         webDriver.waitUntil(new WebdriverPageUrlContainsPredicate(urlPart, false));
-    }
-
-    public static void waitUntilPageUrlContains(AtlassianWebDriver webDriver, String urlPart)
-    {
-        webDriver.waitUntil(new WebdriverPageUrlContainsPredicate(urlPart, true));
     }
 
     private static final class WebdriverPageUrlContainsPredicate implements Function<WebDriver, Boolean>
