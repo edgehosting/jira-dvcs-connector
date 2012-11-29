@@ -16,7 +16,6 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddIssuePage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddProjectPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
@@ -67,7 +66,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
     {
         githubRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME, GITHUB_REPO_OWNER);
 
-        if (JiraPageUtils.jiraProjectExists(jira, JIRA_PROJECT_NAME_AND_KEY))
+        if (JiraPageUtils.projectExists(jira, JIRA_PROJECT_NAME_AND_KEY))
         {
             JiraPageUtils.deleteProject(jira, JIRA_PROJECT_NAME_AND_KEY);
         }
@@ -77,7 +76,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
     {
         githubRepositoriesREST.createGithubRepository(MISSING_COMMITS_REPOSITORY_NAME);
 
-        jira.getPageBinder().navigateToAndBind(JiraAddProjectPage.class).createProject(JIRA_PROJECT_NAME_AND_KEY);
+        JiraPageUtils.createProject(jira, JIRA_PROJECT_NAME_AND_KEY, JIRA_PROJECT_NAME_AND_KEY);
         jira.getPageBinder().navigateToAndBind(JiraAddIssuePage.class).createIssue();
     }
 

@@ -57,7 +57,7 @@
             <version>2.5</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-func-tests</artifactId>
             <version>${jira.version}</version>
@@ -68,7 +68,7 @@
                     <groupId>junit</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>com.atlassian.crowd</groupId>
             <artifactId>crowd-api</artifactId>
@@ -86,10 +86,10 @@
                     <artifactId>junit</artifactId>
                     <groupId>junit</groupId>
                 </exclusion>
-                <exclusion>
+                <!--exclusion>
                     <artifactId>junit-dep</artifactId>
                     <groupId>junit</groupId>
-                </exclusion>
+                </exclusion-->
             </exclusions>
         </dependency>
         <dependency>

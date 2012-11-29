@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.pageobjects.project.AddProjectDialog;
 import com.atlassian.jira.pageobjects.project.DeleteProjectPage;
 import com.atlassian.jira.pageobjects.project.ViewProjectsPage;
 import com.atlassian.jira.pageobjects.project.summary.ProjectSummaryPageTab;
@@ -13,7 +14,7 @@ public class JiraPageUtils
     private JiraPageUtils() {}
 
 
-    public static boolean jiraProjectExists(JiraTestedProduct jira, String projectName)
+    public static boolean projectExists(JiraTestedProduct jira, String projectName)
     {
         ViewProjectsPage viewProjectsPage = jira.getPageBinder().navigateToAndBind(ViewProjectsPage.class);
 
@@ -27,5 +28,13 @@ public class JiraPageUtils
         long projectId = projectSummaryPageTab.getProjectId();
 
         jira.getPageBinder().navigateToAndBind(DeleteProjectPage.class, projectId).submitConfirm();
+    }
+
+    public static void createProject(JiraTestedProduct jira, String projectKey, String projectName)
+    {
+        ViewProjectsPage viewProjectsPage = jira.getPageBinder().navigateToAndBind(ViewProjectsPage.class);
+
+        AddProjectDialog addProjectDialog = viewProjectsPage.openCreateProjectDialog();
+        addProjectDialog.createProjectSuccess(projectKey, projectName, null); // no leader
     }
 }
