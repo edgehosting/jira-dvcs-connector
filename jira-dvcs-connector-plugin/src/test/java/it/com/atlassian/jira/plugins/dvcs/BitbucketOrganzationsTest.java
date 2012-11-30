@@ -179,8 +179,8 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
         loginToBitbucketAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
-        assertThat(getCommitsForIssue("QA-2")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
-        assertThat(getCommitsForIssue("QA-3")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-2", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-3", 2)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
 
         jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
@@ -194,16 +194,16 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
         configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         // QA-2
-        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");
-        assertThat(commitMessages).hasSize(1);
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2", 1); // throws AssertionError with other than 1 message
+
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
         assertThat(statistics).hasSize(1);
         assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
 
         // QA-3
-        commitMessages = getCommitsForIssue("QA-3");
-        assertThat(commitMessages).hasSize(2);
+        commitMessages = getCommitsForIssue("QA-3", 2); // throws AssertionError with other than 2 messages
+
         // commit 1
         commitMessage = commitMessages.get(0);
         statistics = commitMessage.getStatistics();

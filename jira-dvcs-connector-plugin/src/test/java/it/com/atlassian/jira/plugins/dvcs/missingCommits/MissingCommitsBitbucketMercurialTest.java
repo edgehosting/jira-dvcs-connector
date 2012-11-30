@@ -118,7 +118,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest<B
         loginToBitbucketAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationSuccessfully(BITBUCKET_REPO_OWNER, true);
 
-        assertThat(getCommitsForIssue("MC-1")).hasSize(3);
+        assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
 
         // repository afther the 2nd push in following state:
         // +---------------+---------+--------------------------------------------+
@@ -135,7 +135,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest<B
         simulatePostCommitHookCall();
         Thread.sleep(5000); // to catch up with soft sync
 
-        assertThat(getCommitsForIssue("MC-1")).hasSize(5);
+        assertThat(getCommitsForIssue("MC-1", 5)).hasSize(5);
     }
 
     private void pushBitbucketHgRepository(String pathToRepoZip) throws IOException, URISyntaxException, InterruptedException

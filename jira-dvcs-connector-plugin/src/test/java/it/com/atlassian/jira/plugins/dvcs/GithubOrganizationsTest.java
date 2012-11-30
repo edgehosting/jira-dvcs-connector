@@ -193,8 +193,8 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest<GithubConfigur
     {
         configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
-        assertThat(getCommitsForIssue("QA-2")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
-        assertThat(getCommitsForIssue("QA-3")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-2", 6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
 
     @Test
@@ -204,8 +204,8 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest<GithubConfigur
         configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         // QA-2
-        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3");
-        assertThat(commitMessages).hasSize(1);
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3", 1); // throws AssertionError with other than 1 message
+
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
         assertThat(statistics).hasSize(1);
@@ -213,8 +213,8 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest<GithubConfigur
         assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
 
         // QA-4
-        commitMessages = getCommitsForIssue("QA-4");
-        assertThat(commitMessages).hasSize(1);
+        commitMessages = getCommitsForIssue("QA-4", 1); // throws AssertionError with other than 1 message
+
         commitMessage = commitMessages.get(0);
         statistics = commitMessage.getStatistics();
         assertThat(statistics).hasSize(1);

@@ -64,11 +64,17 @@ public abstract class BitBucketBaseOrgTest<T extends BaseConfigureOrganizationsP
     }
 
 
-    protected List<BitBucketCommitEntry> getCommitsForIssue(String issueKey)
+    protected List<BitBucketCommitEntry> getCommitsForIssue(String issueKey, int exectedNumberOfCommits)
+    {
+        return getCommitsForIssue(issueKey, exectedNumberOfCommits, 1000L, 5);
+    }
+
+    protected List<BitBucketCommitEntry> getCommitsForIssue(String issueKey, int exectedNumberOfCommits,
+            long retryThreshold, int maxRetryCount)
     {
         return jira.visit(JiraViewIssuePage.class, issueKey)
                 .openBitBucketPanel()
-                .waitForMessages();
+                .waitForNumberOfMessages(exectedNumberOfCommits, retryThreshold, maxRetryCount);
     }
 
     protected GithubOAuthConfigPage goToGithubOAuthConfigPage()

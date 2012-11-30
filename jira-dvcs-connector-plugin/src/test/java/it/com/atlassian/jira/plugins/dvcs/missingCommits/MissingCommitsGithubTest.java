@@ -114,7 +114,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
         loginToGithubAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationSuccessfully(GITHUB_REPO_OWNER, true);
 
-        assertThat(getCommitsForIssue("MC-1")).hasSize(3);
+        assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
 
         // repository after the 2nd push in following state:
         // +-------------------+------------+--------------------------------------------+
@@ -131,7 +131,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
         simulatePostCommitHookCall();
         Thread.sleep(5000); // to catch up with soft sync
 
-        assertThat(getCommitsForIssue("MC-1")).hasSize(5);
+        assertThat(getCommitsForIssue("MC-1", 5)).hasSize(5);
     }
 
     private void pushGithubRepository(String pathToRepoZip) throws IOException, URISyntaxException, InterruptedException
