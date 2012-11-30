@@ -47,6 +47,15 @@ public class JiraPageUtils
         CreateIssueDialog createIssueDialog = jiraHeader.createIssue();
 
         createIssueDialog.selectProject(projectName);
+        try
+        {
+            Thread.sleep(1000L);
+        }
+        catch (InterruptedException e)
+        {
+            throw new IllegalStateException(e);
+        }
+
         createIssueDialog.fill("summary", "Missing commits fix demonstration");
         createIssueDialog.submit(DashboardPage.class);
     }
