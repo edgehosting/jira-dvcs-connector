@@ -199,7 +199,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         checkAndDoGithubLogin();
         String currentUrl = authorizeGithubAppIfRequired();
-        if (!currentUrl.contains("/jira/"))
+        if (!currentUrl.contains("jira"))
         {
             throw new AssertionError("Expected was automatic continue to jira!");
         }
