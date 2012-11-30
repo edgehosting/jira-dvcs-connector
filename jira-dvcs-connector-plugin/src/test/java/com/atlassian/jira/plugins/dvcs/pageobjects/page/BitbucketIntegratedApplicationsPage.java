@@ -2,39 +2,27 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
+import com.atlassian.jira.pageobjects.pages.AbstractJiraPage;
 import org.openqa.selenium.By;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitbucketAddOAuthConsumerDialog;
 import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
-import com.atlassian.pageobjects.Page;
-import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.query.Poller;
+import com.atlassian.pageobjects.elements.query.TimedCondition;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com
  */
-public class BitbucketIntegratedApplicationsPage implements Page
+public class BitbucketIntegratedApplicationsPage extends AbstractJiraPage
 {    
     public static final String PAGE_URL = "https://bitbucket.org/account/user/jirabitbucketconnector/api";
 
 
-    @Inject
-    PageBinder pageBinder;
-
     @ElementBy(id = "oauth-consumers")
     private PageElement consumersConfg;
-  
-    @ElementBy(tagName= "body")
-    private PageElement bodyElement;
-
-    @Inject
-    PageElementFinder elementFinder;
-    
+   
     private String lastAddedConsumerName;
 
 
@@ -44,17 +32,22 @@ public class BitbucketIntegratedApplicationsPage implements Page
         return PAGE_URL;
     }
 
+    @Override
+    public TimedCondition isAt() {
+        return consumersConfg.timed().isVisible();
+    }
+
 
     public OAuthCredentials addConsumer()
-    {       
+    {
         
         addConsumerButton().click();
 
         PageElement addOAuthConsumerDialogDiv = null;
         while (addOAuthConsumerDialogDiv == null)
         {
-            addOAuthConsumerDialogDiv = bodyElement.find(By.id("bb-add-consumer-dialog"));
-        }     
+            addOAuthConsumerDialogDiv = body.find(By.id("bb-add-consumer-dialog"));
+        }
 
         BitbucketAddOAuthConsumerDialog addConsumerDialog =
                 pageBinder.bind(BitbucketAddOAuthConsumerDialog.class, addOAuthConsumerDialogDiv);
@@ -118,7 +111,7 @@ public class BitbucketIntegratedApplicationsPage implements Page
                 break;
             }
         }
-    }    
+    }
 
     public static final class OAuthCredentials
     {
