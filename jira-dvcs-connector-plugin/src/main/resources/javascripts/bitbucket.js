@@ -254,6 +254,10 @@ function dvcsSubmitFormHandler() {
     		return false;
     	}
     	var dvcsHost = AJS.$("#urlSelect option:selected").text();
+    	
+    	if ( dvcsHost == "GitHub:enterprise") {
+    		alert("Please be sure that you are logged in to GitHub:enterprise");
+    	}
     	//
         AJS.messages.info({ title: "Connecting to " + dvcsHost + " to configure your account...", closeable : false});
         // set url by selected type
