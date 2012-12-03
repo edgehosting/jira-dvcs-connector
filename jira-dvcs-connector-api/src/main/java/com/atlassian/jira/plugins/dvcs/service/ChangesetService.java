@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -21,7 +21,7 @@ public interface ChangesetService
 
     void removeAllInRepository(int repositoryId);
 
-    Iterable<Changeset> getChangesetsFromDvcs(Repository repository, Date lastCommitDate);
+    Iterable<Changeset> getChangesetsFromDvcs(Repository repository);
 
     Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset);
 
@@ -44,5 +44,5 @@ public interface ChangesetService
         
     void markSmartcommitAvailability(int id, boolean available);
     
-    List<String> getOrderedProjectKeysByRepository(int repositoryId);
+    Set<String> findReferencedProjects(int repositoryId);
 }

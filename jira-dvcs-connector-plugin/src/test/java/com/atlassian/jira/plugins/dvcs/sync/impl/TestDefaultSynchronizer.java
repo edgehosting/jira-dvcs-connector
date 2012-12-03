@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -53,26 +53,24 @@ public final class TestDefaultSynchronizer
 			new Date());
 
 	@Test
-	public void softSynchronization_ShouldSaveOneChangeset() throws InterruptedException
+	public void softSynchronization_ShouldSaveOneChangesetWithIssueKey() throws InterruptedException
 	{
-		Date lastCommitDate = new Date();
-
-		when(repositoryMock.getLastCommitDate()).thenReturn(lastCommitDate);
-
-		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(lastCommitDate))).thenReturn(
+		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(
 				Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
 		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
-				mock(RepositoryService.class), changesetServiceMock, true); // soft sync
+                mock(RepositoryService.class), changesetServiceMock, true); // soft sync
 
 		Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
 		synchronizer.synchronize(repositoryMock, synchronisationOperation);
 
 		waitUntilProgressEnds(synchronizer);
-       
-		verify(changesetServiceMock, times(1)).save(savedChangesetCaptor.capture());
+       	
+		verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
         
-		assertThat(savedChangesetCaptor.getValue().getIssueKey(), is("MES-123"));
+		// one changeset is saved with issue key, another without
+		assertThat(savedChangesetCaptor.getAllValues().get(0).getIssueKey(), is("MES-123"));
+		assertThat(savedChangesetCaptor.getAllValues().get(1).getIssueKey(), is("NON_EXISTING-0"));
 	}
     
 	private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException

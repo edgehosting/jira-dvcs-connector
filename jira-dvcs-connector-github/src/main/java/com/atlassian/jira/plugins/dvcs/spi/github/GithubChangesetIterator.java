@@ -1,101 +1,63 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
-import org.eclipse.egit.github.core.RepositoryCommit;
-import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.RepositoryBranch;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 
-
+/**
+ * Iterates all new commits in all branches.
+ */
 public class GithubChangesetIterator implements Iterator<Changeset>
 {
-    private ListIterator<Changeset> inPageChangesetsIterator = Collections.<Changeset>emptyList().listIterator();
-    private StopablePageIterator pagesIterator;
-
-    private final BranchesIterator branchesIterator;
-
+    private ChangesetIterator changesetIterator;
+    private final ListIterator<RepositoryBranch> branchesIterator;
+    private final ChangesetCache changesetCache;
+    private final GithubCommunicator githubCommunicator;
     private final Repository repository;
 
-    private Changeset nextChangeset = null;
-    private final Date lastCommitDate;
-	private ChangesetCache changesetCache;
-
     public GithubChangesetIterator(ChangesetCache changesetCache, GithubCommunicator githubCommunicator,
-                                   Repository repository, List<String> branches, Date lastCommitDate)
+            					   Repository repository, List<RepositoryBranch> branches)
     {
         this.changesetCache = changesetCache;
+        this.githubCommunicator = githubCommunicator;
         this.repository = repository;
-        this.lastCommitDate = lastCommitDate;
-
-        branchesIterator = new BranchesIterator(branches, githubCommunicator, repository);
-        pagesIterator = branchesIterator.next();
+        this.branchesIterator = branches.listIterator();
     }
 
     @Override
     public boolean hasNext()
     {
-        final boolean hasNext = inPageChangesetsIterator.hasNext() || (pagesIterator != null && pagesIterator.hasNext()) || branchesIterator.hasNext();
-        if (hasNext)
+        if (changesetIterator!=null && changesetIterator.hasNext())
         {
-            nextChangeset = internalNext();
-            if (shoudStopBranchIteration())
-            {
-                inPageChangesetsIterator = Collections.<Changeset>emptyList().listIterator();
-                pagesIterator.stop();
-                return hasNext();
-            }
-
+            return true;
         }
-        return hasNext;
-    }
-
-    private boolean shoudStopBranchIteration()
-    {
-        boolean changesetOlderThanLastCommitDate = lastCommitDate != null && lastCommitDate.after(nextChangeset.getDate());
-        boolean changesetAlreadySynchronized = changesetCache.isCached(repository.getId(), nextChangeset.getNode());
-        return changesetOlderThanLastCommitDate || changesetAlreadySynchronized;
-    }
- 
-    private Changeset internalNext() {
-        if (inPageChangesetsIterator.hasNext())
+        if (branchesIterator.hasNext())
         {
-            return inPageChangesetsIterator.next();
-        } else if (pagesIterator.hasNext())
-        {
-            inPageChangesetsIterator = pagesIterator.next();
-            return internalNext();
-        } else if (branchesIterator.hasNext())
-        {
-            pagesIterator = branchesIterator.next();
-            return internalNext();
+            RepositoryBranch nextBranch = branchesIterator.next();
+            changesetIterator = new ChangesetIterator(githubCommunicator, repository, nextBranch, changesetCache);
+            return hasNext();
         }
-
-        throw new NoSuchElementException();
-
+        return false;
     }
 
     @Override
     public Changeset next()
     {
-        if (nextChangeset == null)
+        if (!hasNext())
         {
-            nextChangeset = internalNext();
+            throw new NoSuchElementException();
         }
 
-        Changeset changeset = nextChangeset;
-        nextChangeset = null;
-        return changeset;
+        return changesetIterator.next();
     }
 
     @Override
@@ -105,91 +67,67 @@ public class GithubChangesetIterator implements Iterator<Changeset>
     }
 }
 
-class StopablePageIterator implements Iterator<ListIterator<Changeset>>
+/**
+ * Iterates new commits starting on a branch tip.
+ */
+class ChangesetIterator implements Iterator<Changeset>
 {
-    private final PageIterator<RepositoryCommit> pageIterator;
-    private final Repository repository;
-    private final String branch;
-
-    private boolean stoped = false;
-
-    StopablePageIterator(PageIterator<RepositoryCommit> pageIterator, Repository repository, String branch)
-    {
-        this.pageIterator = pageIterator;
-        this.repository = repository;
-        this.branch = branch;
-    }
-    
-    @Override
-    public boolean hasNext()
-    {
-        return !stoped && pageIterator.hasNext();
-    }
-    
-
-    @Override
-    public ListIterator<Changeset> next()
-    {
-        final ArrayList<Changeset> changesets = new ArrayList<Changeset>();
-        final Collection<RepositoryCommit> page = pageIterator.next();
-        for (Object obj : page)
-        {
-            RepositoryCommit repositoryCommit = (RepositoryCommit) obj;
-            Changeset changeset = GithubChangesetFactory.transform(repositoryCommit, repository.getId(), branch);
-            changesets.add(changeset);
-        }
-        return changesets.listIterator();
-    }
-
-
-    @Override
-    public void remove()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public void stop() 
-	{
-        this.stoped = true;
-    }
-}
-
-class BranchesIterator implements Iterator<StopablePageIterator>
-{
-
-    private ListIterator<String> branchNamesIterator = Collections.<String>emptyList().listIterator();
     private final GithubCommunicator githubCommunicator;
     private final Repository repository;
+    private final Set<String> nextNodes = new HashSet<String>();
+    private final String branch;
+    private final ChangesetCache changesetCache;
 
-    BranchesIterator(List<String> branches, GithubCommunicator githubCommunicator, Repository repository)
+    public ChangesetIterator(GithubCommunicator githubCommunicator, Repository repository, RepositoryBranch branch,
+            ChangesetCache changesetCache)
     {
         this.githubCommunicator = githubCommunicator;
         this.repository = repository;
-        this.branchNamesIterator = branches.listIterator();
+        this.changesetCache = changesetCache;
+        this.branch = branch.getName();
+        addNodes(branch.getCommit().getSha());
     }
 
     @Override
     public boolean hasNext()
     {
-        return branchNamesIterator.hasNext();
+        return !nextNodes.isEmpty();
     }
 
     @Override
-    public StopablePageIterator next()
+    public Changeset next()
     {
-        if (!hasNext())
+        if (nextNodes.isEmpty())
         {
-            return null;
+            throw new NoSuchElementException();
         }
-
-        final String branch = branchNamesIterator.next();
-        return new StopablePageIterator(githubCommunicator.getPageIterator(repository, branch), repository, branch);
-       }
+        
+        Iterator<String> it = nextNodes.iterator();
+        String node = it.next();
+        it.remove();
+        Changeset currentChangeset = githubCommunicator.getDetailChangeset(repository, branch, node);
+        
+        List<String> parents = currentChangeset.getParents();
+        addNodes(parents.toArray(new String[0]));
+        return currentChangeset;
+    }
 
     @Override
     public void remove()
     {
         throw new UnsupportedOperationException();
     }
-}
+    
+    private void addNodes(String... nodes)
+    {
+        for (String node : nodes)
+        {
+            if (!changesetCache.isCached(repository.getId(), node))
+            {
+                nextNodes.add(node);
+            }
+        }
+    }
 
+
+}

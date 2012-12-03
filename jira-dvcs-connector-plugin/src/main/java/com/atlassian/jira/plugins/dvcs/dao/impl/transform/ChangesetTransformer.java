@@ -42,11 +42,11 @@ public class ChangesetTransformer
                 changesetMapping.getMessage(),
                 parents,
                 fileData.getFiles(),
-                fileData.getFileCount());
+                fileData.getFileCount(),
+                changesetMapping.getAuthorEmail());
 
         changeset.setId(changesetMapping.getID());
         changeset.setVersion(changesetMapping.getVersion());
-        changeset.setAuthorEmail(changesetMapping.getAuthorEmail());
         changeset.setSmartcommitAvaliable(changesetMapping.isSmartcommitAvailable());
         
         return changeset;

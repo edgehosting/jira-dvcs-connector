@@ -1,15 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+
+import java.util.List;
+
 import junit.framework.Assert;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import java.util.List;
-import org.openqa.selenium.WebElement;
 
 /**
  * Represents the page to link repositories to projects
@@ -29,14 +32,8 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     @ElementBy(name = "commit")
     PageElement githubWebSubmitButton;
 
-    @ElementBy(id = "oauthClientId")
-    PageElement clientId;
-
-    @ElementBy(id = "oauthSecret")
-    PageElement secretId;
-
     @Override
-    public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String url, String organizationAccount, boolean autoSync)
+    public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -92,7 +89,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     }
 
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String url)
+    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2()
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -123,7 +120,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         if (currentUrl.contains("https://github.com/login?"))
         {
             githubWebLoginField.type("jirabitbucketconnector");
-            githubWebPasswordField.type("jirabitbucketconnector1");
+            githubWebPasswordField.type(PasswordUtil.getPassword("jirabitbucketconnector"));
             setPageAsOld();
             githubWebSubmitButton.click();
         }
@@ -191,7 +188,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         return this;
     }
 
-    public GithubConfigureOrganizationsPage addRepoToProjectForOrganization(String organizationString, boolean autoSync)
+    public GithubConfigureOrganizationsPage addRepoToProjectForOrganization(String organizationString)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();

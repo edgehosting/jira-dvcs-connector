@@ -1,12 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.JsonParsingException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoriesEnvelope;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 
 /**
  * AccountRemoteRestpoint
@@ -27,14 +26,16 @@ public class AccountRemoteRestpoint {
     {
         String getUserUrl = String.format("/users/%s", owner);
         
-        RemoteResponse response = requestor.get(getUserUrl, null);
-        try
+        return requestor.get(getUserUrl, null, new ResponseCallback<BitbucketAccount>()
         {
-            return ClientUtils.fromJson(response.getResponse(), BitbucketRepositoriesEnvelope.class).getUser();
-        } catch (JsonParsingException e)
-        {
-            throw new BitbucketRequestException("Request could not be parsed", e);
-        }
+            @Override
+            public BitbucketAccount onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), BitbucketRepositoriesEnvelope.class).getUser();
+            }
+            
+        });
+        
     }
     
     /**
@@ -53,6 +54,6 @@ public class AccountRemoteRestpoint {
                                              repositoryOwnerToInvite,
                                              repositorySlugToInvite);
         
-        requestor.put(inviteUserUrl, null);
+        requestor.put(inviteUserUrl, null, ResponseCallback.EMPTY);
     }
 }

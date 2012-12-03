@@ -7,12 +7,12 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
-import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
+//import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+//import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 
 public class OrganizationServiceImpl implements OrganizationService
@@ -21,8 +21,7 @@ public class OrganizationServiceImpl implements OrganizationService
 	private final OrganizationDao organizationDao;
 	private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
 	private final RepositoryService repositoryService;
-
-
+    
 	public OrganizationServiceImpl(OrganizationDao organizationDao, DvcsCommunicatorProvider dvcsCommunicatorProvider,
         RepositoryService repositoryService)
     {
@@ -98,8 +97,6 @@ public class OrganizationServiceImpl implements OrganizationService
 		//
 		// it's brand new organization. save it.
 		//
-		checkCredentials(organization);
-		//
 		org = organizationDao.save(organization);
 
 		// sync repository list
@@ -123,7 +120,6 @@ public class OrganizationServiceImpl implements OrganizationService
 		//
 		Organization organization = organizationDao.get(organizationId);
 		organization.setCredential(new Credential(username, plaintextPassword, null));
-		checkCredentials(organization);
 
 		organizationDao.updateCredentials(organizationId, username, plaintextPassword, null, null, null);
 	}
@@ -136,8 +132,6 @@ public class OrganizationServiceImpl implements OrganizationService
 		//
 		Organization organization = organizationDao.get(organizationId);
 		organization.setCredential(new Credential(null, null, accessToken));
-		checkCredentials(organization);
-		//
 
 		organizationDao.updateCredentials(organizationId, null, null, accessToken, null, null);
 
@@ -151,7 +145,7 @@ public class OrganizationServiceImpl implements OrganizationService
         //
         Organization organization = organizationDao.get(organizationId);
         organization.setCredential(new Credential(null, null, null, key, secret));
-        checkCredentials(organization);
+        //checkCredentials(organization);
         //
         
         organizationDao.updateCredentialsKeySecret(organizationId, key, secret);
@@ -201,24 +195,6 @@ public class OrganizationServiceImpl implements OrganizationService
 	}
 
 	@Override
-	public void checkCredentials(Organization forOrganizationWithPlainCredentials) throws InvalidCredentialsException
-	{
-		String bitbucketDvcsType = "bitbucket";
-
-		// validate just bitbucket credentials for now
-		if (bitbucketDvcsType.equalsIgnoreCase(forOrganizationWithPlainCredentials.getDvcsType()))
-		{
-			DvcsCommunicator bitbucket = dvcsCommunicatorProvider.getCommunicator(bitbucketDvcsType);
-			boolean valid = bitbucket.validateCredentials(forOrganizationWithPlainCredentials);
-			if (!valid)
-			{
-				throw new InvalidCredentialsException("Incorrect password");
-			}
-		}
-
-	}
-
-	@Override
 	public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
 	{
 		organizationDao.setDefaultGroupsSlugs(orgId, groupsSlugs);
@@ -235,6 +211,5 @@ public class OrganizationServiceImpl implements OrganizationService
     {
         return organizationDao.getByHostAndName(hostUrl, name);
     }
-	
-	
+
 }

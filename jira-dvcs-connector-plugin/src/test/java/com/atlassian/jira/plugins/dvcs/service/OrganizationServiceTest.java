@@ -35,7 +35,7 @@ public class OrganizationServiceTest
 
 	@Mock
 	private DvcsCommunicator bitbucketCommunicator;
-
+	
 	// tested object
 	private OrganizationService organizationService;
 
@@ -61,7 +61,6 @@ public class OrganizationServiceTest
 
 		Mockito.when(organizationDao.getByHostAndName("https://bitbucket.org", "doesnotmatter")).thenReturn(null);
 		Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
-		Mockito.when(bitbucketCommunicator.validateCredentials(sampleOrganization)).thenReturn(true);
 		Mockito.when(organizationDao.save(sampleOrganization)).thenReturn(sampleOrganization);
 
 		Organization saved = organizationService.save(sampleOrganization);
@@ -156,7 +155,6 @@ public class OrganizationServiceTest
 		Organization sampleOrganization = createSampleOrganization();
 		Mockito.when(organizationDao.get(0)).thenReturn(sampleOrganization);
 		Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
-		Mockito.when(bitbucketCommunicator.validateCredentials(sampleOrganization)).thenReturn(true);
 
 		organizationService.updateCredentials(0, "doesnotmatter_u", "doesnotmatter_p");
 
@@ -172,7 +170,6 @@ public class OrganizationServiceTest
 		Organization sampleOrganization = createSampleOrganization();
 		Mockito.when(organizationDao.get(0)).thenReturn(sampleOrganization);
 		Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
-		Mockito.when(bitbucketCommunicator.validateCredentials(sampleOrganization)).thenReturn(true);
 
 		organizationService.updateCredentialsAccessToken(0, "doesnotmatter_AT");
 

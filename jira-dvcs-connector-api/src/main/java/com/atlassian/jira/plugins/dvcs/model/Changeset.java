@@ -32,14 +32,14 @@ public class Changeset
 
     public Changeset(int repositoryId, String node, String message, Date timestamp)
     {
-        this(repositoryId, node, "", "", "", timestamp, "", "", message, Collections.<String>emptyList(), Collections.<ChangesetFile>emptyList(), 0);
+        this(repositoryId, node, "", "", "", timestamp, "", "", message, Collections.<String>emptyList(), Collections.<ChangesetFile>emptyList(), 0, "");
     }
 
 
     public Changeset(int repositoryId,String node, String issueKey,
                      String rawAuthor, String author, Date date,
                      String rawNode, String branch, String message,
-                     List<String> parents, List<ChangesetFile> files, int allFileCount)
+                     List<String> parents, List<ChangesetFile> files, int allFileCount, String authorEmail)
     {
         this.repositoryId = repositoryId;
         this.node = node;
@@ -53,6 +53,7 @@ public class Changeset
         this.parents = parents;
         this.files = files;
         this.allFileCount = allFileCount;
+        this.authorEmail = authorEmail;
     }
 
     public int getRepositoryId()

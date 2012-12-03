@@ -67,6 +67,7 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.CleanupPluginSettings</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_09_SmartCommitsColumnsMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_10_LastChangesetNodeMigrator</upgradeTask>
     </ao>
 	
 	<!-- Integrated account -->
@@ -87,13 +88,9 @@
     </component>
 	
 
-    <!--
-    	Upgrade Tasks
-     -->
-
-	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task"
-		class="com.atlassian.jira.plugins.dvcs.upgrade.RepositoryLinksUpgradeTask"
-		public="true">
+    <!-- Plugin upgrade Tasks -->
+	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task" public="true"
+		class="com.atlassian.jira.plugins.dvcs.upgrade.To_02_ProjectBasedRepositoryLinksUpgradeTask">
 		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
 	</component>
 
@@ -103,7 +100,6 @@
     <component key="defferedBitbucketLinker" name="defferedBitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.DeferredBitbucketLinker">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
     </component>
-    <component key="projectCreatedEventListener" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.ProjectCreatedListener" />
 
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
                class="com.atlassian.jira.plugins.dvcs.activeobjects.DefaultBitbucketProjectSettings">
