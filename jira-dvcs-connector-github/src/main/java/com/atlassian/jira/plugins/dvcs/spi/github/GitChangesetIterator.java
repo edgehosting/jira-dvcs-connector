@@ -16,7 +16,7 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 /**
  * Iterates all new commits in all branches.
  */
-public class GithubChangesetIterator implements Iterator<Changeset>
+public class GitChangesetIterator implements Iterator<Changeset>
 {
     private ChangesetIterator changesetIterator;
     private final ListIterator<RepositoryBranch> branchesIterator;
@@ -24,7 +24,7 @@ public class GithubChangesetIterator implements Iterator<Changeset>
     private final GithubCommunicator githubCommunicator;
     private final Repository repository;
 
-    public GithubChangesetIterator(ChangesetCache changesetCache, GithubCommunicator githubCommunicator,
+    public GitChangesetIterator(ChangesetCache changesetCache, GithubCommunicator githubCommunicator,
             					   Repository repository, List<RepositoryBranch> branches)
     {
         this.changesetCache = changesetCache;
