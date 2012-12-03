@@ -222,7 +222,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
 
         jira.getPageBinder().navigateToAndBind(getPageClass());
-        configureOrganizations.deleteAllOrganizations();
+        configureOrganizations.deleteAllOrganizations();//TODO should be factored to @After as well
         removeOAuthConsumer();
     }
 
@@ -261,7 +261,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         //    }
         //]
 
-        try {
+        try {//TODO use GSON instead of manual JSON parsing
             JSONArray jsonArray = new JSONArray(listServicesResponseString);
             for (int i = 0; i < jsonArray.length(); i++)
             {
