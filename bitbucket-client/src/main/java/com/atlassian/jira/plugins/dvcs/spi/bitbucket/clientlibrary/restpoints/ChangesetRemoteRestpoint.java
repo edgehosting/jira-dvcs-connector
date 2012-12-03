@@ -85,11 +85,6 @@ public class ChangesetRemoteRestpoint
 
     }
 
-    public Iterable<BitbucketChangeset> getChangesets(final String owner, final String slug)
-    {
-        return getChangesets(owner, slug, null);
-    }
-
     public Iterable<BitbucketChangeset> getChangesets(String owner, String slug, String lastChangesetNode)
     {
         return getChangesets(owner, slug, lastChangesetNode, DEFAULT_CHANGESETS_LIMIT);

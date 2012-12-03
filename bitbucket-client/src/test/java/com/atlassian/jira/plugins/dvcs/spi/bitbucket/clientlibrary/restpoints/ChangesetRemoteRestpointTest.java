@@ -99,7 +99,7 @@ public class ChangesetRemoteRestpointTest
     {       
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
                                                                        .getChangesets(BITBUCKET_OWNER,
-                                                                                      BITBUCKET_EMPTY_REPO);
+                                                                                      BITBUCKET_EMPTY_REPO, null);
         Iterator<BitbucketChangeset> changesetIterator = changesets.iterator();
         
         Assertions.assertThat(changesetIterator.hasNext()).isFalse();
@@ -113,7 +113,7 @@ public class ChangesetRemoteRestpointTest
     {
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
                                                                        .getChangesets(BITBUCKET_OWNER,
-                                                                                      BITBUCKET_REPO);
+                                                                                      BITBUCKET_REPO, null);
         Iterator<BitbucketChangeset> changesetIterator = changesets.iterator();
 
         int changesetCounter = 0;
@@ -136,7 +136,7 @@ public class ChangesetRemoteRestpointTest
     {
         Iterable<BitbucketChangeset> changesets = bitbucketRemoteClient.getChangesetsRest()
                                                                        .getChangesets(BITBUCKET_OWNER,
-                                                                                      BITBUCKET_REPO);
+                                                                                      BITBUCKET_REPO, null);
 
         Iterator<BitbucketChangeset> changesetIterator = changesets.iterator();
 

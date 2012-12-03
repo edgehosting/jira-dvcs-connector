@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -29,7 +28,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceField;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetIterableAdapter;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DvcsUserTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
@@ -367,39 +366,5 @@ public class BitbucketCommunicator implements DvcsCommunicator
     public static String getApiUrl(String hostUrl)
     {
         return hostUrl + "/!api/1.0";
-    }
-    private static final class ChangesetIterableAdapter implements Iterable<Changeset>, Iterator<Changeset>
-    {
-        private final Iterator<BitbucketChangeset> bitbucketChangesetIterator;
-        private final int repositoryId;
-
-
-        private ChangesetIterableAdapter(Repository repository, Iterable<BitbucketChangeset> bitbucketChangesetIterable)
-        {
-            this.bitbucketChangesetIterator = bitbucketChangesetIterable.iterator();
-            this.repositoryId = repository.getId();
-        }
-
-
-        @Override
-        public boolean hasNext() {
-            return bitbucketChangesetIterator.hasNext();
-        }
-
-        @Override
-        public Changeset next() {
-            return ChangesetTransformer.fromBitbucketChangeset(repositoryId,
-                                                               bitbucketChangesetIterator.next());
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Remove operation not supported.");
-        }
-
-        @Override
-        public Iterator<Changeset> iterator() {
-            return this;
-        }
     }
 }
