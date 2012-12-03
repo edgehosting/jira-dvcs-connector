@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
 import java.io.IOException;
+import java.net.URL;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 
 public class GithubEnterpriseCommunicator extends GithubCommunicator
 {
@@ -23,10 +25,10 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     {
         super(changesetCache, githubOAuth, githubClientProvider);
     }
-    
+        
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        UserService userService = new UserService(GitHubClient.createClient(hostUrl));
+        UserService userService = new UserService(GithubOAuthUtils.createClient(hostUrl));
         boolean requiresOauth = StringUtils.isBlank(githubOAuth.getEnterpriseClientId()) || StringUtils.isBlank(githubOAuth.getEnterpriseClientSecret());
 
         try
@@ -67,6 +69,5 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     {
         return GITHUB_ENTERPRISE;
     }
-
 }
 
