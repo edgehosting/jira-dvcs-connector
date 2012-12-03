@@ -8,13 +8,11 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage
 import org.junit.Test;
 import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest;
 
-
 /**
  * @author Martin Skurla
  */
 public class GreenHopperIntegrationTest extends BitBucketBaseOrgTest
 {
-    private static final String TEST_URL = "https://bitbucket.org";
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
 
     private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
@@ -28,7 +26,7 @@ public class GreenHopperIntegrationTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         GreenHopperBoardPage greenHopperBoardPage = jira.getPageBinder().navigateToAndBind(GreenHopperBoardPage.class);
-        greenHopperBoardPage.goToQABoard();
+        greenHopperBoardPage.goToQABoardPlan();
         greenHopperBoardPage.assertCommitsAppearOnIssue("QA-1", 5);
 
         removeOAuthConsumer();
