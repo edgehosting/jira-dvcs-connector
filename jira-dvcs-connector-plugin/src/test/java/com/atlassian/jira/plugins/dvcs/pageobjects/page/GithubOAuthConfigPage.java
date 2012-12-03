@@ -1,22 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import com.atlassian.pageobjects.Page;
-import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-
-import javax.inject.Inject;
 
 /**
  *
  */
 public class GithubOAuthConfigPage implements Page
 {
-    @Inject
-    PageBinder pageBinder;
-
     @ElementBy(id = "Submit")
     PageElement submitButton;
 

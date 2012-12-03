@@ -67,6 +67,7 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.CleanupPluginSettings</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_09_SmartCommitsColumnsMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_10_LastChangesetNodeMigrator</upgradeTask>
     </ao>
 	
 	<!-- Integrated account -->
@@ -87,13 +88,9 @@
     </component>
 	
 
-    <!--
-    	Upgrade Tasks
-     -->
-
-	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task"
-		class="com.atlassian.jira.plugins.dvcs.upgrade.RepositoryLinksUpgradeTask"
-		public="true">
+    <!-- Plugin upgrade Tasks -->
+	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task" public="true"
+		class="com.atlassian.jira.plugins.dvcs.upgrade.To_02_ProjectBasedRepositoryLinksUpgradeTask">
 		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
 	</component>
 
@@ -103,7 +100,6 @@
     <component key="defferedBitbucketLinker" name="defferedBitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.DeferredBitbucketLinker">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
     </component>
-    <component key="projectCreatedEventListener" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.ProjectCreatedListener" />
 
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
                class="com.atlassian.jira.plugins.dvcs.activeobjects.DefaultBitbucketProjectSettings">
@@ -249,11 +245,6 @@
         <interface>com.atlassian.jira.plugins.dvcs.listener.IPluginFeatureDetector</interface>
     </component>
 
-    <component key="changesetRenderer" name="changesetRenderer"
-               class="com.atlassian.jira.plugins.dvcs.webwork.ChangesetRendererImpl">
-        <interface>com.atlassian.jira.plugins.dvcs.webwork.ChangesetRenderer</interface>
-    </component>
-
     <!-- Listener -->
     <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />
 
@@ -265,18 +256,6 @@
         <!--<resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>-->
         <supports-ajax-load>true</supports-ajax-load>
     </issue-tabpanel>
-
-    <web-panel key="dvcs-commits-greenhopper-tab" location="atl.gh.issue.details.tab" weight="100">
-
-        <resource name="view" type="velocity" location="/templates/greenhopper-commits.vm" />
-
-        <context-provider class="com.atlassian.jira.plugins.dvcs.webwork.DvcsTabPanelContextProvider">
-        </context-provider>
-
-        <label key="Commits" />
-        <tooltip key="Commits" />
-        <resource type="download" name="icon.png" location="images/gh_icon.png" />
-    </web-panel>
 
     <!-- The webwork1 plugin element is how you add new actions to JIRA -->
     <webwork1 key="repositoryConfiguration" name="Repository Configuration" class="java.lang.Object">
@@ -377,15 +356,8 @@
     <web-resource key="requiredResourceForAjaxCommitsTab" name="Resources That Needs To be Loaded On Issue View">
 		<context>jira.view.issue</context>
 		<dependency>jira.webresources:viewissue</dependency>
-		<resource type="download" name="issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
+		<resource type="download" name="css/issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
 	</web-resource>
-
-    <web-resource key="requiredResourceForGreenHopperCommitsTab" name="Resources That Needs To be Loaded On GreenHopper Board">
-        <context>gh-rapid</context>
-        <resource type="download" name="issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
-        <resource type="download" name="greenhopper-overrides.css" location="css/greenhopper-overrides.css" />
-    </web-resource>
-
 
     <rest key="bitbucket-rest-resources" path="/bitbucket" version="1.0">
         <description>REST Resources</description>

@@ -39,7 +39,7 @@ import com.atlassian.util.concurrent.ThreadFactories;
  * @author jhocman@atlassian.com
  *
  */
-public class BitbucketAccountsConfigService implements AccountsConfigService
+public class BitbucketAccountsConfigService implements AccountsConfigService//TODO move to BB module
 {
 
     private static final Logger log = LoggerFactory.getLogger(BitbucketAccountsConfigService.class);
@@ -393,7 +393,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         organization.setName(info.accountName);
         organization.setCredential(new Credential(null, null, null, info.oauthKey, info.oauthSecret));
         organization.setHostUrl(BITBUCKET_URL);
-        organization.setDvcsType(BitbucketCommunicator.BITBUCKET);
+        organization.setDvcsType(BitbucketCommunicator.BITBUCKET);//TODO should not depend on Bitbucket module => BBC-331
         organization.setAutolinkNewRepos(true);
         organization.setSmartcommitsOnNewRepos(true);
         

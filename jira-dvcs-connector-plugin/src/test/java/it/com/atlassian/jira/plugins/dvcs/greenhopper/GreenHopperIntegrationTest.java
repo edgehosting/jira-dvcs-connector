@@ -25,7 +25,7 @@ public class GreenHopperIntegrationTest extends BitBucketBaseOrgTest
     {
         loginToBitbucketAndSetJiraOAuthCredentials();
 
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         GreenHopperBoardPage greenHopperBoardPage = jira.getPageBinder().navigateToAndBind(GreenHopperBoardPage.class);
         greenHopperBoardPage.goToQABoard();

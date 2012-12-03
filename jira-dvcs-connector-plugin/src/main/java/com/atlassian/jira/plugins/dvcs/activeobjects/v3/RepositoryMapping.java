@@ -13,7 +13,8 @@ public interface RepositoryMapping extends Entity
     public static final String ORGANIZATION_ID = "ORGANIZATION_ID";
     public static final String SLUG = "SLUG";
     public static final String NAME = "NAME";
-    public static final String LAST_COMMIT_DATE = "LAST_COMMIT_DATE";
+    public static final String LAST_COMMIT_DATE = "LAST_COMMIT_DATE";//TODO could be removed?
+    public static final String LAST_CHANGESET_NODE = "LAST_CHANGESET_NODE";
     public static final String LINKED = "LINKED";
     public static final String DELETED = "DELETED";
     public static final String SMARTCOMMITS_ENABLED = "SMARTCOMMITS_ENABLED";
@@ -22,6 +23,7 @@ public interface RepositoryMapping extends Entity
     String getSlug();
     String getName();
     Date getLastCommitDate();
+    String getLastChangesetNode();
     boolean isLinked();
     boolean isDeleted();
     boolean isSmartcommitsEnabled();
@@ -30,6 +32,7 @@ public interface RepositoryMapping extends Entity
     void setSlug(String slug);
     void setName(String name);
     void setLastCommitDate(Date lastCommitDate);
+    void setLastChangesetNode(String lastChangesetNode);
     void setLinked(boolean linked);
     void setDeleted(boolean deleted);
     void setSmartcommitsEnabled(boolean enabled);

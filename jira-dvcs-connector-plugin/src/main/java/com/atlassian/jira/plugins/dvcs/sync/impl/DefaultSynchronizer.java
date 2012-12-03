@@ -40,6 +40,7 @@ public class DefaultSynchronizer implements Synchronizer
     public void synchronize(Repository repository, SynchronisationOperation operation)
     {
         Progress progress = progressMap.get(repository);
+        //TODO isShouldStop really necessary? should we create a queue even if those conditions are not met?
         if (progress==null || progress.isFinished() || progress.isShouldStop())
         {
         	addSynchronisationOperation(repository, operation);

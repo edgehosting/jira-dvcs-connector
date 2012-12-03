@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
@@ -28,13 +29,18 @@ public class BitbucketLoginPage implements Page {
         return LOGIN_PAGE;
     }
 
-    
+
     public void doLogin()
     {
+        doLogin("jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+    }
+
+    public void doLogin(String username, String password)
+    {
         usernameOrEmailInput.clear()
-                            .type("jirabitbucketconnector");
+                            .type(username);
         passwordInput.clear()
-                     .type("jirabitbucketconnector1");
+                     .type(password);
         
         loginButton.click();
     }

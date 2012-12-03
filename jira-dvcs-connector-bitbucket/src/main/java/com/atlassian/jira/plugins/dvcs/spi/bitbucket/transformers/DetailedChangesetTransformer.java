@@ -18,10 +18,10 @@ public final class DetailedChangesetTransformer {
     public static Changeset fromChangesetAndBitbucketDiffstats(Changeset inputChangeset,
             List<BitbucketChangesetWithDiffstat> diffstats)
     {
-        List<ChangesetFile> files = ChangesetFileTransformer.fromBitbucketChangesetWithDiffstat(diffstats);
+        List<ChangesetFile> files = ChangesetFileTransformer.fromBitbucketChangesetsWithDiffstat(diffstats);
         
         Changeset changeset = copyChangeset(inputChangeset);
-        changeset.setIssueKey(null); //TODO missing various other transformations for fields, did we forget?
+        changeset.setIssueKey(null);
         changeset.setFiles(files);
         
         return changeset;
@@ -40,8 +40,8 @@ public final class DetailedChangesetTransformer {
                                             changesetToCopy.getMessage(),
                                             changesetToCopy.getParents(),
                                             changesetToCopy.getFiles(),
-                                            changesetToCopy.getAllFileCount());
-        changeset.setAuthorEmail(changesetToCopy.getAuthorEmail());
+                                            changesetToCopy.getAllFileCount(),
+                                            changesetToCopy.getAuthorEmail());
         
         return changeset;
     }

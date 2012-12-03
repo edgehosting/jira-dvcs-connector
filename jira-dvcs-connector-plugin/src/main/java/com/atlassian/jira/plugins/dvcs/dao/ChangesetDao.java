@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
 import java.util.List;
+import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
@@ -64,12 +65,12 @@ public interface ChangesetDao
     void markSmartcommitAvailability(int id, boolean available);
     
     /**
-     * Gets the project keys by repository.
+     * From the changesets in database find all referenced project keys.
      *
      * @param repositoryId the repository id
      * @return the project keys by repository
      */
-    List<String> getOrderedProjectKeysByRepository(int repositoryId);
+    Set<String> findReferencedProjects(int repositoryId);
     
     /**
      *

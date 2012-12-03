@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -25,13 +24,13 @@ public interface DvcsCommunicator
 
     Changeset getDetailChangeset(Repository repository, Changeset changeset);
 
-    Iterable<Changeset> getChangesets(Repository repository, Date lastCommitDate);
+    Iterable<Changeset> getChangesets(Repository repository);
 
     void setupPostcommitHook(Repository repository, String postCommitUrl);
 
-    void linkRepository(Repository repository, List<String> withProjectkeys);
+    void linkRepository(Repository repository, Set<String> withProjectkeys);
     
-    void linkRepositoryIncremental(Repository repository, List<String> withPossibleNewProjectkeys);
+    void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys);
 
     void removePostcommitHook(Repository repository, String postCommitUrl);
 
@@ -45,13 +44,6 @@ public interface DvcsCommunicator
     
     boolean isOauthConfigured();
 
-    /**
-     * Validate credentials.
-     *
-     * @param organization the organization
-     * @return true, if given credentials are valid
-     */
-    boolean validateCredentials(Organization organization);
     //-----------------------------------------------------------------------
     // methods for invitation management on bitbucket
     //-----------------------------------------------------------------------
