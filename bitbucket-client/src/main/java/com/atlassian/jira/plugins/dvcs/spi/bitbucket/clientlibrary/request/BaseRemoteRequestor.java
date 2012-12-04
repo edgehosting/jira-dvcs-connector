@@ -252,7 +252,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
         return connection;
     }
 
-    @SuppressWarnings("all")
     private void setPayloadParams(HttpURLConnection connection, Map<String, String> params) throws IOException
     {
         connection.setDoOutput(true);

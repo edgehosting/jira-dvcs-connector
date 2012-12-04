@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.RepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLinkHandler;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
 import com.atlassian.jira.project.Project;
@@ -229,8 +230,9 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 
     private boolean isCustomOrJiraType(BitbucketRepositoryLink repositoryLink)
     {
-        return RepositoryLink.TYPE_JIRA.equals(repositoryLink.getHandler().getName())
-                || RepositoryLink.TYPE_CUSTOM.equals(repositoryLink.getHandler().getName());
+        return repositoryLink.getHandler() != null && 
+                (RepositoryLink.TYPE_JIRA.equals(repositoryLink.getHandler().getName()) 
+                     || RepositoryLink.TYPE_CUSTOM.equals(repositoryLink.getHandler().getName()));
     }
 
     private Set<String> getProjectKeysInJira()
@@ -284,12 +286,15 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         for (BitbucketRepositoryLink repositoryLink : currentBitbucketLinks)
         {
             // make sure that is of type jira or custom (new version of linking)
-            String replacementUrl = repositoryLink.getHandler().getReplacementUrl().toLowerCase();
-            if (isCustomOrJiraType(repositoryLink)
-            // remove links just to OUR jira instance
-                    && replacementUrl.startsWith(baseUrl.toLowerCase()))
+            if (isCustomOrJiraType(repositoryLink))
             {
-                linksToThisJira.add(repositoryLink);
+                BitbucketRepositoryLinkHandler handler = repositoryLink.getHandler();
+                String displayTo = handler.getDisplayTo();
+                if (displayTo!=null && displayTo.toLowerCase().startsWith(baseUrl.toLowerCase()))
+                {
+                    // remove links just to OUR jira instance
+                    linksToThisJira.add(repositoryLink);
+                }
             }
         }
         return linksToThisJira;
