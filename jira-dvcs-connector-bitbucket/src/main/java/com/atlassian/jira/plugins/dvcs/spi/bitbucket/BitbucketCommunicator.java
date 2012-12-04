@@ -183,6 +183,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     private List<BranchTip> getBranches(Repository repository)
     {
+        // use https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
         return;
     }
 
