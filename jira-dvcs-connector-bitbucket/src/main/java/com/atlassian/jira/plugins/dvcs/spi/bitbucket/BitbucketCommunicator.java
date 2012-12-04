@@ -182,10 +182,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
             public Iterator<Changeset> iterator()
             {
                 List<BranchTip> branches = getBranches(repository);
-                // TODO if there are more than X (20?) branches then we should
-                // do something smarter...
-                // maybe search for new commits in scheduler job only? (once an
-                // hour)
                 return new BranchedChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, branches);
             }
 
@@ -194,6 +190,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     private List<BranchTip> getBranches(Repository repository)
     {
+        // Using undocumented https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
         List<BranchTip> branchTips = new ArrayList<BranchTip>();
         try
         {
@@ -205,6 +202,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 List<String> heads = bitbucketBranch.getHeads();
                 for (String head : heads)
                 {
+                    // make sure "master" branch is first in the list
                     if ("master".equals(bitbucketBranch.getName()))
                     {
                         branchTips.add(0, new BranchTip(bitbucketBranch.getName(), head));
@@ -220,18 +218,16 @@ public class BitbucketCommunicator implements DvcsCommunicator
             throw new SourceControlException("Could not add postcommit hook", e);
         }
 
-        // TODO use https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
-        // This returns raw_nodes for each branch, but changesetiterator works with nodes. We need to use only
-        // first 12 characters from the node
-        // make sure "master" branch is first in the list
-        
         // Bitbucket returns raw_nodes for each branch, but changesetiterator works 
         // with nodes. We need to use only first 12 characters from the node
         for (BranchTip branchTip : branchTips)
         {
             String rawNode = branchTip.getNode();
-            String node = rawNode.substring(0, 11); // TODO test this
-            branchTip.setNode(node);
+            if (StringUtils.length(rawNode)>12)
+            {
+                String node = rawNode.substring(0, 11); // TODO test this
+                branchTip.setNode(node);
+            }
         }
         return branchTips;
     }
