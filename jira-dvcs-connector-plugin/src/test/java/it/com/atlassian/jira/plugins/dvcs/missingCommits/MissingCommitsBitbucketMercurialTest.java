@@ -43,8 +43,6 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest<B
     private static final String _2ND_BITBUCKET_REPO_ZIP_TO_PUSH = "missingCommits/bitbucket/hg2_after_merge.zip";
 
     private static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
-    
-    private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
 
 
     @BeforeClass
@@ -92,7 +90,8 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest<B
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin(BITBUCKET_REPO_OWNER, BITBUCKET_REPO_PASSWORD);
 
         jira.getTester().gotoUrl("https://bitbucket.org/account/user/dvcsconnectortest/api");
-        bitbucketIntegratedApplicationsPage = jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
+        BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage =
+                jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
 
         BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
                 bitbucketIntegratedApplicationsPage.addConsumer();

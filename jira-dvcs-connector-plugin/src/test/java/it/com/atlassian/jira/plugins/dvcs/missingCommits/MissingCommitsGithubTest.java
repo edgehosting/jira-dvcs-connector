@@ -41,8 +41,6 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
     private static final String _2ND_GITHUB_REPO_ZIP_TO_PUSH = "missingCommits/github/git2_after_merge.zip";
 
     private static GithubRepositoriesRemoteRestpoint githubRepositoriesREST;
-    
-    private GithubRegisterOAuthAppPage githubRegisterOAuthAppPage;
 
     @BeforeClass
     public static void initializeRepositoriesREST()
@@ -85,7 +83,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
         jira.getPageBinder().bind(GithubLoginPage.class).doLogin(GITHUB_REPO_OWNER, GITHUB_REPO_PASSWORD);
 
         jira.getTester().gotoUrl(GithubRegisterOAuthAppPage.PAGE_URL);
-        githubRegisterOAuthAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
+        GithubRegisterOAuthAppPage githubRegisterOAuthAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
 
         String oauthAppName = "testApp" + System.currentTimeMillis();
         String baseUrl = jira.getProductInstance().getBaseUrl();
@@ -109,7 +107,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
         // | dvcsconnectortest | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
         // | dvcsconnectortest | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
         // | dvcsconnectortest | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
-        pushGithubRepository(_1ST_GITHUB_REPO_ZIP_TO_PUSH);
+        pushGithubRepository(_1ST_GITHUB_REPO_ZIP_TO_PUSH);//TODO correct Author
 
         loginToGithubAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationSuccessfully(GITHUB_REPO_OWNER, true);
@@ -155,7 +153,9 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
         Process process;
         try
         {
-            process = new ProcessBuilder("git").start();
+            // executing "git" without any arguent on Win OS would wait forever (even if git is correctly placed on PATH)
+            // => we need to execute "git" with some argument e.g. "--version"
+            process = new ProcessBuilder("git", "--version").start();
             process.waitFor();
             return "git";
         } catch (Exception e)
