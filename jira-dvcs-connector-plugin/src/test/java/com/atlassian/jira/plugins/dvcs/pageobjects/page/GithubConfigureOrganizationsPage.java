@@ -4,8 +4,6 @@ import static org.hamcrest.Matchers.containsString;
 
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -54,9 +52,9 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         String githubWebLoginRedirectUrl = authorizeGithubAppIfRequired();
 
-        if (!githubWebLoginRedirectUrl.contains("/jira/"))
+        if (!githubWebLoginRedirectUrl.contains("jira"))
         {
-            Assert.fail("Expected was Valid OAuth login and redirect to JIRA!");
+            throw new AssertionError("Expected was Valid OAuth login and redirect to JIRA!");
         }
 
         if (autoSync) {
@@ -105,7 +103,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         String expectedUrl = "https://github.com/login/oauth/authorize?";
         if (!currentUrl.startsWith(expectedUrl) || !currentUrl.contains("client_id=xxx"))
         {
-            Assert.fail("Unexpected url: " + currentUrl);
+            throw new AssertionError("Unexpected url: " + currentUrl);
         }
 
         return this;
@@ -182,7 +180,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         String currentUrl = authorizeGithubAppIfRequired();
         if (!currentUrl.contains("/jira/"))
         {
-            Assert.fail("Expected was automatic continue to jira!");
+            throw new AssertionError("Expected was automatic continue to jira!");
         }
 
         return this;
@@ -201,9 +199,9 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         checkAndDoGithubLogin();
         String currentUrl = authorizeGithubAppIfRequired();
-        if (!currentUrl.contains("/jira/"))
+        if (!currentUrl.contains("jira"))
         {
-            Assert.fail("Expected was automatic continue to jira!");
+            throw new AssertionError("Expected was automatic continue to jira!");
         }
 
         return this;

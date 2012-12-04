@@ -14,6 +14,22 @@
     <name>Bitbucket Client Java library</name>
     <description>Bitbucket Client Java library</description>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <jirabitbucketconnector.password>${jirabitbucketconnector.password}</jirabitbucketconnector.password>
+                        <dvcsconnectortest.password>${dvcsconnectortest.password}</dvcsconnectortest.password>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -22,16 +38,16 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-           <groupId>com.google.collections</groupId>
-  		   <artifactId>google-collections</artifactId>
- 		   <version>1.0</version>
-           <scope>provided</scope>
+            <groupId>com.google.collections</groupId>
+            <artifactId>google-collections</artifactId>
+            <version>1.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-           <groupId>commons-collections</groupId>
- 		   <artifactId>commons-collections</artifactId>
- 		   <version>2.1</version>
-           <scope>provided</scope>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>2.1</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -39,12 +55,6 @@
             <version>1.4</version>
             <scope>provided</scope>
         </dependency>
-        <!--dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
-            <scope>compile</scope>
-        </dependency-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
@@ -63,19 +73,5 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>6.5.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.easytesting</groupId>
-            <artifactId>fest-assert-core</artifactId>
-            <version>2.0M6</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
-
 </project>

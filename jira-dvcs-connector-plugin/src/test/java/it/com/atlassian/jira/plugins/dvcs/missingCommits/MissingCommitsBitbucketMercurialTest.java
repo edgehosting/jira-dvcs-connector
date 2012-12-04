@@ -9,17 +9,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddIssuePage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddProjectPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewProjectsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
@@ -29,10 +24,14 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.plugin.util.zip.FileUnzipper;
 
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 /**
  * @author Martin Skurla
  */
-public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
+public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest<BitBucketConfigureOrganizationsPage>
 {
     private static final String BITBUCKET_REPO_OWNER = "dvcsconnectortest";
     private static final String BITBUCKET_REPO_PASSWORD = PasswordUtil.getPassword("dvcsconnectortest");
@@ -44,8 +43,6 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
     private static final String _2ND_BITBUCKET_REPO_ZIP_TO_PUSH = "missingCommits/bitbucket/hg2_after_merge.zip";
 
     private static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
-    
-    private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
 
 
     @BeforeClass
@@ -58,7 +55,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
     }
 
 
-    @Before
+    @BeforeMethod
     public void prepareHgRepositoryAndJiraProjectWithIssue()
     {
         removeHgRepositoryAndJiraProject();
@@ -73,16 +70,18 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
         }
         catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
 
-
-        jira.getPageBinder().navigateToAndBind(JiraViewProjectsPage.class).deleteProject(JIRA_PROJECT_NAME_AND_KEY);
+        if (JiraPageUtils.projectExists(jira, JIRA_PROJECT_NAME_AND_KEY))
+        {
+            JiraPageUtils.deleteProject(jira, JIRA_PROJECT_NAME_AND_KEY);
+        }
     }
 
     private void createHgRepositoryAndJiraProjectWithIssue()
     {
         bitbucketRepositoriesREST.createHgRepository(MISSING_COMMITS_REPOSITORY_NAME);
 
-        jira.getPageBinder().navigateToAndBind(JiraAddProjectPage.class).createProject(JIRA_PROJECT_NAME_AND_KEY);
-        jira.getPageBinder().navigateToAndBind(JiraAddIssuePage.class).createIssue();
+        JiraPageUtils.createProject(jira, JIRA_PROJECT_NAME_AND_KEY, JIRA_PROJECT_NAME_AND_KEY);
+        JiraPageUtils.createIssue(jira, JIRA_PROJECT_NAME_AND_KEY);
     }
 
     private void loginToBitbucketAndSetJiraOAuthCredentials()
@@ -91,7 +90,8 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin(BITBUCKET_REPO_OWNER, BITBUCKET_REPO_PASSWORD);
 
         jira.getTester().gotoUrl("https://bitbucket.org/account/user/dvcsconnectortest/api");
-        bitbucketIntegratedApplicationsPage = jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
+        BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage =
+                jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
 
         BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
                 bitbucketIntegratedApplicationsPage.addConsumer();
@@ -117,7 +117,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
         loginToBitbucketAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationSuccessfully(BITBUCKET_REPO_OWNER, true);
 
-        assertThat(getCommitsForIssue("MC-1")).hasSize(3);
+        assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
 
         // repository afther the 2nd push in following state:
         // +---------------+---------+--------------------------------------------+
@@ -134,7 +134,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
         simulatePostCommitHookCall();
         Thread.sleep(5000); // to catch up with soft sync
 
-        assertThat(getCommitsForIssue("MC-1")).hasSize(5);
+        assertThat(getCommitsForIssue("MC-1", 5)).hasSize(5);
     }
 
     private void pushBitbucketHgRepository(String pathToRepoZip) throws IOException, URISyntaxException, InterruptedException
@@ -178,7 +178,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest
 
 
     @Override
-    protected Class getPageClass()
+    protected Class<BitBucketConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return BitBucketConfigureOrganizationsPage.class;
     }

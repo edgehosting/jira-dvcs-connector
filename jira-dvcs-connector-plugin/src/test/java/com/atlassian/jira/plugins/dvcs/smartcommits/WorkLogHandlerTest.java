@@ -1,18 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-import static org.mockito.Matchers.*;
+import java.util.Arrays;
 import static org.mockito.Mockito.*;
 
-import org.fest.util.Collections;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.JiraServiceContext;
@@ -21,7 +15,11 @@ import com.atlassian.jira.bc.issue.worklog.WorklogService;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import static org.fest.assertions.api.Assertions.*;
+
 public class WorkLogHandlerTest
 {
 
@@ -38,9 +36,11 @@ public class WorkLogHandlerTest
         super();
     }
 
-    @Before
+    @BeforeMethod
     public void setUp()
     {
+        MockitoAnnotations.initMocks(this);
+
         handler = new WorkLogHandler(worklogService);
     }
 
@@ -50,15 +50,15 @@ public class WorkLogHandlerTest
 
         MutableIssue sampleIssue = sampleIssue();
        
-        handler.handle(sampleUser(), sampleIssue, "time", Collections.list("1h 44m"));
+        handler.handle(sampleUser(), sampleIssue, "time", Arrays.asList("1h 44m"));
 
         verify(worklogService).validateCreate(any(JiraServiceContext.class), worklogParamsCaptor.capture());
 
         WorklogInputParametersImpl worklogParams = worklogParamsCaptor.getValue();
 
-        Assert.assertEquals("1h 44m", worklogParams.getTimeSpent());
-        Assert.assertEquals("", worklogParams.getComment());
-        Assert.assertEquals(sampleIssue, worklogParams.getIssue());
+        assertThat(worklogParams.getTimeSpent()).isEqualTo("1h 44m");
+        assertThat(worklogParams.getComment()).isEmpty();
+        assertThat(worklogParams.getIssue()).isEqualTo(sampleIssue);
     }
     
     @Test
@@ -67,15 +67,15 @@ public class WorkLogHandlerTest
 
         MutableIssue sampleIssue = sampleIssue();
        
-        handler.handle(sampleUser(), sampleIssue, "time", Collections.list("2w 3d 1h 44m   Total work logged in !!!  "));
+        handler.handle(sampleUser(), sampleIssue, "time", Arrays.asList("2w 3d 1h 44m   Total work logged in !!!  "));
 
         verify(worklogService).validateCreate(any(JiraServiceContext.class), worklogParamsCaptor.capture());
 
         WorklogInputParametersImpl worklogParams = worklogParamsCaptor.getValue();
 
-        Assert.assertEquals("2w 3d 1h 44m", worklogParams.getTimeSpent());
-        Assert.assertEquals("Total work logged in !!!", worklogParams.getComment());
-        Assert.assertEquals(sampleIssue, worklogParams.getIssue());
+        assertThat(worklogParams.getTimeSpent()).isEqualTo("2w 3d 1h 44m");
+        assertThat(worklogParams.getComment()).isEqualTo("Total work logged in !!!");
+        assertThat(worklogParams.getIssue()).isEqualTo(sampleIssue);
     }
 
     private MutableIssue sampleIssue()

@@ -17,7 +17,7 @@ import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.webdriver.jira.JiraTestedProduct;
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 
 /**
  * Represents the page to link repositories to projects
@@ -70,7 +70,6 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
         for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-orgdata-container"))) {
 
-        	// orgContainer.find(By.className("dvcs-org-container")).click();
         	 Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-org-container")).timed().isVisible());
 
              list.add(pageBinder.bind(BitBucketOrganization.class, orgContainer));
@@ -92,46 +91,6 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     	return this;
     }
 
-    /**
-     * Whether a repository is currently linked to a given project
-     *
-     * @param projectKey The JIRA project key
-     * @param url        The repository url
-     * @return True if repository is linked, false otherwise
-     */
-   /* public boolean isRepositoryPresent(String projectKey, String url)
-    {
-        boolean commitFound = false;
-        for (BitBucketRepository repo : getRepositories())
-        {
-            if (repo.getProjectKey().equals(projectKey) && repo.getUrl().equals(url))
-            {
-                commitFound = true;
-                break;
-            }
-        }
-
-        return commitFound;
-    }*/
-
-    /**
-     * @param matcher
-     */
-    public void assertThatSyncMessage(Matcher<String> matcher)
-    {
-        Poller.waitUntil(syncStatusDiv.timed().getText(), matcher);
-    }
-
-    public void assertThatSuccessMessage(Matcher<String> matcher)
-    {
-        Poller.waitUntil(messageBarDiv.find(By.className("success")).timed().getText(), matcher);
-    }
-
-    public void assertThatWarningMessage(Matcher<String> matcher)
-    {
-        Poller.waitUntil(messageBarDiv.find(By.className("warning")).timed().getText(), matcher);
-    }
-
     public void assertThatErrorMessage(Matcher<String> matcher)
     {
         Poller.waitUntil(messageBarDiv.find(By.className("error")).timed().getText(), matcher);
@@ -139,37 +98,24 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     protected void checkSyncProcessSuccess()
     {
+        String currentUrl =  jiraTestedProduct.getTester().getDriver().getCurrentUrl();
         // maybe we should do the rest call to server
         // to find out the status of syncing
-        boolean syncFinished;
-        do {
-            // TODO the idea for waiting for all icons not to have "running" class doesn't work because
-            // the javascript doesn't run onLoad stuff. 
-            // The onload is broken by Raphael trying to do something with svg icons.
-            // The error in the js console:
-            //    this.join is not a function
-            //    [Break on this error] return this.join(",").replace(p2s, "$1"); 
+        do { 
             sleep(1000);
-            syncFinished = true;
-            List<PageElement> syncIcons = organizationsElement.findAll(By.className("syncrepoicon"));
-            System.out.println("Found some syncicons: " +syncIcons.size());
-            
-            for (PageElement syncIcon : syncIcons)
-            {
-                if (syncIcon.hasClass("running"))
-                {
-                    syncFinished = false;
-                    System.out.println("Running");
-                } else
-                {
-                    System.out.println("Not Running");
-                }
-            }
-            
-        } while (!syncFinished);
+        } while (!isSyncFinished());
         // syncing is now finished. TODO check for errors
+        
+        jiraTestedProduct.getTester().gotoUrl(currentUrl);
     }
 
+    private boolean isSyncFinished()
+    {
+        jiraTestedProduct.getTester().gotoUrl(jiraTestedProduct.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repositories");
+        String pageSource = jiraTestedProduct.getTester().getDriver().getPageSource();
+
+        return !pageSource.contains("finished=\"false\"");
+    }
 
     private void sleep(long milis)
     {

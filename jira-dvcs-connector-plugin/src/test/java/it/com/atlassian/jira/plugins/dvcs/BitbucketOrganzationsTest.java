@@ -10,9 +10,6 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
@@ -29,15 +26,15 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
 
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.*;
 import static org.fest.assertions.api.Assertions.*;
-
-
 
 /**
  * Test to verify behaviour when syncing bitbucket repository..
  */
-public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
+public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketConfigureOrganizationsPage>
 {
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
     private static final String TEST_NOT_EXISTING_URL = "https://privatebitbucket.org/someaccount";
@@ -48,13 +45,13 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 
 
     @Override
-    protected Class<BitBucketConfigureOrganizationsPage> getPageClass()
+    protected Class<BitBucketConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return BitBucketConfigureOrganizationsPage.class;
     }
 
 
-    @Before
+    @BeforeMethod
     public void removeExistingPostCommitHooks()
     {
         Set<String> extractedBitbucketServiceIds = extractBitbucketServiceIdsToRemove();
@@ -97,12 +94,12 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
 
         PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
         // first row is header row, than repos ...
-        Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
+        assertThat(repositoriesTable.findAll(By.tagName("tr")).size()).isGreaterThan(2);
 
         // check add user extension
         jira.visit(JiraAddUserPage.class).checkPanelPresented();
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
@@ -115,9 +112,9 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
                 configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
         PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
         // first row is header row, than repos ...
-        Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
+        assertThat(repositoriesTable.findAll(By.tagName("tr")).size()).isGreaterThan(2);
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
@@ -129,11 +126,11 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationFailingStep1(TEST_NOT_EXISTING_URL);
 
         String errorMessage = configureOrganizations.getErrorStatusMessage();
-        assertThat(errorMessage).contains("Invalid user/team account");
+        assertThat(errorMessage).contains("is incorrect or the server is not responding");
 
         configureOrganizations.clearForm();
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
@@ -158,7 +155,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, ACCOUNT_ADMIN_LOGIN, ACCOUNT_ADMIN_PASSWORD);
         assertThat(servicesConfig).doesNotContain(syncUrl);
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
@@ -182,10 +179,10 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         loginToBitbucketAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
-        assertThat(getCommitsForIssue("QA-2")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
-        assertThat(getCommitsForIssue("QA-3")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-2", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-3", 2)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
         removeOAuthConsumer();
     }
@@ -197,29 +194,29 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         // QA-2
-        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");
-        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2", 1); // throws AssertionError with other than 1 message
+
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertTrue("Expected Added", commitMessage.isAdded(statistics.get(0)));
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
 
         // QA-3
-        commitMessages = getCommitsForIssue("QA-3");
-        Assert.assertEquals("Expected 2 commits", 2, commitMessages.size());
+        commitMessages = getCommitsForIssue("QA-3", 2); // throws AssertionError with other than 2 messages
+
         // commit 1
         commitMessage = commitMessages.get(0);
         statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertTrue("Expected Added", commitMessage.isAdded(statistics.get(0)));
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
         // commit 2
         commitMessage = commitMessages.get(1);
         statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+3");
-        Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+3");
+        assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();//TODO should be factored to @After as well
         removeOAuthConsumer();
     }

@@ -3,8 +3,6 @@ package com.atlassian.jira.plugins.dvcs.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -18,6 +16,9 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 public class RepositoryServiceTest
 {
@@ -51,7 +52,7 @@ public class RepositoryServiceTest
 		super();
 	}
 
-	@Before
+	@BeforeMethod
 	public void setup()
 	{
 		MockitoAnnotations.initMocks(this);

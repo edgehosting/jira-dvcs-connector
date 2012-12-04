@@ -32,10 +32,10 @@ public class BitbucketGrandOAuthAccessPage implements Page
         
         PageElement buttonsDiv = bodyElement.find(By.className("buttons"));
         
-        PageElement grandAccessButton = PageElementUtils.findTagWithAttribute(buttonsDiv,
-                                                                              "button",
-                                                                              "type",
-                                                                              "submit");
+        PageElement grandAccessButton = PageElementUtils.findTagWithAttributeValue(buttonsDiv,
+                                                                                   "button",
+                                                                                   "type",
+                                                                                   "submit");
         
         grandAccessButton.click();
     }
