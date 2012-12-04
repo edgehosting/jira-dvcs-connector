@@ -5,7 +5,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedAppli
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest;
 
 /**
