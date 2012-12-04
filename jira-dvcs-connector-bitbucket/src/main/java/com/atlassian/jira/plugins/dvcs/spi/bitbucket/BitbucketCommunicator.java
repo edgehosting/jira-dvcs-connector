@@ -140,14 +140,14 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    public Changeset getDetailChangeset(Repository repository, String node)
     {
         try
         {
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
             List<BitbucketChangesetWithDiffstat> changesetDiffStat = remoteClient.getChangesetsRest()
                     .getChangesetDiffStat(repository.getOrgName(), // owner
-                            repository.getSlug(), changeset.getNode(), Changeset.MAX_VISIBLE_FILES); // limit
+                            repository.getSlug(), node, Changeset.MAX_VISIBLE_FILES); // limit
 
             return DetailedChangesetTransformer.fromChangesetAndBitbucketDiffstats(changeset, changesetDiffStat);
         } catch (BitbucketRequestException e)

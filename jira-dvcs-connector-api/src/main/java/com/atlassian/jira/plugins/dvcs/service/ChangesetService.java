@@ -23,8 +23,6 @@ public interface ChangesetService
 
     Iterable<Changeset> getChangesetsFromDvcs(Repository repository);
 
-    Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset);
-
     /**
      * returns all changesets for given issue
      * @param issueKey issueKey

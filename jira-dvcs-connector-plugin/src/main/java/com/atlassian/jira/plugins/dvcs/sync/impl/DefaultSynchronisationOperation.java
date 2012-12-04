@@ -56,7 +56,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
         int changesetCount = 0;
         int jiraCount = 0;
-        int synchroErrorCount = 0;
 
         Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository);
 
@@ -100,22 +99,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             
             if (CollectionUtils.isNotEmpty(extractedIssues) ) 
             {
-                if ( /*github*/ "github".equals(repository.getDvcsType()) )
-                {
-                    // we have requested detail changesets for github
-                    detailChangeset = changeset;
-                } else
-                {
-                    try
-                    {
-                        detailChangeset = changesetService.getDetailChangesetFromDvcs(repository, changeset);
-                    } catch (Exception e)
-                    {
-                        log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
-                        synchroErrorCount++;
-                    }
-                }
-                
                 boolean changesetAlreadyMarkedForSmartCommits = false;
                 for (String extractedIssue : extractedIssues)
                 {
@@ -123,24 +106,23 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     String issueKey = extractedIssue.toUpperCase();
                     try
                     {
-                        Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
-                        changesetForSave.setIssueKey(issueKey);
+                        changeset.setIssueKey(issueKey);
                         //--------------------------------------------
                         // mark smart commit can be processed
                         // + store extracted project key for incremental linking
                         if (softSync && !changesetAlreadyMarkedForSmartCommits)
                         {
-                            markChangesetForSmartCommit(changesetForSave, true);
+                            markChangesetForSmartCommit(changeset, true);
                             changesetAlreadyMarkedForSmartCommits = true;
                         } else
                         {
-                            markChangesetForSmartCommit(changesetForSave, false);
+                            markChangesetForSmartCommit(changeset, false);
                         }
                         
                         foundProjectKeys.add(ChangesetDaoImpl.parseProjectKey(issueKey));
                         //--------------------------------------------
-                        log.debug("Save changeset [{}]", changesetForSave);
-                        changesetService.save(changesetForSave);
+                        log.debug("Save changeset [{}]", changeset);
+                        changesetService.save(changeset);
                     
                     } catch (SourceControlException e)
                     {
@@ -148,7 +130,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     }
                 }
             }
-            progress.inProgress(changesetCount, jiraCount, synchroErrorCount);
+            progress.inProgress(changesetCount, jiraCount, 0);
         }
         
         setupNewLinkers(foundProjectKeys);

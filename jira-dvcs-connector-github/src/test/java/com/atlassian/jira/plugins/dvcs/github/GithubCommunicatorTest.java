@@ -2,19 +2,13 @@ package com.atlassian.jira.plugins.dvcs.github;
 
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -76,7 +70,7 @@ public class GithubCommunicatorTest
 	private class ChangesetCacheImpl implements ChangesetCache
 	{
 	    
-	    private List<String> cache = new ArrayList<String>();
+	    private final List<String> cache = new ArrayList<String>();
 	    
         @Override
         public boolean isCached(int repositoryId, String changesetNode)
@@ -128,7 +122,6 @@ public class GithubCommunicatorTest
     @Test
     public void gettingDetailChangeset_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException, IOException
     {
-        Changeset changesetMock = mock(Changeset.class);
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryCommit repositoryCommit = mock(RepositoryCommit.class);
@@ -137,7 +130,7 @@ public class GithubCommunicatorTest
         when(repositoryCommit.getCommit()).thenReturn(commit);
         when(commit.getMessage()).thenReturn("ABC-123 fix");
 
-        Changeset detailChangeset = communicator.getDetailChangeset(repositoryMock, changesetMock);
+        Changeset detailChangeset = communicator.getDetailChangeset(repositoryMock, "abcde");
         
         verify(commitService).getCommit(Matchers.<IRepositoryIdProvider>anyObject(),anyString());
 

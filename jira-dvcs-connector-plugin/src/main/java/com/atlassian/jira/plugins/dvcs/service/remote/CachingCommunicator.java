@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -183,9 +182,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    public Changeset getDetailChangeset(Repository repository, String node)
     {
-        return delegate.getDetailChangeset(repository, changeset);
+        return delegate.getDetailChangeset(repository, node);
     }
 
     @Override
