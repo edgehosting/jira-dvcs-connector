@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,8 @@ import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranch;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranchesAndTags;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
@@ -183,11 +186,46 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     private List<BranchTip> getBranches(Repository repository)
     {
+        List<BranchTip> branchTips = new ArrayList<BranchTip>();
+        try
+        {
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
+            BitbucketBranchesAndTags branchesAndTags = remoteClient.getBranchesAndTagsRemoteRestpoint().getBranches(repository.getOrgName(),repository.getSlug());
+            List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
+            for (BitbucketBranch bitbucketBranch : bitbucketBranches)
+            {
+                List<String> heads = bitbucketBranch.getHeads();
+                for (String head : heads)
+                {
+                    if ("master".equals(bitbucketBranch.getName()))
+                    {
+                        branchTips.add(0, new BranchTip(bitbucketBranch.getName(), head));
+                    } else
+                    {
+                        branchTips.add(new BranchTip(bitbucketBranch.getName(), head));
+                    }
+                }
+            }
+        } catch (BitbucketRequestException e)
+        {
+            log.debug("Could not add postcommit hook", e);
+            throw new SourceControlException("Could not add postcommit hook", e);
+        }
+
         // TODO use https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
         // This returns raw_nodes for each branch, but changesetiterator works with nodes. We need to use only
         // first 12 characters from the node
         // make sure "master" branch is first in the list
-        return;
+        
+        // Bitbucket returns raw_nodes for each branch, but changesetiterator works 
+        // with nodes. We need to use only first 12 characters from the node
+        for (BranchTip branchTip : branchTips)
+        {
+            String rawNode = branchTip.getNode();
+            String node = rawNode.substring(0, 11); // TODO test this
+            branchTip.setNode(node);
+        }
+        return branchTips;
     }
 
     /**

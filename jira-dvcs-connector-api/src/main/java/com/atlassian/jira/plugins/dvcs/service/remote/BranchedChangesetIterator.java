@@ -137,5 +137,4 @@ class ChangesetIterator implements Iterator<Changeset>
         }
     }
 
-
 }
