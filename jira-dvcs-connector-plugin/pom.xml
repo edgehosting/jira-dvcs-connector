@@ -44,7 +44,7 @@
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
-		
+
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>atlassian-jira</artifactId>
@@ -186,13 +186,13 @@
                     </systemPropertyVariables>
                     <productVersion>${jira.version}</productVersion>
                     <testResourcesVersion>${jira.data.version}</testResourcesVersion>
-					<productDataPath>${basedir}/src/test/resources/test-resources-gh-enabled-5.0.1.zip</productDataPath>
+                    <productDataPath>${basedir}/src/test/resources/test-resources-gh-enabled-5.0.1.zip</productDataPath>
                     <log4jProperties>src/aps/log4j.properties</log4jProperties>
-					<pluginArtifacts>
+                    <pluginArtifacts>
                         <pluginArtifact>
-							<groupId>com.atlassian.jira.plugins</groupId>
-							<artifactId>jira-greenhopper-plugin</artifactId>
-							<version>${greenhopper.version}</version>
+                            <groupId>com.atlassian.jira.plugins</groupId>
+                            <artifactId>jira-greenhopper-plugin</artifactId>
+                            <version>${greenhopper.version}</version>
                         </pluginArtifact>
                     </pluginArtifacts>
                 </configuration>
