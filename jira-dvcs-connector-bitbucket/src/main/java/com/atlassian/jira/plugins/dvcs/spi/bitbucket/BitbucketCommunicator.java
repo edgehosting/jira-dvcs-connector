@@ -20,8 +20,8 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
@@ -183,7 +183,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     private List<BranchTip> getBranches(Repository repository)
     {
-        // use https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
+        // TODO use https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
+        // make sure "master" branch is first in the list
         return;
     }
 
