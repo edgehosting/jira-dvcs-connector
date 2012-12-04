@@ -184,6 +184,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
     private List<BranchTip> getBranches(Repository repository)
     {
         // TODO use https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
+        // This returns raw_nodes for each branch, but changesetiterator works with nodes. We need to use only
+        // first 12 characters from the node
         // make sure "master" branch is first in the list
         return;
     }
