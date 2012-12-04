@@ -11,7 +11,7 @@ import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest;
 /**
  * @author Martin Skurla
  */
-public class GreenHopperIntegrationTest extends BitBucketBaseOrgTest
+public class GreenHopperIntegrationTest extends BitBucketBaseOrgTest<BitBucketConfigureOrganizationsPage>
 {
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
 
@@ -33,7 +33,7 @@ public class GreenHopperIntegrationTest extends BitBucketBaseOrgTest
     }
 
     @Override
-    protected Class<BitBucketConfigureOrganizationsPage> getPageClass()
+    protected Class<BitBucketConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return BitBucketConfigureOrganizationsPage.class;
     }

@@ -39,14 +39,14 @@ public class GreenHopperBoardPage implements Page
     {
         PageElement backlogContainerDiv = bodyElement.find(By.className("ghx-backlog-container"));
 
-        PageElement qa1Div  = PageElementUtils.findTagWithAttribute(backlogContainerDiv, "div", "data-issue-key", issueKey);
-        PageElement qa1Link = PageElementUtils.findTagWithAttribute(qa1Div,              "a",   "title",          issueKey);
+        PageElement qa1Div  = PageElementUtils.findTagWithAttributeValue(backlogContainerDiv, "div", "data-issue-key", issueKey);
+        PageElement qa1Link = PageElementUtils.findTagWithAttributeValue(qa1Div,              "a",   "title",          issueKey);
 
         qa1Link.click();
 
         PageElement openIssueTabsMenu = bodyElement.find(By.className("tabs-menu"));
         Poller.waitUntilTrue(openIssueTabsMenu.timed().isVisible());
-        PageElement commitsTabLink = PageElementUtils.findTagWithAttribute(openIssueTabsMenu, "li", "title", "Commits")
+        PageElement commitsTabLink = PageElementUtils.findTagWithAttributeValue(openIssueTabsMenu, "li", "title", "Commits")
                                                      .find(By.tagName("a"));
 
         commitsTabLink.click();
