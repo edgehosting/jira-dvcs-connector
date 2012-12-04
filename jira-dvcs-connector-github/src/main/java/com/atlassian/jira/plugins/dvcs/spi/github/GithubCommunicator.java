@@ -40,7 +40,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.service.remote.GitChangesetIterator;
+import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
@@ -221,7 +221,7 @@ public class GithubCommunicator implements DvcsCommunicator
                 // do something smarter...
                 // maybe search for new commits in scheduler job only? (once an
                 // hour)
-                return new GitChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
+                return new BranchedChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
             }
         };
     }

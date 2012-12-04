@@ -21,7 +21,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.service.remote.GitChangesetIterator;
+import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
@@ -175,7 +175,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 // do something smarter...
                 // maybe search for new commits in scheduler job only? (once an
                 // hour)
-                return new GitChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, branches);
+                return new BranchedChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, branches);
             }
 
         };
