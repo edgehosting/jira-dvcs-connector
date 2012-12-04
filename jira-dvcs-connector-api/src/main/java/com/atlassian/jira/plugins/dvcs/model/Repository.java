@@ -21,7 +21,6 @@ public class Repository
 	private String slug;
 	private String name;
 	private Date lastCommitDate;
-    private String lastChangesetNode;
 	private boolean linked;
     private boolean deleted;
     private boolean smartcommitsEnabled;
@@ -41,7 +40,7 @@ public class Repository
 	}
 
 	public Repository(int id, int organizationId, String dvcsType, String slug, String name, Date lastCommitDate,
-			String lastChangesetNode, boolean linked, boolean deleted, Credential credential)
+			 boolean linked, boolean deleted, Credential credential)
 	{
 		this.id = id;
 		this.organizationId = organizationId;
@@ -49,7 +48,6 @@ public class Repository
 		this.slug = slug;
 		this.name = name;
 		this.lastCommitDate = lastCommitDate;
-        this.lastChangesetNode = lastChangesetNode;
 		this.linked = linked;
         this.deleted = deleted;
         this.credential = credential;
@@ -113,14 +111,6 @@ public class Repository
     public void setLastCommitDate(Date lastCommitDate)
     {
         this.lastCommitDate = lastCommitDate;
-    }
-
-    public String getLastChangesetNode() {
-        return lastChangesetNode;
-    }
-
-    public void setLastChangesetNode(String lastChangesetNode) {
-        this.lastChangesetNode = lastChangesetNode;
     }
 
     public boolean isLinked()

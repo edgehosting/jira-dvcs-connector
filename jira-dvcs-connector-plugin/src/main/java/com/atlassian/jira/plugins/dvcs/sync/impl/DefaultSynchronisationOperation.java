@@ -49,7 +49,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         {
             // we are doing full sync, lets delete all existing changesets
             changesetService.removeAllInRepository(repository.getId());
-            repository.setLastChangesetNode(null);
             repository.setLastCommitDate(null);
             repositoryService.save(repository);
         }
@@ -61,19 +60,12 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
         Set<String> foundProjectKeys = new HashSet<String>();
 
-        boolean lastChangesetNodeUpdated = false;
         for (Changeset changeset : allOrLatestChangesets)
         {
         	if (progress.isShouldStop())
         	{
         		return;
         	}
-            if (!lastChangesetNodeUpdated)
-            {
-                repository.setLastChangesetNode(changeset.getRawNode());
-                repositoryService.save(repository);
-                lastChangesetNodeUpdated = true;
-            }
         	
             if (repository.getLastCommitDate() == null || repository.getLastCommitDate().before(changeset.getDate()))
             {
@@ -94,9 +86,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                 continue;
             }
 
-            // get detail changeset because in this response is not information about files
-            Changeset detailChangeset = null;
-            
             if (CollectionUtils.isNotEmpty(extractedIssues) ) 
             {
                 boolean changesetAlreadyMarkedForSmartCommits = false;
