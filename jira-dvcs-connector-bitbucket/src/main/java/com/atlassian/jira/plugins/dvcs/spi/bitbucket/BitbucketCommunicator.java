@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -17,10 +18,12 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.GitChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
@@ -28,7 +31,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceField;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetIterableAdapter;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DvcsUserTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
@@ -53,6 +55,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
     private final BitbucketOAuth oauth;
     private final BitbucketClientRemoteFactory bitbucketClientRemoteFactory;
 
+    private final ChangesetCache changesetCache;
+
     /**
      * The Constructor.
      * 
@@ -63,11 +67,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
      */
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
             PluginAccessor pluginAccessor, BitbucketOAuth oauth,
-            BitbucketClientRemoteFactory bitbucketClientRemoteFactory)
+            BitbucketClientRemoteFactory bitbucketClientRemoteFactory, ChangesetCache changesetCache)
     {
         this.bitbucketLinker = bitbucketLinker;
         this.oauth = oauth;
         this.bitbucketClientRemoteFactory = bitbucketClientRemoteFactory;
+        this.changesetCache = changesetCache;
         this.pluginVersion = getPluginVersion(pluginAccessor);
     }
 
@@ -157,27 +162,28 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Iterable<Changeset> getChangesets(Repository repository)
+    public Iterable<Changeset> getChangesets(final Repository repository)
     {
-        try
+        return new Iterable<Changeset>()
         {
-            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
-            Iterable<BitbucketChangeset> bitbucketChangesets =
-                    remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
-                                                                   repository.getSlug(),
-                                                                   repository.getLastChangesetNode());
+            @Override
+            public Iterator<Changeset> iterator()
+            {
+                List<BranchTip> branches = getBranches(repository);
+                // TODO if there are more than X (20?) branches then we should
+                // do something smarter...
+                // maybe search for new commits in scheduler job only? (once an
+                // hour)
+                return new GitChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, branches);
+            }
 
-            return new ChangesetIterableAdapter(repository, bitbucketChangesets);
-        }
-        catch (BitbucketRequestException e)
-        {
-            log.debug(e.getMessage(), e);
-            throw new SourceControlException("Could not get result", e);
-        }
+        };
+    }
+
+    private List<BranchTip> getBranches(Repository repository)
+    {
+        return;
     }
 
     /**
