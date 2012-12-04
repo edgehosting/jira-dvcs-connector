@@ -10,26 +10,25 @@ import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.egit.github.core.client.GitHubClient;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddIssuePage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddProjectPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewProjectsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.plugin.util.zip.FileUnzipper;
 
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 /**
  * @author Miroslav Stencel
  */
-public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
+public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigureOrganizationsPage>
 {
     private static final String GITHUB_URL = "api.github.com";
     private static final String GITHUB_REPO_OWNER = "dvcsconnectortest";
@@ -42,8 +41,6 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
     private static final String _2ND_GITHUB_REPO_ZIP_TO_PUSH = "missingCommits/github/git2_after_merge.zip";
 
     private static GithubRepositoriesRemoteRestpoint githubRepositoriesREST;
-    
-    private GithubRegisterOAuthAppPage githubRegisterOAuthAppPage;
 
     @BeforeClass
     public static void initializeRepositoriesREST()
@@ -55,7 +52,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
     }
 
 
-    @Before
+    @BeforeMethod
     public void prepareGitRepositoryAndJiraProjectWithIssue()
     {
         removeGitRepositoryAndJiraProject();
@@ -66,15 +63,18 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
     {
         githubRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME, GITHUB_REPO_OWNER);
 
-        jira.getPageBinder().navigateToAndBind(JiraViewProjectsPage.class).deleteProject(JIRA_PROJECT_NAME_AND_KEY);
+        if (JiraPageUtils.projectExists(jira, JIRA_PROJECT_NAME_AND_KEY))
+        {
+            JiraPageUtils.deleteProject(jira, JIRA_PROJECT_NAME_AND_KEY);
+        }
     }
 
     private void createGitRepositoryAndJiraProjectWithIssue()
     {
         githubRepositoriesREST.createGithubRepository(MISSING_COMMITS_REPOSITORY_NAME);
 
-        jira.getPageBinder().navigateToAndBind(JiraAddProjectPage.class).createProject(JIRA_PROJECT_NAME_AND_KEY);
-        jira.getPageBinder().navigateToAndBind(JiraAddIssuePage.class).createIssue();
+        JiraPageUtils.createProject(jira, JIRA_PROJECT_NAME_AND_KEY, JIRA_PROJECT_NAME_AND_KEY);
+        JiraPageUtils.createIssue(jira, JIRA_PROJECT_NAME_AND_KEY);
     }
 
     private void loginToGithubAndSetJiraOAuthCredentials()
@@ -83,7 +83,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
         jira.getPageBinder().bind(GithubLoginPage.class).doLogin(GITHUB_REPO_OWNER, GITHUB_REPO_PASSWORD);
 
         jira.getTester().gotoUrl(GithubRegisterOAuthAppPage.PAGE_URL);
-        githubRegisterOAuthAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
+        GithubRegisterOAuthAppPage githubRegisterOAuthAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
 
         String oauthAppName = "testApp" + System.currentTimeMillis();
         String baseUrl = jira.getProductInstance().getBaseUrl();
@@ -107,12 +107,12 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
         // | dvcsconnectortest | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
         // | dvcsconnectortest | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
         // | dvcsconnectortest | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
-        pushGithubRepository(_1ST_GITHUB_REPO_ZIP_TO_PUSH);
+        pushGithubRepository(_1ST_GITHUB_REPO_ZIP_TO_PUSH);//TODO correct Author
 
         loginToGithubAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationSuccessfully(GITHUB_REPO_OWNER, true);
 
-        assertThat(getCommitsForIssue("MC-1")).hasSize(3);
+        assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
 
         // repository after the 2nd push in following state:
         // +-------------------+------------+--------------------------------------------+
@@ -129,7 +129,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
         simulatePostCommitHookCall();
         Thread.sleep(5000); // to catch up with soft sync
 
-        assertThat(getCommitsForIssue("MC-1")).hasSize(5);
+        assertThat(getCommitsForIssue("MC-1", 5)).hasSize(5);
     }
 
     private void pushGithubRepository(String pathToRepoZip) throws IOException, URISyntaxException, InterruptedException
@@ -153,7 +153,9 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
         Process process;
         try
         {
-            process = new ProcessBuilder("git").start();
+            // executing "git" without any arguent on Win OS would wait forever (even if git is correctly placed on PATH)
+            // => we need to execute "git" with some argument e.g. "--version"
+            process = new ProcessBuilder("git", "--version").start();
             process.waitFor();
             return "git";
         } catch (Exception e)
@@ -197,7 +199,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest
 
 
     @Override
-    protected Class getPageClass()
+    protected Class<GithubConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return GithubConfigureOrganizationsPage.class;
     }

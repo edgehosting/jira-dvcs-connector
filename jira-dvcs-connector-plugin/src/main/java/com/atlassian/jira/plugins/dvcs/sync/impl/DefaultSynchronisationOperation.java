@@ -48,7 +48,9 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     	if (!softSync) 
         {
             // we are doing full sync, lets delete all existing changesets
+            // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
             changesetService.removeAllInRepository(repository.getId());
+            // required as BBCommunicator.getChangesets() will return changesets until repository.getLastChangesetNode()
             repository.setLastChangesetNode(null);
             repository.setLastCommitDate(null);
             repositoryService.save(repository);

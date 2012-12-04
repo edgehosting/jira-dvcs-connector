@@ -13,12 +13,6 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
@@ -33,10 +27,16 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
 
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 /**
  * Test to verify behaviour when syncing  github repository.
  */
-public class GithubOrganizationsTest extends BitBucketBaseOrgTest
+public class GithubOrganizationsTest extends BitBucketBaseOrgTest<GithubConfigureOrganizationsPage>
 {
 
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
@@ -73,7 +73,8 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
         ghLoginPage.doLogout();
 
-        GithubOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(GithubOAuthConfigPage.class);
+        jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(GithubOAuthConfigPage.class);
+        GithubOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(GithubOAuthConfigPage.class);
         oauthConfigPage.setCredentials(clientID, clientSecret);
 
         // logout jira
@@ -100,7 +101,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         ghLoginPage.doLogout();
     }
 
-    @Before
+    @BeforeMethod
     public void removeExistingPostCommitHooks()
     {
         String[] githubRepositories = { "repo1", "test-project" };
@@ -114,16 +115,15 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         }
     }
 
-    @After
+    @AfterMethod
     public void deleteRepositoriesAfterTest()
     {
         goToConfigPage();
         configureOrganizations.deleteAllOrganizations();
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    protected Class getPageClass()
+    protected Class<GithubConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return GithubConfigureOrganizationsPage.class;
     }
@@ -193,8 +193,8 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     {
         configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
-        assertThat(getCommitsForIssue("QA-2")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
-        assertThat(getCommitsForIssue("QA-3")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-2", 6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
 
     @Test
@@ -204,21 +204,21 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         // QA-2
-        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3");
-        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3", 1); // throws AssertionError with other than 1 message
+
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+1");
-        Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+1");
+        assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
 
         // QA-4
-        commitMessages = getCommitsForIssue("QA-4");
-        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        commitMessages = getCommitsForIssue("QA-4", 1); // throws AssertionError with other than 1 message
+
         commitMessage = commitMessages.get(0);
         statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertTrue("Expected commit resource Added: 1", commitMessage.isAdded(statistics.get(0)));
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
     }
 
 
