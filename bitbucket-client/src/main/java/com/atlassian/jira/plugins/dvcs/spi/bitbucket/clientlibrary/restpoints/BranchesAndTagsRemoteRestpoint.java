@@ -27,7 +27,7 @@ public class BranchesAndTagsRemoteRestpoint
      * @param slug 
      * @return
      */
-    public BitbucketBranchesAndTags getBranches(String owner, String slug)
+    public BitbucketBranchesAndTags getBranchesAndTags(String owner, String slug)
     {
         String getBranchesUrl = String.format("/repositories/%s/%s/branches-tags", owner, slug);
 

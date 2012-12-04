@@ -198,7 +198,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
-            BitbucketBranchesAndTags branchesAndTags = remoteClient.getBranchesAndTagsRemoteRestpoint().getBranches(repository.getOrgName(),repository.getSlug());
+            BitbucketBranchesAndTags branchesAndTags = remoteClient.getBranchesAndTagsRemoteRestpoint().getBranchesAndTags(repository.getOrgName(),repository.getSlug());
             List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
             for (BitbucketBranch bitbucketBranch : bitbucketBranches)
             {
