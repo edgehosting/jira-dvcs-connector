@@ -108,14 +108,14 @@
 				<div id="github-form-section" style="display:none">
 					<input type="hidden" id="oauthRequired" name="oauthRequired" value="true" />
                     <div class="field-group">
-	                   <label for="oauthGHClientId">OAuth Key:</label>
-	                   <input type="text" id="oauthGHClientId" name="oauthClientId" value=""/>
+	                   <label for="oauthClientId">OAuth Key:</label>
+	                   <input type="text" id="oauthClientId" name="oauthClientId" value=""/>
 	                   <div id="oauth-gh-client-error" class="dvcs-error">This field is required.</div>
 	                   <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureGithubOAuth!default.jspa">find OAuth key and secret</a>?</div>
 	                </div>
 	                <div class="field-group">
-	                   <label for="oauthGHSecret">OAuth Secret:</label>
-	                   <input type="text" id="oauthGHSecret" name="oauthSecret" value=""/>
+	                   <label for="oauthSecret">OAuth Secret:</label>
+	                   <input type="text" id="oauthSecret" name="oauthSecret" value=""/>
 	                   <div id="oauth-gh-secret-error" class="dvcs-error">This field is required.</div>
 	                </div>
 	            </div>

@@ -339,9 +339,9 @@ function validateAddOrganizationForm() {
 	} else if (AJS.$("#oauthBbClientId").is(":visible")) {
 		validator.addItem("oauthBbClientId", "oauth-bb-client-error", "required");
 		validator.addItem("oauthBbSecret", "oauth-bb-secret-error", "required");
-	} else if (AJS.$("#oauthGHClientId").is(":visible")) {
-		validator.addItem("oauthGHClientId", "oauth-gh-client-error", "required");
-		validator.addItem("oauthGHSecret", "oauth-gh-secret-error", "required");
+	} else if (AJS.$("#oauthClientId").is(":visible")) {
+		validator.addItem("oauthClientId", "oauth-gh-client-error", "required");
+		validator.addItem("oauthSecret", "oauth-gh-secret-error", "required");
 	} else if (AJS.$("#adminUsername").is(":visible")){
 		// validator.addItem("adminUsername", "admin-username-error", "required");
 		// validator.addItem("adminPassword", "admin-password-error", "required");
