@@ -50,33 +50,23 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             // we are doing full sync, lets delete all existing changesets
             // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
             changesetService.removeAllInRepository(repository.getId());
-            // required as BBCommunicator.getChangesets() will return changesets until repository.getLastChangesetNode()
-            repository.setLastChangesetNode(null);
             repository.setLastCommitDate(null);
             repositoryService.save(repository);
         }
 
         int changesetCount = 0;
         int jiraCount = 0;
-        int synchroErrorCount = 0;
 
         Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository);
 
         Set<String> foundProjectKeys = new HashSet<String>();
 
-        boolean lastChangesetNodeUpdated = false;
         for (Changeset changeset : allOrLatestChangesets)
         {
         	if (progress.isShouldStop())
         	{
         		return;
         	}
-            if (!lastChangesetNodeUpdated)
-            {
-                repository.setLastChangesetNode(changeset.getRawNode());
-                repositoryService.save(repository);
-                lastChangesetNodeUpdated = true;
-            }
         	
             if (repository.getLastCommitDate() == null || repository.getLastCommitDate().before(changeset.getDate()))
             {
@@ -97,27 +87,8 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                 continue;
             }
 
-            // get detail changeset because in this response is not information about files
-            Changeset detailChangeset = null;
-            
             if (CollectionUtils.isNotEmpty(extractedIssues) ) 
             {
-                if ( /*github*/ "github".equals(repository.getDvcsType()) )
-                {
-                    // we have requested detail changesets for github
-                    detailChangeset = changeset;
-                } else
-                {
-                    try
-                    {
-                        detailChangeset = changesetService.getDetailChangesetFromDvcs(repository, changeset);
-                    } catch (Exception e)
-                    {
-                        log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
-                        synchroErrorCount++;
-                    }
-                }
-                
                 boolean changesetAlreadyMarkedForSmartCommits = false;
                 for (String extractedIssue : extractedIssues)
                 {
@@ -125,24 +96,23 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     String issueKey = extractedIssue.toUpperCase();
                     try
                     {
-                        Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
-                        changesetForSave.setIssueKey(issueKey);
+                        changeset.setIssueKey(issueKey);
                         //--------------------------------------------
                         // mark smart commit can be processed
                         // + store extracted project key for incremental linking
                         if (softSync && !changesetAlreadyMarkedForSmartCommits)
                         {
-                            markChangesetForSmartCommit(changesetForSave, true);
+                            markChangesetForSmartCommit(changeset, true);
                             changesetAlreadyMarkedForSmartCommits = true;
                         } else
                         {
-                            markChangesetForSmartCommit(changesetForSave, false);
+                            markChangesetForSmartCommit(changeset, false);
                         }
                         
                         foundProjectKeys.add(ChangesetDaoImpl.parseProjectKey(issueKey));
                         //--------------------------------------------
-                        log.debug("Save changeset [{}]", changesetForSave);
-                        changesetService.save(changesetForSave);
+                        log.debug("Save changeset [{}]", changeset);
+                        changesetService.save(changeset);
                     
                     } catch (SourceControlException e)
                     {
@@ -150,7 +120,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     }
                 }
             }
-            progress.inProgress(changesetCount, jiraCount, synchroErrorCount);
+            progress.inProgress(changesetCount, jiraCount, 0);
         }
         
         setupNewLinkers(foundProjectKeys);

@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.AccountRemoteRestpoint;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.BranchesAndTagsRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ChangesetRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.GroupRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
@@ -42,6 +43,8 @@ public class BitbucketRemoteClient
     private final ServiceRemoteRestpoint serviceRemoteRestpoint;
 
     private final RemoteRequestor requestor;
+
+    private final BranchesAndTagsRemoteRestpoint branchesAndTagsRemoteRestpoint;
     
 	
 	public BitbucketRemoteClient(AuthProvider provider)
@@ -54,6 +57,7 @@ public class BitbucketRemoteClient
         this.repositoryLinkRemoteRestpoint = new RepositoryLinkRemoteRestpoint(requestor);
         this.repositoryRemoteRestpoint = new RepositoryRemoteRestpoint(requestor);
         this.serviceRemoteRestpoint = new ServiceRemoteRestpoint(requestor);
+        this.branchesAndTagsRemoteRestpoint = new BranchesAndTagsRemoteRestpoint(requestor);
 	}
 	
     public AccountRemoteRestpoint getAccountRest()
@@ -85,6 +89,11 @@ public class BitbucketRemoteClient
     {
 		return serviceRemoteRestpoint;
 	}
+
+	public BranchesAndTagsRemoteRestpoint getBranchesAndTagsRemoteRestpoint()
+    {
+        return branchesAndTagsRemoteRestpoint;
+    }
 
     public RemoteRequestor getRequestor()
     {

@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.spi.github;
+package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -7,7 +7,7 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.eclipse.egit.github.core.RepositoryBranch;
+import org.apache.commons.lang3.StringUtils;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -16,19 +16,19 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 /**
  * Iterates all new commits in all branches.
  */
-public class GithubChangesetIterator implements Iterator<Changeset>
+public class BranchedChangesetIterator implements Iterator<Changeset>
 {
     private ChangesetIterator changesetIterator;
-    private final ListIterator<RepositoryBranch> branchesIterator;
+    private final ListIterator<BranchTip> branchesIterator;
     private final ChangesetCache changesetCache;
-    private final GithubCommunicator githubCommunicator;
     private final Repository repository;
+    private final DvcsCommunicator dvcsCommunicator;
 
-    public GithubChangesetIterator(ChangesetCache changesetCache, GithubCommunicator githubCommunicator,
-            					   Repository repository, List<RepositoryBranch> branches)
+    public BranchedChangesetIterator(ChangesetCache changesetCache, DvcsCommunicator dvcsCommunicator,
+            					   Repository repository, List<BranchTip> branches)
     {
         this.changesetCache = changesetCache;
-        this.githubCommunicator = githubCommunicator;
+        this.dvcsCommunicator = dvcsCommunicator;
         this.repository = repository;
         this.branchesIterator = branches.listIterator();
     }
@@ -40,10 +40,11 @@ public class GithubChangesetIterator implements Iterator<Changeset>
         {
             return true;
         }
+        
         if (branchesIterator.hasNext())
         {
-            RepositoryBranch nextBranch = branchesIterator.next();
-            changesetIterator = new ChangesetIterator(githubCommunicator, repository, nextBranch, changesetCache);
+            BranchTip nextBranch = branchesIterator.next();
+            changesetIterator = new ChangesetIterator(dvcsCommunicator, repository, nextBranch, changesetCache);
             return hasNext();
         }
         return false;
@@ -68,24 +69,24 @@ public class GithubChangesetIterator implements Iterator<Changeset>
 }
 
 /**
- * Iterates new commits starting on a branch tip.
+ * Iterates new commits starting on a branchName tip.
  */
 class ChangesetIterator implements Iterator<Changeset>
 {
-    private final GithubCommunicator githubCommunicator;
+    private final DvcsCommunicator dvcsCommunicator;
     private final Repository repository;
     private final Set<String> nextNodes = new HashSet<String>();
-    private final String branch;
+    private final String branchName;
     private final ChangesetCache changesetCache;
 
-    public ChangesetIterator(GithubCommunicator githubCommunicator, Repository repository, RepositoryBranch branch,
+    public ChangesetIterator(DvcsCommunicator dvcsCommunicator, Repository repository, BranchTip branchTip,
             ChangesetCache changesetCache)
     {
-        this.githubCommunicator = githubCommunicator;
+        this.dvcsCommunicator = dvcsCommunicator;
         this.repository = repository;
         this.changesetCache = changesetCache;
-        this.branch = branch.getName();
-        addNodes(branch.getCommit().getSha());
+        this.branchName = branchTip.getBranchName();
+        addNodes(branchTip.getNode());
     }
 
     @Override
@@ -105,7 +106,14 @@ class ChangesetIterator implements Iterator<Changeset>
         Iterator<String> it = nextNodes.iterator();
         String node = it.next();
         it.remove();
-        Changeset currentChangeset = githubCommunicator.getDetailChangeset(repository, branch, node);
+        Changeset currentChangeset = dvcsCommunicator.getDetailChangeset(repository, node);
+        
+        // mercurial repositories will have branch set for each changeset
+        // git repositories don't have branch names set on changesets so we will set our own guessed name
+        if (StringUtils.isBlank(currentChangeset.getBranch()))
+        {
+            currentChangeset.setBranch(branchName);
+        }
         
         List<String> parents = currentChangeset.getParents();
         addNodes(parents.toArray(new String[0]));
@@ -128,6 +136,5 @@ class ChangesetIterator implements Iterator<Changeset>
             }
         }
     }
-
 
 }

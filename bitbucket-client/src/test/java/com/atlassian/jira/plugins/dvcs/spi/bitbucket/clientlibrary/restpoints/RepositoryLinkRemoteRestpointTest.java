@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
@@ -12,8 +14,6 @@ import org.testng.annotations.Test;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
-
-import static org.fest.assertions.api.Assertions.*;
 
 
 /**
@@ -61,7 +61,7 @@ public class RepositoryLinkRemoteRestpointTest
         repositoryLinkREST.getRepositoryLinks(BITBUCKET_REPO_OWNER, BITBUCKET_REPO_SLUG);
     }
 
-    @Test(timeOut=5000)
+    @Test(timeOut=10000)
     public void afterAddingRepositoryLink_ShouldBeAbleToQueryTheRepositoryLinkById()
     {
         // needed because you cannot add repository link with the same KEY multiple times => 400 status code
@@ -82,7 +82,7 @@ public class RepositoryLinkRemoteRestpointTest
         assertThat(addedRepositoryLink.getHandler()).isEqualsToByComparingFields(queriedRepositoryLink.getHandler());
     }
     
-    @Test(timeOut=5000)
+    @Test(timeOut=10000)
     public void removingAlreadyAddedRepositoryLink_ShouldNotThrowException()
     {
         // needed because you cannot add repository link with the same KEY multiple times => 400 status code
