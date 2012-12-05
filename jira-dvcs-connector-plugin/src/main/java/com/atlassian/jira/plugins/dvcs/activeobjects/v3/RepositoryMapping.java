@@ -13,7 +13,7 @@ public interface RepositoryMapping extends Entity
     public static final String ORGANIZATION_ID = "ORGANIZATION_ID";
     public static final String SLUG = "SLUG";
     public static final String NAME = "NAME";
-    public static final String LAST_COMMIT_DATE = "LAST_COMMIT_DATE";//TODO could be removed?
+    public static final String LAST_COMMIT_DATE = "LAST_COMMIT_DATE";
     public static final String LINKED = "LINKED";
     public static final String DELETED = "DELETED";
     public static final String SMARTCOMMITS_ENABLED = "SMARTCOMMITS_ENABLED";

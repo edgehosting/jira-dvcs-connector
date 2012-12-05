@@ -47,9 +47,15 @@ public final class TestSmartcommits
 	@Captor
 	private ArgumentCaptor<Changeset> savedChangesetCaptor;
 
-	private final Changeset changesetWithJIRAIssue = new Changeset(123, "node", "message MES-123 text", new Date());
-	private final Changeset changesetWithoutJIRAIssue = new Changeset(123, "node", "message without JIRA issue",
-			new Date());
+    private Changeset changesetWithJIRAIssue()
+    {
+        return new Changeset(123, "node", "message MES-123 text", new Date());
+    }
+
+    private Changeset changesetWithoutJIRAIssue()
+    {
+        return new Changeset(123, "node", "message without JIRA issue", new Date());
+    }
 
 
     @BeforeMethod
@@ -64,7 +70,7 @@ public final class TestSmartcommits
 		when(repositoryMock.isSmartcommitsEnabled()).thenReturn(Boolean.TRUE);
 
 		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(
-				Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
+				Arrays.asList(changesetWithJIRAIssue(), changesetWithoutJIRAIssue()));
 
 		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
                 mock(RepositoryService.class), changesetServiceMock, true); // soft sync
@@ -83,13 +89,14 @@ public final class TestSmartcommits
 	}
     
 
-//	@Test
+	@Test
 	public void softSynchronization_ShouldnotMarkSmartcommit() throws InterruptedException
 	{
 		when(repositoryMock.isSmartcommitsEnabled()).thenReturn(Boolean.FALSE);
 
+        changesetServiceMock = mock(ChangesetService.class);
 		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(
-				Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
+				Arrays.asList(changesetWithJIRAIssue(), changesetWithoutJIRAIssue()));
 
 		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
                 mock(RepositoryService.class), changesetServiceMock, true); // soft sync

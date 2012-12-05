@@ -217,10 +217,6 @@ public class GithubCommunicator implements DvcsCommunicator
             public Iterator<Changeset> iterator()
             {
                 List<BranchTip> branches = getBranches(repository);
-                // TODO if there are more than X (20?) branches then we should
-                // do something smarter...
-                // maybe search for new commits in scheduler job only? (once an
-                // hour)
                 return new BranchedChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
             }
         };
