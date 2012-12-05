@@ -19,7 +19,6 @@ import com.google.gson.reflect.TypeToken;
  */
 public class ChangesetRemoteRestpoint
 {
-    public static final int DEFAULT_CHANGESETS_LIMIT = 5;
     private static final int DIFFSTAT_NO_LIMIT = -1;
 
     private final RemoteRequestor requestor;
