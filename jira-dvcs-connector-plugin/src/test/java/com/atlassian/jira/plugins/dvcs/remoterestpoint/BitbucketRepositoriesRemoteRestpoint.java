@@ -23,6 +23,11 @@ public class BitbucketRepositoriesRemoteRestpoint
         createRepository(repositoryName, "hg");
     }
 
+    public void createGitRepository(String repositoryName)
+    {
+        createRepository(repositoryName, "git");    
+    }
+
     private void createRepository(String repositoryName, String scm)
     {
         Map<String, String> createRepoPostData = new HashMap<String, String>();
