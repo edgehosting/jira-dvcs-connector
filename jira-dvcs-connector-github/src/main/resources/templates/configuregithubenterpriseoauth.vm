@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>GitHub:enterprise  OAuth Settings</title>
+    <title>GitHub Enterprise  OAuth Settings</title>
     
     $webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
 
@@ -13,7 +13,7 @@
        #set($baseurl = $action.getBaseUrl())
 
         
-        <h3>GitHub:enterprise OAuth Settings</h3>
+        <h3>GitHub Enterprise OAuth Settings</h3>
 
               <h4 class="gh_config_h4">Setting up a GitHub OAuth Application</h4>
 

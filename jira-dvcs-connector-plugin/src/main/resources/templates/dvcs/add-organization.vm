@@ -69,7 +69,7 @@
                       <select id="urlSelect" name="urlSelect" class="select" onchange="switchDvcsDetails(this)">
 	               		<option value="bitbucket">Bitbucket</option>
 	                	<option value="github">GitHub</option>
-	                	<option value="githube">GitHub:enterprise</option>
+	                	<option value="githube">GitHub Enterprise</option>
 	               	  </select>
                       <div class="fieldValue" id="urlReadOnly"></div>
                       <div id="url-error" class="dvcs-error">Choose URL.</div>

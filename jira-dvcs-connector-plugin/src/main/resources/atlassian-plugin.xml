@@ -377,8 +377,8 @@
     
      <web-item key="github_enterprise_oauth" name="GitHub Enerprise OAuth" section="admin_plugins_menu/source_control" weight="10">
         <description>Static link to github.com.</description>
-        <label>GitHub:enterprise OAuth Settings</label>
-        <name>GitHub:enterprise Name Item</name>
+        <label>GitHub Enterprise OAuth Settings</label>
+        <name>GitHub Enterprise Name Item</name>
         <link>/secure/admin/ConfigureGithubEnterpriseOAuth!default.jspa</link>
         <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
     </web-item>
