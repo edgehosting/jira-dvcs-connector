@@ -126,6 +126,8 @@
                     <div class="field-group">
 	                   <label for="urlGhe">Host URL:</label>
 	                   <input type="text" id="urlGhe" name="urlGhe" value=""/>
+	                   <div id="ghe-url-error" class="dvcs-error">This field is required.</div>
+	                   <div id="ghe-invalid-url-error" class="dvcs-error">Valid url is required.</div>
 	                </div>
 	                <div id="githube-form-section-oauth" style="display:none">
 	                    <div class="field-group">

@@ -253,10 +253,11 @@ function dvcsSubmitFormHandler() {
     		AJS.$('#Submit').removeAttr("disabled");
     		return false;
     	}
-    	var dvcsHost = AJS.$("#urlSelect option:selected").text();
+    	var selectedDvcs = AJS.$("#urlSelect option:selected");
+    	var dvcsHost = selectedDvcs.text();
     	
-    	if ( dvcsHost == "GitHub:enterprise") {
-    		alert("Please be sure that you are logged in to GitHub:enterprise");
+    	if ( selectedDvcs.val() == "githube") {
+    		alert("Please be sure that you are logged in to " + dvcsHost);
     	}
     	//
         AJS.messages.info({ title: "Connecting to " + dvcsHost + " to configure your account...", closeable : false});
@@ -327,6 +328,10 @@ function validateAddOrganizationForm() {
 	
 	validator.addItem("organization", "org-error", "required");
 	
+	if (AJS.$("#githube-form-section").is(":visible")) {
+	    validator.addItem("urlGhe","ghe-url-error", "required");
+	    validator.addItem("urlGhe","ghe-invalid-url-error", "url");
+    }
 	if (AJS.$("#oauthClientId").is(":visible")) {
 		validator.addItem("oauthClientId", "oauth-client-error", "required");
 		validator.addItem("oauthSecret", "oauth-secret-error", "required");
