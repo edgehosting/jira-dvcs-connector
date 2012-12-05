@@ -331,10 +331,17 @@ function validateAddOrganizationForm() {
 	if (AJS.$("#githube-form-section").is(":visible")) {
 	    validator.addItem("urlGhe","ghe-url-error", "required");
 	    validator.addItem("urlGhe","ghe-invalid-url-error", "url");
-    }
-	if (AJS.$("#oauthClientId").is(":visible")) {
-		validator.addItem("oauthClientId", "oauth-client-error", "required");
-		validator.addItem("oauthSecret", "oauth-secret-error", "required");
+	    
+	    if (AJS.$("#githube-form-section-oauth").is(":visible")) {
+			validator.addItem("oauthClientIdGhe", "oauth-ghe-client-error", "required");
+			validator.addItem("oauthSecretGhe", "oauth-ghe-secret-error", "required");
+		}
+	} else if (AJS.$("#oauthBbClientId").is(":visible")) {
+		validator.addItem("oauthBbClientId", "oauth-bb-client-error", "required");
+		validator.addItem("oauthBbSecret", "oauth-bb-secret-error", "required");
+	} else if (AJS.$("#oauthGHClientId").is(":visible")) {
+		validator.addItem("oauthGHClientId", "oauth-gh-client-error", "required");
+		validator.addItem("oauthGHSecret", "oauth-gh-secret-error", "required");
 	} else if (AJS.$("#adminUsername").is(":visible")){
 		// validator.addItem("adminUsername", "admin-username-error", "required");
 		// validator.addItem("adminPassword", "admin-password-error", "required");
