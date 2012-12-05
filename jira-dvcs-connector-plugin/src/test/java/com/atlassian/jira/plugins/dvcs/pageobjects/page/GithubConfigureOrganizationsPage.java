@@ -127,7 +127,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         return jiraTestedProduct.getTester().getDriver().getCurrentUrl();
     }
 
-    private void waitWhileNewPageLaoded()
+    protected void waitWhileNewPageLaoded()
     {
         jiraTestedProduct.getTester().getDriver().waitUntilElementIsNotLocated(By.id("old-page"));
     }

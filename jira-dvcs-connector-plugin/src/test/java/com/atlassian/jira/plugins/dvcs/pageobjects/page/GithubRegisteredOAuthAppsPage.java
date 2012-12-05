@@ -10,7 +10,8 @@ import com.atlassian.pageobjects.elements.PageElement;
 
 public class GithubRegisteredOAuthAppsPage implements Page
 {
-    public static final String PAGE_URL = "https://github.com/settings/applications";
+    public static final String PAGE_PATH = "/settings/applications";
+    public static final String PAGE_URL = "https://github.com" + PAGE_PATH;
 
     @ElementBy(tagName = "body")
     PageElement pageBodyElm;
@@ -25,10 +26,15 @@ public class GithubRegisteredOAuthAppsPage implements Page
 
     public void parseClientIdAndSecret(String appName)
     {
+        parseClientIdAndSecret("https://github.com", appName);
+    }
+    
+    public void parseClientIdAndSecret(String githubUrl, String appName)
+    {
     	
     	List<PageElement> applications = pageBodyElm.findAll(By.cssSelector("li.linked-item a"));
     	PageElement lastApplication = applications.get(applications.size() - 1);
-    	oauthAppUrl = "https://github.com" + lastApplication.getAttribute("href");
+    	oauthAppUrl = githubUrl + lastApplication.getAttribute("href");
 
     }
 
