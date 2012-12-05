@@ -2,7 +2,11 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import static org.hamcrest.Matchers.containsString;
 
+import it.com.atlassian.jira.plugins.dvcs.GithubEnterpriseOrganizationsTest;
+
 import java.util.List;
+
+import junit.framework.Assert;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -15,31 +19,30 @@ import com.atlassian.pageobjects.elements.query.Poller;
 /**
  * Represents the page to link repositories to projects
  */
-public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizationsPage
+public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureOrganizationsPage
 {
-
-    @ElementBy(id = "login_field")
-    PageElement githubWebLoginField;
-
-    @ElementBy(id = "password")
-    PageElement githubWebPasswordField;
-
-    @ElementBy(name = "authorize")
-    PageElement githubWebAuthorizeButton;
-
-    @ElementBy(name = "commit")
-    PageElement githubWebSubmitButton;
-
+    @ElementBy(name = "urlGhe")
+    PageElement githubEnterpriseHostUrl;
+    
+    private String githubEnterpriseHost;
+    
+    public void setGithubEnterpriseHost(String githubEnterpriseHost)
+    {
+        this.githubEnterpriseHost = githubEnterpriseHost;
+    }
+    
     @Override
-    public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
+    public GithubEnterpriseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
 
-        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
+        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
 
         organization.clear().type(organizationAccount);
 
+        githubEnterpriseHostUrl.clear().type(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL);
+        
         setPageAsOld();
 
         if (!autoSync) {
@@ -52,9 +55,9 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         String githubWebLoginRedirectUrl = authorizeGithubAppIfRequired();
 
-        if (!githubWebLoginRedirectUrl.contains("jira"))
+        if (!githubWebLoginRedirectUrl.contains("/jira/"))
         {
-            throw new AssertionError("Expected was Valid OAuth login and redirect to JIRA!");
+            Assert.fail("Expected was Valid OAuth login and redirect to JIRA!");
         }
 
         if (autoSync) {
@@ -64,18 +67,18 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         return this;
     }
 
-
-
     @Override
-    public GithubConfigureOrganizationsPage addOrganizationFailingStep1(String url)
+    public GithubEnterpriseConfigureOrganizationsPage addOrganizationFailingStep1(String url)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
 
-        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
+        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
 
         organization.clear().type(url);
 
+        githubEnterpriseHostUrl.clear().type(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL);
+        
         setPageAsOld();
 
         addOrgButton.click();
@@ -92,18 +95,19 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         linkRepositoryButton.click();
         waitFormBecomeVisible();
 
-        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
+        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
         organization.clear().type("jirabitbucketconnector");
-
+        githubEnterpriseHostUrl.clear().type(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL);
+        
         setPageAsOld();
 
         addOrgButton.click();
 
         String currentUrl = checkAndDoGithubLogin();
-        String expectedUrl = "https://github.com/login/oauth/authorize?";
+        String expectedUrl = GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL + "/login/oauth/authorize?";
         if (!currentUrl.startsWith(expectedUrl) || !currentUrl.contains("client_id=xxx"))
         {
-            throw new AssertionError("Unexpected url: " + currentUrl);
+            Assert.fail("Unexpected url: " + currentUrl);
         }
 
         return this;
@@ -115,7 +119,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     	waitWhileNewPageLaoded();
 
         String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
-        if (currentUrl.contains("https://github.com/login?"))
+        if (currentUrl.contains(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL + "/login?"))
         {
             githubWebLoginField.type("jirabitbucketconnector");
             githubWebPasswordField.type(PasswordUtil.getPassword("jirabitbucketconnector"));
@@ -125,28 +129,12 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         return jiraTestedProduct.getTester().getDriver().getCurrentUrl();
     }
 
-    protected void waitWhileNewPageLaoded()
-    {
-        jiraTestedProduct.getTester().getDriver().waitUntilElementIsNotLocated(By.id("old-page"));
-    }
-
-    protected void setPageAsOld()
-    {
-        StringBuilder script = new StringBuilder();
-        script.append("var bodyElm = document.getElementsByTagName('body')[0];");
-        script.append("var oldPageHiddenElm = document.createElement('input');");
-        script.append("oldPageHiddenElm.setAttribute('id','old-page');");
-        script.append("oldPageHiddenElm.setAttribute('type','hidden');");
-        script.append("bodyElm.appendChild(oldPageHiddenElm);");
-        jiraTestedProduct.getTester().getDriver().executeScript(script.toString());
-    }
-
     private String authorizeGithubAppIfRequired()
     {
         waitWhileNewPageLaoded();
 
         String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
-        if (currentUrl.contains("/github.com/login/oauth"))
+        if (currentUrl.contains(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL + "/login/oauth"))
         {
             githubWebAuthorizeButton.click();
         }
@@ -164,14 +152,38 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         return this;
     }
 
-
-    public GithubConfigureOrganizationsPage addRepoToProject(String url, boolean autoSync)
+    @Override
+    public GithubEnterpriseConfigureOrganizationsPage addRepoToProject(String url, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
 
-        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
+        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
         organization.clear().type("jirabitbucketconnector");
+        githubEnterpriseHostUrl.clear().type(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL);
+        
+        setPageAsOld();
+        addOrgButton.click();
+
+        checkAndDoGithubLogin();
+        String currentUrl = authorizeGithubAppIfRequired();
+        if (!currentUrl.contains("/jira/"))
+        {
+            Assert.fail("Expected was automatic continue to jira!");
+        }
+
+        return this;
+    }
+
+    @Override
+    public GithubEnterpriseConfigureOrganizationsPage addRepoToProjectForOrganization(String organizationString)
+    {
+        linkRepositoryButton.click();
+        waitFormBecomeVisible();
+
+        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
+        organization.clear().type(organizationString);
+        githubEnterpriseHostUrl.clear().type(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL);
 
         setPageAsOld();
         addOrgButton.click();
@@ -180,39 +192,9 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         String currentUrl = authorizeGithubAppIfRequired();
         if (!currentUrl.contains("/jira/"))
         {
-            throw new AssertionError("Expected was automatic continue to jira!");
+            Assert.fail("Expected was automatic continue to jira!");
         }
 
         return this;
-    }
-
-    public GithubConfigureOrganizationsPage addRepoToProjectForOrganization(String organizationString)
-    {
-        linkRepositoryButton.click();
-        waitFormBecomeVisible();
-
-        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
-        organization.clear().type(organizationString);
-
-        setPageAsOld();
-        addOrgButton.click();
-
-        checkAndDoGithubLogin();
-        String currentUrl = authorizeGithubAppIfRequired();
-        if (!currentUrl.contains("jira"))
-        {
-            throw new AssertionError("Expected was automatic continue to jira!");
-        }
-
-        return this;
-    }
-
-    public int getNumberOfVisibleRepositories()
-    {
-        List<WebElement> visibleRepositoryRows = jiraTestedProduct.getTester()
-                                                                  .getDriver()
-                                                                  .findElements(By.className("dvcs-repo-row"));
-
-        return visibleRepositoryRows.size();
     }
 }

@@ -178,8 +178,19 @@
     background-repeat: no-repeat;
 }
 
+.githubeLogo {
+	background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/ghe_logo.png);
+	background-repeat: no-repeat;
+}
+
 h4.bitbucketLogo, h4.githubLogo {
 	padding-left: 27px;	
+}
+
+h4.githubeLogo  {
+	padding-left: 115px;
+	height: 30px;
+	line-height: 30px;
 }
 
 #postCommitServiceDetails{
@@ -378,7 +389,7 @@ select#urlSelect {
 
 }
 
-.aui.bitbucketLogo, .aui.githubLogo {
+.aui.bitbucketLogo, .aui.githubLogo, .aui.githubeLogo {
 	float: left;
 	position: relative;
 	top: 2px;

@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.ProtocolException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
@@ -53,9 +54,9 @@ public class GithubCommunicator implements DvcsCommunicator
     public static final String GITHUB = "github";
 
     private final ChangesetCache changesetCache;
-    private final GithubOAuth githubOAuth;
+    protected final GithubOAuth githubOAuth;
 
-    private final GithubClientProvider githubClientProvider;
+    protected final GithubClientProvider githubClientProvider;
 
     public GithubCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
             GithubClientProvider githubClientProvider)
@@ -258,7 +259,14 @@ public class GithubCommunicator implements DvcsCommunicator
             {
                 if (postCommitUrl.equals(hook.getConfig().get("url")))
                 {
-                    repositoryService.deleteHook(repositoryId, (int) hook.getId());
+                    //TODO catching java.net.ProtocolException: HTTP method DELETE doesn't support output
+                    try 
+                    {
+                        repositoryService.deleteHook(repositoryId, (int) hook.getId());
+                    } catch (ProtocolException pe)
+                    {
+                        log.warn("Error removing postcommit hook [{}] for repository [{}].", hook.getId(), repository.getRepositoryUrl());
+                    }
                 }
             }
         } catch (IOException e)

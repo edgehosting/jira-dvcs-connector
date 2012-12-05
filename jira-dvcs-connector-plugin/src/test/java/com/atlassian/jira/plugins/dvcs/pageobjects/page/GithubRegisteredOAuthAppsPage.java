@@ -10,7 +10,8 @@ import com.atlassian.pageobjects.elements.query.TimedCondition;
 
 public class GithubRegisteredOAuthAppsPage extends AbstractJiraPage
 {
-    public static final String PAGE_URL = "https://github.com/settings/applications";
+    public static final String PAGE_PATH = "/settings/applications";
+    public static final String PAGE_URL = "https://github.com" + PAGE_PATH;
 
     private String oauthAppUrl;
 

@@ -10,8 +10,9 @@ import com.atlassian.pageobjects.elements.PageElement;
  */
 public class GithubLoginPage implements Page
 {
-    public static final String PAGE_URL = "https://github.com/login";
-
+    public static final String PAGE_PATH = "/login";
+    public static final String PAGE_URL = "https://github.com" + PAGE_PATH;
+    
     @ElementBy(id = "login_field")
     PageElement githubWebLoginField;
     

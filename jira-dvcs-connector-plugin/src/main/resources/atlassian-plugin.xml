@@ -165,6 +165,12 @@
         <description>githubCommunicator</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
     </component>
+    
+    <component key="githubEnterpriseCommunicator" name="githubEnterpriseCommunicator"
+               class="com.atlassian.jira.plugins.dvcs.spi.github.GithubEnterpriseCommunicator">
+        <description>githubEnterpriseCommunicator</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
+    </component>
 
     <component key="dvcsCommunicatorProvider" name="dvcsCommunicatorProvider"
                class="com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider">
@@ -289,11 +295,20 @@
             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.ConfigureGithubOAuth" alias="ConfigureGithubOAuth">
                 <view name="input">/templates/configuregithuboauth.vm</view>
             </action>
+            
+             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.ConfigureGithubEnterpriseOAuth" alias="ConfigureGithubEnterpriseOAuth">
+                <view name="input">/templates/configuregithubenterpriseoauth.vm</view>
+            </action>
 
 			<!-- New organization driven actions -->
             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.AddGithubOrganization"
                     alias="AddGithubOrganization" roles-required="admin">
                 <view name="input">/templates/dvcs/add-github-organization.vm</view>
+            </action>
+            
+               <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.AddGithubEnterpriseOrganization"
+                    alias="AddGithubEnterpriseOrganization" roles-required="admin">
+                <view name="input">/templates/dvcs/add-githube-organization.vm</view>
             </action>
 
             <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.AddBitbucketOrganization"
@@ -318,6 +333,11 @@
 
 			<action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken"
                     alias="RegenerateGithubOauthToken" roles-required="admin">
+                <view name="input">/templates/dvcs/add-organization.vm</view>
+            </action>
+            
+            <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubEnterpriseOauthToken"
+                    alias="RegenerateGithubEnterpriseOauthToken" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
 
@@ -352,6 +372,14 @@
         <label>GitHub OAuth Settings</label>
         <name>GitHub Name Item</name>
         <link>/secure/admin/ConfigureGithubOAuth!default.jspa</link>
+        <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
+    </web-item>
+    
+     <web-item key="github_enterprise_oauth" name="GitHub Enerprise OAuth" section="admin_plugins_menu/source_control" weight="10">
+        <description>Static link to github.com.</description>
+        <label>GitHub Enterprise OAuth Settings</label>
+        <name>GitHub Enterprise Name Item</name>
+        <link>/secure/admin/ConfigureGithubEnterpriseOAuth!default.jspa</link>
         <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
     </web-item>
 

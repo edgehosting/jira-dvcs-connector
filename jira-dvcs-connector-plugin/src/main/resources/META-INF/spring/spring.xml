@@ -11,5 +11,9 @@
         <constructor-arg  ref="githubCommunicator" />
     </bean>
 
+    <bean id="cachingGithubEnterpriseCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
+        <constructor-arg  ref="githubEnterpriseCommunicator" />
+    </bean>
+
 
 </beans>
