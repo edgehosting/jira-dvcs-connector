@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -18,9 +19,14 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
+import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranch;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranchesAndTags;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
@@ -54,6 +60,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
     private final BitbucketOAuth oauth;
     private final BitbucketClientRemoteFactory bitbucketClientRemoteFactory;
 
+    private final ChangesetCache changesetCache;
+
     /**
      * The Constructor.
      * 
@@ -64,11 +72,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
      */
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
             PluginAccessor pluginAccessor, BitbucketOAuth oauth,
-            BitbucketClientRemoteFactory bitbucketClientRemoteFactory)
+            BitbucketClientRemoteFactory bitbucketClientRemoteFactory, ChangesetCache changesetCache)
     {
         this.bitbucketLinker = bitbucketLinker;
         this.oauth = oauth;
         this.bitbucketClientRemoteFactory = bitbucketClientRemoteFactory;
+        this.changesetCache = changesetCache;
         this.pluginVersion = getPluginVersion(pluginAccessor);
     }
 
@@ -141,16 +150,22 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    public Changeset getDetailChangeset(Repository repository, String node)
     {
         try
         {
+            // get the changeset
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
+            BitbucketChangeset bitbucketChangeset = remoteClient.getChangesetsRest().getChangeset(repository.getOrgName(), 
+                            repository.getSlug(), node);
+
+            // get the commit statistics for changeset
+            Changeset fromBitbucketChangeset = ChangesetTransformer.fromBitbucketChangeset(repository.getId(), bitbucketChangeset);
             List<BitbucketChangesetWithDiffstat> changesetDiffStat = remoteClient.getChangesetsRest()
                     .getChangesetDiffStat(repository.getOrgName(), // owner
-                            repository.getSlug(), changeset.getNode(), Changeset.MAX_VISIBLE_FILES); // limit
-
-            return DetailedChangesetTransformer.fromChangesetAndBitbucketDiffstats(changeset, changesetDiffStat);
+                            repository.getSlug(), node, Changeset.MAX_VISIBLE_FILES); // limit
+            // merge it all 
+            return DetailedChangesetTransformer.fromChangesetAndBitbucketDiffstats(fromBitbucketChangeset, changesetDiffStat);
         } catch (BitbucketRequestException e)
         {
             log.debug(e.getMessage(), e);
@@ -158,27 +173,63 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Iterable<Changeset> getChangesets(Repository repository)
+    public Iterable<Changeset> getChangesets(final Repository repository)
     {
+        return new Iterable<Changeset>()
+        {
+            @Override
+            public Iterator<Changeset> iterator()
+            {
+                List<BranchTip> branches = getBranches(repository);
+                return new BranchedChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, branches);
+            }
+
+        };
+    }
+
+    private List<BranchTip> getBranches(Repository repository)
+    {
+        // Using undocumented https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
+        List<BranchTip> branchTips = new ArrayList<BranchTip>();
         try
         {
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
-            Iterable<BitbucketChangeset> bitbucketChangesets =
-                    remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
-                                                                   repository.getSlug(),
-                                                                   repository.getLastChangesetNode());
-
-            return new ChangesetIterableAdapter(repository, bitbucketChangesets);
-        }
-        catch (BitbucketRequestException e)
+            BitbucketBranchesAndTags branchesAndTags = remoteClient.getBranchesAndTagsRemoteRestpoint().getBranchesAndTags(repository.getOrgName(),repository.getSlug());
+            List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
+            for (BitbucketBranch bitbucketBranch : bitbucketBranches)
+            {
+                List<String> heads = bitbucketBranch.getHeads();
+                for (String head : heads)
+                {
+                    // make sure "master" branch is first in the list
+                    if ("master".equals(bitbucketBranch.getName()))
+                    {
+                        branchTips.add(0, new BranchTip(bitbucketBranch.getName(), head));
+                    } else
+                    {
+                        branchTips.add(new BranchTip(bitbucketBranch.getName(), head));
+                    }
+                }
+            }
+        } catch (BitbucketRequestException e)
         {
-            log.debug(e.getMessage(), e);
-            throw new SourceControlException("Could not get result", e);
+            log.debug("Could not add postcommit hook", e);
+            throw new SourceControlException("Could not add postcommit hook", e);
         }
+
+        // Bitbucket returns raw_nodes for each branch, but changesetiterator works 
+        // with nodes. We need to use only first 12 characters from the node
+        for (BranchTip branchTip : branchTips)
+        {
+            String rawNode = branchTip.getNode();
+            if (StringUtils.length(rawNode)>12)
+            {
+                String node = rawNode.substring(0, 11); // TODO test this
+                branchTip.setNode(node);
+            }
+        }
+        return branchTips;
     }
 
     /**
@@ -367,39 +418,5 @@ public class BitbucketCommunicator implements DvcsCommunicator
     public static String getApiUrl(String hostUrl)
     {
         return hostUrl + "/!api/1.0";
-    }
-    private static final class ChangesetIterableAdapter implements Iterable<Changeset>, Iterator<Changeset>
-    {
-        private final Iterator<BitbucketChangeset> bitbucketChangesetIterator;
-        private final int repositoryId;
-
-
-        private ChangesetIterableAdapter(Repository repository, Iterable<BitbucketChangeset> bitbucketChangesetIterable)
-        {
-            this.bitbucketChangesetIterator = bitbucketChangesetIterable.iterator();
-            this.repositoryId = repository.getId();
-        }
-
-
-        @Override
-        public boolean hasNext() {
-            return bitbucketChangesetIterator.hasNext();
-        }
-
-        @Override
-        public Changeset next() {
-            return ChangesetTransformer.fromBitbucketChangeset(repositoryId,
-                                                               bitbucketChangesetIterator.next());
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Remove operation not supported.");
-        }
-
-        @Override
-        public Iterator<Changeset> iterator() {
-            return this;
-        }
     }
 }

@@ -1,20 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.github;
 
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -30,12 +21,8 @@ import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -47,12 +34,15 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.sal.api.net.ResponseException;
 
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import static org.fest.assertions.api.Assertions.*;
 
 /**
  * @author Martin Skurla
  * @author Miroslav Stencel mstencel@atlassian.com
  */
-@RunWith(MockitoJUnitRunner.class)
 public class GithubCommunicatorTest
 {
 	@Mock
@@ -76,7 +66,7 @@ public class GithubCommunicatorTest
 	private class ChangesetCacheImpl implements ChangesetCache
 	{
 	    
-	    private List<String> cache = new ArrayList<String>();
+	    private final List<String> cache = new ArrayList<String>();
 	    
         @Override
         public boolean isCached(int repositoryId, String changesetNode)
@@ -89,10 +79,12 @@ public class GithubCommunicatorTest
             cache.add(node);
         }
 	}
-	
-	@Before
-	public void initializeGithubCommunicator()
+
+	@BeforeMethod
+	public void initializeMocksAndGithubCommunicator()
     {
+        MockitoAnnotations.initMocks(this);
+
         communicator = new GithubCommunicator(changesetCache = new ChangesetCacheImpl(), mock(GithubOAuth.class), githubClientProvider);
         when(githubClientProvider.getRepositoryService(repositoryMock)).thenReturn(repositoryService);
         when(githubClientProvider.getUserService(repositoryMock)).thenReturn(userService);
@@ -120,15 +112,14 @@ public class GithubCommunicatorTest
         
         DvcsUser githubUser = communicator.getUser(repositoryMock, "USER-NAME");
         
-        assertThat(githubUser.getAvatar(), is("https://secure.gravatar.com/avatar/gravatarId?s=60"));
-        assertThat(githubUser.getUsername(), is("Test GitHub user login"));
-        assertThat(githubUser.getFullName(), is("Test GitHub user name"));
+        assertThat(githubUser.getAvatar())  .isEqualTo("https://secure.gravatar.com/avatar/gravatarId?s=60");
+        assertThat(githubUser.getUsername()).isEqualTo("Test GitHub user login");
+        assertThat(githubUser.getFullName()).isEqualTo("Test GitHub user name");
     }
 
     @Test
     public void gettingDetailChangeset_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException, IOException
     {
-        Changeset changesetMock = mock(Changeset.class);
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryCommit repositoryCommit = mock(RepositoryCommit.class);
@@ -137,23 +128,23 @@ public class GithubCommunicatorTest
         when(repositoryCommit.getCommit()).thenReturn(commit);
         when(commit.getMessage()).thenReturn("ABC-123 fix");
 
-        Changeset detailChangeset = communicator.getDetailChangeset(repositoryMock, changesetMock);
+        Changeset detailChangeset = communicator.getDetailChangeset(repositoryMock, "abcde");
         
         verify(commitService).getCommit(Matchers.<IRepositoryIdProvider>anyObject(),anyString());
 
-        assertThat(detailChangeset.getMessage(), is("ABC-123 fix"));
+        assertThat(detailChangeset.getMessage()).isEqualTo("ABC-123 fix");
     }
     
     @Test
     public void getChangesets_noBranches()
     {
-     // Repository
+        // Repository
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         
         Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-        assertFalse(changesetIterator.hasNext());
-        assertFalse(changesetIterator.hasNext());
+        assertThat(changesetIterator.hasNext()).isFalse();
+        assertThat(changesetIterator.hasNext()).isFalse();
         
         // this should throw an exception
         try
@@ -196,7 +187,7 @@ public class GithubCommunicatorTest
             }
         }
         
-        assertThat(changesetCounter, is(5));
+        assertThat(changesetCounter).isEqualTo(5);
     }
     
     @Test
@@ -216,8 +207,8 @@ public class GithubCommunicatorTest
         changesetIterator.next();
         
         // we are on the last node
-        assertTrue(changesetIterator.hasNext());
-        assertTrue(changesetIterator.hasNext());
+        assertThat(changesetIterator.hasNext()).isTrue();
+        assertThat(changesetIterator.hasNext()).isTrue();
     }
     
     @Test
@@ -237,8 +228,8 @@ public class GithubCommunicatorTest
         changesetCache.add("NODE-1");
         
         changesetIterator.next();
-        assertFalse(changesetIterator.hasNext());
-        assertFalse(changesetIterator.hasNext());
+        assertThat(changesetIterator.hasNext()).isFalse();
+        assertThat(changesetIterator.hasNext()).isFalse();
     }
     
     @Test
@@ -255,8 +246,8 @@ public class GithubCommunicatorTest
         
         changesetCache.add("MASTER-SHA");
         
-        assertFalse(changesetIterator.hasNext());
-        assertFalse(changesetIterator.hasNext());
+        assertThat(changesetIterator.hasNext()).isFalse();
+        assertThat(changesetIterator.hasNext()).isFalse();
        
         // this should throw an exception
         try
@@ -286,12 +277,12 @@ public class GithubCommunicatorTest
         changesetCache.add("MASTER-SHA");
         
         // we stopped the master branch, it should iterate branch1
-        assertTrue(changesetIterator.hasNext());
-        assertTrue(changesetIterator.hasNext());
+        assertThat(changesetIterator.hasNext()).isTrue();
+        assertThat(changesetIterator.hasNext()).isTrue();
        
         Changeset detailChangeset = changesetIterator.next();
-        assertThat(detailChangeset.getBranch(), is("branch1"));
-        assertThat(detailChangeset.getNode(), is("BRANCH-SHA"));
+        assertThat(detailChangeset.getBranch()).isEqualTo("branch1");
+        assertThat(detailChangeset.getNode())  .isEqualTo("BRANCH-SHA");
     }
     
     @Test
@@ -323,7 +314,7 @@ public class GithubCommunicatorTest
             changesetIterator.hasNext();
         }
         
-        assertThat(changesetCounter, is(5));
+        assertThat(changesetCounter).isEqualTo(5);
     }
     
     @Test
@@ -346,7 +337,7 @@ public class GithubCommunicatorTest
             changesetCache.add(changeset.getNode());
             changesetCounter++;
         }
-        assertThat(changesetCounter, is(3));
+        assertThat(changesetCounter).isEqualTo(3);
     }
     
     @Test
@@ -366,7 +357,7 @@ public class GithubCommunicatorTest
             changesetCache.add(changeset.getNode());
             changesetCounter++;
         }
-        assertThat(changesetCounter, is(15));
+        assertThat(changesetCounter).isEqualTo(15);
     }
     
     private void createBranchWithTwoNodes(RepositoryId repositoryId) throws IOException

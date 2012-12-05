@@ -12,6 +12,5 @@ public interface RemoteRequestor
     <T> T put(String uri, Map<String, String> parameters, ResponseCallback<T> callback);
 	
     <T> T delete(String uri, Map<String, String> parameters, ResponseCallback<T> callback);
-	
 }
 

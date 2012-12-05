@@ -70,7 +70,7 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest
         // find out app URL
         jira.getTester().gotoUrl( GITHUB_ENTERPRISE_URL + GithubRegisteredOAuthAppsPage.PAGE_PATH);
         GithubRegisteredOAuthAppsPage registeredOAuthAppsPage = jira.getPageBinder().bind(GithubRegisteredOAuthAppsPage.class);
-        registeredOAuthAppsPage.parseClientIdAndSecret(GITHUB_ENTERPRISE_URL, oauthAppName);
+        registeredOAuthAppsPage.parseClientIdAndSecret(oauthAppName);
         oauthAppLink = registeredOAuthAppsPage.getOauthAppUrl();
         jira.getTester().gotoUrl(GITHUB_ENTERPRISE_URL + GithubLoginPage.PAGE_PATH);
         ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
@@ -124,9 +124,8 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest
         configureOrganizations.deleteAllOrganizations();
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    protected Class getPageClass()
+    protected Class<GithubEnterpriseConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return GithubEnterpriseConfigureOrganizationsPage.class;
     }
@@ -201,8 +200,8 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest
     {
         configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
-        assertThat(getCommitsForIssue("QA-2")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
-        assertThat(getCommitsForIssue("QA-3")).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-2",6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-3",1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
 
     @Test
@@ -212,7 +211,7 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         // QA-2
-        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3");
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3",1);
         Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
@@ -221,7 +220,7 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest
         Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
 
         // QA-4
-        commitMessages = getCommitsForIssue("QA-4");
+        commitMessages = getCommitsForIssue("QA-4",1);
         Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
         commitMessage = commitMessages.get(0);
         statistics = commitMessage.getStatistics();

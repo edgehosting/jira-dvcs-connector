@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.google.common.collect.Sets;
+
+import org.testng.annotations.Test;
+
+import static org.fest.assertions.api.Assertions.*;
 
 public class OrganizationDaoImplTest
 {
@@ -14,19 +14,23 @@ public class OrganizationDaoImplTest
     @Test
     public void testDeserializeDefaultGroups()
     {
-        assertEquals(Sets.newHashSet(new Group("a"),new Group("b")), oDao.deserializeDefaultGroups("a;b"));
-        assertEquals(Sets.newHashSet(), oDao.deserializeDefaultGroups(null));
-        assertEquals(Sets.newHashSet(), oDao.deserializeDefaultGroups(" "));
-        assertEquals(Sets.newHashSet(), oDao.deserializeDefaultGroups(";"));
-        assertEquals(Sets.newHashSet(), oDao.deserializeDefaultGroups(" ;"));
-        assertEquals(Sets.newHashSet(new Group("abraka dab"),new Group("raka")), oDao.deserializeDefaultGroups("abraka dab;raka"));
+        assertThat(oDao.deserializeDefaultGroups(null)).isEmpty();
+        assertThat(oDao.deserializeDefaultGroups(" ")) .isEmpty();
+        assertThat(oDao.deserializeDefaultGroups(";")) .isEmpty();
+        assertThat(oDao.deserializeDefaultGroups(" ;")).isEmpty();
+
+        assertThat(oDao.deserializeDefaultGroups("a;b")).containsOnly(new Group("a"), new Group("b"));
+
+        assertThat(oDao.deserializeDefaultGroups("abraka dab;raka")).containsOnly(new Group("abraka dab"),new Group("raka"));
     }
     
     @Test
     public void testSerializeDefaultGroups()
     {
-        assertEquals("a;b",oDao.serializeDefaultGroups(Sets.newHashSet(new Group("a"),new Group("b"))));
-        assertEquals("raka;abraka dab",oDao.serializeDefaultGroups(Sets.newHashSet(new Group("abraka dab"),new Group("raka"))));
-    }
+        assertThat(oDao.serializeDefaultGroups(Sets.newHashSet(new Group("a"),new Group("b"))))
+                .isEqualTo("a;b");
 
+        assertThat(oDao.serializeDefaultGroups(Sets.newHashSet(new Group("abraka dab"),new Group("raka"))))
+                .isEqualTo("raka;abraka dab");
+    }
 }

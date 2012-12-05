@@ -5,27 +5,28 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import static org.mockito.Mockito.*;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountInfo;
 
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import static org.fest.assertions.api.Assertions.*;
 
-@RunWith(MockitoJUnitRunner.class)
+
 public class JsonFileBasedAccountsConfigProviderTest
 {
     @Mock
     private FeatureManager featureManager;
     
-    @Before
+    @BeforeMethod
     public void setUp()
     {
+        MockitoAnnotations.initMocks(this);
+
         when(featureManager.isEnabled(isA(CoreFeatures.class))).thenReturn(Boolean.TRUE);
     }
     
@@ -36,9 +37,9 @@ public class JsonFileBasedAccountsConfigProviderTest
         AccountsConfig configuration = provider.provideConfiguration();
         BitbucketAccountInfo linkConfig = configuration.getFirstBitbucketAccountConfig();
 
-        Assert.assertEquals("mybucketbit", linkConfig.getAccount());
-        Assert.assertEquals("verysecretkey", linkConfig.getKey());
-        Assert.assertEquals("verysecretsecret", linkConfig.getSecret());
+        assertThat(linkConfig.getAccount()).isEqualTo("mybucketbit");
+        assertThat(linkConfig.getKey())    .isEqualTo("verysecretkey");
+        assertThat(linkConfig.getSecret()) .isEqualTo("verysecretsecret");
     }
     
     @Test
@@ -48,9 +49,9 @@ public class JsonFileBasedAccountsConfigProviderTest
         AccountsConfig configuration = provider.provideConfiguration();
         BitbucketAccountInfo linkConfig = configuration.getFirstBitbucketAccountConfig();
 
-        Assert.assertEquals("mybucketbit", linkConfig.getAccount());
-        Assert.assertEquals("verysecretkey", linkConfig.getKey());
-        Assert.assertEquals("verysecretsecret", linkConfig.getSecret());
+        assertThat(linkConfig.getAccount()).isEqualTo("mybucketbit");
+        assertThat(linkConfig.getKey())    .isEqualTo("verysecretkey");
+        assertThat(linkConfig.getSecret()) .isEqualTo("verysecretsecret");
     }
     
     @Test
@@ -58,7 +59,7 @@ public class JsonFileBasedAccountsConfigProviderTest
     {
         AccountsConfigProvider provider = getCustomProvider("ondemand/ondemand-failed-content.properties");
         AccountsConfig configuration = provider.provideConfiguration();
-        Assert.assertNull(configuration);
+        assertThat(configuration).isNull();
     }
     
     @Test
@@ -66,7 +67,7 @@ public class JsonFileBasedAccountsConfigProviderTest
     {
         AccountsConfigProvider provider = getCustomProvider("/ondemand/ondemand-NOTFOUND.properties");
         AccountsConfig configuration = provider.provideConfiguration();
-        Assert.assertNull(configuration);
+        assertThat(configuration).isNull();
     }
     
     

@@ -39,7 +39,9 @@ import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
@@ -151,19 +153,14 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
-    {
-        return getDetailChangeset(repository, changeset.getBranch(), changeset.getNode());
-    }
-
-    public Changeset getDetailChangeset(Repository repository, String branch, String node) {
+    public Changeset getDetailChangeset(Repository repository, String node) {
         CommitService commitService = githubClientProvider.getCommitService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
         try
         {
             RepositoryCommit commit = commitService.getCommit(repositoryId, node);
-            return GithubChangesetFactory.transform(commit, repository.getId(), branch);
+            return GithubChangesetFactory.transform(commit, repository.getId(), null);
         } catch (IOException e)
         {
             throw new SourceControlException("could not get result", e);
@@ -180,7 +177,6 @@ public class GithubCommunicator implements DvcsCommunicator
                 return getPageIteratorInternal(repository, branch);
             }
         });
-
     }
 
     private PageIterator<RepositoryCommit> getPageIteratorInternal(Repository repository, String branch)
@@ -221,12 +217,12 @@ public class GithubCommunicator implements DvcsCommunicator
             @Override
             public Iterator<Changeset> iterator()
             {
-                List<RepositoryBranch> branches = getBranches(repository);
+                List<BranchTip> branches = getBranches(repository);
                 // TODO if there are more than X (20?) branches then we should
                 // do something smarter...
                 // maybe search for new commits in scheduler job only? (once an
                 // hour)
-                return new GithubChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
+                return new BranchedChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
             }
         };
     }
@@ -319,11 +315,11 @@ public class GithubCommunicator implements DvcsCommunicator
         return MessageFormat.format("{0}/{1}", repository.getOrgHostUrl(), changeset.getAuthor());
     }
 
-    private List<RepositoryBranch> getBranches(Repository repository)
+    private List<BranchTip> getBranches(Repository repository)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
 
-        List<RepositoryBranch> branches = new ArrayList<RepositoryBranch>();
+        List<BranchTip> branches = new ArrayList<BranchTip>();
         try
         {
             final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(
@@ -332,12 +328,13 @@ public class GithubCommunicator implements DvcsCommunicator
 
             for (RepositoryBranch ghBranch : ghBranches)
             {
-                if ( "master".equalsIgnoreCase(ghBranch.getName()) )
+                BranchTip branchTip = new BranchTip(ghBranch.getName(), ghBranch.getCommit().getSha());
+                if ("master".equalsIgnoreCase(ghBranch.getName()))
                 {
-                    branches.add(0, ghBranch);
+                    branches.add(0, branchTip);
                 } else
                 {
-                    branches.add(ghBranch);
+                    branches.add(branchTip);
                 }
             }
 

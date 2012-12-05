@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.util;
 import org.openqa.selenium.By;
 
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.webdriver.AtlassianWebDriver;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com
@@ -26,7 +25,7 @@ public final class PageElementUtils
         return null;
     }
 
-    public static PageElement findTagWithAttribute(PageElement sourceElement, String tagName, String attributeName,
+    public static PageElement findTagWithAttributeValue(PageElement sourceElement, String tagName, String attributeName,
             String attributeValue)
     {
         for (PageElement tag : sourceElement.findAll(By.tagName(tagName)))
@@ -40,46 +39,18 @@ public final class PageElementUtils
         return null;
     }
 
-    public static PageElement findTagWithText(PageElement sourceElement, String tagName, String expectedTagText)
+    public static PageElement findTagWithAttributeValueEndingWith(PageElement sourceElement, String tagName,
+            String attributeName, String attributeValueEndPart)
     {
         for (PageElement tag : sourceElement.findAll(By.tagName(tagName)))
         {
-            if (expectedTagText.equals(tag.getText()))
+            String attributeValue = tag.getAttribute(attributeName);
+            if (attributeValue != null && attributeValue.endsWith(attributeValueEndPart))
             {
                 return tag;
             }
         }
 
         return null;
-    }
-
-    public static void waitUntilPageUrlDoesNotContain(AtlassianWebDriver webDriver, String string)
-    {
-        String pageUrl = webDriver.getCurrentUrl();
-
-        while (pageUrl.contains(string))
-        {
-            try
-            {
-                Thread.sleep(100);
-                pageUrl = webDriver.getCurrentUrl();
-            }
-            catch (InterruptedException e) {} // does not matter
-        }
-    }
-
-    public static void waitUntilPageUrlContains(AtlassianWebDriver webDriver, String string)
-    {
-        String pageUrl = webDriver.getCurrentUrl();
-
-        while (!pageUrl.contains(string))
-        {
-            try
-            {
-                Thread.sleep(100);
-                pageUrl = webDriver.getCurrentUrl();
-            }
-            catch (InterruptedException e) {} // does not matter
-        }
     }
 }

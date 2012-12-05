@@ -34,6 +34,7 @@ public class DefaultProgress implements Progress
     }
 
     @Override
+    // TODO remove synchroErrorCount
     public void inProgress(int changesetCount, int jiraCount, int synchroErrorCount)
     {
         this.changesetCount = changesetCount;

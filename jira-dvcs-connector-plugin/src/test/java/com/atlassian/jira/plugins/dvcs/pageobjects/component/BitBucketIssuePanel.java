@@ -61,7 +61,7 @@ public class BitBucketIssuePanel implements ActivatedComponent<BitBucketIssuePan
      * Waits for commits to be retrieved from GitHub
      * @return List of <tt>BitBucketCommitEntry</tt>
      */
-    public List<BitBucketCommitEntry> waitForMessages()
+    private List<BitBucketCommitEntry> waitForMessages()
     {
         // wait for one message to be present (setting timeout type to longest value)
         Poller.waitUntilTrue(view.find(By.className("CommitContainer"), TimeoutType.PAGE_LOAD).timed().isPresent());
@@ -74,5 +74,31 @@ public class BitBucketIssuePanel implements ActivatedComponent<BitBucketIssuePan
         }
 
         return commitMessageList;
+    }
+
+    public List<BitBucketCommitEntry> waitForNumberOfMessages(int numberOfMessages, long retryThreshold,
+            int maxRetryCount)
+    {
+        List<BitBucketCommitEntry> messages;
+        int currentRetryCount = 0;
+
+        for (messages = waitForMessages(); messages.size() != numberOfMessages; messages = waitForMessages())
+        {
+            if (++currentRetryCount > maxRetryCount)
+            {
+                throw new AssertionError();
+            }
+
+            try
+            {
+                Thread.sleep(retryThreshold);
+            }
+            catch (InterruptedException e)
+            {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        return messages;
     }
 }
