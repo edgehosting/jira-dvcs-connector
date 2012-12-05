@@ -274,8 +274,10 @@
                                                          <a href="$baseurl/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 	                                                   #end
 
-													 #else
+													 #elseif ($org.dvcsType == "github")
 													   <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+									            	 #else
+									            	   <a href="$baseurl/secure/admin/RegenerateGithubEnterpriseOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
 									            	 #end
 						   			 	 		</li>
 					

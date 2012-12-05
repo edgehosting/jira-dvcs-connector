@@ -318,6 +318,11 @@
                     alias="RegenerateGithubOauthToken" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
+            
+            <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubEnterpriseOauthToken"
+                    alias="RegenerateGithubEnterpriseOauthToken" roles-required="admin">
+                <view name="input">/templates/dvcs/add-organization.vm</view>
+            </action>
 
             <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.RegenerateBitbucketOauthToken"
                     alias="RegenerateBitbucketOauthToken" roles-required="admin">

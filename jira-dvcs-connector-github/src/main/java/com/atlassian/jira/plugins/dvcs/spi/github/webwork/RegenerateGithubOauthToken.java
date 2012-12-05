@@ -43,16 +43,25 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 
 	}
 
-	private String redirectUserToGithub()
+	protected String redirectUserToGithub()
 	{
-		String organizationUrl = organizationService.get(Integer.parseInt(organization), false).getHostUrl();
+		String organizationUrl = getHostUrl();
 
-        String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("RegenerateGithubOauthToken",
+        String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl(getRedirectAction(),
 				organizationUrl, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
 		return getRedirect(githubAuthorizeUrl);
 	}
 
+	protected String getHostUrl()
+	{
+	    return organizationService.get(Integer.parseInt(organization), false).getHostUrl();
+	}
+	
+	protected String getRedirectAction()
+	{
+	    return "RegenerateGithubOauthToken"; 
+	}
 
 	@Override
 	protected void doValidation()
@@ -97,7 +106,7 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 	private String requestAccessToken()
 	{
 
-		return githubOAuthUtils.requestAccessToken(code);
+		return githubOAuthUtils.requestAccessToken(getHostUrl(), code);
 	}
 
 	public static String encode(String url)
