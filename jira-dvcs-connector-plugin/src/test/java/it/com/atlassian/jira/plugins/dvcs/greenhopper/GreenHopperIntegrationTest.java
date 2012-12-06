@@ -39,7 +39,7 @@ public class GreenHopperIntegrationTest extends BitBucketBaseOrgTest<BitBucketCo
     }
 
 
-    private void loginToBitbucketAndSetJiraOAuthCredentials() //TODO @Before vs not needed for every test method
+    private void loginToBitbucketAndSetJiraOAuthCredentials()
     {
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
@@ -56,7 +56,7 @@ public class GreenHopperIntegrationTest extends BitBucketBaseOrgTest<BitBucketCo
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
     }
 
-    private void removeOAuthConsumer() //TODO @After vs not needed for every method
+    private void removeOAuthConsumer()
     {
         jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
         bitbucketIntegratedApplicationsPage.removeLastAdddedConsumer();
