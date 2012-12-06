@@ -21,9 +21,9 @@
 	        <fieldset>
 	         
 	          <div class="field-group">
-	              <label for="urlGhe">Url:</label>
+	              <label for="url">Url:</label>
 	              <span class="field-value">$textutils.htmlEncode($action.getUrl())</span>
-	              <input type="hidden" id="url" name="url" value="$textutils.htmlEncode($action.getUrlGhe())"/>
+	              <input type="hidden" id="url" name="url" value="$textutils.htmlEncode($action.getUrl())"/>
 	          </div>
 	          
 	          <div class="field-group" >

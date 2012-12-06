@@ -22,11 +22,10 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 {
     private static final long serialVersionUID = -5043563666764556942L;
 
-    private final Logger log = LoggerFactory.getLogger(AddGithubOrganization.class);
+    private final Logger log = LoggerFactory.getLogger(AddGithubEnterpriseOrganization.class);
 
 	private String organization;
 
-	private String urlGhe;
 	private String oauthClientIdGhe;
 	private String oauthSecretGhe;
 	private String oauthRequiredGhe;
@@ -43,7 +42,6 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
 	public AddGithubEnterpriseOrganization(OrganizationService organizationService,
 								GithubOAuth githubOAuth,
-								GithubOAuthUtils githubOAuthUtils,
 								ApplicationProperties applicationProperties)
 	{
 		this.organizationService = organizationService;
@@ -63,8 +61,6 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
             configureOAuth();
         }
 		
-        url = urlGhe;
-
 		// then continue
 		return redirectUserToGithub();
 
@@ -78,7 +74,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	private String redirectUserToGithub()
 	{
 		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubEnterpriseOrganization",
-		        urlGhe, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
+		        url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
 		return getRedirect(githubAuthorizeUrl);
 	}
@@ -95,22 +91,22 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
             }
         }
 	    
-	    if (StringUtils.isBlank(urlGhe) || StringUtils.isBlank(organization))
+	    if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
 	    {
 	        addErrorMessage("Please provide both url and organization parameters.");
 	    }
         
-	    if (urlGhe.endsWith("/"))
+	    if (url.endsWith("/"))
 	    {
-	        urlGhe = StringUtils.chop(urlGhe);
+	        url = StringUtils.chop(url);
 	        
 	    }
-	    if (!isValid(urlGhe))
+	    if (!isValid(url))
 	    {
 	        addErrorMessage("Please provide valid GitHub host URL.");
 	    }
 //TODO validation of account is disabled because of private mode 
-//        AccountInfo accountInfo = organizationService.getAccountInfo(urlGhe, organization);
+//        AccountInfo accountInfo = organizationService.getAccountInfo(url, organization);
 //        if (accountInfo == null)
 //        {
 //            addErrorMessage("Invalid user/team account.");
@@ -225,16 +221,6 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
     public void setOauthRequiredGhe(String oauthRequiredGhe)
     {
         this.oauthRequiredGhe = oauthRequiredGhe;
-    }
-
-    public String getUrlGhe()
-    {
-        return urlGhe;
-    }
-
-    public void setUrlGhe(String urlGhe)
-    {
-        this.urlGhe = urlGhe;
     }
 
     public String getUrl()

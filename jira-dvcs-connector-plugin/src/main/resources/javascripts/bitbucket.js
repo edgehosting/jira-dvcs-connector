@@ -11,16 +11,7 @@ function deleteRepository(repositoryId, repositoryUrl) {
     }
 }
 
-function toggleMoreFiles(target_div) {
-    AJS.$('#' + target_div).toggle();
-    AJS.$('#see_more_' + target_div).toggle();
-    AJS.$('#hide_more_' + target_div).toggle();
-}
-
-
 function switchDvcsDetails(selectSwitch) {
-	
-	
 	var dvcsType = selectSwitch.selectedIndex;
 	switchDvcsDetailsInternal(dvcsType);
 }
@@ -39,27 +30,19 @@ function switchDvcsDetailsInternal(dvcsType) {
 		
 		AJS.$('#github-form-section').hide();
 		AJS.$('#githube-form-section').hide();
-		
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
 
 		// hide examples
 		AJS.$('#examples').hide();
 
 		if (BB_REQUIRES_AUTH == "true") {
-			
 			// we need oauth ...
-			
 			// hide examples
 			AJS.$('#examples').hide();
-			
 			AJS.$("#bitbucket-form-section").fadeIn();
-
 		} else {
-			
 			AJS.$("#oauthBbRequired").val("");
-
 		}
-		
 
 	} else if (dvcsType == 1) {
 
@@ -68,44 +51,29 @@ function switchDvcsDetailsInternal(dvcsType) {
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
 		
 		if (GH_REQUIRES_AUTH == "true") {
-			
 			// we need oauth ...
-			
 			// hide examples
 			AJS.$('#examples').hide();
-			
 			AJS.$("#github-form-section").fadeIn();
-
 		} else {
-			
 			AJS.$("#oauthRequired").val("");
-
 		}
-		
 		
 	}  else if (dvcsType == 2) {
 
 		AJS.$('#bitbucket-form-section').hide();
 		AJS.$('#github-form-section').hide();
 		AJS.$('#githube-form-section').show();
-
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubEnterpriseOrganization.jspa");
 		
 		if (GHE_REQUIRES_AUTH == "true") {
-			
 			// we need oauth ...
-			
 			// hide examples
 			AJS.$('#examples').hide();
-			
 			AJS.$("#githube-form-section-oauth").fadeIn();
-
 		} else {
-			
 			AJS.$("#oauthRequiredGhe").val("");
-
 		}
-		
 		
 	}  
 }
@@ -121,13 +89,10 @@ function forceSync(repositoryId) {
 function retrieveSyncStatus() {
 
 	AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/repositories", function (data) {
-
 		AJS.$.each(data.repositories, function (a, repo) {
 			updateSyncStatus(repo);
 		});
-	
 		window.setTimeout(retrieveSyncStatus, 4000)
-	
 	});
 }
 
@@ -145,13 +110,9 @@ function updateSyncStatus(repo) {
     if (repo.sync) {
 
         if (repo.sync.finished) {
-            if (repo.lastCommitDate) {
-//            	syncIcon = "commits";
-            }
             syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
 
         } else {
-//            syncIcon = "running";
             syncRepoIcon = "running";
             syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong>" + repo.sync.jiraCount + "</strong> issues found";
             if (repo.sync.synchroErrorCount > 0)
@@ -161,7 +122,6 @@ function updateSyncStatus(repo) {
         if (repo.sync.error) {
             syncStatusHtml = "";
             syncIcon = "error";
-//            syncErrorDiv.html("<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>");
             syncErrorDiv.html("<span class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</span>" +
                                 "<span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>");
         } else {
@@ -170,17 +130,10 @@ function updateSyncStatus(repo) {
     }
     
     else {
-        if (repo.lastCommitDate) {
-//        	syncIcon = "commits";
-        }
         syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
     }
     syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
     syncRepoIconElement.removeClass("running").addClass(syncRepoIcon);
-
-//    if (syncStatusHtml != "") {
-//    	syncStatusHtml += " <span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>";
-//    }
     syncStatusDiv.html(syncStatusHtml);
 
 }
@@ -188,7 +141,6 @@ function updateSyncStatus(repo) {
 function getLastCommitRelativeDateHtml(daysAgo) {
 	    var html = "";
 	    if (daysAgo) {
-//	        html = "last commit " + new Date(daysAgo).toDateString();
 	        html = new Date(daysAgo).toDateString();
 	    }
 	    return html;
@@ -245,6 +197,11 @@ function dvcsSubmitFormHandler() {
 
     // submit form
     var organizationElement = AJS.$("#organization");
+    
+    if (selectSwitch.selectedIndex==2) { // Github Enterprise
+    	// impose real URL to hidden input
+    	AJS.$("#url").val(AJS.$("#urlGhe").val()); 
+    }
     
     // if not custom URL
     if ( !dvcsContainsSlash( organizationElement.val()) ) {
@@ -313,13 +270,9 @@ function dvcsSubmitFormHandler() {
 }
 
 function validateAccountInfoForm() {
-
 	var validator = new DvcsValidator();
-	
 	validator.addItem("organization", "org-error", "required");
-
 	return validator.runValidation();
-
 }
 
 function validateAddOrganizationForm() {
