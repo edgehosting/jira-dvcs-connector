@@ -157,7 +157,7 @@
 
     <component key="githubClientProvider" name="githubClientProvider"
                class="com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider">
-        <description>githubCommunicator</description>
+        <description>Github Client Provider</description>
     </component>
 
     <component key="githubCommunicator" name="githubCommunicator"

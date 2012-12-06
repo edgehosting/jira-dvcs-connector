@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.RepositoryLink;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketConstants;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLinkHandler;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
@@ -231,8 +231,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     private boolean isCustomOrJiraType(BitbucketRepositoryLink repositoryLink)
     {
         return repositoryLink.getHandler() != null && 
-                (RepositoryLink.TYPE_JIRA.equals(repositoryLink.getHandler().getName()) 
-                     || RepositoryLink.TYPE_CUSTOM.equals(repositoryLink.getHandler().getName()));
+                (BitbucketConstants.REPOSITORY_LINK_TYPE_JIRA.equals(repositoryLink.getHandler().getName())
+                     || BitbucketConstants.REPOSITORY_LINK_TYPE_CUSTOM.equals(repositoryLink.getHandler().getName()));
     }
 
     private Set<String> getProjectKeysInJira()
