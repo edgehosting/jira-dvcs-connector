@@ -48,6 +48,9 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
         addOrgButton.click();
 
+        // accept alert for GitHub Enterprise
+        jiraTestedProduct.getTester().getDriver().getDriver().switchTo().alert().accept();
+        
         checkAndDoGithubLogin();
 
         String githubWebLoginRedirectUrl = authorizeGithubAppIfRequired();
@@ -80,6 +83,9 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
         addOrgButton.click();
 
+        // accept alert for GitHub Enterprise
+        jiraTestedProduct.getTester().getDriver().getDriver().switchTo().alert().accept();
+        
         Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed()
                 .hasText("Error!"));
 
@@ -100,6 +106,9 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
         addOrgButton.click();
 
+        // accept alert for GitHub Enterprise
+        jiraTestedProduct.getTester().getDriver().getDriver().switchTo().alert().accept();
+        
         String currentUrl = checkAndDoGithubLogin();
         String expectedUrl = GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL + "/login/oauth/authorize?";
         if (!currentUrl.startsWith(expectedUrl) || !currentUrl.contains("client_id=xxx"))
@@ -161,7 +170,10 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
         
         setPageAsOld();
         addOrgButton.click();
-
+     
+        // accept alert for GitHub Enterprise
+        jiraTestedProduct.getTester().getDriver().getDriver().switchTo().alert().accept();
+        
         checkAndDoGithubLogin();
         String currentUrl = authorizeGithubAppIfRequired();
         if (!currentUrl.contains("/jira/"))
@@ -185,6 +197,9 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
         setPageAsOld();
         addOrgButton.click();
 
+        // accept alert for GitHub Enterprise
+        jiraTestedProduct.getTester().getDriver().getDriver().switchTo().alert().accept();
+        
         checkAndDoGithubLogin();
         String currentUrl = authorizeGithubAppIfRequired();
         if (!currentUrl.contains("/jira/"))
