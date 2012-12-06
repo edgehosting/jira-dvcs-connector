@@ -4,17 +4,14 @@ import static org.hamcrest.Matchers.containsString;
 
 import it.com.atlassian.jira.plugins.dvcs.GithubEnterpriseOrganizationsTest;
 
-import java.util.List;
-
-import junit.framework.Assert;
-
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+
+import org.testng.Assert;
 
 /**
  * Represents the page to link repositories to projects
@@ -24,7 +21,7 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
     @ElementBy(name = "urlGhe")
     PageElement githubEnterpriseHostUrl;
     
-    private String githubEnterpriseHost;
+    private String githubEnterpriseHost;//TODO ???
     
     public void setGithubEnterpriseHost(String githubEnterpriseHost)
     {

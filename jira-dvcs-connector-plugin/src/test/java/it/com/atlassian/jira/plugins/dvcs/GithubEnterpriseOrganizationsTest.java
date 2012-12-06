@@ -13,12 +13,6 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
@@ -35,15 +29,21 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
 
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 /**
  * Test to verify behaviour when syncing  github repository.
  */
-public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest
+public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest<GithubEnterpriseConfigureOrganizationsPage>
 {
-    public static final String GITHUB_ENTERPRISE_URL = "https://192.168.2.47";
+    public static final String GITHUB_ENTERPRISE_URL = "http://192.168.2.47";
     
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
-    private static final String TEST_NOT_EXISTING_URL = "mynotexistingaccount124";
+//    private static final String TEST_NOT_EXISTING_URL = "mynotexistingaccount124";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
     private static final String REPO_ADMIN_PASSWORD = PasswordUtil.getPassword("jirabitbucketconnector");
 
@@ -103,7 +103,7 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest
         ghLoginPage.doLogout();
     }
 
-    @Before
+    @BeforeMethod
     public void removeExistingPostCommitHooks()
     {
         String[] githubRepositories = { "repo1", "test-project" };
@@ -117,7 +117,7 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest
         }
     }
 
-    @After
+    @AfterMethod
     public void deleteRepositoriesAfterTest()
     {
         goToConfigPage();
@@ -212,20 +212,28 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3",1);
-        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        assertThat(commitMessages).hasSize(1);
+//        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+1");
-        Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+1");
+        assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
+
+//        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
+//        Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+1");
+//        Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
 
         // QA-4
         commitMessages = getCommitsForIssue("QA-4",1);
-        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        assertThat(commitMessages).hasSize(1);
+//        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
         commitMessage = commitMessages.get(0);
         statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertTrue("Expected commit resource Added: 1", commitMessage.isAdded(statistics.get(0)));
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
+//        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
+//        Assert.assertTrue("Expected commit resource Added: 1", commitMessage.isAdded(statistics.get(0)));
     }
 
 
@@ -252,6 +260,7 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest
         assertThat(githubConfigureOrganizationsPage.getNumberOfVisibleRepositories()).isEqualTo(2);
     }
 
+    @Override
     protected GithubOAuthConfigPage goToGithubOAuthConfigPage()
     {
         return jira.visit(GithubEnterpriseOAuthConfigPage.class);
