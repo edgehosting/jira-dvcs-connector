@@ -52,7 +52,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     private static final Logger log = LoggerFactory.getLogger(BitbucketCommunicator.class);
 
     /** The Constant BITBUCKET. */
-    public static final String BITBUCKET = "bitbucket";
+    private static final String BITBUCKET = "bitbucket";
     private static final String PLUGIN_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin";
 
     private final BitbucketLinker bitbucketLinker;

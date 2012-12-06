@@ -24,7 +24,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountInfo;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.Links;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.util.concurrent.ThreadFactories;
 
 /**
@@ -393,7 +392,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
         organization.setName(info.accountName);
         organization.setCredential(new Credential(null, null, null, info.oauthKey, info.oauthSecret));
         organization.setHostUrl(BITBUCKET_URL);
-        organization.setDvcsType(BitbucketCommunicator.BITBUCKET);//TODO should not depend on Bitbucket module => BBC-331
+        organization.setDvcsType("bitbucket");
         organization.setAutolinkNewRepos(true);
         organization.setSmartcommitsOnNewRepos(true);
         
