@@ -1,13 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
-import static com.atlassian.jira.util.UrlValidator.*;
+import static com.atlassian.jira.util.UrlValidator.isValid;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -95,6 +94,11 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
                 addErrorMessage("Missing credentials.");
             }
         }
+	    
+	    if (StringUtils.isBlank(urlGhe) || StringUtils.isBlank(organization))
+	    {
+	        addErrorMessage("Please provide both url and organization parameters.");
+	    }
         
 	    if (urlGhe.endsWith("/"))
 	    {
@@ -105,11 +109,6 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	    {
 	        addErrorMessage("Please provide valid GitHub host URL.");
 	    }
-
-        if (StringUtils.isBlank(urlGhe) || StringUtils.isBlank(organization))
-        {
-            addErrorMessage("Please provide both url and organization parameters.");
-        }
 //TODO validation of account is disabled because of private mode 
 //        AccountInfo accountInfo = organizationService.getAccountInfo(urlGhe, organization);
 //        if (accountInfo == null)
