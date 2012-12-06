@@ -20,13 +20,14 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
-import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
+import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.pageobjects.elements.PageElement;
 
+import org.eclipse.egit.github.core.RepositoryHook;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.RepositoryService;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -102,15 +103,15 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest<GithubConfigur
     }
 
     @BeforeMethod
-    public void removeExistingPostCommitHooks()
+    public void removeExistingPostCommitHooks() throws IOException
     {
         String[] githubRepositories = { "repo1", "test-project" };
-        for (String githubRepositoryId : githubRepositories)
+        for (String githubRepositoryName : githubRepositories)
         {
-            Set<String> extractedGithubHookIds = extractGithubHookIdsForRepositoryToRemove(githubRepositoryId);
-            for (String extractedGithubHookId : extractedGithubHookIds)
+            Set<Long> extractedGithubHookIds = extractGithubHookIdsForRepositoryToRemove(githubRepositoryName);
+            for (long extractedGithubHookId : extractedGithubHookIds)
             {
-                removePostCommitHook(githubRepositoryId, extractedGithubHookId);
+                removePostCommitHook(githubRepositoryName, extractedGithubHookId);
             }
         }
     }
@@ -245,80 +246,38 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest<GithubConfigur
         assertThat(githubConfigureOrganizationsPage.getNumberOfVisibleRepositories()).isEqualTo(3);
     }
 
-    private static Set<String> extractGithubHookIdsForRepositoryToRemove(String repositoryId)
+    private static Set<Long> extractGithubHookIdsForRepositoryToRemove(String repositoryName) throws IOException
     {
-        String listHooksResponseString;
-        String finalGithubUrl = String.format("https://api.github.com/repos/jirabitbucketconnector/%s/hooks",
-                                              repositoryId);
+        GitHubClient gitHubClient = GithubOAuthUtils.createClient("https://api.github.com");
+        gitHubClient.setCredentials(REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
 
-        try
+        RepositoryService repositoryService = new RepositoryService(gitHubClient);
+
+        RepositoryId repositoryId = RepositoryId.create(REPO_ADMIN_LOGIN, repositoryName);
+
+        Set<Long> extractedHookIds = new LinkedHashSet<Long>();
+        for (RepositoryHook repositoryHook : repositoryService.getHooks(repositoryId))
         {
-            listHooksResponseString = HttpSenderUtils.sendGetHttpRequest(finalGithubUrl,
-                                                                         REPO_ADMIN_LOGIN,
-                                                                         REPO_ADMIN_PASSWORD);
-        }
-        catch (IOException e)
-        {
-            throw new IllegalStateException("Cannot extract BitBucket service IDs !", e);
-        }
+            long githubHookId = repositoryHook.getId();
+            String configURL = repositoryHook.getConfig().get("url");
 
-        Set<String> extractedHookIds = new LinkedHashSet<String>();
-
-        // parsing following JSON:
-        //[
-        //  {
-        //    "url": "https://api.github.com/repos/octocat/Hello-World/hooks/1",
-        //    "updated_at": "2011-09-06T20:39:23Z",
-        //    "created_at": "2011-09-06T17:26:27Z",
-        //    "name": "web",
-        //    "events": [
-        //      "push"
-        //    ],
-        //    "active": true,
-        //    "config": {
-        //      "url": "http://example.com",
-        //      "content_type": "json"
-        //    },
-        //    "id": 1
-        //  }
-        //]
-
-        try {
-            JSONArray jsonArray = new JSONArray(listHooksResponseString);
-
-            for (int i = 0; i < jsonArray.length(); i++)
+            if (configURL.contains(jira.getProductInstance().getBaseUrl()))
             {
-                JSONObject data = (JSONObject) jsonArray.get(i);
-
-                String githubHookId = data.getString("id");
-                JSONObject configObject = data.getJSONObject("config");
-                String configURL = configObject.getString("url");
-
-                if (configURL.contains(jira.getProductInstance().getBaseUrl())) {
-                    extractedHookIds.add(githubHookId);
-                }
+                extractedHookIds.add(githubHookId);
             }
-        }
-        catch (JSONException e)
-        {
-            throw new IllegalStateException("Cannot parse JSON !", e);
         }
 
         return extractedHookIds;
     }
 
-    private static void removePostCommitHook(String repositoryId, String serviceId) {
-        String finalGithubUrl = String.format(
-                "https://api.github.com/repos/jirabitbucketconnector/%s/hooks/%s",
-                repositoryId,
-                serviceId);
-        try
-        {
-            HttpSenderUtils.sendDeleteHttpRequest(finalGithubUrl, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
-        }
-        catch (IOException e)
-        {
-            throw new IllegalStateException("Cannot send DELETE Http request !", e);
-        }
+    private static void removePostCommitHook(String repositoryName, long hookId) throws IOException
+    {
+        GitHubClient gitHubClient = GithubOAuthUtils.createClient("https://api.github.com");
+        gitHubClient.setCredentials(REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
+
+        RepositoryId repositoryId = RepositoryId.create(REPO_ADMIN_LOGIN, repositoryName);
+
+        RepositoryService repositoryService = new RepositoryService(gitHubClient);
+        repositoryService.deleteHook(repositoryId, (int) hookId);
     }
 }
