@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException.InvalidResponseException;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -130,11 +131,16 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 		{
 			accessToken = requestAccessToken();
 
+		} catch (InvalidResponseException ire)
+		{
+		    addErrorMessage(ire.getMessage() + " Possibly bug in releases of GitHub Enterprise prior to 11.10.290.");
+		    return INPUT;
+		
 		} catch (SourceControlException sce)
 		{
 			addErrorMessage(sce.getMessage());
 			return INPUT;
-		
+
 		} catch (Exception e) {
 		    addErrorMessage("Error obtain access token.");
             return INPUT;

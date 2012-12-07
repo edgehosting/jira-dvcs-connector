@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException.InvalidResponseException;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOauthProvider;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
@@ -129,7 +130,7 @@ public class GithubOAuthUtils
         } else if (!result.startsWith("access_token"))
         {
             log.error("Requested access token response is invalid");
-            throw new SourceControlException("Error obtaining access token.");
+            throw new InvalidResponseException("Error obtaining access token. Response is invalid.");
         }
 
         return result.replaceAll("access_token=(.*)&token_type.*", "$1");
