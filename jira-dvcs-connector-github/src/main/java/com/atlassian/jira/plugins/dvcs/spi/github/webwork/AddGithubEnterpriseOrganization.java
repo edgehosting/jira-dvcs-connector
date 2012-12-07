@@ -84,29 +84,34 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	protected void doValidation()
 	{
 	    
-	    if (StringUtils.isNotBlank(oauthRequiredGhe))
+        if (StringUtils.isNotBlank(oauthRequiredGhe))
         {
             if (StringUtils.isBlank(oauthClientIdGhe) || StringUtils.isBlank(oauthSecretGhe))
             {
                 addErrorMessage("Missing credentials.");
             }
+        } else
+        {
+            // load saved GitHub Enterprise url
+            url = githubOAuth.getEnterpriseHostUrl();
         }
-	    
-	    if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
-	    {
-	        addErrorMessage("Please provide both url and organization parameters.");
-	    }
         
-	    if (!isValid(url))
-	    {
-	        addErrorMessage("Please provide valid GitHub host URL.");
-	    }
-	    
-	    if (url.endsWith("/"))
+        if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
+        {
+            addErrorMessage("Please provide both url and organization parameters.");
+        }
+        
+        if (!isValid(url))
+        {
+            addErrorMessage("Please provide valid GitHub host URL.");
+        }
+        
+        if (url.endsWith("/"))
         {
             url = StringUtils.chop(url);
             
         }
+	    
 //TODO validation of account is disabled because of private mode 
 //        AccountInfo accountInfo = organizationService.getAccountInfo(url, organization);
 //        if (accountInfo == null)
