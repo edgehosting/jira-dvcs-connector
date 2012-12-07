@@ -81,7 +81,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubEnterpriseOrganization",
 		        urlGhe, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
-		return getRedirect(githubAuthorizeUrl);
+		return getRedirect(githubAuthorizeUrl, true);
 	}
 
 	@Override
