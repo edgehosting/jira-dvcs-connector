@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException.InvalidResponseException;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -72,7 +73,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
 	private void configureOAuth()
 	{
-		githubOAuth.setEnterpriseClient(oauthClientIdGhe, oauthSecretGhe);
+		githubOAuth.setEnterpriseClient(urlGhe, oauthClientIdGhe, oauthSecretGhe);
 	}
 
 	private String redirectUserToGithub()
@@ -80,7 +81,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubEnterpriseOrganization",
 		        urlGhe, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
-		return getRedirect(githubAuthorizeUrl);
+		return getRedirect(githubAuthorizeUrl, true);
 	}
 
 	@Override
@@ -100,15 +101,16 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	        addErrorMessage("Please provide both url and organization parameters.");
 	    }
         
-	    if (urlGhe.endsWith("/"))
-	    {
-	        urlGhe = StringUtils.chop(urlGhe);
-	        
-	    }
 	    if (!isValid(urlGhe))
 	    {
 	        addErrorMessage("Please provide valid GitHub host URL.");
 	    }
+	    
+	    if (urlGhe.endsWith("/"))
+        {
+            urlGhe = StringUtils.chop(urlGhe);
+            
+        }
 //TODO validation of account is disabled because of private mode 
 //        AccountInfo accountInfo = organizationService.getAccountInfo(urlGhe, organization);
 //        if (accountInfo == null)
@@ -129,11 +131,16 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 		{
 			accessToken = requestAccessToken();
 
+		} catch (InvalidResponseException ire)
+		{
+		    addErrorMessage(ire.getMessage() + " Possibly bug in releases of GitHub Enterprise prior to 11.10.290.");
+		    return INPUT;
+		
 		} catch (SourceControlException sce)
 		{
 			addErrorMessage(sce.getMessage());
 			return INPUT;
-		
+
 		} catch (Exception e) {
 		    addErrorMessage("Error obtain access token.");
             return INPUT;

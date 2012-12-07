@@ -33,4 +33,12 @@ public class SourceControlException extends RuntimeException
         }
         
     }
+    
+    public static class InvalidResponseException extends SourceControlException
+    {
+        public InvalidResponseException(String message)
+        {
+            super(message);
+        }
+    }
 }
