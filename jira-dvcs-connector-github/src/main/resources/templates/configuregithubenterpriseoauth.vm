@@ -60,6 +60,23 @@
 
                       <table width="500px">
 
+							   <tr>
+                                 <td>Host URL</td>
+                               </tr>
+                               <tr>
+                                 <td>
+                                    <input type="text"
+                                    class="text"
+                                    id="hostUrl"
+                                    name="hostUrl"
+                                    value="$textutils.htmlEncode($action.getHostUrl())"
+                                    size="60"
+                                    />
+
+                                 </td>
+
+                               </tr>
+                               
                                <tr>
                                  <td>Client ID</td>
                                </tr>

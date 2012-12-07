@@ -35,10 +35,11 @@ public class DefaultGithubOAuth implements GithubOAuth
     }
 
     @Override
-    public void setEnterpriseClient(String clientID, String clientSecret)
+    public void setEnterpriseClient(String hostUrl, String clientID, String clientSecret)
     {
         pluginSettingsFactory.createGlobalSettings().put("ghEnterpriseRepositoryClientID", StringUtils.trim(clientID));
         pluginSettingsFactory.createGlobalSettings().put("ghEnterpriseRepositoryClientSecret", StringUtils.trim(clientSecret));
+        pluginSettingsFactory.createGlobalSettings().put("ghEnterpriseRepositoryHostUrl", StringUtils.trim(hostUrl));
     }
 
     @Override
@@ -54,7 +55,11 @@ public class DefaultGithubOAuth implements GithubOAuth
         String savedClientSecret = (String) pluginSettingsFactory.createGlobalSettings().get("ghEnterpriseRepositoryClientSecret");
         return StringUtils.isBlank(savedClientSecret) ? "" : savedClientSecret;
     }
-    
-    
 
+    @Override
+    public String getEnterpriseHostUrl()
+    {
+        String savedHostUrl = (String) pluginSettingsFactory.createGlobalSettings().get("ghEnterpriseRepositoryHostUrl");
+        return StringUtils.isBlank(savedHostUrl) ? "" : savedHostUrl;
+    }
 }

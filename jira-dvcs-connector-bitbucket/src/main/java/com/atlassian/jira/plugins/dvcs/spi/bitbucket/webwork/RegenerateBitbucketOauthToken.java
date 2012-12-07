@@ -61,7 +61,7 @@ public class RegenerateBitbucketOauthToken extends CommonDvcsConfigurationAction
 
             request.getSession().setAttribute("requestToken", requestToken);
 
-            return getRedirect(authUrl);
+            return getRedirect(authUrl, true);
 
         } catch (Exception e)
         {

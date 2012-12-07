@@ -63,14 +63,16 @@ function switchDvcsDetailsInternal(dvcsType) {
 
 		AJS.$('#bitbucket-form-section').hide();
 		AJS.$('#github-form-section').hide();
-		AJS.$('#githube-form-section').show();
+
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubEnterpriseOrganization.jspa");
 		
 		if (GHE_REQUIRES_AUTH == "true") {
 			// we need oauth ...
 			// hide examples
 			AJS.$('#examples').hide();
-			AJS.$("#githube-form-section-oauth").fadeIn();
+			
+			AJS.$("#githube-form-section").fadeIn();
+
 		} else {
 			AJS.$("#oauthRequiredGhe").val("");
 		}
@@ -278,14 +280,11 @@ function validateAddOrganizationForm() {
 	
 	validator.addItem("organization", "org-error", "required");
 	
-	if (AJS.$("#githube-form-section").is(":visible")) {
+	if (AJS.$("#oauthClientIdGhe").is(":visible")) {
 	    validator.addItem("urlGhe","ghe-url-error", "required");
 	    validator.addItem("urlGhe","ghe-invalid-url-error", "url");
-	    
-	    if (AJS.$("#githube-form-section-oauth").is(":visible")) {
-			validator.addItem("oauthClientIdGhe", "oauth-ghe-client-error", "required");
-			validator.addItem("oauthSecretGhe", "oauth-ghe-secret-error", "required");
-		}
+		validator.addItem("oauthClientIdGhe", "oauth-ghe-client-error", "required");
+		validator.addItem("oauthSecretGhe", "oauth-ghe-secret-error", "required");
 	} else if (AJS.$("#oauthBbClientId").is(":visible")) {
 		validator.addItem("oauthBbClientId", "oauth-bb-client-error", "required");
 		validator.addItem("oauthBbSecret", "oauth-bb-secret-error", "required");
