@@ -17,16 +17,12 @@ function toggleMoreFiles(target_div) {
     AJS.$('#hide_more_' + target_div).toggle();
 }
 
-
 function switchDvcsDetails(selectSwitch) {
-	
-	
 	var dvcsType = selectSwitch.selectedIndex;
 	switchDvcsDetailsInternal(dvcsType);
 }
 
 function switchDvcsDetailsInternal(dvcsType) {
-	
 	// clear all form errors
 	DvcsValidator.clearAllErrors();
 
@@ -36,30 +32,16 @@ function switchDvcsDetailsInternal(dvcsType) {
 
 	if (dvcsType == 0) {
 		
-		
 		AJS.$('#github-form-section').hide();
 		AJS.$('#githube-form-section').hide();
 		
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
 
-		// hide examples
-		AJS.$('#examples').hide();
-
 		if (BB_REQUIRES_AUTH == "true") {
-			
-			// we need oauth ...
-			
-			// hide examples
-			AJS.$('#examples').hide();
-			
 			AJS.$("#bitbucket-form-section").fadeIn();
-
 		} else {
-			
 			AJS.$("#oauthBbRequired").val("");
-
 		}
-		
 
 	} else if (dvcsType == 1) {
 
@@ -68,20 +50,10 @@ function switchDvcsDetailsInternal(dvcsType) {
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
 		
 		if (GH_REQUIRES_AUTH == "true") {
-			
-			// we need oauth ...
-			
-			// hide examples
-			AJS.$('#examples').hide();
-			
 			AJS.$("#github-form-section").fadeIn();
-
 		} else {
-			
 			AJS.$("#oauthRequired").val("");
-
 		}
-		
 		
 	}  else if (dvcsType == 2) {
 
@@ -91,21 +63,10 @@ function switchDvcsDetailsInternal(dvcsType) {
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubEnterpriseOrganization.jspa");
 		
 		if (GHE_REQUIRES_AUTH == "true") {
-			
-			// we need oauth ...
-			
-			// hide examples
-			AJS.$('#examples').hide();
-			
 			AJS.$("#githube-form-section").fadeIn();
-
 		} else {
-			
 			AJS.$("#oauthRequiredGhe").val("");
-
 		}
-		
-		
 	}  
 }
 
@@ -120,18 +81,14 @@ function forceSync(repositoryId) {
 function retrieveSyncStatus() {
 
 	AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/repositories", function (data) {
-
 		AJS.$.each(data.repositories, function (a, repo) {
 			updateSyncStatus(repo);
 		});
-	
 		window.setTimeout(retrieveSyncStatus, 4000)
-	
 	});
 }
 
 function updateSyncStatus(repo) {
-
 	var syncStatusDiv = AJS.$('#sync_status_message_' + repo.id);
     var syncErrorDiv = AJS.$('#sync_error_message_' + repo.id);
     var syncIconElement = AJS.$('#syncicon_' + repo.id);
@@ -144,23 +101,16 @@ function updateSyncStatus(repo) {
     if (repo.sync) {
 
         if (repo.sync.finished) {
-            if (repo.lastCommitDate) {
-//            	syncIcon = "commits";
-            }
             syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
-
         } else {
-//            syncIcon = "running";
             syncRepoIcon = "running";
             syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong>" + repo.sync.jiraCount + "</strong> issues found";
             if (repo.sync.synchroErrorCount > 0)
                 syncStatusHtml += ", <span style='color:#e16161;'><strong>" + repo.sync.synchroErrorCount + "</strong> changesets incomplete</span>";
-
         }
         if (repo.sync.error) {
             syncStatusHtml = "";
             syncIcon = "error";
-//            syncErrorDiv.html("<div class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</div>");
             syncErrorDiv.html("<span class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</span>" +
                                 "<span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>");
         } else {
@@ -169,17 +119,11 @@ function updateSyncStatus(repo) {
     }
     
     else {
-        if (repo.lastCommitDate) {
-//        	syncIcon = "commits";
-        }
         syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
     }
     syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
     syncRepoIconElement.removeClass("running").addClass(syncRepoIcon);
 
-//    if (syncStatusHtml != "") {
-//    	syncStatusHtml += " <span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>";
-//    }
     syncStatusDiv.html(syncStatusHtml);
 
 }
@@ -187,7 +131,6 @@ function updateSyncStatus(repo) {
 function getLastCommitRelativeDateHtml(daysAgo) {
 	    var html = "";
 	    if (daysAgo) {
-//	        html = "last commit " + new Date(daysAgo).toDateString();
 	        html = new Date(daysAgo).toDateString();
 	    }
 	    return html;
@@ -196,14 +139,10 @@ function getLastCommitRelativeDateHtml(daysAgo) {
 function showAddRepoDetails(show) {
 
 	if (show) {
-
 		// Reset to default view:
-
 		AJS.$('#repoEntry').attr("action", "");
-		
 		// - hide username/password
 		AJS.$("#github-form-section").hide();
-
 		// - show url, organization field
 		AJS.$('#urlSelect').show();
 		AJS.$('#urlSelect').val(0); // select BB by default
@@ -211,13 +150,8 @@ function showAddRepoDetails(show) {
 
 		AJS.$('#organization').show();
 		AJS.$('#organizationReadOnly').hide();
-
 		//
 		AJS.$('#Submit').removeAttr("disabled");
-
-		// show examples
-		AJS.$('#examples').show();
-		
 		// clear all form errors
 		DvcsValidator.clearAllErrors();
 		
@@ -238,13 +172,11 @@ function showAddRepoDetails(show) {
 
 	}
 }
+
 function dvcsSubmitFormHandler() {
-
     AJS.$('#Submit').attr("disabled", "disabled");
-
     // submit form
     var organizationElement = AJS.$("#organization");
-    
     // if not custom URL
     if ( !dvcsContainsSlash( organizationElement.val()) ) {
     	// some really simple validation
@@ -265,10 +197,7 @@ function dvcsSubmitFormHandler() {
 	}
 
     // else - lets try to identify account
-    
-    
     // account info
-    
     if (!validateAccountInfoForm()) {
     	AJS.$('#Submit').removeAttr("disabled");
     	return false;
@@ -312,21 +241,15 @@ function dvcsSubmitFormHandler() {
 }
 
 function validateAccountInfoForm() {
-
 	var validator = new DvcsValidator();
-	
 	validator.addItem("organization", "org-error", "required");
-
 	return validator.runValidation();
-
 }
 
 function validateAddOrganizationForm() {
-	
 	var validator = new DvcsValidator();
-	
 	validator.addItem("organization", "org-error", "required");
-	
+
 	if (AJS.$("#oauthClientIdGhe").is(":visible")) {
 	    validator.addItem("urlGhe","ghe-url-error", "required");
 	    validator.addItem("urlGhe","ghe-invalid-url-error", "url");
@@ -342,29 +265,19 @@ function validateAddOrganizationForm() {
 		// validator.addItem("adminUsername", "admin-username-error", "required");
 		// validator.addItem("adminPassword", "admin-password-error", "required");
 	}
-	
 	return validator.runValidation();
-	
 }
 
 var dvcsSubmitFormAjaxHandler = {
-
 		"bitbucket": function(data){
-			
 			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
-			
 			if (data.requiresOauth) {
-				
-				// we need oauth ...
 					
 				// hide url input box
 				AJS.$('#urlReadOnly').html(AJS.$('#url').val());
 				AJS.$('#urlSelect').hide(); 
 				AJS.$('#urlReadOnly').show();
 				
-				// hide examples
-				AJS.$('#examples').hide();
-	
 				//show username / password
 				AJS.$("#github-form-section").hide();
 				AJS.$("#bitbucket-form-section").fadeIn();
@@ -379,19 +292,12 @@ var dvcsSubmitFormAjaxHandler = {
 		}, 
 
 		"github": function(data) {
-			
 			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
-			
 			if (data.requiresOauth) {
-				
-				// we need oauth ...
-				
+
 				AJS.$('#urlReadOnly').html(AJS.$('#url').val());
 				AJS.$('#urlSelect').hide(); 
 				AJS.$('#urlReadOnly').show();
-				
-				// hide examples
-				AJS.$('#examples').hide();
 				
 				AJS.$("#bitbucket-form-section").hide();
 				AJS.$("#github-form-section").fadeIn();
@@ -404,10 +310,6 @@ var dvcsSubmitFormAjaxHandler = {
 
 			}
 		}
-}
-
-function deleteOrg() {
-	
 }
 
 function changePassword(username, id) {
@@ -427,22 +329,16 @@ function changePassword(username, id) {
 	 AJS.$("#usernameUp").val(username);
 
 	 popup.addHeader("Update Account Credentials");
-
 	 var dialogContent = AJS.$(".update-credentials");
-
 	 popup.addPanel("", "#updatePasswordForm", "dvcs-update-cred-dialog");
-	 
 	 popup.addButton("Update", function (dialog) {
-        
 		 AJS.$("#updatePasswordForm").submit();
-        
      }, "aui-button submit");
      popup.addButton("Cancel", function (dialog) {
          dialog.hide();
      }, "aui-button submit");
      
 	 popup.show();
-	 
 	 AJS.$("#adminPasswordUp").focus().select();
 }
 
@@ -460,15 +356,11 @@ function configureDefaultGroups(orgName, id) {
 	});
 	
 	AJS.$("#organizationIdDefaultGroups").val(id);
-	
+
 	popup.addHeader("Configure Default Groups");
-	
 	var dialogContent = AJS.$(".configure-default-groups");
-	
 	popup.addPanel("", "#configureDefaultGroupsForm", "configure-default-groups-dialog");
-	
 	popup.addButton("Save", function (dialog) {
-		
 		AJS.$("#configureDefaultGroupsForm").submit();
 		
 	}, "aui-button submit");
@@ -476,23 +368,17 @@ function configureDefaultGroups(orgName, id) {
 	popup.addCancel("Cancel", function (dialog) {
 		dialog.hide();
 	});
-	
+
 	popup.show();
-	
 	// load web fragment
 	AJS.$.ajax(
 			{
 				type : 'GET',
-				  
-				url :
-				BASE_URL + "/rest/bitbucket/1.0/fragment/" + id + "/defaultgroups",
-	
+				url : BASE_URL + "/rest/bitbucket/1.0/fragment/" + id + "/defaultgroups",
 				success :
 				function (data) {
-					
 					AJS.$("#configureDefaultGroupsContentWorking").hide()
 					AJS.$("#configureDefaultGroupsContent").html(data);
-					
 				}
 			}
 		
@@ -502,9 +388,7 @@ function configureDefaultGroups(orgName, id) {
 		});
 }
 
-
 function autoLinkIssuesOrg(organizationId, checkboxId) {
-	
 	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
 	AJS.$("#" + checkboxId).attr("disabled", "disabled");
 
@@ -515,16 +399,10 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 			type : 'POST',
 			dataType : "json",
 			contentType : "application/json",
-			  
-			url :
-			BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autolink",
-			
-			data :
-			'{ "payload" : "' + checkedValue+ '"}',
-			  
+			url : BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autolink",
+			data : '{ "payload" : "' + checkedValue+ '"}',
 			success :
 			function (data) {
-				  
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  if (!checkedValue && AJS.$("#org_global_smarts" + organizationId)) {
@@ -542,24 +420,16 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 			  });
 }
 
-
 function enableSmartcommitsOnNewRepos(organizationId, checkboxId) {
-	
 	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
-	
 	AJS.$("#" + checkboxId).attr("disabled", "disabled");
-	
 	AJS.$.ajax(
 		{
 			type : 'POST',
 			dataType : "json",
 			contentType : "application/json",
-			  
-			url :
-			BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/globalsmarts",
-			
-			data :
-			'{ "payload" : "' + checkedValue+ '"}',
+			url : BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/globalsmarts",
+			data : '{ "payload" : "' + checkedValue+ '"}',
 			
 			success :
 			function (data) {
@@ -573,23 +443,16 @@ function enableSmartcommitsOnNewRepos(organizationId, checkboxId) {
 }
 
 function autoLinkIssuesRepo(repoId, checkboxId) {
-	
 	var checkedValue = AJS.$("#" + checkboxId).is(":checked");
 	AJS.$("#" + checkboxId).attr("disabled", "disabled");
-
 	AJS.$("#" + checkboxId  + "working").show();
-
 	AJS.$.ajax( 
 		{
 			type : 'POST',
 			dataType : "json",
 			contentType : "application/json",
-			  
-			url :
-			BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/autolink",
-			
-			data :
-			'{ "payload" : "' + checkedValue+ '"}',
+			url : BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/autolink",
+			data : '{ "payload" : "' + checkedValue+ '"}',
 			
 			success :
 			function (data) {
@@ -618,23 +481,16 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 }
 
 function enableRepoSmartcommits(repoId, checkboxId) {
-	
 	var checkedValue = AJS.$("#" + checkboxId).is(":checked");
 	AJS.$("#" + checkboxId).attr("disabled", "disabled");
-
 	AJS.$("#" + checkboxId  + "working").show();
-
 	AJS.$.ajax( 
 		{
 			type : 'POST',
 			dataType : "json",
 			contentType : "application/json",
-			  
-			url :
-			BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/smart",
-			
-			data :
-			'{ "payload" : "' + checkedValue+ '"}',
+			url : BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/smart",
+			data : '{ "payload" : "' + checkedValue+ '"}',
 			
 			success :
 			function (data) {
@@ -642,7 +498,6 @@ function enableRepoSmartcommits(repoId, checkboxId) {
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 			  }
 		}
-	 
 	).error(function (err) { 
 				  showError("Unexpected error occurred.");
 				  AJS.$("#" + checkboxId  + "working").hide();
@@ -679,36 +534,29 @@ function dvcsShowHidePanel(id) {
 //--------------------------------------------------------------------------------------------------
 
 var dvcsKnownUrls = {
-		
 		"bitbucket" : "https://bitbucket.org",
 		"github" : "https://github.com",
 		"githube" : "https://github.com"
 };
 
 function dvcsContainsSlash(stringType) {
-	
 	return stringType.indexOf("/") != -1;
-	
 };
 
 function dvcsGetAccountNameFromUrl (stringType) {
-	
 	// case of i.e. https://bitbucket.org/someuser/
 	if (dvcsEndsWith(stringType, "/")) {
 		stringType = stringType.substring(0, stringType.length - 1);
 	}
-
 	var extracted = stringType.substring(stringType.lastIndexOf("/") + 1, stringType.length);
 	return extracted.replace("/");
 }
 
 function dvcsGetUrlFromAccountUrl (stringType) {
-	
 	// case of i.e. https://bitbucket.org/someuser/
 	if (dvcsEndsWith(stringType, "/")) {
 		stringType = stringType.substring(0, stringType.length - 1);
 	}
-
 	return stringType.substring(0, stringType.lastIndexOf("/"));
 }
 
@@ -727,27 +575,20 @@ function dvcsCopyOrganizationToUsername() {
 //------------------------------------------------------------
 
 AJS.$(document).ready(function() {
-	
     if (typeof init_repositories == 'function') {
-    	
     	// cancel annoying leave message even when browser pre-fill some fields
     	window.onbeforeunload = function () {};
-    	
     	// some organization gear
     	AJS.$(".dvcs-organization-controls-tool").dvcsGearMenu(
     			{ noHideItemsSelector : ".dvcs-gearmenu-nohide" }
     	);
-
     	// defined in macro
     	init_repositories();
-
     	//
     	if (window.location.hash == '#expand') {
     		showAddRepoDetails(true);
     	}
-    	
     }
-
 });
 
 //---------------------------------------------------------
@@ -762,4 +603,3 @@ AJS.$.fn.extend({
 	    	});
 	    }
 });
-
