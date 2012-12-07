@@ -129,19 +129,17 @@
 	                   <div id="ghe-url-error" class="dvcs-error">This field is required.</div>
 	                   <div id="ghe-invalid-url-error" class="dvcs-error">Valid url is required.</div>
 	                </div>
-	                <div id="githube-form-section-oauth" style="display:none">
-	                    <div class="field-group">
-		                   <label for="oauthClientIdGhe">OAuth Key:</label>
-		                   <input type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value=""/>
-		                   <div id="oauth-ghe-client-error" class="dvcs-error">This field is required.</div>
-		                   <div class="description"></div>
-		                </div>
-		                <div class="field-group">
-		                   <label for="oauthSecretGhe">OAuth Secret:</label>
-		                   <input type="text" id="oauthSecretGhe" name="oauthSecretGhe" value=""/>
-		                   <div id="oauth-ghe-secret-error" class="dvcs-error">This field is required.</div>
-		                </div>
-		            </div>
+                    <div class="field-group">
+ 	                   <label for="oauthClientIdGhe">OAuth Key:</label>
+	                   <input type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value=""/>
+	                   <div id="oauth-ghe-client-error" class="dvcs-error">This field is required.</div>
+	                   <div class="description"></div>
+	                </div>
+	                <div class="field-group">
+	                   <label for="oauthSecretGhe">OAuth Secret:</label>
+	                   <input type="text" id="oauthSecretGhe" name="oauthSecretGhe" value=""/>
+	                   <div id="oauth-ghe-secret-error" class="dvcs-error">This field is required.</div>
+	                </div>
 	            </div>
 	            
 	            <div style="margin-top: 10px;"  class="field-group">

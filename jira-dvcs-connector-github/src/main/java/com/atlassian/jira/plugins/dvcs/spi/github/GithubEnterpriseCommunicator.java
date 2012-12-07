@@ -60,7 +60,8 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     @Override
     public boolean isOauthConfigured()
     {
-        return StringUtils.isNotBlank(githubOAuth.getEnterpriseClientId())
+        return StringUtils.isNotBlank(githubOAuth.getEnterpriseHostUrl())
+                && StringUtils.isNotBlank(githubOAuth.getEnterpriseClientId())
                 && StringUtils.isNotBlank(githubOAuth.getEnterpriseClientSecret());
     }
     

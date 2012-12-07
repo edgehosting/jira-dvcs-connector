@@ -72,7 +72,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
 	private void configureOAuth()
 	{
-		githubOAuth.setEnterpriseClient(oauthClientIdGhe, oauthSecretGhe);
+		githubOAuth.setEnterpriseClient(urlGhe, oauthClientIdGhe, oauthSecretGhe);
 	}
 
 	private String redirectUserToGithub()
@@ -100,15 +100,16 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	        addErrorMessage("Please provide both url and organization parameters.");
 	    }
         
-	    if (urlGhe.endsWith("/"))
-	    {
-	        urlGhe = StringUtils.chop(urlGhe);
-	        
-	    }
 	    if (!isValid(urlGhe))
 	    {
 	        addErrorMessage("Please provide valid GitHub host URL.");
 	    }
+	    
+	    if (urlGhe.endsWith("/"))
+        {
+            urlGhe = StringUtils.chop(urlGhe);
+            
+        }
 //TODO validation of account is disabled because of private mode 
 //        AccountInfo accountInfo = organizationService.getAccountInfo(urlGhe, organization);
 //        if (accountInfo == null)
