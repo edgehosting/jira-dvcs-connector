@@ -101,13 +101,13 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
     public void commitsIssueTab_ShouldNotMissAnyRelatedCommits() throws Exception
     {
         // repository after the 1st push in following state:
-        // +-------------------+------------+--------------------------------------------+
-        // | Author            | Commit     | Message                                    |
-        // +-------------------+------------+--------------------------------------------+
-        // | dvcsconnectortest | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
-        // | dvcsconnectortest | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
-        // | dvcsconnectortest | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
-        pushGithubRepository(_1ST_GIT_REPO_ZIP_TO_PUSH);//TODO correct Author
+        // +------------------+------------+--------------------------------------------+
+        // | Author           | Commit     | Message                                    |
+        // +------------------+------------+--------------------------------------------+
+        // | Miroslav Stencel | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
+        // | Miroslav Stencel | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
+        // | Miroslav Stencel | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
+        pushGithubRepository(_1ST_GIT_REPO_ZIP_TO_PUSH);
 
         loginToGithubAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationSuccessfully(GITHUB_REPO_OWNER, true);
@@ -115,15 +115,15 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
         assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
 
         // repository after the 2nd push in following state:
-        // +-------------------+------------+--------------------------------------------+
-        // | Author            | Commit     | Message                                    |
-        // +-------------------+------------+--------------------------------------------+
-        // | dvcsconnectortest | f59cc8a7b7 | merge + 3rd push {user2} [14:44]           |
-        // | dvcsconnectortest | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
-        // | dvcsconnectortest | cc2ac8c703 | MC-1 4th commit {user2} [14:25]            |
-        // | dvcsconnectortest | d5d190c12c | MC-1 3rd commit {user2} [14:24]            |
-        // | dvcsconnectortest | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
-        // | dvcsconnectortest | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
+        // +------------------+------------+--------------------------------------------+
+        // | Author           | Commit     | Message                                    |
+        // +------------------+------------+--------------------------------------------+
+        // | Miroslav Stencel | f59cc8a7b7 | merge + 3rd push {user2} [14:44]           |
+        // | Miroslav Stencel | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
+        // | Miroslav Stencel | cc2ac8c703 | MC-1 4th commit {user2} [14:25]            |
+        // | Miroslav Stencel | d5d190c12c | MC-1 3rd commit {user2} [14:24]            |
+        // | Miroslav Stencel | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
+        // | Miroslav Stencel | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
         pushGithubRepository(_2ND_GIT_REPO_ZIP_TO_PUSH);
         
         simulatePostCommitHookCall();
