@@ -21,16 +21,17 @@
 	        <fieldset>
 	         
 	          <div class="field-group">
-	              <label for="urlGhe">Url:</label>
+	              <label for="url">Url:</label>
 	              <span class="field-value">$textutils.htmlEncode($action.getUrl())</span>
-	              <input type="hidden" id="url" name="url" value="$textutils.htmlEncode($action.getUrlGhe())"/>
+	              <input type="hidden" id="url" name="url" value="$textutils.htmlEncode($action.getUrl())"/>
 	          </div>
 	          
 	          <div class="field-group" >
 	          	<label for="organization">Team Account Username:</label>
 	            <input class="field-value" type="text" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 			  </div>
-	 			
+
+              #if($action.getOauthRequiredGhe() == "true")	
 	          	<h3>OAuth Credentials</h3>
 	          	<input type="hidden" name="oauthRequiredGhe" value="true" />
 	          	<div class="field-group" >
@@ -42,8 +43,9 @@
 	          		<label for="oauthSecretGhe">Secret:</label>
 	            	<input type="text" id="oauthSecretGhe" name="oauthSecretGhe" value="$textutils.htmlEncode($action.getOauthSecretGhe())"/>
 			   </div>
+	          #end
 	         
-	         <div class="field-group" style="margin-top: 10px; clear: both" >
+             <div class="field-group" style="margin-top: 10px; clear: both" >
 			  <label for="autoLinking">Auto Link New Repositories:</label>
 	          #if($action.getAutoLinking() == "true")
 		         <input disabled="disabled" checked="checked" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>

@@ -11,12 +11,6 @@ function deleteRepository(repositoryId, repositoryUrl) {
     }
 }
 
-function toggleMoreFiles(target_div) {
-    AJS.$('#' + target_div).toggle();
-    AJS.$('#see_more_' + target_div).toggle();
-    AJS.$('#hide_more_' + target_div).toggle();
-}
-
 function switchDvcsDetails(selectSwitch) {
 	var dvcsType = selectSwitch.selectedIndex;
 	switchDvcsDetailsInternal(dvcsType);
@@ -34,7 +28,6 @@ function switchDvcsDetailsInternal(dvcsType) {
 		
 		AJS.$('#github-form-section').hide();
 		AJS.$('#githube-form-section').hide();
-		
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
 
 		if (BB_REQUIRES_AUTH == "true") {
@@ -123,7 +116,6 @@ function updateSyncStatus(repo) {
     }
     syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
     syncRepoIconElement.removeClass("running").addClass(syncRepoIcon);
-
     syncStatusDiv.html(syncStatusHtml);
 
 }
@@ -187,7 +179,9 @@ function dvcsSubmitFormHandler() {
     	var selectedDvcs = AJS.$("#urlSelect option:selected");
     	var dvcsHost = selectedDvcs.text();
     	
-    	if ( selectedDvcs.val() == "githube") {
+    	if ( selectedDvcs.val() == "githube") { // Github Enterprise
+    		// impose real URL to hidden input
+    		AJS.$("#url").val(AJS.$("#urlGhe").val()); 
     		alert("Please be sure that you are logged in to " + dvcsHost);
     	}
     	//
