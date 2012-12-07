@@ -65,7 +65,8 @@ public class GithubOAuthUtils
 
     public String requestAccessToken(String githubHostUrl, String code)
     {
-
+        log.debug("Requesting access token at " + githubHostUrl + " with code " + code);
+        
         URL url;
         HttpURLConnection conn;
 
@@ -78,9 +79,10 @@ public class GithubOAuthUtils
             throw new SourceControlException("Ops, no access code returned. Did you click Allow?");
         }
 
+        String githubUrl = githubUrl(githubHostUrl);
         try
         {
-            String requestUrl = githubUrl(githubHostUrl) + "/login/oauth/access_token?&client_id="
+            String requestUrl = githubUrl + "/login/oauth/access_token?&client_id="
                     + clentId() + "&client_secret=" + clientSecret() + "&code=" + code;
 
             log.debug("requestAccessToken() - " + requestUrl);
@@ -100,11 +102,15 @@ public class GithubOAuthUtils
 
         } catch (MalformedURLException e)
         {
-            throw new SourceControlException("Error obtain access token.");
+            throw new SourceControlException("Error obtaining access token.");
 
-        } catch (Exception e)
+        } catch (IOException ioe)
         {
-            throw new SourceControlException("Error obtain access token. Please check your credentials.");
+            throw new SourceControlException("Error obtaining access token. Cannot access " + githubUrl + " from Jira.");
+        }
+        catch (Exception e)
+        {
+            throw new SourceControlException("Error obtaining access token. Please check your credentials.");
         }
 
         if (result.startsWith("error="))
@@ -120,6 +126,10 @@ public class GithubOAuthUtils
             }
 
             throw new SourceControlException("Error obtaining access token: " + error);
+        } else if (!result.startsWith("access_token"))
+        {
+            log.error("Requested access token response is invalid");
+            throw new SourceControlException("Error obtaining access token.");
         }
 
         return result.replaceAll("access_token=(.*)&token_type.*", "$1");
