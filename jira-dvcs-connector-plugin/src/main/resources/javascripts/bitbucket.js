@@ -198,11 +198,6 @@ function dvcsSubmitFormHandler() {
     // submit form
     var organizationElement = AJS.$("#organization");
     
-    if (selectSwitch.selectedIndex==2) { // Github Enterprise
-    	// impose real URL to hidden input
-    	AJS.$("#url").val(AJS.$("#urlGhe").val()); 
-    }
-    
     // if not custom URL
     if ( !dvcsContainsSlash( organizationElement.val()) ) {
     	// some really simple validation
@@ -213,7 +208,9 @@ function dvcsSubmitFormHandler() {
     	var selectedDvcs = AJS.$("#urlSelect option:selected");
     	var dvcsHost = selectedDvcs.text();
     	
-    	if ( selectedDvcs.val() == "githube") {
+    	if ( selectedDvcs.val() == "githube") { // Github Enterprise
+    		// impose real URL to hidden input
+    		AJS.$("#url").val(AJS.$("#urlGhe").val()); 
     		alert("Please be sure that you are logged in to " + dvcsHost);
     	}
     	//
