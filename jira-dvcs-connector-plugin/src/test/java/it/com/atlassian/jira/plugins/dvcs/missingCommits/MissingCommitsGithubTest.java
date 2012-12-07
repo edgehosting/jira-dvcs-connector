@@ -37,8 +37,8 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
 
-    private static final String _1ST_GITHUB_REPO_ZIP_TO_PUSH = "missingCommits/github/git1_2nd_push.zip";
-    private static final String _2ND_GITHUB_REPO_ZIP_TO_PUSH = "missingCommits/github/git2_after_merge.zip";
+    private static final String _1ST_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_1st_push.zip";
+    private static final String _2ND_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_2nd_push_after_merge.zip";
 
     private static GithubRepositoriesRemoteRestpoint githubRepositoriesREST;
 
@@ -107,7 +107,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
         // | dvcsconnectortest | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
         // | dvcsconnectortest | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
         // | dvcsconnectortest | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
-        pushGithubRepository(_1ST_GITHUB_REPO_ZIP_TO_PUSH);//TODO correct Author
+        pushGithubRepository(_1ST_GIT_REPO_ZIP_TO_PUSH);//TODO correct Author
 
         loginToGithubAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationSuccessfully(GITHUB_REPO_OWNER, true);
@@ -124,7 +124,7 @@ public class MissingCommitsGithubTest extends BitBucketBaseOrgTest<GithubConfigu
         // | dvcsconnectortest | d5d190c12c | MC-1 3rd commit {user2} [14:24]            |
         // | dvcsconnectortest | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
         // | dvcsconnectortest | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
-        pushGithubRepository(_2ND_GITHUB_REPO_ZIP_TO_PUSH);
+        pushGithubRepository(_2ND_GIT_REPO_ZIP_TO_PUSH);
         
         simulatePostCommitHookCall();
         Thread.sleep(5000); // to catch up with soft sync

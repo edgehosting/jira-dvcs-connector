@@ -39,13 +39,12 @@ public class MissingCommitsBitbucketGitTest extends BitBucketBaseOrgTest<BitBuck
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
 
-    private static final String _1ST_GIT_REPO_ZIP_TO_PUSH = "missingCommits/github/git1_2nd_push.zip";
-    private static final String _2ND_GIT_REPO_ZIP_TO_PUSH = "missingCommits/github/git2_after_merge.zip";
-//TODO rename resources - not 2nd push and after merge 2nd push
+    private static final String _1ST_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_1st_push.zip";
+    private static final String _2ND_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_2nd_push_after_merge.zip";
+
     private static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
 
-//TODO premenovat missingCommits.bitbucket na missingCommits.mercurial
-//TODO premenovat missingCommits.github na missingCommits.git
+
     @BeforeClass
     public static void initializeRepositoriesREST()
     {
