@@ -226,12 +226,6 @@ a:hover.repositoryNameLink {
     
 }
 
-.aui-item-column2 {
-    display: inline;
-    float: left;
-    padding-left: 35px;
-}
-
 #addRepositoryContent {
     margin: 0 20px 0 0;
     color: #555 !important;

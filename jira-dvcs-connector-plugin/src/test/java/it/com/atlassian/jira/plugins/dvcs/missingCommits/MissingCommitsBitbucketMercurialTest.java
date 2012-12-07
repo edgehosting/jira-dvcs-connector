@@ -39,8 +39,8 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest<B
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
 
-    private static final String _1ST_BITBUCKET_REPO_ZIP_TO_PUSH = "missingCommits/bitbucket/hg1_2nd_push.zip";
-    private static final String _2ND_BITBUCKET_REPO_ZIP_TO_PUSH = "missingCommits/bitbucket/hg2_after_merge.zip";
+    private static final String _1ST_HG_REPO_ZIP_TO_PUSH = "missingCommits/mercurial/hg_1st_push.zip";
+    private static final String _2ND_HG_REPO_ZIP_TO_PUSH = "missingCommits/mercurial/hg_2nd_push_after_merge.zip";
 
     private static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
 
@@ -112,7 +112,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest<B
         // | Martin Skurla | 8b32e32 | MC-1 5th commit + 2nd push {user1} [10:47] |
         // | Martin Skurla | ccdd16b | MC-1 2nd commit + 1st push {user1} [10:38] |
         // | Martin Skurla | 792d8d6 | MC-1 1st commit {user1} [10:37]            |
-        pushBitbucketHgRepository(_1ST_BITBUCKET_REPO_ZIP_TO_PUSH);
+        pushBitbucketHgRepository(_1ST_HG_REPO_ZIP_TO_PUSH);
 
         loginToBitbucketAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationSuccessfully(BITBUCKET_REPO_OWNER, true);
@@ -129,7 +129,7 @@ public class MissingCommitsBitbucketMercurialTest extends BitBucketBaseOrgTest<B
         // | Martin Skurla | 8b32e32 | MC-1 5th commit + 2nd push {user1} [10:47] |
         // | Martin Skurla | ccdd16b | MC-1 2nd commit + 1st push {user1} [10:38] |
         // | Martin Skurla | 792d8d6 | MC-1 1st commit {user1} [10:37]            |
-        pushBitbucketHgRepository(_2ND_BITBUCKET_REPO_ZIP_TO_PUSH);
+        pushBitbucketHgRepository(_2ND_HG_REPO_ZIP_TO_PUSH);
         
         simulatePostCommitHookCall();
         Thread.sleep(5000); // to catch up with soft sync

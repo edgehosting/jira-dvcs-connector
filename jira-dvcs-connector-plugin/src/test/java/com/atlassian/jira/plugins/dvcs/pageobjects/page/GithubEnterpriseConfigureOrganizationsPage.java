@@ -55,7 +55,7 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
         String githubWebLoginRedirectUrl = authorizeGithubAppIfRequired();
 
-        if (!githubWebLoginRedirectUrl.contains("/jira/"))
+        if (!githubWebLoginRedirectUrl.contains("jira"))
         {
             Assert.fail("Expected was Valid OAuth login and redirect to JIRA!");
         }
@@ -119,13 +119,13 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
         return this;
     }
 
-    private String checkAndDoGithubLogin()
+    private String checkAndDoGithubLogin()//TODO why not use page object?
     {
 
     	waitWhileNewPageLaoded();
 
         String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
-        if (currentUrl.contains(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL + "/login?"))
+        if (currentUrl.contains(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL + "/login"))
         {
             githubWebLoginField.type("jirabitbucketconnector");
             githubWebPasswordField.type(PasswordUtil.getPassword("jirabitbucketconnector"));
@@ -176,7 +176,7 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
         
         checkAndDoGithubLogin();
         String currentUrl = authorizeGithubAppIfRequired();
-        if (!currentUrl.contains("/jira/"))
+        if (!currentUrl.contains("jira"))
         {
             Assert.fail("Expected was automatic continue to jira!");
         }

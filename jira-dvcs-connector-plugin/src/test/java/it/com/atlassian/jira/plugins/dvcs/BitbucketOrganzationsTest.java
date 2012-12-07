@@ -92,8 +92,11 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
     }
 
-    private void removeOAuthConsumer() //TODO @After vs not needed for every method
+    private void deleteAllOrganizationsAndRemoveOAuthConsumer() //TODO @After vs not needed for every method
     {
+        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());//TODO is this needed???
+        configureOrganizations.deleteAllOrganizations();
+
         jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
         bitbucketIntegratedApplicationsPage.removeLastAdddedConsumer();
     }
@@ -112,9 +115,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
         // check add user extension
         jira.visit(JiraAddUserPage.class).checkPanelPresented();
 
-        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
-        configureOrganizations.deleteAllOrganizations();
-        removeOAuthConsumer();
+        deleteAllOrganizationsAndRemoveOAuthConsumer();
     }
 
     @Test
@@ -127,9 +128,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
         // first row is header row, than repos ...
         assertThat(repositoriesTable.findAll(By.tagName("tr")).size()).isGreaterThan(2);
 
-        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
-        configureOrganizations.deleteAllOrganizations();
-        removeOAuthConsumer();
+        deleteAllOrganizationsAndRemoveOAuthConsumer();
     }
 
     @Test
@@ -143,9 +142,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
 
         configureOrganizations.clearForm();
 
-        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
-        configureOrganizations.deleteAllOrganizations();
-        removeOAuthConsumer();
+        deleteAllOrganizationsAndRemoveOAuthConsumer();
     }
 
     @Test
@@ -168,9 +165,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
         servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, ACCOUNT_ADMIN_LOGIN, ACCOUNT_ADMIN_PASSWORD);
         assertThat(servicesConfig).doesNotContain(syncUrl);
 
-        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
-        configureOrganizations.deleteAllOrganizations();
-        removeOAuthConsumer();
+        deleteAllOrganizationsAndRemoveOAuthConsumer();
     }
 
     private String getBitbucketServices(String url, String username, String password) throws Exception
@@ -195,9 +190,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
         assertThat(getCommitsForIssue("QA-2", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 2)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
 
-        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
-        configureOrganizations.deleteAllOrganizations();
-        removeOAuthConsumer();
+        deleteAllOrganizationsAndRemoveOAuthConsumer();
     }
 
     @Test
@@ -229,9 +222,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
         assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+3");
         assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
 
-        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());
-        configureOrganizations.deleteAllOrganizations();//TODO should be factored to @After as well
-        removeOAuthConsumer();
+        deleteAllOrganizationsAndRemoveOAuthConsumer();
     }
 
 

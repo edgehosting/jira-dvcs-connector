@@ -1,6 +1,7 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static com.atlassian.jira.plugins.dvcs.util.TestNGAssumptions.assumeThat;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest.AnotherLoginPage;
@@ -164,25 +165,24 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest<Gith
     public void testPostCommitHookAdded() throws Exception
     {
         //TODO delete rest call doesn't work for http
-        if ( !GITHUB_ENTERPRISE_URL.startsWith("http://") )
-        {
-            String baseUrl = jira.getProductInstance().getBaseUrl();
+        assumeThat(GITHUB_ENTERPRISE_URL.startsWith("http://"));
+
+        String baseUrl = jira.getProductInstance().getBaseUrl();
     
-            // add repository
-            configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
-    
-            // check that it created postcommit hook
-            String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/";
-            String hooksURL = GITHUB_ENTERPRISE_URL + "/jirabitbucketconnector/test-project/admin/hooks";
-            String hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
-            assertThat(hooksPage).contains(githubServiceConfigUrlPath);
-            goToConfigPage();
-            // delete repository
-            configureOrganizations.deleteAllOrganizations();
-            // check that postcommit hook is removed
-            hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
-            assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
-        }
+        // add repository
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
+
+        // check that it created postcommit hook
+        String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/";
+        String hooksURL = GITHUB_ENTERPRISE_URL + "/jirabitbucketconnector/test-project/admin/hooks";
+        String hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
+        assertThat(hooksPage).contains(githubServiceConfigUrlPath);
+        goToConfigPage();
+        // delete repository
+        configureOrganizations.deleteAllOrganizations();
+        // check that postcommit hook is removed
+        hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
+        assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
     }
 
     private String getGithubServices(String url, String username, String password) throws Exception

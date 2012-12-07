@@ -39,13 +39,12 @@ public class MissingCommitsBitbucketGitTest extends BitBucketBaseOrgTest<BitBuck
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
 
-    private static final String _1ST_GIT_REPO_ZIP_TO_PUSH = "missingCommits/github/git1_2nd_push.zip";
-    private static final String _2ND_GIT_REPO_ZIP_TO_PUSH = "missingCommits/github/git2_after_merge.zip";
-//TODO rename resources - not 2nd push and after merge 2nd push
+    private static final String _1ST_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_1st_push.zip";
+    private static final String _2ND_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_2nd_push_after_merge.zip";
+
     private static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
 
-//TODO premenovat missingCommits.bitbucket na missingCommits.mercurial
-//TODO premenovat missingCommits.github na missingCommits.git
+
     @BeforeClass
     public static void initializeRepositoriesREST()
     {
@@ -107,13 +106,13 @@ public class MissingCommitsBitbucketGitTest extends BitBucketBaseOrgTest<BitBuck
     public void commitsIssueTab_ShouldNotMissAnyRelatedCommits() throws Exception
     {
         // repository after the 1st push in following state:
-        // +---------------+---------+--------------------------------------------+
-        // | Author        | Commit  | Message                                    |
-        // +---------------+---------+--------------------------------------------+
-        // | Martin Skurla | 8b32e32 | MC-1 5th commit + 2nd push {user1} [10:47] |
-        // | Martin Skurla | ccdd16b | MC-1 2nd commit + 1st push {user1} [10:38] |
-        // | Martin Skurla | 792d8d6 | MC-1 1st commit {user1} [10:37]            |
-        pushBitbucketGitRepository(_1ST_GIT_REPO_ZIP_TO_PUSH);//TODO update messages
+        // +------------------+------------+--------------------------------------------+
+        // | Author           | Commit     | Message                                    |
+        // +------------------+------------+--------------------------------------------+
+        // | Miroslav Stencel | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
+        // | Miroslav Stencel | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
+        // | Miroslav Stencel | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
+        pushBitbucketGitRepository(_1ST_GIT_REPO_ZIP_TO_PUSH);
 
         loginToBitbucketAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationSuccessfully(BITBUCKET_REPO_OWNER, true);
@@ -121,15 +120,15 @@ public class MissingCommitsBitbucketGitTest extends BitBucketBaseOrgTest<BitBuck
         assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
 
         // repository afther the 2nd push in following state:
-        // +---------------+---------+--------------------------------------------+
-        // | Author        | Commit  | Message                                    |
-        // +---------------+---------+--------------------------------------------+
-        // | Martin Skurla | 9caa788 | merge + 3rd push {user2} [11:04]           |
-        // | Martin Skurla | 066e3b1 | MC-1 4th commit {user2} [10:45]            |
-        // | Martin Skurla | 1b05d76 | MC-1 3rd commit {user2} [10:44]            |
-        // | Martin Skurla | 8b32e32 | MC-1 5th commit + 2nd push {user1} [10:47] |
-        // | Martin Skurla | ccdd16b | MC-1 2nd commit + 1st push {user1} [10:38] |
-        // | Martin Skurla | 792d8d6 | MC-1 1st commit {user1} [10:37]            |
+        // +------------------+------------+--------------------------------------------+
+        // | Author           | Commit     | Message                                    |
+        // +------------------+------------+--------------------------------------------+
+        // | Miroslav Stencel | f59cc8a7b7 | merge + 3rd push {user2} [14:44]           |
+        // | Miroslav Stencel | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
+        // | Miroslav Stencel | cc2ac8c703 | MC-1 4th commit {user2} [14:25]            |
+        // | Miroslav Stencel | d5d190c12c | MC-1 3rd commit {user2} [14:24]            |
+        // | Miroslav Stencel | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
+        // | Miroslav Stencel | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
         pushBitbucketGitRepository(_2ND_GIT_REPO_ZIP_TO_PUSH);
 
         simulatePostCommitHookCall();
