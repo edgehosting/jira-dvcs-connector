@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
+import static com.atlassian.jira.util.UrlValidator.isValid;
+
 import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
@@ -32,6 +34,11 @@ public class ConfigureGithubEnterpriseOAuth extends ConfigureGithubOAuth
         if (StringUtils.isBlank(hostUrl))
         {
             addErrorMessage("Please enter GitHub Enterprise host url.");
+        }
+        
+        if (!isValid(hostUrl))
+        {
+            addErrorMessage("Please provide valid GitHub host URL.");
         }
     }
 
