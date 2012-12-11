@@ -18,16 +18,6 @@ import org.testng.Assert;
  */
 public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureOrganizationsPage
 {
-    @ElementBy(name = "urlGhe")
-    PageElement githubEnterpriseHostUrl;
-    
-    private String githubEnterpriseHost;//TODO ???
-    
-    public void setGithubEnterpriseHost(String githubEnterpriseHost)
-    {
-        this.githubEnterpriseHost = githubEnterpriseHost;
-    }
-    
     @Override
     public GithubEnterpriseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
     {
@@ -38,8 +28,6 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
         organization.clear().type(organizationAccount);
 
-        githubEnterpriseHostUrl.clear().type(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL);
-        
         setPageAsOld();
 
         if (!autoSync) {
@@ -77,8 +65,6 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
         organization.clear().type(url);
 
-        githubEnterpriseHostUrl.clear().type(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL);
-        
         setPageAsOld();
 
         addOrgButton.click();
@@ -100,7 +86,6 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
         organization.clear().type("jirabitbucketconnector");
-        githubEnterpriseHostUrl.clear().type(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL);
         
         setPageAsOld();
 
@@ -124,14 +109,15 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
     	waitWhileNewPageLaoded();
 
-        String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
-        if (currentUrl.contains(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL + "/login"))
-        {
-            githubWebLoginField.type("jirabitbucketconnector");
-            githubWebPasswordField.type(PasswordUtil.getPassword("jirabitbucketconnector"));
-            setPageAsOld();
-            githubWebSubmitButton.click();
-        }
+// We don't need to login
+//        String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
+//        if (currentUrl.contains(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL + "/login"))
+//        {
+//            githubWebLoginField.type("jirabitbucketconnector");
+//            githubWebPasswordField.type(PasswordUtil.getPassword("jirabitbucketconnector"));
+//            setPageAsOld();
+//            githubWebSubmitButton.click();
+//        }
         return jiraTestedProduct.getTester().getDriver().getCurrentUrl();
     }
 
@@ -166,7 +152,6 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
         organization.clear().type("jirabitbucketconnector");
-        githubEnterpriseHostUrl.clear().type(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL);
         
         setPageAsOld();
         addOrgButton.click();
@@ -192,7 +177,6 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
         organization.clear().type(organizationString);
-        githubEnterpriseHostUrl.clear().type(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL);
 
         setPageAsOld();
         addOrgButton.click();

@@ -4,7 +4,7 @@
            Manage DVCS Accounts
     </title>
 
-	$webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
+    $webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
 
     <script type="text/javascript">
         
@@ -16,9 +16,9 @@
 
         function init_repositories()
         {
-        	// run timer for repos sync statuses
-           	retrieveSyncStatus();
-			// bind submit handler
+            // run timer for repos sync statuses
+               retrieveSyncStatus();
+            // bind submit handler
             AJS.$("#repoEntry").submit(dvcsSubmitFormHandler);
         }
      </script>
@@ -29,7 +29,7 @@
 
   <body>
 
- 		<h3>Manage DVCS Accounts</h3>
+         <h3>Manage DVCS Accounts</h3>
 
         #if ($action.isOnDemandLicense())
             <p>Connect your <a href="http://confluence.atlassian.com/display/AOD/Linking+a+bitbucket+or+GitHub+repository+with+JIRA+OnDemand" target="_blank">Bitbucket and GitHub accounts to JIRA OnDemand</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
@@ -37,8 +37,8 @@
             <p>Connect your <a href="http://confluence.atlassian.com/display/BITBUCKET/Using+the+JIRA+DVCS+Connector+Plugin" target="_blank">Bitbucket and GitHub accounts to JIRA</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
         #end
         <br/>
-	
-		#foreach ($errorMessage in $action.getErrorMessages())
+    
+        #foreach ($errorMessage in $action.getErrorMessages())
                 <div class="aui-message error shadowed">
                     <p class="title">
                         <span class="aui-icon icon-error"></span>
@@ -47,7 +47,7 @@
                     <p>$errorMessage</p>
                 </div>
         #end
-		
+        
 
         <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account &gt;&gt;" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account &gt;&gt;" />
 
@@ -63,110 +63,98 @@
                 <input type="hidden" name="isPrivate" id="isPrivate">
                 <input type="hidden" name="url" id="url" >
               
-	            
-                    <div class="field-group" >
-                      <label for="urlSelect">Host:</label>
-                      <select id="urlSelect" name="urlSelect" class="select" onchange="switchDvcsDetails(this)">
-	               		<option value="bitbucket">Bitbucket</option>
-	                	<option value="github">GitHub</option>
-	                	<option value="githube">GitHub Enterprise</option>
-	               	  </select>
-                      <div class="fieldValue" id="urlReadOnly"></div>
-                      <div id="url-error" class="dvcs-error">Choose URL.</div>
-                    </div>
                 
-                <div class="aui-item-column2" id="examples">
-                    <label>Examples:</label>
-                    <div style="padding-top: 3px;"><i>https://bitbucket.org</i></div>
-                    <div><i>https://github.com</i></div>
+                <div class="field-group" >
+                  <label for="urlSelect">Host:</label>
+                  <select id="urlSelect" name="urlSelect" class="select" onchange="switchDvcsDetails(this)">
+                       <option value="bitbucket">Bitbucket</option>
+                    <option value="github">GitHub</option>
+                    <option value="githube">GitHub Enterprise</option>
+                     </select>
+                  <div class="fieldValue" id="urlReadOnly"></div>
+                  <div id="url-error" class="dvcs-error">Choose URL.</div>
+                </div>
+            
+                <div class="field-group" >
+                  <label for="organization">Team or User Account:</label>
+                  <input type="text" id="organization" name="organization" value=""/>
+                  <div class="fieldValue" id="organizationReadOnly"></div>
+                  <div id="org-error" class="dvcs-error">This field is required.</div>
                 </div>
                 
-                    <div class="field-group" >
-                      <label for="organization">Team or User Account:</label>
-                      <input type="text" id="organization" name="organization" value=""/>
-                      <div class="fieldValue" id="organizationReadOnly"></div>
-                      <div id="org-error" class="dvcs-error">This field is required.</div>
+                ## BB form section
+                <div id="bitbucket-form-section" style="display:none">
+                    <input type="hidden" id="oauthBbRequired" name="oauthBbRequired" value="true" />
+                    <div class="field-group">
+                       <label for="oauthBbClientId">OAuth Key:</label>
+                       <input type="text" id="oauthBbClientId" name="oauthBbClientId" value=""/>
+                       <div id="oauth-bb-client-error" class="dvcs-error">This field is required.</div>
+                       <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureBitbucketOAuth!default.jspa">find OAuth key and secret</a>?</div>
                     </div>
-				
-				## BB form section
-				<div id="bitbucket-form-section" style="display:none">
-	                <input type="hidden" id="oauthBbRequired" name="oauthBbRequired" value="true" />
                     <div class="field-group">
-	                   <label for="oauthBbClientId">OAuth Key:</label>
-	                   <input type="text" id="oauthBbClientId" name="oauthBbClientId" value=""/>
-	                   <div id="oauth-bb-client-error" class="dvcs-error">This field is required.</div>
-	                   <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureBitbucketOAuth!default.jspa">find OAuth key and secret</a>?</div>
-	                </div>
-	                <div class="field-group">
-	                   <label for="oauthBbSecret">OAuth Secret:</label>
-	                   <input type="text" id="oauthBbSecret" name="oauthBbSecret" value=""/>
-	                   <div id="oauth-bb-secret-error" class="dvcs-error">This field is required.</div>
-	                </div>
-	            </div>
+                       <label for="oauthBbSecret">OAuth Secret:</label>
+                       <input type="text" id="oauthBbSecret" name="oauthBbSecret" value=""/>
+                       <div id="oauth-bb-secret-error" class="dvcs-error">This field is required.</div>
+                    </div>
+                </div>
 
-				## GH form section
-				<div id="github-form-section" style="display:none">
-					<input type="hidden" id="oauthRequired" name="oauthRequired" value="true" />
+                ## GH form section
+                <div id="github-form-section" style="display:none">
+                    <input type="hidden" id="oauthRequired" name="oauthRequired" value="true" />
                     <div class="field-group">
-	                   <label for="oauthClientId">OAuth Key:</label>
-	                   <input type="text" id="oauthClientId" name="oauthClientId" value=""/>
-	                   <div id="oauth-gh-client-error" class="dvcs-error">This field is required.</div>
-	                   <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureGithubOAuth!default.jspa">find OAuth key and secret</a>?</div>
-	                </div>
-	                <div class="field-group">
-	                   <label for="oauthSecret">OAuth Secret:</label>
-	                   <input type="text" id="oauthSecret" name="oauthSecret" value=""/>
-	                   <div id="oauth-gh-secret-error" class="dvcs-error">This field is required.</div>
-	                </div>
-	            </div>
-	            
-	            ## GHE form section
-				<div id="githube-form-section" style="display:none">
-					<input type="hidden" id="oauthRequiredGhe" name="oauthRequiredGhe" value="true" />
+                       <label for="oauthClientId">OAuth Key:</label>
+                       <input type="text" id="oauthClientId" name="oauthClientId" value=""/>
+                       <div id="oauth-gh-client-error" class="dvcs-error">This field is required.</div>
+                       <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureGithubOAuth!default.jspa">find OAuth key and secret</a>?</div>
+                    </div>
                     <div class="field-group">
-	                   <label for="urlGhe">Host URL:</label>
-	                   <input type="text" id="urlGhe" name="urlGhe" value=""/>
-	                   <div id="ghe-url-error" class="dvcs-error">This field is required.</div>
-	                   <div id="ghe-invalid-url-error" class="dvcs-error">Valid url is required.</div>
-	                </div>
+                       <label for="oauthSecret">OAuth Secret:</label>
+                       <input type="text" id="oauthSecret" name="oauthSecret" value=""/>
+                       <div id="oauth-gh-secret-error" class="dvcs-error">This field is required.</div>
+                    </div>
+                </div>
+                
+                ## GHE form section
+                <div id="githube-form-section" style="display:none">
+                    <input type="hidden" id="oauthRequiredGhe" name="oauthRequiredGhe" value="true" />
                     <div class="field-group">
- 	                   <label for="oauthClientIdGhe">OAuth Key:</label>
-	                   <input type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value=""/>
-	                   <div id="oauth-ghe-client-error" class="dvcs-error">This field is required.</div>
-	                   <div class="description"></div>
-	                </div>
-	                <div class="field-group">
-	                   <label for="oauthSecretGhe">OAuth Secret:</label>
-	                   <input type="text" id="oauthSecretGhe" name="oauthSecretGhe" value=""/>
-	                   <div id="oauth-ghe-secret-error" class="dvcs-error">This field is required.</div>
-	                </div>
-	            </div>
-	            
-	            <div style="margin-top: 10px;"  class="field-group">
-	                <label for="autoLinking">Auto Link New Repositories:</label>
-	                <input class="checkbox" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true" checked="checked" />
-	           		 #*
-	                <div>
-	                	Configure new repos to automatically link issue keys and commit messages on Bitbucket.
-	            	</div>
-	            	*#
-	            </div>
-	           
-	            <div style="margin-top: 10px;"  class="field-group">
-	                <label for="autoSmartCommits">Enable Smart Commits:</label>
-	                <input class="checkbox" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true" checked="checked" />
-	                <div class="description">
-	                	#if ($action.isOnDemandLicense())
-	                		<a href="https://confluence.atlassian.com/display/AOD/Processing+JIRA+issues+with+commit+messages" target="_blank">
-				        #else
-				        	<a href="https://confluence.atlassian.com/display/BITBUCKET/Processing+JIRA+issues+with+commit+messages" target="_blank">
-        				#end
-	                	Smart Commits</a> allow repository committers to perform actions like transitioning JIRA issues
-	                </div>
-	            </div>
+                       <label for="urlGhe">Host URL:</label>
+                       <input type="text" id="urlGhe" name="urlGhe" value=""/>
+                       <div id="ghe-url-error" class="dvcs-error">This field is required.</div>
+                       <div id="ghe-invalid-url-error" class="dvcs-error">Valid url is required.</div>
+                    </div>
+                    <div class="field-group">
+                        <label for="oauthClientIdGhe">OAuth Key:</label>
+                       <input type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value=""/>
+                       <div id="oauth-ghe-client-error" class="dvcs-error">This field is required.</div>
+                       <div class="description"></div>
+                    </div>
+                    <div class="field-group">
+                       <label for="oauthSecretGhe">OAuth Secret:</label>
+                       <input type="text" id="oauthSecretGhe" name="oauthSecretGhe" value=""/>
+                       <div id="oauth-ghe-secret-error" class="dvcs-error">This field is required.</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 10px;"  class="field-group">
+                    <label for="autoLinking">Auto Link New Repositories:</label>
+                    <input class="checkbox" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true" checked="checked" />
+                </div>
+               
+                <div style="margin-top: 10px;"  class="field-group">
+                    <label for="autoSmartCommits">Enable Smart Commits:</label>
+                    <input class="checkbox" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true" checked="checked" />
+                    <div class="description">
+                        #if ($action.isOnDemandLicense())
+                            <a href="https://confluence.atlassian.com/display/AOD/Processing+JIRA+issues+with+commit+messages" target="_blank">
+                        #else
+                            <a href="https://confluence.atlassian.com/display/BITBUCKET/Processing+JIRA+issues+with+commit+messages" target="_blank">
+                        #end
+                        Smart Commits</a> allow repository committers to perform actions like transitioning JIRA issues
+                    </div>
+                </div>
      
                 <div id="bbCredentials"></div>
-
 
                 <div id="aui-message-bar"></div>
 
@@ -179,14 +167,14 @@
             </form>
         </div>
         </div>
-   		
-   		<div id="organization-list">
-   			#printOrganizations
-   		</div>
-   		
-	#printUpdateCredentialsFormHidden
-	#printConfigureDefaultGroupsFormHidden
-	
+           
+       <div id="organization-list">
+           #printOrganizations
+       </div>
+           
+        #printUpdateCredentialsFormHidden
+        #printConfigureDefaultGroupsFormHidden
+    
   </body>
 </html>
 
@@ -201,197 +189,195 @@
 
 #foreach( $org in $action.loadOrganizations() )
   <div class="dvcs-orgdata-container">
-			
-			#if($org.isAutolinkNewRepos())
-				#set( $orgAutolink = "checked='checked'")
-				#set( $orgSmartcommitsOnNewReposDisabled = "")
-				#else
-				#set( $orgAutolink = "")
-				#set( $orgSmartcommitsOnNewReposDisabled = "disabled='disabled'")
-			#end
-			#if($org.isSmartcommitsOnNewRepos())
-				#set( $orgSmartcommitsOnNewRepos = "checked='checked'")
-				#else
-				#set( $orgSmartcommitsOnNewRepos = "")
-			#end
-	
-	<div class="dvcs-header-container">	
-		<h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a> #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end </h4>
-		<div class="dvcs-org-container aui-toolbar">
-				
-				<ul class="toolbar-group">
-				
-					<li class="toolbar-item toolbar-dropdown dvcs-organization-controls-tool">
-					
-						<div class="aui-dd-parent">
-							<a title="Show Settings" class="toolbar-trigger aui-dd-trigger" href="#" style="heiht: 24px;">
-		                                <span class="icon-tools-small" style="float: left;"></span>
-		                                <span class="icon icon-dropdown" ></span>
-		                    </a>
-								<ul id="dvcs-organization-controls-$org.id" class=" aui-dropdown dvcs-organization-controls"  >
-								           
-								           <li class="dropdown-item">
-								            	 <div class="dvcs-gearmenu-nohide">
-									            	 <input id="org_autolink_check$org.id" 
-									            	 		class="aui" $!orgAutolink 
-									            	 		type="checkbox" name="org_autolink_check$org.id"
-									            	 		onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" />
-									            	 <label for="org_autolink_check$org.id"> Autolink new repositories</label>
-								            	 </div>
-								            </li>
+            
+    #if($org.isAutolinkNewRepos())
+        #set( $orgAutolink = "checked='checked'")
+        #set( $orgSmartcommitsOnNewReposDisabled = "")
+        #else
+        #set( $orgAutolink = "")
+        #set( $orgSmartcommitsOnNewReposDisabled = "disabled='disabled'")
+    #end
+    #if($org.isSmartcommitsOnNewRepos())
+        #set( $orgSmartcommitsOnNewRepos = "checked='checked'")
+        #else
+        #set( $orgSmartcommitsOnNewRepos = "")
+    #end
+    
+    <div class="dvcs-header-container">
+        <h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a> #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end </h4>
+        <div class="dvcs-org-container aui-toolbar">
+                
+            <ul class="toolbar-group">
+            
+                <li class="toolbar-item toolbar-dropdown dvcs-organization-controls-tool">
+                
+                    <div class="aui-dd-parent">
+                        <a title="Show Settings" class="toolbar-trigger aui-dd-trigger" href="#" style="heiht: 24px;">
+                                    <span class="icon-tools-small" style="float: left;"></span>
+                                    <span class="icon icon-dropdown" ></span>
+                        </a>
+                            <ul id="dvcs-organization-controls-$org.id" class=" aui-dropdown dvcs-organization-controls"  >
+                                       
+                               <li class="dropdown-item">
+                                 <div class="dvcs-gearmenu-nohide">
+                                     <input id="org_autolink_check$org.id" 
+                                             class="aui" $!orgAutolink 
+                                             type="checkbox" name="org_autolink_check$org.id"
+                                             onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" />
+                                     <label for="org_autolink_check$org.id"> Autolink new repositories</label>
+                                 </div>
+                                </li>
+    
+                               <li class="dropdown-item">
+                                 <div class="dvcs-gearmenu-nohide" id="org_global_smarts_wrap$org.id">
+                                     <input id="org_global_smarts$org.id" 
+                                             class="aui" $!orgSmartcommitsOnNewRepos $!orgSmartcommitsOnNewReposDisabled
+                                             type="checkbox" name="org_autolink_check$org.id"
+                                             onclick="javascript: enableSmartcommitsOnNewRepos($org.id, 'org_global_smarts$org.id');" />
+                                     <label for="org_global_smarts$org.id"> Enable smart commits on new repositories</label>
+                                 </div>
+                                </li>
+                                
+                                <li class="dropdown-item">
+                                      <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh list</a>
+                                </li>
+                                
+                                #if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
+                                    <li class="dropdown-item">
+                                      <div class="dvcs-gearmenu-nohide">
+                                        <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id);"> Configure default groups</a>
+                                      </div>
+                                    </li>
+                                 #end
+                                
+                                #if( !$org.isIntegratedAccount() )
+                                    
+                                    <li class="dropdown-item">
+                                    
+                                         #if($org.dvcsType == "bitbucket")
+                                    
+                                           #if ($action.isBitbucketOauthRequired())
+                                             <a href="$baseurl/secure/admin/ConfigureBitbucketOAuth!default.jspa?atl_token=$atl_token">Configure OAuth</a>
+                                           #else
+                                             <a href="$baseurl/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+                                           #end
+    
+                                         #elseif ($org.dvcsType == "github")
+                                           <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+                                         #else
+                                           <a href="$baseurl/secure/admin/RegenerateGithubEnterpriseOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+                                         #end
+                                         </li>
+        
+                                    <li class="dropdown-item">
+                                          <a  class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Delete</a>
+                                    </li>
+                                    
+                                #end
+                             </ul>
+                        </div>
+                    </li>
+            </ul>
+        </div>
+        <div class="dvcs-dclear"></div>
+    </div>
 
-								           <li class="dropdown-item">
-								            	 <div class="dvcs-gearmenu-nohide" id="org_global_smarts_wrap$org.id">
-									            	 <input id="org_global_smarts$org.id" 
-									            	 		class="aui" $!orgSmartcommitsOnNewRepos $!orgSmartcommitsOnNewReposDisabled
-									            	 		type="checkbox" name="org_autolink_check$org.id"
-									            	 		onclick="javascript: enableSmartcommitsOnNewRepos($org.id, 'org_global_smarts$org.id');" />
-									            	 <label for="org_global_smarts$org.id"> Enable smart commits on new repositories</label>
-								            	 </div>
-								            </li>
-								            
-								            <li class="dropdown-item">
-								             	 <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh list</a>
-								            </li>
-								            
- 							            	#if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
-   							            	   	<li class="dropdown-item">
-	   							                	<div class="dvcs-gearmenu-nohide">
-							 							<a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id);"> Configure default groups</a>
-						 							</div>
-					 							</li>
-					 						#end
-								            
-								            #if( !$org.isIntegratedAccount() )
-									            
-									            <li class="dropdown-item">
-												
-													 #if($org.dvcsType == "bitbucket")
-												
-													   #if ($action.isBitbucketOauthRequired())
-                                                         <a href="$baseurl/secure/admin/ConfigureBitbucketOAuth!default.jspa?atl_token=$atl_token">Configure OAuth</a>
-                                                       #else
-                                                         <a href="$baseurl/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
-	                                                   #end
+                
+       #if (!$org.getRepositories().isEmpty())
+        
+       <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
+        <thead>
+            <tr>
+                <th>Enabled</th>
+                <th>Repository</th>
+                <th style="text-align: right; white-space: nowrap;" >Last Commit</th>   ## last commit
+                <th class="dvcs-centered">Sync Repo</th>   ## sync repo
+                <th class="dvcs-smartcommits-head" style="white-space: nowrap;">Smart Commits</th>
+            </tr>
+        </thead>
+        <tbody>
 
-													 #elseif ($org.dvcsType == "github")
-													   <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
-									            	 #else
-									            	   <a href="$baseurl/secure/admin/RegenerateGithubEnterpriseOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
-									            	 #end
-						   			 	 		</li>
-					
-									            <li class="dropdown-item">
-									            	  <a  class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Delete</a>
-									            </li>
-									            
-								            #end
-								 </ul>
-							</div>
-						</li>
-				</ul>
-			</div>
-			<div class="dvcs-dclear"></div>
-	</div>				 
+        #foreach( $repo in $org.getRepositories() )
+            
+            #if($repo.isLinked())
+                #set( $repoAutolink = "checked='checked'")
+                #else
+                #set( $repoAutolink = "")
+            #end
+            
+            #if($repo.isSmartcommitsEnabled())
+                #set( $smartcommitsEnabled = "checked='checked'")
+                #else
+                #set( $smartcommitsEnabled = "")
+            #end
+            
+            #if(!$repo.linked)
+                #set( $dvcsRepoRowClass = "dvcs-disabled")
+                #set( $dvcsNoDisplayClass = "dvcs-nodisplay")
+                #else
+                #set( $dvcsRepoRowClass = "")
+                #set( $dvcsNoDisplayClass = "")
+            #end
+            <tr id="dvcs-repo-row-$repo.id" class="$!dvcsRepoRowClass dvcs-repo-row">
 
-				
-			   #if (!$org.getRepositories().isEmpty())
-				
-			   <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
-			    <thead>
-			        <tr>
-                        <th>Enabled</th>
-			            <th>Repository</th>
-			            <th style="text-align: right; white-space: nowrap;" >Last Commit</th>   ## last commit
-			            <th class="dvcs-centered">Sync Repo</th>   ## sync repo
-						<th class="dvcs-smartcommits-head" style="white-space: nowrap;">Smart Commits</th>
-			        </tr>
-			    </thead>
-			    <tbody>
+                <td class="dvcs-autolink-repo">
+                    <span style="padding-left: 1px;">&nbsp;</span>
+                    <input class="repo_autolink_check" id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
+                     onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
 
-			    #foreach( $repo in $org.getRepositories() )
-			        
-			        #if($repo.isLinked())
-						#set( $repoAutolink = "checked='checked'")
-						#else
-						#set( $repoAutolink = "")
-					#end
-					
-					#if($repo.isSmartcommitsEnabled())
-						#set( $smartcommitsEnabled = "checked='checked'")
-						#else
-						#set( $smartcommitsEnabled = "")
-					#end
-					
-					#if(!$repo.linked)
-						#set( $dvcsRepoRowClass = "dvcs-disabled")
-						#set( $dvcsNoDisplayClass = "dvcs-nodisplay")
-						#else
-						#set( $dvcsRepoRowClass = "")
-						#set( $dvcsNoDisplayClass = "")
-					#end
-			        <tr id="dvcs-repo-row-$repo.id" class="$!dvcsRepoRowClass dvcs-repo-row">
+                    <span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
+                </td>
+                
+                <td class="dvcs-org-reponame"><a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a></td>
 
-                        <td class="dvcs-autolink-repo">
-                            <span style="padding-left: 1px;">&nbsp;</span>
-                            <input class="repo_autolink_check" id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
-                             onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
+                
+                <td class="action" headers="action" style="text-align: right; white-space: nowrap;">
+                
+                    <div id="dvcs-action-container-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
+                        <span id="syncicon_$repo.id" class="syncicon" >&nbsp;</span>
+                        <span id="sync_status_message_$repo.id" class="gh_messages">
+                            <span class="content"></span>
+                        </span>
+                        <span id="sync_error_message_$repo.id" class="gh_messages">
+                        </span>
+                    </div>
+                    
+                </td>
 
-                            <span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
-                        </td>
-                        
-			            <td class="dvcs-org-reponame"><a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a></td>
+                <td class="dvcs-sync-repo dvcs-centered">
+                    <div id="dvcs-action-container2-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
+                        <a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">
+                            <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo $textutils.htmlEncode($repo.name)" >&nbsp;</span>
+                        </a>
+                    </div>
+                </td>
+                
+                <td class="dvcs-smartcommits-repo">
+                    <div id="dvcs-action-container3-$repo.id" class="$!dvcsNoDisplayClass">
+                        <span style="padding-left: 1px;">&nbsp;</span>
+                        <input class="repo_smartcommit_check repo_smartcommit_check$org.id" id="repo_smartcommits$repo.id" type="checkbox" $!smartcommitsEnabled $!localSmartcommitsDisabled
+                         onclick="javascript: enableRepoSmartcommits($repo.id, 'repo_smartcommits$repo.id');" />
 
-			            
-			            <td class="action" headers="action" style="text-align: right; white-space: nowrap;">
-			            
-			            	<div id="dvcs-action-container-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
-				                <span id="syncicon_$repo.id" class="syncicon" >&nbsp;</span>
-	                            <span id="sync_status_message_$repo.id" class="gh_messages">
-	                                <span class="content"></span>
-	                            </span>
-	                            <span id="sync_error_message_$repo.id" class="gh_messages">
-                           	 </span>
-			                </div>
-			                
-			            </td>
+                        <span style="display:none; width: 16px; height: 16px;" id="repo_smartcommit_check${repo.id}working" class="syncicon running">&nbsp;</span>
+                    </div>
+                </td>
 
-                        <td class="dvcs-sync-repo dvcs-centered">
-                            <div id="dvcs-action-container2-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
-                                <a href="#" onclick="forceSync($repo.id); AJS.$('.gh_messages.repository$repo.id').slideDown(); return false;">
-                                    <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo $textutils.htmlEncode($repo.name)" >&nbsp;</span>
-                                </a>
-                            </div>
-                        </td>
-                        
-                        <td class="dvcs-smartcommits-repo">
-                        	<div id="dvcs-action-container3-$repo.id" class="$!dvcsNoDisplayClass">
-	                            <span style="padding-left: 1px;">&nbsp;</span>
-	                            <input class="repo_smartcommit_check repo_smartcommit_check$org.id" id="repo_smartcommits$repo.id" type="checkbox" $!smartcommitsEnabled $!localSmartcommitsDisabled
-	                             onclick="javascript: enableRepoSmartcommits($repo.id, 'repo_smartcommits$repo.id');" />
-	
-	                            <span style="display:none; width: 16px; height: 16px;" id="repo_smartcommit_check${repo.id}working" class="syncicon running">&nbsp;</span>
-                            </div>
-                        </td>
-
-			        </tr>
-			       
-			    #end
-			       
-			    </tbody>
-			</table>
-			
-			#else
-			
-			<span class="dvcs-no-repos">
-				No repositories.
-			</span>
-			
-			#end
-			
-			<div class="vert-space">&nbsp;</div>
-			<div class="vert-space">&nbsp;</div>
-		
+            </tr>
+           
+        #end
+           
+        </tbody>
+    </table>
+    
+    #else
+        <span class="dvcs-no-repos">
+            No repositories.
+        </span>
+    #end
+    
+    <div class="vert-space">&nbsp;</div>
+    <div class="vert-space">&nbsp;</div>
+        
   </div>
 #end
 
@@ -399,47 +385,47 @@
 #end
 
 #macro (printUpdateCredentialsFormHidden)
-	
-	<div class="update-credentials" style="display:none">
-	
-		<form id="updatePasswordForm" class="aui" method="post" action="$baseurl/secure/admin/UpdateBitbucketCredentials.jspa" >
-		
-			 <input type="hidden" name="atl_token" value="$atl_token">
-			 <input type="hidden" id="organizationId" name="organizationId" value="" />
+    
+    <div class="update-credentials" style="display:none">
+    
+        <form id="updatePasswordForm" class="aui" method="post" action="$baseurl/secure/admin/UpdateBitbucketCredentials.jspa" >
+        
+             <input type="hidden" name="atl_token" value="$atl_token">
+             <input type="hidden" id="organizationId" name="organizationId" value="" />
 
-			 <div class="field-group">
-		           <label for="usernameUp">Username:</label>
-		           <input type="text" id="usernameUp" name="usernameUp" value="" />
-		     </div>
-		                
-		     <div class="field-group">
-		          <label for="adminPasswordUp">Password:</label>
-		          <input type="password" id="adminPasswordUp" name="adminPasswordUp" value=""/>
-		     </div>
-		     
-		</form>
-	</div>
+             <div class="field-group">
+                   <label for="usernameUp">Username:</label>
+                   <input type="text" id="usernameUp" name="usernameUp" value="" />
+             </div>
+                        
+             <div class="field-group">
+                  <label for="adminPasswordUp">Password:</label>
+                  <input type="password" id="adminPasswordUp" name="adminPasswordUp" value=""/>
+             </div>
+             
+        </form>
+    </div>
 
 #end
 
 #macro (printConfigureDefaultGroupsFormHidden)
-	
-	<div style="display:none">
-	
-		<form id="configureDefaultGroupsForm" class="aui" method="post" action="$baseurl/secure/admin/ConfigureDefaultBitbucketGroups.jspa" >
-		
-			 <input type="hidden" name="atl_token" value="$atl_token">
-			 <input type="hidden" id="organizationIdDefaultGroups" name="organizationIdDefaultGroups" value="" />
-			 
-			 <div id="configureDefaultGroupsContentWorking" style="margin:10px; display: none">
-			 	&nbsp;
-			 </div>
-			 
-			 <div id="configureDefaultGroupsContent">
-			 
-			 </div>
-		     
-		</form>
-	</div>
+    
+    <div style="display:none">
+    
+        <form id="configureDefaultGroupsForm" class="aui" method="post" action="$baseurl/secure/admin/ConfigureDefaultBitbucketGroups.jspa" >
+        
+             <input type="hidden" name="atl_token" value="$atl_token">
+             <input type="hidden" id="organizationIdDefaultGroups" name="organizationIdDefaultGroups" value="" />
+             
+             <div id="configureDefaultGroupsContentWorking" style="margin:10px; display: none">
+                 &nbsp;
+             </div>
+             
+             <div id="configureDefaultGroupsContent">
+             
+             </div>
+             
+        </form>
+    </div>
 
 #end
