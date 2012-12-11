@@ -165,7 +165,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest<GithubConfigur
 
         // check that it created postcommit hook
         String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/";
-        String hooksURL = "https://github.com/jirabitbucketconnector/test-project/admin/hooks";
+        String hooksURL = "https://github.com/jirabitbucketconnector/test-project/settings/hooks";
         String hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
         assertThat(hooksPage).contains(githubServiceConfigUrlPath);
         goToConfigPage();
