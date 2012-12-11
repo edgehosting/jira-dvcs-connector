@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 
@@ -50,7 +51,7 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
         String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl(getRedirectAction(),
 				organizationUrl, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
-		return getRedirect(githubAuthorizeUrl, true);
+        return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
 	}
 
 	protected String getHostUrl()

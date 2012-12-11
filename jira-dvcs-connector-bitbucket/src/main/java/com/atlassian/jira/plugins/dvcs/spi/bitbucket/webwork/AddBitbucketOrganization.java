@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 
+import java.lang.reflect.Method;
+
 import org.apache.commons.lang.StringUtils;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.SignatureType;
@@ -19,8 +21,10 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.google.common.collect.Sets;
 
 /**
@@ -83,9 +87,8 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 			String authUrl = service.getAuthorizationUrl(requestToken);
 
 			request.getSession().setAttribute("requestToken", requestToken);
-			
-			return getRedirect(authUrl, true);
 
+			return SystemUtils.getRedirect(this, authUrl, true);
 		} catch (Exception e)
 		{
 		    log.error("Error redirect user to bitbucket server.", e);

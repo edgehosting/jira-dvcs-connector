@@ -467,7 +467,8 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 		}
 	 
 	).error(function (err) { 
-				  showError("Unable to link selected repository. Do you have administrator permissions on the {GitHub|Bitbucket} repository you are attempting to sync?");
+		          
+				  showError("Unable to " + (checkedValue ? "link" : "unlink") + " selected repository. Do you have administrator permissions on the {GitHub|Bitbucket} repository you are attempting to sync?");
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);

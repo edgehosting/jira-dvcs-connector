@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.DefaultGithubOauthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubEnterpriseCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -77,7 +78,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubEnterpriseOrganization",
 		        url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
-		return getRedirect(githubAuthorizeUrl, true);
+		return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
 	}
 
 	@Override
