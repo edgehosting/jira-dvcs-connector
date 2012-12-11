@@ -20,7 +20,7 @@ public class SystemUtils
 	{
 	    // Detect whether getRedirect(String, boolean) is present
 	    try {
-            JiraWebActionSupport.class.getMethod("getRedirect", String.class, Boolean.class);
+            JiraWebActionSupport.class.getMethod("getRedirect", String.class, boolean.class);
         } catch (NoSuchMethodException nsme)
         {
             return false;
