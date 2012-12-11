@@ -3,8 +3,6 @@ package it.com.atlassian.jira.plugins.dvcs;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest.AnotherLoginPage;
-
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -15,6 +13,15 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.eclipse.egit.github.core.RepositoryHook;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.RepositoryService;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
@@ -28,28 +35,17 @@ import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.elements.PageElement;
 
-import org.eclipse.egit.github.core.RepositoryHook;
-import org.eclipse.egit.github.core.RepositoryId;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.service.RepositoryService;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 /**
  * Test to verify behaviour when syncing  github repository.
  */
 public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest<GithubEnterpriseConfigureOrganizationsPage>
 {
-    public static final String GITHUB_ENTERPRISE_URL = "http://192.168.2.47";
-    
+    public static final String GITHUB_ENTERPRISE_URL = System.getProperty("githubenterprise.url", "http://192.168.2.47");
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
 //    private static final String TEST_NOT_EXISTING_URL = "mynotexistingaccount124";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
     private static final String REPO_ADMIN_PASSWORD = PasswordUtil.getPassword("jirabitbucketconnector");
-
+    
     private static String clientID;
     private static String clientSecret;
     private static String oauthAppLink;
@@ -57,7 +53,7 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest<Gith
     @BeforeClass
     public static void registerAppToGithub()
     {
-        jira.getTester().gotoUrl(GITHUB_ENTERPRISE_URL + GithubLoginPage.PAGE_PATH);
+         jira.getTester().gotoUrl(GITHUB_ENTERPRISE_URL + GithubLoginPage.PAGE_PATH);
         GithubLoginPage ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
         ghLoginPage.doLogin();
 
