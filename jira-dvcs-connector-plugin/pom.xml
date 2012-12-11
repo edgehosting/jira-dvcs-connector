@@ -230,4 +230,31 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <profiles>
+        <!-- The 'disableGithubEnterprise' system property propagation cannot be part of 'maven-jira-plugin'.
+             Maven will try to bind the system property value to the 'maven-jira-plugin' and NPE will be thrown when the
+             property was not set. -->
+        <profile>
+            <id>disableGithubEnterprise</id>
+            <activation>
+                <property>
+                    <name>disableGithubEnterprise</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-jira-plugin</artifactId>
+                        <version>3.5.2</version>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <disableGithubEnterprise>true</disableGithubEnterprise>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
