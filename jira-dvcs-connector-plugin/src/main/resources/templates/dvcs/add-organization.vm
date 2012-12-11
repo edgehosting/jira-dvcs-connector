@@ -67,10 +67,12 @@
                 <div class="field-group" >
                   <label for="urlSelect">Host:</label>
                   <select id="urlSelect" name="urlSelect" class="select" onchange="switchDvcsDetails(this)">
-                       <option value="bitbucket">Bitbucket</option>
+                    <option value="bitbucket">Bitbucket</option>
                     <option value="github">GitHub</option>
+                    #if ( $action.isGithubEnterpriseEnabled() )
                     <option value="githube">GitHub Enterprise</option>
-                     </select>
+                    #end
+                  </select>
                   <div class="fieldValue" id="urlReadOnly"></div>
                   <div id="url-error" class="dvcs-error">Choose URL.</div>
                 </div>

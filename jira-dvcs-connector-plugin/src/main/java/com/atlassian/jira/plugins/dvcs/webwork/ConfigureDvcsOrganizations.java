@@ -122,6 +122,12 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	public boolean isBitbucketOauthRequired() {
 		return !communicatorProvider.getCommunicator("bitbucket").isOauthConfigured();
 	}
+
+    public boolean isGithubEnterpriseEnabled()
+    {
+        // so the disable system property was not set
+        return System.getProperty("disableGithubEnterprise") == null;
+    }
 	
 	public boolean isIntegratedAccount(Organization org) {
 	    return org.isIntegratedAccount();
