@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -61,7 +62,7 @@ public class RegenerateBitbucketOauthToken extends CommonDvcsConfigurationAction
 
             request.getSession().setAttribute("requestToken", requestToken);
 
-            return getRedirect(authUrl, true);
+            return SystemUtils.getRedirect(this, authUrl, true);
 
         } catch (Exception e)
         {
