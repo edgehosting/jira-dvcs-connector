@@ -116,7 +116,7 @@ public class BitbucketIntegratedApplicationsPage extends AbstractJiraPage
     public static final class OAuthCredentials
     {
         public final String oauthKey;
-        public final String oauthSecret; 
+        public final String oauthSecret;
 
         private OAuthCredentials(String oauthKey, String oauthSecret)
         {

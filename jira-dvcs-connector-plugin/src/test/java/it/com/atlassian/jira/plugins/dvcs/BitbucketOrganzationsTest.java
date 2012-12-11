@@ -75,7 +75,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
         }
     }
 
-    private void loginToBitbucketAndSetJiraOAuthCredentials() //TODO @Before vs not needed for every test method
+    private void loginToBitbucketAndSetJiraOAuthCredentials()
     {
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
@@ -92,9 +92,9 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
     }
 
-    private void deleteAllOrganizationsAndRemoveOAuthConsumer() //TODO @After vs not needed for every method
+    private void deleteAllOrganizationsAndRemoveOAuthConsumer()
     {
-        jira.getPageBinder().navigateToAndBind(getConfigureOrganizationsPageClass());//TODO is this needed???
+        jira.goTo(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
 
         jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
@@ -134,15 +134,12 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
     @Test
     public void addUrlThatDoesNotExist()
     {
-        loginToBitbucketAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationFailingStep1(TEST_NOT_EXISTING_URL);
 
         String errorMessage = configureOrganizations.getErrorStatusMessage();
         assertThat(errorMessage).contains("is incorrect or the server is not responding");
 
         configureOrganizations.clearForm();
-
-        deleteAllOrganizationsAndRemoveOAuthConsumer();
     }
 
     @Test

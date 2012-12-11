@@ -2,43 +2,26 @@ package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
-import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
-import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
-import com.atlassian.plugin.util.zip.FileUnzipper;
+import com.atlassian.jira.plugins.dvcs.util.ZipUtils;
 
 import org.apache.commons.io.FileUtils;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest;
-
-import static org.fest.assertions.api.Assertions.assertThat;
 
 /**
  * @author Martin Skurla
  */
-public class MissingCommitsBitbucketGitTest extends BitBucketBaseOrgTest<BitBucketConfigureOrganizationsPage>
+public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<BitBucketConfigureOrganizationsPage>
 {
-    private static final String BITBUCKET_REPO_OWNER = "dvcsconnectortest";
-    private static final String BITBUCKET_REPO_PASSWORD = PasswordUtil.getPassword("dvcsconnectortest");
-    private static final String MISSING_COMMITS_REPOSITORY_NAME = "missingcommitsfixproof";
-
-    private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
-
     private static final String _1ST_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_1st_push.zip";
     private static final String _2ND_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_2nd_push_after_merge.zip";
 
@@ -46,48 +29,35 @@ public class MissingCommitsBitbucketGitTest extends BitBucketBaseOrgTest<BitBuck
 
 
     @BeforeClass
-    public static void initializeRepositoriesREST()
+    public static void initializeBitbucketRepositoriesREST()
     {
         AuthProvider basicAuthProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
-                                                                   BITBUCKET_REPO_OWNER,
-                                                                   BITBUCKET_REPO_PASSWORD);
+                                                                   DVCS_REPO_OWNER,
+                                                                   DVCS_REPO_PASSWORD);
         bitbucketRepositoriesREST = new BitbucketRepositoriesRemoteRestpoint(basicAuthProvider.provideRequestor());
     }
 
-
-    @BeforeMethod
-    public void prepareGitRepositoryAndJiraProjectWithIssue()
-    {
-        removeGitRepositoryAndJiraProject();
-        createGitRepositoryAndJiraProjectWithIssue();
-    }
-
-    private void removeGitRepositoryAndJiraProject()
+    @Override
+    void removeRemoteDvcsRepository()
     {
         try
         {
-            bitbucketRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME, BITBUCKET_REPO_OWNER);
+            bitbucketRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME, DVCS_REPO_OWNER);
         }
         catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
-
-        if (JiraPageUtils.projectExists(jira, JIRA_PROJECT_NAME_AND_KEY))
-        {
-            JiraPageUtils.deleteProject(jira, JIRA_PROJECT_NAME_AND_KEY);
-        }
     }
 
-    private void createGitRepositoryAndJiraProjectWithIssue()
+    @Override
+    void createRemoteDvcsRepository()
     {
         bitbucketRepositoriesREST.createGitRepository(MISSING_COMMITS_REPOSITORY_NAME);
-
-        JiraPageUtils.createProject(jira, JIRA_PROJECT_NAME_AND_KEY, JIRA_PROJECT_NAME_AND_KEY);
-        JiraPageUtils.createIssue(jira, JIRA_PROJECT_NAME_AND_KEY);
     }
 
-    private void loginToBitbucketAndSetJiraOAuthCredentials()
+    @Override
+    void loginToDvcsAndSetJiraOAuthCredentials()
     {
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
-        jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin(BITBUCKET_REPO_OWNER, BITBUCKET_REPO_PASSWORD);
+        jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
 
         jira.getTester().gotoUrl("https://bitbucket.org/account/user/dvcsconnectortest/api");
         BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage =
@@ -98,51 +68,15 @@ public class MissingCommitsBitbucketGitTest extends BitBucketBaseOrgTest<BitBuck
 
         BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
         oauthConfigPage.setCredentials(oauthCredentials.oauthKey, oauthCredentials.oauthSecret);
-
-        jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
     }
 
-    @Test
-    public void commitsIssueTab_ShouldNotMissAnyRelatedCommits() throws Exception
+    @Override
+    void pushToRemoteDvcsRepository(String pathToRepoZip) throws Exception
     {
-        // repository after the 1st push in following state:
-        // +------------------+------------+--------------------------------------------+
-        // | Author           | Commit     | Message                                    |
-        // +------------------+------------+--------------------------------------------+
-        // | Miroslav Stencel | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
-        // | Miroslav Stencel | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
-        // | Miroslav Stencel | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
-        pushBitbucketGitRepository(_1ST_GIT_REPO_ZIP_TO_PUSH);
+        File extractedRepoDir = ZipUtils.extractRepoZipIntoTempDir(pathToRepoZip);
 
-        loginToBitbucketAndSetJiraOAuthCredentials();
-        configureOrganizations.addOrganizationSuccessfully(BITBUCKET_REPO_OWNER, true);
-
-        assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
-
-        // repository afther the 2nd push in following state:
-        // +------------------+------------+--------------------------------------------+
-        // | Author           | Commit     | Message                                    |
-        // +------------------+------------+--------------------------------------------+
-        // | Miroslav Stencel | f59cc8a7b7 | merge + 3rd push {user2} [14:44]           |
-        // | Miroslav Stencel | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
-        // | Miroslav Stencel | cc2ac8c703 | MC-1 4th commit {user2} [14:25]            |
-        // | Miroslav Stencel | d5d190c12c | MC-1 3rd commit {user2} [14:24]            |
-        // | Miroslav Stencel | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
-        // | Miroslav Stencel | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
-        pushBitbucketGitRepository(_2ND_GIT_REPO_ZIP_TO_PUSH);
-
-        simulatePostCommitHookCall();
-        Thread.sleep(10000); // to catch up with soft sync
-
-        assertThat(getCommitsForIssue("MC-1", 5)).hasSize(5);
-    }
-
-    private void pushBitbucketGitRepository(String pathToRepoZip) throws IOException, URISyntaxException, InterruptedException
-    {
-        File extractedRepoDir = extractRepoZipIntoTempDir(pathToRepoZip);
-
-        String gitPushUrl = String.format("https://%1$s:%2$s@bitbucket.org/%1$s/%3$s.git", BITBUCKET_REPO_OWNER,
-                                                                                           BITBUCKET_REPO_PASSWORD,
+        String gitPushUrl = String.format("https://%1$s:%2$s@bitbucket.org/%1$s/%3$s.git", DVCS_REPO_OWNER,
+                                                                                           DVCS_REPO_PASSWORD,
                                                                                            MISSING_COMMITS_REPOSITORY_NAME);
 
         String gitCommand = getGitCommand();
@@ -176,28 +110,34 @@ public class MissingCommitsBitbucketGitTest extends BitBucketBaseOrgTest<BitBuck
         }
     }
 
-    private File extractRepoZipIntoTempDir(String pathToRepoZip) throws IOException, URISyntaxException
+    @Override
+    String getFirstDvcsZipRepoPathToPush()
     {
-        URL repoZipResource = getClass().getClassLoader().getResource(pathToRepoZip);
-
-        File tempDir = new File(System.getProperty("java.io.tmpdir"), "" + System.currentTimeMillis());
-        tempDir.mkdir();
-
-        FileUnzipper fileUnzipper = new FileUnzipper(new File(repoZipResource.toURI()), tempDir);
-        fileUnzipper.unzip();
-
-        return tempDir;
+        // repository after the 1st push in following state:
+        // +------------------+------------+--------------------------------------------+
+        // | Author           | Commit     | Message                                    |
+        // +------------------+------------+--------------------------------------------+
+        // | Miroslav Stencel | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
+        // | Miroslav Stencel | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
+        // | Miroslav Stencel | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
+        return _1ST_GIT_REPO_ZIP_TO_PUSH;
     }
 
-    private void simulatePostCommitHookCall() throws IOException
+    @Override
+    String getSecondDvcsZipRepoPathToPush()
     {
-        BitBucketConfigureOrganizationsPage configureOrganizationsPage =
-                jira.getPageBinder().navigateToAndBind(BitBucketConfigureOrganizationsPage.class);
-        String repositoryId = configureOrganizationsPage.getRepositoryIdFromRepositoryName(MISSING_COMMITS_REPOSITORY_NAME);
-
-        PostCommitHookCallSimulatingRemoteRestpoint.simulate(jira.getProductInstance().getBaseUrl(), repositoryId);
+        // repository after the 2nd push in following state:
+        // +------------------+------------+--------------------------------------------+
+        // | Author           | Commit     | Message                                    |
+        // +------------------+------------+--------------------------------------------+
+        // | Miroslav Stencel | f59cc8a7b7 | merge + 3rd push {user2} [14:44]           |
+        // | Miroslav Stencel | 9d08182535 | MC-1 5th commit + 2nd push {user1} [14:26] |
+        // | Miroslav Stencel | cc2ac8c703 | MC-1 4th commit {user2} [14:25]            |
+        // | Miroslav Stencel | d5d190c12c | MC-1 3rd commit {user2} [14:24]            |
+        // | Miroslav Stencel | f6ffeee87f | MC-1 2nd commit + 1st push {user1} [14:18] |
+        // | Miroslav Stencel | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
+        return _2ND_GIT_REPO_ZIP_TO_PUSH;
     }
-
 
     @Override
     protected Class<BitBucketConfigureOrganizationsPage> getConfigureOrganizationsPageClass()

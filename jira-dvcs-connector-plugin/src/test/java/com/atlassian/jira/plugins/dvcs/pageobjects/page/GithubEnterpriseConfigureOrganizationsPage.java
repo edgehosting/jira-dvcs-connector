@@ -6,9 +6,6 @@ import it.com.atlassian.jira.plugins.dvcs.GithubEnterpriseOrganizationsTest;
 
 import org.openqa.selenium.By;
 
-import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
-import com.atlassian.pageobjects.elements.ElementBy;
-import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 
 import org.testng.Assert;
@@ -104,7 +101,7 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
         return this;
     }
 
-    private String checkAndDoGithubLogin()//TODO why not use page object?
+    private String checkAndDoGithubLogin()
     {
 
     	waitWhileNewPageLaoded();
