@@ -20,7 +20,7 @@ public final class HttpSenderUtils {
     private HttpSenderUtils() {}
 
 
-    @Deprecated //TODO remove HTTPClient dependency ?
+    @Deprecated
     public static String sendGetHttpRequest(String url, String username, String password) throws IOException
     {
 		HttpClient httpClient = new HttpClient();

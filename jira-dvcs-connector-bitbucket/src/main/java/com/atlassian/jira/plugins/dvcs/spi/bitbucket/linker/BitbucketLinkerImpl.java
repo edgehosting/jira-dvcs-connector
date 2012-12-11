@@ -274,8 +274,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     }
 
     /**
-     * Returns BitbucketRepositoryLink that point to this jira instance TODO:
-     * implement as google collections transformer?
+     * Returns BitbucketRepositoryLink that point to this jira instance
      * 
      * @param currentBitbucketLinks
      * @return

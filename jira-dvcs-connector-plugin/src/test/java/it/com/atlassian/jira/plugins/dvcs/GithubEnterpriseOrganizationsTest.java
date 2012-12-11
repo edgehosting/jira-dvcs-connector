@@ -165,7 +165,7 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest<Gith
 //    @Test
 //    public void testPostCommitHookAdded() throws Exception
 //    {
-//        //TODO delete rest call doesn't work for http
+//        // delete rest call doesn't work for http
 //        assumeThat(GITHUB_ENTERPRISE_URL.startsWith("http://"));
 //
 //        String baseUrl = jira.getProductInstance().getBaseUrl();
