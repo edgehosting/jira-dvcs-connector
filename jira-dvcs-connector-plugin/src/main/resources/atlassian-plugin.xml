@@ -382,7 +382,7 @@
        <link>/secure/admin/ConfigureGithubEnterpriseOAuth!default.jspa</link>
        <conditions type="AND">
            <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
-           <condition class="com.atlassian.jira.plugins.dvcs.conditions.GithubEnterpriseDisabledCondition" />
+           <condition class="com.atlassian.jira.plugins.dvcs.conditions.GithubEnterpriseEnabledCondition" />
        </conditions>
     </web-item>
 
