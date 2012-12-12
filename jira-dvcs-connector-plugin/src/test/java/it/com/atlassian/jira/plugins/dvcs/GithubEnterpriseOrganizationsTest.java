@@ -157,30 +157,26 @@ public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest<Gith
 //        configureOrganizations.clearForm();
 //    }
 
-//TODO fix post commit hooks removal (BBC-364)
-//    @Test
-//    public void testPostCommitHookAdded() throws Exception
-//    {
-//        // delete rest call doesn't work for http
-//        assumeThat(GITHUB_ENTERPRISE_URL.startsWith("http://"));
-//
-//        String baseUrl = jira.getProductInstance().getBaseUrl();
-//    
-//        // add repository
-//        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
-//
-//        // check that it created postcommit hook
-//        String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/";
-//        String hooksURL = GITHUB_ENTERPRISE_URL + "/jirabitbucketconnector/test-project/admin/hooks";
-//        String hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
-//        assertThat(hooksPage).contains(githubServiceConfigUrlPath);
-//        goToConfigPage();
-//        // delete repository
-//        configureOrganizations.deleteAllOrganizations();
-//        // check that postcommit hook is removed
-//        hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
-//        assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
-//    }
+    @Test
+    public void testPostCommitHookAdded() throws Exception
+    {
+        String baseUrl = jira.getProductInstance().getBaseUrl();
+    
+        // add repository
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
+
+        // check that it created postcommit hook
+        String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/";
+        String hooksURL = GITHUB_ENTERPRISE_URL + "/jirabitbucketconnector/test-project/admin/hooks";
+        String hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
+        assertThat(hooksPage).contains(githubServiceConfigUrlPath);
+        goToConfigPage();
+        // delete repository
+        configureOrganizations.deleteAllOrganizations();
+        // check that postcommit hook is removed
+        hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
+        assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
+    }
 
     private String getGithubServices(String url, String username, String password) throws Exception
     {

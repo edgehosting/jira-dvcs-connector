@@ -17,6 +17,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
@@ -31,6 +35,8 @@ import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.auth.Authentication;
+import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -40,8 +46,8 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
@@ -259,13 +265,17 @@ public class GithubCommunicator implements DvcsCommunicator
             {
                 if (postCommitUrl.equals(hook.getConfig().get("url")))
                 {
-                    //TODO catching java.net.ProtocolException: HTTP method DELETE doesn't support output
                     try 
                     {
                         repositoryService.deleteHook(repositoryId, (int) hook.getId());
                     } catch (ProtocolException pe)
                     {
-                        log.warn("Error removing postcommit hook [{}] for repository [{}].", hook.getId(), repository.getRepositoryUrl());
+                        //BBC-364 if delete rest call doesn't work on Java client, we try Apache HttpClient
+                        log.debug("Error removing postcommit hook [{}] for repository [{}], trying Apache HttpClient.", hook.getId(), repository.getRepositoryUrl());
+ 
+                        deleteHookByHttpClient(repository, hook);
+                        
+                        log.debug("Deletion was successfull.");
                     }
                 }
             }
@@ -344,6 +354,28 @@ public class GithubCommunicator implements DvcsCommunicator
         return branches;
     }
 
+    private void deleteHookByHttpClient(Repository repository, RepositoryHook hook) throws HttpException, IOException
+    {
+        RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
+        HttpClient httpClient = new HttpClient();
+        String baseUrl = repository.getOrgHostUrl();
+        if ("https://github.com".equals(baseUrl))
+        {
+            baseUrl = "https://api.github.com";
+        } else
+        {
+            baseUrl = baseUrl + "/api/v3";
+        }
+        
+        String url = baseUrl + "/repos/" + repositoryId.generateId() + "/hooks/" + hook.getId();
+        HttpMethod method = new DeleteMethod(url);
+
+        Authentication auth = new OAuthAuthentication(repository.getCredential().getAccessToken());
+        auth.addAuthentication(method, httpClient);
+        
+        httpClient.executeMethod(method);
+    }
+    
     @Override
     public boolean supportsInvitation(Organization organization)
     {
