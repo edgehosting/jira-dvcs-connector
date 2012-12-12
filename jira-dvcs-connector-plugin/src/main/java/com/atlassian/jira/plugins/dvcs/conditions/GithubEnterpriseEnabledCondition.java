@@ -7,7 +7,7 @@ import com.atlassian.plugin.PluginParseException;
 /**
  * @author Martin Skurla
  */
-public class GithubEnterpriseDisabledCondition implements com.atlassian.plugin.web.Condition
+public class GithubEnterpriseEnabledCondition implements com.atlassian.plugin.web.Condition
 {
 
     @Override

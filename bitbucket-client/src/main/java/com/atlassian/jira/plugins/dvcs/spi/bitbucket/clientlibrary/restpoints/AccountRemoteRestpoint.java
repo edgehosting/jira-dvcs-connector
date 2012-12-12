@@ -21,10 +21,11 @@ public class AccountRemoteRestpoint {
         this.requestor = remoteRequestor;
     }
 
-    
-    public BitbucketAccount getUser(String owner)
+
+    // https://confluence.atlassian.com/display/BITBUCKET/account+Resource#accountResource-GETtheaccountprofile
+    public BitbucketAccount getUser(String ownerOrEmail)
     {
-        String getUserUrl = String.format("/users/%s", owner);
+        String getUserUrl = String.format("/users/%s", ownerOrEmail);
         
         return requestor.get(getUserUrl, null, new ResponseCallback<BitbucketAccount>()
         {
