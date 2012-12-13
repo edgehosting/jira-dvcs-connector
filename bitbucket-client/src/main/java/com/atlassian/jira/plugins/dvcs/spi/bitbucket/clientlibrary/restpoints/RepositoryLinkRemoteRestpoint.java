@@ -28,7 +28,7 @@ public class RepositoryLinkRemoteRestpoint
 
     public List<BitbucketRepositoryLink> getRepositoryLinks(String owner, String slug)
     {
-        String getRepositoryLinksUrl = String.format("/repositories/%s/%s/links", owner, slug);
+        String getRepositoryLinksUrl = URLPathFormatter.format("/repositories/%s/%s/links", owner, slug);
 
         return requestor.get(getRepositoryLinksUrl, null, new ResponseCallback<List<BitbucketRepositoryLink>>()
         {
@@ -47,7 +47,7 @@ public class RepositoryLinkRemoteRestpoint
 
     public void removeRepositoryLink(String owner, String slug, int id)
     {
-        String removeRepositoryLinkUrl = String.format("/repositories/%s/%s/links/%d", owner, slug, id);
+        String removeRepositoryLinkUrl = URLPathFormatter.format("/repositories/%s/%s/links/%s", owner, slug, "" + id);
 
         requestor.delete(removeRepositoryLinkUrl, Collections.<String, String>emptyMap(), ResponseCallback.EMPTY);
     }
@@ -55,7 +55,7 @@ public class RepositoryLinkRemoteRestpoint
     public BitbucketRepositoryLink addRepositoryLink(String owner, String slug, String handler, String linkUrl,
             String linkKey)
     {
-        String addRepositoryUrl = String.format("/repositories/%s/%s/links", owner, slug);
+        String addRepositoryUrl = URLPathFormatter.format("/repositories/%s/%s/links", owner, slug);
 
         Map<String, String> params = Maps.newHashMap();
         params.put("handler", handler);
@@ -79,7 +79,7 @@ public class RepositoryLinkRemoteRestpoint
 
     public BitbucketRepositoryLink addCustomRepositoryLink(String owner, String slug, String replacementUrl, String rex)
     {
-        String addRepositoryUrl = String.format("/repositories/%s/%s/links", owner, slug);
+        String addRepositoryUrl = URLPathFormatter.format("/repositories/%s/%s/links", owner, slug);
 
         Map<String, String> params = Maps.newHashMap();
         params.put("handler", "custom");
@@ -88,7 +88,6 @@ public class RepositoryLinkRemoteRestpoint
 
         return requestor.post(addRepositoryUrl, params, new ResponseCallback<BitbucketRepositoryLink>()
         {
-
             @Override
             public BitbucketRepositoryLink onResponse(RemoteResponse response)
             {
@@ -96,18 +95,15 @@ public class RepositoryLinkRemoteRestpoint
                 {
                 }.getType());
             }
-
         });
-
     }
 
     BitbucketRepositoryLink getRepositoryLink(String owner, String slug, int id)
     {
-        String getRepositoryLinkUrl = String.format("/repositories/%s/%s/links/%d", owner, slug, id);
+        String getRepositoryLinkUrl = URLPathFormatter.format("/repositories/%s/%s/links/%s", owner, slug, "" + id);
 
         return requestor.get(getRepositoryLinkUrl, null, new ResponseCallback<BitbucketRepositoryLink>()
         {
-
             @Override
             public BitbucketRepositoryLink onResponse(RemoteResponse response)
             {
@@ -115,8 +111,6 @@ public class RepositoryLinkRemoteRestpoint
                 {
                 }.getType());
             }
-
         });
-
     }
 }

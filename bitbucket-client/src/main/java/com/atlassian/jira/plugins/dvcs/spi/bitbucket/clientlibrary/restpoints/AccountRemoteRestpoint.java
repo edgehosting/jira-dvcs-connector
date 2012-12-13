@@ -24,7 +24,7 @@ public class AccountRemoteRestpoint {
     
     public BitbucketAccount getUser(String owner)
     {
-        String getUserUrl = String.format("/users/%s", owner);
+        String getUserUrl = URLPathFormatter.format("/users/%s", owner);
         
         return requestor.get(getUserUrl, null, new ResponseCallback<BitbucketAccount>()
         {
@@ -33,9 +33,7 @@ public class AccountRemoteRestpoint {
             {
                 return ClientUtils.fromJson(response.getResponse(), BitbucketRepositoriesEnvelope.class).getUser();
             }
-            
         });
-        
     }
     
     /**
@@ -48,11 +46,11 @@ public class AccountRemoteRestpoint {
      */
     public void inviteUser(String owner, String userEmail, String repositoryOwnerToInvite, String repositorySlugToInvite)
     {
-		String inviteUserUrl = String.format("/users/%s/invitations/%s/%s/%s",
-                                             owner,
-                                             userEmail,
-                                             repositoryOwnerToInvite,
-                                             repositorySlugToInvite);
+		String inviteUserUrl = URLPathFormatter.format("/users/%s/invitations/%s/%s/%s",
+                                                       owner,
+                                                       userEmail,
+                                                       repositoryOwnerToInvite,
+                                                       repositorySlugToInvite);
         
         requestor.put(inviteUserUrl, null, ResponseCallback.EMPTY);
     }
