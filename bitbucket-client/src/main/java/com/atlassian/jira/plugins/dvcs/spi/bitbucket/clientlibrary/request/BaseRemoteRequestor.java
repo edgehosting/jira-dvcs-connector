@@ -8,7 +8,6 @@ import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.httpclient.util.URIUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,7 +137,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
        
         try
         {
-            connection = createConnection(getOrDelete, URIUtil.encodePath(uri) + paramsToString(parameters, uri.contains("?")), parameters);
+            connection = createConnection(getOrDelete, uri + paramsToString(parameters, uri.contains("?")), parameters);
             response = checkAndCreateRemoteResponse(connection);
             
             return callback.onResponse(response);
@@ -158,7 +157,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     {
         RemoteResponse response = new RemoteResponse();
 
-        if (connection.getResponseCode() >= 300)//TODO from here the IOException with too many redirection is thrown
+        if (connection.getResponseCode() >= 300)
         {
             RuntimeException toBeThrown =  new BitbucketRequestException("Error response code during the request : "
                     + connection.getResponseCode());
