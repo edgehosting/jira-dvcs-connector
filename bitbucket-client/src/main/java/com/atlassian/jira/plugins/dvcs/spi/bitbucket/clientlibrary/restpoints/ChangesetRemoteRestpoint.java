@@ -30,7 +30,7 @@ public class ChangesetRemoteRestpoint
 
     public BitbucketChangeset getChangeset(String owner, String slug, String node)
     {
-        String getChangesetUrl = String.format("/repositories/%s/%s/changesets/%s", owner, slug, node);
+        String getChangesetUrl = URLPathFormatter.format("/repositories/%s/%s/changesets/%s", owner, slug, node);
 
         return requestor.get(getChangesetUrl, null, new ResponseCallback<BitbucketChangeset>()
         {
@@ -40,9 +40,7 @@ public class ChangesetRemoteRestpoint
             {
                 return ClientUtils.fromJson(response.getResponse(), BitbucketChangeset.class);
             }
-
         });
-
     }
 
     public List<BitbucketChangesetWithDiffstat> getChangesetDiffStat(String owner, String slug, String node)
@@ -52,7 +50,7 @@ public class ChangesetRemoteRestpoint
 
     public List<BitbucketChangesetWithDiffstat> getChangesetDiffStat(String owner, String slug, String node, int limit)
     {
-        String getChangesetDiffStatUrl = String.format("/repositories/%s/%s/changesets/%s/diffstat", owner, slug, node);
+        String getChangesetDiffStatUrl = URLPathFormatter.format("/repositories/%s/%s/changesets/%s/diffstat", owner, slug, node);
 
         Map<String, String> parameters = null;
         if (limit != DIFFSTAT_NO_LIMIT)
@@ -63,7 +61,6 @@ public class ChangesetRemoteRestpoint
         return requestor.get(getChangesetDiffStatUrl, parameters,
                 new ResponseCallback<List<BitbucketChangesetWithDiffstat>>()
                 {
-
                     @Override
                     public List<BitbucketChangesetWithDiffstat> onResponse(RemoteResponse response)
                     {
@@ -72,8 +69,6 @@ public class ChangesetRemoteRestpoint
                                 {
                                 }.getType());
                     }
-
                 });
-
     }
 }

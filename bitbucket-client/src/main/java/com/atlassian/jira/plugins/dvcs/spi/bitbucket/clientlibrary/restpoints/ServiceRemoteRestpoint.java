@@ -24,7 +24,7 @@ public class ServiceRemoteRestpoint
 
     public BitbucketService addPOSTService(String owner, String slug, String serviceUrl)
     {
-        String addServiceUrl = String.format("/repositories/%s/%s/services", owner, slug);
+        String addServiceUrl = URLPathFormatter.format("/repositories/%s/%s/services", owner, slug);
 
         Map<String, String> addServiceParameters = new HashMap<String, String>();
         addServiceParameters.put("type", "POST");
@@ -32,32 +32,27 @@ public class ServiceRemoteRestpoint
 
         return requestor.post(addServiceUrl, addServiceParameters, new ResponseCallback<BitbucketService>()
         {
-
             @Override
             public BitbucketService onResponse(RemoteResponse response)
             {
                 return ClientUtils.fromJson(response.getResponse(), BitbucketService.class);
             }
-
         });
-
     }
 
     public void deleteService(String owner, String slug, int serviceId)
     {
-        String deleteServiceUrl = String.format("/repositories/%s/%s/services/%d", owner, slug, serviceId);
+        String deleteServiceUrl = URLPathFormatter.format("/repositories/%s/%s/services/%s", owner, slug, "" + serviceId);
 
         requestor.delete(deleteServiceUrl, Collections.<String, String>emptyMap(), ResponseCallback.EMPTY);
-
     }
 
     public List<BitbucketServiceEnvelope> getAllServices(String owner, String slug)
     {
-        String getAllServicesUrl = String.format("/repositories/%s/%s/services", owner, slug);
+        String getAllServicesUrl = URLPathFormatter.format("/repositories/%s/%s/services", owner, slug);
 
         return requestor.get(getAllServicesUrl, null, new ResponseCallback<List<BitbucketServiceEnvelope>>()
         {
-
             @Override
             public List<BitbucketServiceEnvelope> onResponse(RemoteResponse response)
             {
@@ -65,8 +60,6 @@ public class ServiceRemoteRestpoint
                 {
                 }.getType());
             }
-
         });
-
     }
 }
