@@ -15,6 +15,7 @@ public enum HttpMethod implements ConnectionCreator
 	public HttpURLConnection createConnection(String forUri) throws IOException 
     {
 		URL url = new URL(forUri);
+	    System.setProperty("http.keepAlive", "false");
 	    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 	    connection.setRequestMethod(name());
 		return connection;
