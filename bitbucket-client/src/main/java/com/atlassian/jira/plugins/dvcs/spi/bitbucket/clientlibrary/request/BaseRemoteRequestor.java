@@ -292,13 +292,14 @@ public class BaseRemoteRequestor implements RemoteRequestor
         if (params != null)
         {
             List<NameValuePair> formparams = new ArrayList<NameValuePair>();
-            formparams.add(new BasicNameValuePair("param2", "value2"));
-            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, "UTF-8");
             
             for (Entry<String, String> entry : params.entrySet())
             {
                 formparams.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
             }
+            
+            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, "UTF-8");
+            
             method.setEntity(entity);
         }
 
