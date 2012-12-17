@@ -1,10 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.Map;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * BasicAuthRemoteRequestor
@@ -33,11 +37,13 @@ public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 	}
 
 	@Override
-	protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method, Map<String, String> params) throws IOException
+	protected void onConnectionCreated(DefaultHttpClient client, HttpRequestBase method, Map<String, String> params)
+	        throws IOException
 	{
-		connection.setRequestProperty(
-				"Authorization",
-				"Basic " + SystemUtils.encodeUsingBase64(username + ":" + password)
-								.replaceAll("\n", "").replaceAll("\r", ""));
+	    CredentialsProvider credsProvider = new BasicCredentialsProvider();
+	    credsProvider.setCredentials(
+	        new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), 
+	        new UsernamePasswordCredentials(username, password));
+	    client.setCredentialsProvider(credsProvider);
 	}
 }
