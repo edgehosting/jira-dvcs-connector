@@ -212,7 +212,9 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
 
         response.setHttpStatusCode(statusCode);
-        response.setResponse(httpResponse.getEntity().getContent());
+        if (httpResponse.getEntity() != null) {
+            response.setResponse(httpResponse.getEntity().getContent());
+        }
         response.setHttpClient(client);
 
         return response;
