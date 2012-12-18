@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -48,10 +47,12 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
 
     protected final String apiUrl;
+    private HttpClientProxyConfig proxyConfig;
 
     public BaseRemoteRequestor(String apiUrl)
     {
         this.apiUrl = apiUrl;
+        proxyConfig = new HttpClientProxyConfig();
     }
 
     @Override
@@ -112,20 +113,19 @@ public class BaseRemoteRequestor implements RemoteRequestor
         log.debug("[REST call {} : {} :: {}]", new Object[] { method.getMethod(), finalUrl, params });
     }
 
-    private <T> T requestWithPayload(HttpEntityEnclosingRequestBase postOrPut, String uri, Map<String, String> params, ResponseCallback<T> callback)
+    private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, String> params, ResponseCallback<T> callback)
     {
 
         DefaultHttpClient client = new DefaultHttpClient();
+
         RemoteResponse response = null;
        
         try
         {
-            createConnection(client, postOrPut, uri, params);
-            setPayloadParams(postOrPut, params);
+            createConnection(client, method, uri, params);
+            setPayloadParams(method, params);
 
-            System.out.println("START");
-            HttpResponse httpResponse = client.execute(postOrPut);
-            System.out.println("END");
+            HttpResponse httpResponse = client.execute(method);
             response = checkAndCreateRemoteResponse(client, httpResponse);
 
             return callback.onResponse(response);
@@ -135,12 +135,12 @@ public class BaseRemoteRequestor implements RemoteRequestor
             throw e; // Unauthorized or NotFound exceptions will be rethrown
         } catch (IOException e)
         {
-            log.debug("Failed to execute request: " + postOrPut.getURI(), e);
-            throw new BitbucketRequestException("Failed to execute request " + postOrPut.getURI(), e);
+            log.debug("Failed to execute request: " + method.getURI(), e);
+            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
         } catch (URISyntaxException e)
         {
-            log.debug("Failed to execute request: " + postOrPut.getURI(), e);
-            throw new BitbucketRequestException("Failed to execute request " + postOrPut.getURI(), e);
+            log.debug("Failed to execute request: " + method.getURI(), e);
+            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
         } finally
         {
             closeResponse(response);
@@ -158,7 +158,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
         DefaultHttpClient client = new DefaultHttpClient();
-        HttpURLConnection connection = null;
+
         RemoteResponse response = null;
        
         try
@@ -172,13 +172,13 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
         } catch (IOException e)
         {
-            log.debug("Failed to execute request: " + connection, e);
-            throw new BitbucketRequestException("Failed to execute request " + connection, e);
+            log.debug("Failed to execute request: " + method.getURI(), e);
+            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
             
         } catch (URISyntaxException e)
         {
-            log.debug("Failed to execute request: " + connection, e);
-            throw new BitbucketRequestException("Failed to execute request " + connection, e);
+            log.debug("Failed to execute request: " + method.getURI(), e);
+            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
         } finally
         {
             closeResponse(response);
@@ -271,6 +271,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private void createConnection(DefaultHttpClient client, HttpRequestBase method, String uri, Map<String, String> params)
             throws IOException, URISyntaxException
     {
+        proxyConfig.configureProxy(client, apiUrl + uri);
+        
         String finalUrl = afterFinalUriConstructed(method, apiUrl + uri, params);
         method.setURI(new URI(finalUrl)); 
 
