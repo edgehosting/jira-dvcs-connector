@@ -3,11 +3,10 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
@@ -40,10 +39,11 @@ public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 	protected void onConnectionCreated(DefaultHttpClient client, HttpRequestBase method, Map<String, String> params)
 	        throws IOException
 	{
-	    CredentialsProvider credsProvider = new BasicCredentialsProvider();
-	    credsProvider.setCredentials(
-	        new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), 
-	        new UsernamePasswordCredentials(username, password));
-	    client.setCredentialsProvider(credsProvider);
+	    UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
+		try {
+			method.addHeader(new BasicScheme().authenticate(creds, method));
+		} catch (AuthenticationException e) {
+			// This should not happen for BasicScheme
+		}
 	}
 }
