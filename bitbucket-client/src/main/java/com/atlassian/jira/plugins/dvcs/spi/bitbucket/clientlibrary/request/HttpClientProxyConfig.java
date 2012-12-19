@@ -22,7 +22,7 @@ public class HttpClientProxyConfig {
      * @param client The client to configure the proxy of
      * @param remoteUrl The remote URL
      */
-    protected void configureProxy(final HttpClient client, String remoteUrl)
+    public void configureProxy(final HttpClient client, String remoteUrl)
     {
         if (client == null)
         {
