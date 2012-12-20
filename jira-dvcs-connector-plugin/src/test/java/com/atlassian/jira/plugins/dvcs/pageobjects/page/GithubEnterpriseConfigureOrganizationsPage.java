@@ -46,7 +46,7 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
         }
 
         if (autoSync) {
-        	checkSyncProcessSuccess();
+        	JiraPageUtils.checkSyncProcessSuccess(jiraTestedProduct);
         }
 
         return this;

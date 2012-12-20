@@ -45,7 +45,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         if (autoSync)
         {
-            checkSyncProcessSuccess();
+            JiraPageUtils.checkSyncProcessSuccess(jiraTestedProduct);
         }
 
         return this;
