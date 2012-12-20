@@ -38,7 +38,7 @@ public class GroupRemoteRestpoint
      */
     public Set<BitbucketGroup> getGroups(String owner)
     {
-        String getGroupUrl = String.format("/groups/%s", owner);
+        String getGroupUrl = URLPathFormatter.format("/groups/%s", owner);
 
         return requestor.get(getGroupUrl, null, new ResponseCallback<Set<BitbucketGroup>>()
         {
@@ -50,8 +50,6 @@ public class GroupRemoteRestpoint
                 {
                 }.getType());
             }
-
         });
-
     }
 }
