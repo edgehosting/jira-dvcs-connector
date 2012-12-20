@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BaseRemoteRequestor;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpMethod;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 
 /**
@@ -71,20 +70,6 @@ public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
 
     protected abstract boolean isTwoLegged();
     
-    protected Verb getScribeVerb(HttpMethod forMethod)
-    {
-        switch (forMethod)
-        {
-        case PUT:
-            return Verb.PUT;
-        case DELETE:
-            return Verb.DELETE;
-        case POST:
-            return Verb.POST;
-        default:
-            return Verb.GET;
-        }
-    }
 
     static class EmptyToken extends Token
     {

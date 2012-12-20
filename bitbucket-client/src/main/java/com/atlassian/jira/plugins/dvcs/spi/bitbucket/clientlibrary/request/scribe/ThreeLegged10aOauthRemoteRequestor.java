@@ -1,16 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.Map;
 
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.scribe.extractors.HeaderExtractorImpl;
 import org.scribe.model.OAuthConstants;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Token;
+import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
-
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpMethod;
 
 /**
  * ThreeLegged10aOauthRemoteRequestor
@@ -28,7 +28,7 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
 {
 
     private final String accessTokenWithSecret;
-    private HeaderExtractorImpl authHeaderCreator;
+    private final HeaderExtractorImpl authHeaderCreator;
 
     /**
      * The Constructor.
@@ -49,8 +49,9 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
         this.authHeaderCreator = new HeaderExtractorImpl();
     }
 
+    
     @Override
-    protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method, Map<String, String> parameters)
+    protected void onConnectionCreated(DefaultHttpClient client, HttpRequestBase method, Map<String, String> parameters)
             throws IOException
     {
         long start = System.currentTimeMillis();
@@ -58,14 +59,14 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
         // generate oauth 1.0 params for 3LO - use scribe so far for that ...
         //
         OAuthService service = createOauthService();
-        OAuthRequest request = new OAuthRequest(getScribeVerb(method), connection.getURL().toString());
+        OAuthRequest request = new OAuthRequest(Verb.valueOf(method.getMethod()), method.getURI().toString());
         
         addParametersForSigning(request, parameters);
         
         service.signRequest(generateAccessTokenObject(accessTokenWithSecret), request);
 
         String header = authHeaderCreator.extract(request);
-        connection.setRequestProperty(OAuthConstants.HEADER, header);
+        method.addHeader(OAuthConstants.HEADER, header);
         
         log.debug("3LO signing took [{}] ms ", System.currentTimeMillis() - start);
 

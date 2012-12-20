@@ -2,10 +2,10 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scri
 
 import java.util.Map;
 
+import org.apache.http.client.methods.HttpRequestBase;
 import org.scribe.model.OAuthRequest;
+import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
-
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpMethod;
 
 /**
  * TwoLegged10aOauthRemoteRequestor
@@ -26,14 +26,14 @@ public class TwoLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequestor
 	}
 
 	@Override
-	protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri, Map<String, String> parameters)
+	protected String afterFinalUriConstructed(HttpRequestBase forMethod, String finalUri, Map<String, String> parameters)
 	{
 	    long start = System.currentTimeMillis();
 		//
 		// generate oauth 1.0 params for 2LO - use scribe so far for that ...
 		//
 		OAuthService service = createOauthService();
-		OAuthRequest request = new OAuthRequest(getScribeVerb(forMethod), finalUri);
+		OAuthRequest request = new OAuthRequest(Verb.valueOf(forMethod.getMethod()), finalUri);
 		
 		addParametersForSigning(request, parameters);
 		
