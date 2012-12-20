@@ -66,6 +66,10 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         
         assertThat(getCommitsForIssue("MC-1", 5)).hasSize(5);
         
+        // Remove all organizations
+        jira.goTo(getConfigureOrganizationsPageClass());
+        configureOrganizations.deleteAllOrganizations();
+        
         removeOAuth();
     }
 
