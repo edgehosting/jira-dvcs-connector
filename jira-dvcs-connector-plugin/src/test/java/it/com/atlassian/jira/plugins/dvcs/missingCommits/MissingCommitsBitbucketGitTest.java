@@ -27,6 +27,7 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
 
     private static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
 
+    private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
 
     @BeforeClass
     public static void initializeBitbucketRepositoriesREST()
@@ -60,9 +61,9 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
 
         jira.getTester().gotoUrl("https://bitbucket.org/account/user/dvcsconnectortest/api");
-        BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage =
+        bitbucketIntegratedApplicationsPage =
                 jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
-
+        
         BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
                 bitbucketIntegratedApplicationsPage.addConsumer();
 
@@ -134,7 +135,7 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
     @Override
     void removeOAuth()
     {
-        // TODO Remove OAuth consumer
-        
+        jira.getTester().gotoUrl("https://bitbucket.org/account/user/dvcsconnectortest/api");
+        bitbucketIntegratedApplicationsPage.removeLastAdddedConsumer();
     }
 }
