@@ -243,7 +243,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest<GithubConfigur
         GithubConfigureOrganizationsPage githubConfigureOrganizationsPage = githubConfigPage
                 .addRepoToProjectForOrganization("dusanhornik");
 
-        assertThat(githubConfigureOrganizationsPage.getNumberOfVisibleRepositories()).isEqualTo(3);
+        assertThat(githubConfigureOrganizationsPage.getNumberOfVisibleRepositories()).isEqualTo(4);
     }
 
     private static Set<Long> extractGithubHookIdsForRepositoryToRemove(String repositoryName) throws IOException
