@@ -96,20 +96,6 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
         process.waitFor();
     }
 
-    public static String getGitCommand()
-    {
-        Process process;
-        try
-        {
-            process = new ProcessBuilder("git", "--version").start();
-            process.waitFor();
-            return "git";
-        } catch (Exception e)
-        {
-            return "/usr/local/git/bin/git";
-        }
-    }
-
     @Override
     String getFirstDvcsZipRepoPathToPush()
     {

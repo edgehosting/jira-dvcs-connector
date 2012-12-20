@@ -85,23 +85,6 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
 
         FileUtils.deleteDirectory(extractedRepoDir);
     }
-  
-    public static String getGitCommand()
-    {
-        Process process;
-        try
-        {
-            // executing "git" without any arguent on Win OS would wait forever (even if git is correctly placed on PATH)
-            // => we need to execute "git" with some argument e.g. "--version"
-            process = new ProcessBuilder("git", "--version").start();
-            process.waitFor();
-            return "git";
-        } catch (Exception e)
-        {
-            return "/usr/local/git/bin/git";
-        }
-    }
-
     
     private void executeCommand(File directory, String... command) throws IOException, InterruptedException
     {

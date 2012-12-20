@@ -60,11 +60,41 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         pushToRemoteDvcsRepository(getSecondDvcsZipRepoPathToPush());
 
         simulatePostCommitHookCall();
-        Thread.sleep(5000); // to catch up with soft sync
-
+        JiraPageUtils.checkSyncProcessSuccess(jira); // to catch up with soft sync
+        
         assertThat(getCommitsForIssue("MC-1", 5)).hasSize(5);
     }
 
+    public String getGitCommand()
+    {
+        Process process;
+        try
+        {
+         // executing "git" without any arguent on Win OS would wait forever (even if git is correctly placed on PATH)
+            // => we need to execute "git" with some argument e.g. "--version"
+            process = new ProcessBuilder("git", "--version").start();
+            process.waitFor();
+            return "git";
+        } catch (Exception e)
+        {
+            return "/usr/local/git/bin/git";
+        }
+    }
+    
+    public String getHgCommand()
+    {
+        Process process;
+        try
+        {
+            process = new ProcessBuilder("hg", "--version").start();
+            process.waitFor();
+            return "hg";
+        } catch (Exception e)
+        {
+            return "/usr/local/bin/hg";
+        }
+    }
+    
     private void removeJiraProject()
     {
         if (JiraPageUtils.projectExists(jira, JIRA_PROJECT_NAME_AND_KEY))

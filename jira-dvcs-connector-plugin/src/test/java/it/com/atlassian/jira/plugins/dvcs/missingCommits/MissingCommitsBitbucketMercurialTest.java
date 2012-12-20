@@ -78,8 +78,9 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
         String hgPushUrl = String.format("https://%1$s:%2$s@bitbucket.org/%1$s/%3$s", DVCS_REPO_OWNER,
                                                                                       DVCS_REPO_PASSWORD,
                                                                                       MISSING_COMMITS_REPOSITORY_NAME);
-
-        Process hgPushProcess = new ProcessBuilder("hg", "push", hgPushUrl)
+        String hgCommand = getHgCommand();
+        
+        Process hgPushProcess = new ProcessBuilder(hgCommand, "push", hgPushUrl)
                                                   .directory(extractedRepoDir)
                                                   .start();
 
