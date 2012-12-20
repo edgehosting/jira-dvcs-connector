@@ -46,6 +46,8 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     abstract String getFirstDvcsZipRepoPathToPush();
     abstract String getSecondDvcsZipRepoPathToPush();
 
+    abstract void removeOAuth();
+    
     @Test
     public void commitsIssueTab_ShouldNotMissAnyRelatedCommits() throws Exception
     {
@@ -63,6 +65,8 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         JiraPageUtils.checkSyncProcessSuccess(jira); // to catch up with soft sync
         
         assertThat(getCommitsForIssue("MC-1", 5)).hasSize(5);
+        
+        removeOAuth();
     }
 
     public String getGitCommand()

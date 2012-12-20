@@ -12,6 +12,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizat
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
 import com.atlassian.plugin.util.zip.FileUnzipper;
 
@@ -29,6 +30,8 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
 
     private static GithubRepositoriesRemoteRestpoint githubRepositoriesREST;
 
+    private static String oauthAppLink;
+    
     @BeforeClass
     public static void initializeGithubRepositoriesREST()
     {
@@ -64,6 +67,12 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
         githubRegisterOAuthAppPage.registerApp(oauthAppName, baseUrl, baseUrl);
         String clientID = githubRegisterOAuthAppPage.getClientId().getText();
         String clientSecret = githubRegisterOAuthAppPage.getClientSecret().getText();
+        
+     // find out app URL
+        jira.getTester().gotoUrl(GithubRegisteredOAuthAppsPage.PAGE_URL);
+        GithubRegisteredOAuthAppsPage registeredOAuthAppsPage = jira.getPageBinder().bind(GithubRegisteredOAuthAppsPage.class);
+        registeredOAuthAppsPage.parseClientIdAndSecret(oauthAppName);
+        oauthAppLink = registeredOAuthAppsPage.getOauthAppUrl();
         
         GithubOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(GithubOAuthConfigPage.class);
         oauthConfigPage.setCredentials(clientID, clientSecret);
@@ -141,5 +150,18 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     protected Class<GithubConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return GithubConfigureOrganizationsPage.class;
+    }
+
+    @Override
+    void removeOAuth()
+    {
+        jira.getTester().gotoUrl(oauthAppLink);
+
+        GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
+        registerAppPage.deleteOAuthApp();
+
+        jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
+        GithubLoginPage ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
+        ghLoginPage.doLogout();
     }
 }

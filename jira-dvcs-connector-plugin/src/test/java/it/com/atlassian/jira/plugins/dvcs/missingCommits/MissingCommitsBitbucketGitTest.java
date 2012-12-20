@@ -130,4 +130,11 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
     {
         return BitBucketConfigureOrganizationsPage.class;
     }
+
+    @Override
+    void removeOAuth()
+    {
+        // TODO Remove OAuth consumer
+        
+    }
 }

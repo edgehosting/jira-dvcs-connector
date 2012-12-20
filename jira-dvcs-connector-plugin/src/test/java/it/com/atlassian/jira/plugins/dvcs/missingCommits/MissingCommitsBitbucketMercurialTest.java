@@ -123,4 +123,11 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
     {
         return BitBucketConfigureOrganizationsPage.class;
     }
+
+    @Override
+    void removeOAuth()
+    {
+        // TODO Remove OAuth consumer
+        
+    }
 }
