@@ -214,8 +214,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
             }
         } catch (BitbucketRequestException e)
         {
-            log.debug("Could not add postcommit hook", e);
-            throw new SourceControlException("Could not add postcommit hook", e);
+            log.debug("Could not retrieve list of branches", e);
+            throw new SourceControlException("Could not retrieve list of branches", e);
         }
 
         // Bitbucket returns raw_nodes for each branch, but changesetiterator works 
