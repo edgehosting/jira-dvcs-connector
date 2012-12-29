@@ -34,11 +34,6 @@
         <jira.compile.version>5.2-rotp4</jira.compile.version>
         <jira.version>5.2-rotp4</jira.version>
         <jira.data.version>5.2-rotp4</jira.data.version>
-
-    <!--
-        <jira.version>5.0.1</jira.version>
-        <jira.data.version>5.0.1</jira.data.version>
-    -->
         
         <ao.version>0.19.7</ao.version>
         <streams.version>5.0.1</streams.version>
@@ -90,12 +85,6 @@
             <artifactId>mockito-core</artifactId>
             <version>1.9.5</version>
             <scope>test</scope>
-            <!--exclusions>
-                <exclusion>
-                    <artifactId>hamcrest-core</artifactId>
-                    <groupId>org.hamcrest</groupId>
-                </exclusion>
-            </exclusions-->
         </dependency>
         <dependency>
             <groupId>org.easytesting</groupId>
@@ -124,8 +113,8 @@
         <profile>
             <id>jira5</id>
             <properties>
-                <jira.version>5.0</jira.version>
-                <jira.data.version>5.0</jira.data.version>
+                <jira.version>5.0.1</jira.version>
+                <jira.data.version>5.0.1</jira.data.version>
             </properties>
         </profile>
     </profiles>
