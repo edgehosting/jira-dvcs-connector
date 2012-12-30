@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import static org.hamcrest.Matchers.containsString;
 
-import it.com.atlassian.jira.plugins.dvcs.GithubEnterpriseOrganizationsTest;
+import it.githubenterprise.com.atlassian.jira.plugins.dvcs.GithubEnterpriseOrganizationsTest;
 
 import org.openqa.selenium.By;
 

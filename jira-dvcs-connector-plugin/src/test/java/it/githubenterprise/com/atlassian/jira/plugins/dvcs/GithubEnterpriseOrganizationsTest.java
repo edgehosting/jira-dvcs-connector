@@ -1,7 +1,10 @@
-package it.com.atlassian.jira.plugins.dvcs;
+package it.githubenterprise.com.atlassian.jira.plugins.dvcs;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
+
+import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest;
+import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest.AnotherLoginPage;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
