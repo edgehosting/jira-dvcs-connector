@@ -1,5 +1,8 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
+import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,6 +13,9 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.openqa.selenium.By;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
@@ -27,12 +33,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Se
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.elements.PageElement;
 
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.*;
-import static org.fest.assertions.api.Assertions.*;
-
 /**
  * Test to verify behaviour when syncing bitbucket repository..
  */
@@ -44,9 +44,7 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
     private static final String ACCOUNT_ADMIN_PASSWORD = PasswordUtil.getPassword("jirabitbucketconnector");
 
     private static ServiceRemoteRestpoint serviceRemoteRestpoint;
-
     private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
-
 
     @Override
     protected Class<BitBucketConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
@@ -68,7 +66,6 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketCon
     public void removeExistingPostCommitHooks()
     {
         Set<Integer> extractedBitbucketServiceIds = extractBitbucketServiceIdsToRemove();
-
         for (int extractedBitbucketServiceId : extractedBitbucketServiceIds)
         {
             serviceRemoteRestpoint.deleteService("jirabitbucketconnector", "public-hg-repo", extractedBitbucketServiceId);
