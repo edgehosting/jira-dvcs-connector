@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.jira.plugins.dvcs.conditions.GithubEnterpriseEnabledCondition;
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -125,8 +126,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
     public boolean isGithubEnterpriseEnabled()
     {
-        // so the disable system property was not set
-        return System.getProperty("disableGithubEnterprise") == null;
+        return GithubEnterpriseEnabledCondition.isGitHubEnterpriseEnabled();
     }
 	
 	public boolean isIntegratedAccount(Organization org) {

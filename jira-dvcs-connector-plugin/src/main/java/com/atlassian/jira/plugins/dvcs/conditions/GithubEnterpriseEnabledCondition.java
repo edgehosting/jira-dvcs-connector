@@ -18,7 +18,11 @@ public class GithubEnterpriseEnabledCondition implements com.atlassian.plugin.we
     @Override
     public boolean shouldDisplay(Map<String, Object> context)
     {
-        // so the disable system property was not set
+        return isGitHubEnterpriseEnabled();
+    }
+
+    public static boolean isGitHubEnterpriseEnabled()
+    {
         return System.getProperty("disableGithubEnterprise") == null;
     }
 }
