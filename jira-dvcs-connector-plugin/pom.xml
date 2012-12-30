@@ -219,7 +219,7 @@
     </build>
 
     <properties>
-        <functionalTestPattern>it/**/*Test.java</functionalTestPattern>
+        <functionalTestPattern>it/com/**/*Test.java</functionalTestPattern>
         <!-- GithubEnterprise only 
             <functionalTestPattern>it/githubenterprise/**/*Test.java</functionalTestPattern>
         -->
@@ -227,9 +227,9 @@
 
 	<profiles>
 		<profile>
-			<id>skipGithubEnterpriseTests</id>
+			<id>includeGithubEnterpriseTests</id>
 			<properties>
-                <functionalTestPattern>it/com/**/*Test.java</functionalTestPattern>
+		        <functionalTestPattern>it/**/*Test.java</functionalTestPattern>
 			</properties>
 		</profile>
 	</profiles>
