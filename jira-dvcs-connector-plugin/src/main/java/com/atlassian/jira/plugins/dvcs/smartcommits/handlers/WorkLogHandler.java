@@ -41,7 +41,7 @@ public class WorkLogHandler implements CommandHandler<Worklog>
 
     @Override
 	public Either<CommitHookHandlerError, Worklog> handle(User user, MutableIssue issue, String commandName,
-            List<String> args)
+            List<String> args, Date commitDate)
     {
 
         JiraServiceContextImpl jiraServiceContext = new JiraServiceContextImpl(user);
@@ -53,7 +53,7 @@ public class WorkLogHandler implements CommandHandler<Worklog>
                 jiraServiceContext,
                 WorklogInputParametersImpl.builder().issue(issue)
                         .timeSpent(durationAndComment.first())
-                        .comment(durationAndComment.second()).startDate(new Date()).build());
+                        .comment(durationAndComment.second()).startDate(commitDate != null ? commitDate : new Date()).build());
 
         if (!jiraServiceContext.getErrorCollection().hasAnyErrors())
         {

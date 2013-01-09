@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.smartcommits.handlers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -55,7 +56,7 @@ public class TransitionHandler implements CommandHandler<Issue> {
     }
 
     @Override
-	public Either<CommitHookHandlerError, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args) {
+	public Either<CommitHookHandlerError, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate) {
         
     	String cmd = commandName;
     	

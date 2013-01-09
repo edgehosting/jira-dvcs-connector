@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits.handlers;
 
+import java.util.Date;
 import java.util.List;
 
 import com.atlassian.crowd.embedded.api.User;
@@ -28,12 +29,17 @@ public class CommentHandler implements CommandHandler<Comment> {
     }
 
     @Override
-	public Either<CommitHookHandlerError, Comment> handle(User user, MutableIssue issue, String commandName, List<String> args) {
+	public Either<CommitHookHandlerError, Comment> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate) {
 
     	JiraServiceContextImpl jiraServiceContext = new JiraServiceContextImpl(user);
        
-        Comment comment = commentService.create(user, issue, args.isEmpty() ? null : args.get(0), true, jiraServiceContext.getErrorCollection());
-
+        Comment comment = commentService.create(user,
+                                                issue,
+                                                args.isEmpty() ? null : args.get(0),
+                                                null, null, commitDate,
+                                                true,
+                                                jiraServiceContext.getErrorCollection());
+        
         if (jiraServiceContext.getErrorCollection().hasAnyErrors()) {
             return Either.error(CommitHookHandlerError.fromErrorCollection(
                     CMD_TYPE.getName(), issue.getKey(), jiraServiceContext.getErrorCollection()));
