@@ -11,3 +11,12 @@
 .CommiterInfoRow {
     display: none;
 }
+.CommitButton {
+	float: none;
+}
+.CommitText {
+	margin-right: 0px;
+}
+.CommitRows {
+	padding-bottom: 2px;
+}
