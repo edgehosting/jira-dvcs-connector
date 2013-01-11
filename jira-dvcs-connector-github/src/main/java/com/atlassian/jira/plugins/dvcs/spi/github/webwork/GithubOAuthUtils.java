@@ -116,15 +116,15 @@ public class GithubOAuthUtils
 
         } catch (MalformedURLException e)
         {
-            throw new SourceControlException("Error obtaining access token.");
+            throw new SourceControlException("Error obtaining access token.",e);
 
         } catch (IOException ioe)
         {
-            throw new SourceControlException("Error obtaining access token. Cannot access " + githubUrl + " from Jira.");
+            throw new SourceControlException("Error obtaining access token. Cannot access " + githubUrl + " from Jira.",ioe);
         }
         catch (Exception e)
         {
-            throw new SourceControlException("Error obtaining access token. Please check your credentials.");
+            throw new SourceControlException("Error obtaining access token. Please check your credentials.",e);
         }
 
         if (result.startsWith("error="))
