@@ -64,6 +64,8 @@ public class GithubCommunicator implements DvcsCommunicator
 
     protected final GithubClientProvider githubClientProvider;
 
+    private HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
+    
     public GithubCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
             GithubClientProvider githubClientProvider)
     {
@@ -370,6 +372,8 @@ public class GithubCommunicator implements DvcsCommunicator
         String url = baseUrl + "/repos/" + repositoryId.generateId() + "/hooks/" + hook.getId();
         HttpMethod method = new DeleteMethod(url);
 
+        proxyConfig.configureProxy(httpClient, url);
+        
         Authentication auth = new OAuthAuthentication(repository.getCredential().getAccessToken());
         auth.addAuthentication(method, httpClient);
         
