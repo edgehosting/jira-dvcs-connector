@@ -111,6 +111,11 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 		} catch (SourceControlException sce)
 		{
 			addErrorMessage(sce.getMessage());
+			log.warn(sce.getMessage());
+			if ( sce.getCause() != null )
+			{
+				log.warn("Caused by: " + sce.getCause().getMessage());
+			}
 			return INPUT;
 		
 		} catch (Exception e) {
