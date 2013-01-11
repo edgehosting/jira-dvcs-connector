@@ -12,13 +12,18 @@ import org.slf4j.LoggerFactory;
  */
 public class Retryer<V>
 {
-    private static final int NUM_ATTEMPTS = 7;
+    private static final int DEFAULT_NUM_ATTEMPTS = 7;
     private static final Logger log = LoggerFactory.getLogger(Retryer.class);
 
-	public V retry(Callable<V> callable)
-	{
+    public V retry(Callable<V> callable)
+    {
+        return retry(callable, DEFAULT_NUM_ATTEMPTS);
+    }
+    
+    public V retry(Callable<V> callable, int num_attempts)
+    {
 		// try few times
-		for (int attempt = 1; attempt < NUM_ATTEMPTS; attempt++)
+		for (int attempt = 1; attempt < num_attempts; attempt++)
 		{
 			try
 			{
@@ -26,7 +31,7 @@ public class Retryer<V>
 			} catch (Exception e)
 			{
 				long delay = (long) (1000 * Math.pow(3, attempt)); // exponencial delay. (currently up to 12 minutes)
-				log.warn("Attempt #" + attempt + " (out of " + NUM_ATTEMPTS
+				log.warn("Attempt #" + attempt + " (out of " + DEFAULT_NUM_ATTEMPTS
 				        + "): Retrieving changesets failed: " + e.getMessage() + "\n. Retrying in "
 				        + delay / 1000 + " secs");
 				try

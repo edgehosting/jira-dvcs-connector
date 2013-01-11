@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -40,6 +41,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChange
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DvcsUserTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
+import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 
 /**
@@ -161,9 +163,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
             // get the commit statistics for changeset
             Changeset fromBitbucketChangeset = ChangesetTransformer.fromBitbucketChangeset(repository.getId(), bitbucketChangeset);
-            List<BitbucketChangesetWithDiffstat> changesetDiffStat = remoteClient.getChangesetsRest()
-                    .getChangesetDiffStat(repository.getOrgName(), // owner
-                            repository.getSlug(), node, Changeset.MAX_VISIBLE_FILES); // limit
+            List<BitbucketChangesetWithDiffstat> changesetDiffStat = getCommitStatistics(repository, node, remoteClient);
             // merge it all 
             return DetailedChangesetTransformer.fromChangesetAndBitbucketDiffstats(fromBitbucketChangeset, changesetDiffStat);
         } catch (BitbucketRequestException e)
@@ -171,6 +171,33 @@ public class BitbucketCommunicator implements DvcsCommunicator
             log.debug(e.getMessage(), e);
             throw new SourceControlException("Could not get result", e);
         }
+    }
+
+    private List<BitbucketChangesetWithDiffstat> getCommitStatistics(final Repository repository, final String node, final BitbucketRemoteClient remoteClient)
+    {
+        try
+        {
+            return new Retryer<List<BitbucketChangesetWithDiffstat>>()
+                    .retry(new Callable<List<BitbucketChangesetWithDiffstat>>()
+                    {
+                        @Override
+                        public List<BitbucketChangesetWithDiffstat> call() throws Exception
+                        {
+                            return remoteClient.getChangesetsRest().getChangesetDiffStat(repository.getOrgName(),
+                                    repository.getSlug(), node, Changeset.MAX_VISIBLE_FILES);
+                        }
+                    });
+        } catch (Exception e)
+        {
+            if (log.isDebugEnabled())
+            {
+                log.warn("Error obtaining commit statistics for " + repository.getRepositoryUrl() + ", node=" + node);
+            } else
+            {
+                log.warn("Error obtaining commit statistics for " + repository.getRepositoryUrl() + ", node=" + node, e);
+           }
+        }
+        return null;
     }
 
     @Override
@@ -184,7 +211,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 List<BranchTip> branches = getBranches(repository);
                 return new BranchedChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, branches);
             }
-
         };
     }
 

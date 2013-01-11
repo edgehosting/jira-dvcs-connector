@@ -18,11 +18,13 @@ public final class DetailedChangesetTransformer {
     public static Changeset fromChangesetAndBitbucketDiffstats(Changeset inputChangeset,
             List<BitbucketChangesetWithDiffstat> diffstats)
     {
-        List<ChangesetFile> files = ChangesetFileTransformer.fromBitbucketChangesetsWithDiffstat(diffstats);
-        
         Changeset changeset = copyChangeset(inputChangeset);
         changeset.setIssueKey(null);
-        changeset.setFiles(files);
+        if (diffstats!=null)
+        {
+            List<ChangesetFile> files = ChangesetFileTransformer.fromBitbucketChangesetsWithDiffstat(diffstats);
+            changeset.setFiles(files);
+        }
         
         return changeset;
     }

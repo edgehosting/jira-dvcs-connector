@@ -25,11 +25,6 @@ public class BitbucketRequestException extends RuntimeException
 		super(message);
 	}
 
-	public BitbucketRequestException(Throwable cause)
-	{
-		super(cause);
-	}
-
 	public BitbucketRequestException(String message, Throwable cause)
 	{
 		super(message, cause);
