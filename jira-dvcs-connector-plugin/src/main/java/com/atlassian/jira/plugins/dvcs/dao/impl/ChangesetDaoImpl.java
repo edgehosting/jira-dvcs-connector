@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
@@ -73,13 +74,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             {
                 Query query = Query.select().where(ChangesetMapping.REPOSITORY_ID + " = ?", repositoryId);
                 log.debug("deleting changesets from repository with id = [ {} ]", new String[]{String.valueOf(repositoryId)});
-
-                activeObjects.stream(ChangesetMapping.class,query, new EntityStreamCallback<ChangesetMapping, Integer>(){
-                    public void onRowRead(ChangesetMapping changeset)
-                    {
-                        activeObjects.delete(activeObjects.get(ChangesetMapping.class, changeset.getID()));
-                    }
-                });
+                ActiveObjectsUtils.delete(activeObjects, ChangesetMapping.class, query);
                 return null;
             }
         });
