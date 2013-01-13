@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe.ThreeLegged10aOauthProvider;
-
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * This test is about getting rid of unnecessary "java.net.ProtocolException: Server redirected too many  times (20)".
@@ -42,7 +42,7 @@ public class URLPathsShouldBeCorrectlyEncodedTest
         accountRemoteRestpoint.getUser("fake User");
     }
 
-    @Test(expectedExceptions = BitbucketRequestException.NotFound_404.class)
+    @Test(expectedExceptions = BitbucketRequestException.class, expectedExceptionsMessageRegExp = "Error response code during the request : 400")
     public void performingPOSTRequestWithOAuthAuthentication_ShouldNotThrowProtocolException()
     {
         // performing POST with not properly encoded URL used to return HTTP 302 status code
