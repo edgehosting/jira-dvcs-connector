@@ -51,4 +51,10 @@ public class BitbucketRepositoryLink implements Serializable
 	{
 		this.handler = handler;
 	}
+	
+	@Override
+    public String toString() 
+	{
+        return "BitbucketRepositoryLink[" + id + ", " + handler + "]";
+	}
 }

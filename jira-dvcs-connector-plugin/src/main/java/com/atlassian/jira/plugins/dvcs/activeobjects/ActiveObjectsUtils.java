@@ -20,7 +20,7 @@ public class ActiveObjectsUtils
         int remainingEntities = activeObjects.count(entityType, query);
         while (remainingEntities > 0)
         {
-            log.warn("Deleting up to {} entities of {} remaining.", DELETION_WINDOW_SIZE, remainingEntities);
+            log.debug("Deleting up to {} entities of {} remaining.", DELETION_WINDOW_SIZE, remainingEntities);
             T[] entities = activeObjects.find(entityType, query.limit(DELETION_WINDOW_SIZE));
             activeObjects.delete(entities);
             remainingEntities = activeObjects.count(entityType, query);

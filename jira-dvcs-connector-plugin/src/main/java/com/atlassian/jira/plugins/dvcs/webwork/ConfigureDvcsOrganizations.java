@@ -52,7 +52,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	@RequiresXsrfCheck
 	protected String doExecute() throws Exception
 	{
-		logger.debug("Configure orgazniation default action.");
+		logger.debug("Configure organization default action.");
 		return INPUT;
 	}
 
