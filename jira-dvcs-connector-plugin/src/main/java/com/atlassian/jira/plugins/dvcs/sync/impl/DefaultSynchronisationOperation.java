@@ -68,6 +68,11 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         		return;
         	}
         	
+        	if (changeset == null)
+        	{
+        	    continue;
+        	}
+        	
             if (repository.getLastCommitDate() == null || repository.getLastCommitDate().before(changeset.getDate()))
             {
                 repository.setLastCommitDate(changeset.getDate());
@@ -84,6 +89,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             {
                 changeset.setIssueKey("NON_EXISTING-0");
                 changesetService.save(changeset);
+                progress.inProgress(changesetCount, jiraCount, 0);
                 continue;
             }
 
