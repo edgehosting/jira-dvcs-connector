@@ -32,7 +32,7 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     public BitbucketPullRequestActivityIterator(RemoteRequestor requestor, Date upToDate, String forRepoSlug, String forUser)
     {
         this.requestor = requestor;
-        this.upToDate = upToDate;
+        this.upToDate = upToDate != null ? upToDate : new Date(0);
         this.forRepoSlug = forRepoSlug;
         this.forUser = forUser;
     }
