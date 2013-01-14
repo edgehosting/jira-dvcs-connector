@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -26,6 +27,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Retryer;
+
 /**
  * BaseRemoteRequestor
  * 
@@ -40,14 +43,10 @@ import org.slf4j.LoggerFactory;
  */
 public class BaseRemoteRequestor implements RemoteRequestor
 {
-    private static final int HTTP_STATUS_CODE_UNAUTHORIZED = 401;
-    private static final int HTTP_STATUS_CODE_FORBIDDEN = 403;
-    private static final int HTTP_STATUS_CODE_NOT_FOUND = 404;
-
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
 
     protected final String apiUrl;
-    private HttpClientProxyConfig proxyConfig;
+    private final HttpClientProxyConfig proxyConfig;
 
     public BaseRemoteRequestor(String apiUrl)
     {
@@ -58,29 +57,86 @@ public class BaseRemoteRequestor implements RemoteRequestor
     @Override
     public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        HttpGet getMethod = new HttpGet();
-        return requestWithoutPayload(getMethod, uri, parameters, callback);
+        return getWithRetry(uri, parameters, callback);
     }
 
     @Override
     public <T> T delete(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        HttpDelete method = new HttpDelete();
-        return requestWithoutPayload(method, uri, parameters, callback);
+        return deleteWithRetry(uri, parameters, callback);
     }
 
     @Override
     public  <T> T post(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        HttpPost method = new HttpPost();
-        return requestWithPayload(method, uri, parameters, callback);
+        return postWithRetry(uri, parameters, callback);
     }
+
 
     @Override
     public <T> T put(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        HttpPut method = new HttpPut();
-        return requestWithPayload(method, uri, parameters, callback);
+        return putWithRetry(uri, parameters, callback);
+    }
+
+    // --------------------------------------------------------------------------------------------------
+    // Retryers...
+    // --------------------------------------------------------------------------------------------------
+    
+    private <T> T getWithRetry(final String uri, final Map<String, String> parameters,
+            final ResponseCallback<T> callback)
+    {
+        return new Retryer<T>().retry(new Callable<T>()
+        {
+            @Override
+            public T call() throws Exception
+            {
+                HttpGet getMethod = new HttpGet();
+                return requestWithoutPayload(getMethod, uri, parameters, callback);
+            }
+        });
+    }
+
+    private <T> T deleteWithRetry(final String uri, final Map<String, String> parameters,
+            final ResponseCallback<T> callback)
+    {
+        return new Retryer<T>().retry(new Callable<T>()
+        {
+            @Override
+            public T call() throws Exception
+            {
+                HttpDelete method = new HttpDelete();
+                return requestWithoutPayload(method, uri, parameters, callback);
+            }
+        });
+    }
+
+    private <T> T postWithRetry(final String uri, final Map<String, String> parameters,
+            final ResponseCallback<T> callback)
+    {
+        return new Retryer<T>().retry(new Callable<T>()
+        {
+            @Override
+            public T call() throws Exception
+            {
+                HttpPost method = new HttpPost();
+                return requestWithPayload(method, uri, parameters, callback);
+            }
+        });
+    }
+
+    private <T> T putWithRetry(final String uri, final Map<String, String> parameters,
+            final ResponseCallback<T> callback)
+    {
+        return new Retryer<T>().retry(new Callable<T>()
+        {
+            @Override
+            public T call() throws Exception
+            {
+                HttpPut method = new HttpPut();
+                return requestWithPayload(method, uri, parameters, callback);
+            }
+        });
     }
 
     // --------------------------------------------------------------------------------------------------
@@ -115,9 +171,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, String> params, ResponseCallback<T> callback)
     {
-
         DefaultHttpClient client = new DefaultHttpClient();
-
         RemoteResponse response = null;
        
         try
@@ -158,7 +212,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
         DefaultHttpClient client = new DefaultHttpClient();
-
         RemoteResponse response = null;
        
         try
@@ -212,7 +265,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
 
         response.setHttpStatusCode(statusCode);
-        if (httpResponse.getEntity() != null) {
+        if (httpResponse.getEntity() != null)
+        {
             response.setResponse(httpResponse.getEntity().getContent());
         }
         response.setHttpClient(client);
@@ -277,12 +331,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         
         String finalUrl = afterFinalUriConstructed(method, apiUrl + uri, params);
         method.setURI(new URI(finalUrl)); 
-
-        
-
         //
         logRequest(method, finalUrl, params);
-        //
         //
         // something to extend
         //
@@ -292,20 +342,15 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private void setPayloadParams(HttpEntityEnclosingRequestBase method, Map<String, String> params) throws IOException
     {
-        
         if (params != null)
         {
             List<NameValuePair> formparams = new ArrayList<NameValuePair>();
-            
             for (Entry<String, String> entry : params.entrySet())
             {
                 formparams.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
             }
-            
             UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, "UTF-8");
-            
             method.setEntity(entity);
         }
-
     }
 }

@@ -134,7 +134,7 @@ class ChangesetIterator implements Iterator<Changeset>
     }
 
     /**
-     * Get Detailed Changeset and retry 3 times
+     * Get Detailed Changeset and retry
      * 
      * @param node
      * @return
@@ -148,7 +148,7 @@ class ChangesetIterator implements Iterator<Changeset>
             {
                 return dvcsCommunicator.getDetailChangeset(repository, node);
             }
-        }, 3);
+        });
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.util;
+package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client;
 
 import java.util.concurrent.Callable;
 
@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 
 /**
+ * 
  *
  */
 public class Retryer<V>
@@ -31,7 +32,7 @@ public class Retryer<V>
 			{
 				long delay = (long) (1000 * Math.pow(3, attempt)); // exponencial delay. (currently up to 12 minutes)
 				log.warn("Attempt #" + attempt + " (out of " + num_attempts
-				        + "): Retrieving operation failed: " + e.getMessage() + "\nRetrying in "
+				        + "): Request operation failed: " + e.getMessage() + "\nRetrying in "
 				        + delay / 1000 + " secs");
 				try
 				{
@@ -44,15 +45,15 @@ public class Retryer<V>
 		}
 
 		// previous tries failed, let's go for it one more final time
-        try
+		try
+		{
+			return callable.call();
+		} catch (RuntimeException e)
+		{
+			throw e;
+		} catch (Exception e)
         {
-            return callable.call();
-        } catch (RuntimeException e)
-        {
-            throw e;
-        } catch (Exception e)
-        {
-            throw new RuntimeException(e);
+		    throw new RuntimeException(e);
         }
 	}
 }

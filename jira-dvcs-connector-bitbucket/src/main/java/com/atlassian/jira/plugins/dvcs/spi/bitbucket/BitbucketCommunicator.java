@@ -189,8 +189,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
         };
     }
 
-    /*
-     * Retry 4 times
+    /**
+     * Retry 3 times
      */
     private List<BranchTip> getBranchesWithRetry(final Repository repository)
     {
@@ -201,7 +201,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             {
                 return getBranches(repository);
             }
-        }, 4);
+        });
     }
     
     private List<BranchTip> getBranches(Repository repository)
