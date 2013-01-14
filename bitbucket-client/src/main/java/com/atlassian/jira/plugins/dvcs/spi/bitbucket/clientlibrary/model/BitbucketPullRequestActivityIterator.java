@@ -14,7 +14,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Respo
 import com.google.gson.reflect.TypeToken;
 
 //TODO failure recoveries ... after merge with default
-public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketPullRequestBaseActivity>, Iterable<BitbucketPullRequestBaseActivity>
+public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketPullRequestBaseActivity>,
+        Iterable<BitbucketPullRequestBaseActivity>
 {
 
     // configs
@@ -29,7 +30,8 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     // services
     private final RemoteRequestor requestor;
 
-    public BitbucketPullRequestActivityIterator(RemoteRequestor requestor, Date upToDate, String forRepoSlug, String forUser)
+    public BitbucketPullRequestActivityIterator(RemoteRequestor requestor, Date upToDate, String forRepoSlug,
+            String forUser)
     {
         this.requestor = requestor;
         this.upToDate = upToDate != null ? upToDate : new Date(0);
@@ -51,11 +53,13 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
 
     private void readFrame()
     {
-        if (wasDateOver) {
+        if (wasDateOver)
+        {
 
             this.currentFrame = new ArrayList<BitbucketPullRequestBaseActivity>();
 
-        } else {
+        } else
+        {
 
             requestor.get(createUrl(), createRequestParams(), createResponseCallback());
             start++;
@@ -66,20 +70,23 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     @Override
     public BitbucketPullRequestBaseActivity next()
     {
-        if (currentFrame.isEmpty()) {
+        if (currentFrame.isEmpty())
+        {
             readFrame();
         }
-        
-        if (currentFrame.isEmpty()) {
+
+        if (currentFrame.isEmpty())
+        {
             throw new NoSuchElementException();
         }
-        
+
         BitbucketPullRequestBaseActivity currentItem = currentFrame.remove(0);
-        
+
         //
         // possibly read a next frame
         //
-        if (currentFrame.isEmpty()) {
+        if (currentFrame.isEmpty())
+        {
             readFrame();
         }
 
@@ -97,7 +104,7 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     {
         throw new UnsupportedOperationException("This is unsupported.");
     }
-    
+
     // ------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------
     // helpers
@@ -119,14 +126,22 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
             @Override
             public List<BitbucketPullRequestBaseActivity> onResponse(RemoteResponse response)
             {
-                List<BitbucketPullRequestBaseActivity> remote = ClientUtils.fromJson(response.getResponse(), new TypeToken<List<BitbucketPullRequestBaseActivity>>(){}.getType());
+                List<BitbucketPullRequestBaseActivity> remote = 
+                        ClientUtils.fromJsonWithDeserializers(
+                                                                  response.getResponse(), 
+                                                                  new TypeToken<List<BitbucketPullRequestBaseActivity>>(){}.getType(),
+                                                                  BitbucketPullRequestActivityDeserializer.asMap()
+                                                              );
+                
                 List<BitbucketPullRequestBaseActivity> ret = new ArrayList<BitbucketPullRequestBaseActivity>();
 
                 for (BitbucketPullRequestBaseActivity remoteActivity : remote)
                 {
-                    if (remoteActivity.getUpdatedOn().after(upToDate)) {
+                    if (remoteActivity.getUpdatedOn().after(upToDate))
+                    {
                         ret.add(remoteActivity);
-                    } else {
+                    } else
+                    {
                         wasDateOver = true;
                     }
                 }
@@ -135,11 +150,10 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
             }
         };
     }
-    
+
     private String createUrl()
     {
         return String.format("/repositories/%s/%s/pullrequests/activity", forUser, forRepoSlug);
     }
-
 
 }

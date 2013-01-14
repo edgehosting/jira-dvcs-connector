@@ -83,7 +83,7 @@ public class ClientUtils
         }
     }
 
-    public static <T> T fromJsonWithDeserializationAdapters(InputStream json, Type type, Map<Class<?>, JsonDeserializer<?>> deserializers)
+    public static <T> T fromJsonWithDeserializers(InputStream json, Type type, Map<Class<?>, JsonDeserializer<?>> deserializers)
     {
         try
         {
