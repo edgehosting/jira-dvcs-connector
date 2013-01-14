@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
-import java.util.ArrayList;
 import java.util.Date;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 
@@ -28,8 +28,9 @@ public class PullRequestRemoteRestpoint
     }
     
     public Iterable<BitbucketPullRequestBaseActivity> getRepositoryActivity(String owner, String repoSlug, Date upToDate) {
-        // TODO
-        return new ArrayList<BitbucketPullRequestBaseActivity>();
+
+        return new BitbucketPullRequestActivityIterator(requestor, upToDate, repoSlug, owner);
+
     }
     
 

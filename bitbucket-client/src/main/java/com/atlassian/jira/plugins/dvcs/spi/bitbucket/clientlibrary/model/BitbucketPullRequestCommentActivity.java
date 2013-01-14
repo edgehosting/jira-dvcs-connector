@@ -22,6 +22,15 @@ public class BitbucketPullRequestCommentActivity extends BitbucketPullRequestBas
         super();
     }
 
+    @Override
+    public Iterable<String> getMessages()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    
+
 
 }
 

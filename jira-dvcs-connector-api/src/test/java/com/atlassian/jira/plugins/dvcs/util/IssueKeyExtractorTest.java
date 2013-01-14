@@ -1,10 +1,13 @@
-package com.atlassian.jira.plugins.dvcs.sync.impl;
+package com.atlassian.jira.plugins.dvcs.util;
+
+import static org.fest.assertions.api.Assertions.*;
 
 import java.util.Set;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
+
+import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
 /**
  * @author Martin Skurla

@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.sync.impl;
+package com.atlassian.jira.plugins.dvcs.util;
 
 import java.util.HashSet;
 import java.util.Set;
