@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.activity;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,7 +26,7 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
     }
 
     @Override
-    public void synchronize(Date lastSyncPoint, Repository forRepository)
+    public void synchronize(Repository forRepository)
     {
         BitbucketRemoteClient remoteClient = clientFactory.getForRepository(forRepository);
         PullRequestRemoteRestpoint pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
@@ -36,7 +35,7 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
         // get activities iterator
         //
         Iterable<BitbucketPullRequestBaseActivity> activites = pullRestpoint.getRepositoryActivity(
-                forRepository.getOrgName(), forRepository.getSlug(), lastSyncPoint);
+                forRepository.getOrgName(), forRepository.getSlug(), dao.getLastSynchronizationDate(forRepository.getId()));
 
         //
         // check whether there's some interesting issue keys in activity
