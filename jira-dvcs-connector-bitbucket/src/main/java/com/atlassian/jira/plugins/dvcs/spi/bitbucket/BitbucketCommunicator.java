@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -40,6 +41,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChange
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DvcsUserTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
+import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 
 /**
@@ -180,12 +182,28 @@ public class BitbucketCommunicator implements DvcsCommunicator
             @Override
             public Iterator<Changeset> iterator()
             {
-                List<BranchTip> branches = getBranches(repository);
+                List<BranchTip> branches = getBranchesWithRetry(repository);
                 return new BranchedChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, branches);
             }
+
         };
     }
 
+    /*
+     * Retry 4 times
+     */
+    private List<BranchTip> getBranchesWithRetry(final Repository repository)
+    {
+        return new Retryer<List<BranchTip>>().retry(new Callable<List<BranchTip>>()
+        {
+            @Override
+            public List<BranchTip> call() throws Exception
+            {
+                return getBranches(repository);
+            }
+        }, 4);
+    }
+    
     private List<BranchTip> getBranches(Repository repository)
     {
         // Using undocumented https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
