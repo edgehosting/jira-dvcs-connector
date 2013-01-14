@@ -483,7 +483,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		} catch (Exception e)
 		{
             log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId()
-                            + ", slug = " + repository.getSlug(), e);
+                            + ", slug = " + repository.getRepositoryUrl(), e);
 		}
 	}
 	

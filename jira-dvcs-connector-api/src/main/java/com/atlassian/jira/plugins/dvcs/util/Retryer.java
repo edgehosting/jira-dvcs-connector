@@ -31,7 +31,7 @@ public class Retryer<V>
 			} catch (Exception e)
 			{
 				long delay = (long) (1000 * Math.pow(3, attempt)); // exponencial delay. (currently up to 12 minutes)
-				log.warn("Attempt #" + attempt + " (out of " + DEFAULT_NUM_ATTEMPTS
+				log.warn("Attempt #" + attempt + " (out of " + num_attempts
 				        + "): Retrieving changesets failed: " + e.getMessage() + "\n. Retrying in "
 				        + delay / 1000 + " secs");
 				try

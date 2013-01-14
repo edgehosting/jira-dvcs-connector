@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 /**
  * 
  * BitbucketRepositoryLink
@@ -106,5 +108,12 @@ public class BitbucketRepositoryLinkHandler implements Serializable
     public void setRawRegex(String rawRegex)
     {
         this.rawRegex = rawRegex;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ToStringBuilder(this).append(url).append(displayFrom).append(name).append(key).append(displayTo)
+                .append(replacementUrl).append(rawRegex).toString();
     }
 }
