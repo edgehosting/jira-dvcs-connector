@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 import java.util.ArrayList;
+import java.util.Date;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketComment;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 
 /**
@@ -27,20 +27,9 @@ public class PullRequestRemoteRestpoint
         this.requestor = requestor;
     }
     
-    public Iterable<BitbucketPullRequest> getAllPullRequestsForRepository(String owner, String repoSlug) {
+    public Iterable<BitbucketPullRequestBaseActivity> getRepositoryActivity(String owner, String repoSlug, Date upToDate) {
         // TODO
-        return new ArrayList<BitbucketPullRequest>();
-    }
-    
-    public Iterable<BitbucketComment> getAllCommentsForPullRequest(Integer pullRequestId) {
-        // TODO
-        return new ArrayList<BitbucketComment>();
-    }
-
-    
-    public Iterable<BitbucketComment> getAllCommentsForChangeset(String owner, String repoSlug, String rawNode) {
-        // TODO
-        return new ArrayList<BitbucketComment>();
+        return new ArrayList<BitbucketPullRequestBaseActivity>();
     }
     
 
