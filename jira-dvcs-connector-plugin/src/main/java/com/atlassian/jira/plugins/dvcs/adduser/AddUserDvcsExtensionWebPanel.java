@@ -95,14 +95,9 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
 
         try
         {
-
-            addBitbucketOrganizations(model);
-
-            model.put("textutils", new TextUtils());
-            model.put("baseurl", appProperties.getBaseUrl());
-
+        	 model.put("baseurl", appProperties.getBaseUrl());
+        	 
             templateRenderer.render("/templates/dvcs/add-user-dvcs-extension.vm", model, stringWriter);
-
         } catch (Exception e)
         {
             log.warn("Error while rendering DVCS extension fragment for add user form.", e);
@@ -112,67 +107,4 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
 
         return stringWriter.toString();
     }
-
-    /**
-     * Appends the bitbucket organizations to model.
-     * 
-     * @param model
-     *            the model
-     * @return the list
-     */
-    private List<Organization> addBitbucketOrganizations(Map<String, Object> model)
-    {
-        String dvcsType = "bitbucket";
-
-        List<Organization> all = organizationService.getAll(false, dvcsType);
-        Map<Integer, Set<String>> defaultSlugs = new HashMap<Integer, Set<String>>();
-
-        DvcsCommunicator communicator = communicatorProvider.getCommunicator(dvcsType);
-
-        boolean groupFound = false;
-
-        for (Organization organization : all)
-        {
-            try
-            {
-                Set<Group> groups = communicator.getGroupsForOrganization(organization);
-                organization.setGroups(groups);
-
-                groupFound |= CollectionUtils.isNotEmpty(groups);
-                
-                defaultSlugs.put(organization.getId(), extractSlugs(organization.getDefaultGroups()));
-
-            } catch (Exception e)
-            {
-                log.warn("Failed to get groups for organization {}. Cause message is {}", organization.getName(),
-                        e.getMessage());
-            }
-        }
-
-        model.put("bbOrgaizations", all);
-        model.put("defaultSlugs", defaultSlugs);
-
-        // quick helper var to find out if we have som data to show
-        model.put("bbSupressRender", !groupFound);
-
-        return all;
-
-    }
-
-    private Set<String> extractSlugs(Set<Group> groupSlugs)
-    {
-        Set<String> slugs = new HashSet<String>();
-
-        if (groupSlugs == null)
-        {
-            return slugs;
-        }
-
-        for (Group group : groupSlugs)
-        {
-            slugs.add(group.getSlug());
-        }
-        return slugs;
-    }
-
 }

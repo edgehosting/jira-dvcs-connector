@@ -1,38 +1,30 @@
-#if(!$bbSupressRender)
+<script type="text/javascript">
 
-	<fieldset class="field-group" id="dvcs-bitucket-extension">
-	  
-	  <label>Bitbucket Accounts</label>
+	AJS.messages.info("#configureGroupsContentWorking", {
+   		title:"Loading list of groups from Bitbucket...",
+   		closeable: false
+			});
+			
+	// load web fragment
+	jQuery.ajax({
+				type : 'GET',
+				url : "${baseurl}/rest/bitbucket/1.0/fragment/groups",
+				success :
+				function (data) {
+					jQuery("#configureGroupsContentWorking").hide();
+					jQuery("#configureGroupsContent").html(data);
+					jQuery("#configureGroupsContent").show();
+				}
+			}).error(function (err) { 
+				jQuery("#configureGroupsContentWorking").empty();
+				AJS.messages.warning("#configureGroupsContentWorking", {title:"Unexpected error occurred when retrieving list of groups from Bitbucket.", closeable: false});
+				jQuery("#configureGroupsContentWorking").show();
+		});
 
-	  #foreach ($bbOrg in $bbOrgaizations)
-	    
-	  	#if($bbOrg.getGroups() && !$bbOrg.getGroups().isEmpty())
-	
-		  	<div class="checkbox" style="padding-left: 0px; margin-top: 2px; margin-bottom: 5px;">
-		    	
-		    	<div style="padding-top: 1px; margin-bottom: 4px; font-weight: bold; font-size: 1.1em; padding-left: 25px; background: url('$baseurl/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png') no-repeat transparent">
-		    		<span><a href="$bbOrg.organizationUrl">$textutils.htmlEncode($bbOrg.name)</a></span>
-		    	</div>
-		    	
-		    	 #foreach ($group in $bbOrg.getGroups())
-	
-					#if($defaultSlugs.get($bbOrg.id).contains($group.slug))
-					 			#set( $selectedGroup = "checked='checked'")
-					 			#else
-					 			#set( $selectedGroup = "")
-					#end	    	 
-		    	 
-		    	 	<div style="margin-left: 25px; margin-bottom: 3px">
-		    	 		<input $!selectedGroup id="dvcs_org_selector_${bbOrg.id}_$group.slug" class="checkbox" type="checkbox" value="${bbOrg.id}:$group.slug" name="dvcs_org_selector" />
-		    	 		<label for="dvcs_org_selector_${bbOrg.id}_$group.slug"> $textutils.htmlEncode($group.niceName) </label>
-		    	 	</div>
-		    	 #end
-		  	</div>
-		  	
-	  	#end
-	  	
-	  #end
-	
-	</fieldset>
+</script>
 
-#end
+<div>
+	<div id="configureGroupsContentWorking"/>
+    <div id="configureGroupsContent" style="display:none"/>
+</div>
+
