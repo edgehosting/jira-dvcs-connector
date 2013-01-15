@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * BitbucketPullRequest
+ * BitbucketPullRequestBaseActivity - JSON model
  *
  * 
  * <br /><br />
@@ -19,6 +19,13 @@ public abstract class BitbucketPullRequestBaseActivity implements Serializable, 
     private static final long serialVersionUID = -4076516797342633690L;
     
     private Date updatedOn;
+    
+    private BitbucketAccount user;
+    
+    private BitbucketRepository repository;
+    
+    // PR title
+    private String title; 
 
     public BitbucketPullRequestBaseActivity()
     {
@@ -33,6 +40,36 @@ public abstract class BitbucketPullRequestBaseActivity implements Serializable, 
     public void setUpdatedOn(Date updatedOn)
     {
         this.updatedOn = updatedOn;
+    }
+
+    public BitbucketAccount getUser()
+    {
+        return user;
+    }
+
+    public void setUser(BitbucketAccount user)
+    {
+        this.user = user;
+    }
+
+    public String getTitle()
+    {
+        return title;
+    }
+
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+
+    public BitbucketRepository getRepository()
+    {
+        return repository;
+    }
+
+    public void setRepository(BitbucketRepository repository)
+    {
+        this.repository = repository;
     }
 
 
