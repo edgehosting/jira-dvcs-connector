@@ -6,5 +6,7 @@ public interface WebfragmentRenderer
 {
 
 	String renderDefaultGroupsFragment(int orgId) throws IOException;
+	
+	String renderGroupsFragment() throws IOException;
 
 }
