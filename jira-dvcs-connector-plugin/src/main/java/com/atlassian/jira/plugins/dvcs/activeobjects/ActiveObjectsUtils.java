@@ -16,7 +16,7 @@ public class ActiveObjectsUtils
     public static <T extends Entity> void delete(final ActiveObjects activeObjects, Class<T> entityType, Query query)
     {
         //TODO: use activeObjects.deleteWithSQL() when AO update https://ecosystem.atlassian.net/browse/AO-348 is available.
-        log.info("Deleting type {}", entityType);
+        log.debug("Deleting type {}", entityType);
         int remainingEntities = activeObjects.count(entityType, query);
         while (remainingEntities > 0)
         {
@@ -26,5 +26,4 @@ public class ActiveObjectsUtils
             remainingEntities = activeObjects.count(entityType, query);
         }
     }
-
 }
