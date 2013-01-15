@@ -241,7 +241,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             String rawNode = branchTip.getNode();
             if (StringUtils.length(rawNode)>12)
             {
-                String node = rawNode.substring(0, 11);
+                String node = rawNode.substring(0, 12);
                 branchTip.setNode(node);
             }
         }
