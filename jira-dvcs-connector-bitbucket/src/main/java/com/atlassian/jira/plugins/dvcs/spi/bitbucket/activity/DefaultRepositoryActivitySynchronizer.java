@@ -5,10 +5,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommentActivity;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestLikeActivity;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
@@ -35,7 +39,7 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
         // get activities iterator
         //
         Iterable<BitbucketPullRequestBaseActivity> activites = pullRestpoint.getRepositoryActivity(
-                forRepository.getOrgName(), forRepository.getSlug(), dao.getLastSynchronizationDate(forRepository.getId()));
+                forRepository.getOrgName(), forRepository.getSlug(), null /* TODO respoitory.getLastActivitySyncDate() - extend repository with last activity sync date */);
 
         //
         // check whether there's some interesting issue keys in activity
@@ -80,6 +84,13 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
 
     private Map<String, Object> toDaoModel(BitbucketPullRequestBaseActivity activity, String issueKey)
     {
+        if(activity instanceof BitbucketPullRequestCommentActivity) {
+            
+        } else if (activity instanceof BitbucketPullRequestLikeActivity) {
+            
+        } else if (activity instanceof BitbucketPullRequestUpdateActivity) {
+            
+        }
         return new HashMap<String, Object>();
     }
 
