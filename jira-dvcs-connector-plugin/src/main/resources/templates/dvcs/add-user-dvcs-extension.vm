@@ -1,30 +1,23 @@
 <script type="text/javascript">
 
-	AJS.messages.info("#configureGroupsContentWorking", {
-   		title:"Loading list of groups from Bitbucket...",
-   		closeable: false
-			});
-			
-	// load web fragment
-	jQuery.ajax({
-				type : 'GET',
-				url : "${baseurl}/rest/bitbucket/1.0/fragment/groups",
-				success :
-				function (data) {
-					jQuery("#configureGroupsContentWorking").hide();
-					jQuery("#configureGroupsContent").html(data);
-					jQuery("#configureGroupsContent").show();
-				}
-			}).error(function (err) { 
-				jQuery("#configureGroupsContentWorking").empty();
-				AJS.messages.warning("#configureGroupsContentWorking", {title:"Unexpected error occurred when retrieving list of groups from Bitbucket.", closeable: false});
-				jQuery("#configureGroupsContentWorking").show();
-		});
-
+    // load web fragment
+    ## AJS.$ doesn't play nice with Velocity, using jQuery instead
+    jQuery.get("${baseurl}/rest/bitbucket/1.0/fragment/groups")
+               .success(function (data) {
+                    jQuery("#configureGroupsContent").html(data);
+                })
+               .error(function (err) { 
+                    jQuery("#configureGroupsContent").empty();
+                    AJS.messages.warning("#configureGroupsContent", {title:"Unexpected error occurred when retrieving list of groups from Bitbucket.", closeable: false});
+               });
+    
 </script>
 
-<div>
-	<div id="configureGroupsContentWorking"/>
-    <div id="configureGroupsContent" style="display:none"/>
+<div id="configureGroupsContent">
+    <div class="aui-message info">
+        <span class="aui-icon icon-info"></span>
+        Loading list of groups from Bitbucket...
+        <span style="background:url('../../../images/icons/wait.gif') 0 center no-repeat;padding-left:18px">&nbsp;</span>
+    </div>
 </div>
 

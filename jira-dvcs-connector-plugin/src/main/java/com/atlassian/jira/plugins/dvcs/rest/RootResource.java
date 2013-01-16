@@ -41,39 +41,39 @@ import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 public class RootResource
 {
 
-	/** The uri info. */
-	@Context
-	UriInfo uriInfo;
+    /** The uri info. */
+    @Context
+    UriInfo uriInfo;
 
-	/** The organization service. */
-	private final OrganizationService organizationService;
+    /** The organization service. */
+    private final OrganizationService organizationService;
 
-	/** The log. */
-	private final Logger log = LoggerFactory.getLogger(RootResource.class);
+    /** The log. */
+    private final Logger log = LoggerFactory.getLogger(RootResource.class);
 
-	/** The repository service. */
-	private final RepositoryService repositoryService;
-	
-	/** The webfragment renderer. */
-	private final WebfragmentRenderer webfragmentRenderer;
+    /** The repository service. */
+    private final RepositoryService repositoryService;
+    
+    /** The webfragment renderer. */
+    private final WebfragmentRenderer webfragmentRenderer;
 
     private final AccountsConfigService ondemandAccountConfig;
 
-	/**
-	 * The Constructor.
-	 * 
-	 * @param organizationService
-	 *            the organization service
-	 * @param repositoryService
-	 *            the repository service
-	 */
-	public RootResource(OrganizationService organizationService, RepositoryService repositoryService, WebfragmentRenderer webfragmentRenderer, AccountsConfigService ondemandAccountConfig)
-	{
-		this.organizationService = organizationService;
-		this.repositoryService = repositoryService;
-		this.webfragmentRenderer = webfragmentRenderer;
+    /**
+     * The Constructor.
+     * 
+     * @param organizationService
+     *            the organization service
+     * @param repositoryService
+     *            the repository service
+     */
+    public RootResource(OrganizationService organizationService, RepositoryService repositoryService, WebfragmentRenderer webfragmentRenderer, AccountsConfigService ondemandAccountConfig)
+    {
+        this.organizationService = organizationService;
+        this.repositoryService = repositoryService;
+        this.webfragmentRenderer = webfragmentRenderer;
         this.ondemandAccountConfig = ondemandAccountConfig;
-	}
+    }
 
     /**
      * Gets the repository.
@@ -97,36 +97,36 @@ public class RootResource
         }
     }
 
-	/**
-	 * Gets the all repositories.
-	 * 
-	 * @return the all repositories
-	 */
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/repositories/")
-	public Response getAllRepositories()
-	{
-		List<Repository> activeRepositories = repositoryService.getAllRepositories();
-		return Response.ok(new RepositoryList(activeRepositories)).build();
-	}
+    /**
+     * Gets the all repositories.
+     * 
+     * @return the all repositories
+     */
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repositories/")
+    public Response getAllRepositories()
+    {
+        List<Repository> activeRepositories = repositoryService.getAllRepositories();
+        return Response.ok(new RepositoryList(activeRepositories)).build();
+    }
 
-	/**
-	 * Start repository sync.
-	 * 
-	 * @param id
-	 *            the id
-	 * @param payload
-	 *            the payload
-	 * @return the response
-	 */
-	@AnonymousAllowed
-	@POST
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/repository/{id}/sync")
-	public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
-	{
-		log.debug("Rest request to sync repository [{}] with payload [{}]", id, payload);
+    /**
+     * Start repository sync.
+     * 
+     * @param id
+     *            the id
+     * @param payload
+     *            the payload
+     * @return the response
+     */
+    @AnonymousAllowed
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repository/{id}/sync")
+    public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
+    {
+        log.debug("Rest request to sync repository [{}] with payload [{}]", id, payload);
 
         if (payload == null)
         {
@@ -136,29 +136,29 @@ public class RootResource
             repositoryService.sync(id, true);
         }
 
-		// ...
-		// redirect to Repository resource - that will contain sync
-		// message/status
-		UriBuilder ub = uriInfo.getBaseUriBuilder();
-		URI uri = ub.path("/repository/{id}").build(id);
+        // ...
+        // redirect to Repository resource - that will contain sync
+        // message/status
+        UriBuilder ub = uriInfo.getBaseUriBuilder();
+        URI uri = ub.path("/repository/{id}").build(id);
 
-		return Response.seeOther(uri).build();
-	}
+        return Response.seeOther(uri).build();
+    }
 
-	/**
-	 * Account info.
-	 * 
-	 * @param server
-	 *            the server
-	 * @param account
-	 *            the account
-	 * @return the response
-	 */
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/accountInfo")
-	public Response accountInfo(@QueryParam("server") String server, @QueryParam("account") String account)
-	{
+    /**
+     * Account info.
+     * 
+     * @param server
+     *            the server
+     * @param account
+     *            the account
+     * @return the response
+     */
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/accountInfo")
+    public Response accountInfo(@QueryParam("server") String server, @QueryParam("account") String account)
+    {
         if (StringUtils.isEmpty(server) || StringUtils.isEmpty(account))
         {
             log.debug("REST call /accountInfo contained empty server '{}' or account '{}' param",
@@ -167,108 +167,108 @@ public class RootResource
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-		AccountInfo accountInfo = organizationService.getAccountInfo(server, account);
+        AccountInfo accountInfo = organizationService.getAccountInfo(server, account);
 
-		if (accountInfo != null)
-		{
-			return Response.ok(accountInfo).build();
-		} else
-		{
-			return Response.status(Response.Status.NOT_FOUND).build();
-		}
-	}
+        if (accountInfo != null)
+        {
+            return Response.ok(accountInfo).build();
+        } else
+        {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
 
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/organization/{id}/syncRepoList")
-	public Response syncRepoList(@PathParam("id") String organizationId)
-	{
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/organization/{id}/syncRepoList")
+    public Response syncRepoList(@PathParam("id") String organizationId)
+    {
         if (organizationId == null)
         {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
         
-		Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
-		repositoryService.syncRepositoryList(organization);
-		return Response.noContent().build();
-	}
+        Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
+        repositoryService.syncRepositoryList(organization);
+        return Response.noContent().build();
+    }
 
-	@POST
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/org/{id}/autolink")
-	@Consumes({MediaType.APPLICATION_JSON})
-	public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, SentData autolink)
-	{
-		organizationService.enableAutolinkNewRepos(id, Boolean.parseBoolean(autolink.getPayload()));
-		return Response.noContent().build();
-	}
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/org/{id}/autolink")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, SentData autolink)
+    {
+        organizationService.enableAutolinkNewRepos(id, Boolean.parseBoolean(autolink.getPayload()));
+        return Response.noContent().build();
+    }
 
-	@POST
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/org/{id}/globalsmarts")
-	@Consumes({MediaType.APPLICATION_JSON})
-	public Response enableSmartcommitsOnNewRepos(@PathParam("id") int id,
-			SentData autoinvite)
-	{
-		organizationService.enableSmartcommitsOnNewRepos(id, Boolean.parseBoolean(autoinvite.getPayload()));
-		return Response.noContent().build();
-	}
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/org/{id}/globalsmarts")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response enableSmartcommitsOnNewRepos(@PathParam("id") int id,
+            SentData autoinvite)
+    {
+        organizationService.enableSmartcommitsOnNewRepos(id, Boolean.parseBoolean(autoinvite.getPayload()));
+        return Response.noContent().build();
+    }
 
-	@POST
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/repo/{id}/autolink")
-	@Consumes({MediaType.APPLICATION_JSON})
-	public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
-	{
-		repositoryService.enableRepository(id, Boolean.parseBoolean(autolink.getPayload()));
-		return Response.noContent().build();
-	}
-	
-	@POST
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/repo/{id}/smart")
-	@Consumes({MediaType.APPLICATION_JSON})
-	public Response enableSmartcommits(@PathParam("id") int id, SentData enabled)
-	{
-		// todo handle exceptions
-		repositoryService.enableRepositorySmartcommits(id, Boolean.parseBoolean(enabled.getPayload()));
-		return Response.noContent().build();
-	}
-	
-	@GET
-	@Produces({ MediaType.TEXT_HTML })
-	@Path("/fragment/{id}/defaultgroups")
-	public Response renderDefaultGroupsFragment(@PathParam("id") int orgId)
-	{
-		try
-		{
-			String html = webfragmentRenderer.renderDefaultGroupsFragment(orgId);
-			return Response.ok(html).build();
-			
-		} catch (IOException e)
-		{
-			log.error("Failed to get default groups for organization with id " + orgId, e);
-			return Response.serverError().build();
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repo/{id}/autolink")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
+    {
+        repositoryService.enableRepository(id, Boolean.parseBoolean(autolink.getPayload()));
+        return Response.noContent().build();
+    }
+    
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repo/{id}/smart")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response enableSmartcommits(@PathParam("id") int id, SentData enabled)
+    {
+        // todo handle exceptions
+        repositoryService.enableRepositorySmartcommits(id, Boolean.parseBoolean(enabled.getPayload()));
+        return Response.noContent().build();
+    }
+    
+    @GET
+    @Produces({ MediaType.TEXT_HTML })
+    @Path("/fragment/{id}/defaultgroups")
+    public Response renderDefaultGroupsFragment(@PathParam("id") int orgId)
+    {
+        try
+        {
+            String html = webfragmentRenderer.renderDefaultGroupsFragment(orgId);
+            return Response.ok(html).build();
+            
+        } catch (IOException e)
+        {
+            log.error("Failed to get default groups for organization with id " + orgId, e);
+            return Response.serverError().build();
 
-		}
-	}
-	
-	@GET
-	@Produces({ MediaType.TEXT_HTML })
-	@Path("/fragment/groups")
-	public Response renderDefaultGroupsFragment()
-	{
-		try
-		{
-			String html = webfragmentRenderer.renderGroupsFragment();
-			return Response.ok(html).build();
-			
-		} catch (IOException e)
-		{
-			log.error("Failed to get groups", e);
-			return Response.serverError().build();
-		}
-	}
+        }
+    }
+    
+    @GET
+    @Produces({ MediaType.TEXT_HTML })
+    @Path("/fragment/groups")
+    public Response renderGroupsFragment()
+    {
+        try
+        {
+            String html = webfragmentRenderer.renderGroupsFragmentForAddUser();
+            return Response.ok(html).build();
+            
+        } catch (IOException e)
+        {
+            log.error("Failed to get groups", e);
+            return Response.serverError().build();
+        }
+    }
 
     @POST
     @Path("/linkers/{onoff}")
@@ -291,8 +291,8 @@ public class RootResource
     @GET
     @AnonymousAllowed
     @Path("/integrated-accounts/reload")
-	@Consumes({MediaType.TEXT_PLAIN, MediaType.APPLICATION_FORM_URLENCODED})
-	@Produces({MediaType.TEXT_PLAIN})
+    @Consumes({MediaType.TEXT_PLAIN, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.TEXT_PLAIN})
     public Response reloadIntegratedAccountConfig()
     {
         try
