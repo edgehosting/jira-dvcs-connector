@@ -141,6 +141,8 @@ class ChangesetIterator implements Iterator<Changeset>
      */
     private Changeset getDetailedChangeset(final String node)
     {
+        // TODO Retrying is now done in bitbucket-client (github doesn't seem to need it). 
+        // I think we don't need to retry here anymore
         return new Retryer<Changeset>().retry(new Callable<Changeset>()
         {
             @Override

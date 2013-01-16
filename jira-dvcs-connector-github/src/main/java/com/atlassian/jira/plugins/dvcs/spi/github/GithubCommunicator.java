@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -50,7 +49,6 @@ import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
-import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.google.common.collect.Iterators;
 
 public class GithubCommunicator implements DvcsCommunicator
@@ -64,7 +62,7 @@ public class GithubCommunicator implements DvcsCommunicator
 
     protected final GithubClientProvider githubClientProvider;
 
-    private HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
+    private final HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
     
     public GithubCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
             GithubClientProvider githubClientProvider)
@@ -174,20 +172,8 @@ public class GithubCommunicator implements DvcsCommunicator
             throw new SourceControlException("could not get result", e);
         }
     }
-    
-    public PageIterator<RepositoryCommit> getPageIterator(final Repository repository, final String branch)
-    {
-        return new Retryer<PageIterator<RepositoryCommit>>().retry(new Callable<PageIterator<RepositoryCommit>>()
-        {
-            @Override
-            public PageIterator<RepositoryCommit> call()
-            {
-                return getPageIteratorInternal(repository, branch);
-            }
-        });
-    }
 
-    private PageIterator<RepositoryCommit> getPageIteratorInternal(Repository repository, String branch)
+    public PageIterator<RepositoryCommit> getPageIterator(Repository repository, String branch)
     {
         final CommitService commitService = githubClientProvider.getCommitService(repository);
 

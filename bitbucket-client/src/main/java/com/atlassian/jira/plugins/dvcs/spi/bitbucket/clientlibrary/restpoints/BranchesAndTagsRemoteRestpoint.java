@@ -33,7 +33,6 @@ public class BranchesAndTagsRemoteRestpoint
 
         return requestor.get(getBranchesUrl, null, new ResponseCallback<BitbucketBranchesAndTags>()
         {
-
             @Override
             public BitbucketBranchesAndTags onResponse(RemoteResponse response)
             {
