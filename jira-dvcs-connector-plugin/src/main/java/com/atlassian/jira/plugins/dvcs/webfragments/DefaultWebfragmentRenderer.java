@@ -21,6 +21,7 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.templaterenderer.RenderingException;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.opensymphony.util.TextUtils;
 
@@ -82,26 +83,17 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
 	}
 
 	@Override
-	public String renderGroupsFragment() throws IOException
+	public String renderGroupsFragmentForAddUser() throws IOException
 	{
 		Map<String,Object> model = new HashMap<String, Object>();
         StringWriter stringWriter = new StringWriter();
 
-        try
-        {
-            addBitbucketOrganizations(model);
-
-            model.put("textutils", new TextUtils());
-            model.put("baseurl", appProperties.getBaseUrl());
-
-            templateRenderer.render("/templates/fragments/groups-fragment.vm", model, stringWriter);
-
-        } catch (Exception e)
-        {
-            log.warn("Error while rendering DVCS extension fragment for add user form.", e);
-            stringWriter = new StringWriter(); // reset writer so no broken
-                                               // output goes out TODO should we print the error message to the writer?
-        }
+        addBitbucketOrganizations(model);
+        
+        model.put("textutils", new TextUtils());
+        model.put("baseurl", appProperties.getBaseUrl());
+        
+        templateRenderer.render("/templates/fragments/groups-fragment.vm", model, stringWriter);
 
         return stringWriter.toString();
     }
@@ -145,7 +137,7 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
             }
         }
 
-        model.put("bbOrgaizations", all);
+        model.put("bbOrganizations", all);
         model.put("defaultSlugs", defaultSlugs);
 
         if (!listOfErrors.isEmpty())
