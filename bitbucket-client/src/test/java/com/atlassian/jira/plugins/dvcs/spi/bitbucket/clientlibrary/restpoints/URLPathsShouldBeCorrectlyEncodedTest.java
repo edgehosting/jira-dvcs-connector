@@ -42,7 +42,7 @@ public class URLPathsShouldBeCorrectlyEncodedTest
         accountRemoteRestpoint.getUser("fake User");
     }
 
-    @Test(expectedExceptions = BitbucketRequestException.class, expectedExceptionsMessageRegExp = "Error response code during the request : 400")
+    @Test(expectedExceptions = BitbucketRequestException.BadRequest_400.class)
     public void performingPOSTRequestWithOAuthAuthentication_ShouldNotThrowProtocolException()
     {
         // performing POST with not properly encoded URL used to return HTTP 302 status code
