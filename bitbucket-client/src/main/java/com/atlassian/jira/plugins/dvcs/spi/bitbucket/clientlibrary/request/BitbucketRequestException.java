@@ -13,7 +13,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 public class BitbucketRequestException extends RuntimeException
 {
 
-	private static final long serialVersionUID = 2834085757547295408L;
+    private static final long serialVersionUID = 2834085757547295408L;
 
 	public BitbucketRequestException()
 	{
@@ -30,6 +30,11 @@ public class BitbucketRequestException extends RuntimeException
 		super(message, cause);
 	}
 
+	
+	public static final class BadRequest_400 extends BitbucketRequestException
+	{
+	    
+	}
     
     public static final class Unauthorized_401 extends BitbucketRequestException
     {

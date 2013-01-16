@@ -27,7 +27,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Retryer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
 
 /**
  * BaseRemoteRequestor
@@ -86,7 +86,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private <T> T getWithRetry(final String uri, final Map<String, String> parameters,
             final ResponseCallback<T> callback)
     {
-        return new Retryer<T>().retry(new Callable<T>()
+        return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
             @Override
             public T call() throws Exception
@@ -100,7 +100,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private <T> T deleteWithRetry(final String uri, final Map<String, String> parameters,
             final ResponseCallback<T> callback)
     {
-        return new Retryer<T>().retry(new Callable<T>()
+        return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
             @Override
             public T call() throws Exception
@@ -114,7 +114,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private <T> T postWithRetry(final String uri, final Map<String, String> parameters,
             final ResponseCallback<T> callback)
     {
-        return new Retryer<T>().retry(new Callable<T>()
+        return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
             @Override
             public T call() throws Exception
@@ -128,7 +128,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private <T> T putWithRetry(final String uri, final Map<String, String> parameters,
             final ResponseCallback<T> callback)
     {
-        return new Retryer<T>().retry(new Callable<T>()
+        return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
             @Override
             public T call() throws Exception
@@ -250,6 +250,9 @@ public class BaseRemoteRequestor implements RemoteRequestor
              
             switch (statusCode)
             {
+            case HttpStatus.SC_BAD_REQUEST:
+                toBeThrown = new BitbucketRequestException.BadRequest_400();
+                
             case HttpStatus.SC_UNAUTHORIZED:
                 toBeThrown = new BitbucketRequestException.Unauthorized_401();
 
