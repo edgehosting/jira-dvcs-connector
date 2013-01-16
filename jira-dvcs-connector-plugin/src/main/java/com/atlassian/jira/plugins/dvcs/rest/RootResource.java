@@ -252,6 +252,23 @@ public class RootResource
 
 		}
 	}
+	
+	@GET
+	@Produces({ MediaType.TEXT_HTML })
+	@Path("/fragment/groups")
+	public Response renderDefaultGroupsFragment()
+	{
+		try
+		{
+			String html = webfragmentRenderer.renderGroupsFragment();
+			return Response.ok(html).build();
+			
+		} catch (IOException e)
+		{
+			log.error("Failed to get groups", e);
+			return Response.serverError().build();
+		}
+	}
 
     @POST
     @Path("/linkers/{onoff}")
