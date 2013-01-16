@@ -240,6 +240,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private RemoteResponse checkAndCreateRemoteResponse(DefaultHttpClient client, HttpResponse httpResponse) throws IOException
     {
+        
         RemoteResponse response = new RemoteResponse();
 
         int statusCode = httpResponse.getStatusLine().getStatusCode();
@@ -252,15 +253,16 @@ public class BaseRemoteRequestor implements RemoteRequestor
             {
             case HttpStatus.SC_BAD_REQUEST:
                 toBeThrown = new BitbucketRequestException.BadRequest_400();
-                
+                break;
             case HttpStatus.SC_UNAUTHORIZED:
                 toBeThrown = new BitbucketRequestException.Unauthorized_401();
-
+                break;
             case HttpStatus.SC_FORBIDDEN:
                 toBeThrown = new BitbucketRequestException.Forbidden_403();
-
+                break;
             case HttpStatus.SC_NOT_FOUND:
                 toBeThrown = new BitbucketRequestException.NotFound_404();
+                break;
             }
             
             // log.error("Failed to properly execute request [" + connection.getRequestMethod() + "] : " + connection, toBeThrown);
