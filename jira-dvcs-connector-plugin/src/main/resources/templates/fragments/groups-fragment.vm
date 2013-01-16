@@ -1,30 +1,11 @@
 #if(!$bbSupressRender)
 
-	#if($errors)
-    <script>
-        AJS.messages.warning("#groupErrors", {
-   		   title:"Failed to get groups for the following accounts",
-   		   body:"<p>\
-   		   			#foreach ($errorOrg in $errors)
-   		   			<div style=\"padding-top: 1px; margin-bottom: 4px; font-weight: bold; font-size: 1.1em; padding-left: 25px; background: url('$baseurl/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png') no-repeat transparent\">\
-		    			<span><a href='$errorOrg.organizationUrl'>$textutils.htmlEncode($errorOrg.name)</a></span>\
-		    		</div>\
-   		   			#end
-   		   	    </p>",
-   		   closeable: false
-			   });
-	</script>
-	
-	<div id="groupErrors"/>
-    #end
-
 	#if(!$defaultSlugs.isEmpty()) 
 	<fieldset class="field-group" id="dvcs-bitucket-extension">
 	  
-	  
 	  <label>Bitbucket Accounts</label>
 
-	  #foreach ($bbOrg in $bbOrgaizations)
+	  #foreach ($bbOrg in $bbOrganizations)
 	    
 	  	#if($bbOrg.getGroups() && !$bbOrg.getGroups().isEmpty())
 	
@@ -37,24 +18,37 @@
 		    	 #foreach ($group in $bbOrg.getGroups())
 	
 					#if($defaultSlugs.get($bbOrg.id).contains($group.slug))
-					 			#set( $selectedGroup = "checked='checked'")
-					 			#else
-					 			#set( $selectedGroup = "")
+                        #set( $selectedGroup = "checked='checked'")
+                    #else
+                        #set( $selectedGroup = "")
 					#end	    	 
 		    	 
 		    	 	<div style="margin-left: 25px; margin-bottom: 3px">
 		    	 		<input $!selectedGroup id="dvcs_org_selector_${bbOrg.id}_$group.slug" class="checkbox" type="checkbox" value="${bbOrg.id}:$group.slug" name="dvcs_org_selector" />
 		    	 		<label for="dvcs_org_selector_${bbOrg.id}_$group.slug"> $textutils.htmlEncode($group.niceName) </label>
 		    	 	</div>
-		    	 	
 		    	 #end
 		  	</div>
-		  	
 	  	#end
-	  	
 	  #end
 	
 	</fieldset>
 	#end
+
+    #if($errors)
+    <div class="aui-message warning">
+        <p class="title">
+            <span class="aui-icon icon-warning"></span>
+            <strong>Failed to get groups for the following accounts</strong>
+        </p>
+        <p>
+            #foreach ($errorOrg in $errors)
+                <div style="padding-top: 1px; margin-bottom: 4px; font-weight: bold; font-size: 1.1em; padding-left: 25px; background: url('$baseurl/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png') no-repeat transparent">
+                    <span><a href='$errorOrg.organizationUrl'>$textutils.htmlEncode($errorOrg.name)</a></span>
+                </div>
+            #end
+        </p>
+    </div>
+    #end
 
 #end
