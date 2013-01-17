@@ -250,7 +250,7 @@
                                 #if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
                                     <li class="dropdown-item">
                                       <div class="dvcs-gearmenu-nohide">
-                                        <a style="display:block;" href="javascript:void(0)" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id);"> Configure default groups</a>
+                                        <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id); return false;"> Configure default groups</a>
                                       </div>
                                     </li>
                                  #end
