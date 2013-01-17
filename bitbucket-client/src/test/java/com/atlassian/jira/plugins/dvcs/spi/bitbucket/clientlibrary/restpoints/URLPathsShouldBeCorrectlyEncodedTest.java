@@ -1,5 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Date;
+
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -41,11 +45,28 @@ public class URLPathsShouldBeCorrectlyEncodedTest
         // performing GET with not properly encoded URL used to throw ProtocolException
         accountRemoteRestpoint.getUser("fake User");
     }
-
+    
     @Test(expectedExceptions = BitbucketRequestException.BadRequest_400.class)
     public void performingPOSTRequestWithOAuthAuthentication_ShouldNotThrowProtocolException()
     {
         // performing POST with not properly encoded URL used to return HTTP 302 status code
         accountRemoteRestpoint.inviteUser("a", "b", "c", "d e");
+    }
+
+    @Test()
+    public void performingPOSTRequestWithOAuthAuthentication() throws UnsupportedEncodingException
+    {
+        BitbucketRemoteClient bitbucketRemoteClientWithOAuthAuth =
+                new BitbucketRemoteClient(new ThreeLegged10aOauthProvider(BitbucketRemoteClient.BITBUCKET_URL,
+                                                                          "pJyXFLwRqM5DTGT8eZ",
+                                                                          "mRPP9VmWqqZ38uhHMEZbPuP4JSkPkfb9",
+                                                                          "evECs8jFrMMLWwLdq8&pYqB8EFRqVWksMBWjTrhmT5YCjs47gxU"));
+
+        AccountRemoteRestpoint rest = bitbucketRemoteClientWithOAuthAuth.getAccountRest();
+        rest.modifyService("369581", "hotovo", "binu-facebook-application", "http:/some.url/com" + new Date());
+
+        // performing POST with not properly encoded URL used to return HTTP 302 status code
+        String email = URLEncoder.encode("klinec+test5@gmail.com", "UTF-8");
+        rest.inviteUser("hotovo", email, "binu", "hotovo");
     }
 }
