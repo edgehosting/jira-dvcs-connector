@@ -3,7 +3,7 @@
 	#if(!$defaultSlugs.isEmpty()) 
 	<fieldset class="field-group" id="dvcs-bitucket-extension">
 	  
-	  <label>Bitbucket Accounts</label>
+	  <label>$i18n.getText("com.atlassian.jira.plugins.dvcs.adduser.accounts.label")</label>
 
 	  #foreach ($bbOrg in $bbOrganizations)
 	    
@@ -39,7 +39,7 @@
     <div class="aui-message warning">
         <p class="title">
             <span class="aui-icon icon-warning"></span>
-            <strong>Failed to get groups for the following accounts</strong>
+            <strong>$i18n.getText("com.atlassian.jira.plugins.dvcs.adduser.accounts.failed")</strong>
         </p>
         <p>
             #foreach ($errorOrg in $errors)
