@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoriesEnvelope;
@@ -50,27 +47,12 @@ public class AccountRemoteRestpoint {
      */
     public void inviteUser(String owner, String userEmail, String repositoryOwnerToInvite, String repositorySlugToInvite)
     {
-        String inviteUserUrl = URLPathFormatter.format("/users/%s/invitations/%s/%s/%s",
+        String inviteUserUrl = String.format("/users/%s/invitations/%s/%s/%s",
                                                        owner,
                                                        userEmail,
                                                        repositoryOwnerToInvite,
                                                        repositorySlugToInvite);
         
         requestor.put(inviteUserUrl, null, ResponseCallback.EMPTY);
-    }
-
-
-    /**
-     * Testing testing 1 2 3
-     */
-    public void modifyService(String serviceId, String owner, String slug, String serviceUrl)
-    {
-        String addServiceUrl = URLPathFormatter.format("/repositories/%s/%s/services/%s", owner, slug, serviceId);
-
-        Map<String, String> addServiceParameters = new HashMap<String, String>();
-        addServiceParameters.put("type", "POST");
-        addServiceParameters.put("URL", serviceUrl);
-
-        requestor.put(addServiceUrl, addServiceParameters, ResponseCallback.EMPTY);
     }
 }

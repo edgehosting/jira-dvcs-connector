@@ -1,9 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Date;
-
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -46,27 +42,19 @@ public class URLPathsShouldBeCorrectlyEncodedTest
         accountRemoteRestpoint.getUser("fake User");
     }
     
-    @Test(expectedExceptions = BitbucketRequestException.BadRequest_400.class)
-    public void performingPOSTRequestWithOAuthAuthentication_ShouldNotThrowProtocolException()
+    @Test(expectedExceptions = BitbucketRequestException.Forbidden_403.class)
+    public void performingPUTRequestWithOAuthAuthentication_ShouldNotThrowProtocolException()
     {
-        // performing POST with not properly encoded URL used to return HTTP 302 status code
-        accountRemoteRestpoint.inviteUser("a", "b", "c", "d e");
+        accountRemoteRestpoint.inviteUser("hotovo", "some_email@gmail.com", "hotovo", "binu");
     }
-
-    @Test()
-    public void performingPOSTRequestWithOAuthAuthentication() throws UnsupportedEncodingException
+    
+    
+    /**
+     * If you use encoded email address Bitbucket returns 302 - redirection to log in page (wtf) 
+     */
+    @Test(expectedExceptions = BitbucketRequestException.class, expectedExceptionsMessageRegExp = "Error response code during the request : 302")
+    public void performingPUTRequestWithOAuthAuthentication_ShouldThrow302Exception()
     {
-        BitbucketRemoteClient bitbucketRemoteClientWithOAuthAuth =
-                new BitbucketRemoteClient(new ThreeLegged10aOauthProvider(BitbucketRemoteClient.BITBUCKET_URL,
-                                                                          "pJyXFLwRqM5DTGT8eZ",
-                                                                          "mRPP9VmWqqZ38uhHMEZbPuP4JSkPkfb9",
-                                                                          "evECs8jFrMMLWwLdq8&pYqB8EFRqVWksMBWjTrhmT5YCjs47gxU"));
-
-        AccountRemoteRestpoint rest = bitbucketRemoteClientWithOAuthAuth.getAccountRest();
-        rest.modifyService("369581", "hotovo", "binu-facebook-application", "http:/some.url/com" + new Date());
-
-        // performing POST with not properly encoded URL used to return HTTP 302 status code
-        String email = URLEncoder.encode("klinec+test5@gmail.com", "UTF-8");
-        rest.inviteUser("hotovo", email, "binu", "hotovo");
+        accountRemoteRestpoint.inviteUser("hotovo", "some_email%40gmail.com", "hotovo", "binu");
     }
 }
