@@ -41,11 +41,20 @@ public class URLPathsShouldBeCorrectlyEncodedTest
         // performing GET with not properly encoded URL used to throw ProtocolException
         accountRemoteRestpoint.getUser("fake User");
     }
-
-    @Test(expectedExceptions = BitbucketRequestException.BadRequest_400.class)
-    public void performingPOSTRequestWithOAuthAuthentication_ShouldNotThrowProtocolException()
+    
+    @Test(expectedExceptions = BitbucketRequestException.Forbidden_403.class)
+    public void performingPUTRequestWithOAuthAuthentication_ShouldNotThrowProtocolException()
     {
-        // performing POST with not properly encoded URL used to return HTTP 302 status code
-        accountRemoteRestpoint.inviteUser("a", "b", "c", "d e");
+        accountRemoteRestpoint.inviteUser("hotovo", "some_email@gmail.com", "hotovo", "binu");
+    }
+    
+    
+    /**
+     * If you use encoded email address Bitbucket returns 302 - redirection to log in page (wtf) 
+     */
+    @Test(expectedExceptions = BitbucketRequestException.class, expectedExceptionsMessageRegExp = "Error response code during the request : 302")
+    public void performingPUTRequestWithOAuthAuthentication_ShouldThrow302Exception()
+    {
+        accountRemoteRestpoint.inviteUser("hotovo", "some_email%40gmail.com", "hotovo", "binu");
     }
 }

@@ -47,7 +47,7 @@ public class AccountRemoteRestpoint {
      */
     public void inviteUser(String owner, String userEmail, String repositoryOwnerToInvite, String repositorySlugToInvite)
     {
-		String inviteUserUrl = URLPathFormatter.format("/users/%s/invitations/%s/%s/%s",
+        String inviteUserUrl = String.format("/users/%s/invitations/%s/%s/%s",
                                                        owner,
                                                        userEmail,
                                                        repositoryOwnerToInvite,

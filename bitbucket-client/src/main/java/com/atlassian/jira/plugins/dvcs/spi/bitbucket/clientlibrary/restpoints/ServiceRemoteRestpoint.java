@@ -15,7 +15,7 @@ import com.google.gson.reflect.TypeToken;
 
 public class ServiceRemoteRestpoint
 {
-    private RemoteRequestor requestor;
+    private final RemoteRequestor requestor;
 
     public ServiceRemoteRestpoint(RemoteRequestor remoteRequestor)
     {
