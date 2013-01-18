@@ -1,39 +1,32 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import javax.inject.Inject;
+import static org.hamcrest.Matchers.is;
 
 import org.openqa.selenium.By;
 
-import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Conditions;
 import com.atlassian.pageobjects.elements.query.Poller;
+import com.atlassian.pageobjects.elements.query.TimedCondition;
 
 /**
  * Represents the page to link repositories to projects.
  */
 public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizationsPage
 {
-    @Inject
-    PageBinder pageBinder;
-
     @ElementBy(id = "oauthClientId")
     PageElement oauthKeyInput;
 
     @ElementBy(id = "oauthSecret")
     PageElement oauthSecretInput;
 
-//    @ElementBy(id = "organization")
-//    PageElement teamOrUserUserAccountInput;
-
-    @ElementBy(tagName = "title")
-    PageElement htmlHeadTitle;
+    @ElementBy(id = "atlassian-token")
+    PageElement atlassianTokenMeta;
 
 
     @Override
-    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String url, String organizationAccount,
-            boolean autoSync)
+    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -42,18 +35,20 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         organization.clear().type(organizationAccount);
 
-        if (!autoSync) {
+        if (!autoSync)
+        {
             autoLinkNewRepos.click();
         }
 
         addOrgButton.click();
 
-        Poller.waitUntilTrue(htmlHeadTitle.timed().hasText("Bitbucket"));
+        Poller.waitUntilFalse(atlassianTokenMeta.timed().isPresent());
+        pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grantAccess();
+        Poller.waitUntilTrue(atlassianTokenMeta.timed().isPresent());
 
-        pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grandAccess();
-
-        if (autoSync) {
-            checkSyncProcessSuccess();
+        if (autoSync)
+        {
+            JiraPageUtils.checkSyncProcessSuccess(jiraTestedProduct);
         }
 
         return this;
@@ -76,7 +71,9 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         addOrgButton.click();
 
-        Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed().hasText("Error!"));
+        TimedCondition hasText = messageBarDiv.find(By.tagName("strong")).timed().hasText("Error!");
+        
+        Poller.waitUntil("Expected Error message while connecting repository", hasText, is(true), Poller.by(30000));
 
         return this;
     }
@@ -85,7 +82,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
      * {@inheritDoc}
      */
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2(String url)
+    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2()
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();

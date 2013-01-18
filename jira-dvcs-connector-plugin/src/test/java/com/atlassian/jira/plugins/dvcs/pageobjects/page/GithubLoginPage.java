@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
@@ -9,11 +10,14 @@ import com.atlassian.pageobjects.elements.PageElement;
  */
 public class GithubLoginPage implements Page
 {
-    public static final String PAGE_URL = "https://github.com/login";
-    public static final String LOGOUT_ACTION_URL = "https://github.com/logout";
-
+    public static final String PAGE_PATH = "/login";
+    public static final String PAGE_URL = "https://github.com" + PAGE_PATH;
+    
     @ElementBy(id = "login_field")
     PageElement githubWebLoginField;
+    
+    @ElementBy(id = "logout")
+    PageElement githubWebLogoutLink;
 
     @ElementBy(id = "password")
     PageElement githubWebPasswordField;
@@ -29,8 +33,22 @@ public class GithubLoginPage implements Page
 
     public void doLogin()
     {
-        githubWebLoginField.type("jirabitbucketconnector");
-        githubWebPasswordField.type("jirabitbucketconnector1");
+        doLogin("jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+    }
+    
+    public void doLogin(String username, String password)
+    {
+        githubWebLoginField.type(username);
+        githubWebPasswordField.type(password);
         githubWebSubmitButton.click();
+    }
+    
+    /**
+     * Logout is done by POST method. It's not enough to go to /logout page. We
+     * need to submit a form that gets us there
+     */
+    public void doLogout()
+    {
+        githubWebLogoutLink.click();
     }
 }

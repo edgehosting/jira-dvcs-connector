@@ -2,8 +2,6 @@ package com.atlassian.jira.plugins.dvcs.util;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.util.URIUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -11,8 +9,6 @@ import java.net.URLEncoder;
 public class CustomStringUtils
 {
 
-    // TODO: check all calls this method if correctly calls method encode() not
-    // encodeUriPath() !!!
     public static String encode(String str)
     {
         if (str == null)
@@ -39,18 +35,6 @@ public class CustomStringUtils
         } else
         {
             return ChangesetFileAction.MODIFIED;
-        }
-    }
-
-    public static String encodeUriPath(String str)
-    {
-        try
-        {
-            return URIUtil.encodePath(str);
-        } catch (URIException e)
-        {
-            e.printStackTrace();
-            return "invalid-path";
         }
     }
 }

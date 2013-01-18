@@ -4,7 +4,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
@@ -12,6 +11,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 
@@ -71,7 +71,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubOrganization",
 				url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
-		return getRedirect(githubAuthorizeUrl);
+		return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
 	}
 
 	@Override
@@ -111,6 +111,11 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 		} catch (SourceControlException sce)
 		{
 			addErrorMessage(sce.getMessage());
+			log.warn(sce.getMessage());
+			if ( sce.getCause() != null )
+			{
+				log.warn("Caused by: " + sce.getCause().getMessage());
+			}
 			return INPUT;
 		
 		} catch (Exception e) {
@@ -140,14 +145,9 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
 			log.debug("Failed adding the account: [" + e.getMessage() + "]");
 			return INPUT;
-		} catch (InvalidCredentialsException e)
-		{
-			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
-			log.debug("Invalid credentials : Failed adding the account: [" + e.getMessage() + "]");
-			return INPUT;
 		}
 
-                return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
 	}
 
 	private String requestAccessToken()

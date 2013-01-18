@@ -1,10 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.Map;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
+import org.apache.http.auth.AuthenticationException;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * BasicAuthRemoteRequestor
@@ -33,11 +36,14 @@ public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 	}
 
 	@Override
-	protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method, Map<String, String> params) throws IOException
+	protected void onConnectionCreated(DefaultHttpClient client, HttpRequestBase method, Map<String, String> params)
+	        throws IOException
 	{
-		connection.setRequestProperty(
-				"Authorization",
-				"Basic " + SystemUtils.encodeUsingBase64(username + ":" + password)
-								.replaceAll("\n", "").replaceAll("\r", ""));
+	    UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
+		try {
+			method.addHeader(new BasicScheme().authenticate(creds, method));
+		} catch (AuthenticationException e) {
+			// This should not happen for BasicScheme
+		}
 	}
 }

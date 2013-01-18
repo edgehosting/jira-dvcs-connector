@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.jira.plugins.dvcs.conditions.GithubEnterpriseEnabledCondition;
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -51,20 +52,15 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	@RequiresXsrfCheck
 	protected String doExecute() throws Exception
 	{
-		logger.debug("Configure orgazniation default action.");
-
+		logger.debug("Configure organization default action.");
 		return INPUT;
 	}
 
 	public Organization[] loadOrganizations()
 	{
-
 		List<Organization> allOrganizations = organizationService.getAll(true);
-		
 		sort(allOrganizations);
-		
 		return allOrganizations.toArray(new Organization[]{});
-		
 	}
 
     private void sort(List<Organization> allOrganizations)
@@ -80,10 +76,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
                     return -1;
                 } else if (StringUtils.isNotBlank((org2.getCredential().getOauthKey())))
                 {
-                    {
-                        return 1;
-                    }
-
+                    return 1;
                 }
                 return 0;
             }
@@ -105,21 +98,33 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 		return featureManager.isEnabled(CoreFeatures.ON_DEMAND);
 	}
 	
-	public boolean isUserInvitationsEnabled() {
-	    
-	    return featuresDetector.isUserInvitationsEnabled();
-	    
-	}
+    public boolean isUserInvitationsEnabled()
+    {
+        return featuresDetector.isUserInvitationsEnabled();
+    }
 	
-	public boolean isGithubOauthRequired() {
-		return !communicatorProvider.getCommunicator("github").isOauthConfigured();
-	}
-	
-	public boolean isBitbucketOauthRequired() {
-		return !communicatorProvider.getCommunicator("bitbucket").isOauthConfigured();
-	}
-	
-	public boolean isIntegratedAccount(Organization org) {
-	    return org.isIntegratedAccount();
-	}
+    public boolean isGithubOauthRequired()
+    {
+        return !communicatorProvider.getCommunicator("github").isOauthConfigured();
+    }
+
+    public boolean isGithubEnterpriseOauthRequired()
+    {
+        return !communicatorProvider.getCommunicator("githube").isOauthConfigured();
+    }
+
+    public boolean isBitbucketOauthRequired()
+    {
+        return !communicatorProvider.getCommunicator("bitbucket").isOauthConfigured();
+    }
+
+    public boolean isGithubEnterpriseEnabled()
+    {
+        return GithubEnterpriseEnabledCondition.isGitHubEnterpriseEnabled();
+    }
+
+    public boolean isIntegratedAccount(Organization org)
+    {
+        return org.isIntegratedAccount();
+    }
 }

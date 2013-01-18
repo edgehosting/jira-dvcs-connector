@@ -14,7 +14,8 @@ import org.openqa.selenium.By;
  */
 public class GithubRegisterOAuthAppPage implements Page
 {
-    public static final String PAGE_URL = "https://github.com/settings/applications/new";
+    public static final String PAGE_PATH = "/settings/applications/new";
+    public static final String PAGE_URL = "https://github.com" + PAGE_PATH;
 
     @ElementBy(name = "oauth_application[name]")
     PageElement oauthApplicationName;

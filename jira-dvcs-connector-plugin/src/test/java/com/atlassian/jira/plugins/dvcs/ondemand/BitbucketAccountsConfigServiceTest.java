@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
@@ -10,16 +9,10 @@ import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginController;
 import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
 import com.atlassian.sal.api.scheduling.PluginScheduler;
-import junit.framework.Assert;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -27,7 +20,12 @@ import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountI
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.Links;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import static org.fest.assertions.api.Assertions.*;
+
 public class BitbucketAccountsConfigServiceTest
 {
 
@@ -59,9 +57,10 @@ public class BitbucketAccountsConfigServiceTest
         super();
     }
 
-    @Before
+    @BeforeMethod
     public void setUp()
     {
+        MockitoAnnotations.initMocks(this);
 
         testedService = new BitbucketAccountsConfigService(configProvider, organizationService, pluginScheduler, pluginController, pluginAccessor);
 
@@ -84,9 +83,9 @@ public class BitbucketAccountsConfigServiceTest
 
         Organization savedOrg = organizationCaptor.getValue();
 
-        Assert.assertEquals("A", savedOrg.getName());
-        Assert.assertEquals("K", savedOrg.getCredential().getOauthKey());
-        Assert.assertEquals("S", savedOrg.getCredential().getOauthSecret());
+        assertThat(savedOrg.getName()).isEqualTo("A");
+        assertThat(savedOrg.getCredential().getOauthKey()).isEqualTo("K");
+        assertThat(savedOrg.getCredential().getOauthSecret()).isEqualTo("S");
     }
 
     @Test

@@ -1,20 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.Executors;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -26,10 +20,14 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProces
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import static org.fest.assertions.api.Assertions.*;
+
 /**
  * @author Martin Skurla
  */
-@RunWith(MockitoJUnitRunner.class)
 public final class TestDefaultSynchronizer
 {
 	@Mock
@@ -52,27 +50,31 @@ public final class TestDefaultSynchronizer
 	private final Changeset changesetWithoutJIRAIssue = new Changeset(123, "node", "message without JIRA issue",
 			new Date());
 
+    @BeforeMethod
+    private void initializeMocks()
+    {
+        MockitoAnnotations.initMocks(this);
+    }
+
 	@Test
-	public void softSynchronization_ShouldSaveOneChangeset() throws InterruptedException
+	public void softSynchronization_ShouldSaveOneChangesetWithIssueKey() throws InterruptedException
 	{
-		Date lastCommitDate = new Date();
-
-		when(repositoryMock.getLastCommitDate()).thenReturn(lastCommitDate);
-
-		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(lastCommitDate))).thenReturn(
+		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(
 				Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
 		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
-				mock(RepositoryService.class), changesetServiceMock, true); // soft sync
+                mock(RepositoryService.class), changesetServiceMock, true); // soft sync
 
 		Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
 		synchronizer.synchronize(repositoryMock, synchronisationOperation);
 
 		waitUntilProgressEnds(synchronizer);
-       
-		verify(changesetServiceMock, times(1)).save(savedChangesetCaptor.capture());
+       	
+		verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
         
-		assertThat(savedChangesetCaptor.getValue().getIssueKey(), is("MES-123"));
+		// one changeset is saved with issue key, another without
+		assertThat(savedChangesetCaptor.getAllValues().get(0).getIssueKey()).isEqualTo("MES-123");
+		assertThat(savedChangesetCaptor.getAllValues().get(1).getIssueKey()).isEqualTo("NON_EXISTING-0");
 	}
     
 	private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException

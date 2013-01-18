@@ -1,18 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
@@ -21,7 +16,10 @@ import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 @SuppressWarnings("all")
 public class SmartcommitOperationTest
 {
@@ -42,9 +40,11 @@ public class SmartcommitOperationTest
 		super();
 	}
 
-	@Before
-	public void setUp() {
-		
+	@BeforeMethod
+	public void setUp()
+    {
+        MockitoAnnotations.initMocks(this);
+
 		changesetDao = new ChangesetDaoImpl(activeObjectsMock);
 		
 		operation = new SmartcommitOperation(changesetDao, commitMessageParser, smartcommitsServiceMock);
@@ -65,8 +65,6 @@ public class SmartcommitOperationTest
 			}
 
 		}).when(activeObjectsMock).stream(Mockito.isA(Class.class), Mockito.isA(Query.class), Mockito.isA(EntityStreamCallback.class));
-		
-		//
 		
 		ChangesetMapping sampleChangesetMapping = (ChangesetMapping) sampleChangesetMapping();
 

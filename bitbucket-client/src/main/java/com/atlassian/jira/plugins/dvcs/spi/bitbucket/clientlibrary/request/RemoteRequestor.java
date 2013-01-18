@@ -5,13 +5,24 @@ import java.util.Map;
 public interface RemoteRequestor
 {
 
-	RemoteResponse get(String uri, Map<String, String> parameters);
-	
-	RemoteResponse post(String uri,  Map<String, String> parameters); 
-	
-	RemoteResponse put(String uri, Map<String, String> parameters);
-	
-	RemoteResponse delete(String uri); 
-	
+    /**
+     * @param uri correctly encoded uri required
+     */
+    <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback);
+
+    /**
+     * @param uri correctly encoded uri required
+     */
+    <T> T post(String uri,  Map<String, String> parameters, ResponseCallback<T> callback);
+
+    /**
+     * @param uri correctly encoded uri required
+     */
+    <T> T put(String uri, Map<String, String> parameters, ResponseCallback<T> callback);
+
+    /**
+     * @param uri correctly encoded uri required
+     */
+    <T> T delete(String uri, Map<String, String> parameters, ResponseCallback<T> callback);
 }
 

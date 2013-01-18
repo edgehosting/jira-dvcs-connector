@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoriesEnvelope;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 
 /**
  * AccountRemoteRestpoint
@@ -20,14 +21,20 @@ public class AccountRemoteRestpoint {
         this.requestor = remoteRequestor;
     }
 
-    
-    public BitbucketAccount getUser(String owner)
+
+    // https://confluence.atlassian.com/display/BITBUCKET/account+Resource#accountResource-GETtheaccountprofile
+    public BitbucketAccount getUser(String ownerOrEmail)
     {
-        String getUserUrl = String.format("/users/%s", owner);
+        String getUserUrl = URLPathFormatter.format("/users/%s", ownerOrEmail);
         
-        RemoteResponse response = requestor.get(getUserUrl, null);
-        
-        return ClientUtils.fromJson(response.getResponse(), BitbucketRepositoriesEnvelope.class).getUser();
+        return requestor.get(getUserUrl, null, new ResponseCallback<BitbucketAccount>()
+        {
+            @Override
+            public BitbucketAccount onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), BitbucketRepositoriesEnvelope.class).getUser();
+            }
+        });
     }
     
     /**
@@ -40,12 +47,12 @@ public class AccountRemoteRestpoint {
      */
     public void inviteUser(String owner, String userEmail, String repositoryOwnerToInvite, String repositorySlugToInvite)
     {
-		String inviteUserUrl = String.format("/users/%s/invitations/%s/%s/%s",
-                                             owner,
-                                             userEmail,
-                                             repositoryOwnerToInvite,
-                                             repositorySlugToInvite);
+        String inviteUserUrl = String.format("/users/%s/invitations/%s/%s/%s",
+                                                       owner,
+                                                       userEmail,
+                                                       repositoryOwnerToInvite,
+                                                       repositorySlugToInvite);
         
-        requestor.put(inviteUserUrl, null);
+        requestor.put(inviteUserUrl, null, ResponseCallback.EMPTY);
     }
 }

@@ -9,7 +9,6 @@ import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
@@ -20,6 +19,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.google.common.collect.Sets;
@@ -84,9 +84,8 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 			String authUrl = service.getAuthorizationUrl(requestToken);
 
 			request.getSession().setAttribute("requestToken", requestToken);
-			
-			return getRedirect(authUrl);
 
+			return SystemUtils.getRedirect(this, authUrl, true);
 		} catch (Exception e)
 		{
 		    log.error("Error redirect user to bitbucket server.", e);
@@ -105,8 +104,11 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
 	private OAuthService createBitbucketOAuthScribeService(String callbackUrl)
 	{
-		ServiceBuilder sb = new ServiceBuilder().apiKey(oauth.getClientId()).signatureType(SignatureType.Header)
-				.apiSecret(oauth.getClientSecret()).provider(new Bitbucket10aScribeApi(url)).debugStream(new DebugOutputStream(log));
+		ServiceBuilder sb = new ServiceBuilder().apiKey(oauth.getClientId())
+		                                        .signatureType(SignatureType.Header)
+		                                        .apiSecret(oauth.getClientSecret())
+		                                        .provider(new Bitbucket10aScribeApi(url))
+		                                        .debugStream(new DebugOutputStream(log));
 		
 		if (!StringUtils.isBlank(callbackUrl))
 		{
@@ -166,11 +168,6 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
 			log.debug("Failed adding the account: [" + e.getMessage() + "]");
 			return INPUT;
-		} catch (InvalidCredentialsException e)
-		{
-			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
-			log.debug("Invalid credentials : Failed adding the account: [" + e.getMessage() + "]");
-			return INPUT;
 		}
 
 		// go back to main DVCS configuration page
@@ -195,7 +192,10 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         }
 
         AccountInfo accountInfo = organizationService.getAccountInfo("https://bitbucket.org", organization);
-        if (accountInfo == null)
+        // Bitbucket REST API to determine existence of accountInfo accepts valid email associated with BB account, but
+        // it is not possible to create an account containing the '@' character.
+        // [https://confluence.atlassian.com/display/BITBUCKET/account+Resource#accountResource-GETtheaccountprofile]
+        if (accountInfo == null || organization.contains("@"))
         {
             addErrorMessage("Invalid user/team account.");
         }

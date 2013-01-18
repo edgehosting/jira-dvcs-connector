@@ -12,22 +12,20 @@ public final class PageElementUtils
     private PageElementUtils() {}
 
 
-    public static PageElement findVisibleElementByClassName(PageElement sourceElement, String className)
+    public static PageElement findTagWithAttribute(PageElement sourceElement, String tagName, String attributeName)
     {
-        for (PageElement pageElement : sourceElement.findAll(By.className(className)))
+        for (PageElement tag : sourceElement.findAll(By.tagName(tagName)))
         {
-            String styleAttributeValue = pageElement.getAttribute("style");
-
-            if (!styleAttributeValue.contains("display: none;"))
+            if (tag.getAttribute(attributeName) != null)
             {
-                return pageElement;
+                return tag;
             }
         }
 
         return null;
     }
 
-    public static PageElement findTagWithAttribute(PageElement sourceElement, String tagName, String attributeName,
+    public static PageElement findTagWithAttributeValue(PageElement sourceElement, String tagName, String attributeName,
             String attributeValue)
     {
         for (PageElement tag : sourceElement.findAll(By.tagName(tagName)))
@@ -41,11 +39,13 @@ public final class PageElementUtils
         return null;
     }
 
-    public static PageElement findTagWithText(PageElement sourceElement, String tagName, String expectedTagText)
+    public static PageElement findTagWithAttributeValueEndingWith(PageElement sourceElement, String tagName,
+            String attributeName, String attributeValueEndPart)
     {
         for (PageElement tag : sourceElement.findAll(By.tagName(tagName)))
         {
-            if (expectedTagText.equals(tag.getText()))
+            String attributeValue = tag.getAttribute(attributeName);
+            if (attributeValue != null && attributeValue.endsWith(attributeValueEndPart))
             {
                 return tag;
             }

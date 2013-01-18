@@ -2,39 +2,27 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
+import com.atlassian.jira.pageobjects.pages.AbstractJiraPage;
 import org.openqa.selenium.By;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitbucketAddOAuthConsumerDialog;
 import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
-import com.atlassian.pageobjects.Page;
-import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.query.Poller;
+import com.atlassian.pageobjects.elements.query.TimedCondition;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com
  */
-public class BitbucketIntegratedApplicationsPage implements Page
+public class BitbucketIntegratedApplicationsPage extends AbstractJiraPage
 {    
     public static final String PAGE_URL = "https://bitbucket.org/account/user/jirabitbucketconnector/api";
 
 
-    @Inject
-    PageBinder pageBinder;
-
-    @ElementBy(id = "add-consumer-link")
-    private PageElement addConsumerButton;
-  
-    @ElementBy(tagName= "body")
-    private PageElement bodyElement;
-
-    @Inject
-    PageElementFinder elementFinder;
-    
+    @ElementBy(id = "oauth-consumers")
+    private PageElement consumersConfg;
+   
     private String lastAddedConsumerName;
 
 
@@ -44,16 +32,22 @@ public class BitbucketIntegratedApplicationsPage implements Page
         return PAGE_URL;
     }
 
+    @Override
+    public TimedCondition isAt() {
+        return consumersConfg.timed().isVisible();
+    }
+
 
     public OAuthCredentials addConsumer()
-    {       
-        addConsumerButton.click();
+    {
+        
+        addConsumerButton().click();
 
         PageElement addOAuthConsumerDialogDiv = null;
         while (addOAuthConsumerDialogDiv == null)
         {
-            addOAuthConsumerDialogDiv = PageElementUtils.findVisibleElementByClassName(bodyElement, "ui-dialog");
-        }     
+            addOAuthConsumerDialogDiv = body.find(By.id("bb-add-consumer-dialog"));
+        }
 
         BitbucketAddOAuthConsumerDialog addConsumerDialog =
                 pageBinder.bind(BitbucketAddOAuthConsumerDialog.class, addOAuthConsumerDialogDiv);
@@ -65,49 +59,64 @@ public class BitbucketIntegratedApplicationsPage implements Page
 
         Poller.waitUntilFalse(addOAuthConsumerDialogDiv.timed().isVisible());
 
-        PageElement oauthConsumerOrderedList = elementFinder.find(By.className("list-widget"));
+        List<PageElement> allConsumers = elementFinder.findAll(By.className("extra-info"));
+        PageElement consumer = allConsumers.get(allConsumers.size() - 1);
+        String key = getKey(consumer);
+        String secret = getSecret(consumer);
 
-        for (PageElement oauthConsumerListItem : oauthConsumerOrderedList.findAll(By.tagName("li")))
-        {
-            // 1st <div> is description
-            // 3rd <div> is key
-            // 4th <div> is secret
-            List<PageElement> divElements = oauthConsumerListItem.findAll(By.tagName("div"));  
-
-            boolean isRecentlyAddedConsumer = divElements.get(0).find(By.tagName("dd")).getText().equals(consumerDescription);
-
-            if (isRecentlyAddedConsumer)
-            {
-                String generatedOauthKey    = divElements.get(2).find(By.tagName("dd")).getText();
-                String generatedOauthSecret = divElements.get(3).find(By.tagName("dd")).getText();
-
-                return new OAuthCredentials(generatedOauthKey, generatedOauthSecret);
-            }
-        }  
-
-        return null;//TODO remove oauth consumers created because of tests
+        return new OAuthCredentials(key, secret);
+ 
     }
+
+    private String getSecret(PageElement consumer)
+    {
+        return consumer.findAll(By.tagName("span")).get(3).getText();
+    }
+
+
+    private String getKey(PageElement consumer)
+    {
+        return consumer.findAll(By.tagName("span")).get(2).getText();
+    }
+
+
+    private PageElement addConsumerButton()
+    {
+        List<PageElement> all = consumersConfg.findAll(By.tagName("a"));
+        for (PageElement pageElement : all)
+        {
+            if (pageElement.getAttribute("href").endsWith("#add-consumer")) {
+                return pageElement;
+            }
+        }
+        
+        throw new IllegalStateException("Add consumer button not found.");
+    }
+
 
     public void removeLastAdddedConsumer()
     {
-        PageElement oauthConsumerOrderedList = elementFinder.find(By.className("list-widget"));
-
-        for (PageElement oauthConsumerListItem : oauthConsumerOrderedList.findAll(By.tagName("li")))
+        PageElement oauthConsumersSection = elementFinder.find(By.id("oauth-consumers"));
+        
+        for (PageElement oauthConsumerRow : oauthConsumersSection.findAll(By.tagName("tr")))
         {
-            PageElement expandConsumerLink = PageElementUtils.findTagWithAttribute(oauthConsumerListItem, "a", "class", "name");
-
-            if (lastAddedConsumerName.equals(expandConsumerLink.getText()))
+            PageElement oauthConsumerNameSpan = oauthConsumerRow.find(By.tagName("span"));
+            
+            if (oauthConsumerNameSpan.isPresent() && // first row is table head not containing span
+                oauthConsumerNameSpan.getText().equals(lastAddedConsumerName))
             {
-                PageElement deleteConsumerButton = PageElementUtils.findTagWithText(oauthConsumerListItem, "a", "Delete");
+                PageElement deleteConsumerButton =
+                        PageElementUtils.findTagWithAttributeValueEndingWith(oauthConsumerRow, "a", "href", "#delete");
                 deleteConsumerButton.click();
+                break;
             }
         }
-    }    
+    }
 
     public static final class OAuthCredentials
     {
         public final String oauthKey;
-        public final String oauthSecret; 
+        public final String oauthSecret;
 
         private OAuthCredentials(String oauthKey, String oauthSecret)
         {

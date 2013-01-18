@@ -1,13 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
 import java.util.Date;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -22,11 +19,12 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 @SuppressWarnings("unchecked")
 public class RepositoryDaoTest
 {
-
-	private static final Date SAMPLE_DATE = new Date();
 
 	@Mock
 	private ActiveObjects activeObjects;
@@ -42,13 +40,15 @@ public class RepositoryDaoTest
 
 	// tested object
 	private RepositoryDao repositoryDao;
+	
+	private static final Date SAMPLE_DATE = new Date();
 
-	@Before
-	public void setup()
-	{
-		MockitoAnnotations.initMocks(this);
-		repositoryDao = new RepositoryDaoImpl(activeObjects, synchronizer);
-	}
+    @BeforeMethod
+    public void setup()
+    {
+        MockitoAnnotations.initMocks(this);
+        repositoryDao = new RepositoryDaoImpl(activeObjects, synchronizer);
+    }
 
 	@Test
 	public void testSave()
@@ -134,7 +134,7 @@ public class RepositoryDaoTest
 		repository.setDvcsType("bitbucket");
 		repository.setOrganizationId(1);
 		repository.setSlug("doesnotmatter-repo");
-		repository.setLastCommitDate(SAMPLE_DATE);
+	    repository.setLastCommitDate(SAMPLE_DATE);
 		repository.setLinked(true);
 		repository.setDeleted(true);
 		return repository;

@@ -20,7 +20,7 @@ public class ChangesetFileTransformer {
 
 
     @SuppressWarnings("unchecked")
-    public static List<ChangesetFile> fromBitbucketChangesetWithDiffstat(List<BitbucketChangesetWithDiffstat> diffstats)
+    public static List<ChangesetFile> fromBitbucketChangesetsWithDiffstat(List<BitbucketChangesetWithDiffstat> diffstats)
     {
         return (List<ChangesetFile>) CollectionUtils.collect(diffstats, new Transformer() {
 
@@ -30,17 +30,28 @@ public class ChangesetFileTransformer {
                 BitbucketChangesetWithDiffstat diffstat = (BitbucketChangesetWithDiffstat) input;
 
                 ChangesetFileAction fileAction = ChangesetFileAction.valueOf(diffstat.getType().toUpperCase());
-
-                return new ChangesetFile(fileAction,
-                                         diffstat.getFile(),
-                                         diffstat.getDiffstat().getAdded(),
-                                         diffstat.getDiffstat().getRemoved());
+                
+                int added = 0; 
+                int removed = 0;
+                if (diffstat.getDiffstat() != null)
+                {
+                    if (diffstat.getDiffstat().getAdded() != null)
+                    {
+                        added = diffstat.getDiffstat().getAdded();
+                    }
+                    if (diffstat.getDiffstat().getRemoved() != null)
+                    {
+                        removed = diffstat.getDiffstat().getRemoved();
+                    }
+                }
+                return new ChangesetFile(fileAction, diffstat.getFile(), added, removed);
             }
         });
     }
+    
 
     @SuppressWarnings("unchecked")
-    public static List<ChangesetFile> fromBitbucketChangesetFile(List<BitbucketChangesetFile> changesetFiles)
+    public static List<ChangesetFile> fromBitbucketChangesetFiles(List<BitbucketChangesetFile> changesetFiles)
     {
         return (List<ChangesetFile>) CollectionUtils.collect(changesetFiles, new Transformer() {
 

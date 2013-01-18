@@ -1,11 +1,10 @@
- #gh_oauth_app_screenshot{
+#gh_oauth_app_screenshot{
      padding-top: 16px;
  }
 
- .gh_steps li {
+.gh_steps li {
      margin-top: 15px;
  }
-
 
 #gh_config_link{
     margin-top: 10px;
@@ -179,7 +178,12 @@
     background-repeat: no-repeat;
 }
 
-h4.bitbucketLogo, h4.githubLogo {
+.githubeLogo {
+	background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_logo.png);
+	background-repeat: no-repeat;
+}
+
+h4.bitbucketLogo, h4.githubLogo, h4.githubeLogo {
 	padding-left: 27px;	
 }
 
@@ -214,12 +218,6 @@ a:hover.repositoryNameLink {
     float: left;
     margin-bottom:12px;
     
-}
-
-.aui-item-column2 {
-    display: inline;
-    float: left;
-    padding-left: 35px;
 }
 
 #addRepositoryContent {
@@ -379,7 +377,7 @@ select#urlSelect {
 
 }
 
-.aui.bitbucketLogo, .aui.githubLogo {
+.aui.bitbucketLogo, .aui.githubLogo, .aui.githubeLogo {
 	float: left;
 	position: relative;
 	top: 2px;
@@ -436,12 +434,21 @@ html[xmlns] .dvcs-dclear {
 
 .dvcs-account-ondemand {
 	width: 115px;
-     height: 28px;
-     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/ondemand_logo.png);
-     background-repeat: no-repeat;
-     display: inline-block;
-     position: relative;
-     top: -7px;
+    height: 28px;
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/ondemand_logo.png);
+    background-repeat: no-repeat;
+    display: inline-block;
+    position: relative;
+    top: -7px;
+}
+.dvcs-account-enterprise {
+	width: 110px;
+    height: 29px;
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/ghe_logo.png);
+    background-repeat: no-repeat;
+    display: inline-block;
+    position: relative;
+    top: -4px;
 }
 
 .dvcs-no-repos {

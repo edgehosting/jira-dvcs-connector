@@ -1,10 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
@@ -62,7 +64,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
     }
 
-
     @Override
     public void removeAllInRepository(final int repositoryId)
     {
@@ -71,15 +72,12 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public Object doInTransaction()
             {
-                final ChangesetMapping[] changesetMappings = activeObjects.find(ChangesetMapping.class, ChangesetMapping.REPOSITORY_ID+" = ?", repositoryId);
-
-                log.debug("deleting [ {} ] changesets from repository with id = [ {} ]", new String[]{String.valueOf(changesetMappings.length), String.valueOf(repositoryId)});
-
-                activeObjects.delete(changesetMappings);
+                Query query = Query.select().where(ChangesetMapping.REPOSITORY_ID + " = ?", repositoryId);
+                log.debug("deleting changesets from repository with id = [ {} ]", new String[]{String.valueOf(repositoryId)});
+                ActiveObjectsUtils.delete(activeObjects, ChangesetMapping.class, query);
                 return null;
             }
         });
-
     }
 
     @Override
@@ -169,7 +167,8 @@ public class ChangesetDaoImpl implements ChangesetDao
         
     }
 
-    private String parseProjectKey(String issueKey) {
+    public static String parseProjectKey(String issueKey)
+    {
         return issueKey.substring(0, issueKey.indexOf("-"));
     }
 
@@ -251,24 +250,21 @@ public class ChangesetDaoImpl implements ChangesetDao
 	}
 
     @Override
-    public List<String> getOrderedProjectKeysByRepository(int repositoryId)
+    public Set<String> findReferencedProjects(int repositoryId)
     {
+        Query query = Query.select(ChangesetMapping.PROJECT_KEY).distinct()
+                .where(ChangesetMapping.REPOSITORY_ID + " = ? ", repositoryId).order(ChangesetMapping.PROJECT_KEY);
 
-        Query query = Query.select(ChangesetMapping.PROJECT_KEY).distinct().where(ChangesetMapping.REPOSITORY_ID + " = ? ", repositoryId).order(ChangesetMapping.PROJECT_KEY);
-
-        final List<String> projectKeys = new ArrayList<String>();
-        
+        final Set<String> projectKeys = new HashSet<String>();
         activeObjects.stream(ProjectKey.class, query, new EntityStreamCallback<ProjectKey, String>()
         {
             @Override
             public void onRowRead(ProjectKey mapping)
             {
-                if (!projectKeys.contains(mapping.getProjectKey())) {
-                    projectKeys.add(mapping.getProjectKey());
-                }
+                projectKeys.add(mapping.getProjectKey());
             }
         });
-        
+
         return projectKeys;
     }
     

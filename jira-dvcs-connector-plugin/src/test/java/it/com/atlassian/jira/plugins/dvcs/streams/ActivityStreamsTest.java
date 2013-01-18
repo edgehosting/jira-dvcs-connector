@@ -1,9 +1,7 @@
 package it.com.atlassian.jira.plugins.dvcs.streams;
 
 import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest.AnotherLoginPage;
-import junit.framework.Assert;
 
-import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -14,15 +12,18 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.DashboardActivityStreamsPage;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.page.LoginPage;
-import com.atlassian.webdriver.jira.JiraTestedProduct;
-import com.atlassian.webdriver.jira.page.DashboardPage;
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.pageobjects.pages.DashboardPage;
+
+import org.testng.annotations.Test;
+
+import static org.fest.assertions.api.Assertions.*;
 
 /**
  *
  */
 public class ActivityStreamsTest
 {
-    private static final String BB_TEST_URL = "https://bitbucket.org";
     private static final String BB_TEST_ORGANIZATION = "jirabitbucketconnector";
 
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
@@ -41,7 +42,7 @@ public class ActivityStreamsTest
     {
         BitBucketConfigureOrganizationsPage configureRepos = goToConfigPage();
         configureRepos.deleteAllOrganizations();
-        configureRepos.addOrganizationSuccessfully(BB_TEST_URL, BB_TEST_ORGANIZATION, true);
+        configureRepos.addOrganizationSuccessfully(BB_TEST_ORGANIZATION, true);
     }
 
 
@@ -56,7 +57,7 @@ public class ActivityStreamsTest
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + "/secure/admin/AddPermission!default.jspa?schemeId=0&permissions=10");
         jira.getTester().getDriver().waitUntilElementIsVisible(By.id("type_group"));
         jira.getTester().getDriver().waitUntilElementIsVisible(By.id("add_submit"));
-        jira.getTester().getDriver().findElement(By.id("type_group")).setSelected();
+        jira.getTester().getDriver().findElement(By.id("type_group")).click();
         jira.getTester().getDriver().findElement(By.id("add_submit")).click();
     }
 
@@ -119,14 +120,16 @@ public class ActivityStreamsTest
         addOrganization();
         goToDashboardPage();
 
-        Assert.assertTrue("Activity streams gadget expected at dashboard page!", page.isActivityStreamsGadgetVisible());
+        // Activity streams gadget expected at dashboard page!
+        assertThat(page.isActivityStreamsGadgetVisible()).isTrue();
 
         WebElement iframeElm = jira.getTester().getDriver().getDriver().findElement(By.id("gadget-10001"));
         String iframeSrc = iframeElm.getAttribute("src");
         jira.getTester().gotoUrl(iframeSrc);
         bindPageAndSetJira();
 
-        Assert.assertTrue("Activity streams should contain at least one changeset with 'more files' link.", page.isMoreFilesLinkVisible());
+        // Activity streams should contain at least one changeset with 'more files' link.
+        assertThat(page.isMoreFilesLinkVisible()).isTrue();
         page.checkIssueActivityPresentedForQA5();
 
         page.setIssueKeyFilter("QA-4");
@@ -161,7 +164,8 @@ public class ActivityStreamsTest
         addOrganization();
         goToDashboardPage();
 
-        Assert.assertTrue("Activity streams gadget expected at dashboard page!", page.isActivityStreamsGadgetVisible());
+        // Activity streams gadget expected at dashboard page!
+        assertThat(page.isActivityStreamsGadgetVisible()).isTrue();
 
         WebElement iframeElm = jira.getTester().getDriver().getDriver().findElement(By.id("gadget-10001"));
         String iframeSrc = iframeElm.getAttribute("src");
@@ -173,7 +177,8 @@ public class ActivityStreamsTest
         logout();
         jira.getPageBinder().navigateToAndBind(DashboardPage.class);
 
-        Assert.assertTrue("Activity streams gadget expected at dashboard page!", page.isActivityStreamsGadgetVisible());
+        // Activity streams gadget expected at dashboard page!
+        assertThat(page.isActivityStreamsGadgetVisible()).isTrue();
 
         jira.getTester().gotoUrl(iframeSrc);
         bindPageAndSetJira();

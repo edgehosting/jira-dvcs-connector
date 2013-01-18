@@ -40,7 +40,7 @@ public class Repository
 	}
 
 	public Repository(int id, int organizationId, String dvcsType, String slug, String name, Date lastCommitDate,
-			boolean linked, boolean deleted, Credential credential)
+			 boolean linked, boolean deleted, Credential credential)
 	{
 		this.id = id;
 		this.organizationId = organizationId;

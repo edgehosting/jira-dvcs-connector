@@ -3,7 +3,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
@@ -53,16 +52,7 @@ public class UpdateBitbucketCredentials extends JiraWebActionSupport
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-    	
-    	try
-		{
-			organizationService.updateCredentials(Integer.parseInt(organizationId), usernameUp, adminPasswordUp);
-		} catch (InvalidCredentialsException e)
-		{
-			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
-			log.debug("Invalid credentials : Failed adding the account: [" + e.getMessage() + "]");
-			return INPUT;
-		}
+        organizationService.updateCredentials(Integer.parseInt(organizationId), usernameUp, adminPasswordUp);
 
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
     }

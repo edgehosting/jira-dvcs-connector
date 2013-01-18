@@ -67,6 +67,7 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.CleanupPluginSettings</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_09_SmartCommitsColumnsMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_10_LastChangesetNodeMigrator</upgradeTask>
     </ao>
 	
 	<!-- Integrated account -->
@@ -87,13 +88,9 @@
     </component>
 	
 
-    <!--
-    	Upgrade Tasks
-     -->
-
-	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task"
-		class="com.atlassian.jira.plugins.dvcs.upgrade.RepositoryLinksUpgradeTask"
-		public="true">
+    <!-- Plugin upgrade Tasks -->
+	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task" public="true"
+		class="com.atlassian.jira.plugins.dvcs.upgrade.To_02_ProjectBasedRepositoryLinksUpgradeTask">
 		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
 	</component>
 
@@ -103,7 +100,6 @@
     <component key="defferedBitbucketLinker" name="defferedBitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.DeferredBitbucketLinker">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
     </component>
-    <component key="projectCreatedEventListener" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.ProjectCreatedListener" />
 
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
                class="com.atlassian.jira.plugins.dvcs.activeobjects.DefaultBitbucketProjectSettings">
@@ -161,12 +157,18 @@
 
     <component key="githubClientProvider" name="githubClientProvider"
                class="com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider">
-        <description>githubCommunicator</description>
+        <description>Github Client Provider</description>
     </component>
 
     <component key="githubCommunicator" name="githubCommunicator"
                class="com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator">
         <description>githubCommunicator</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
+    </component>
+    
+    <component key="githubEnterpriseCommunicator" name="githubEnterpriseCommunicator"
+               class="com.atlassian.jira.plugins.dvcs.spi.github.GithubEnterpriseCommunicator">
+        <description>githubEnterpriseCommunicator</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
     </component>
 
@@ -249,6 +251,11 @@
         <interface>com.atlassian.jira.plugins.dvcs.listener.IPluginFeatureDetector</interface>
     </component>
 
+    <component key="changesetRenderer" name="changesetRenderer"
+               class="com.atlassian.jira.plugins.dvcs.webwork.ChangesetRendererImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.webwork.ChangesetRenderer</interface>
+    </component>
+
     <!-- Listener -->
     <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />
 
@@ -260,6 +267,18 @@
         <!--<resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>-->
         <supports-ajax-load>true</supports-ajax-load>
     </issue-tabpanel>
+
+    <web-panel key="dvcs-commits-greenhopper-tab" location="atl.gh.issue.details.tab" weight="100">
+
+        <resource name="view" type="velocity" location="/templates/greenhopper-commits.vm" />
+
+        <context-provider class="com.atlassian.jira.plugins.dvcs.webwork.DvcsTabPanelContextProvider">
+        </context-provider>
+
+        <label key="Commits" />
+        <tooltip key="Commits" />
+        <resource type="download" name="icon.png" location="images/gh_icon.png" />
+    </web-panel>
 
     <!-- The webwork1 plugin element is how you add new actions to JIRA -->
     <webwork1 key="repositoryConfiguration" name="Repository Configuration" class="java.lang.Object">
@@ -276,11 +295,20 @@
             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.ConfigureGithubOAuth" alias="ConfigureGithubOAuth">
                 <view name="input">/templates/configuregithuboauth.vm</view>
             </action>
+            
+             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.ConfigureGithubEnterpriseOAuth" alias="ConfigureGithubEnterpriseOAuth">
+                <view name="input">/templates/configuregithubenterpriseoauth.vm</view>
+            </action>
 
 			<!-- New organization driven actions -->
             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.AddGithubOrganization"
                     alias="AddGithubOrganization" roles-required="admin">
                 <view name="input">/templates/dvcs/add-github-organization.vm</view>
+            </action>
+            
+               <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.AddGithubEnterpriseOrganization"
+                    alias="AddGithubEnterpriseOrganization" roles-required="admin">
+                <view name="input">/templates/dvcs/add-githube-organization.vm</view>
             </action>
 
             <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.AddBitbucketOrganization"
@@ -305,6 +333,11 @@
 
 			<action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken"
                     alias="RegenerateGithubOauthToken" roles-required="admin">
+                <view name="input">/templates/dvcs/add-organization.vm</view>
+            </action>
+            
+            <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubEnterpriseOauthToken"
+                    alias="RegenerateGithubEnterpriseOauthToken" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
 
@@ -341,8 +374,19 @@
         <link>/secure/admin/ConfigureGithubOAuth!default.jspa</link>
         <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
     </web-item>
+    
+    <web-item key="github_enterprise_oauth" name="GitHub Enerprise OAuth" section="admin_plugins_menu/source_control" weight="10">
+       <description>Static link to github.com.</description>
+       <label>GitHub Enterprise OAuth Settings</label>
+       <name>GitHub Enterprise Name Item</name>
+       <link>/secure/admin/ConfigureGithubEnterpriseOAuth!default.jspa</link>
+       <conditions type="AND">
+           <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
+           <condition class="com.atlassian.jira.plugins.dvcs.conditions.GithubEnterpriseEnabledCondition" />
+       </conditions>
+    </web-item>
 
-        <web-item key="bitbucket_oauth" name="Bitbucket OAuth" section="admin_plugins_menu/source_control" weight="10">
+    <web-item key="bitbucket_oauth" name="Bitbucket OAuth" section="admin_plugins_menu/source_control" weight="10">
         <description>Static link to bitbucket.com.</description>
         <label>Bitbucket OAuth Settings</label>
         <name>Bitbucket Name Item</name>
@@ -363,13 +407,20 @@
 		<resource type="download" name="css/issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
 	</web-resource>
 
+    <web-resource key="requiredResourceForGreenHopperCommitsTab" name="Resources That Needs To be Loaded On GreenHopper Board">
+        <context>gh-rapid</context>
+        <resource type="download" name="issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
+        <resource type="download" name="greenhopper-overrides.css" location="css/greenhopper-overrides.css" />
+    </web-resource>
+
     <rest key="bitbucket-rest-resources" path="/bitbucket" version="1.0">
         <description>REST Resources</description>
     </rest>
 
     <resource type="download" name="images/" location="images/"/>
     <resource type="i18n" name="bitbucket-i18n" location="i18n"/>
-
+    <resource type="i18n" name="dvcs-connector-props" location="dvcsconnector"/>
+    
     <activity-streams-provider key="dvcs-streams-provider" name="Dvcs Streams Provider" i18n-name-key="Bitbucket Connector"
                        class="com.atlassian.jira.plugins.dvcs.streams.DvcsStreamsActivityProvider">
     </activity-streams-provider>

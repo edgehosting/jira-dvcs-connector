@@ -3,8 +3,6 @@ package com.atlassian.jira.plugins.dvcs.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -17,6 +15,10 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 public class RepositoryServiceTest
 {
@@ -39,6 +41,9 @@ public class RepositoryServiceTest
 	@Mock
 	private DvcsCommunicator bitbucketCommunicator;
 
+	@Mock
+	private PluginSettingsFactory settings;
+
 	// tested object
 	private RepositoryService repositoryService;
 
@@ -47,12 +52,12 @@ public class RepositoryServiceTest
 		super();
 	}
 
-	@Before
+	@BeforeMethod
 	public void setup()
 	{
 		MockitoAnnotations.initMocks(this);
 		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer,
-				changesetService, applicationProperties);
+				changesetService, applicationProperties, settings);
 
 	}
 

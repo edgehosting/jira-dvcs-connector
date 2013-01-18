@@ -3,10 +3,10 @@ package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 
@@ -44,14 +44,25 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 
 	}
 
-	private String redirectUserToGithub()
+	protected String redirectUserToGithub()
 	{
-		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("RegenerateGithubOauthToken",
-				"", getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
+		String organizationUrl = getHostUrl();
 
-		return getRedirect(githubAuthorizeUrl);
+        String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl(getRedirectAction(),
+				organizationUrl, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
+
+        return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
 	}
 
+	protected String getHostUrl()
+	{
+	    return organizationService.get(Integer.parseInt(organization), false).getHostUrl();
+	}
+	
+	protected String getRedirectAction()
+	{
+	    return "RegenerateGithubOauthToken"; 
+	}
 
 	@Override
 	protected void doValidation()
@@ -71,6 +82,11 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 		} catch (SourceControlException sce)
 		{
 			addErrorMessage(sce.getMessage());
+			log.warn(sce.getMessage());
+			if ( sce.getCause() != null )
+			{
+				log.warn("Caused by: " + sce.getCause().getMessage());
+			}
 			return INPUT;
 		}
 
@@ -88,20 +104,15 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
 			log.debug("Failed adding the account: [" + e.getMessage() + "]");
 			return INPUT;
-		} catch (InvalidCredentialsException e)
-		{
-			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
-			log.debug("Invalid credentials : Failed adding the account: [" + e.getMessage() + "]");
-			return INPUT;
 		}
 
-                return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
 	}
 
 	private String requestAccessToken()
 	{
 
-		return githubOAuthUtils.requestAccessToken(code);
+		return githubOAuthUtils.requestAccessToken(getHostUrl(), code);
 	}
 
 	public static String encode(String url)

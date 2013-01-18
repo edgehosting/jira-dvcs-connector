@@ -1,6 +1,8 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import java.io.IOException;
+import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,10 +12,10 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 import org.openqa.selenium.By;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
@@ -22,50 +24,55 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedAppli
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraAddUserPage;
-import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceEnvelope;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceField;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServiceRemoteRestpoint;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.elements.PageElement;
-import org.hamcrest.Matchers;
-
-import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
 
 /**
  * Test to verify behaviour when syncing bitbucket repository..
  */
-public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
+public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketConfigureOrganizationsPage>
 {
-    private static final String TEST_URL = "https://bitbucket.org";
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
     private static final String TEST_NOT_EXISTING_URL = "https://privatebitbucket.org/someaccount";
     private static final String ACCOUNT_ADMIN_LOGIN = "jirabitbucketconnector";
-    private static final String ACCOUNT_ADMIN_PASSWORD = "jirabitbucketconnector1";
+    private static final String ACCOUNT_ADMIN_PASSWORD = PasswordUtil.getPassword("jirabitbucketconnector");
 
+    private static ServiceRemoteRestpoint serviceRemoteRestpoint;
     private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
 
-
     @Override
-    protected Class<BitBucketConfigureOrganizationsPage> getPageClass()
+    protected Class<BitBucketConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return BitBucketConfigureOrganizationsPage.class;
     }
 
 
-    @Before
+    @BeforeClass
+    public static void initializeServiceREST()
+    {
+        AuthProvider basicAuthProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
+                                                                   ACCOUNT_ADMIN_LOGIN,
+                                                                   ACCOUNT_ADMIN_PASSWORD);
+        serviceRemoteRestpoint = new ServiceRemoteRestpoint(basicAuthProvider.provideRequestor());
+    }
+
+    @BeforeMethod
     public void removeExistingPostCommitHooks()
     {
-        Set<String> extractedBitbucketServiceIds = extractBitbucketServiceIdsToRemove();
-
-        for (String extractedBitbucketServiceId : extractedBitbucketServiceIds)
+        Set<Integer> extractedBitbucketServiceIds = extractBitbucketServiceIdsToRemove();
+        for (int extractedBitbucketServiceId : extractedBitbucketServiceIds)
         {
-            removePostCommitHook(extractedBitbucketServiceId);
+            serviceRemoteRestpoint.deleteService("jirabitbucketconnector", "public-hg-repo", extractedBitbucketServiceId);
         }
     }
 
-    private void loginToBitbucketAndSetJiraOAuthCredentials() //TODO @Before vs not needed for every test method
+    private void loginToBitbucketAndSetJiraOAuthCredentials()
     {
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
@@ -82,8 +89,11 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
     }
 
-    private void removeOAuthConsumer() //TODO @After vs not needed for every method
+    private void deleteAllOrganizationsAndRemoveOAuthConsumer()
     {
+        jira.goTo(getConfigureOrganizationsPageClass());
+        configureOrganizations.deleteAllOrganizations();
+
         jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
         bitbucketIntegratedApplicationsPage.removeLastAdddedConsumer();
     }
@@ -93,18 +103,16 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     {
         loginToBitbucketAndSetJiraOAuthCredentials();
         BaseConfigureOrganizationsPage organizationsPage =
-                configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, false);
+                configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, false);
 
         PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
         // first row is header row, than repos ...
-        Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
+        assertThat(repositoriesTable.findAll(By.tagName("tr")).size()).isGreaterThan(2);
 
         // check add user extension
         jira.visit(JiraAddUserPage.class).checkPanelPresented();
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
-        configureOrganizations.deleteAllOrganizations();
-        removeOAuthConsumer();
+        deleteAllOrganizationsAndRemoveOAuthConsumer();
     }
 
     @Test
@@ -112,30 +120,23 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     {
         loginToBitbucketAndSetJiraOAuthCredentials();
         BaseConfigureOrganizationsPage organizationsPage =
-                configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+                configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
         PageElement repositoriesTable = organizationsPage.getOrganizations().get(0).getRepositoriesTable();
         // first row is header row, than repos ...
-        Assert.assertTrue(repositoriesTable.findAll(By.tagName("tr")).size() > 2);
+        assertThat(repositoriesTable.findAll(By.tagName("tr")).size()).isGreaterThan(2);
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
-        configureOrganizations.deleteAllOrganizations();
-        removeOAuthConsumer();
+        deleteAllOrganizationsAndRemoveOAuthConsumer();
     }
 
     @Test
     public void addUrlThatDoesNotExist()
     {
-        loginToBitbucketAndSetJiraOAuthCredentials();
         configureOrganizations.addOrganizationFailingStep1(TEST_NOT_EXISTING_URL);
 
         String errorMessage = configureOrganizations.getErrorStatusMessage();
-        assertThat(errorMessage, containsString("is incorrect or the server is not responding."));
+        assertThat(errorMessage).contains("is incorrect or the server is not responding");
 
         configureOrganizations.clearForm();
-
-        jira.getPageBinder().navigateToAndBind(getPageClass());
-        configureOrganizations.deleteAllOrganizations();
-        removeOAuthConsumer();
     }
 
     @Test
@@ -146,21 +147,19 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
         String baseUrl = jira.getProductInstance().getBaseUrl();
 
         // add account
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
         // check that it created postcommit hook
         String syncUrl = baseUrl + "/rest/bitbucket/1.0/repository/";
         String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
         servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, ACCOUNT_ADMIN_LOGIN, ACCOUNT_ADMIN_PASSWORD);
-        assertThat(servicesConfig, containsString(syncUrl));
+        assertThat(servicesConfig).contains(syncUrl);
         // delete repository
         configureOrganizations.deleteAllOrganizations();
         // check that postcommit hook is removed
         servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, ACCOUNT_ADMIN_LOGIN, ACCOUNT_ADMIN_PASSWORD);
-        assertThat(servicesConfig, not(containsString(syncUrl)));
+        assertThat(servicesConfig).doesNotContain(syncUrl);
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
-        configureOrganizations.deleteAllOrganizations();
-        removeOAuthConsumer();
+        deleteAllOrganizationsAndRemoveOAuthConsumer();
     }
 
     private String getBitbucketServices(String url, String username, String password) throws Exception
@@ -180,131 +179,71 @@ public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest
     public void addRepoCommitsAppearOnIssues()
     {
         loginToBitbucketAndSetJiraOAuthCredentials();
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
-        assertThat(getCommitsForIssue("QA-2"),
-                Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
-        assertThat(getCommitsForIssue("QA-3"),
-                Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+        assertThat(getCommitsForIssue("QA-2", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-3", 2)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
-        configureOrganizations.deleteAllOrganizations();
-        removeOAuthConsumer();
+        deleteAllOrganizationsAndRemoveOAuthConsumer();
     }
 
     @Test
     public void testCommitStatistics()
     {
         loginToBitbucketAndSetJiraOAuthCredentials();
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         // QA-2
-        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2");
-        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2", 1); // throws AssertionError with other than 1 message
+
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertTrue("Expected Added", commitMessage.isAdded(statistics.get(0)));
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
 
         // QA-3
-        commitMessages = getCommitsForIssue("QA-3");
-        Assert.assertEquals("Expected 2 commits", 2, commitMessages.size());
+        commitMessages = getCommitsForIssue("QA-3", 2); // throws AssertionError with other than 2 messages
+
         // commit 1
         commitMessage = commitMessages.get(0);
         statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertTrue("Expected Added", commitMessage.isAdded(statistics.get(0)));
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
         // commit 2
         commitMessage = commitMessages.get(1);
         statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+3");
-        Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+3");
+        assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
 
-        jira.getPageBinder().navigateToAndBind(getPageClass());
-        configureOrganizations.deleteAllOrganizations();
-        removeOAuthConsumer();
+        deleteAllOrganizationsAndRemoveOAuthConsumer();
     }
 
 
-    private static Set<String> extractBitbucketServiceIdsToRemove()
+    private static Set<Integer> extractBitbucketServiceIdsToRemove()
     {
-        String listServicesResponseString;
+        List<BitbucketServiceEnvelope> bitbucketServices =
+                serviceRemoteRestpoint.getAllServices("jirabitbucketconnector", "public-hg-repo");
 
-        try
+        Set<Integer> extractedServiceIds = new LinkedHashSet<Integer>();
+
+        for (BitbucketServiceEnvelope bitbucketServiceEnvelope : bitbucketServices)
         {
-            listServicesResponseString = HttpSenderUtils.sendGetHttpRequest(
-                    "https://api.bitbucket.org/1.0/repositories/jirabitbucketconnector/public-hg-repo/services/",
-                    ACCOUNT_ADMIN_LOGIN,
-                    ACCOUNT_ADMIN_PASSWORD);
-        }
-        catch (IOException e)
-        {
-            throw new IllegalStateException("Cannot extract BitBucket service IDs !", e);
-        }
+            int bitbucketServiceId = bitbucketServiceEnvelope.getId();
 
-        Set<String> extractedServiceIds = new LinkedHashSet<String>();
-
-        // parsing following JSON:
-        //[
-        //    {
-        //        "id": 3,
-        //        "service": {
-        //            "fields": [
-        //                {
-        //                    "name": "URL",
-        //                    "value": "..."
-        //                }
-        //            ],
-        //            "type": "Email"
-        //        }
-        //    }
-        //]
-
-        try {
-            JSONArray jsonArray = new JSONArray(listServicesResponseString);
-            for (int i = 0; i < jsonArray.length(); i++)
+            for (BitbucketServiceField bitbucketServiceField : bitbucketServiceEnvelope.getService().getFields())
             {
-                JSONObject data = (JSONObject) jsonArray.get(i);
+                if (bitbucketServiceField.getName().equals("URL"))
+                {
+                    String serviceURL = bitbucketServiceField.getValue();
 
-                String bitbucketServiceId = data.getString("id");
-                JSONObject serviceObject = data.getJSONObject("service");
-                JSONArray  fieldsArray = serviceObject.getJSONArray("fields");
-
-                for (int j = 0; j < fieldsArray.length(); j++) {
-                    JSONObject fieldObject = fieldsArray.getJSONObject(j);
-
-                    if (fieldObject.getString("name").equals("URL")) {
-                        String serviceURL = fieldObject.getString("value");
-
-                        if (serviceURL.contains(jira.getProductInstance().getBaseUrl())) {
-                            extractedServiceIds.add(bitbucketServiceId);
-                        }
+                    if (serviceURL.contains(jira.getProductInstance().getBaseUrl())) {
+                        extractedServiceIds.add(bitbucketServiceId);
                     }
                 }
             }
         }
-        catch (JSONException e)
-        {
-            throw new IllegalStateException("Cannot parse JSON !", e);
-        }
 
         return extractedServiceIds;
-    }
-
-    private static void removePostCommitHook(String serviceId) {
-        String finalBitbucketUrl = String.format(
-                "https://api.bitbucket.org/1.0/repositories/jirabitbucketconnector/public-hg-repo/services/%s",
-                serviceId);
-        try
-        {
-            HttpSenderUtils.sendDeleteHttpRequest(finalBitbucketUrl,
-                                  ACCOUNT_ADMIN_LOGIN,
-                                  ACCOUNT_ADMIN_PASSWORD);
-        }
-        catch (IOException e)
-        {
-            throw new IllegalStateException("Cannot send DELETE Http request !", e);
-        }
     }
 }

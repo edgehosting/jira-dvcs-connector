@@ -1,19 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
 import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
@@ -24,7 +19,10 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 public class OrganizationDaoTest
 {
     @Mock
@@ -38,9 +36,10 @@ public class OrganizationDaoTest
 
     private OrganizationDao organizationDao;
 
-	@Before
-	public void initializeOrganizationDAO()
+	@BeforeMethod
+	public void initializeMocksAndOrganizationDAO()
 	{
+        MockitoAnnotations.initMocks(this);
 		organizationDao = new OrganizationDaoImpl(activeObjectsMock, mock(Encryptor.class));
 	}
 

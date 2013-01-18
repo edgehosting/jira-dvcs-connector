@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -183,15 +182,15 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    public Changeset getDetailChangeset(Repository repository, String node)
     {
-        return delegate.getDetailChangeset(repository, changeset);
+        return delegate.getDetailChangeset(repository, node);
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(Repository repository, Date lastCommitDate)
+    public Iterable<Changeset> getChangesets(Repository repository)
     {
-        return delegate.getChangesets(repository, lastCommitDate);
+        return delegate.getChangesets(repository);
     }
 
     @Override
@@ -219,21 +218,15 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public boolean validateCredentials(Organization organization)
-    {
-        return delegate.validateCredentials(organization);
-    }
-
-    @Override
-    public void linkRepository(Repository repository, List<String> withProjectkeys)
+    public void linkRepository(Repository repository, Set<String> withProjectkeys)
     {
         delegate.linkRepository(repository, withProjectkeys);
     }
 
     @Override
-    public void linkRepositoryIncremental(Repository repository, List<String> withPossibleNewProjectkeys)
+    public void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys)
     {
         delegate.linkRepositoryIncremental(repository, withPossibleNewProjectkeys);
     }
-    
+
 }

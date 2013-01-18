@@ -10,7 +10,6 @@ import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginController;
 import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
-import com.atlassian.sal.api.scheduling.PluginJob;
 import com.atlassian.sal.api.scheduling.PluginScheduler;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
@@ -25,7 +24,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountInfo;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.Links;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.util.concurrent.ThreadFactories;
 
 /**
@@ -40,7 +38,7 @@ import com.atlassian.util.concurrent.ThreadFactories;
  * @author jhocman@atlassian.com
  *
  */
-public class BitbucketAccountsConfigService implements AccountsConfigService
+public class BitbucketAccountsConfigService implements AccountsConfigService//TODO move to BB module
 {
 
     private static final Logger log = LoggerFactory.getLogger(BitbucketAccountsConfigService.class);
@@ -394,7 +392,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService
         organization.setName(info.accountName);
         organization.setCredential(new Credential(null, null, null, info.oauthKey, info.oauthSecret));
         organization.setHostUrl(BITBUCKET_URL);
-        organization.setDvcsType(BitbucketCommunicator.BITBUCKET);
+        organization.setDvcsType("bitbucket");
         organization.setAutolinkNewRepos(true);
         organization.setSmartcommitsOnNewRepos(true);
         

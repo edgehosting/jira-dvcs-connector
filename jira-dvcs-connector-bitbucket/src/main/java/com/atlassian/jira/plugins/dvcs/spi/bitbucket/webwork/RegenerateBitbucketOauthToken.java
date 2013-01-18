@@ -9,7 +9,6 @@ import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -17,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -62,7 +62,7 @@ public class RegenerateBitbucketOauthToken extends CommonDvcsConfigurationAction
 
             request.getSession().setAttribute("requestToken", requestToken);
 
-            return getRedirect(authUrl);
+            return SystemUtils.getRedirect(this, authUrl, true);
 
         } catch (Exception e)
         {
@@ -142,11 +142,6 @@ public class RegenerateBitbucketOauthToken extends CommonDvcsConfigurationAction
         {
             addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
             log.debug("Failed adding the account: [" + e.getMessage() + "]");
-            return INPUT;
-        } catch (InvalidCredentialsException e)
-        {
-            addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
-            log.debug("Invalid credentials : Failed adding the account: [" + e.getMessage() + "]");
             return INPUT;
         }
 

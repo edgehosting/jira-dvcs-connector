@@ -8,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryEnvelope;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.google.gson.reflect.TypeToken;
 
 
@@ -23,7 +24,6 @@ import com.google.gson.reflect.TypeToken;
  */
 public class RepositoryRemoteRestpoint
 {
-
 	private final RemoteRequestor requestor;
 
 	public RepositoryRemoteRestpoint(RemoteRequestor requestor)
@@ -34,15 +34,18 @@ public class RepositoryRemoteRestpoint
 	
 	public List<BitbucketRepository> getAllRepositories(String owner)
     {
-		String getAllRepositoriesUrl = String.format("/users/%s", owner);
+		String getAllRepositoriesUrl = URLPathFormatter.format("/users/%s", owner);
         
-		RemoteResponse response = requestor.get(getAllRepositoriesUrl, null);
-
-		BitbucketRepositoryEnvelope envelope = ClientUtils.fromJson(response.getResponse(),
-                                                                    new TypeToken<BitbucketRepositoryEnvelope>(){}.getType());
-		
-		return envelope.getRepositories();
+		return requestor.get(getAllRepositoriesUrl, null, new ResponseCallback<List<BitbucketRepository>>()
+        {
+            @Override
+            public List<BitbucketRepository> onResponse(RemoteResponse response)
+            {
+                BitbucketRepositoryEnvelope envelope = ClientUtils.fromJson(response.getResponse(),
+                        new TypeToken<BitbucketRepositoryEnvelope>(){}.getType());
+                return  envelope.getRepositories();
+            }
+        });
 	}
-	
 }
 

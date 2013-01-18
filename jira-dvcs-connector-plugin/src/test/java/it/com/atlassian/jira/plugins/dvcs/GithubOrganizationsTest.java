@@ -1,5 +1,8 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
+import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -10,13 +13,6 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
@@ -24,27 +20,30 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
-import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
+import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.elements.PageElement;
 
-import static com.atlassian.jira.plugins.dvcs.pageobjects.CommitMessageMatcher.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import org.eclipse.egit.github.core.RepositoryHook;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.RepositoryService;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  * Test to verify behaviour when syncing  github repository.
  */
-public class GithubOrganizationsTest extends BitBucketBaseOrgTest
+public class GithubOrganizationsTest extends BitBucketBaseOrgTest<GithubConfigureOrganizationsPage>
 {
 
-    private static final String TEST_URL = "https://github.com";
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
-    private static final String TEST_NOT_EXISTING_URL = "https://privategithub.com/myaccount";
+    private static final String TEST_NOT_EXISTING_URL = "mynotexistingaccount124";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
-    private static final String REPO_ADMIN_PASSWORD = "jirabitbucketconnector1";
+    private static final String REPO_ADMIN_PASSWORD = PasswordUtil.getPassword("jirabitbucketconnector");
 
     private static String clientID;
     private static String clientSecret;
@@ -72,10 +71,11 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         registeredOAuthAppsPage.parseClientIdAndSecret(oauthAppName);
         oauthAppLink = registeredOAuthAppsPage.getOauthAppUrl();
         jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
-        jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
+        ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
+        ghLoginPage.doLogout();
 
-
-        GithubOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(GithubOAuthConfigPage.class);
+        jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(GithubOAuthConfigPage.class);
+        GithubOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(GithubOAuthConfigPage.class);
         oauthConfigPage.setCredentials(clientID, clientSecret);
 
         // logout jira
@@ -94,45 +94,37 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 
         jira.getTester().gotoUrl(oauthAppLink);
 
-    	try
-		{
-			jira.getTester().getDriver().switchTo().alert().accept();
-		} catch (Exception e)
-		{
-			// nop, probably no leave page alert
-		}
-
         GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
         registerAppPage.deleteOAuthApp();
 
-        jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
+        jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
+        GithubLoginPage ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
+        ghLoginPage.doLogout();
     }
 
-    @Before
-    public void removeExistingPostCommitHooks()
+    @BeforeMethod
+    public void removeExistingPostCommitHooks() throws IOException
     {
-        String[] githubRepositories = {"repo1", "test-project"};
-
-        for (String githubRepositoryId : githubRepositories) {
-            Set<String> extractedGithubHookIds = extractGithubHookIdsForRepositoryToRemove(githubRepositoryId);
-
-            for (String extractedGithubHookId : extractedGithubHookIds)
+        String[] githubRepositories = { "repo1", "test-project" };
+        for (String githubRepositoryName : githubRepositories)
+        {
+            Set<Long> extractedGithubHookIds = extractGithubHookIdsForRepositoryToRemove(githubRepositoryName);
+            for (long extractedGithubHookId : extractedGithubHookIds)
             {
-                removePostCommitHook(githubRepositoryId, extractedGithubHookId);
+                removePostCommitHook(githubRepositoryName, extractedGithubHookId);
             }
         }
     }
 
-    @After
+    @AfterMethod
     public void deleteRepositoriesAfterTest()
     {
         goToConfigPage();
         configureOrganizations.deleteAllOrganizations();
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    protected Class getPageClass()
+    protected Class<GithubConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return GithubConfigureOrganizationsPage.class;
     }
@@ -140,17 +132,17 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     @Test
     public void addOrganization()
     {
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, false);
-        assertThat(configureOrganizations.getOrganizations().size(), equalTo(1));
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, false);
+        assertThat(configureOrganizations.getOrganizations()).hasSize(1);
     }
 
     @Test
     public void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount()
     {
         // we should see 'private-dvcs-connector-test' repo
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, "atlassian", false);
+        configureOrganizations.addOrganizationSuccessfully("atlassian", false);
 
-        assertThat(configureOrganizations.containsRepositoryWithName("private-dvcs-connector-test"), is(true));
+        assertThat(configureOrganizations.containsRepositoryWithName("private-dvcs-connector-test")).isTrue();
     }
 
     @Test
@@ -159,7 +151,7 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         configureOrganizations.addOrganizationFailingStep1(TEST_NOT_EXISTING_URL);
 
         String errorMessage = configureOrganizations.getErrorStatusMessage();
-        assertThat(errorMessage, containsString("is incorrect or the server is not responding."));
+        assertThat(errorMessage).contains("Invalid user/team account.");
         configureOrganizations.clearForm();
     }
 
@@ -169,19 +161,19 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
         String baseUrl = jira.getProductInstance().getBaseUrl();
 
         // add repository
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         // check that it created postcommit hook
         String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/";
-        String hooksURL = "https://github.com/jirabitbucketconnector/test-project/admin/hooks";
+        String hooksURL = "https://github.com/jirabitbucketconnector/test-project/settings/hooks";
         String hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
-        assertThat(hooksPage, containsString(githubServiceConfigUrlPath));
+        assertThat(hooksPage).contains(githubServiceConfigUrlPath);
         goToConfigPage();
         // delete repository
         configureOrganizations.deleteAllOrganizations();
         // check that postcommit hook is removed
         hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
-        assertThat(hooksPage, not(containsString(githubServiceConfigUrlPath)));
+        assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
     }
 
     private String getGithubServices(String url, String username, String password) throws Exception
@@ -200,36 +192,34 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
     @Test
     public void addRepoCommitsAppearOnIssues()
     {
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
-        assertThat(getCommitsForIssue("QA-2"),
-                Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
-        assertThat(getCommitsForIssue("QA-3"),
-                Matchers.<BitBucketCommitEntry>hasItem(withMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA")));
+        assertThat(getCommitsForIssue("QA-2", 6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
 
     @Test
     public void testCommitStatistics()
     {
         configureOrganizations.deleteAllOrganizations();
-        configureOrganizations.addOrganizationSuccessfully(TEST_URL, TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
 
         // QA-2
-        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3");
-        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3", 1); // throws AssertionError with other than 1 message
+
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertEquals("Expected Additions: 1", commitMessage.getAdditions(statistics.get(0)), "+1");
-        Assert.assertEquals("Expected Deletions: -", commitMessage.getDeletions(statistics.get(0)), "-");
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+1");
+        assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
 
         // QA-4
-        commitMessages = getCommitsForIssue("QA-4");
-        Assert.assertEquals("Expected 1 commit", 1, commitMessages.size());
+        commitMessages = getCommitsForIssue("QA-4", 1); // throws AssertionError with other than 1 message
+
         commitMessage = commitMessages.get(0);
         statistics = commitMessage.getStatistics();
-        Assert.assertEquals("Expected 1 statistic", 1, statistics.size());
-        Assert.assertTrue("Expected commit resource Added: 1", commitMessage.isAdded(statistics.get(0)));
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
     }
 
 
@@ -240,95 +230,54 @@ public class GithubOrganizationsTest extends BitBucketBaseOrgTest
 
         goToConfigPage();
 
-        configureOrganizations.addRepoToProjectFailingStep2(TEST_URL);
+        configureOrganizations.addRepoToProjectFailingStep2();
 
         goToGithubOAuthConfigPage().setCredentials(clientID, clientSecret);
     }
 
     @Test
-    public void addPrivateRepositoryWithValidOAuth() {
+    public void addPrivateRepositoryWithValidOAuth()
+    {
         GithubConfigureOrganizationsPage githubConfigPage = (GithubConfigureOrganizationsPage) goToConfigPage();
 
-        GithubConfigureOrganizationsPage githubConfigureOrganizationsPage =
-                githubConfigPage.addRepoToProjectForOrganization("dusanhornik", true);
+        GithubConfigureOrganizationsPage githubConfigureOrganizationsPage = githubConfigPage
+                .addRepoToProjectForOrganization("dusanhornik");
 
-        assertThat(githubConfigureOrganizationsPage.getNumberOfVisibleRepositories(), is(3));
+        assertThat(githubConfigureOrganizationsPage.getNumberOfVisibleRepositories()).isEqualTo(4);
     }
 
-    private static Set<String> extractGithubHookIdsForRepositoryToRemove(String repositoryId)
+    private static Set<Long> extractGithubHookIdsForRepositoryToRemove(String repositoryName) throws IOException
     {
-        String listHooksResponseString;
-        String finalGithubUrl = String.format("https://api.github.com/repos/jirabitbucketconnector/%s/hooks",
-                                              repositoryId);
+        GitHubClient gitHubClient = GithubOAuthUtils.createClient("https://api.github.com");
+        gitHubClient.setCredentials(REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
 
-        try
+        RepositoryService repositoryService = new RepositoryService(gitHubClient);
+
+        RepositoryId repositoryId = RepositoryId.create(REPO_ADMIN_LOGIN, repositoryName);
+
+        Set<Long> extractedHookIds = new LinkedHashSet<Long>();
+        for (RepositoryHook repositoryHook : repositoryService.getHooks(repositoryId))
         {
-            listHooksResponseString = HttpSenderUtils.sendGetHttpRequest(finalGithubUrl,
-                                                                         REPO_ADMIN_LOGIN,
-                                                                         REPO_ADMIN_PASSWORD);
-        }
-        catch (IOException e)
-        {
-            throw new IllegalStateException("Cannot extract BitBucket service IDs !", e);
-        }
+            long githubHookId = repositoryHook.getId();
+            String configURL = repositoryHook.getConfig().get("url");
 
-        Set<String> extractedHookIds = new LinkedHashSet<String>();
-
-        // parsing following JSON:
-        //[
-        //  {
-        //    "url": "https://api.github.com/repos/octocat/Hello-World/hooks/1",
-        //    "updated_at": "2011-09-06T20:39:23Z",
-        //    "created_at": "2011-09-06T17:26:27Z",
-        //    "name": "web",
-        //    "events": [
-        //      "push"
-        //    ],
-        //    "active": true,
-        //    "config": {
-        //      "url": "http://example.com",
-        //      "content_type": "json"
-        //    },
-        //    "id": 1
-        //  }
-        //]
-
-        try {
-            JSONArray jsonArray = new JSONArray(listHooksResponseString);
-
-            for (int i = 0; i < jsonArray.length(); i++)
+            if (configURL.contains(jira.getProductInstance().getBaseUrl()))
             {
-                JSONObject data = (JSONObject) jsonArray.get(i);
-
-                String githubHookId = data.getString("id");
-                JSONObject configObject = data.getJSONObject("config");
-                String configURL = configObject.getString("url");
-
-                if (configURL.contains(jira.getProductInstance().getBaseUrl())) {
-                    extractedHookIds.add(githubHookId);
-                }
+                extractedHookIds.add(githubHookId);
             }
-        }
-        catch (JSONException e)
-        {
-            throw new IllegalStateException("Cannot parse JSON !", e);
         }
 
         return extractedHookIds;
     }
 
-    private static void removePostCommitHook(String repositoryId, String serviceId) {
-        String finalGithubUrl = String.format(
-                "https://api.github.com/repos/jirabitbucketconnector/%s/hooks/%s",
-                repositoryId,
-                serviceId);
-        try
-        {
-            HttpSenderUtils.sendDeleteHttpRequest(finalGithubUrl, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
-        }
-        catch (IOException e)
-        {
-            throw new IllegalStateException("Cannot send DELETE Http request !", e);
-        }
+    private static void removePostCommitHook(String repositoryName, long hookId) throws IOException
+    {
+        GitHubClient gitHubClient = GithubOAuthUtils.createClient("https://api.github.com");
+        gitHubClient.setCredentials(REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
+
+        RepositoryId repositoryId = RepositoryId.create(REPO_ADMIN_LOGIN, repositoryName);
+
+        RepositoryService repositoryService = new RepositoryService(gitHubClient);
+        repositoryService.deleteHook(repositoryId, (int) hookId);
     }
 }

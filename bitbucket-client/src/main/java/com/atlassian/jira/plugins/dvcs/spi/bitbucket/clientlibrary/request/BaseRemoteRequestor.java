@@ -1,16 +1,33 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
 
 /**
  * BaseRemoteRequestor
@@ -26,41 +43,100 @@ import org.slf4j.LoggerFactory;
  */
 public class BaseRemoteRequestor implements RemoteRequestor
 {
-    private static final int HTTP_STATUS_CODE_UNAUTHORIZED = 401;
-    private static final int HTTP_STATUS_CODE_FORBIDDEN = 403;
-    private static final int HTTP_STATUS_CODE_NOT_FOUND = 404;
-
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
 
     protected final String apiUrl;
+    private final HttpClientProxyConfig proxyConfig;
 
     public BaseRemoteRequestor(String apiUrl)
     {
         this.apiUrl = apiUrl;
+        proxyConfig = new HttpClientProxyConfig();
     }
 
     @Override
-    public RemoteResponse get(String uri, Map<String, String> parameters)
+    public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        return requestWithoutPayload(HttpMethod.GET, uri, parameters);
+        return getWithRetry(uri, parameters, callback);
     }
 
     @Override
-    public RemoteResponse delete(String uri)
+    public <T> T delete(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        return requestWithoutPayload(HttpMethod.DELETE, uri, Collections.<String, String> emptyMap());
+        return deleteWithRetry(uri, parameters, callback);
     }
 
     @Override
-    public RemoteResponse post(String uri, Map<String, String> parameters)
+    public  <T> T post(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        return requestWithPayload(HttpMethod.POST, uri, parameters);
+        return postWithRetry(uri, parameters, callback);
     }
 
+
     @Override
-    public RemoteResponse put(String uri, Map<String, String> parameters)
+    public <T> T put(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        return requestWithPayload(HttpMethod.PUT, uri, parameters);
+        return putWithRetry(uri, parameters, callback);
+    }
+
+    // --------------------------------------------------------------------------------------------------
+    // Retryers...
+    // --------------------------------------------------------------------------------------------------
+    
+    private <T> T getWithRetry(final String uri, final Map<String, String> parameters,
+            final ResponseCallback<T> callback)
+    {
+        return new BadRequestRetryer<T>().retry(new Callable<T>()
+        {
+            @Override
+            public T call() throws Exception
+            {
+                HttpGet getMethod = new HttpGet();
+                return requestWithoutPayload(getMethod, uri, parameters, callback);
+            }
+        });
+    }
+
+    private <T> T deleteWithRetry(final String uri, final Map<String, String> parameters,
+            final ResponseCallback<T> callback)
+    {
+        return new BadRequestRetryer<T>().retry(new Callable<T>()
+        {
+            @Override
+            public T call() throws Exception
+            {
+                HttpDelete method = new HttpDelete();
+                return requestWithoutPayload(method, uri, parameters, callback);
+            }
+        });
+    }
+
+    private <T> T postWithRetry(final String uri, final Map<String, String> parameters,
+            final ResponseCallback<T> callback)
+    {
+        return new BadRequestRetryer<T>().retry(new Callable<T>()
+        {
+            @Override
+            public T call() throws Exception
+            {
+                HttpPost method = new HttpPost();
+                return requestWithPayload(method, uri, parameters, callback);
+            }
+        });
+    }
+
+    private <T> T putWithRetry(final String uri, final Map<String, String> parameters,
+            final ResponseCallback<T> callback)
+    {
+        return new BadRequestRetryer<T>().retry(new Callable<T>()
+        {
+            @Override
+            public T call() throws Exception
+            {
+                HttpPut method = new HttpPut();
+                return requestWithPayload(method, uri, parameters, callback);
+            }
+        });
     }
 
     // --------------------------------------------------------------------------------------------------
@@ -69,7 +145,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     /**
      * E.g. append basic auth headers ...
      */
-    protected void onConnectionCreated(HttpURLConnection connection, HttpMethod method, Map<String, String> params)
+    protected void onConnectionCreated(DefaultHttpClient client, HttpRequestBase method, Map<String, String> params)
             throws IOException
     {
 
@@ -78,7 +154,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     /**
      * E.g. append oauth params ...
      */
-    protected String afterFinalUriConstructed(HttpMethod forMethod, String finalUri, Map<String, String> params)
+    protected String afterFinalUriConstructed(HttpRequestBase method, String finalUri, Map<String, String> params)
     {
         return finalUri;
     }
@@ -87,75 +163,119 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // Helpers
     // --------------------------------------------------------------------------------------------------
 
-    protected void logRequest(HttpURLConnection connection, Map<String, String> params)
+    protected void logRequest(HttpRequestBase method, String finalUrl, Map<String, String> params)
     {
-        log.debug("[REST call {} : {} :: {}]", new Object[] { connection.getRequestMethod(), connection.getURL(),
-            params });
+        log.debug("[Headers {}]", method.getParams());
+        log.debug("[REST call {} : {} :: {}]", new Object[] { method.getMethod(), finalUrl, params });
     }
 
-    private RemoteResponse requestWithPayload(HttpMethod postOrPut, String uri, Map<String, String> params)
+    private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, String> params, ResponseCallback<T> callback)
     {
-
-        HttpURLConnection connection = null;
+        DefaultHttpClient client = new DefaultHttpClient();
+        RemoteResponse response = null;
+       
         try
         {
-            connection = createConnection(postOrPut, uri, params);
-            setPayloadParams(connection, params);
+            createConnection(client, method, uri, params);
+            setPayloadParams(method, params);
 
-            return checkAndCreateRemoteResponse(connection);
+            HttpResponse httpResponse = client.execute(method);
+            response = checkAndCreateRemoteResponse(client, httpResponse);
+
+            return callback.onResponse(response);
 
         } catch (BitbucketRequestException e)
         {
             throw e; // Unauthorized or NotFound exceptions will be rethrown
         } catch (IOException e)
         {
-            log.debug("Failed to execute request: " + connection, e);
-            throw new BitbucketRequestException("Failed to execute request " + connection, e);
+            log.debug("Failed to execute request: " + method.getURI(), e);
+            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
+        } catch (URISyntaxException e)
+        {
+            log.debug("Failed to execute request: " + method.getURI(), e);
+            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
+        } finally
+        {
+            closeResponse(response);
         }
     }
 
-    private RemoteResponse requestWithoutPayload(HttpMethod getOrDelete, String uri, Map<String, String> parameters)
+    private void closeResponse(RemoteResponse response)
     {
-        HttpURLConnection connection = null;
+        if (response != null)
+        {
+            response.close();
+        }
+    }
+
+    private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
+    {
+        DefaultHttpClient client = new DefaultHttpClient();
+        RemoteResponse response = null;
+       
         try
         {
-            connection = createConnection(getOrDelete, uri + paramsToString(parameters, uri.contains("?")), parameters);
-            return checkAndCreateRemoteResponse(connection);
+            createConnection(client, method, uri + paramsToString(parameters, uri.contains("?")), parameters);
+          
+            HttpResponse httpResponse = client.execute(method);
+            response = checkAndCreateRemoteResponse(client, httpResponse);
+            
+            return callback.onResponse(response);
 
         } catch (IOException e)
         {
-            log.debug("Failed to execute request: " + connection, e);
-            throw new BitbucketRequestException("Failed to execute request " + connection, e);
+            log.debug("Failed to execute request: " + method.getURI(), e);
+            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
+            
+        } catch (URISyntaxException e)
+        {
+            log.debug("Failed to execute request: " + method.getURI(), e);
+            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
+        } finally
+        {
+            closeResponse(response);
         }
     }
 
-    private RemoteResponse checkAndCreateRemoteResponse(HttpURLConnection connection) throws IOException
+    private RemoteResponse checkAndCreateRemoteResponse(DefaultHttpClient client, HttpResponse httpResponse) throws IOException
     {
+        
         RemoteResponse response = new RemoteResponse();
 
-        if (connection.getResponseCode() >= 300)
+        int statusCode = httpResponse.getStatusLine().getStatusCode();
+        if (statusCode >= 300)
         {
-            RuntimeException toBeThrown =  new BitbucketRequestException("Error response code during the request : "
-                    + connection.getResponseCode());
-            
-            switch (connection.getResponseCode())
+            RuntimeException toBeThrown = new BitbucketRequestException("Error response code during the request : "
+                    + statusCode);            
+             
+            switch (statusCode)
             {
-            case HTTP_STATUS_CODE_UNAUTHORIZED:
+            case HttpStatus.SC_BAD_REQUEST:
+                toBeThrown = new BitbucketRequestException.BadRequest_400();
+                break;
+            case HttpStatus.SC_UNAUTHORIZED:
                 toBeThrown = new BitbucketRequestException.Unauthorized_401();
-
-            case HTTP_STATUS_CODE_FORBIDDEN:
+                break;
+            case HttpStatus.SC_FORBIDDEN:
                 toBeThrown = new BitbucketRequestException.Forbidden_403();
-
-            case HTTP_STATUS_CODE_NOT_FOUND:
+                break;
+            case HttpStatus.SC_NOT_FOUND:
                 toBeThrown = new BitbucketRequestException.NotFound_404();
+                break;
             }
             
             // log.error("Failed to properly execute request [" + connection.getRequestMethod() + "] : " + connection, toBeThrown);
             throw toBeThrown;
         }
 
-        response.setHttpStatusCode(connection.getResponseCode());
-        response.setResponse(connection.getInputStream());
+        response.setHttpStatusCode(statusCode);
+        if (httpResponse.getEntity() != null)
+        {
+            response.setResponse(httpResponse.getEntity().getContent());
+        }
+        response.setHttpClient(client);
+
         return response;
     }
 
@@ -209,60 +329,33 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
     }
 
-    private HttpURLConnection createConnection(HttpMethod method, String uri, Map<String, String> params)
-            throws IOException
+    private void createConnection(DefaultHttpClient client, HttpRequestBase method, String uri, Map<String, String> params)
+            throws IOException, URISyntaxException
     {
+        proxyConfig.configureProxy(client, apiUrl + uri);
+        
         String finalUrl = afterFinalUriConstructed(method, apiUrl + uri, params);
-
-        HttpURLConnection connection = method.createConnection(finalUrl);
-
+        method.setURI(new URI(finalUrl)); 
         //
-        logRequest(connection, params);
-        //
+        logRequest(method, finalUrl, params);
         //
         // something to extend
         //
-        onConnectionCreated(connection, method, params);
+        onConnectionCreated(client, method, params);
 
-        return connection;
     }
 
-    @SuppressWarnings("all")
-    private void setPayloadParams(HttpURLConnection connection, Map<String, String> params) throws IOException
+    private void setPayloadParams(HttpEntityEnclosingRequestBase method, Map<String, String> params) throws IOException
     {
-        connection.setDoOutput(true);
-
         if (params != null)
         {
-            byte[] data = new byte[] {};
-
-            // assuming post/put kind of "form" params
-            StringBuilder paramsAsString = new StringBuilder();
-            paramsMapToString(params, paramsAsString);
-
-            data = paramsAsString.toString().getBytes("UTF-8");
-
-            connection.setFixedLengthStreamingMode(data.length);
-            BufferedOutputStream output = new BufferedOutputStream(connection.getOutputStream());
-            try
+            List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+            for (Entry<String, String> entry : params.entrySet())
             {
-
-                output.write(data);
-                output.flush();
-
-            } finally
-            {
-                try
-                {
-                    output.close();
-                } catch (IOException ignored)
-                {
-                    // nop
-                }
+                formparams.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
             }
-        } else
-        {
-            connection.setFixedLengthStreamingMode(0);
+            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, "UTF-8");
+            method.setEntity(entity);
         }
     }
 }

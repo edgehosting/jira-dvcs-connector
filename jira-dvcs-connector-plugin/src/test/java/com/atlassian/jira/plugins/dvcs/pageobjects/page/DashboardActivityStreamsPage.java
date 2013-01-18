@@ -4,10 +4,11 @@ import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.webdriver.jira.JiraTestedProduct;
-import junit.framework.Assert;
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+
+import static org.fest.assertions.api.Assertions.*;
 
 /**
  *
@@ -32,7 +33,6 @@ public class DashboardActivityStreamsPage implements Page
     @Override
     public String getUrl()
     {
-//        return "/secure/Dashboard.jspa";
         return "/secure/admin/EditDefaultDashboard!default.jspa";
     }
 
@@ -62,7 +62,7 @@ public class DashboardActivityStreamsPage implements Page
     }
 
     private void showFilter(){
-        Assert.assertTrue(filterIconElm.isVisible());
+        assertThat(filterIconElm.isVisible()).isTrue();
         filterIconElm.click();
     }
 
@@ -75,7 +75,7 @@ public class DashboardActivityStreamsPage implements Page
         addFilterLinkElm.click();
 
         WebElement ruleSelectkElm = jira.getTester().getDriver().findElement(By.className("rule"));
-        ruleSelectkElm.findElement(By.xpath("//option[text() = 'JIRA Issue Key']")).setSelected();
+        ruleSelectkElm.findElement(By.xpath("//option[text() = 'JIRA Issue Key']")).click();
 
 
         WebElement issueKeyInputElm = jira.getTester().getDriver().findElement(By.name("streams-issue-key-is"));
