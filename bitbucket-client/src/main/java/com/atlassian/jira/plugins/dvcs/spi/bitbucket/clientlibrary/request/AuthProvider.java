@@ -7,5 +7,6 @@ public interface AuthProvider
 	
 	String getApiUrl();
 	
+	void setApiVersion(int apiVersion);
 }
 

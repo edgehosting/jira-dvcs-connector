@@ -46,7 +46,7 @@ public class BitbucketRemoteClient
     private final RemoteRequestor requestor;
 
     private final BranchesAndTagsRemoteRestpoint branchesAndTagsRemoteRestpoint;
-    
+    private final PullRequestRemoteRestpoint pullRequestsEndpoint;
 	
 	public BitbucketRemoteClient(AuthProvider provider)
 	{
@@ -59,6 +59,7 @@ public class BitbucketRemoteClient
         this.repositoryRemoteRestpoint = new RepositoryRemoteRestpoint(requestor);
         this.serviceRemoteRestpoint = new ServiceRemoteRestpoint(requestor);
         this.branchesAndTagsRemoteRestpoint = new BranchesAndTagsRemoteRestpoint(requestor);
+        this.pullRequestsEndpoint = new PullRequestRemoteRestpoint(requestor);
 	}
 	
     public AccountRemoteRestpoint getAccountRest()
@@ -98,8 +99,7 @@ public class BitbucketRemoteClient
 	
 	public PullRequestRemoteRestpoint getPullRequestAndCommentsRemoteRestpoint()
 	{
-	    // TODO
-	    return null;
+	    return this.pullRequestsEndpoint;
 	}
 
     public RemoteRequestor getRequestor()

@@ -1,10 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 import java.util.Date;
+import java.util.Set;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * 
@@ -33,6 +39,24 @@ public class PullRequestRemoteRestpoint
 
     }
     
+    public BitbucketPullRequest getPullRequestDetail(String owner, String repoSlug, String localId) {
+
+        String url = String.format("/repositories/%s/%s/pullrequests/%s", owner, repoSlug, localId);
+
+        return requestor.get(url, null, new ResponseCallback<BitbucketPullRequest>()
+        {
+
+            @Override
+            public BitbucketPullRequest onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), new TypeToken<Set<BitbucketPullRequest>>()
+                {
+                }.getType());
+            }
+
+        });
+        
+    }
 
 }
 

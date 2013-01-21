@@ -24,9 +24,6 @@ public abstract class BitbucketPullRequestBaseActivity implements Serializable, 
     
     private BitbucketRepository repository;
     
-    // PR title
-    private String title; 
-
     public BitbucketPullRequestBaseActivity()
     {
         super();
@@ -50,16 +47,6 @@ public abstract class BitbucketPullRequestBaseActivity implements Serializable, 
     public void setUser(BitbucketAccount user)
     {
         this.user = user;
-    }
-
-    public String getTitle()
-    {
-        return title;
-    }
-
-    public void setTitle(String title)
-    {
-        this.title = title;
     }
 
     public BitbucketRepository getRepository()

@@ -21,36 +21,48 @@ import com.google.gson.JsonParseException;
  * @author jhocman@atlassian.com
  *
  */
-public class BitbucketPullRequestActivityDeserializer implements JsonDeserializer<BitbucketPullRequestBaseActivity>
+public class BitbucketPullRequestActivityEnvelopeDeserializer implements JsonDeserializer<BitbucketPullRequestActivityInfo>
 {
 
     @Override
-    public BitbucketPullRequestBaseActivity deserialize(JsonElement json, Type typeOfT,
+    public BitbucketPullRequestActivityInfo deserialize(JsonElement json, Type typeOfT,
             JsonDeserializationContext context) throws JsonParseException
     {
         
         JsonObject jsonObject = json.getAsJsonObject();
 
+        BitbucketPullRequestActivityInfo touple = new BitbucketPullRequestActivityInfo();
+        touple.setPr((BitbucketPullRequest) context.deserialize(jsonObject.get("pr"), BitbucketPullRequest.class));
+
+        BitbucketPullRequestBaseActivity activity = null;
+
         if (asComment(jsonObject) != null)
         {
-            return context.deserialize(asComment(jsonObject), BitbucketPullRequestCommentActivity.class);
+            activity = context.deserialize(asComment(jsonObject), BitbucketPullRequestCommentActivity.class);
 
         } else if (asUpdate(jsonObject) != null)
         {
-            return context.deserialize(asUpdate(jsonObject), BitbucketPullRequestUpdateActivity.class);
+            activity =  context.deserialize(asUpdate(jsonObject), BitbucketPullRequestUpdateActivity.class);
 
         } else if (asLike(jsonObject) != null)
         {
-            return context.deserialize(asLike(jsonObject), BitbucketPullRequestLikeActivity.class);
-        }
+            activity =  context.deserialize(asLike(jsonObject), BitbucketPullRequestLikeActivity.class);
 
-        throw new JsonParseException("Unknown type of activity : " + json);
+        } else {
+            
+            throw new JsonParseException("Unknown type of activity : " + json.getAsString());
+        }
+        
+        touple.setActivity(activity);
+        
+        return touple;
+
     }
 
     public static Map<Class<?>, JsonDeserializer<?>>  asMap()
     {
         Map<Class<?>, JsonDeserializer<?>> deserializers = new HashMap<Class<?>, JsonDeserializer<?>>();
-        deserializers.put(BitbucketPullRequestBaseActivity.class, new BitbucketPullRequestActivityDeserializer ());
+        deserializers.put(BitbucketPullRequestBaseActivity.class, new BitbucketPullRequestActivityEnvelopeDeserializer ());
         return deserializers;
     }
 

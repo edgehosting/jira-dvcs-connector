@@ -7,11 +7,18 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 public interface RepositoryActivityDao
 {
-    void save (Map<String, Object> activity);
+    // C-U-D
+    void saveActivity (Map<String, Object> activity);
 
+    RepositoryPullRequestMapping savePullRequest (Map<String, Object> activity);
+
+    void removeAll (Repository forRepository);
+    
+    // R
     List<RepositoryActivityPullRequestMapping> getRepositoryActivityForIssue(String issueKey);
     
-    void removeAll (Repository forRepository);
+    RepositoryPullRequestMapping findRequestById(Integer localId, String repoSlug);
+
     
 }
 

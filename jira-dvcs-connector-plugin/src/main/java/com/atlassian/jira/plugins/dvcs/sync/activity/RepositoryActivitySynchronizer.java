@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.spi.bitbucket.activity;
+package com.atlassian.jira.plugins.dvcs.sync.activity;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 

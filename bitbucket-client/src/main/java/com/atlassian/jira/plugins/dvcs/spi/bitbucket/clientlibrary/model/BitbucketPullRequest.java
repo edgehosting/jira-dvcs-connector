@@ -22,7 +22,7 @@ public class BitbucketPullRequest implements Serializable
     private String title;
 
     private BitbucketAccount user;
-
+    
     public BitbucketPullRequest()
     {
         super();

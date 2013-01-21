@@ -12,5 +12,8 @@ public interface BitbucketClientRemoteFactory
     BitbucketRemoteClient getForRepository(Repository repository);
 
     BitbucketRemoteClient getNoAuthClient(String hostUrl);
+    
+    //
+    BitbucketRemoteClient getForRepository(Repository repository, int apiVersion);
 
 }

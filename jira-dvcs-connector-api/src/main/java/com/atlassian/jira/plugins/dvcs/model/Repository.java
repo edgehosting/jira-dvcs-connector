@@ -25,6 +25,8 @@ public class Repository
     private boolean deleted;
     private boolean smartcommitsEnabled;
     
+    private Date activityLastSync;
+    
     private String repositoryUrl;
     
 	private transient Credential credential;
@@ -228,4 +230,14 @@ public class Repository
 	{
         return repositoryUrl + ", " + name + ", " + linked + ", " + deleted + ", " + smartcommitsEnabled;
 	}
+
+    public Date getActivityLastSync()
+    {
+        return activityLastSync;
+    }
+
+    public void setActivityLastSync(Date activityLastSync)
+    {
+        this.activityLastSync = activityLastSync;
+    }
 }

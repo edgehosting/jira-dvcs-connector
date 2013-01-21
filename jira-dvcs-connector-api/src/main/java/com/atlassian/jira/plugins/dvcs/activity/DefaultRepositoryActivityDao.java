@@ -44,7 +44,7 @@ public class DefaultRepositoryActivityDao implements RepositoryActivityDao
     }
 
     @Override
-    public void save(final Map<String, Object> activity)
+    public void saveActivity(final Map<String, Object> activity)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
@@ -56,6 +56,30 @@ public class DefaultRepositoryActivityDao implements RepositoryActivityDao
             }
 
         });
+    }
+    
+    @Override
+    public RepositoryPullRequestMapping savePullRequest(final Map<String, Object> request)
+    {
+        return
+        activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
+                {
+                    public RepositoryPullRequestMapping doInTransaction()
+                    {
+                        return  activeObjects.create(RepositoryPullRequestMapping.class,
+                                request);
+                    }
+
+                });
+    }
+    
+    @Override
+    public RepositoryPullRequestMapping findRequestById(Integer localId, String repoSlug)
+    {
+        Query query = Query.select().from(RepositoryPullRequestMapping.class)
+                .where(RepositoryPullRequestMapping.LOCAL_ID +  " = ? AND " + RepositoryPullRequestMapping.TO_REPO_SLUG + " = ?", localId, repoSlug);
+        RepositoryPullRequestMapping[] found = activeObjects.find(RepositoryPullRequestMapping.class, query);
+        return found.length == 1 ? found[0] : null;
     }
 
     @Override
@@ -139,5 +163,6 @@ public class DefaultRepositoryActivityDao implements RepositoryActivityDao
 
         return sortable;
     }
+
 
 }

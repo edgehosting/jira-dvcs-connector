@@ -45,6 +45,15 @@ public final class DefaultBitbucketRemoteClientFactory implements BitbucketClien
     }
     
     @Override
+    public BitbucketRemoteClient getForRepository(Repository repository, int apiVersion)
+    {
+        AuthProvider authProvider = createProviderForRepository(repository);
+        authProvider.setApiVersion(apiVersion);
+
+        return new BitbucketRemoteClient(authProvider);
+    }
+    
+    @Override
     public BitbucketRemoteClient getNoAuthClient(String hostUrl)
     {
         AuthProvider authProvider = new NoAuthAuthProvider(hostUrl);
@@ -119,4 +128,6 @@ public final class DefaultBitbucketRemoteClientFactory implements BitbucketClien
 
         return authProvider;
     }
+
+    
 }

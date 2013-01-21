@@ -155,5 +155,5 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     {
         return String.format("/repositories/%s/%s/pullrequests/activity", forUser, forRepoSlug);
     }
-
+    
 }

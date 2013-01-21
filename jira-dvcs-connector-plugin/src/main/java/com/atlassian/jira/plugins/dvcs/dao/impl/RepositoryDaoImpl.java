@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 		repository.setOrgName(organizationMapping.getName());
 		repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
 		repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
+		repository.setActivityLastSync(repositoryMapping.getActivityLastSync());
 		
 		// set sync progress
 		repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
@@ -246,6 +248,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 							map.put(RepositoryMapping.LINKED, repository.isLinked());
 							map.put(RepositoryMapping.DELETED, repository.isDeleted());
 							map.put(RepositoryMapping.SMARTCOMMITS_ENABLED, repository.isSmartcommitsEnabled());
+							map.put(RepositoryMapping.ACTIVITY_LAST_SYNC, repository.getActivityLastSync());
 
 							rm = activeObjects.create(RepositoryMapping.class, map);
                             rm = activeObjects.find(RepositoryMapping.class, "ID = ?", rm.getID())[0];
@@ -259,6 +262,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 							rm.setLinked(repository.isLinked());
 							rm.setDeleted(repository.isDeleted());
 							rm.setSmartcommitsEnabled(repository.isSmartcommitsEnabled());
+							rm.setActivityLastSync(repository.getActivityLastSync());
 
 							rm.save();
 						}
@@ -269,6 +273,22 @@ public class RepositoryDaoImpl implements RepositoryDao
 		return transform(repositoryMapping, getOrganizationMapping(repository.getOrganizationId()));
 
 	}
+	
+    @Override
+    public void setLastActivitySyncDate(final Integer id, final Date date)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            public Void doInTransaction()
+            {
+                RepositoryMapping repo = activeObjects.get(RepositoryMapping.class, id);
+                repo.setActivityLastSync(date);
+                repo.save();
+                return null;
+            }
+        });
+    }
+	
 
     @Override
     public void remove(int repositoryId)

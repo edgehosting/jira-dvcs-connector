@@ -15,6 +15,8 @@ public abstract class AbstractOauthProvider implements AuthProvider
 {
 	private final String hostUrl;
 	
+	private int apiVersion = 1;
+	
 	public AbstractOauthProvider(String hostUrl)
 	{
 		this.hostUrl = hostUrl;
@@ -23,8 +25,13 @@ public abstract class AbstractOauthProvider implements AuthProvider
     @Override
 	public String getApiUrl()
 	{
-		return hostUrl.replaceAll("/$", "") + "/api/1.0";
+		return hostUrl.replaceAll("/$", "") + "/api/"  + apiVersion + ".0";
 	}
+
+    public void setApiVersion(int apiVersion)
+    {
+        this.apiVersion = apiVersion;
+    }
 
 }
 
