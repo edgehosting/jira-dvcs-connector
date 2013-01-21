@@ -3,10 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 public interface InvalidOrganizationManager
 {
 
-    void validateOrganization(int organizationId);
+	void setOrganizationValid(int organizationId, boolean valid);
 
-    void invalidateOrganization(int organizationId);
-
-    boolean isInvalidOrganization(int organizationId);
-
+	boolean isOrganizationValid(int organizationId);
 }

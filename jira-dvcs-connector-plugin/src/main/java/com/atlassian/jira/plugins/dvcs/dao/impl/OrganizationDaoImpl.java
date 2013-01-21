@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -309,7 +308,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 	
 		// removing organization from invalid organizations list
 		InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
-		invalidOrganizationsManager.validateOrganization(organizationId);
+		invalidOrganizationsManager.setOrganizationValid(organizationId, true);
 	}
 
 	/**

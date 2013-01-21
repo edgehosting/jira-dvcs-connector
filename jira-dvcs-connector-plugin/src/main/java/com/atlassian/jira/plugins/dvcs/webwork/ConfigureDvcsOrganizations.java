@@ -71,7 +71,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
 	public boolean isInvalidOrganization(Organization organization)
 	{
-	    return invalidOrganizationsManager.isInvalidOrganization(organization.getId());
+	    return !invalidOrganizationsManager.isOrganizationValid(organization.getId());
 	}
 	
     private void sort(List<Organization> allOrganizations)

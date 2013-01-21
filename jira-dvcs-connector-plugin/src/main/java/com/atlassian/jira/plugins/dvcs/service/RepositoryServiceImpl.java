@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -8,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +20,6 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
-import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.collect.Maps;
 
@@ -108,7 +105,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		log.debug("Synchronising list of repositories");
 		
 		InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
-		invalidOrganizationsManager.validateOrganization(organization.getId());
+		invalidOrganizationsManager.setOrganizationValid(organization.getId(), true);
 		
 		// get repositories from the dvcs hosting server
 		DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
@@ -121,7 +118,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		} 
         catch (SourceControlException e)
         {
-            invalidOrganizationsManager.invalidateOrganization(organization.getId());
+            invalidOrganizationsManager.setOrganizationValid(organization.getId(),false);
             // we could not load repositories, we can't continue
             return;
         }

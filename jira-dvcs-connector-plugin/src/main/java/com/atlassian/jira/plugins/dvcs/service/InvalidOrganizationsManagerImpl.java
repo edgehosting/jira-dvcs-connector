@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import java.util.List;
 
-import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 public class InvalidOrganizationsManagerImpl implements InvalidOrganizationManager {
@@ -16,11 +15,19 @@ public class InvalidOrganizationsManagerImpl implements InvalidOrganizationManag
         this.pluginSettingsFactory = pluginSettingsFactory;
     }
     
-    /* (non-Javadoc)
-     * @see com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager#validateOrganization(int)
-     */
     @Override
-    public void validateOrganization(int organizationId)
+    public void setOrganizationValid(int organizationId, boolean valid) {
+    	if ( valid )
+    	{
+    		validateOrganization(organizationId);
+    	} else
+    	{
+    		invalidateOrganization(organizationId);
+    	}
+    	
+    }
+
+    private void validateOrganization(int organizationId)
     {
         List<String> invalidOrganizations = loadInvalidOrganizations();
         String organizationIdString =  Integer.toString(organizationId);
@@ -32,11 +39,7 @@ public class InvalidOrganizationsManagerImpl implements InvalidOrganizationManag
         
     }
     
-    /* (non-Javadoc)
-     * @see com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager#invalidateOrganization(int)
-     */
-    @Override
-    public void invalidateOrganization(int organizationId)
+    private void invalidateOrganization(int organizationId)
     {
         List<String> invalidOrganizations = loadInvalidOrganizations();
         String organizationIdString =  Integer.toString(organizationId);
@@ -47,19 +50,16 @@ public class InvalidOrganizationsManagerImpl implements InvalidOrganizationManag
         }
     }
     
-    /* (non-Javadoc)
-     * @see com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager#isInvalidOrganization(int)
-     */
     @Override
-    public boolean isInvalidOrganization(int organizationId)
+    public boolean isOrganizationValid(int organizationId)
     {
         List<String> invalidOrganizations = loadInvalidOrganizations();
         if (invalidOrganizations == null)
         {
-            return false;
+            return true;
         }
         
-        return invalidOrganizations.contains(Integer.toString(organizationId));
+        return !invalidOrganizations.contains(Integer.toString(organizationId));
     }
     
     @SuppressWarnings("unchecked")
