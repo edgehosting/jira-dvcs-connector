@@ -9,7 +9,7 @@ import static org.fest.assertions.api.Assertions.*;
 
 public class OrganizationDaoImplTest
 {
-    private final OrganizationDaoImpl oDao = new OrganizationDaoImpl(null, null);
+    private final OrganizationDaoImpl oDao = new OrganizationDaoImpl(null, null, null);
 
     @Test
     public void testDeserializeDefaultGroups()

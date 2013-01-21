@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +22,7 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.collect.Maps;
 
@@ -103,9 +106,26 @@ public class RepositoryServiceImpl implements RepositoryService
 	public synchronized void syncRepositoryList(Organization organization, boolean soft)
 	{
 		log.debug("Synchronising list of repositories");
+		
+		InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
+		invalidOrganizationsManager.validateOrganization(organization.getId());
+		
 		// get repositories from the dvcs hosting server
 		DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-		List<Repository> remoteRepositories = communicator.getRepositories(organization);
+		
+		List<Repository> remoteRepositories;
+		
+		try 
+		{
+		    remoteRepositories = communicator.getRepositories(organization);
+		} 
+        catch (SourceControlException e)
+        {
+            invalidOrganizationsManager.invalidateOrganization(organization.getId());
+            // we could not load repositories, we can't continue
+            return;
+        }
+
         // get local repositories
 		List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
 
@@ -116,8 +136,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		// repositories that are no longer on hosting server will be marked as deleted
 		removeDeletedRepositories(storedRepositories, remoteRepositories);
 		// new repositories will be added to the database
-		Set<String> newRepoSlugs 
-		= addNewReposReturnNewSlugs(storedRepositories, remoteRepositories, organization);
+		Set<String> newRepoSlugs = addNewReposReturnNewSlugs(storedRepositories, remoteRepositories, organization);
 
 		// start asynchronous changesets synchronization for all linked repositories in organization
 		syncAllInOrganization(organization.getId(), soft, newRepoSlugs);

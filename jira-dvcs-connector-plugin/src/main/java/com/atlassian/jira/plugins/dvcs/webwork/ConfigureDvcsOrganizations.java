@@ -13,10 +13,13 @@ import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.conditions.GithubEnterpriseEnabledCondition;
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager;
+import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationsManagerImpl;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 /**
  * Webwork action used to configure the bitbucket organizations
@@ -34,13 +37,16 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
     private final PluginFeatureDetector featuresDetector;
 
+    private final InvalidOrganizationManager invalidOrganizationsManager;
+    
 	public ConfigureDvcsOrganizations(OrganizationService organizationService,
-			FeatureManager featureManager, DvcsCommunicatorProvider communicatorProvider, PluginFeatureDetector featuresDetector)
+			FeatureManager featureManager, DvcsCommunicatorProvider communicatorProvider, PluginFeatureDetector featuresDetector, PluginSettingsFactory pluginSettingsFactory)
 	{
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
 		this.featureManager = featureManager;
         this.featuresDetector = featuresDetector;
+        this.invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
 	}
 
 	@Override
@@ -63,6 +69,11 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 		return allOrganizations.toArray(new Organization[]{});
 	}
 
+	public boolean isInvalidOrganization(Organization organization)
+	{
+	    return invalidOrganizationsManager.isInvalidOrganization(organization.getId());
+	}
+	
     private void sort(List<Organization> allOrganizations)
     {
         // TODO add javadoc, this is to keep integrated account on the top of the list
