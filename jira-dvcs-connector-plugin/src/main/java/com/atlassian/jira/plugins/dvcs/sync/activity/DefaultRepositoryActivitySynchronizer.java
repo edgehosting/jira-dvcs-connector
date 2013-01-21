@@ -80,7 +80,9 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
 
         if (pullRequest == null)
         {
-            pullRequest = dao.savePullRequest(toDaoModelPullRequest(null));
+            BitbucketPullRequest remotePullRequest = pullRestpoint.getPullRequestDetail(forRepository.getOrgName(),
+                    forRepository.getSlug(), info.getPullRequest().getId() + "");
+            pullRequest = dao.savePullRequest(toDaoModelPullRequest(remotePullRequest));
         }
 
         return pullRequest.getID();

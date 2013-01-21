@@ -14,8 +14,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Respo
 import com.google.gson.reflect.TypeToken;
 
 //TODO failure recoveries ... after merge with default
-public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketPullRequestBaseActivity>,
-        Iterable<BitbucketPullRequestBaseActivity>
+public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketPullRequestActivityInfo>,
+        Iterable<BitbucketPullRequestActivityInfo>
 {
 
     // configs
@@ -25,7 +25,7 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     private boolean wasDateOver = false;
     private final String forUser;
     private final String forRepoSlug;
-    private List<BitbucketPullRequestBaseActivity> currentFrame = null;
+    private List<BitbucketPullRequestActivityInfo> currentFrame = null;
 
     // services
     private final RemoteRequestor requestor;
@@ -56,7 +56,7 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
         if (wasDateOver)
         {
 
-            this.currentFrame = new ArrayList<BitbucketPullRequestBaseActivity>();
+            this.currentFrame = new ArrayList<BitbucketPullRequestActivityInfo>();
 
         } else
         {
@@ -68,7 +68,7 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     }
 
     @Override
-    public BitbucketPullRequestBaseActivity next()
+    public BitbucketPullRequestActivityInfo next()
     {
         if (currentFrame.isEmpty())
         {
@@ -80,7 +80,7 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
             throw new NoSuchElementException();
         }
 
-        BitbucketPullRequestBaseActivity currentItem = currentFrame.remove(0);
+        BitbucketPullRequestActivityInfo currentItem = currentFrame.remove(0);
 
         //
         // possibly read a next frame
@@ -94,7 +94,7 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     }
 
     @Override
-    public Iterator<BitbucketPullRequestBaseActivity> iterator()
+    public Iterator<BitbucketPullRequestActivityInfo> iterator()
     {
         return this;
     }
@@ -119,25 +119,25 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
         return params;
     }
 
-    private ResponseCallback<List<BitbucketPullRequestBaseActivity>> createResponseCallback()
+    private ResponseCallback<List<BitbucketPullRequestActivityInfo>> createResponseCallback()
     {
-        return new ResponseCallback<List<BitbucketPullRequestBaseActivity>>()
+        return new ResponseCallback<List<BitbucketPullRequestActivityInfo>>()
         {
             @Override
-            public List<BitbucketPullRequestBaseActivity> onResponse(RemoteResponse response)
+            public List<BitbucketPullRequestActivityInfo> onResponse(RemoteResponse response)
             {
-                List<BitbucketPullRequestBaseActivity> remote = 
+                BitbucketPullRequestActivityInfo[] remote = 
                         ClientUtils.fromJsonWithDeserializers(
                                                                   response.getResponse(), 
-                                                                  new TypeToken<List<BitbucketPullRequestBaseActivity>>(){}.getType(),
-                                                                  BitbucketPullRequestActivityDeserializer.asMap()
+                                                                  new TypeToken<BitbucketPullRequestActivityInfo[]>(){}.getType(),
+                                                                  BitbucketPullRequestActivityEnvelopeDeserializer.asMap()
                                                               );
                 
-                List<BitbucketPullRequestBaseActivity> ret = new ArrayList<BitbucketPullRequestBaseActivity>();
+                List<BitbucketPullRequestActivityInfo> ret = new ArrayList<BitbucketPullRequestActivityInfo>();
 
-                for (BitbucketPullRequestBaseActivity remoteActivity : remote)
+                for (BitbucketPullRequestActivityInfo remoteActivity : remote)
                 {
-                    if (remoteActivity.getUpdatedOn().after(upToDate))
+                    if (remoteActivity.getActivity().getUpdatedOn().after(upToDate))
                     {
                         ret.add(remoteActivity);
                     } else
