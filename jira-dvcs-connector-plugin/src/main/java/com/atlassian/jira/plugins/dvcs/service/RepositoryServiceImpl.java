@@ -115,12 +115,12 @@ public class RepositoryServiceImpl implements RepositoryService
 		try 
 		{
 		    remoteRepositories = communicator.getRepositories(organization);
-		} 
-        catch (SourceControlException e)
+		} catch (SourceControlException.UnauthorisedException e)
         {
+        	// we could not load repositories, we can't continue
+			// mark the organization as invalid
             invalidOrganizationsManager.setOrganizationValid(organization.getId(),false);
-            // we could not load repositories, we can't continue
-            return;
+            throw e;
         }
 
         // get local repositories
