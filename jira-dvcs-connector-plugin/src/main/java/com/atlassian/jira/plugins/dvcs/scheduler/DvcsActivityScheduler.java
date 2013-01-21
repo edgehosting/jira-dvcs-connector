@@ -22,7 +22,9 @@ public class DvcsActivityScheduler implements LifecycleAware
     private final PluginScheduler pluginScheduler; // provided by SAL
 
     private static final String PROPERTY_KEY = "dvcs.activity.connector.scheduler.interval";
-    private static final long DEFAULT_INTERVAL = 1000L * 60 * 60; // default job
+    private static final long DEFAULT_INTERVAL = 1000L * 60 * 1; // testing - each minute
+
+//    private static final long DEFAULT_INTERVAL = 1000L * 60 * 60; // default job
                                                                   // interval (1
                                                                   // hour)
     private long interval = DEFAULT_INTERVAL;

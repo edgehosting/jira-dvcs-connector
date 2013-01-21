@@ -28,7 +28,7 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
  * 
  */
 @SuppressWarnings("all")
-public class DefaultRepositoryActivityDao implements RepositoryActivityDao
+public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 {
 
     private final ActiveObjects activeObjects;
@@ -37,7 +37,7 @@ public class DefaultRepositoryActivityDao implements RepositoryActivityDao
             RepositoryActivityPullRequestCommentMapping.class, RepositoryActivityPullRequestLikeMapping.class,
             RepositoryActivityPullRequestUpdateMapping.class };
 
-    public DefaultRepositoryActivityDao(ActiveObjects activeObjects)
+    public RepositoryActivityDaoImpl(ActiveObjects activeObjects)
     {
         super();
         this.activeObjects = activeObjects;
