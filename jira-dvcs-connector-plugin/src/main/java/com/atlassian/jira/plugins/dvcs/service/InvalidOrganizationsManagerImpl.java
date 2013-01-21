@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -42,6 +43,10 @@ public class InvalidOrganizationsManagerImpl implements InvalidOrganizationManag
     private void invalidateOrganization(int organizationId)
     {
         List<String> invalidOrganizations = loadInvalidOrganizations();
+        if ( invalidOrganizations == null )
+        {
+        	invalidOrganizations = new ArrayList<String>();
+        }
         String organizationIdString =  Integer.toString(organizationId);
         if (!invalidOrganizations.contains(organizationIdString) )
         {
