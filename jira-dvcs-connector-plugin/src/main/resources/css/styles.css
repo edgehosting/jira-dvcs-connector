@@ -460,11 +460,13 @@ html[xmlns] .dvcs-dclear {
 	margin-top: 20px;
 }
 .dvcs-invalid-organization {
-    width: 16px;
-    height: 16px;
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png);
     background-repeat: no-repeat;
+    background-position: 4px -1px; 
     display: inline-block;
-    position: relative;
-    top: 2px;	
+    padding-left: 25px;
+    position:relative;
+    font-weight: normal;
+    font-size:11px;
+    top: 4px;
 }
