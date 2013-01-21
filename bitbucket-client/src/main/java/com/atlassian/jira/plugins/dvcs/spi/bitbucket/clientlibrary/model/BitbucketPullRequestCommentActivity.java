@@ -16,6 +16,8 @@ public class BitbucketPullRequestCommentActivity extends BitbucketPullRequestBas
 {
 
     private static final long serialVersionUID = 8212352604704981087L;
+    
+    private String cm;
 
     public BitbucketPullRequestCommentActivity()
     {
@@ -27,6 +29,16 @@ public class BitbucketPullRequestCommentActivity extends BitbucketPullRequestBas
     {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public String getCm()
+    {
+        return cm;
+    }
+
+    public void setCm(String cm)
+    {
+        this.cm = cm;
     }
     
     

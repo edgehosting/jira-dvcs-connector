@@ -5,8 +5,8 @@ import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityIterator;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
@@ -33,7 +33,7 @@ public class PullRequestRemoteRestpoint
         this.requestor = requestor;
     }
     
-    public Iterable<BitbucketPullRequestBaseActivity> getRepositoryActivity(String owner, String repoSlug, Date upToDate) {
+    public Iterable<BitbucketPullRequestActivityInfo> getRepositoryActivity(String owner, String repoSlug, Date upToDate) {
 
         return new BitbucketPullRequestActivityIterator(requestor, upToDate, repoSlug, owner);
 

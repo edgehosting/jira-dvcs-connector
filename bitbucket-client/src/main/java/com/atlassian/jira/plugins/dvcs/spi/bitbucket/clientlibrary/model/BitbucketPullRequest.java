@@ -21,6 +21,8 @@ public class BitbucketPullRequest implements Serializable
 
     private String title;
 
+    private String href;
+
     private BitbucketAccount user;
     
     public BitbucketPullRequest()
@@ -56,6 +58,16 @@ public class BitbucketPullRequest implements Serializable
     public void setUser(BitbucketAccount user)
     {
         this.user = user;
+    }
+
+    public String getHref()
+    {
+        return href;
+    }
+
+    public void setHref(String href)
+    {
+        this.href = href;
     }
     
 

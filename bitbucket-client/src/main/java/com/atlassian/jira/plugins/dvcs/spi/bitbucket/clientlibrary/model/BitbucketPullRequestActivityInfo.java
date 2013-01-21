@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 public class BitbucketPullRequestActivityInfo
 {
     private BitbucketPullRequestBaseActivity activity;
-    private BitbucketPullRequest pr;
+    private BitbucketPullRequest pullRequest;
 
     public BitbucketPullRequestActivityInfo()
     {
@@ -20,13 +20,14 @@ public class BitbucketPullRequestActivityInfo
         this.activity = activity;
     }
 
-    public BitbucketPullRequest getPr()
+    public BitbucketPullRequest getPullRequest()
     {
-        return pr;
+        return pullRequest;
     }
 
-    public void setPr(BitbucketPullRequest pr)
+    public void setPullRequest(BitbucketPullRequest pullRequest)
     {
-        this.pr = pr;
+        this.pullRequest = pullRequest;
     }
+
 }

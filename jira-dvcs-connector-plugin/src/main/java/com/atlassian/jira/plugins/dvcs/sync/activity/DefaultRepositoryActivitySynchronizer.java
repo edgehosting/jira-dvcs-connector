@@ -12,6 +12,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommentActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestLikeActivity;
@@ -41,19 +42,19 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
         //
         // get activities iterator
         //
-        Iterable<BitbucketPullRequestBaseActivity> activites = pullRestpoint.getRepositoryActivity(
+        Iterable<BitbucketPullRequestActivityInfo> activites = pullRestpoint.getRepositoryActivity(
                 forRepository.getOrgName(), forRepository.getSlug(), forRepository.getActivityLastSync());
 
         //
         // check whether there's some interesting issue keys in activity
         // and persist it if yes
         //
-        for (BitbucketPullRequestBaseActivity activity : activites)
+        for (BitbucketPullRequestActivityInfo info : activites)
         {
-            Set<String> issueKeysFromActivity = extractIssueKeys(activity);
+            Set<String> issueKeysFromActivity = extractIssueKeys(info.getActivity());
             if (!issueKeysFromActivity.isEmpty())
             {
-                saveActivity(activity, issueKeysFromActivity, forRepository, pullRestpoint);
+                saveActivity(info, issueKeysFromActivity, forRepository, pullRestpoint);
             } else
             {
                 // yami yami activity
@@ -61,26 +62,27 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
         }
     }
 
-    private void saveActivity(BitbucketPullRequestBaseActivity activity, Set<String> issueKeysFromActivity,
+    private void saveActivity(BitbucketPullRequestActivityInfo info, Set<String> issueKeysFromActivity,
             Repository forRepository, PullRequestRemoteRestpoint pullRestpoint)
     {
-        Integer pullRequestId = ensurePullRequestPresent(forRepository, pullRestpoint, activity);
+        Integer pullRequestId = ensurePullRequestPresent(forRepository, pullRestpoint, info);
         for (String issueKey : issueKeysFromActivity)
         {
-            dao.saveActivity(toDaoModel(activity, issueKey, pullRequestId));
+            dao.saveActivity(toDaoModel(info.getActivity(), issueKey, pullRequestId));
         }
     }
 
     private Integer ensurePullRequestPresent(Repository forRepository, PullRequestRemoteRestpoint pullRestpoint,
-            BitbucketPullRequestBaseActivity activity)
+            BitbucketPullRequestActivityInfo info)
     {
-        /* NULL : not clear json format yet https://jira.atlassian.com/browse/BB-7093?focusedCommentId=430283&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-430283 */
-        RepositoryPullRequestMapping pullRequest = dao.findRequestById(/* !!! TODO !!! */ null /* !!! TODO !!! */, forRepository.getSlug());
-        
-        if (pullRequest == null) {
+        RepositoryPullRequestMapping pullRequest = dao.findRequestById(info.getPullRequest().getId(),
+                forRepository.getSlug());
+
+        if (pullRequest == null)
+        {
             pullRequest = dao.savePullRequest(toDaoModelPullRequest(null));
         }
-        
+
         return pullRequest.getID();
     }
 
@@ -135,7 +137,7 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
         ret.put(RepositoryActivityPullRequestMapping.REPO_SLUG, activity.getRepository().getSlug());
         return ret;
     }
-    
+
     private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request)
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();

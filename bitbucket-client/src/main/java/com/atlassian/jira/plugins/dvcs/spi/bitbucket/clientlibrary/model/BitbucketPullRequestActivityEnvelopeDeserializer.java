@@ -29,10 +29,10 @@ public class BitbucketPullRequestActivityEnvelopeDeserializer implements JsonDes
             JsonDeserializationContext context) throws JsonParseException
     {
         
-        JsonObject jsonObject = json.getAsJsonObject();
+        JsonObject jsonObject = json.getAsJsonObject().getAsJsonObject("item");
 
-        BitbucketPullRequestActivityInfo touple = new BitbucketPullRequestActivityInfo();
-        touple.setPr((BitbucketPullRequest) context.deserialize(jsonObject.get("pr"), BitbucketPullRequest.class));
+        BitbucketPullRequestActivityInfo info = new BitbucketPullRequestActivityInfo();
+        info.setPullRequest((BitbucketPullRequest) context.deserialize(jsonObject.get("pull_request"), BitbucketPullRequest.class));
 
         BitbucketPullRequestBaseActivity activity = null;
 
@@ -53,16 +53,16 @@ public class BitbucketPullRequestActivityEnvelopeDeserializer implements JsonDes
             throw new JsonParseException("Unknown type of activity : " + json.getAsString());
         }
         
-        touple.setActivity(activity);
+        info.setActivity(activity);
         
-        return touple;
+        return info;
 
     }
 
     public static Map<Class<?>, JsonDeserializer<?>>  asMap()
     {
         Map<Class<?>, JsonDeserializer<?>> deserializers = new HashMap<Class<?>, JsonDeserializer<?>>();
-        deserializers.put(BitbucketPullRequestBaseActivity.class, new BitbucketPullRequestActivityEnvelopeDeserializer ());
+        deserializers.put(BitbucketPullRequestActivityInfo.class, new BitbucketPullRequestActivityEnvelopeDeserializer ());
         return deserializers;
     }
 
