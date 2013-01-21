@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.sync.activity;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Set;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
@@ -20,17 +22,20 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
+// TODO failure recovery
 public class DefaultRepositoryActivitySynchronizer implements RepositoryActivitySynchronizer
 {
 
     private final BitbucketClientRemoteFactory clientFactory;
     private final RepositoryActivityDao dao;
+    private final RepositoryDao repositoryDao;
 
-    public DefaultRepositoryActivitySynchronizer(BitbucketClientRemoteFactory clientFactory, RepositoryActivityDao dao)
+    public DefaultRepositoryActivitySynchronizer(BitbucketClientRemoteFactory clientFactory, RepositoryActivityDao dao, RepositoryDao repositoryDao)
     {
         super();
         this.clientFactory = clientFactory;
         this.dao = dao;
+        this.repositoryDao = repositoryDao;
     }
 
     @Override
@@ -60,6 +65,9 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
                 // yami yami activity
             }
         }
+
+        // { finally
+        repositoryDao.setLastActivitySyncDate(forRepository.getId(), new Date());
     }
 
     private void saveActivity(BitbucketPullRequestActivityInfo info, Set<String> issueKeysFromActivity,
