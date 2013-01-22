@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.dao.impl.OrganizationDaoImpl;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 import org.mockito.MockitoAnnotations;
@@ -40,7 +41,7 @@ public class OrganizationDaoTest
 	public void initializeMocksAndOrganizationDAO()
 	{
         MockitoAnnotations.initMocks(this);
-		organizationDao = new OrganizationDaoImpl(activeObjectsMock, mock(Encryptor.class));
+		organizationDao = new OrganizationDaoImpl(activeObjectsMock, mock(Encryptor.class), mock(PluginSettingsFactory.class));
 	}
 
     @SuppressWarnings("unchecked")

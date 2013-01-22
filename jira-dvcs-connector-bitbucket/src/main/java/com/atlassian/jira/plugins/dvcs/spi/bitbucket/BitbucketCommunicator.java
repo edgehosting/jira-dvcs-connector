@@ -138,8 +138,13 @@ public class BitbucketCommunicator implements DvcsCommunicator
         } catch (BitbucketRequestException.Unauthorized_401 e)
         {
             log.debug("Invalid credentials", e);
-            throw new SourceControlException("Invalid credentials");
-        } catch (BitbucketRequestException e)
+            throw new SourceControlException.UnauthorisedException("Invalid credentials");
+        } catch ( BitbucketRequestException.BadRequest_400 e)
+        {
+        	// We received bad request status code and we assume that an invalid OAuth is the cause
+        	throw new SourceControlException.UnauthorisedException("Invalid credentials");
+        }
+        catch (BitbucketRequestException e)
         {
             log.debug(e.getMessage(), e);
             throw new SourceControlException(e.getMessage());

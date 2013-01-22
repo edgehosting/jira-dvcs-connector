@@ -28,6 +28,7 @@ import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
@@ -152,7 +153,15 @@ public class GithubCommunicator implements DvcsCommunicator
 
             log.debug("Found repositories: " + repositories.size());
             return new ArrayList<Repository>(repositories);
-        } catch (IOException e)
+        } catch ( RequestException e)
+        {
+        	if ( e.getStatus() == 401 )
+        	{
+        		throw new SourceControlException.UnauthorisedException("Invalid credentials", e);
+        	}
+        	throw new SourceControlException("Error retrieving list of repositories", e);
+        }
+        catch (IOException e)
         {
             throw new SourceControlException("Error retrieving list of repositories", e);
         }

@@ -103,9 +103,26 @@ public class RepositoryServiceImpl implements RepositoryService
 	public synchronized void syncRepositoryList(Organization organization, boolean soft)
 	{
 		log.debug("Synchronising list of repositories");
+		
+		InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
+		invalidOrganizationsManager.setOrganizationValid(organization.getId(), true);
+		
 		// get repositories from the dvcs hosting server
 		DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-		List<Repository> remoteRepositories = communicator.getRepositories(organization);
+		
+		List<Repository> remoteRepositories;
+		
+		try 
+		{
+		    remoteRepositories = communicator.getRepositories(organization);
+		} catch (SourceControlException.UnauthorisedException e)
+        {
+        	// we could not load repositories, we can't continue
+			// mark the organization as invalid
+            invalidOrganizationsManager.setOrganizationValid(organization.getId(),false);
+            throw e;
+        }
+
         // get local repositories
 		List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
 
@@ -116,8 +133,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		// repositories that are no longer on hosting server will be marked as deleted
 		removeDeletedRepositories(storedRepositories, remoteRepositories);
 		// new repositories will be added to the database
-		Set<String> newRepoSlugs 
-		= addNewReposReturnNewSlugs(storedRepositories, remoteRepositories, organization);
+		Set<String> newRepoSlugs = addNewReposReturnNewSlugs(storedRepositories, remoteRepositories, organization);
 
 		// start asynchronous changesets synchronization for all linked repositories in organization
 		syncAllInOrganization(organization.getId(), soft, newRepoSlugs);

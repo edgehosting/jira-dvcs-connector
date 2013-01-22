@@ -22,6 +22,9 @@ import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager;
+import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationsManagerImpl;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -41,6 +44,8 @@ public class OrganizationDaoImpl implements OrganizationDao
 	/** The encryptor. */
 	private final Encryptor encryptor;
 
+	private final PluginSettingsFactory pluginSettingsFactory;
+	
 	/**
 	 * The Constructor.
 	 *
@@ -49,10 +54,11 @@ public class OrganizationDaoImpl implements OrganizationDao
 	 * @param encryptor
 	 *            the encryptor
 	 */
-	public OrganizationDaoImpl(ActiveObjects activeObjects, Encryptor encryptor)
+	public OrganizationDaoImpl(ActiveObjects activeObjects, Encryptor encryptor, PluginSettingsFactory pluginSettingsFactory)
 	{
 		this.activeObjects = activeObjects;
 		this.encryptor = encryptor;
+		this.pluginSettingsFactory = pluginSettingsFactory;
 	}
 
 	/**
@@ -299,6 +305,10 @@ public class OrganizationDaoImpl implements OrganizationDao
 	public void remove(int organizationId)
 	{
 		activeObjects.delete(activeObjects.get(OrganizationMapping.class, organizationId));
+	
+		// removing organization from invalid organizations list
+		InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
+		invalidOrganizationsManager.setOrganizationValid(organizationId, true);
 	}
 
 	/**

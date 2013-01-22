@@ -32,6 +32,15 @@ public class SourceControlException extends RuntimeException
             super(message);
         }
         
+        public UnauthorisedException(String message, Throwable cause)
+        {
+            super(message, cause);
+        }
+        
+        public UnauthorisedException(Throwable cause)
+        {
+			super(cause);
+		}
     }
     
     public static class InvalidResponseException extends SourceControlException
