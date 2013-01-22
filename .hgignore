@@ -21,3 +21,6 @@ syntax: regexp
 
 syntax: glob
 *.iml
+
+syntax: regexp
+^bitbucket-client/test-output$
