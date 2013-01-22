@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * BitbucketPullRequest
@@ -14,7 +15,6 @@ import java.io.Serializable;
  */
 public class BitbucketPullRequest implements Serializable
 {
-
     private static final long serialVersionUID = -4295609256398236631L;
 
     private Integer id;
@@ -24,6 +24,11 @@ public class BitbucketPullRequest implements Serializable
     private String href;
 
     private BitbucketAccount user;
+    
+    private BitbucketPullRequestCommitInfo commits;
+    
+    // 
+    private transient List<BitbucketPullRequestCommit> commitsDetails;
     
     public BitbucketPullRequest()
     {
@@ -68,6 +73,26 @@ public class BitbucketPullRequest implements Serializable
     public void setHref(String href)
     {
         this.href = href;
+    }
+
+    public BitbucketPullRequestCommitInfo getCommits()
+    {
+        return commits;
+    }
+
+    public void setCommits(BitbucketPullRequestCommitInfo commits)
+    {
+        this.commits = commits;
+    }
+
+    public List<BitbucketPullRequestCommit> getCommitsDetails()
+    {
+        return commitsDetails;
+    }
+
+    public void setCommitsDetails(List<BitbucketPullRequestCommit> commitsDetails)
+    {
+        this.commitsDetails = commitsDetails;
     }
     
 
