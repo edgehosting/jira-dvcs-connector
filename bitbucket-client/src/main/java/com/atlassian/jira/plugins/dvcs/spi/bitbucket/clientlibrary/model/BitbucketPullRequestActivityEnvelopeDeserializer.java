@@ -29,7 +29,7 @@ public class BitbucketPullRequestActivityEnvelopeDeserializer implements JsonDes
             JsonDeserializationContext context) throws JsonParseException
     {
         
-        JsonObject jsonObject = json.getAsJsonObject().getAsJsonObject("item");
+        JsonObject jsonObject = json.getAsJsonObject();
 
         BitbucketPullRequestActivityInfo info = new BitbucketPullRequestActivityInfo();
         info.setPullRequest((BitbucketPullRequest) context.deserialize(jsonObject.get("pull_request"), BitbucketPullRequest.class));

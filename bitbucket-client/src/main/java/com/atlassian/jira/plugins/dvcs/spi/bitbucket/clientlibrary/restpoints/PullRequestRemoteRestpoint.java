@@ -7,6 +7,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Client
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityIterator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
@@ -38,6 +39,13 @@ public class PullRequestRemoteRestpoint
         return new BitbucketPullRequestActivityIterator(requestor, upToDate, repoSlug, owner);
 
     }
+    
+    public Iterable<BitbucketPullRequestCommit> getPullRequestCommits(String url) {
+
+       //  return new BitbucketPullRequestActivityIterator(requestor, upToDate, repoSlug, owner);
+        return null;
+    }
+    
     
     public BitbucketPullRequest getPullRequestDetail(String owner, String repoSlug, String localId) {
 

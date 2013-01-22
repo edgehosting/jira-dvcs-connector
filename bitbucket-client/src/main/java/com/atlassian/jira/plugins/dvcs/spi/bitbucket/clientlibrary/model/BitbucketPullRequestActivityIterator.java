@@ -126,16 +126,16 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
             @Override
             public List<BitbucketPullRequestActivityInfo> onResponse(RemoteResponse response)
             {
-                BitbucketPullRequestActivityInfo[] remote = 
+                BitbucketPullRequestBaseActivityEnvelope remote = 
                         ClientUtils.fromJsonWithDeserializers(
                                                                   response.getResponse(), 
-                                                                  new TypeToken<BitbucketPullRequestActivityInfo[]>(){}.getType(),
+                                                                  new TypeToken<BitbucketPullRequestBaseActivityEnvelope>(){}.getType(),
                                                                   BitbucketPullRequestActivityEnvelopeDeserializer.asMap()
                                                               );
                 
                 List<BitbucketPullRequestActivityInfo> ret = new ArrayList<BitbucketPullRequestActivityInfo>();
 
-                for (BitbucketPullRequestActivityInfo remoteActivity : remote)
+                for (BitbucketPullRequestActivityInfo remoteActivity : remote.getValues())
                 {
                     if (remoteActivity.getActivity().getUpdatedOn().after(upToDate))
                     {

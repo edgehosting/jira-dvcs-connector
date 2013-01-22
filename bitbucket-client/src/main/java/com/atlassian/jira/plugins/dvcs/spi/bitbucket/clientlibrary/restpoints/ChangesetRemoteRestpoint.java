@@ -45,6 +45,23 @@ public class ChangesetRemoteRestpoint
 
     }
 
+    // i.e.
+    // "/api/1.0/repositories/erik/bitbucket/changesets/4a233e7b8596e5b17dd672f063e40f7c544c2c81"
+    public BitbucketChangeset getChangeset(String urlIncludingApi)
+    {
+        return requestor.get(urlIncludingApi, null, new ResponseCallback<BitbucketChangeset>()
+        {
+
+            @Override
+            public BitbucketChangeset onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), BitbucketChangeset.class);
+            }
+
+        });
+
+    }
+
     public List<BitbucketChangesetWithDiffstat> getChangesetDiffStat(String owner, String slug, String node)
     {
         return getChangesetDiffStat(owner, slug, node, DIFFSTAT_NO_LIMIT);

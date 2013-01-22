@@ -237,7 +237,17 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private HttpURLConnection createConnection(HttpMethod method, String uri, Map<String, String> params)
             throws IOException
     {
-        String finalUrl = afterFinalUriConstructed(method, apiUrl + uri, params);
+        String isApiUrl = "";
+
+        try
+        {
+            // already has api prefix included ?
+            isApiUrl = uri.startsWith("/api/") ? "" : apiUrl;
+        } catch (Exception e)
+        {
+        }
+        
+        String finalUrl = afterFinalUriConstructed(method, isApiUrl + uri, params);
 
         HttpURLConnection connection = method.createConnection(finalUrl);
 

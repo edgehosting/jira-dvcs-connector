@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 
@@ -33,22 +34,48 @@ public class BitbucketPullRequestBaseActivityEnvelope implements Serializable
 {
     private static final long serialVersionUID = -4076516797342633690L;
     
-    private BitbucketPullRequestActivityInfo item;
+    private List<BitbucketPullRequestActivityInfo> values;
+    
+    private Integer pagelen;
+
+    private Integer size;
     
     public BitbucketPullRequestBaseActivityEnvelope()
     {
         super();
     }
 
-    public BitbucketPullRequestActivityInfo getItem()
+    public List<BitbucketPullRequestActivityInfo> getValues()
     {
-        return item;
+        return values;
     }
 
-    public void setItem(BitbucketPullRequestActivityInfo item)
+    public void setValues(List<BitbucketPullRequestActivityInfo> values)
     {
-        this.item = item;
+        this.values = values;
     }
+
+    public Integer getPagelen()
+    {
+        return pagelen;
+    }
+
+    public void setPagelen(Integer pagelen)
+    {
+        this.pagelen = pagelen;
+    }
+
+    public Integer getSize()
+    {
+        return size;
+    }
+
+    public void setSize(Integer size)
+    {
+        this.size = size;
+    }
+
+   
 
    
     
