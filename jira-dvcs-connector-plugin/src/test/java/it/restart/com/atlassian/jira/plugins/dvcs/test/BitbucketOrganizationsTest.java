@@ -9,6 +9,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicBinder;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
@@ -27,6 +28,13 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
         new MagicBinder(jira).navigateAndBind(BitbucketLoginPage.class).doLogin();
         bbOAuthController = new BitbucketOAuthPageController(jira).setupOAuth();
     }
+
+    @BeforeMethod
+    public void beforeMethod()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.getPage().deleteAllOrganizations();
+    }
     
     @Override
     @Test
@@ -34,12 +42,16 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(RepositoriesPageController.ACCOUNT_TYPE_BITBUCKET, ACCOUNT_NAME, false);
-        assertThat(rpc.getPage().getRepositoriesCount(0)).isGreaterThan(2); 
+
+        assertThat(rpc.getPage().getOrganization("bitbucket", ACCOUNT_NAME)).isNotNull(); 
+        assertThat(rpc.getPage().getOrganization("bitbucket", ACCOUNT_NAME).getRepositories().size()).isEqualTo(4);  
     }
     
     @AfterClass
     public void afterClass()
     {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.getPage().deleteAllOrganizations();
         bbOAuthController.removeOAuth();
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogout();
     }

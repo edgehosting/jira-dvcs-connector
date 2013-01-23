@@ -29,21 +29,17 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     public void addOrganization(int accountType, String accountName, boolean autosync)
     {
         page.addOrganisation(accountType, accountName, autosync);
-        
         if(requiresGrantAccess())
         {
             getGrantAccessController(accountType).grantAccess();
         }
-        
         if (autosync)
         {
             waitForSyncToFinish();
         }
-        
 //        Poller.waitUntilFalse(atlassianTokenMeta.timed().isPresent());
 //        pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grantAccess();
 //        Poller.waitUntilTrue(atlassianTokenMeta.timed().isPresent());
-
     }
 
     private void waitForSyncToFinish()
