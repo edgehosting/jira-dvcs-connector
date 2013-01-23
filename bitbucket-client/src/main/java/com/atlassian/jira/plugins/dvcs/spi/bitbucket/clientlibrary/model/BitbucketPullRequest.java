@@ -23,6 +23,8 @@ public class BitbucketPullRequest implements Serializable, HasMessages
     private Integer id;
 
     private String title;
+    
+    private String description;
 
     private String href;
 
@@ -101,15 +103,29 @@ public class BitbucketPullRequest implements Serializable, HasMessages
     @Override
     public List<String> getMessages()
     {
-        ArrayList<String> ret = new ArrayList<String>();
+        ArrayList<String> allMessages = new ArrayList<String>();
+
+        allMessages.add(title);
+        allMessages.add(description);
+        
         if (commitsDetails != null)
         {
             for (BitbucketPullRequestCommit commitDetail : commitsDetails)
             {
-                ret.add(commitDetail.getMessage());
+                allMessages.add(commitDetail.getMessage());
             }
         }
-        return ret;
+        return allMessages;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
 
 }
