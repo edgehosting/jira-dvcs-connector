@@ -26,7 +26,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.HasPoss
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
-// TODO failure recovery
+// TODO failure recovery + rename to stateful if will be stateful
 public class DefaultRepositoryActivitySynchronizer implements RepositoryActivitySynchronizer
 {
 
