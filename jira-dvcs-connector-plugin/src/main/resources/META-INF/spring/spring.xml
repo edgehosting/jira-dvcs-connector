@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation=" http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+       xmlns:osgi="http://www.springframework.org/schema/osgi"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                           http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 
     <bean id="cachingBitbucketCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
         <constructor-arg  ref="bitbucketCommunicator" />
@@ -15,5 +17,11 @@
         <constructor-arg  ref="githubEnterpriseCommunicator" />
     </bean>
 
-
+    <osgi:service interface="com.sun.jersey.spi.container.ResourceFilterFactory">
+        <osgi:service-properties>
+            <entry key="plugin" value="com.atlassian.plugins.rest"/>
+        </osgi:service-properties>
+        <bean class="com.atlassian.jira.plugins.dvcs.rest.filter.AdminOnlyResourceFilterFactory" autowire="constructor"/>
+    </osgi:service>
+ 
 </beans>
