@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
@@ -41,7 +42,13 @@ public class SyncRepositoryListAction extends JiraWebActionSupport
     	
     	Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
 		
-    	repositoryService.syncRepositoryList(organization);
+    	try
+    	{
+    		repositoryService.syncRepositoryList(organization);
+    	} catch (SourceControlException e)
+    	{
+    		log.error(e);
+    	}
 
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
     }

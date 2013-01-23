@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.*;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -83,16 +84,28 @@ public class GithubOAuthUtils
         String githubUrl = githubUrl(githubHostUrl);
         try
         {
-            String requestUrl = githubUrl + "/login/oauth/access_token?&client_id="
-                    + clentId() + "&client_secret=" + clientSecret() + "&code=" + code;
+            String requestUrl = githubUrl + "/login/oauth/access_token";
 
-            log.debug("requestAccessToken() - " + requestUrl);
+            String urlParameters = "client_id=" + clentId() + "&client_secret=" + clientSecret() + "&code=" + code;
+            
+            log.debug("requestAccessToken() - " + requestUrl + " with parameters " + urlParameters);
 
             url = new URL(requestUrl);
             conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
             conn.setInstanceFollowRedirects(true);
             conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); 
+            conn.setRequestProperty("charset", "utf-8");
+            conn.setRequestProperty("Content-Length", "" + Integer.toString(urlParameters.getBytes().length));
+            conn.setUseCaches (false);
 
+            DataOutputStream wr = new DataOutputStream(conn.getOutputStream ());
+            wr.writeBytes(urlParameters);
+            wr.flush();
+            wr.close();
+            
             rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             while ((line = rd.readLine()) != null)
             {
@@ -103,15 +116,15 @@ public class GithubOAuthUtils
 
         } catch (MalformedURLException e)
         {
-            throw new SourceControlException("Error obtaining access token.");
+            throw new SourceControlException("Error obtaining access token.",e);
 
         } catch (IOException ioe)
         {
-            throw new SourceControlException("Error obtaining access token. Cannot access " + githubUrl + " from Jira.");
+            throw new SourceControlException("Error obtaining access token. Cannot access " + githubUrl + " from Jira.",ioe);
         }
         catch (Exception e)
         {
-            throw new SourceControlException("Error obtaining access token. Please check your credentials.");
+            throw new SourceControlException("Error obtaining access token. Please check your credentials.",e);
         }
 
         if (result.startsWith("error="))

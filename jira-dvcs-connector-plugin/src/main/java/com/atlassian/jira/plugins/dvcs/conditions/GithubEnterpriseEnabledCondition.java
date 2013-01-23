@@ -7,7 +7,7 @@ import com.atlassian.plugin.PluginParseException;
 /**
  * @author Martin Skurla
  */
-public class GithubEnterpriseDisabledCondition implements com.atlassian.plugin.web.Condition
+public class GithubEnterpriseEnabledCondition implements com.atlassian.plugin.web.Condition
 {
 
     @Override
@@ -18,7 +18,11 @@ public class GithubEnterpriseDisabledCondition implements com.atlassian.plugin.w
     @Override
     public boolean shouldDisplay(Map<String, Object> context)
     {
-        // so the disable system property was not set
+        return isGitHubEnterpriseEnabled();
+    }
+
+    public static boolean isGitHubEnterpriseEnabled()
+    {
         return System.getProperty("disableGithubEnterprise") == null;
     }
 }

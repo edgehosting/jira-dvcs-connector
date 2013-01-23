@@ -179,18 +179,12 @@
 }
 
 .githubeLogo {
-	background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/ghe_logo.png);
+	background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_logo.png);
 	background-repeat: no-repeat;
 }
 
-h4.bitbucketLogo, h4.githubLogo {
+h4.bitbucketLogo, h4.githubLogo, h4.githubeLogo {
 	padding-left: 27px;	
-}
-
-h4.githubeLogo  {
-	padding-left: 115px;
-	height: 30px;
-	line-height: 30px;
 }
 
 #postCommitServiceDetails{
@@ -440,12 +434,21 @@ html[xmlns] .dvcs-dclear {
 
 .dvcs-account-ondemand {
 	width: 115px;
-     height: 28px;
-     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/ondemand_logo.png);
-     background-repeat: no-repeat;
-     display: inline-block;
-     position: relative;
-     top: -7px;
+    height: 28px;
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/ondemand_logo.png);
+    background-repeat: no-repeat;
+    display: inline-block;
+    position: relative;
+    top: -7px;
+}
+.dvcs-account-enterprise {
+	width: 110px;
+    height: 29px;
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/ghe_logo.png);
+    background-repeat: no-repeat;
+    display: inline-block;
+    position: relative;
+    top: -4px;
 }
 
 .dvcs-no-repos {
@@ -455,4 +458,15 @@ html[xmlns] .dvcs-dclear {
 }
 .dvcs-bb-oauth-info {
 	margin-top: 20px;
+}
+.dvcs-invalid-organization {
+    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png);
+    background-repeat: no-repeat;
+    background-position: 4px -1px; 
+    display: inline-block;
+    padding-left: 25px;
+    position:relative;
+    font-weight: normal;
+    font-size:11px;
+    top: 4px;
 }

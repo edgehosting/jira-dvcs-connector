@@ -27,6 +27,7 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
 
     private static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
 
+    private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
 
     @BeforeClass
     public static void initializeBitbucketRepositoriesREST()
@@ -60,9 +61,9 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
 
         jira.getTester().gotoUrl("https://bitbucket.org/account/user/dvcsconnectortest/api");
-        BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage =
+        bitbucketIntegratedApplicationsPage =
                 jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
-
+        
         BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
                 bitbucketIntegratedApplicationsPage.addConsumer();
 
@@ -94,20 +95,6 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
                                                      .start();
 
         process.waitFor();
-    }
-
-    public static String getGitCommand()
-    {
-        Process process;
-        try
-        {
-            process = new ProcessBuilder("git", "--version").start();
-            process.waitFor();
-            return "git";
-        } catch (Exception e)
-        {
-            return "/usr/local/git/bin/git";
-        }
     }
 
     @Override
@@ -143,5 +130,12 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
     protected Class<BitBucketConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return BitBucketConfigureOrganizationsPage.class;
+    }
+
+    @Override
+    void removeOAuth()
+    {
+        jira.getTester().gotoUrl("https://bitbucket.org/account/user/dvcsconnectortest/api");
+        bitbucketIntegratedApplicationsPage.removeLastAdddedConsumer();
     }
 }

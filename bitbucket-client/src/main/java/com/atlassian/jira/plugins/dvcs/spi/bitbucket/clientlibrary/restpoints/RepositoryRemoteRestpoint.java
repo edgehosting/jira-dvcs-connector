@@ -24,7 +24,6 @@ import com.google.gson.reflect.TypeToken;
  */
 public class RepositoryRemoteRestpoint
 {
-
 	private final RemoteRequestor requestor;
 
 	public RepositoryRemoteRestpoint(RemoteRequestor requestor)
@@ -35,7 +34,7 @@ public class RepositoryRemoteRestpoint
 	
 	public List<BitbucketRepository> getAllRepositories(String owner)
     {
-		String getAllRepositoriesUrl = String.format("/users/%s", owner);
+		String getAllRepositoriesUrl = URLPathFormatter.format("/users/%s", owner);
         
 		return requestor.get(getAllRepositoriesUrl, null, new ResponseCallback<List<BitbucketRepository>>()
         {
@@ -46,10 +45,7 @@ public class RepositoryRemoteRestpoint
                         new TypeToken<BitbucketRepositoryEnvelope>(){}.getType());
                 return  envelope.getRepositories();
             }
-		    
         });
-		
 	}
-	
 }
 

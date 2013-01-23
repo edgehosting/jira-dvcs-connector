@@ -6,12 +6,16 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.util.Retryer;
 
 /**
  * Iterates all new commits in all branches.
@@ -23,6 +27,7 @@ public class BranchedChangesetIterator implements Iterator<Changeset>
     private final ChangesetCache changesetCache;
     private final Repository repository;
     private final DvcsCommunicator dvcsCommunicator;
+
 
     public BranchedChangesetIterator(ChangesetCache changesetCache, DvcsCommunicator dvcsCommunicator,
             					   Repository repository, List<BranchTip> branches)
@@ -78,6 +83,7 @@ class ChangesetIterator implements Iterator<Changeset>
     private final Set<String> nextNodes = new HashSet<String>();
     private final String branchName;
     private final ChangesetCache changesetCache;
+    private static final Logger log = LoggerFactory.getLogger(ChangesetIterator.class);
 
     public ChangesetIterator(DvcsCommunicator dvcsCommunicator, Repository repository, BranchTip branchTip,
             ChangesetCache changesetCache)
@@ -106,18 +112,45 @@ class ChangesetIterator implements Iterator<Changeset>
         Iterator<String> it = nextNodes.iterator();
         String node = it.next();
         it.remove();
-        Changeset currentChangeset = dvcsCommunicator.getDetailChangeset(repository, node);
-        
-        // mercurial repositories will have branch set for each changeset
-        // git repositories don't have branch names set on changesets so we will set our own guessed name
-        if (StringUtils.isBlank(currentChangeset.getBranch()))
+
+        try
         {
-            currentChangeset.setBranch(branchName);
+            Changeset currentChangeset = getDetailedChangeset(node);
+            // mercurial repositories will have branch set for each changeset
+            // git repositories don't have branch names set on changesets so we will set our own guessed name
+            if (StringUtils.isBlank(currentChangeset.getBranch()))
+            {
+                currentChangeset.setBranch(branchName);
+            }
+            
+            List<String> parents = currentChangeset.getParents();
+            addNodes(parents.toArray(new String[0]));
+            return currentChangeset;
+        } catch (Exception e)
+        {
+            log.warn("Error obtaining detailed changeset for " + repository.getRepositoryUrl() + ", node=" + node, e);
+            return null;
         }
-        
-        List<String> parents = currentChangeset.getParents();
-        addNodes(parents.toArray(new String[0]));
-        return currentChangeset;
+    }
+
+    /**
+     * Get Detailed Changeset and retry
+     * 
+     * @param node
+     * @return
+     */
+    private Changeset getDetailedChangeset(final String node)
+    {
+        // TODO Retrying is now done in bitbucket-client (github doesn't seem to need it). 
+        // I think we don't need to retry here anymore
+        return new Retryer<Changeset>().retry(new Callable<Changeset>()
+        {
+            @Override
+            public Changeset call() throws Exception
+            {
+                return dvcsCommunicator.getDetailChangeset(repository, node);
+            }
+        });
     }
 
     @Override

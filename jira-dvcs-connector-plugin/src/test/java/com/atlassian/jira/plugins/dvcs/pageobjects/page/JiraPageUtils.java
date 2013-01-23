@@ -59,4 +59,36 @@ public class JiraPageUtils
         createIssueDialog.fill("summary", "Missing commits fix demonstration");
         createIssueDialog.submit(DashboardPage.class);
     }
+    
+    public static void checkSyncProcessSuccess(JiraTestedProduct jira)
+    {
+        String currentUrl =  jira.getTester().getDriver().getCurrentUrl();
+        // maybe we should do the rest call to server
+        // to find out the status of syncing
+        do { 
+            sleep(1000);
+        } while (!isSyncFinished(jira));
+        // syncing is now finished. TODO check for errors
+        
+        jira.getTester().gotoUrl(currentUrl);
+    }
+
+    private static boolean isSyncFinished(JiraTestedProduct jira)
+    {
+        jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repositories");
+        String pageSource = jira.getTester().getDriver().getPageSource();
+
+        return !pageSource.contains("finished=\"false\"");
+    }
+
+    private static void sleep(long milis)
+    {
+        try
+        {
+            Thread.sleep(milis);
+        } catch (InterruptedException e)
+        {
+            // ignore
+        }
+    }
 }

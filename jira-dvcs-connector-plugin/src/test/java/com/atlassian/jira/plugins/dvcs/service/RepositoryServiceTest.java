@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 import org.testng.annotations.BeforeMethod;
@@ -58,7 +59,6 @@ public class RepositoryServiceTest
 		MockitoAnnotations.initMocks(this);
 		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer,
 				changesetService, applicationProperties, settings);
-
 	}
 
 	@Test
@@ -97,7 +97,7 @@ public class RepositoryServiceTest
 	@Test
 	public void testSyncRepositoryList()
 	{
-
+		Mockito.when(settings.createGlobalSettings()).thenReturn(Mockito.mock(PluginSettings.class));
 		Repository sampleRepository1 = createSampleRepository();
 		sampleRepository1.setId(1);
 		sampleRepository1.setSlug("sampleRepository1");

@@ -2,18 +2,21 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.HttpURLConnection;
+
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RemoteResponse implements Serializable
 {
 
     private static final long serialVersionUID = -8160018795770610703L;
+    private final Logger log = LoggerFactory.getLogger(RemoteResponse.class);
 
-    private InputStream response;
+    private InputStream inputStream;
 
     private int httpStatusCode;
-
-    private HttpURLConnection connection;
+    private DefaultHttpClient client;
 
     public RemoteResponse()
     {
@@ -22,12 +25,12 @@ public class RemoteResponse implements Serializable
 
     public InputStream getResponse()
     {
-        return response;
+        return inputStream;
     }
 
     public void setResponse(InputStream response)
     {
-        this.response = response;
+        this.inputStream = response;
     }
 
     public int getHttpStatusCode()
@@ -40,28 +43,30 @@ public class RemoteResponse implements Serializable
         this.httpStatusCode = httpStatusCode;
     }
 
-    public void setConnection(HttpURLConnection connection)
-    {
-        this.connection = connection;
-
-    }
-
-    public HttpURLConnection getConnection()
-    {
-        return connection;
-    }
-
     public void close()
     {
-        if (connection != null)
+        try
         {
-            try
+            if (inputStream!=null)
             {
-                connection.disconnect();
-            } catch (Exception e)
-            {
+                try
+                {
+                    inputStream.close();
+                } catch (Exception ignore)
+                {
+                    // ignore
+                }
             }
+            
+        } finally
+        {
+            client.getConnectionManager().shutdown();
         }
+    }
+
+    public void setHttpClient(DefaultHttpClient client)
+    {
+        this.client = client;
     }
 
 }

@@ -96,38 +96,6 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         Poller.waitUntil(messageBarDiv.find(By.className("error")).timed().getText(), matcher);
     }
 
-    protected void checkSyncProcessSuccess()
-    {
-        String currentUrl =  jiraTestedProduct.getTester().getDriver().getCurrentUrl();
-        // maybe we should do the rest call to server
-        // to find out the status of syncing
-        do { 
-            sleep(1000);
-        } while (!isSyncFinished());
-        // syncing is now finished. TODO check for errors
-        
-        jiraTestedProduct.getTester().gotoUrl(currentUrl);
-    }
-
-    private boolean isSyncFinished()
-    {
-        jiraTestedProduct.getTester().gotoUrl(jiraTestedProduct.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repositories");
-        String pageSource = jiraTestedProduct.getTester().getDriver().getPageSource();
-
-        return !pageSource.contains("finished=\"false\"");
-    }
-
-    private void sleep(long milis)
-    {
-        try
-        {
-            Thread.sleep(milis);
-        } catch (InterruptedException e)
-        {
-            // ignore
-        }
-    }
-
     protected void waitFormBecomeVisible()
     {
         jiraTestedProduct.getTester().getDriver().waitUntilElementIsVisible(By.id("repoEntry"));

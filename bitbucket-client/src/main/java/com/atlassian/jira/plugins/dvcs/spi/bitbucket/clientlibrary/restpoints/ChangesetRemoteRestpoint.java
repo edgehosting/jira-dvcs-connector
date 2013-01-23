@@ -19,8 +19,6 @@ import com.google.gson.reflect.TypeToken;
  */
 public class ChangesetRemoteRestpoint
 {
-    private static final int DIFFSTAT_NO_LIMIT = -1;
-
     private final RemoteRequestor requestor;
 
     public ChangesetRemoteRestpoint(RemoteRequestor remoteRequestor)
@@ -30,7 +28,7 @@ public class ChangesetRemoteRestpoint
 
     public BitbucketChangeset getChangeset(String owner, String slug, String node)
     {
-        String getChangesetUrl = String.format("/repositories/%s/%s/changesets/%s", owner, slug, node);
+        String getChangesetUrl = URLPathFormatter.format("/repositories/%s/%s/changesets/%s", owner, slug, node);
 
         return requestor.get(getChangesetUrl, null, new ResponseCallback<BitbucketChangeset>()
         {
@@ -40,16 +38,13 @@ public class ChangesetRemoteRestpoint
             {
                 return ClientUtils.fromJson(response.getResponse(), BitbucketChangeset.class);
             }
-
         });
-
     }
 
-    // i.e.
     // "/api/1.0/repositories/erik/bitbucket/changesets/4a233e7b8596e5b17dd672f063e40f7c544c2c81"
     public BitbucketChangeset getChangeset(String urlIncludingApi)
     {
-        return requestor.get(urlIncludingApi, null, new ResponseCallback<BitbucketChangeset>()
+        return requestor.get(URLPathFormatter.format(urlIncludingApi), null, new ResponseCallback<BitbucketChangeset>()
         {
 
             @Override
@@ -62,25 +57,16 @@ public class ChangesetRemoteRestpoint
 
     }
 
-    public List<BitbucketChangesetWithDiffstat> getChangesetDiffStat(String owner, String slug, String node)
-    {
-        return getChangesetDiffStat(owner, slug, node, DIFFSTAT_NO_LIMIT);
-    }
-
     public List<BitbucketChangesetWithDiffstat> getChangesetDiffStat(String owner, String slug, String node, int limit)
     {
-        String getChangesetDiffStatUrl = String.format("/repositories/%s/%s/changesets/%s/diffstat", owner, slug, node);
+        String getChangesetDiffStatUrl = URLPathFormatter.format("/repositories/%s/%s/changesets/%s/diffstat", owner, slug, node);
 
         Map<String, String> parameters = null;
-        if (limit != DIFFSTAT_NO_LIMIT)
-        {
-            parameters = Collections.singletonMap("limit", "" + limit);
-        }
+        parameters = Collections.singletonMap("limit", "" + limit);
 
         return requestor.get(getChangesetDiffStatUrl, parameters,
                 new ResponseCallback<List<BitbucketChangesetWithDiffstat>>()
                 {
-
                     @Override
                     public List<BitbucketChangesetWithDiffstat> onResponse(RemoteResponse response)
                     {
@@ -89,8 +75,6 @@ public class ChangesetRemoteRestpoint
                                 {
                                 }.getType());
                     }
-
                 });
-
     }
 }

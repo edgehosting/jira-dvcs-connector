@@ -29,11 +29,10 @@ public class BranchesAndTagsRemoteRestpoint
      */
     public BitbucketBranchesAndTags getBranchesAndTags(String owner, String slug)
     {
-        String getBranchesUrl = String.format("/repositories/%s/%s/branches-tags", owner, slug);
+        String getBranchesUrl = URLPathFormatter.format("/repositories/%s/%s/branches-tags", owner, slug);
 
         return requestor.get(getBranchesUrl, null, new ResponseCallback<BitbucketBranchesAndTags>()
         {
-
             @Override
             public BitbucketBranchesAndTags onResponse(RemoteResponse response)
             {
@@ -41,8 +40,6 @@ public class BranchesAndTagsRemoteRestpoint
                 {
                 }.getType());
             }
-
         });
-
     }
 }

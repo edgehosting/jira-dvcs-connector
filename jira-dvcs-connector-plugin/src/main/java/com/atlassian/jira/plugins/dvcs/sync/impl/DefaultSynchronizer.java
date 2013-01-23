@@ -38,7 +38,7 @@ public class DefaultSynchronizer implements Synchronizer
 
     @Override
     public void synchronize(Repository repository, SynchronisationOperation operation)
-    {
+    {//TODO this and the row 63 is not really thread safe as it represents atomic operation that is not executed atomically
         Progress progress = progressMap.get(repository);
         //TODO isShouldStop really necessary? should we create a queue even if those conditions are not met?
         if (progress==null || progress.isFinished() || progress.isShouldStop())

@@ -82,6 +82,11 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 		} catch (SourceControlException sce)
 		{
 			addErrorMessage(sce.getMessage());
+			log.warn(sce.getMessage());
+			if ( sce.getCause() != null )
+			{
+				log.warn("Caused by: " + sce.getCause().getMessage());
+			}
 			return INPUT;
 		}
 
@@ -101,7 +106,7 @@ public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
 			return INPUT;
 		}
 
-        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
+		return getRedirect("SyncRepositoryListAction.jspa?organizationId=" + organization + "&atl_token=" + CustomStringUtils.encode(getXsrfToken()));
 	}
 
 	private String requestAccessToken()

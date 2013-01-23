@@ -382,7 +382,7 @@
        <link>/secure/admin/ConfigureGithubEnterpriseOAuth!default.jspa</link>
        <conditions type="AND">
            <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
-           <condition class="com.atlassian.jira.plugins.dvcs.conditions.GithubEnterpriseDisabledCondition" />
+           <condition class="com.atlassian.jira.plugins.dvcs.conditions.GithubEnterpriseEnabledCondition" />
        </conditions>
     </web-item>
 
@@ -419,7 +419,8 @@
 
     <resource type="download" name="images/" location="images/"/>
     <resource type="i18n" name="bitbucket-i18n" location="i18n"/>
-
+    <resource type="i18n" name="dvcs-connector-props" location="dvcsconnector"/>
+    
     <activity-streams-provider key="dvcs-streams-provider" name="Dvcs Streams Provider" i18n-name-key="Bitbucket Connector"
                        class="com.atlassian.jira.plugins.dvcs.streams.DvcsStreamsActivityProvider">
     </activity-streams-provider>

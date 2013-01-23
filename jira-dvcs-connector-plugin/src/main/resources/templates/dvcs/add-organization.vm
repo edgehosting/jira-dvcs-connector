@@ -67,10 +67,12 @@
                 <div class="field-group" >
                   <label for="urlSelect">Host:</label>
                   <select id="urlSelect" name="urlSelect" class="select" onchange="switchDvcsDetails(this)">
-                       <option value="bitbucket">Bitbucket</option>
+                    <option value="bitbucket">Bitbucket</option>
                     <option value="github">GitHub</option>
+                    #if ( $action.isGithubEnterpriseEnabled() )
                     <option value="githube">GitHub Enterprise</option>
-                     </select>
+                    #end
+                  </select>
                   <div class="fieldValue" id="urlReadOnly"></div>
                   <div id="url-error" class="dvcs-error">Choose URL.</div>
                 </div>
@@ -204,7 +206,11 @@
     #end
     
     <div class="dvcs-header-container">
-        <h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a> #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end </h4>
+        <h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a>
+        #if($org.getDvcsType() == "githube") <a href="https://enterprise.github.com/" target="_blank"><span title="GitHubEnterprise" class="dvcs-account-enterprise"> &nbsp; </span></a> #end
+        #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end
+        </h4>  
+		#if($action.isInvalidOrganization($org)) <span class="dvcs-invalid-organization error">Invalid credentials, please regenerate access token</span> #end
         <div class="dvcs-org-container aui-toolbar">
                 
             <ul class="toolbar-group">
@@ -245,7 +251,7 @@
                                 #if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
                                     <li class="dropdown-item">
                                       <div class="dvcs-gearmenu-nohide">
-                                        <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id);"> Configure default groups</a>
+                                        <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id); return false;"> Configure default groups</a>
                                       </div>
                                     </li>
                                  #end
@@ -281,8 +287,7 @@
         </div>
         <div class="dvcs-dclear"></div>
     </div>
-
-                
+           
        #if (!$org.getRepositories().isEmpty())
         
        <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">

@@ -19,11 +19,6 @@ public class VelocityUtils
         dateTimeFormatter = ComponentManager.getComponent(DateTimeFormatterFactory.class).formatter();
     }
 
-    public String encodeUriPath(String str)
-    {
-        return CustomStringUtils.encodeUriPath(str);
-    }
-
     public String getRelativePastDate(Date dateInPast)
     {
         return dateTimeFormatter.forLoggedInUser().withStyle(DateTimeStyle.RELATIVE).format(dateInPast);

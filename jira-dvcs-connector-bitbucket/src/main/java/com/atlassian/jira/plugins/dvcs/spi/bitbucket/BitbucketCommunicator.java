@@ -138,8 +138,13 @@ public class BitbucketCommunicator implements DvcsCommunicator
         } catch (BitbucketRequestException.Unauthorized_401 e)
         {
             log.debug("Invalid credentials", e);
-            throw new SourceControlException("Invalid credentials");
-        } catch (BitbucketRequestException e)
+            throw new SourceControlException.UnauthorisedException("Invalid credentials");
+        } catch ( BitbucketRequestException.BadRequest_400 e)
+        {
+        	// We received bad request status code and we assume that an invalid OAuth is the cause
+        	throw new SourceControlException.UnauthorisedException("Invalid credentials");
+        }
+        catch (BitbucketRequestException e)
         {
             log.debug(e.getMessage(), e);
             throw new SourceControlException(e.getMessage());
@@ -161,15 +166,14 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
             // get the commit statistics for changeset
             Changeset fromBitbucketChangeset = ChangesetTransformer.fromBitbucketChangeset(repository.getId(), bitbucketChangeset);
-            List<BitbucketChangesetWithDiffstat> changesetDiffStat = remoteClient.getChangesetsRest()
-                    .getChangesetDiffStat(repository.getOrgName(), // owner
-                            repository.getSlug(), node, Changeset.MAX_VISIBLE_FILES); // limit
+            List<BitbucketChangesetWithDiffstat> changesetDiffStat = remoteClient.getChangesetsRest().getChangesetDiffStat(repository.getOrgName(),
+                    repository.getSlug(), node, Changeset.MAX_VISIBLE_FILES);
             // merge it all 
             return DetailedChangesetTransformer.fromChangesetAndBitbucketDiffstats(fromBitbucketChangeset, changesetDiffStat);
         } catch (BitbucketRequestException e)
         {
             log.debug(e.getMessage(), e);
-            throw new SourceControlException("Could not get result", e);
+            throw new SourceControlException("Could not get detailed changeset [" + node + "] from " + repository.getRepositoryUrl(), e);
         }
     }
 
@@ -187,7 +191,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
         };
     }
-
+    
     private List<BranchTip> getBranches(Repository repository)
     {
         // Using undocumented https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
@@ -214,8 +218,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
             }
         } catch (BitbucketRequestException e)
         {
-            log.debug("Could not add postcommit hook", e);
-            throw new SourceControlException("Could not add postcommit hook", e);
+            log.debug("Could not retrieve list of branches", e);
+            throw new SourceControlException("Could not retrieve list of branches", e);
         }
 
         // Bitbucket returns raw_nodes for each branch, but changesetiterator works 
@@ -225,7 +229,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             String rawNode = branchTip.getNode();
             if (StringUtils.length(rawNode)>12)
             {
-                String node = rawNode.substring(0, 11);
+                String node = rawNode.substring(0, 12);
                 branchTip.setNode(node);
             }
         }

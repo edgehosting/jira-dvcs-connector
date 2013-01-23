@@ -27,6 +27,7 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
 
     private static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
 
+    private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
 
     @BeforeClass
     public static void initializeBitbucketRepositoriesREST()
@@ -60,7 +61,7 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
 
         jira.getTester().gotoUrl("https://bitbucket.org/account/user/dvcsconnectortest/api");
-        BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage =
+        bitbucketIntegratedApplicationsPage =
                 jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
 
         BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
@@ -78,8 +79,9 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
         String hgPushUrl = String.format("https://%1$s:%2$s@bitbucket.org/%1$s/%3$s", DVCS_REPO_OWNER,
                                                                                       DVCS_REPO_PASSWORD,
                                                                                       MISSING_COMMITS_REPOSITORY_NAME);
-
-        Process hgPushProcess = new ProcessBuilder("hg", "push", hgPushUrl)
+        String hgCommand = getHgCommand();
+        
+        Process hgPushProcess = new ProcessBuilder(hgCommand, "push", hgPushUrl)
                                                   .directory(extractedRepoDir)
                                                   .start();
 
@@ -121,5 +123,12 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
     protected Class<BitBucketConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
         return BitBucketConfigureOrganizationsPage.class;
+    }
+
+    @Override
+    void removeOAuth()
+    {
+        jira.getTester().gotoUrl("https://bitbucket.org/account/user/dvcsconnectortest/api");
+        bitbucketIntegratedApplicationsPage.removeLastAdddedConsumer();
     }
 }
