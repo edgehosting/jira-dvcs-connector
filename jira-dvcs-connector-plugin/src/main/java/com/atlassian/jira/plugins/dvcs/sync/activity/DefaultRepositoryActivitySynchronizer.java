@@ -83,31 +83,52 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
         dao.saveActivity(toDaoModel(info.getActivity(), pullRequestId));
     }
 
+    // TODO improve performance here [***] , as this is gonna to call often 
     private RepositoryPullRequestMapping ensurePullRequestPresent(Repository forRepository,
             PullRequestRemoteRestpoint pullRestpoint, BitbucketPullRequestActivityInfo info)
     {
-        RepositoryPullRequestMapping pullRequest = dao.findRequestById(info.getPullRequest().getId(),
+        RepositoryPullRequestMapping localPullRequest = dao.findRequestById(info.getPullRequest().getId(),
                 forRepository.getSlug());
 
-        if (pullRequest == null)
+        // don't have this pull request, let's save it
+        if (localPullRequest == null)
         {
+            // go for pull request details [***]
             BitbucketPullRequest remotePullRequest = pullRestpoint.getPullRequestDetail(forRepository.getOrgName(),
                     forRepository.getSlug(), info.getPullRequest().getId() + "");
 
-            // re-set detail of pull request
+            // go for commits details [***]
             fillCommits(info, pullRestpoint);
             info.setPullRequest(remotePullRequest);
             //
             Set<String> issueKeys = extractIssueKeys(info);
-            pullRequest = dao.savePullRequest(toDaoModelPullRequest(remotePullRequest, issueKeys), issueKeys);
+            localPullRequest = dao.savePullRequest(toDaoModelPullRequest(remotePullRequest, issueKeys), issueKeys);
 
+          // already have it, let's find new issue keys
         } else if (info.getActivity() instanceof HasPossibleUpdatedMessages) {
             
-            // TODO somehow update, maybe new issue key is introduced ...
+            // go for pull request details [***]
+            BitbucketPullRequest remotePullRequest = pullRestpoint.getPullRequestDetail(forRepository.getOrgName(),
+                    forRepository.getSlug(), info.getPullRequest().getId() + "");
+            // go for commits details [***]
+            fillCommits(info, pullRestpoint);
+            info.setPullRequest(remotePullRequest);
             
+            Set<String> issueKeys = extractIssueKeys(info);
+            // [***]
+            Set<String> existingIssueKeysMapping = dao.getExistingIssueKeysMapping(localPullRequest.getID());
+            for (String possibleNewIssueKey : issueKeys)
+            {
+                if (existingIssueKeysMapping.contains(possibleNewIssueKey)) {
+                    issueKeys.remove(possibleNewIssueKey);
+                }
+            }
+            if (!issueKeys.isEmpty()) {
+                dao.saveIssueKeysMappings(issueKeys, localPullRequest.getID());
+            }
         }
 
-        return pullRequest;
+        return localPullRequest;
     }
 
     private Set<String> extractIssueKeys(BitbucketPullRequestActivityInfo info)

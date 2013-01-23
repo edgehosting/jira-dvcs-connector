@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.activity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -82,6 +83,40 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                 });
     }
     
+    @Override
+    public void saveIssueKeysMappings(final Collection<String> issueKeys, final int pullRequestId)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction()
+            {
+                for (String issueKey : issueKeys)
+                {
+                    activeObjects.create(RepositoryPullRequestIssueKeyMapping.class, asIssueKeyMapping(issueKey, pullRequestId));
+                }
+                return null;
+            }
+        });
+    }
+    
+    @Override
+    public Set<String> getExistingIssueKeysMapping(Integer pullRequestId)
+    {
+        Query query = Query.select()
+                .from(RepositoryPullRequestIssueKeyMapping.class)
+                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID +  " = ? ", 
+                      pullRequestId);
+        RepositoryPullRequestIssueKeyMapping[] mappings = activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, query);
+        Set<String> issueKeys = new java.util.HashSet<String>();
+        for (RepositoryPullRequestIssueKeyMapping repositoryPullRequestIssueKeyMapping : mappings)
+        {
+            issueKeys.add(repositoryPullRequestIssueKeyMapping.getIssueKey());
+        }
+        return issueKeys;
+    }
+
+    
     protected Map<String, Object> asIssueKeyMapping(String issueKey, int pullRequestId)
     {
         Map<String, Object> map = new HashMap<String, Object>();
@@ -138,8 +173,8 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         return prIds;
     }
 
-    @Override
-    public void removeAll(Repository forRepository)
+    // TODO
+    private void removeAll(Repository forRepository)
     {
         for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
         {
