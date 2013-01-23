@@ -29,6 +29,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
+import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
@@ -67,7 +68,8 @@ public class RootResource
      * @param repositoryService
      *            the repository service
      */
-    public RootResource(OrganizationService organizationService, RepositoryService repositoryService, WebfragmentRenderer webfragmentRenderer, AccountsConfigService ondemandAccountConfig)
+    public RootResource(OrganizationService organizationService, RepositoryService repositoryService, WebfragmentRenderer webfragmentRenderer,
+            AccountsConfigService ondemandAccountConfig)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
@@ -85,6 +87,7 @@ public class RootResource
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/repository/{id}")
+    @AdminOnly
     public Response getRepository(@PathParam("id") int id)
     {
         Repository repository = repositoryService.get(id);
@@ -105,6 +108,7 @@ public class RootResource
     @GET
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repositories/")
+    @AdminOnly
     public Response getAllRepositories()
     {
         List<Repository> activeRepositories = repositoryService.getAllRepositories();
@@ -126,16 +130,30 @@ public class RootResource
     @Path("/repository/{id}/sync")
     public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
     {
-        log.debug("Rest request to sync repository [{}] with payload [{}]", id, payload);
+        log.debug("Rest request to soft sync repository [{}] with payload [{}]", id, payload);
 
-        if (payload == null)
-        {
-            repositoryService.sync(id, false);
-        } else
-        {
-            repositoryService.sync(id, true);
-        }
+        repositoryService.sync(id, true);
 
+        return Response.ok().build();
+    }
+
+    /**
+     * Start repository fullsync.
+     * 
+     * @param id
+     *            the id
+     * @return the response
+     */
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repository/{id}/fullsync")
+    @AdminOnly
+    public Response startRepositorySync(@PathParam("id") int id)
+    {
+        log.debug("Rest request to fullsync repository [{}] ", id);
+
+        repositoryService.sync(id, false);
+         
         // ...
         // redirect to Repository resource - that will contain sync
         // message/status
@@ -144,7 +162,7 @@ public class RootResource
 
         return Response.seeOther(uri).build();
     }
-
+    
     /**
      * Account info.
      * 
@@ -157,6 +175,7 @@ public class RootResource
     @GET
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/accountInfo")
+    @AdminOnly
     public Response accountInfo(@QueryParam("server") String server, @QueryParam("account") String account)
     {
         if (StringUtils.isEmpty(server) || StringUtils.isEmpty(account))
@@ -181,6 +200,7 @@ public class RootResource
     @GET
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/organization/{id}/syncRepoList")
+    @AdminOnly
     public Response syncRepoList(@PathParam("id") String organizationId)
     {
         if (organizationId == null)
@@ -197,6 +217,7 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/org/{id}/autolink")
     @Consumes({MediaType.APPLICATION_JSON})
+    @AdminOnly
     public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, SentData autolink)
     {
         organizationService.enableAutolinkNewRepos(id, Boolean.parseBoolean(autolink.getPayload()));
@@ -207,6 +228,7 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/org/{id}/globalsmarts")
     @Consumes({MediaType.APPLICATION_JSON})
+    @AdminOnly
     public Response enableSmartcommitsOnNewRepos(@PathParam("id") int id,
             SentData autoinvite)
     {
@@ -218,6 +240,7 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repo/{id}/autolink")
     @Consumes({MediaType.APPLICATION_JSON})
+    @AdminOnly
     public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
     {
         repositoryService.enableRepository(id, Boolean.parseBoolean(autolink.getPayload()));
@@ -228,6 +251,7 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repo/{id}/smart")
     @Consumes({MediaType.APPLICATION_JSON})
+    @AdminOnly
     public Response enableSmartcommits(@PathParam("id") int id, SentData enabled)
     {
         // todo handle exceptions
@@ -238,6 +262,7 @@ public class RootResource
     @GET
     @Produces({ MediaType.TEXT_HTML })
     @Path("/fragment/{id}/defaultgroups")
+    @AdminOnly
     public Response renderDefaultGroupsFragment(@PathParam("id") int orgId)
     {
         try
@@ -256,6 +281,7 @@ public class RootResource
     @GET
     @Produces({ MediaType.TEXT_HTML })
     @Path("/fragment/groups")
+    @AdminOnly
     public Response renderGroupsFragment()
     {
         try
@@ -274,6 +300,7 @@ public class RootResource
     @Path("/linkers/{onoff}")
     @Consumes({ MediaType.TEXT_PLAIN})
     @Produces({ MediaType.TEXT_PLAIN })
+    @AdminOnly
     public Response onOffLinkers(@PathParam("onoff") String onOff)
     {
         try
@@ -305,5 +332,4 @@ public class RootResource
             return Response.serverError().build();
         }
     }
-    
 }
