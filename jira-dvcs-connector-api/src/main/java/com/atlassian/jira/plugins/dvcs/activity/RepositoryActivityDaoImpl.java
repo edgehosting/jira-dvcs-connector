@@ -113,8 +113,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
             final Query query = Query
                     .select()
                     .from(activityTable)
-                    .where(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(pullRequestIds) + ")",
-                            new Object[] {  });
+                    .where(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(pullRequestIds) + ")");
 
             ret.addAll(Arrays.asList(activeObjects.find(activityTable, query)));
 

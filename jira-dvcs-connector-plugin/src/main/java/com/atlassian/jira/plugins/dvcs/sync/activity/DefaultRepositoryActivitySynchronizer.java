@@ -64,7 +64,7 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
         }
 
         // { finally
-        repositoryDao.setLastActivitySyncDate(forRepository.getId(), new Date());
+        repositoryDao.setLastActivitySyncDate(forRepository.getId(), new Date() /* ? TODO last success saved activity date ? */);
     }
 
     // -------------------------------------------------------------------------------------------------------
@@ -73,7 +73,8 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
     // -------------------------------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------------------------------
 
-    private void processActivity(BitbucketPullRequestActivityInfo info, Repository forRepository, PullRequestRemoteRestpoint pullRestpoint)
+    private void processActivity(BitbucketPullRequestActivityInfo info, Repository forRepository,
+            PullRequestRemoteRestpoint pullRestpoint)
     {
         RepositoryPullRequestMapping localPullRequest = ensurePullRequestPresent(forRepository, pullRestpoint, info);
         Integer pullRequestId = localPullRequest.getID();
@@ -99,6 +100,10 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
             Set<String> issueKeys = extractIssueKeys(info);
             pullRequest = dao.savePullRequest(toDaoModelPullRequest(remotePullRequest, issueKeys), issueKeys);
 
+        } else {
+            
+            // TODO somehow update, maybe new issue key is introduced ...
+            
         }
 
         return pullRequest;
@@ -120,8 +125,7 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
         return ret;
     }
 
-    private Map<String, Object> toDaoModel(BitbucketPullRequestBaseActivity activity,
-            Integer pullRequestId)
+    private Map<String, Object> toDaoModel(BitbucketPullRequestBaseActivity activity, Integer pullRequestId)
     {
         Map<String, Object> ret = getAsCommonProperties(activity, pullRequestId);
 
