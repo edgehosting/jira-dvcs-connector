@@ -145,7 +145,7 @@ public class RegenerateBitbucketOauthToken extends CommonDvcsConfigurationAction
             return INPUT;
         }
 
-        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + getXsrfToken());
+		return getRedirect("SyncRepositoryListAction.jspa?organizationId=" + organization + "&atl_token=" + getXsrfToken());
     }
 
     public static String encode(String url)
