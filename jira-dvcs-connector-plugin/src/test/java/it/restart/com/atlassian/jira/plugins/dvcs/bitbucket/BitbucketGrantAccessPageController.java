@@ -7,15 +7,8 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 
 public class BitbucketGrantAccessPageController implements GrantAccessPageController
 {
-    private final JiraTestedProduct jira;
-
-    public BitbucketGrantAccessPageController(JiraTestedProduct jira)
-    {
-        this.jira = jira;
-    }
-
     @Override
-    public void grantAccess()
+    public void grantAccess(JiraTestedProduct jira)
     {
         BitbucketGrantAccessPage grantAccessPage = jira.getPageBinder().bind(BitbucketGrantAccessPage.class);
         grantAccessPage.grantAccess();

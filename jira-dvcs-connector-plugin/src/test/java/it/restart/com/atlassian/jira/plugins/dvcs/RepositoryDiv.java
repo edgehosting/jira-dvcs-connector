@@ -6,10 +6,26 @@ import com.atlassian.pageobjects.elements.PageElement;
 
 public class RepositoryDiv
 {
-    
+    private final PageElement rootElement;
+
     public RepositoryDiv(PageElement rootElement)
     {
-        PageElement find = rootElement.find(By.tagName("td"));
+        this.rootElement = rootElement;
+    }
+
+    public boolean isSyncing()
+    {
+        PageElement syncRepoIcon = rootElement.find(By.xpath("td[4]/div/a/span"));
+        if (syncRepoIcon!=null)
+        {
+            return syncRepoIcon.getAttribute("class").contains("running");
+        }
+        return false;
+    }
+    
+    public String getMessage()
+    {
+        return rootElement.find(By.xpath("td[3]/div")).getText();
     }
 
 }

@@ -1,6 +1,7 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import it.restart.com.atlassian.jira.plugins.dvcs.BitbucketOrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraAddUserPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
@@ -46,23 +47,37 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
     public void addOrganization()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(RepositoriesPageController.ACCOUNT_TYPE_BITBUCKET, ACCOUNT_NAME, false);
-
-        assertThat(rpc.getPage().getOrganization("bitbucket", ACCOUNT_NAME)).isNotNull(); 
-        assertThat(rpc.getPage().getOrganization("bitbucket", ACCOUNT_NAME).getRepositories().size()).isEqualTo(4);  
+        BitbucketOrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, false);
+        
+        assertThat(organization).isNotNull(); 
+        assertThat(organization.getRepositories().size()).isEqualTo(4);  
         
         // check add user extension
         PageElement dvcsExtensionsPanel = jira.visit(JiraAddUserPage.class).getDvcsExtensionsPanel();
         assertThat(dvcsExtensionsPanel.isVisible());
+    }
+    
+    @Override
+    @Test
+    public void addOrganizationWaitForSync()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        BitbucketOrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, true);
 
+        assertThat(organization).isNotNull(); 
+        assertThat(organization.getRepositories().size()).isEqualTo(4);
+        assertThat(organization.getRepositories().get(3).getMessage()).isEqualTo("Fri Mar 02 2012");
     }
     
     @AfterClass
     public void afterClass()
     {
+        // delete all organizations
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
+        // remove OAuth in bitbucket
         bbOAuthController.removeOAuth();
+        // log out from bitbucket
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogout();
     }
     
