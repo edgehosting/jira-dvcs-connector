@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * BitbucketPullRequest
@@ -17,32 +18,33 @@ public class BitbucketPullRequestCommentActivity extends BitbucketPullRequestBas
 
     private static final long serialVersionUID = 8212352604704981087L;
     
-    private String cm;
+    private BitbucketPullRequestCommentActivityContent content;
 
     public BitbucketPullRequestCommentActivity()
     {
         super();
     }
 
+    public BitbucketPullRequestCommentActivityContent getContent()
+    {
+        return content;
+    }
+
+    public void setContent(BitbucketPullRequestCommentActivityContent content)
+    {
+        this.content = content;
+    }
+    
     @Override
-    public Iterable<String> getMessages()
+    public List<String> getMessages()
     {
-        // TODO Auto-generated method stub
-        return null;
+        List<String> messages = super.getMessages();
+        if (content != null)
+        {
+            messages.add(content.getRaw());
+        }
+        return messages;
     }
-
-    public String getCm()
-    {
-        return cm;
-    }
-
-    public void setCm(String cm)
-    {
-        this.cm = cm;
-    }
-    
-    
-
 
 }
 

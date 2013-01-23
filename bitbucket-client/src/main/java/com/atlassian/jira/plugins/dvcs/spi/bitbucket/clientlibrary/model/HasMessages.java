@@ -1,9 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
+import java.util.List;
+
 public interface HasMessages
 {
 
-    Iterable<String> getMessages();
+    List<String> getMessages();
     
 }
 

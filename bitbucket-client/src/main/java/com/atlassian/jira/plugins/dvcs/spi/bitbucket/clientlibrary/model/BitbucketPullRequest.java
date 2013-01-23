@@ -1,19 +1,22 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * BitbucketPullRequest
- *
  * 
- * <br /><br />
- * Created on 11.12.2012, 14:02:57
- * <br /><br />
+ * 
+ * <br />
+ * <br />
+ * Created on 11.12.2012, 14:02:57 <br />
+ * <br />
+ * 
  * @author jhocman@atlassian.com
- *
+ * 
  */
-public class BitbucketPullRequest implements Serializable
+public class BitbucketPullRequest implements Serializable, HasMessages
 {
     private static final long serialVersionUID = -4295609256398236631L;
 
@@ -24,12 +27,12 @@ public class BitbucketPullRequest implements Serializable
     private String href;
 
     private BitbucketAccount user;
-    
+
     private BitbucketPullRequestCommitInfo commits;
-    
-    // 
+
+    //
     private transient List<BitbucketPullRequestCommit> commitsDetails;
-    
+
     public BitbucketPullRequest()
     {
         super();
@@ -94,7 +97,19 @@ public class BitbucketPullRequest implements Serializable
     {
         this.commitsDetails = commitsDetails;
     }
-    
+
+    @Override
+    public List<String> getMessages()
+    {
+        ArrayList<String> ret = new ArrayList<String>();
+        if (commitsDetails != null)
+        {
+            for (BitbucketPullRequestCommit commitDetail : commitsDetails)
+            {
+                ret.add(commitDetail.getMessage());
+            }
+        }
+        return ret;
+    }
 
 }
-

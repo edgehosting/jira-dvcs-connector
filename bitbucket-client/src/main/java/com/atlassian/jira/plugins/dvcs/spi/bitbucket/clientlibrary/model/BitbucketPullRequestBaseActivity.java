@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * BitbucketPullRequestBaseActivity - JSON model
@@ -13,7 +15,7 @@ import java.util.Date;
  * @author jhocman@atlassian.com
  *
  */
-public abstract class BitbucketPullRequestBaseActivity implements Serializable, HasMessages
+public class BitbucketPullRequestBaseActivity implements Serializable, HasMessages
 {
 
     private static final long serialVersionUID = -4076516797342633690L;
@@ -57,6 +59,12 @@ public abstract class BitbucketPullRequestBaseActivity implements Serializable, 
     public void setRepository(BitbucketRepository repository)
     {
         this.repository = repository;
+    }
+    
+    @Override
+    public List<String> getMessages()
+    {
+        return new ArrayList<String>();
     }
 
 

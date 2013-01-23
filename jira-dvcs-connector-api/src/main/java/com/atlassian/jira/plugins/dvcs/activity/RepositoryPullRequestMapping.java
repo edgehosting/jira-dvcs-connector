@@ -8,6 +8,7 @@ public interface RepositoryPullRequestMapping extends Entity {
     String TO_REPO_SLUG = "TO_REPO_SLUG";
     String PULL_REQUEST_NAME = "PULL_REQUEST_NAME";
     String PULL_REQUEST_URL = "PULL_REQUEST_URL";
+    String FOUND_ISSUE_KEY = "FOUND_ISSUE_KEY";
     
     //
     // getters
@@ -16,6 +17,7 @@ public interface RepositoryPullRequestMapping extends Entity {
     String getToRepoSlug();
     String getPullRequestName();
     String getPullRequestUrl();
+    boolean isFoundIssueKey();
 
     //
     // setters
@@ -24,6 +26,6 @@ public interface RepositoryPullRequestMapping extends Entity {
     void setToRepoSlug(String repoSlug);
     void setPullRequestName(String name);
     void setPullRequestUrl(String url);
-    
+    void setFoundIssueKey(boolean foundIssueKey);
 }
 

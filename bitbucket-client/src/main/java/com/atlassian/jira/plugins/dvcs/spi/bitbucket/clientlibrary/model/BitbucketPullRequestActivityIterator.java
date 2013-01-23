@@ -145,8 +145,6 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
                         wasDateOver = true;
                     }
                 }
-                // now we need to get PR commits
-                fillCommits(ret);
                 //
                 BitbucketPullRequestActivityIterator.this.currentFrame = ret;
                 return ret;
@@ -158,14 +156,6 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     private String createUrl()
     {
         return String.format("/repositories/%s/%s/pullrequests/activity", forUser, forRepoSlug);
-    }
-    
-    private void fillCommits(List<BitbucketPullRequestActivityInfo> ret)
-    {
-        for (BitbucketPullRequestActivityInfo activityInfo : ret)
-        {
-            // TODO
-        }
     }
     
 }

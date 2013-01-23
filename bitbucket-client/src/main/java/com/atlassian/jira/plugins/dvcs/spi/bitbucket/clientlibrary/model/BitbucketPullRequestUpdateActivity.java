@@ -14,22 +14,12 @@ import java.io.Serializable;
  */
 public class BitbucketPullRequestUpdateActivity extends BitbucketPullRequestBaseActivity implements Serializable
 {
-
     private static final long serialVersionUID = -7371697488007134175L;
 
     public BitbucketPullRequestUpdateActivity()
     {
         super();
     }
-
-    @Override
-    public Iterable<String> getMessages()
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    
 
 }
 

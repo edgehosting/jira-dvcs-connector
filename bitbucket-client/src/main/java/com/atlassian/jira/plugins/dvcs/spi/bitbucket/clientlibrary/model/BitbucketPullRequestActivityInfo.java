@@ -1,6 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
-public class BitbucketPullRequestActivityInfo
+import java.util.ArrayList;
+import java.util.List;
+
+public class BitbucketPullRequestActivityInfo implements HasMessages
 {
     private BitbucketPullRequestBaseActivity activity;
     private BitbucketPullRequest pullRequest;
@@ -28,6 +31,15 @@ public class BitbucketPullRequestActivityInfo
     public void setPullRequest(BitbucketPullRequest pullRequest)
     {
         this.pullRequest = pullRequest;
+    }
+
+    @Override
+    public List<String> getMessages()
+    {
+        List<String> ret = new ArrayList<String>();
+        ret.addAll(pullRequest.getMessages());
+        ret.addAll(activity.getMessages());
+        return ret;
     }
 
 }

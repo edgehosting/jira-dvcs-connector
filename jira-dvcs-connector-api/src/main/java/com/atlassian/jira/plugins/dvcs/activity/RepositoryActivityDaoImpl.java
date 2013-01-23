@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
@@ -13,6 +15,7 @@ import net.java.ao.Query;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Joiner;
 
 /**
  * 
@@ -59,25 +62,42 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
     
     @Override
-    public RepositoryPullRequestMapping savePullRequest(final Map<String, Object> request)
+    public RepositoryPullRequestMapping savePullRequest(final Map<String, Object> request, final Set<String> issueKeys)
     {
         return
         activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
                 {
                     public RepositoryPullRequestMapping doInTransaction()
                     {
-                        return  activeObjects.create(RepositoryPullRequestMapping.class,
+                        RepositoryPullRequestMapping pullRequest = activeObjects.create(RepositoryPullRequestMapping.class,
                                 request);
+                        // persist mappings
+                        for (String issueKey : issueKeys)
+                        {
+                            activeObjects.create(RepositoryPullRequestIssueKeyMapping.class, asIssueKeyMapping(issueKey, pullRequest.getID()));
+                        }
+                        return  pullRequest;
                     }
 
                 });
     }
     
+    protected Map<String, Object> asIssueKeyMapping(String issueKey, int pullRequestId)
+    {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY, issueKey);
+        map.put(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID, pullRequestId);
+        return map;
+    }
+
     @Override
     public RepositoryPullRequestMapping findRequestById(Integer localId, String repoSlug)
     {
-        Query query = Query.select().from(RepositoryPullRequestMapping.class)
-                .where(RepositoryPullRequestMapping.LOCAL_ID +  " = ? AND " + RepositoryPullRequestMapping.TO_REPO_SLUG + " = ?", localId, repoSlug);
+        Query query = Query.select()
+                           .from(RepositoryPullRequestMapping.class)
+                           .where(RepositoryPullRequestMapping.LOCAL_ID +  " = ? AND " 
+                                + RepositoryPullRequestMapping.TO_REPO_SLUG + " = ?", localId, repoSlug);
+        
         RepositoryPullRequestMapping[] found = activeObjects.find(RepositoryPullRequestMapping.class, query);
         return found.length == 1 ? found[0] : null;
     }
@@ -86,19 +106,37 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     public List<RepositoryActivityPullRequestMapping> getRepositoryActivityForIssue(String issueKey)
     {
         List<RepositoryActivityPullRequestMapping> ret = new ArrayList<RepositoryActivityPullRequestMapping>();
+        List<Integer> pullRequestIds = findRelatedPullRequests(issueKey);
 
         for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
         {
             final Query query = Query
                     .select()
                     .from(activityTable)
-                    .where(RepositoryActivityPullRequestMapping.ISSUE_KEY + " = ?",
-                            new Object[] { issueKey.toUpperCase() });
+                    .where(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(pullRequestIds) + ")",
+                            new Object[] {  });
 
             ret.addAll(Arrays.asList(activeObjects.find(activityTable, query)));
 
         }
         return sort(ret);
+    }
+
+    private List<Integer> findRelatedPullRequests(String issueKey)
+    {
+        List<Integer> prIds = new ArrayList<Integer>();
+        final Query query = Query
+                .select()
+                .from(RepositoryPullRequestIssueKeyMapping.class)
+                .where(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY + " = ?",
+                        new Object[] { issueKey.toUpperCase() });
+        
+        RepositoryPullRequestIssueKeyMapping[] mappings = activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, query);
+        for (RepositoryPullRequestIssueKeyMapping issueKeyMapping : mappings)
+        {
+            prIds.add(issueKeyMapping.getPullRequestId());
+        }
+        return prIds;
     }
 
     @Override

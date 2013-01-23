@@ -22,15 +22,5 @@ public class BitbucketPullRequestLikeActivity extends BitbucketPullRequestBaseAc
         super();
     }
 
-    @Override
-    public Iterable<String> getMessages()
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    
-    
-
-
 }
 
