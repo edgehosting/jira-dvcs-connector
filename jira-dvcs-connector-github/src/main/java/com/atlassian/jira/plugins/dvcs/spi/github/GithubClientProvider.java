@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.spi.github;
 
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.CommitService;
+import org.eclipse.egit.github.core.service.EventService;
+import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
@@ -66,6 +68,16 @@ public class GithubClientProvider
     public RepositoryService getRepositoryService(Organization organization)
     {
         return new RepositoryService(createClient(organization));
+    }
+
+    public PullRequestService getPullRequestService(Repository repository)
+    {
+        return new PullRequestService(createClient(repository));
+    }
+
+    public EventService getEventService(Repository repository)
+    {
+        return new EventService(createClient(repository));
     }
 
 }
