@@ -22,6 +22,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestLikeActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.HasPossibleUpdatedMessages;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
@@ -100,7 +101,7 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
             Set<String> issueKeys = extractIssueKeys(info);
             pullRequest = dao.savePullRequest(toDaoModelPullRequest(remotePullRequest, issueKeys), issueKeys);
 
-        } else {
+        } else if (info.getActivity() instanceof HasPossibleUpdatedMessages) {
             
             // TODO somehow update, maybe new issue key is introduced ...
             

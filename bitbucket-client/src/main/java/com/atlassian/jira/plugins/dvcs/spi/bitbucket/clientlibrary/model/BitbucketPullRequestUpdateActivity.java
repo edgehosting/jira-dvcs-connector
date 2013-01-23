@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @author jhocman@atlassian.com
  *
  */
-public class BitbucketPullRequestUpdateActivity extends BitbucketPullRequestBaseActivity implements Serializable
+public class BitbucketPullRequestUpdateActivity extends BitbucketPullRequestBaseActivity implements Serializable, HasPossibleUpdatedMessages
 {
     private static final long serialVersionUID = -7371697488007134175L;
 
