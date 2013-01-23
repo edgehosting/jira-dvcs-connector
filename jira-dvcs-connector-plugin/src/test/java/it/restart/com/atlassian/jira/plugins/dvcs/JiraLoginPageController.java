@@ -17,7 +17,7 @@ public class JiraLoginPageController implements PageController<JiraLoginPage>
 
     public JiraLoginPageController(JiraTestedProduct jira)
     {
-        this.page = jira.getPageBinder().navigateToAndBind(JiraLoginPage.class);
+        this.page = jira.visit(JiraLoginPage.class);
     }
     
     public void login()

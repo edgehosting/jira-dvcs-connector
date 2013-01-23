@@ -17,7 +17,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     public RepositoriesPageController(JiraTestedProduct jira)
     {
         this.jira = jira;
-        this.page = jira.getPageBinder().navigateToAndBind(RepositoriesPage.class);
+        this.page = jira.visit(RepositoriesPage.class);
     }
     
     @Override

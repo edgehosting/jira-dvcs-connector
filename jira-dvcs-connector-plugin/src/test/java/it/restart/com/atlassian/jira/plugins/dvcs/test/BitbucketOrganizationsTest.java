@@ -1,11 +1,12 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import it.restart.com.atlassian.jira.plugins.dvcs.JiraAddUserPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicBinder;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -14,6 +15,7 @@ import org.testng.annotations.Test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.pageobjects.TestedProductFactory;
+import com.atlassian.pageobjects.elements.PageElement;
 
 public class BitbucketOrganizationsTest implements BasicOrganizationTests, MissingCommitsTests
 {
@@ -24,8 +26,11 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
     @BeforeClass
     public void beforeClass()
     {
+        // log in to JIRA 
         new JiraLoginPageController(jira).login();
-        new MagicBinder(jira).navigateAndBind(BitbucketLoginPage.class).doLogin();
+        // log in to Bitbucket
+        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin();
+        // setup up OAuth from bitbucket
         bbOAuthController = new BitbucketOAuthPageController(jira).setupOAuth();
     }
 
@@ -45,6 +50,11 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
 
         assertThat(rpc.getPage().getOrganization("bitbucket", ACCOUNT_NAME)).isNotNull(); 
         assertThat(rpc.getPage().getOrganization("bitbucket", ACCOUNT_NAME).getRepositories().size()).isEqualTo(4);  
+        
+        // check add user extension
+        PageElement dvcsExtensionsPanel = jira.visit(JiraAddUserPage.class).getDvcsExtensionsPanel();
+        assertThat(dvcsExtensionsPanel.isVisible());
+
     }
     
     @AfterClass

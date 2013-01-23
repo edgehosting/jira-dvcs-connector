@@ -3,12 +3,12 @@ package it.restart.com.atlassian.jira.plugins.dvcs.common;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.pageobjects.Page;
 
-public class MagicBinder
+public class MagicVisitor
 {
 
     private final JiraTestedProduct jira;
 
-    public MagicBinder(JiraTestedProduct jira)
+    public MagicVisitor(JiraTestedProduct jira)
     {
         this.jira = jira;
     }
@@ -16,7 +16,7 @@ public class MagicBinder
     /**
      * workaround for navigating and binding pages out of jira
      */
-    public  <P extends Page> P navigateAndBind(Class<P> pageClass)
+    public  <P extends Page> P visit(Class<P> pageClass)
     {
         String url = jira.getPageBinder().delayedBind(pageClass).bind().getUrl();
         jira.getTester().gotoUrl(url);
