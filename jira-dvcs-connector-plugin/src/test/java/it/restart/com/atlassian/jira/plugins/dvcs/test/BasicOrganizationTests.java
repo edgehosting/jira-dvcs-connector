@@ -10,6 +10,8 @@ public interface BasicOrganizationTests
 //    public void addOrganizationSuccessfully(String organizationAccount, boolean autosync);
 
     void addOrganizationWaitForSync();
+
+    void addOrganizationInvalidUrl();
     
     
 }

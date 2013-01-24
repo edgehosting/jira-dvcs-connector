@@ -29,6 +29,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     public BitbucketOrganizationDiv addOrganization(AccountType accountType, String accountName, boolean autosync)
     {
         page.addOrganisation(accountType.index, accountName, autosync);
+        assertThat(page.getErrorStatusMessage()).isNull();
         if(requiresGrantAccess())
         {
             accountType.grantAccessPageController.grantAccess(jira);
