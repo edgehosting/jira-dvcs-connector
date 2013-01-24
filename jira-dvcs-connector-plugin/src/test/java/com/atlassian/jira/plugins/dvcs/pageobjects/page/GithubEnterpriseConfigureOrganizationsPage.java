@@ -1,14 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import static org.hamcrest.Matchers.containsString;
-
 import it.githubenterprise.com.atlassian.jira.plugins.dvcs.GithubEnterpriseOrganizationsTest;
 
 import org.openqa.selenium.By;
+import org.testng.Assert;
 
 import com.atlassian.pageobjects.elements.query.Poller;
-
-import org.testng.Assert;
 
 /**
  * Represents the page to link repositories to projects
@@ -128,17 +125,6 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
             githubWebAuthorizeButton.click();
         }
         return jiraTestedProduct.getTester().getDriver().getCurrentUrl();
-    }
-
-    @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String url)
-    {
-        addRepoToProject(url, true);
-
-        assertThatErrorMessage(containsString("Error adding postcommit hook. Do you have admin rights to the repository?\n" +
-                "Repository was not added. [Could not add postcommit hook. ]"));
-
-        return this;
     }
 
     @Override
