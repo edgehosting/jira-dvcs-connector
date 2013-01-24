@@ -35,6 +35,19 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
         bbOAuthController = new BitbucketOAuthPageController(jira).setupOAuth();
     }
 
+    
+    @AfterClass
+    public void afterClass()
+    {
+        // delete all organizations
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.getPage().deleteAllOrganizations();
+        // remove OAuth in bitbucket
+        bbOAuthController.removeOAuth();
+        // log out from bitbucket
+        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogout();
+    }
+    
     @BeforeMethod
     public void beforeMethod()
     {
@@ -69,7 +82,6 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
         assertThat(organization.getRepositories().get(3).getMessage()).isEqualTo("Fri Mar 02 2012");
     }
     
-    
     @Override
     @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://privatebitbucket.org\\] is incorrect or the server is not responding.*")
     public void addOrganizationInvalidUrl()
@@ -77,17 +89,6 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(RepositoriesPageController.BITBUCKET, "https://privatebitbucket.org/someaccount", false);
     }
-    
-    @AfterClass
-    public void afterClass()
-    {
-        // delete all organizations
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.getPage().deleteAllOrganizations();
-        // remove OAuth in bitbucket
-        bbOAuthController.removeOAuth();
-        // log out from bitbucket
-        jira.getPageBinder().bind(BitbucketLoginPage.class).doLogout();
-    }
+
     
 }
