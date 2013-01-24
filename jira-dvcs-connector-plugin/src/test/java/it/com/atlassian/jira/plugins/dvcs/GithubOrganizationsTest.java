@@ -37,7 +37,7 @@ import org.testng.annotations.Test;
 /**
  * Test to verify behaviour when syncing  github repository.
  */
-public class GithubOrganizationsTest extends BitBucketBaseOrgTest<GithubConfigureOrganizationsPage>
+public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigureOrganizationsPage>
 {
 
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";

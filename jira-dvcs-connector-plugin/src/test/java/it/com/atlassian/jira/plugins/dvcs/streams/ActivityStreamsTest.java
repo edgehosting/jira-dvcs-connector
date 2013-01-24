@@ -1,6 +1,6 @@
 package it.com.atlassian.jira.plugins.dvcs.streams;
 
-import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest.AnotherLoginPage;
+import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest.AnotherLoginPage;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;

@@ -2,7 +2,7 @@ package it.githubenterprise.com.atlassian.jira.plugins.dvcs;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
-import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest;
+import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -39,7 +39,7 @@ import com.atlassian.pageobjects.elements.PageElement;
 /**
  * Test to verify behaviour when syncing  github repository.
  */
-public class GithubEnterpriseOrganizationsTest extends BitBucketBaseOrgTest<GithubEnterpriseConfigureOrganizationsPage>
+public class GithubEnterpriseOrganizationsTest extends BaseOrganizationTest<GithubEnterpriseConfigureOrganizationsPage>
 {
     public static final String GITHUB_ENTERPRISE_URL = System.getProperty("githubenterprise.url", "http://192.168.2.47");
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";

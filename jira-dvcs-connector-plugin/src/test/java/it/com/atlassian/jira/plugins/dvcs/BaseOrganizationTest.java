@@ -18,7 +18,7 @@ import org.testng.annotations.BeforeMethod;
 /**
  * Base class for BitBucket integration tests. Initializes the JiraTestedProduct and logs admin in.
  */
-public abstract class BitBucketBaseOrgTest<T extends BaseConfigureOrganizationsPage>
+public abstract class BaseOrganizationTest<T extends BaseConfigureOrganizationsPage>
 {
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     protected T configureOrganizations;
