@@ -267,7 +267,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
             
             if ( toBeThrown instanceof RetryableRequestException )
             {
-            	log.info("Failed to properly execute request [{}] : {}", method.getMethod(), method.getURI());
+            	log.warn("Failed to properly execute request [{}], status code {} : {}", new Object[] {method.getMethod(), statusCode, method.getURI()});
             }
             
             throw toBeThrown;
