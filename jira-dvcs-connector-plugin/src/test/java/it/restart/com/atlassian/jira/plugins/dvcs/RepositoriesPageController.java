@@ -30,10 +30,6 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     public OrganizationDiv addOrganization(AccountType accountType, String accountName, boolean autosync)
     {
         page.addOrganisation(accountType.index, accountName, autosync);
-        if (page.getErrorStatusMessage()==null)
-        {
-            System.out.println("ops");
-        }
         assertThat(page.getErrorStatusMessage()).isNull();
         if(requiresGrantAccess())
         {

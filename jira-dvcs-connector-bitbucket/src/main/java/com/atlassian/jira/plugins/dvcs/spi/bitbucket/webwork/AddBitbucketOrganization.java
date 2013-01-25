@@ -88,7 +88,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 			return SystemUtils.getRedirect(this, authUrl, true);
 		} catch (Exception e)
 		{
-		    log.error("Error redirect user to bitbucket server.", e);
+		    log.warn("Error redirect user to bitbucket server.", e);
 			addErrorMessage("The authentication with Bitbucket has failed. Please check your OAuth settings.");
 			return INPUT;
 		}

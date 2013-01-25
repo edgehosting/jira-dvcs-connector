@@ -1,12 +1,14 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
+import it.restart.com.atlassian.jira.plugins.dvcs.JiraGithubOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -20,7 +22,7 @@ public class GithubOrganizationsTest implements BasicOrganizationTests, MissingC
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
-    private GithubOAuthPageController ghOAuthController;
+    private OAuth oAuth;
     
     @BeforeClass
     public void beforeClass()
@@ -30,9 +32,10 @@ public class GithubOrganizationsTest implements BasicOrganizationTests, MissingC
         // log in to github
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogin();
         // setup up OAuth from github
-        ghOAuthController = new GithubOAuthPageController(jira).setupOAuth();
+        oAuth = new MagicVisitor(jira).visit(GithubOAuthPage.class).addConsumer(jira.getProductInstance().getBaseUrl());
+        jira.visit(JiraGithubOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
     }
-    
+
     @AfterClass
     public void afterClass()
     {
@@ -40,7 +43,7 @@ public class GithubOrganizationsTest implements BasicOrganizationTests, MissingC
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
         // remove OAuth in github
-        ghOAuthController.removeOAuth();
+        new MagicVisitor(jira).visit(GithubOAuthPage.class, oAuth.applicationId).removeConsumer();
         // log out from github
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
     }
@@ -63,16 +66,45 @@ public class GithubOrganizationsTest implements BasicOrganizationTests, MissingC
         assertThat(organization.getRepositories().size()).isEqualTo(4);  
     }
 
+    
     @Override
+    @Test
     public void addOrganizationWaitForSync()
     {
-        // TODO Auto-generated method stub
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.GITHUB, ACCOUNT_NAME, true);
+        
+        assertThat(organization).isNotNull(); 
+        assertThat(organization.getRepositories().size()).isEqualTo(4);
+        assertThat(organization.getRepositories().get(3).getMessage()).isEqualTo("Mon Feb 06 2012");
+
+    }
+    
+    @Override
+    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://privatebitbucket.org\\] is incorrect or the server is not responding.*")
+    public void addOrganizationInvalidUrl()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(RepositoriesPageController.GITHUB, "https://privatebitbucket.org/someaccount", false);
     }
 
     @Override
-    public void addOrganizationInvalidUrl()
+    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
+    public void addOrganizationInvalidOAuth()
     {
-        // TODO Auto-generated method stub
+        try
+        {
+            jira.visit(JiraGithubOAuthPage.class).setCredentials("xxx","yyy");
+            RepositoriesPageController rpc = new RepositoriesPageController(jira);
+            OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.GITHUB, ACCOUNT_NAME, true);
+
+            assertThat(organization).isNotNull(); 
+            assertThat(organization.getRepositories().size()).isEqualTo(4);  
+        } finally
+        {
+            jira.visit(JiraGithubOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
+        }
     }
+    
 
 }
