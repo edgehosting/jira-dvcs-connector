@@ -1,6 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.github;
 
-import it.restart.com.atlassian.jira.plugins.dvcs.JiraBitbucketOAuthPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.JiraGithubOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.PageController;
@@ -28,8 +28,8 @@ public class GithubOAuthPageController implements PageController<GithubOAuthPage
     public GithubOAuthPageController setupOAuth()
     {
         oAuth = page.addConsumer(jira.getProductInstance().getBaseUrl());
-        JiraBitbucketOAuthPage jiraBitbucketOAuthPage = jira.visit(JiraBitbucketOAuthPage.class);
-        jiraBitbucketOAuthPage.setCredentials(oAuth.key, oAuth.secret);
+        JiraGithubOAuthPage jiraGithubOAuthPage = jira.visit(JiraGithubOAuthPage.class);
+        jiraGithubOAuthPage.setCredentials(oAuth.key, oAuth.secret);
         return this;
     }
 

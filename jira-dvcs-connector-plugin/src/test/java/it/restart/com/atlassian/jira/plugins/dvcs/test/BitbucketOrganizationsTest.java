@@ -1,9 +1,9 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import it.restart.com.atlassian.jira.plugins.dvcs.BitbucketOrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraAddUserPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPageController;
@@ -60,7 +60,7 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
     public void addOrganization()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        BitbucketOrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, false);
+        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, false);
         
         assertThat(organization).isNotNull(); 
         assertThat(organization.getRepositories().size()).isEqualTo(4);  
@@ -75,7 +75,7 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
     public void addOrganizationWaitForSync()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        BitbucketOrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, true);
+        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, true);
         
         assertThat(organization).isNotNull(); 
         assertThat(organization.getRepositories().size()).isEqualTo(4);

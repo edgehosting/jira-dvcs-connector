@@ -1,5 +1,7 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
@@ -50,12 +52,15 @@ public class GithubOrganizationsTest implements BasicOrganizationTests, MissingC
         rpc.getPage().deleteAllOrganizations();
     }
     
-    
     @Override
     @Test
     public void addOrganization()
     {
-        // TODO Auto-generated method stub
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.GITHUB, ACCOUNT_NAME, false);
+        
+        assertThat(organization).isNotNull(); 
+        assertThat(organization.getRepositories().size()).isEqualTo(4);  
     }
 
     @Override

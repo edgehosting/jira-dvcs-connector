@@ -37,9 +37,6 @@ public class GithubOAuthPage implements Page
     @ElementBy(xpath = "//div[@id='facebox']//button")
     private PageElement deleteApplicationConfirm;
     
-    @ElementBy(xpath = "//div[@id='cancel_info']/form")
-    private PageElement someFormWithTheUrlINeed;
-
     @ElementBy(tagName = "body")
     private PageElement body;
 

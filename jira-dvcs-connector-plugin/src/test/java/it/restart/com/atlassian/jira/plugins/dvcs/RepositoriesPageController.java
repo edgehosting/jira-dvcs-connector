@@ -3,6 +3,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs;
 import static org.fest.assertions.api.Assertions.assertThat;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketGrantAccessPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.PageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubGrantAccessPageController;
 
 import java.util.List;
 
@@ -26,16 +27,20 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         return page;
     }
 
-    public BitbucketOrganizationDiv addOrganization(AccountType accountType, String accountName, boolean autosync)
+    public OrganizationDiv addOrganization(AccountType accountType, String accountName, boolean autosync)
     {
         page.addOrganisation(accountType.index, accountName, autosync);
+        if (page.getErrorStatusMessage()==null)
+        {
+            System.out.println("ops");
+        }
         assertThat(page.getErrorStatusMessage()).isNull();
         if(requiresGrantAccess())
         {
             accountType.grantAccessPageController.grantAccess(jira);
         }
         
-        BitbucketOrganizationDiv organization = page.getOrganization(accountType.type, accountName);
+        OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
         if (autosync)
         {
             waitForSyncToFinish(organization);
@@ -46,7 +51,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         return organization;
     }
 
-    public void waitForSyncToFinish(BitbucketOrganizationDiv organization)
+    public void waitForSyncToFinish(OrganizationDiv organization)
     {
         do
         {
@@ -60,7 +65,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         } while (!isSyncFinished(organization));
     }
     
-    private boolean isSyncFinished(BitbucketOrganizationDiv organization)
+    private boolean isSyncFinished(OrganizationDiv organization)
     {
         List<RepositoryDiv> repositories = organization.getRepositories();
         for (RepositoryDiv repositoryDiv : repositories)
@@ -86,7 +91,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     *
     */
     public static final AccountType BITBUCKET = new AccountType(0, "bitbucket", new BitbucketGrantAccessPageController());
-    public static final AccountType GITHUB = new AccountType(1, "github", new BitbucketGrantAccessPageController());
+    public static final AccountType GITHUB = new AccountType(1, "github", new GithubGrantAccessPageController());
     public static final AccountType GITHUBENTERPRISE = new AccountType(2, "github1", new BitbucketGrantAccessPageController());
 
     static class AccountType
