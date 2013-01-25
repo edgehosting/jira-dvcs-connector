@@ -7,27 +7,25 @@ import com.atlassian.pageobjects.elements.PageElement;
 
 public class BitbucketLoginPage implements Page
 {
-    public static String LOGIN_PAGE = "https://bitbucket.org/account/signin/?next=/";
-
     @ElementBy(id = "id_username")
-    PageElement usernameOrEmailInput;
+    private PageElement usernameOrEmailInput;
 
     @ElementBy(id = "id_password")
-    PageElement passwordInput;
+    private PageElement passwordInput;
     
     @ElementBy(name = "submit")
-    PageElement loginButton;
+    private PageElement loginButton;
 
     @ElementBy(id = "user-dropdown-trigger")
-    PageElement userDropdownTriggerLink;
+    private PageElement userDropdownTriggerLink;
     
     @ElementBy(linkText = "Log out")
-    PageElement logOutLink;
+    private PageElement logoutLink;
 
     @Override
     public String getUrl()
     {
-        return LOGIN_PAGE;
+        return "https://bitbucket.org/account/signin/?next=/";
     }
 
     public void doLogin()
@@ -39,14 +37,13 @@ public class BitbucketLoginPage implements Page
     {
         usernameOrEmailInput.clear().type(username);
         passwordInput.clear().type(password);
-
         loginButton.click();
     }
     
     public void doLogout()
     {
         userDropdownTriggerLink.click();
-        logOutLink.click();
+        logoutLink.click();
     }
     
 }

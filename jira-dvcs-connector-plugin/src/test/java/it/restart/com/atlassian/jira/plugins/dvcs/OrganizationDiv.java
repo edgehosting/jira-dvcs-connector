@@ -12,7 +12,7 @@ import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.webdriver.AtlassianWebDriver;
 
-public class BitbucketOrganizationDiv
+public class OrganizationDiv
 {
     @Inject
     private PageBinder pageBinder;
@@ -25,7 +25,7 @@ public class BitbucketOrganizationDiv
     private final PageElement repositoryType;
     private final PageElement repositoryName;
   
-    public BitbucketOrganizationDiv(PageElement row)
+    public OrganizationDiv(PageElement row)
     {
         this.rootElement = row;
         this.repositoriesTable = rootElement.find(By.tagName("table"));

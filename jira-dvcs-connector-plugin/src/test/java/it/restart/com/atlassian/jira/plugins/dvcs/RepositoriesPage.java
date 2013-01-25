@@ -75,35 +75,35 @@ public class RepositoriesPage implements Page
         addOrgButton.click();
     }
 
-    public BitbucketOrganizationDiv getOrganization(String repositoryType, String repositoryName)
+    public OrganizationDiv getOrganization(String repositoryType, String repositoryName)
     {
-        List<BitbucketOrganizationDiv> organizations = getOrganizations();
-        for (BitbucketOrganizationDiv bitbucketOrganizationDiv : organizations)
+        List<OrganizationDiv> organizations = getOrganizations();
+        for (OrganizationDiv organizationDiv : organizations)
         {
-            if (repositoryType.equals(bitbucketOrganizationDiv.getRepositoryType())
-                    && repositoryName.equals(bitbucketOrganizationDiv.getRepositoryName()))
+            if (repositoryType.equals(organizationDiv.getRepositoryType())
+                    && repositoryName.equals(organizationDiv.getRepositoryName()))
             {
-                return bitbucketOrganizationDiv;
+                return organizationDiv;
             }
         }
         return null;
     }
 
     
-    public List<BitbucketOrganizationDiv> getOrganizations()
+    public List<OrganizationDiv> getOrganizations()
     {
-        List<BitbucketOrganizationDiv> list = new ArrayList<BitbucketOrganizationDiv>();
+        List<OrganizationDiv> list = new ArrayList<OrganizationDiv>();
         for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-orgdata-container")))
         {
             Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-org-container")).timed().isVisible());
-            list.add(pageBinder.bind(BitbucketOrganizationDiv.class, orgContainer));
+            list.add(pageBinder.bind(OrganizationDiv.class, orgContainer));
         }
         return list;
     }
 
     public void deleteAllOrganizations()
     {
-        List<BitbucketOrganizationDiv> orgs;
+        List<OrganizationDiv> orgs;
         while (!(orgs = getOrganizations()).isEmpty())
         {
             orgs.get(0).delete();
@@ -127,7 +127,7 @@ public class RepositoriesPage implements Page
 
     public String getErrorStatusMessage()
     {
-        return messageBarDiv.find(By.className("error")).timed().getText().now();
+        return messageBarDiv.find(By.className("error")).timed().getText().by(1000l);
     }
 
     public boolean containsRepositoryWithName(String askedRepositoryName)
