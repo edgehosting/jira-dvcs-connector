@@ -9,7 +9,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestLikeMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -154,17 +157,18 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
         if (activity instanceof BitbucketPullRequestCommentActivity)
         {
 
-            ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, BitbucketPullRequestCommentActivity.class);
+            ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestCommentMapping.class);
 
         } else if (activity instanceof BitbucketPullRequestLikeActivity)
         {
 
-            ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, BitbucketPullRequestLikeActivity.class);
+            ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestLikeMapping.class);
 
         } else if (activity instanceof BitbucketPullRequestUpdateActivity)
         {
 
-            ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, BitbucketPullRequestUpdateActivity.class);
+            ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
+            ret.put(RepositoryActivityPullRequestUpdateMapping.STATUS, ((BitbucketPullRequestUpdateActivity) activity).getStatus());
 
         }
         return ret;
