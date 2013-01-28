@@ -105,7 +105,7 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
             info.setPullRequest(remotePullRequest);
             //
             Set<String> issueKeys = extractIssueKeys(info);
-            localPullRequest = dao.savePullRequest(toDaoModelPullRequest(remotePullRequest, issueKeys), issueKeys);
+            localPullRequest = dao.savePullRequest(toDaoModelPullRequest(remotePullRequest, issueKeys, forRepository), issueKeys);
 
           // already have it, let's find new issue keys
         } else if (info.getActivity() instanceof HasPossibleUpdatedMessages) {
@@ -182,16 +182,16 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
         ret.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, activity.getUser().getUsername());
         ret.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, pullRequestId);
         ret.put(RepositoryActivityPullRequestMapping.REPO_SLUG, activity.getRepository().getSlug());
-        ret.put(RepositoryActivityPullRequestMapping.REPO_SLUG, activity.getRepository().getSlug());
         return ret;
     }
 
-    private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Set<String> issueKeys)
+    private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Set<String> issueKeys, Repository forRepo)
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
         ret.put(RepositoryPullRequestMapping.LOCAL_ID, request.getId());
         ret.put(RepositoryPullRequestMapping.PULL_REQUEST_NAME, request.getTitle());
         ret.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
+        ret.put(RepositoryPullRequestMapping.TO_REPO_SLUG, forRepo.getSlug());
         return ret;
     }
 

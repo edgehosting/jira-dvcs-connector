@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -173,26 +174,54 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         return prIds;
     }
 
-    // TODO
-    private void removeAll(Repository forRepository)
+    public void removeAll(final Repository forRepository)
     {
+        final List<Query> activityDeleteQueries = new ArrayList<Query>();
+        
         for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
         {
-            final Query query = Query
+            activityDeleteQueries.add( 
+                     Query
                     .select()
                     .from(activityTable)
                     .where(RepositoryActivityPullRequestMapping.REPO_SLUG + " = ?",
-                            new Object[] { forRepository.getSlug() });
-
-            activeObjects.executeInTransaction(new TransactionCallback<Void>()
-            {
-                public Void doInTransaction()
-                {
-                    deleteFromTableByQuery(activityTable, query);
-                    return null;
-                }
-            });
+                            new Object[] { forRepository.getSlug() })
+                            );
         }
+
+
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+                {
+                    public Void doInTransaction()
+                    {
+                        // drop activities
+                        int i = 0;
+                        for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
+                        {
+                            deleteFromTableByQuery(activityTable, activityDeleteQueries.get(i), null);
+                            i++;
+                        }
+                        // drop pull requests
+                        HashSet<Integer> deletedIds = new java.util.HashSet<Integer>();
+                        deleteFromTableByQuery(RepositoryActivityPullRequestMapping.class,
+                                Query
+                                .select()
+                                .from(RepositoryActivityPullRequestMapping.class)
+                                .where(RepositoryActivityPullRequestMapping.REPO_SLUG + " = ?",
+                                        new Object[] { forRepository.getSlug() })
+                                        , deletedIds);
+                        
+                        // drop issue keys to PR mappings
+                        deleteFromTableByQuery(RepositoryPullRequestIssueKeyMapping.class,
+                                Query
+                                .select()
+                                .from(RepositoryPullRequestIssueKeyMapping.class)
+                                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds) +")",
+                                        new Object[] {  })
+                                        , null);
+                        return null;
+                    }
+                });
 
     }
 
@@ -202,7 +231,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
 
-    private void deleteFromTableByQuery(final Class<RepositoryActivityPullRequestMapping> activityTable, Query query)
+    private void deleteFromTableByQuery(final Class activityTable, Query query, final Set<Integer> deletedIds)
     {
         activeObjects.stream(activityTable, query,
                 new EntityStreamCallback<RepositoryActivityPullRequestMapping, Integer>()
@@ -210,6 +239,9 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                     @Override
                     public void onRowRead(RepositoryActivityPullRequestMapping mapping)
                     {
+                        if (deletedIds != null) {
+                            deletedIds.add(mapping.getID());
+                        }
                         activeObjects.delete(activeObjects.get(activityTable, mapping.getID()));
                     }
                 });
