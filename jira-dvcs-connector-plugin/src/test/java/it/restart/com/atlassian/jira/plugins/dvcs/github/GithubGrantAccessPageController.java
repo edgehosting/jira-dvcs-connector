@@ -10,6 +10,11 @@ public class GithubGrantAccessPageController implements GrantAccessPageControlle
     @Override
     public void grantAccess(JiraTestedProduct jira)
     {
+        if (jira.getTester().getDriver().getPageSource().contains("This is not the web page you are looking for"))
+        {
+            throw new AssertionError("Invalid OAuth");
+        }
+        
         GithubGrantAccessPage grantAccessPage = jira.getPageBinder().bind(GithubGrantAccessPage.class);
         grantAccessPage.grantAccess();
     }

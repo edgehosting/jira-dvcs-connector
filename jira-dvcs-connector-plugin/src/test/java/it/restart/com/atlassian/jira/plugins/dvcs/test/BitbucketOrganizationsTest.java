@@ -2,12 +2,14 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraAddUserPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.JiraBitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -22,7 +24,7 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
-    private BitbucketOAuthPageController bbOAuthController;
+    private OAuth oAuth;
     
     @BeforeClass
     public void beforeClass()
@@ -32,9 +34,9 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
         // log in to Bitbucket
         new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin();
         // setup up OAuth from bitbucket
-        bbOAuthController = new BitbucketOAuthPageController(jira).setupOAuth();
+        oAuth = new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
+        jira.visit(JiraBitbucketOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
     }
-
     
     @AfterClass
     public void afterClass()
@@ -43,7 +45,7 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
         // remove OAuth in bitbucket
-        bbOAuthController.removeOAuth();
+        new MagicVisitor(jira).visit(BitbucketOAuthPage.class).removeConsumer(oAuth.applicationId);
         // log out from bitbucket
         new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogout();
     }
@@ -88,6 +90,24 @@ public class BitbucketOrganizationsTest implements BasicOrganizationTests, Missi
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(RepositoriesPageController.BITBUCKET, "https://privatebitbucket.org/someaccount", false);
+    }
+
+    @Override
+    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe authentication with Bitbucket has failed. Please check your OAuth settings.*")
+    public void addOrganizationInvalidOAuth()
+    {
+        try
+        {
+            jira.visit(JiraBitbucketOAuthPage.class).setCredentials("xxx","yyy");
+            RepositoriesPageController rpc = new RepositoriesPageController(jira);
+            OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, true);
+
+            assertThat(organization).isNotNull(); 
+            assertThat(organization.getRepositories().size()).isEqualTo(4);  
+        } finally
+        {
+            jira.visit(JiraBitbucketOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
+        }
     }
 
     
