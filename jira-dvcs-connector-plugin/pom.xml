@@ -220,6 +220,8 @@
 
     <properties>
         <functionalTestPattern>it/**/*Test.java</functionalTestPattern>
+        <jirabitbucketconnector.password>Im here so AMPS wont fail when just building stuff</jirabitbucketconnector.password>
+        <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
         <!-- GithubEnterprise only 
             <functionalTestPattern>it/githubenterprise/**/*Test.java</functionalTestPattern>
         -->
