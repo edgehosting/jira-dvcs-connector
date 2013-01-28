@@ -47,7 +47,7 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
     }
 
     @Override
-    public void synchronize(Repository forRepository)
+    public void synchronize(Repository forRepository, boolean softSync)
     {
         BitbucketRemoteClient remoteClient = clientFactory.getForRepository(forRepository, 2);
         PullRequestRemoteRestpoint pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();

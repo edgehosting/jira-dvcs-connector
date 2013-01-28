@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
+import com.atlassian.jira.plugins.dvcs.sync.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
@@ -30,8 +31,10 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
     private final DvcsCommunicator communicator;
 
-    public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository, RepositoryService repositoryService, ChangesetService changesetService,
-            boolean softSync)
+    private final RepositoryActivitySynchronizer activitySynchronizer;
+
+    public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository,
+            RepositoryService repositoryService, ChangesetService changesetService, boolean softSync, RepositoryActivitySynchronizer activitySynchronizer)
     {
         this.communicator = communicator;
         this.repository = repository;
@@ -39,6 +42,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         this.changesetService = changesetService;
         this.progress = new DefaultProgress();
         this.softSync = softSync;
+        this.activitySynchronizer = activitySynchronizer;
     }
 
     @Override
@@ -130,7 +134,11 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             progress.inProgress(changesetCount, jiraCount, 0);
         }
         
+        // linkers
         setupNewLinkers(foundProjectKeys);
+        
+        // activity
+        syncActivity();
     }
     
     private void setupNewLinkers(Set<String> extractedProjectKeys)
@@ -174,5 +182,12 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     public boolean isSoftSync()
     {
         return softSync;
+    }
+    
+    private void syncActivity()
+    {
+
+        activitySynchronizer.synchronize(repository, softSync);
+
     }
 }
