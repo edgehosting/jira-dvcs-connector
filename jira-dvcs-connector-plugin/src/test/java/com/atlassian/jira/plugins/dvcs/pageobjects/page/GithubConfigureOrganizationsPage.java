@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import static org.hamcrest.Matchers.containsString;
-
 import java.util.List;
 
 import org.openqa.selenium.By;
@@ -152,18 +150,6 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         }
         return jiraTestedProduct.getTester().getDriver().getCurrentUrl();
     }
-
-    @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String url)
-    {
-        addRepoToProject(url, true);
-
-        assertThatErrorMessage(containsString("Error adding postcommit hook. Do you have admin rights to the repository?\n" +
-                "Repository was not added. [Could not add postcommit hook. ]"));
-
-        return this;
-    }
-
 
     public GithubConfigureOrganizationsPage addRepoToProject(String url, boolean autoSync)
     {

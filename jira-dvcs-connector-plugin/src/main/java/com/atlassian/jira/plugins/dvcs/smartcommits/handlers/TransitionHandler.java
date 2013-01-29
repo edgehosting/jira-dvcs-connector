@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.smartcommits.handlers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +30,8 @@ import com.opensymphony.workflow.loader.ActionDescriptor;
 public class TransitionHandler implements CommandHandler<Issue> {
 
     private static CommandType CMD_TYPE = CommandType.TRANSITION;
+    
+    // private Pattern IN_TRANSITION_PATTERN = Pattern.compile("(#\\S*)(.*)");
 
     private static final String NO_STATUS = "fisheye.commithooks.transition.unknownstatus";
 
@@ -53,9 +56,11 @@ public class TransitionHandler implements CommandHandler<Issue> {
     }
 
     @Override
-	public Either<CommitHookHandlerError, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args) {
+	public Either<CommitHookHandlerError, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate) {
         
     	String cmd = commandName;
+    	
+    	String comment = (args != null && args.size() == 1) ? args.get(0) : null;
       
         if (cmd == null || cmd.equals("")) {
             return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
@@ -65,7 +70,8 @@ public class TransitionHandler implements CommandHandler<Issue> {
         Collection<ActionDescriptor> actions = getActionsForIssue(issue);
 
         Collection<ValidatedAction> validActions =
-                getValidActions(actions, user, issue, new IssueInputParametersImpl());
+                getValidActions(actions, user, issue, new IssueInputParametersImpl(), comment);
+
         if (validActions.isEmpty()) {
             return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(NO_ALLOWED_ACTIONS_TEMPLATE, issue.getKey())));
@@ -155,18 +161,24 @@ public class TransitionHandler implements CommandHandler<Issue> {
             Collection<ActionDescriptor> actionsToValidate,
             User user,
             MutableIssue issue,
-            IssueInputParameters parameters) {
+            IssueInputParameters parameters,
+            String comment) {
 
         Collection<ValidatedAction> validations =
             new ArrayList<ValidatedAction>();
         for (ActionDescriptor ad : actionsToValidate) {
+            IssueInputParametersImpl input = new IssueInputParametersImpl();
+            if (comment != null) {
+                input.setComment(comment);
+            }
             IssueService.TransitionValidationResult validation =
-                    issueService.validateTransition(user, issue.getId(), ad.getId(), new IssueInputParametersImpl());
+                    issueService.validateTransition(user, issue.getId(), ad.getId(), input);
             if (validation.isValid()) {
                 validations.add(new ValidatedAction(ad, validation));
             }
         }
         return validations;
     }
+    
 
 }

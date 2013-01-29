@@ -1,6 +1,14 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+
+
 public interface BasicOrganizationTests
 {
-    public abstract void addOrganization();
+    void addOrganization();
+
+    void addOrganizationWaitForSync();
+
+    void addOrganizationInvalidUrl();
+
+    void addOrganizationInvalidOAuth();
 }

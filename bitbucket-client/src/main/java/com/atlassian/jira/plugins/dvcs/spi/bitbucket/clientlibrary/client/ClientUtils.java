@@ -116,13 +116,16 @@ public class ClientUtils
                 throws JsonParseException
         {
             String dateString = json.getAsString();
-
+            
+            // we need to synchronize SimpleDateFormat as it is not thread-safe
+            // we could also use ThreadLocal to improve performance here
             try
             {
-                return dateFormat.parse(dateString);
-            }
-            catch (ParseException e)
-            {
+                synchronized (dateFormat)
+                {
+                    return dateFormat.parse(dateString);
+                }
+            } catch (ParseException e) {
                 throw new JsonParseException("Not parseable datetime string: '" + dateString + "'");
             }
         }

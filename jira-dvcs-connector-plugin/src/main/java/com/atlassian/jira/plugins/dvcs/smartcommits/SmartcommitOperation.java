@@ -54,6 +54,7 @@ public class SmartcommitOperation implements Runnable
 					changesetDao.markSmartcommitAvailability(changeset.getId(), false);
 					// parse message
 					CommitCommands commands = commitMessageParser.parseCommitComment(changeset.getMessage());
+					commands.setCommitDate(changeset.getDate());
 					commands.setAuthorEmail(changeset.getAuthorEmail());
 					// do commands
 					if (CollectionUtils.isNotEmpty(commands.getCommands())) {

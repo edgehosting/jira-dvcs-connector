@@ -50,7 +50,7 @@ public class WorkLogHandlerTest
 
         MutableIssue sampleIssue = sampleIssue();
        
-        handler.handle(sampleUser(), sampleIssue, "time", Arrays.asList("1h 44m"));
+        handler.handle(sampleUser(), sampleIssue, "time", Arrays.asList("1h 44m"), null);
 
         verify(worklogService).validateCreate(any(JiraServiceContext.class), worklogParamsCaptor.capture());
 
@@ -67,7 +67,7 @@ public class WorkLogHandlerTest
 
         MutableIssue sampleIssue = sampleIssue();
        
-        handler.handle(sampleUser(), sampleIssue, "time", Arrays.asList("2w 3d 1h 44m   Total work logged in !!!  "));
+        handler.handle(sampleUser(), sampleIssue, "time", Arrays.asList("2w 3d 1h 44m   Total work logged in !!!  "), null);
 
         verify(worklogService).validateCreate(any(JiraServiceContext.class), worklogParamsCaptor.capture());
 

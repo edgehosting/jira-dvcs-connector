@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException.RetryableRequestException;
 
 /**
  * BaseRemoteRequestor
@@ -180,7 +181,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
             setPayloadParams(method, params);
 
             HttpResponse httpResponse = client.execute(method);
-            response = checkAndCreateRemoteResponse(client, httpResponse);
+            response = checkAndCreateRemoteResponse(method, client, httpResponse);
 
             return callback.onResponse(response);
 
@@ -219,7 +220,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
             createConnection(client, method, uri + paramsToString(parameters, uri.contains("?")), parameters);
           
             HttpResponse httpResponse = client.execute(method);
-            response = checkAndCreateRemoteResponse(client, httpResponse);
+            response = checkAndCreateRemoteResponse(method, client, httpResponse);
             
             return callback.onResponse(response);
 
@@ -238,7 +239,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
     }
 
-    private RemoteResponse checkAndCreateRemoteResponse(DefaultHttpClient client, HttpResponse httpResponse) throws IOException
+    private RemoteResponse checkAndCreateRemoteResponse(HttpRequestBase method, DefaultHttpClient client, HttpResponse httpResponse) throws IOException
     {
         
         RemoteResponse response = new RemoteResponse();
@@ -246,7 +247,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         int statusCode = httpResponse.getStatusLine().getStatusCode();
         if (statusCode >= 300)
         {
-            RuntimeException toBeThrown = new BitbucketRequestException("Error response code during the request : "
+            RuntimeException toBeThrown = new BitbucketRequestException.Other("Error response code during the request : "
                     + statusCode);            
              
             switch (statusCode)
@@ -265,7 +266,11 @@ public class BaseRemoteRequestor implements RemoteRequestor
                 break;
             }
             
-            // log.error("Failed to properly execute request [" + connection.getRequestMethod() + "] : " + connection, toBeThrown);
+            if ( toBeThrown instanceof RetryableRequestException )
+            {
+            	log.warn("Failed to properly execute request [{}], status code {} : {}", new Object[] {method.getMethod(), statusCode, method.getURI()});
+            }
+            
             throw toBeThrown;
         }
 

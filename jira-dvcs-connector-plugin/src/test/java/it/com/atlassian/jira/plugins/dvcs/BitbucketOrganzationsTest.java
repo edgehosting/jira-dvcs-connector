@@ -36,7 +36,7 @@ import com.atlassian.pageobjects.elements.PageElement;
 /**
  * Test to verify behaviour when syncing bitbucket repository..
  */
-public class BitbucketOrganzationsTest extends BitBucketBaseOrgTest<BitBucketConfigureOrganizationsPage>
+public class BitbucketOrganzationsTest extends BaseOrganizationTest<BitBucketConfigureOrganizationsPage>
 {
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
     private static final String TEST_NOT_EXISTING_URL = "https://privatebitbucket.org/someaccount";

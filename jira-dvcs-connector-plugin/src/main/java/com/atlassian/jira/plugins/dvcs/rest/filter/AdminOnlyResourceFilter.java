@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.rest.filter;
 
 import javax.ws.rs.ext.Provider;
 
+import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
 import com.atlassian.jira.security.JiraAuthenticationContext;
@@ -49,11 +50,12 @@ public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequest
     {
         if ( isAdminNeeded() )
         {
-        	if ( !isClientAuthenticated() )
+        	User loggedInUser = authenticationContext.getLoggedInUser();
+        	if  (loggedInUser == null)
         	{
         		throw new AuthenticationRequiredException();
         	}
-        	if( !isAdmin() )
+        	if( !isAdmin(loggedInUser) )
         	{
         		throw new AuthorizationException();
         	}
@@ -67,13 +69,8 @@ public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequest
                 || abstractMethod.getResource().getAnnotation(AdminOnly.class) != null;
     }
 
-    private boolean isClientAuthenticated()
+    private boolean isAdmin(User user)
     {
-        return authenticationContext.isLoggedInUser();
-    }
-    
-    private boolean isAdmin()
-    {
-        return permissionManager.hasPermission(Permissions.ADMINISTER, authenticationContext.getLoggedInUser());
+        return permissionManager.hasPermission(Permissions.ADMINISTER, user);
     }
 }

@@ -8,7 +8,6 @@ import javax.inject.Inject;
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 
-import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketOrganization;
 import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
@@ -62,8 +61,6 @@ public class RepositoriesPage implements Page
     {
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
     }
-
-    
     
     public void addOrganisation(int accountType, String accountName, boolean autoSync)
     {
@@ -77,33 +74,36 @@ public class RepositoriesPage implements Page
         }
         addOrgButton.click();
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    private List<BitBucketOrganization> getOrganizations()
+
+    public OrganizationDiv getOrganization(String repositoryType, String repositoryName)
     {
-        List<BitBucketOrganization> list = new ArrayList<BitBucketOrganization>();
+        List<OrganizationDiv> organizations = getOrganizations();
+        for (OrganizationDiv organizationDiv : organizations)
+        {
+            if (repositoryType.equals(organizationDiv.getRepositoryType())
+                    && repositoryName.equals(organizationDiv.getRepositoryName()))
+            {
+                return organizationDiv;
+            }
+        }
+        return null;
+    }
+
+    
+    public List<OrganizationDiv> getOrganizations()
+    {
+        List<OrganizationDiv> list = new ArrayList<OrganizationDiv>();
         for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-orgdata-container")))
         {
             Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-org-container")).timed().isVisible());
-            list.add(pageBinder.bind(BitBucketOrganization.class, orgContainer));
+            list.add(pageBinder.bind(OrganizationDiv.class, orgContainer));
         }
         return list;
     }
 
     public void deleteAllOrganizations()
     {
-        List<BitBucketOrganization> orgs;
+        List<OrganizationDiv> orgs;
         while (!(orgs = getOrganizations()).isEmpty())
         {
             orgs.get(0).delete();
@@ -127,7 +127,7 @@ public class RepositoriesPage implements Page
 
     public String getErrorStatusMessage()
     {
-        return messageBarDiv.find(By.className("error")).timed().getText().now();
+        return messageBarDiv.find(By.className("error")).timed().getText().by(1000l);
     }
 
     public boolean containsRepositoryWithName(String askedRepositoryName)
@@ -170,8 +170,6 @@ public class RepositoriesPage implements Page
 
     public int getRepositoriesCount(int organisationIndex)
     {
-        PageElement repositoriesTable = getOrganizations().get(organisationIndex).getRepositoriesTable();
-        // first row is header row, than repos ...
-        return repositoriesTable.findAll(By.tagName("tr")).size() - 1;
+        return getOrganizations().get(organisationIndex).getRepositories().size();
     }
 }

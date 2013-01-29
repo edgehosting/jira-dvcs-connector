@@ -470,3 +470,13 @@ html[xmlns] .dvcs-dclear {
     font-size:11px;
     top: 4px;
 }
+
+.dvcs-wait {
+	background-image:url(../../../../images/icons/wait.gif);
+	background-repeat: no-repeat;
+	background-position: right center;
+	padding-right:25px;
+	min-height:25px;
+	color: #777;
+	font-size: 1.2em;
+}
