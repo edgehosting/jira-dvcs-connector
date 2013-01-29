@@ -24,6 +24,6 @@ public interface RepositoryActivityDao
     RepositoryPullRequestMapping findRequestById(Integer localId, String repoSlug);
 
     Set<String> getExistingIssueKeysMapping(Integer pullRequestId);
-
+    
 }
 

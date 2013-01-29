@@ -275,22 +275,6 @@ public class RepositoryDaoImpl implements RepositoryDao
 	}
 	
     @Override
-    public void setLastActivitySyncDate(final Integer id, final Date date)
-    {
-        activeObjects.executeInTransaction(new TransactionCallback<Void>()
-        {
-            public Void doInTransaction()
-            {
-                RepositoryMapping repo = activeObjects.get(RepositoryMapping.class, id);
-                repo.setActivityLastSync(date);
-                repo.save();
-                return null;
-            }
-        });
-    }
-	
-
-    @Override
     public void remove(int repositoryId)
     {
         activeObjects.delete(activeObjects.get(RepositoryMapping.class, repositoryId));
@@ -307,5 +291,20 @@ public class RepositoryDaoImpl implements RepositoryDao
 			}
 		});
 	}
+    
+    @Override
+    public void setLastActivitySyncDate(final Integer id, final Date date)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            public Void doInTransaction()
+            {
+                RepositoryMapping repo = activeObjects.get(RepositoryMapping.class, id);
+                repo.setActivityLastSync(date);
+                repo.save();
+                return null;
+            }
+        });
+    }
 
 }
