@@ -127,10 +127,9 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
             public List<BitbucketPullRequestActivityInfo> onResponse(RemoteResponse response)
             {
                 BitbucketPullRequestBaseActivityEnvelope remote = 
-                        ClientUtils.fromJsonWithDeserializers(
+                        ClientUtils.fromJson(
                                                                   response.getResponse(), 
-                                                                  new TypeToken<BitbucketPullRequestBaseActivityEnvelope>(){}.getType(),
-                                                                  BitbucketPullRequestActivityEnvelopeDeserializer.asMap()
+                                                                  new TypeToken<BitbucketPullRequestBaseActivityEnvelope>(){}.getType()
                                                               );
                 
                 List<BitbucketPullRequestActivityInfo> ret = new ArrayList<BitbucketPullRequestActivityInfo>();
