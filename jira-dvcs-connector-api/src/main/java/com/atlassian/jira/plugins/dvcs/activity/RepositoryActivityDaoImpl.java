@@ -38,7 +38,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
     private final ActiveObjects activeObjects;
 
-    private static final Class<RepositoryActivityPullRequestMapping>[] ALL_ACTIVITY_TABLES = (Class[]) new Object[] {
+    private static final Class<RepositoryActivityPullRequestMapping>[] ALL_ACTIVITY_TABLES = new Class[] {
             RepositoryActivityPullRequestCommentMapping.class, RepositoryActivityPullRequestLikeMapping.class,
             RepositoryActivityPullRequestUpdateMapping.class };
 
