@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits.model;
 
+import java.util.Date;
 import java.util.List;
 
 public class CommitCommands {
@@ -8,6 +9,7 @@ public class CommitCommands {
     
     private String authorEmail;
     
+    private Date commitDate;
 
 	public void setCommands(List<CommitCommand> commands)
 	{
@@ -71,4 +73,15 @@ public class CommitCommands {
 	{
 		this.authorEmail = authorEmail;
 	}
+
+    public Date getCommitDate()
+    {
+        return commitDate;
+    }
+
+    public void setCommitDate(Date commitDate)
+    {
+        this.commitDate = commitDate;
+    }
+
 }
