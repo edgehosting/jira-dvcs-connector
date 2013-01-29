@@ -34,7 +34,8 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     private final RepositoryActivitySynchronizer activitySynchronizer;
 
     public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository,
-            RepositoryService repositoryService, ChangesetService changesetService, boolean softSync, RepositoryActivitySynchronizer activitySynchronizer)
+            RepositoryService repositoryService, ChangesetService changesetService, boolean softSync,
+            RepositoryActivitySynchronizer activitySynchronizer)
     {
         this.communicator = communicator;
         this.repository = repository;
