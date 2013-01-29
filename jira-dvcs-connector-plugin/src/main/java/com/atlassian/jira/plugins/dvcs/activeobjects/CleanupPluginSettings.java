@@ -119,13 +119,13 @@ public class CleanupPluginSettings implements ActiveObjectsUpgradeTask
 
     private void removeGithubRepositories(String projectKey)
     {
-        log.debug(" === removing Github repositories for project [{}] === ", projectKey);
+        log.debug(" === removing GitHub repositories for project [{}] === ", projectKey);
         pluginSettingsFactory.createSettingsForKey(projectKey).remove("githubRepositoryURLArray");
     }
 
     private void removeGithubIssueMappings(String projectKey, String repositoryUrl)
     {
-        log.debug(" === removing issue mappings for Github repository {} === ", repositoryUrl);
+        log.debug(" === removing issue mappings for GitHub repository {} === ", repositoryUrl);
         PluginSettings ps = pluginSettingsFactory.createSettingsForKey(projectKey);
         ArrayList<String> issueIds = (ArrayList<String>) ps.get("githubIssueIDs" + repositoryUrl);
         if (issueIds != null)
