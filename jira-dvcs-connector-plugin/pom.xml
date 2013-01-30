@@ -156,15 +156,17 @@
             <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
                 <artifactId>maven-jira-plugin</artifactId>
-                <version>4.1.2</version>
+                <version>3.5.2</version>
                 <extensions>true</extensions>
                 <configuration>
                     <jvmArgs>-Xmx720m -XX:MaxPermSize=250m</jvmArgs>
                     <systemPropertyVariables>
                         <jira.websudo.is.disabled>true</jira.websudo.is.disabled>
-                        <server>http://localhost:2990/jira</server>
-                        <httpPort>2990</httpPort>
-                        <contextPath>jira</contextPath>
+
+						<baseurl.jira>http://localhost:2990/jira</baseurl.jira>
+-                        <http.jira.port>2990</http.jira.port>
+-                        <context.jira.path>jira</context.jira.path>
+
                         <jirabitbucketconnector.password>${jirabitbucketconnector.password}</jirabitbucketconnector.password>
                         <dvcsconnectortest.password>${dvcsconnectortest.password}</dvcsconnectortest.password>
                     </systemPropertyVariables>
