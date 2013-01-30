@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -33,6 +34,7 @@ import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
+import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
 /**
@@ -331,5 +333,29 @@ public class RootResource
             log.error("Failed to reload config.", e);
             return Response.serverError().build();
         }
+    }
+    
+    @DELETE
+    @Path("/organization/{id}")
+    @AdminOnly
+    public Response deleteOrganization(@PathParam("id") int id)
+    {
+    	Organization integratedAccount = organizationService.findIntegratedAccount();
+        if (    integratedAccount != null 
+        		&&  id==integratedAccount.getId())
+        {
+        	return Status.error().message("Failed to delete integrated account.").response();
+        }
+    	
+    	try
+        {
+    	    organizationService.remove(id);
+
+        } catch (Exception e)
+        {
+            log.error("Failed to remove account " + id, e);
+        }
+		
+        return Response.noContent().build();
     }
 }

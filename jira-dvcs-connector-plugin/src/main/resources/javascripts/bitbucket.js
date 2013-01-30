@@ -501,19 +501,30 @@ function enableRepoSmartcommits(repoId, checkboxId) {
 			  });
 }
 
-function confirmDeleteOrganization(organization) {
-	var result = confirm("Are you sure you want to remove account '" + organization + "' from JIRA ?");
+function deleteOrganization(organizationId, organizationName) {
+	var answer = confirm("Are you sure you want to remove account '" +organizationName + "' from JIRA ?");
 	
-	if ( result ) {
+	if (answer) {
 		var dialog = new AJS.Dialog({width:400, height:120, id:"deleting-account-dialog", closeOnOutsideClick: false});
 		dialog.addHeader("Deleting Account");
 
-		dialog.addPanel("DeletePanel", "<span class='dvcs-wait'>Deleting '" + organization + "' account. Please wait...</span>");
+		dialog.addPanel("DeletePanel", "<span class='dvcs-wait'>Deleting '" + organizationName + "' account. Please wait...</span>");
 		
 		dialog.show(); 
+		
+		AJS.$.ajax({
+            url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId,
+            type: 'DELETE',
+            success: function(result) {
+                window.location.reload();
+            }
+        }).error(function (err,status,message) { 
+        	dialog.remove();
+        	showError("Error when deleting account '" + organizationName + "'.");
+		});
+		
+        
 	}
-
-	return result;
 }
 
 function showError(message) {
