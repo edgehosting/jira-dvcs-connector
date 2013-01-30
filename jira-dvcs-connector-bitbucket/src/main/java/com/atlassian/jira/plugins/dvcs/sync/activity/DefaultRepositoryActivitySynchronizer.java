@@ -178,11 +178,26 @@ public class DefaultRepositoryActivitySynchronizer implements RepositoryActivity
             Integer pullRequestId)
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
-        ret.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, activity.getUpdatedOn());
+        ret.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, extractDate(activity));
         ret.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, activity.getUser().getUsername());
         ret.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, pullRequestId);
         ret.put(RepositoryActivityPullRequestMapping.REPO_SLUG, activity.getRepository().getSlug());
         return ret;
+    }
+
+    private Date extractDate(BitbucketPullRequestBaseActivity activity)
+    {
+        Date date = activity.getUpdatedOn();
+        
+        // fallbacks - order depends
+        if (date == null) {
+            date = activity.getDate();
+        }
+        if (date == null) {
+            date = activity.getCreatedOn();
+        }
+        
+        return date;
     }
 
     private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Set<String> issueKeys, Repository forRepo)
