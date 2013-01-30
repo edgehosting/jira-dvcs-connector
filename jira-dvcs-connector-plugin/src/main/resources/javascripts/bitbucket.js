@@ -507,9 +507,7 @@ function deleteOrganization(organizationId, organizationName) {
 	if (answer) {
 		var dialog = new AJS.Dialog({width:400, height:120, id:"deleting-account-dialog", closeOnOutsideClick: false});
 		dialog.addHeader("Deleting Account");
-
 		dialog.addPanel("DeletePanel", "<span class='dvcs-wait'>Deleting '" + organizationName + "' account. Please wait...</span>");
-		
 		dialog.show(); 
 		
 		AJS.$.ajax({
@@ -518,13 +516,28 @@ function deleteOrganization(organizationId, organizationName) {
             success: function(result) {
                 window.location.reload();
             }
-        }).error(function (err,status,message) { 
+        }).error(function (err) { 
         	dialog.remove();
         	showError("Error when deleting account '" + organizationName + "'.");
 		});
-		
-        
 	}
+}
+
+function syncRepositoryList(organizationId,organizationName) {
+	var dialog = new AJS.Dialog({width:400, height:120, id:"deleting-account-dialog", closeOnOutsideClick: false});
+	dialog.addHeader("Refreshing Account");
+	dialog.addPanel("RefreshPanel", "<span class='dvcs-wait'>Refreshing '" + organizationName + "' account. Please wait...</span>");
+	dialog.show(); 
+	
+	AJS.$.ajax({
+        url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId + "/syncRepoList",
+        type: 'GET',
+        success: function(result) {
+            window.location.reload();
+        }
+    }).error(function (err) { 
+    	window.location.reload();
+	});
 }
 
 function showError(message) {

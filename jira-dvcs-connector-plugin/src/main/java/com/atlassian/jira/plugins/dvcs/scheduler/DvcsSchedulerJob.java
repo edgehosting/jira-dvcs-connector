@@ -25,7 +25,15 @@ public class DvcsSchedulerJob implements PluginJob
 		List<Organization> organizations = organizationService.getAll(false);
 		for (Organization organization : organizations)
         {
-			repositoryService.syncRepositoryList(organization);
+			try
+			{
+				repositoryService.syncRepositoryList(organization);
+			} catch (Exception e)
+			{
+				// Log error but continue with synchronization,
+				// if wrong credentials, organization has been already marked as invalid and will display error message 
+				log.error(e.getMessage(),e);
+			}
         }
     }
 	

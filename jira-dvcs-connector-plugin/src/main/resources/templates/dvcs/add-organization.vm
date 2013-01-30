@@ -245,7 +245,7 @@
                                 </li>
                                 
                                 <li class="dropdown-item">
-                                      <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh list</a>
+                                      <a  href="#" onclick="javascript:syncRepositoryList($org.id,'$org.name'); return false;">Refresh list</a>
                                 </li>
                                 
                                 #if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
