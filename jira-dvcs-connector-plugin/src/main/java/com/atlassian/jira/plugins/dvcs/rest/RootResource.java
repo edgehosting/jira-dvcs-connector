@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -211,8 +212,14 @@ public class RootResource
         }
         
         Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
-        repositoryService.syncRepositoryList(organization);
-        return Response.noContent().build();
+        try
+    	{
+    		repositoryService.syncRepositoryList(organization);
+    	} catch (SourceControlException e)
+    	{
+    		log.error(e.getMessage(), e);
+    	}
+   		return Response.noContent().build();
     }
 
     @POST
