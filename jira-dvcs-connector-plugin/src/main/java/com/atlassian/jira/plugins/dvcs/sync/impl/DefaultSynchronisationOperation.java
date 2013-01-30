@@ -7,6 +7,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -16,7 +17,6 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
-import com.atlassian.jira.plugins.dvcs.sync.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation

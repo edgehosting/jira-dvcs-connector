@@ -10,6 +10,7 @@ import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -17,7 +18,6 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import com.atlassian.jira.plugins.dvcs.sync.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
