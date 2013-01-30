@@ -5,7 +5,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 public interface RepositoryActivitySynchronizer
 {
 
-   void synchronize(Repository forRepository);
+   void synchronize(Repository forRepository, boolean softSync);
     
 }
 

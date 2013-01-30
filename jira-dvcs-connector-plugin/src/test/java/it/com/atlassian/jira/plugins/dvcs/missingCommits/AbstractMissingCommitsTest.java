@@ -1,7 +1,7 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest;
+import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
 
 import java.io.IOException;
 
@@ -17,7 +17,7 @@ import org.testng.annotations.Test;
 /**
  * @author Martin Skurla
  */
-public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganizationsPage> extends BitBucketBaseOrgTest<T>
+public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganizationsPage> extends BaseOrganizationTest<T>
 {
     static final String DVCS_REPO_OWNER = "dvcsconnectortest";
     static final String DVCS_REPO_PASSWORD = PasswordUtil.getPassword("dvcsconnectortest");

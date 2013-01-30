@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
-import static com.atlassian.jira.util.UrlValidator.isValid;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,7 +100,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
             addErrorMessage("Please provide both url and organization parameters.");
         }
         
-        if (!isValid(url))
+        if (!SystemUtils.isValid(url))
         {
             addErrorMessage("Please provide valid GitHub host URL.");
         }

@@ -5,7 +5,7 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException.RetryableRequestException;
 
 
 /**
@@ -30,22 +30,25 @@ public class BadRequestRetryer<V>
 			try
 			{
 				return callable.call();
-			} catch (BitbucketRequestException.BadRequest_400 e)   
-			{
-				long delay = (long) (1000 * Math.pow(3, attempt)); // exponencial delay.
-				log.warn("Attempt #" + attempt + " (out of " + num_attempts
-				        + "): Request operation failed: " + e.getMessage() + "\nRetrying in "
-				        + delay / 1000 + " secs");
-				try
-				{
-					Thread.sleep(delay);
-				} catch (InterruptedException ignored)
-				{
-					// ignore
-				}
 			} catch (RuntimeException e)
 	        {
-	            throw e;
+				if ( e instanceof RetryableRequestException)
+				{
+					long delay = (long) (1000 * Math.pow(3, attempt)); // exponencial delay.
+					log.warn("Attempt #" + attempt + " (out of " + num_attempts
+					        + "): Request operation failed: " + e.getMessage() + "\nRetrying in "
+					        + delay / 1000 + " secs");
+					try
+					{
+						Thread.sleep(delay);
+					} catch (InterruptedException ignored)
+					{
+						// ignore
+					}
+				} else
+				{
+					throw e;
+				}
 	        } catch (Exception e)
 	        {
 	            throw new RuntimeException(e);

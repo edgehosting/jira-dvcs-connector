@@ -96,13 +96,4 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         return this;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingPostcommitService(String url)
-    {
-        return this;
-    }
 }

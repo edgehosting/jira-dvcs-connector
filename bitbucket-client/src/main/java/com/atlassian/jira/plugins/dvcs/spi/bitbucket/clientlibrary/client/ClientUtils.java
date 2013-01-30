@@ -8,9 +8,10 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 import java.util.TimeZone;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityEnvelopeDeserializer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -31,6 +32,7 @@ public class ClientUtils
         GsonBuilder builder = new GsonBuilder();
         builder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
         builder.registerTypeAdapter(Date.class, new GsonDateTypeAdapter()); //to parse 2011-12-21 15:17:37
+        builder.registerTypeAdapter(BitbucketPullRequestActivityInfo.class, new BitbucketPullRequestActivityEnvelopeDeserializer ());
 
         return builder;
     }
@@ -83,24 +85,6 @@ public class ClientUtils
         }
     }
 
-    public static <T> T fromJsonWithDeserializers(InputStream json, Type type, Map<Class<?>, JsonDeserializer<?>> deserializers)
-    {
-        try
-        {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(json, UTF8));
-            GsonBuilder gson = createGson();
-            for (Class<?> forClass : deserializers.keySet())
-            {
-                gson.registerTypeHierarchyAdapter(forClass, deserializers.get(forClass));
-            }
-            return gson.create().fromJson(reader, type);
-        } catch (Exception e)
-        {
-            throw new JsonParsingException(e);
-        }
-    }
-
-    
     private static final class GsonDateTypeAdapter implements JsonDeserializer<Date>
     {
 
@@ -116,13 +100,16 @@ public class ClientUtils
                 throws JsonParseException
         {
             String dateString = json.getAsString();
-
+            
+            // we need to synchronize SimpleDateFormat as it is not thread-safe
+            // we could also use ThreadLocal to improve performance here
             try
             {
-                return dateFormat.parse(dateString);
-            }
-            catch (ParseException e)
-            {
+                synchronized (dateFormat)
+                {
+                    return dateFormat.parse(dateString);
+                }
+            } catch (ParseException e) {
                 throw new JsonParseException("Not parseable datetime string: '" + dateString + "'");
             }
         }

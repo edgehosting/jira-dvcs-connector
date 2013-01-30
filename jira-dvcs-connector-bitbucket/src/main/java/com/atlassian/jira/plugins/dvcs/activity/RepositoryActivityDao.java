@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+
 public interface RepositoryActivityDao
 {
     // C-U-D
@@ -12,7 +14,9 @@ public interface RepositoryActivityDao
 
     RepositoryPullRequestMapping savePullRequest (Map<String, Object> activity, Set<String> issueKeys);
     
-    void saveIssueKeysMappings(Collection<String> issueKeys, int id); 
+    void saveIssueKeysMappings(Collection<String> issueKeys, int id);
+    
+    void removeAll(final Repository forRepository);
 
     // R
     List<RepositoryActivityPullRequestMapping> getRepositoryActivityForIssue(String issueKey);
@@ -20,6 +24,6 @@ public interface RepositoryActivityDao
     RepositoryPullRequestMapping findRequestById(Integer localId, String repoSlug);
 
     Set<String> getExistingIssueKeysMapping(Integer pullRequestId);
-
+    
 }
 

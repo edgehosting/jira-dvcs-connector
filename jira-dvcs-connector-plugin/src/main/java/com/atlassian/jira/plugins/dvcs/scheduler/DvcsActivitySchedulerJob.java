@@ -27,7 +27,7 @@ public class DvcsActivitySchedulerJob implements PluginJob
 
 		for (Repository repository : repositories)
         {
-		    activitySynchronizer.synchronize(repository);
+		    activitySynchronizer.synchronize(repository, true);
         }
     }
 	

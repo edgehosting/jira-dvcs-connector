@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
 import net.java.ao.Entity;
+import net.java.ao.schema.Table;
 
+@Table("PullRequest")
 public interface RepositoryPullRequestMapping extends Entity {
     
     String LOCAL_ID = "LOCAL_ID";

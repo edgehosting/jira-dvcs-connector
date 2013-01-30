@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.jira.plugins.dvcs.sync.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -48,6 +49,8 @@ public class RepositoryServiceImpl implements RepositoryService
 	private final ApplicationProperties applicationProperties;
 
     private final PluginSettingsFactory pluginSettingsFactory;
+
+    private final RepositoryActivitySynchronizer activitySynchronizer;
     
 	/**
 	 * The Constructor.
@@ -59,7 +62,7 @@ public class RepositoryServiceImpl implements RepositoryService
 	 * @param applicationProperties the application properties
 	 */
 	public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
-        ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
+        ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory, RepositoryActivitySynchronizer activitySynchronizer)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
@@ -67,6 +70,7 @@ public class RepositoryServiceImpl implements RepositoryService
         this.changesetService = changesetService;
         this.applicationProperties = applicationProperties;
         this.pluginSettingsFactory = pluginSettingsFactory;
+        this.activitySynchronizer = activitySynchronizer;
     }
 
     /**
@@ -347,7 +351,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		{
             DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
                     communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService,
-                    softSync);
+                    softSync, activitySynchronizer);
 			synchronizer.synchronize(repository, synchronisationOperation);
 		}
 	}

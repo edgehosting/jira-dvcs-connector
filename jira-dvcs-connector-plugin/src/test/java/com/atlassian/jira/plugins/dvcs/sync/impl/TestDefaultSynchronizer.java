@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -9,6 +11,9 @@ import java.util.concurrent.Executors;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -19,11 +24,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
+import com.atlassian.jira.plugins.dvcs.sync.activity.RepositoryActivitySynchronizer;
 
 /**
  * @author Martin Skurla
@@ -42,6 +43,10 @@ public final class TestDefaultSynchronizer
 
 	@Mock
 	private SmartcommitsChangesetsProcessor changesetsProcessorMock;
+	
+
+    @Mock
+    private RepositoryActivitySynchronizer activitySyncerMock;
     
 	@Captor
 	private ArgumentCaptor<Changeset> savedChangesetCaptor;
@@ -63,7 +68,7 @@ public final class TestDefaultSynchronizer
 				Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
 		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
-                mock(RepositoryService.class), changesetServiceMock, true); // soft sync
+                mock(RepositoryService.class), changesetServiceMock, true, activitySyncerMock); // soft sync
 
 		Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
 		synchronizer.synchronize(repositoryMock, synchronisationOperation);

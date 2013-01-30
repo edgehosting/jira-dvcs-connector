@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -9,6 +11,9 @@ import java.util.concurrent.Executors;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -18,13 +23,9 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.jira.plugins.dvcs.sync.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer;
-
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
 
 /**
  * @author Martin Skurla
@@ -43,8 +44,11 @@ public final class TestSmartcommits
     
 	@Mock
     DvcsCommunicator communicatorMock;
-	
-	@Captor
+
+    @Mock
+    private RepositoryActivitySynchronizer activitySyncerMock;
+
+    @Captor
 	private ArgumentCaptor<Changeset> savedChangesetCaptor;
 
     private Changeset changesetWithJIRAIssue()
@@ -73,7 +77,7 @@ public final class TestSmartcommits
 				Arrays.asList(changesetWithJIRAIssue(), changesetWithoutJIRAIssue()));
 
 		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
-                mock(RepositoryService.class), changesetServiceMock, true); // soft sync
+                mock(RepositoryService.class), changesetServiceMock, true, activitySyncerMock); // soft sync
 
 		Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
 		synchronizer.synchronize(repositoryMock, synchronisationOperation);
@@ -99,7 +103,7 @@ public final class TestSmartcommits
 				Arrays.asList(changesetWithJIRAIssue(), changesetWithoutJIRAIssue()));
 
 		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
-                mock(RepositoryService.class), changesetServiceMock, true); // soft sync
+                mock(RepositoryService.class), changesetServiceMock, true, activitySyncerMock); // soft sync
 
 		Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
 		synchronizer.synchronize(repositoryMock, synchronisationOperation);

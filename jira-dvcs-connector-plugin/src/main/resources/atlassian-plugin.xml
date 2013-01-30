@@ -59,6 +59,14 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
+
+        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestLikeMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping</entity>
+        
+        
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v2.To_04_ActiveObjectsV2Migrator</upgradeTask>
@@ -68,14 +76,16 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_09_SmartCommitsColumnsMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_10_LastChangesetNodeMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_11_NewRepositoryColumn</upgradeTask>
     </ao>
-	
+
 	<!-- Integrated account -->
 
-    <navigation-link key="app-switcher-nav-link" menu-key="home" state="disabled">
+    <navigation-link key="app-switcher-nav-link" menu-key="home" state="disabled" weight="400">
         <link>https://bitbucket.org</link>
         <label key="Bitbucket"/>
         <description key="Git and Mercurial code hosting"/>
+        <application-type>bitbucket</application-type>
     </navigation-link>
     <component key="bitbucketAccountsConfigService" name="Bitbucket Accounts Config Service" class="com.atlassian.jira.plugins.dvcs.ondemand.BitbucketAccountsConfigService" public="true">
         <interface>com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService</interface>
@@ -526,5 +536,16 @@
 
 	<!-- Web Panels -->
 	<web-panel key="add-user-dvcs-extension" weight="2000" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />
+
+	<!-- 
+		Activity synchronizer
+	 -->
+	<component key="defaultRepositoryActivitySynchronizer" name="Default Repository Activity Synchronizer"
+		class="com.atlassian.jira.plugins.dvcs.sync.activity.DefaultRepositoryActivitySynchronizer" />
+		
+	<component key="repositoryActivityDaoImpl" name="Repository Activity Dao Impl"
+		class="com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDaoImpl" />
+		
+		
 
 </atlassian-plugin>

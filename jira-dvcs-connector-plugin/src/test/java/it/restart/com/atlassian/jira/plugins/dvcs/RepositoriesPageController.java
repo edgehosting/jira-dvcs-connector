@@ -1,23 +1,24 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketGrantAccessPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.PageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubGrantAccessPageController;
+
+import java.util.List;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 
 public class RepositoriesPageController implements PageController<RepositoriesPage>
 {
-    public static final int ACCOUNT_TYPE_BITBUCKET = 0;
-    public static final int ACCOUNT_TYPE_GITHUB = 1;
-    public static final int ACCOUNT_TYPE_GITHUBENTERPRISE = 2;
+    
     private final JiraTestedProduct jira;
     private final RepositoriesPage page;
 
     public RepositoriesPageController(JiraTestedProduct jira)
     {
         this.jira = jira;
-        this.page = jira.getPageBinder().navigateToAndBind(RepositoriesPage.class);
+        this.page = jira.visit(RepositoriesPage.class);
     }
     
     @Override
@@ -26,29 +27,51 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         return page;
     }
 
-    public void addOrganization(int accountType, String accountName, boolean autosync)
+    public OrganizationDiv addOrganization(AccountType accountType, String accountName, boolean autosync)
     {
-        page.addOrganisation(accountType, accountName, autosync);
-        
+        page.addOrganisation(accountType.index, accountName, autosync);
+        assertThat(page.getErrorStatusMessage()).isNull();
         if(requiresGrantAccess())
         {
-            getGrantAccessController(accountType).grantAccess();
+            accountType.grantAccessPageController.grantAccess(jira);
         }
         
+        OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
         if (autosync)
         {
-            waitForSyncToFinish();
+            waitForSyncToFinish(organization);
+        } else
+        {
+            assertThat(isSyncFinished(organization));
         }
-        
-//        Poller.waitUntilFalse(atlassianTokenMeta.timed().isPresent());
-//        pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grantAccess();
-//        Poller.waitUntilTrue(atlassianTokenMeta.timed().isPresent());
-
+        return organization;
     }
 
-    private void waitForSyncToFinish()
+    public void waitForSyncToFinish(OrganizationDiv organization)
     {
-        JiraPageUtils.checkSyncProcessSuccess(jira);
+        do
+        {
+            try
+            {
+                Thread.sleep(1000l);
+            } catch (InterruptedException e)
+            {
+                // ignore
+            }
+        } while (!isSyncFinished(organization));
+    }
+    
+    private boolean isSyncFinished(OrganizationDiv organization)
+    {
+        List<RepositoryDiv> repositories = organization.getRepositories();
+        for (RepositoryDiv repositoryDiv : repositories)
+        {
+            if (repositoryDiv.isSyncing())
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean requiresGrantAccess()
@@ -59,18 +82,27 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         return !currentUrl.contains("/jira");
     }
 
-    private GrantAccessPageController getGrantAccessController(int accountType)
-    {
-        switch (accountType)
-        {
-        case ACCOUNT_TYPE_BITBUCKET:
-            return new BitbucketGrantAccessPageController(jira);
-        case ACCOUNT_TYPE_GITHUB:
-            return new BitbucketGrantAccessPageController(jira);
-        case ACCOUNT_TYPE_GITHUBENTERPRISE:
-            return new BitbucketGrantAccessPageController(jira);
-        }
-        return null;
-    }
 
+    /**
+    *
+    */
+    public static final AccountType BITBUCKET = new AccountType(0, "bitbucket", new BitbucketGrantAccessPageController());
+    public static final AccountType GITHUB = new AccountType(1, "github", new GithubGrantAccessPageController());
+    public static final AccountType GITHUBENTERPRISE = new AccountType(2, "github1", new BitbucketGrantAccessPageController());
+
+    static class AccountType
+    {
+        public final int index;
+        public final String type;
+        public final GrantAccessPageController grantAccessPageController;
+
+        private AccountType(int index, String type, GrantAccessPageController grantAccessPageController)
+        {
+            this.index = index;
+            this.type = type;
+            this.grantAccessPageController = grantAccessPageController;
+        }
+
+    }
+    
 }

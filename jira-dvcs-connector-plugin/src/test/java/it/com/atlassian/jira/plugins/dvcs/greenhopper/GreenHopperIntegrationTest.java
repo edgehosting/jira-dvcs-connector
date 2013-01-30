@@ -6,12 +6,12 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
 
 import org.testng.annotations.Test;
-import it.com.atlassian.jira.plugins.dvcs.BitBucketBaseOrgTest;
+import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
 
 /**
  * @author Martin Skurla
  */
-public class GreenHopperIntegrationTest extends BitBucketBaseOrgTest<BitBucketConfigureOrganizationsPage>
+public class GreenHopperIntegrationTest extends BaseOrganizationTest<BitBucketConfigureOrganizationsPage>
 {
     private static final String TEST_ORGANIZATION = "jirabitbucketconnector";
 

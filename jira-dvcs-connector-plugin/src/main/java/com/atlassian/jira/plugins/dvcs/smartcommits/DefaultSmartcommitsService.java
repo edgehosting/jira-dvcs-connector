@@ -138,7 +138,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 			// -----------------------------------------------------------------------------------------------
 			case LOG_WORK:
 				Either<CommitHookHandlerError, Worklog> logResult = workLogHandler.handle(user, issue,
-						command.getCommandName(), command.getArguments());
+						command.getCommandName(), command.getArguments(), commands.getCommitDate());
 
 				if (logResult.hasError())
 				{
@@ -150,7 +150,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 			// -----------------------------------------------------------------------------------------------
 			case COMMENT:
 				Either<CommitHookHandlerError, Comment> commentResult = commentHandler.handle(user, issue,
-						command.getCommandName(), command.getArguments());
+						command.getCommandName(), command.getArguments(), commands.getCommitDate());
 
 				if (commentResult.hasError())
 				{
@@ -162,7 +162,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 			// -----------------------------------------------------------------------------------------------
 			case TRANSITION:
 				Either<CommitHookHandlerError, Issue> transitionResult = transitionHandler.handle(user, issue,
-						command.getCommandName(), command.getArguments());
+						command.getCommandName(), command.getArguments(), commands.getCommitDate());
 
 				if (transitionResult.hasError())
 				{

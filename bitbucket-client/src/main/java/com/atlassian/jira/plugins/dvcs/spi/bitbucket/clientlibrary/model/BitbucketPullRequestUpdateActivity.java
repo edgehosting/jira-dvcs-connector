@@ -32,6 +32,8 @@ public class BitbucketPullRequestUpdateActivity extends BitbucketPullRequestBase
     
     private String description;
 
+    private String status;
+
     public BitbucketPullRequestUpdateActivity()
     {
         super();
@@ -55,6 +57,16 @@ public class BitbucketPullRequestUpdateActivity extends BitbucketPullRequestBase
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+    public String getStatus()
+    {
+        return status;
+    }
+
+    public void setStatus(String status)
+    {
+        this.status = status;
     }
     
 

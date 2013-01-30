@@ -3,7 +3,9 @@ package com.atlassian.jira.plugins.dvcs.activity;
 import java.util.Date;
 
 import net.java.ao.Entity;
+import net.java.ao.Polymorphic;
 
+@Polymorphic
 public interface RepositoryActivityPullRequestMapping extends Entity {
     
     String ENTITY_TYPE = "ENTITY_TYPE";

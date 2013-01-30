@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Add New Github Account</title>
+    <title>Add New GitHub Account</title>
 
 	$webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
 
@@ -13,7 +13,7 @@
    <div class="aui-message shadowed" id="add-org-form-container">
    
 	   <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddGithubOrganization.jspa" class="aui long-label">
-	      <h4>New Github Account</h4>
+	      <h4>New GitHub Account</h4>
 	      <input type="hidden" name="atl_token" value="$atl_token">
 	      <input type="hidden" name="autoLinking" id="autoLinking" value="$action.autoLinking">
 	       <input type="hidden" name="autoSmartCommits" id="autoSmartCommits" value="$action.autoSmartCommits">
