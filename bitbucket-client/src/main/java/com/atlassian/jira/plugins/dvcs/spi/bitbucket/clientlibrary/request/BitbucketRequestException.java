@@ -56,6 +56,15 @@ public class BitbucketRequestException extends RuntimeException
     
     public static final class NotFound_404 extends BitbucketRequestException
     {
+        public NotFound_404()
+        {
+            super();
+        }
+        public NotFound_404(String message)
+        {
+            super(message);
+        }
+        
     }
     
     /**

@@ -262,7 +262,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
                 toBeThrown = new BitbucketRequestException.Forbidden_403();
                 break;
             case HttpStatus.SC_NOT_FOUND:
-                toBeThrown = new BitbucketRequestException.NotFound_404();
+                toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI());
                 break;
             }
             
