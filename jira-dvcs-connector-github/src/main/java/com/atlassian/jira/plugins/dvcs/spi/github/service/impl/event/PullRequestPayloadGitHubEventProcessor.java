@@ -1,69 +1,49 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.eclipse.egit.github.core.PullRequest;
-import org.eclipse.egit.github.core.RepositoryCommit;
-import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.PullRequestPayload;
-import org.eclipse.egit.github.core.service.PullRequestService;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitService;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction.Action;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubUserService;
 
 /**
  * An {@link PullRequestPayload} based {@link GitHubEventProcessor}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class PullRequestPayloadGitHubEventProcessor extends AbstractGitHubEventProcessor<PullRequestPayload>
 {
 
     /**
-     * @see #PullRequestPayloadGitHubEventProcessor(GithubClientProvider, GitHubPullRequestService, GitHubPullRequestUpdateService,
-     *      GitHubCommitService)
-     */
-    private final GithubClientProvider githubClientProvider;
-
-    /**
-     * @see #PullRequestPayloadGitHubEventProcessor(GithubClientProvider, GitHubPullRequestService, GitHubPullRequestUpdateService,
-     *      GitHubCommitService)
+     * @see #PullRequestPayloadGitHubEventProcessor(GithubClientProvider, GitHubPullRequestService, GitHubUserService)
      */
     private final GitHubPullRequestService gitHubPullRequestService;
 
     /**
-     * @see #PullRequestPayloadGitHubEventProcessor(GithubClientProvider, GitHubPullRequestService, GitHubPullRequestUpdateService,
-     *      GitHubCommitService)
+     * @see #PullRequestPayloadGitHubEventProcessor(GithubClientProvider, GitHubPullRequestService, GitHubUserService)
      */
-    private final GitHubCommitService gitHubCommitService;
+    private final GitHubUserService gitHubUserService;
 
     /**
      * Constructor.
      * 
-     * @param githubClientProvider
-     *            used for connection access
      * @param gitHubPullRequestService
      *            Injected {@link GitHubPullRequestService} dependency.
-     * @param gitHubPullRequestUpdateService
-     *            Injected {@link GitHubPullRequestUpdateService} dependency.
-     * @param gitHubCommitService
-     *            Injected {@link GitHubCommitService} dependency.
+     * @param gitHubUserService
+     *            Injected {@link GitHubUserService} dependency.
      */
-    public PullRequestPayloadGitHubEventProcessor(GithubClientProvider githubClientProvider,
-            GitHubPullRequestService gitHubPullRequestService, GitHubCommitService gitHubCommitService)
+    public PullRequestPayloadGitHubEventProcessor(GitHubPullRequestService gitHubPullRequestService, GitHubUserService gitHubUserService)
     {
-        this.githubClientProvider = githubClientProvider;
         this.gitHubPullRequestService = gitHubPullRequestService;
-        this.gitHubCommitService = gitHubCommitService;
+        this.gitHubUserService = gitHubUserService;
     }
 
     /**
@@ -72,43 +52,77 @@ public class PullRequestPayloadGitHubEventProcessor extends AbstractGitHubEventP
     @Override
     public void process(Repository repository, Event event)
     {
-        RepositoryId egitRepository = RepositoryId.createFromUrl(repository.getRepositoryUrl());
         PullRequestPayload payload = getPayload(event);
         PullRequest pullRequest = payload.getPullRequest();
 
-        GitHubPullRequest gitHubPullRequest = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
-        if (gitHubPullRequest != null)
-        {
-            return;
-        }
+        GitHubPullRequest gitHubPullRequest = gitHubPullRequestService
+                .synchronize(repository, pullRequest.getId(), pullRequest.getNumber());
 
-        List<GitHubCommit> initialCommits = new LinkedList<GitHubCommit>();
-        try
+        Action resolvedAction = resolveAction(payload);
+        // was resolved appropriate action? with other words is supported action?
+        if (resolvedAction != null)
         {
-            PullRequestService pullRequestService = githubClientProvider.getPullRequestService(repository);
-            List<RepositoryCommit> repositoryCommits = pullRequestService.getCommits(egitRepository, pullRequest.getCommits());
-            for (RepositoryCommit repositoryCommit : repositoryCommits)
+
+            // reuse action if already synchronized
+            GitHubPullRequestAction action = null;
+            for (GitHubPullRequestAction oldAction : gitHubPullRequest.getActions())
             {
-                GitHubCommit commit = gitHubCommitService.getBySha(repositoryCommit.getSha());
-                if (commit == null)
+                if (event.getId().equals(oldAction.getGitHubEventId()))
                 {
-                    commit = new GitHubCommit();
-                    gitHubCommitService.map(commit, repositoryCommit.getCommit());
-                    gitHubCommitService.save(commit);
-                    initialCommits.add(commit);
+                    action = oldAction;
+                    break;
                 }
             }
 
-        } catch (IOException e)
+            // creates news one
+            if (action == null)
+            {
+                action = new GitHubPullRequestAction();
+                action.setGitHubEventId(event.getId());
+                gitHubPullRequest.getActions().add(action);
+            }
+
+            action.setAt(event.getCreatedAt());
+            action.setActor(gitHubUserService.synchronize(event.getActor().getLogin(), repository));
+            action.setAction(resolvedAction);
+        }
+
+        gitHubPullRequestService.save(gitHubPullRequest);
+    }
+
+    /**
+     * Resolves action ENUM for the provided {@link PullRequestPayload}.
+     * 
+     * @param payload
+     * @return resolved action
+     */
+    private Action resolveAction(PullRequestPayload payload)
+    {
+        Action result = null;
+
+        if ("opened".equalsIgnoreCase(payload.getAction()))
         {
-            throw new RuntimeException(e);
+            result = GitHubPullRequestAction.Action.OPENED;
+
+        } else if ("closed".equalsIgnoreCase(payload.getAction()))
+        {
+            if (payload.getPullRequest().getMergedAt() != null)
+            {
+                result = GitHubPullRequestAction.Action.MERGED;
+
+            } else
+            {
+                result = GitHubPullRequestAction.Action.CLOSED;
+
+            }
+
+        } else if ("reopened".equalsIgnoreCase(payload.getAction()))
+        {
+            result = GitHubPullRequestAction.Action.REOPENED;
 
         }
 
-        // creates GitHubPullRequest
-        gitHubPullRequest = new GitHubPullRequest();
-        gitHubPullRequest.setTitle(pullRequest.getTitle());
-        gitHubPullRequestService.save(gitHubPullRequest);
+        return result;
     }
 
     /**

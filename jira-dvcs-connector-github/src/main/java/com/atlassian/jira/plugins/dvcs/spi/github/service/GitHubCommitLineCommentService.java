@@ -8,7 +8,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommitLineComment;
 /**
  * Provides {@link GitHubCommitLineComment} related services.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public interface GitHubCommitLineCommentService

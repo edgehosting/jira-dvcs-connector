@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.dao.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestLineCommentDAO;
@@ -9,7 +11,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineCom
 /**
  * The transient/mock implementation of the {@link GitHubPullRequestLineCommentDAO}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubPullRequestLineCommentDAOMockImpl implements GitHubPullRequestLineCommentDAO
@@ -75,6 +77,15 @@ public class GitHubPullRequestLineCommentDAOMockImpl implements GitHubPullReques
     {
         Integer id = transientStoreByGitHubId.get(gitHubId);
         return id != null ? getById(id) : null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<GitHubPullRequestLineComment> getByIssueKey(String issueKey)
+    {
+        return new ArrayList<GitHubPullRequestLineComment>(transientStore.values());
     }
 
 }

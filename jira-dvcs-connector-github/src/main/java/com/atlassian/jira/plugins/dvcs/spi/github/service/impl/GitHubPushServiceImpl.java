@@ -7,7 +7,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPushService;
 /**
  * The {@link GitHubPushService} implementation.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubPushServiceImpl implements GitHubPushService

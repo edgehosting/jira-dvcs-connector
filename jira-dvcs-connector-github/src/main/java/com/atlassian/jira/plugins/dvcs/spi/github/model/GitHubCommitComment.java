@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Comment assigned to the {@link GitHubCommit}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubCommitComment

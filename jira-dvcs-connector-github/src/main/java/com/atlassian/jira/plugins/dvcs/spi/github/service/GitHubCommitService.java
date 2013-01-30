@@ -9,7 +9,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 /**
  * Defines {@link GitHubCommit}'s related services.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public interface GitHubCommitService

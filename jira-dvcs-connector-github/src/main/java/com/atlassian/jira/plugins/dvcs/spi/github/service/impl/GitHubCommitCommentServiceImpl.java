@@ -10,7 +10,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitCommentSer
 /**
  * The implementation of the {@link GitHubCommitCommentService}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubCommitCommentServiceImpl implements GitHubCommitCommentService

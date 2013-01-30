@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.CommitComment;
 import org.eclipse.egit.github.core.event.CommitCommentPayload;
 import org.eclipse.egit.github.core.event.Event;
@@ -16,7 +17,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
 /**
  * The {@link CommitCommentPayload} implementation of the {@link GitHubEventProcessor}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class CommitCommentPayloadGitHubEventProcessor extends AbstractGitHubEventProcessor<CommitCommentPayload>
@@ -64,7 +65,7 @@ public class CommitCommentPayloadGitHubEventProcessor extends AbstractGitHubEven
         CommitComment commitComment = getPayload(event).getComment();
 
         // line or general comment?
-        if (commitComment.getPath() == null || commitComment.getPath().trim().isEmpty())
+        if (StringUtils.isBlank(commitComment.getPath()))
         {
             // already proceed nothing to do
             if (gitHubCommitCommentService.getByGitHubId(commitComment.getId()) != null)

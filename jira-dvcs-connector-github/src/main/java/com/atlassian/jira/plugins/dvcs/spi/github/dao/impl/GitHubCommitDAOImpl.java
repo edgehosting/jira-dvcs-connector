@@ -14,7 +14,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 /**
  * AO implementation of the {@link GitHubCommitDAO}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubCommitDAOImpl implements GitHubCommitDAO
@@ -113,7 +113,7 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
     @Override
     public List<GitHubCommit> getByIssueKey(String issueKey)
     {
-        // FIXME<stanislav-dvorscak@solumiss.eu>
+        // FIXME<Stanislav Dvorscak>
         throw new UnsupportedOperationException();
     }
 

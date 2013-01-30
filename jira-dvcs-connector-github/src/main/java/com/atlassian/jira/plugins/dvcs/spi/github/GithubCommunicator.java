@@ -50,6 +50,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService;
 import com.google.common.collect.Iterators;
 
 public class GithubCommunicator implements DvcsCommunicator
@@ -62,15 +63,18 @@ public class GithubCommunicator implements DvcsCommunicator
     protected final GithubOAuth githubOAuth;
 
     protected final GithubClientProvider githubClientProvider;
+    
+    private final GitHubRepositoryService gitHubRepositoryService;
 
     private final HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
     
     public GithubCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
-            GithubClientProvider githubClientProvider)
+            GithubClientProvider githubClientProvider, GitHubRepositoryService gitHubRepositoryService)
     {
         this.changesetCache = changesetCache;
         this.githubOAuth = githubOAuth;
         this.githubClientProvider = githubClientProvider;
+        this.gitHubRepositoryService = gitHubRepositoryService;
     }
 
     @Override
@@ -404,4 +408,14 @@ public class GithubCommunicator implements DvcsCommunicator
     {
 
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void synchronize(Repository repository)
+    {
+        gitHubRepositoryService.synchronize(repository);
+    }
+    
 }

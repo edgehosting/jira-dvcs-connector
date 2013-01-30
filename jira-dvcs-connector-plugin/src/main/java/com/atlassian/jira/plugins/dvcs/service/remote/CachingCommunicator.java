@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import com.atlassian.extras.common.log.Logger;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -228,5 +229,13 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     {
         delegate.linkRepositoryIncremental(repository, withPossibleNewProjectkeys);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void synchronize(Repository repository)
+    {
+    	delegate.synchronize(repository);
+    }
 }

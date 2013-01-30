@@ -18,7 +18,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitService;
 /**
  * AO implementation of the {@link GitHubPushDAO}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubPushDAOImpl implements GitHubPushDAO

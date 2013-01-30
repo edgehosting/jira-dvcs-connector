@@ -6,7 +6,7 @@ import org.eclipse.egit.github.core.event.EventPayload;
 /**
  * It is tagging interface, which mark aggregators of the several {@link GitHubEventProcessor}s.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  * @param <T_EventPayload>
  *            {@link #getEventPayloadType()}

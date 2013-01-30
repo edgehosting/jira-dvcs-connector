@@ -1,17 +1,20 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
-import org.eclipse.egit.github.core.CommitComment;
+import java.util.List;
+
+import org.eclipse.egit.github.core.Comment;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestCommentDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
 
 /**
  * The implementation of the {@link GitHubPullRequestService}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCommentService
@@ -68,16 +71,28 @@ public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCom
     {
         return gitHubPullRequestCommentDAO.getByGitHubId(gitHubId);
     }
-
+    
     /**
      * {@inheritDoc}
      */
     @Override
-    public void map(GitHubPullRequestComment target, CommitComment source, GitHubPullRequest pullRequest)
+    public List<GitHubPullRequestComment> getByIssueKey(String issueKey)
+    {
+        return gitHubPullRequestCommentDAO.getByIssueKey(issueKey);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @param createdBy 
+     */
+    @Override
+    public void map(GitHubPullRequestComment target, Comment source, GitHubPullRequest pullRequest, GitHubUser createdBy)
     {
         target.setGitHubId(source.getId());
-        target.setText(source.getBodyText());
         target.setPullRequest(pullRequest);
+        target.setCreatedAt(source.getCreatedAt());
+        target.setCreatedBy(createdBy);
+        target.setText(source.getBody());
     }
 
 }

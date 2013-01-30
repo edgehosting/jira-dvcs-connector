@@ -1,11 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.dao;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
 
 /**
  * The {@link GitHubPullRequestLineComment} related DAO services.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public interface GitHubPullRequestLineCommentDAO
@@ -40,5 +42,12 @@ public interface GitHubPullRequestLineCommentDAO
      * @return {@link GitHubPullRequestLineComment}
      */
     GitHubPullRequestLineComment getByGitHubId(long gitHubId);
+
+    /**
+     * @param issueKey
+     *            linked issue key
+     * @return resolved {@link GitHubPullRequestLineComment}-s.
+     */
+    List<GitHubPullRequestLineComment> getByIssueKey(String issueKey);
 
 }

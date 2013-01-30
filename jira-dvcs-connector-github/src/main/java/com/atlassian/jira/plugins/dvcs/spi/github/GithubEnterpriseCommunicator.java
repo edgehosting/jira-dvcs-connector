@@ -1,10 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
 import java.io.IOException;
-import java.net.URL;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
@@ -12,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService;
 import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 
 public class GithubEnterpriseCommunicator extends GithubCommunicator
@@ -21,9 +20,9 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     public static final String GITHUB_ENTERPRISE = "githube";
 
     private GithubEnterpriseCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
-            GithubClientProvider githubClientProvider)
+            GithubClientProvider githubClientProvider, GitHubRepositoryService gitHubRepositoryService)
     {
-        super(changesetCache, githubOAuth, githubClientProvider);
+        super(changesetCache, githubOAuth, githubClientProvider, gitHubRepositoryService);
     }
         
     public AccountInfo getAccountInfo(String hostUrl, String accountName)

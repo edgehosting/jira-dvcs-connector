@@ -7,7 +7,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 /**
  * Provides DAO services related to an {@link GitHubPullRequest}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public interface GitHubPullRequestDAO

@@ -11,7 +11,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitService;
 /**
  * An {@link GitHubCommitService} implementation.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubCommitServiceImpl implements GitHubCommitService

@@ -2,14 +2,13 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
 import java.util.List;
 
-import org.eclipse.egit.github.core.PullRequest;
-
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 
 /**
  * Defines {@link GitHubPullRequest}'s related services.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public interface GitHubPullRequestService
@@ -52,13 +51,14 @@ public interface GitHubPullRequestService
     List<GitHubPullRequest> getGitHubPullRequest(String issueKey);
 
     /**
-     * Re-maps {@link PullRequest} to the {@link GitHubPullRequest}.
-     * 
-     * @param target
-     *            internal model
-     * @param source
-     *            egit model
+     * @param repository
+     *            owning pull request
+     * @param gitHubId
+     *            identity of the pull request
+     * @param pullRequestNumber
+     *            the number of the pull request
+     * @return newly created or refreshed pull request
      */
-    void map(GitHubPullRequest target, PullRequest source);
+    GitHubPullRequest synchronize(Repository repository, long gitHubId, int pullRequestNumber);
 
 }

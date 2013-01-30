@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Model of the commit.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubCommit

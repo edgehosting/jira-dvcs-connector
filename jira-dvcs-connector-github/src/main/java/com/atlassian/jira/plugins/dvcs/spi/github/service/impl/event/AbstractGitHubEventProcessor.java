@@ -8,7 +8,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
 /**
  * General functionality useful for the {@link GitHubEventProcessor} implementation.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  * @param <T_EventPayload>
  *            {@link #getEventPayloadType()}
@@ -21,7 +21,7 @@ public abstract class AbstractGitHubEventProcessor<T_EventPayload extends EventP
 	 */
 	protected boolean wasAlreadyProceed()
 	{
-		// FIXME<stanislav-dvorscak@solumiss.eu>
+		// FIXME<Stanislav Dvorscak>
 		return false;
 	}
 

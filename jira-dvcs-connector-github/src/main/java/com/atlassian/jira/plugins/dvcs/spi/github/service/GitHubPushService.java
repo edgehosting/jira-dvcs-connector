@@ -5,7 +5,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
 /**
  * Provides services related to the {@link GitHubPush}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public interface GitHubPushService

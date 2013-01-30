@@ -15,7 +15,7 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 /**
  * AO implementation of the {@link GitHubPullRequestDAO}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
@@ -126,7 +126,7 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
     @Override
     public List<GitHubPullRequest> getGitHubPullRequest(String issueKey)
     {
-        // FIXME<stanislav-dvorscak@solumiss.eu>
+        // FIXME<Stanislav Dvorscak>
         throw new UnsupportedOperationException();
     }
 

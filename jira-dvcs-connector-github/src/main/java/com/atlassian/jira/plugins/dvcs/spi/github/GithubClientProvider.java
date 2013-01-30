@@ -27,10 +27,10 @@ public class GithubClientProvider
     private GitHubClient createClient(Repository repository)
     {
         GitHubClient client = GithubOAuthUtils.createClient(repository.getOrgHostUrl());
-        
+
         OAuthAuthentication auth = (OAuthAuthentication) authenticationFactory.getAuthentication(repository);
         client.setOAuth2Token(auth.getAccessToken());
-        
+
         return client;
     }
 

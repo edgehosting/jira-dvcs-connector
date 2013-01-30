@@ -9,7 +9,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
 /**
  * AO of the {@link GitHubPush}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public interface GitHubPushMapping extends Entity

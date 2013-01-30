@@ -9,7 +9,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommitLineComment;
 /**
  * Mock transient implementation of the {@link GitHubCommitLineComment}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubCommitLineCommentDAOMockImpl implements GitHubCommitLineCommentDAO

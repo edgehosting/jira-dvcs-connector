@@ -10,7 +10,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommitComment;
 /**
  * Transient mock implementation of the {@link GitHubCommitComment}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubCommitCommentDAOMockImpl implements GitHubCommitCommentDAO

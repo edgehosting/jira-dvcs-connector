@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Line comment over an {@link GitHubCommit}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubPullRequestLineComment
@@ -27,7 +27,12 @@ public class GitHubPullRequestLineComment
     private Date createdAt;
 
     /**
-     * @see #get
+     * @see #getCreatedBy()
+     */
+    private GitHubUser createdBy;
+
+    /**
+     * @see #getPullRequest()
      */
     private GitHubPullRequest pullRequest;
 
@@ -107,6 +112,23 @@ public class GitHubPullRequestLineComment
     public void setCreatedAt(Date createdAt)
     {
         this.createdAt = createdAt;
+    }
+
+    /**
+     * @return Creator of the comment.
+     */
+    public GitHubUser getCreatedBy()
+    {
+        return createdBy;
+    }
+
+    /**
+     * @param createdBy
+     *            {@link #getCreatedBy()}
+     */
+    public void setCreatedBy(GitHubUser createdBy)
+    {
+        this.createdBy = createdBy;
     }
 
     /**

@@ -10,7 +10,7 @@ import com.atlassian.jira.util.NotNull;
 /**
  * AO of the {@link GitHubPullRequest}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 @Table("GitHubPullRequestMapping")

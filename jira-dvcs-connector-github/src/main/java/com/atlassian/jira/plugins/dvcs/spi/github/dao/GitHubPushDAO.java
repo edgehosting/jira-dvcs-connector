@@ -5,7 +5,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
 /**
  * Provides {@link GitHubPush} DAO services.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public interface GitHubPushDAO

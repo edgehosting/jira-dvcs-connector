@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Contains information, which happened when push was realized.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubPush

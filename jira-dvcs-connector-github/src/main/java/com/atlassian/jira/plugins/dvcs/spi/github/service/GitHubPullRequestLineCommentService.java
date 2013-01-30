@@ -1,15 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
+import java.util.List;
+
 import org.eclipse.egit.github.core.CommitComment;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 
 /**
  * The {@link GitHubPullRequestLineComment} related services.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public interface GitHubPullRequestLineCommentService
@@ -54,9 +57,19 @@ public interface GitHubPullRequestLineCommentService
      *            egit model
      * @param pullRequest
      *            {@link GitHubPullRequestLineComment#getPullRequest()}
+     * @param createdBy
+     *            {@link GitHubPullRequestLineComment#getCreatedBy()}
      * @param commit
      *            {@link CommitComment#getCommitId()}
      */
-    public void map(GitHubPullRequestLineComment target, CommitComment source, GitHubPullRequest pullRequest, GitHubCommit commit);
+    public void map(GitHubPullRequestLineComment target, CommitComment source, GitHubPullRequest pullRequest, GitHubUser createdBy,
+            GitHubCommit commit);
+
+    /**
+     * @param issueKey
+     *            linked issue key
+     * @return resolved {@link GitHubPullRequestLineComment}-s.
+     */
+    List<GitHubPullRequestLineComment> getByIssueKey(String issueKey);
 
 }

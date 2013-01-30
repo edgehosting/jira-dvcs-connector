@@ -11,17 +11,20 @@ import org.eclipse.egit.github.core.service.PullRequestService;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestLineCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubUserService;
 
 /**
  * The {@link PullRequestReviewCommentPayload} implementation of the {@link GitHubEventProcessor}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class PullRequestReviewCommentPayloadGitHubEventProcessor extends AbstractGitHubEventProcessor<PullRequestReviewCommentPayload>
@@ -29,25 +32,31 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
 
     /**
      * @see #PullRequestReviewCommentPayloadGitHubEventProcessor(GitHubPullRequestLineCommentService, GitHubPullRequestService,
-     *      GitHubCommitService, GithubClientProvider)
+     *      GitHubUserService, GitHubCommitService, GithubClientProvider)
      */
     private final GitHubPullRequestLineCommentService gitHubPullRequestLineCommentService;
 
     /**
      * @see #PullRequestReviewCommentPayloadGitHubEventProcessor(GitHubPullRequestLineCommentService, GitHubPullRequestService,
-     *      GitHubCommitService, GithubClientProvider)
+     *      GitHubUserService, GitHubCommitService, GithubClientProvider)
      */
     private final GitHubPullRequestService gitHubPullRequestService;
 
     /**
      * @see #PullRequestReviewCommentPayloadGitHubEventProcessor(GitHubPullRequestLineCommentService, GitHubPullRequestService,
-     *      GitHubCommitService, GithubClientProvider)
+     *      GitHubUserService, GitHubCommitService, GithubClientProvider)
      */
     private final GitHubCommitService gitHubCommitService;
 
     /**
      * @see #PullRequestReviewCommentPayloadGitHubEventProcessor(GitHubPullRequestLineCommentService, GitHubPullRequestService,
-     *      GitHubCommitService, GithubClientProvider)
+     *      GitHubUserService, GitHubCommitService, GithubClientProvider)
+     */
+    private final GitHubUserService gitHubUserService;
+
+    /**
+     * @see #PullRequestReviewCommentPayloadGitHubEventProcessor(GitHubPullRequestLineCommentService, GitHubPullRequestService,
+     *      GitHubUserService, GitHubCommitService, GithubClientProvider)
      */
     private final GithubClientProvider githubClientProvider;
 
@@ -58,6 +67,8 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
      *            Injected {@link GitHubPullRequestLineCommentService} dependency.
      * @param gitHubPullRequestService
      *            Injected {@link GitHubPullRequestService} dependency.
+     * @param gitHubUserService
+     *            Injected {@link GitHubUserService} dependency.
      * @param gitHubCommitService
      *            Injected {@link GitHubCommitService} dependency.
      * @param githubClientProvider
@@ -66,12 +77,14 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
     public PullRequestReviewCommentPayloadGitHubEventProcessor( //
             GitHubPullRequestLineCommentService gitHubPullRequestLineCommentService, //
             GitHubPullRequestService gitHubPullRequestService, //
+            GitHubUserService gitHubUserService, //
             GitHubCommitService gitHubCommitService, //
             GithubClientProvider githubClientProvider)
     {
         this.gitHubPullRequestLineCommentService = gitHubPullRequestLineCommentService;
         this.gitHubCommitService = gitHubCommitService;
         this.gitHubPullRequestService = gitHubPullRequestService;
+        this.gitHubUserService = gitHubUserService;
         this.githubClientProvider = githubClientProvider;
     }
 
@@ -81,7 +94,8 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
     @Override
     public void process(Repository repository, Event event)
     {
-        CommitComment commitComment = getPayload(event).getComment();
+        PullRequestReviewCommentPayload payload = getPayload(event);
+        CommitComment commitComment = payload.getComment();
 
         // is it already proceed?
         if (gitHubPullRequestLineCommentService.getByGitHubId(commitComment.getId()) != null)
@@ -91,8 +105,10 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
 
         // not - will be proceed
         GitHubPullRequestLineComment gitHubPullRequestLineComment = new GitHubPullRequestLineComment();
-        gitHubPullRequestLineCommentService.map(gitHubPullRequestLineComment, commitComment,
-                getPullRequestByComment(repository, commitComment), gitHubCommitService.getBySha(commitComment.getCommitId()));
+        GitHubPullRequest pullRequest = getPullRequestByComment(repository, commitComment);
+        GitHubCommit commit = gitHubCommitService.getBySha(commitComment.getCommitId());
+        GitHubUser createdBy = gitHubUserService.synchronize(payload.getComment().getUser().getLogin(), repository);
+        gitHubPullRequestLineCommentService.map(gitHubPullRequestLineComment, commitComment, pullRequest, createdBy, commit);
         gitHubPullRequestLineCommentService.save(gitHubPullRequestLineComment);
     }
 
@@ -121,20 +137,19 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
         try
         {
+            PullRequestService pullRequestService = githubClientProvider.getPullRequestService(repository);
 
             // iterates over open pull requests
-            PullRequestService pullRequestService = githubClientProvider.getPullRequestService(repository);
             for (PullRequest pullRequest : pullRequestService.getPullRequests(repositoryId, "open"))
             {
-                for (CommitComment tmpCommitComment : pullRequestService.getComments(repositoryId, pullRequest.getComments()))
+                for (CommitComment tmpCommitComment : pullRequestService.getComments(repositoryId, pullRequest.getNumber()))
                 {
                     if (commitComment.getId() == tmpCommitComment.getId())
                     {
                         result = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
                         if (result == null)
                         {
-                            result = new GitHubPullRequest();
-                            gitHubPullRequestService.map(result, pullRequest);
+                            result = gitHubPullRequestService.synchronize(repository, pullRequest.getId(), pullRequest.getNumber());
                             gitHubPullRequestService.save(result);
                         }
 
@@ -146,16 +161,14 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
             // iterates over closed pull-requests
             for (PullRequest pullRequest : pullRequestService.getPullRequests(repositoryId, "closed"))
             {
-                for (CommitComment tmpCommitComment : pullRequestService.getComments(repositoryId, pullRequest.getComments()))
+                for (CommitComment tmpCommitComment : pullRequestService.getComments(repositoryId, pullRequest.getNumber()))
                 {
                     if (commitComment.getId() == tmpCommitComment.getId())
                     {
                         result = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
                         if (result == null)
                         {
-                            result = new GitHubPullRequest();
-                            gitHubPullRequestService.map(result, pullRequest);
-                            gitHubPullRequestService.save(result);
+                            result = gitHubPullRequestService.synchronize(repository, pullRequest.getId(), pullRequest.getNumber());
                         }
 
                         return result;

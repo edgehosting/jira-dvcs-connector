@@ -11,7 +11,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPushService;
 /**
  * Implementation of the {@link GitHubEventProcessor} for the {@link PushPayload} based event.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class PushPayloadGitHubEventProcessor extends AbstractGitHubEventProcessor<PushPayload>

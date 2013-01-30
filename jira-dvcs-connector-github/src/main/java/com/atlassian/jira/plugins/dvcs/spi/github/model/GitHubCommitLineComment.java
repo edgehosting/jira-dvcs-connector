@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.model;
 /**
  * Line commit comment.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubCommitLineComment

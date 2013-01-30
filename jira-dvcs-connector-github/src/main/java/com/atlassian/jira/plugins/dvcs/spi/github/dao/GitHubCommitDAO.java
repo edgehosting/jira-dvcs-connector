@@ -7,7 +7,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 /**
  * Defines {@link GitHubCommit}'s related DAO services.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public interface GitHubCommitDAO

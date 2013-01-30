@@ -11,7 +11,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 /**
  * Mock - transient implementation of the {@link GitHubCommitDAO}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubCommitDAOMockImpl implements GitHubCommitDAO

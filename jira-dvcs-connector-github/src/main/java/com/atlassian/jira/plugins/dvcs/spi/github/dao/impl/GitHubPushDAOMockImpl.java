@@ -9,7 +9,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
 /**
  * Mock - transient implementation of the {@link GitHubPushDAO}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubPushDAOMockImpl implements GitHubPushDAO

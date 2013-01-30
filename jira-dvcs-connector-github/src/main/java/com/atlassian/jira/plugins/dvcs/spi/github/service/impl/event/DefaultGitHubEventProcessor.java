@@ -9,27 +9,27 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
 /**
  * Default implementation of the {@link GitHubEventProcessor}.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class DefaultGitHubEventProcessor implements GitHubEventProcessor<EventPayload>
 {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void process(Repository repository, Event event)
-	{
-		// nothing to do
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void process(Repository repository, Event event)
+    {
+        // nothing to do
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Class<EventPayload> getEventPayloadType()
-	{
-		return EventPayload.class;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Class<EventPayload> getEventPayloadType()
+    {
+        return EventPayload.class;
+    }
 }

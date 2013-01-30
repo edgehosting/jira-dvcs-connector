@@ -1,11 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.model;
 
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A Pull Request.
  * 
- * @author stanislav-dvorscak@solumiss.eu
+ * @author Stanislav Dvorscak
  * 
  */
 public class GitHubPullRequest
@@ -15,6 +17,11 @@ public class GitHubPullRequest
      * @see #getId()
      */
     private int id;
+
+    /**
+     * @see #getSynchronizedAt()
+     */
+    private Date synchronizedAt;
 
     /**
      * @see #getGitHubId()
@@ -27,9 +34,9 @@ public class GitHubPullRequest
     private String title;
 
     /**
-     * @see #get
+     * @see #getActions()
      */
-    private Date createdAt;
+    private List<GitHubPullRequestAction> actions = new LinkedList<GitHubPullRequestAction>();
 
     /**
      * Constructor.
@@ -53,6 +60,23 @@ public class GitHubPullRequest
     public void setId(int id)
     {
         this.id = id;
+    }
+
+    /**
+     * @return date when was last synchronized.
+     */
+    public Date getSynchronizedAt()
+    {
+        return synchronizedAt;
+    }
+
+    /**
+     * @param synchronizedAt
+     *            {@link #setSynchronizedAt(Date)}
+     */
+    public void setSynchronizedAt(Date synchronizedAt)
+    {
+        this.synchronizedAt = synchronizedAt;
     }
 
     /**
@@ -90,20 +114,20 @@ public class GitHubPullRequest
     }
 
     /**
-     * @return The date of the pull request creation.
+     * @return The actions performed on this {@link GitHubPullRequest}.
      */
-    public Date getCreatedAt()
+    public List<GitHubPullRequestAction> getActions()
     {
-        return createdAt;
+        return actions;
     }
 
     /**
-     * @param createdAt
-     *            {@link #getCreatedAt()}
+     * @param actions
+     *            {@link #getActions()}
      */
-    public void setCreatedAt(Date createdAt)
+    public void setActions(List<GitHubPullRequestAction> actions)
     {
-        this.createdAt = createdAt;
+        this.actions = actions;
     }
 
 }
