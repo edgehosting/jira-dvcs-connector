@@ -13,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCom
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestLikeMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Repository;

@@ -164,8 +164,8 @@
                         <jira.websudo.is.disabled>true</jira.websudo.is.disabled>
 
 						<baseurl.jira>http://localhost:2990/jira</baseurl.jira>
--                        <http.jira.port>2990</http.jira.port>
--                        <context.jira.path>jira</context.jira.path>
+                        <http.jira.port>2990</http.jira.port>
+                        <context.jira.path>jira</context.jira.path>
 
                         <jirabitbucketconnector.password>${jirabitbucketconnector.password}</jirabitbucketconnector.password>
                         <dvcsconnectortest.password>${dvcsconnectortest.password}</dvcsconnectortest.password>
@@ -184,40 +184,7 @@
                     <functionalTestPattern>${functionalTestPattern}</functionalTestPattern>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <execution>
-                        <id>unpack</id>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>com.atlassian.jira.plugins</groupId>
-                                    <artifactId>jira-dvcs-connector-api</artifactId>
-                                    <version>${project.version}</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>com.atlassian.jira.plugins</groupId>
-                                    <artifactId>jira-dvcs-connector-bitbucket</artifactId>
-                                    <version>${project.version}</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>com.atlassian.jira.plugins</groupId>
-                                    <artifactId>jira-dvcs-connector-github</artifactId>
-                                    <version>${project.version}</version>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
+       </plugins>
     </build>
 
     <properties>
