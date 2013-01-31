@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.sync.activity;
+package com.atlassian.jira.plugins.dvcs.spi.bitbucket.activity;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,14 +31,14 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Pu
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
 // TODO failure recovery + rename to stateful if will be stateful
-public class DefaultRepositoryActivitySynchronizer implements RepositoryActivitySynchronizer
+public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivitySynchronizer
 {
 
     private final BitbucketClientRemoteFactory clientFactory;
     private final RepositoryActivityDao dao;
     private final RepositoryDao repositoryDao;
 
-    public DefaultRepositoryActivitySynchronizer(BitbucketClientRemoteFactory clientFactory, RepositoryActivityDao dao,
+    public BitbucketRepositoryActivitySynchronizer(BitbucketClientRemoteFactory clientFactory, RepositoryActivityDao dao,
             RepositoryDao repositoryDao)
     {
         super();

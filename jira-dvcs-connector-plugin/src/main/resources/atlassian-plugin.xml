@@ -540,8 +540,15 @@
 	<!-- 
 		Activity synchronizer
 	 -->
-	<component key="defaultRepositoryActivitySynchronizer" name="Default Repository Activity Synchronizer"
-		class="com.atlassian.jira.plugins.dvcs.sync.activity.DefaultRepositoryActivitySynchronizer" />
+	 
+	<component key="delegatingRepositoryActivitySynchronizer" name="Delegating Repository Activity Synchronizer"
+		class="com.atlassian.jira.plugins.dvcs.sync.impl.DelegatingRepositoryActivitySynchronizer" />
+		
+	<component key="bitbucketRepositoryActivitySynchronizer" name="Bitbucket Repository Activity Synchronizer"
+		class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.activity.BitbucketRepositoryActivitySynchronizer" />
+		
+	<component key="githubRepositoryActivitySynchronizer" name="Github Repository Activity Synchronizer"
+		class="com.atlassian.jira.plugins.dvcs.spi.github.activity.GithubRepositoryActivitySynchronizer" />
 		
 	<component key="repositoryActivityDaoImpl" name="Repository Activity Dao Impl"
 		class="com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDaoImpl" />

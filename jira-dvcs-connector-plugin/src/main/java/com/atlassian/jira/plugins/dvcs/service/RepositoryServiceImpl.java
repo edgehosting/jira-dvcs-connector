@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -62,7 +63,9 @@ public class RepositoryServiceImpl implements RepositoryService
 	 * @param applicationProperties the application properties
 	 */
 	public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
-        ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory, RepositoryActivitySynchronizer activitySynchronizer)
+        ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory,
+        @Qualifier("delegatingRepositoryActivitySynchronizer")
+        RepositoryActivitySynchronizer activitySynchronizer)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
