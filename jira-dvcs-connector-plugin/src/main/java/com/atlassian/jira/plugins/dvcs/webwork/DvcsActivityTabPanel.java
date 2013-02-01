@@ -64,10 +64,19 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
         String issueKey = issue.getKey();
         List<IssueAction> bitbucketActions = new ArrayList<IssueAction>();
         
-        
         try
         {
-            List<RepositoryActivityPullRequestMapping> activity = activityDao.getRepositoryActivityForIssue(issueKey);
+            List<RepositoryActivityPullRequestMapping> activities = activityDao.getRepositoryActivityForIssue(issueKey);
+            
+            for (RepositoryActivityPullRequestMapping activity : activities)
+            {
+            	logger.debug("found changeset [ {} ] on issue [ {} ]", activity.getID(), issueKey);
+            	String changesetAsHtml = getHtmlForActivity(activity);
+                if (StringUtils.isNotBlank(changesetAsHtml))
+                {
+                    bitbucketActions.add(new CommitsIssueAction(changesetAsHtml, activity.getLastUpdatedOn()));
+                }
+            }
             
             for (Changeset changeset : changesetService.getByIssueKey(issueKey))
             {
@@ -150,7 +159,20 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
         return sw.toString();
     }
 
-
+    private String getHtmlForActivity(RepositoryActivityPullRequestMapping activity)
+    {
+    	Map<String, Object> templateMap = new HashMap<String, Object>();
+    	
+    	StringWriter sw = new StringWriter();
+        try
+        {
+            templateRenderer.render("/templates/activity/activity-view.vm", templateMap, sw);
+        } catch (IOException e)
+        {
+            logger.warn(e.getMessage(), e);
+        }
+        return sw.toString();
+	}
 
 }
 

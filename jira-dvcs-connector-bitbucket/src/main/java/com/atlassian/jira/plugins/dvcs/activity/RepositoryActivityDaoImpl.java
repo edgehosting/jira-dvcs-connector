@@ -144,17 +144,20 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         List<RepositoryActivityPullRequestMapping> ret = new ArrayList<RepositoryActivityPullRequestMapping>();
         List<Integer> pullRequestIds = findRelatedPullRequests(issueKey);
 
-        for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
+        if ( !pullRequestIds.isEmpty() )
         {
-            final Query query = Query
-                    .select()
-                    .from(activityTable)
-                    .where(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(pullRequestIds) + ")");
-
-            ret.addAll(Arrays.asList(activeObjects.find(activityTable, query)));
-
+		    for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
+		    {
+		        final Query query = Query
+		                .select()
+		                .from(activityTable)
+		                .where(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(pullRequestIds) + ")");
+		
+		        ret.addAll(Arrays.asList(activeObjects.find(activityTable, query)));
+		
+		    }
         }
-        return sort(ret);
+		return sort(ret);
     }
 
     private List<Integer> findRelatedPullRequests(String issueKey)

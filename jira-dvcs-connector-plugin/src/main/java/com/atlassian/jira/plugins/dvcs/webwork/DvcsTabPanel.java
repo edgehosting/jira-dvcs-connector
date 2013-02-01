@@ -140,8 +140,5 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         }
         return sw.toString();
     }
-
-
-
 }
 
