@@ -24,7 +24,7 @@ public final class DelegatingRepositoryActivitySynchronizer implements Repositor
     @Override
     public void synchronize(Repository forRepository, boolean softSync)
     {
-        if (!isGithubRepo(forRepository)) {
+        if (isBitbucketRepo(forRepository)) {
             
             bitbucketSynchronizer.synchronize(forRepository, softSync);
             
@@ -35,9 +35,9 @@ public final class DelegatingRepositoryActivitySynchronizer implements Repositor
         }
     }
 
-    private boolean isGithubRepo(Repository forRepository)
+    private boolean isBitbucketRepo(Repository forRepository)
     {
-        return "github".equals(forRepository.getDvcsType());
+        return "bitbucket".equals(forRepository.getDvcsType());
     }
 
 }

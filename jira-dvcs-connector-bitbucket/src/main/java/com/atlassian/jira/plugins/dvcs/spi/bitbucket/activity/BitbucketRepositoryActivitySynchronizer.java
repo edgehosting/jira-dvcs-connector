@@ -50,6 +50,12 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     @Override
     public void synchronize(Repository forRepository, boolean softSync)
     {
+        if (!softSync)
+        {
+            dao.removeAll(forRepository);
+            forRepository.setActivityLastSync(null);
+        }
+
         BitbucketRemoteClient remoteClient = clientFactory.getForRepository(forRepository, 2);
         PullRequestRemoteRestpoint pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
 
