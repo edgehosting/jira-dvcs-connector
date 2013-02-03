@@ -1,5 +1,5 @@
 <div class="CommitContainer">
-<ol class="comments-list line-commenting pull-request-activity" id="activity-list">
+<ol id="activity-list">
 
 <li class="activity-item">
   <article class="iterable-item">
@@ -28,16 +28,16 @@
   </article>
 </li>
 <li class="comment">
-        <article data-comment-id="16415">
-            <header>
-                <a href="/nvenegas"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/283225c91c158f3a10927e9d76a71be7?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
-                <a href="/nvenegas" class="author">Nicolas Venegas</a>
-              commented on a file
-            </header>
-              <div class="comment-content">
-      <b>apps/api/v10/handlers.py</b>
-              </div>
-        </article>
+    <article data-comment-id="16415">
+        <header>
+            <a href="/nvenegas"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/283225c91c158f3a10927e9d76a71be7?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+            <a href="/nvenegas" class="author">Nicolas Venegas</a>
+          commented on a file
+        </header>
+          <div class="comment-content">
+                <b>apps/api/v10/handlers.py</b>
+          </div>
+    </article>
 </li>
 <li class="activity-item">
   <article class="iterable-item">
@@ -53,16 +53,16 @@
   </article>
 </li>
 <li class="comment">
-        <article data-comment-id="16403">
-            <header>
-                <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
-                <a href="/erik" class="author">Erik van Zĳst</a>
-              commented on a file
-            </header>
-            <div class="comment-content">
-      <b>apps/api/v10/handlers.py</b>
-              </div>
-        </article>
+    <article data-comment-id="16403">
+        <header>
+            <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+            <a href="/erik" class="author">Erik van Zĳst</a>
+          commented on a file
+        </header>
+        <div class="comment-content">
+  <b>apps/api/v10/handlers.py</b>
+          </div>
+    </article>
 </li>
 <li class="activity-item">
   <article class="iterable-item">
@@ -79,7 +79,7 @@
     <div class="content">
 <div id="commit-list-container">
     <div id="commits-graph" data-graph="[]"></div>
-    <table class="aui bb-list commit-list">
+    <table class="aui commit-list">
       <thead>
       <tr id="chg_0">
         <th class="author">Author</th>
@@ -126,7 +126,6 @@
         </tr>
       </tbody>
     </table>
-    <div class="mask"></div>
   </div>
     <script id="unmapped-author-dialog" type="text/html">
 <h3>Unmapped user</h3>
@@ -151,7 +150,7 @@
     <div class="content">
 <div id="commit-list-container">
     <div id="commits-graph" data-graph="[]"></div>
-    <table class="aui bb-list commit-list">
+    <table class="aui commit-list">
       <thead>
       <tr id="chg_0">
         <th class="author">Author</th>
@@ -230,7 +229,6 @@
         </tr>
       </tbody>
     </table>
-    <div class="mask"></div>
   </div>
     <script id="unmapped-author-dialog" type="text/html">
 <h3>Unmapped user</h3>
