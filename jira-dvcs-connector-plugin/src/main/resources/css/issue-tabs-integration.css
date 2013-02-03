@@ -12,7 +12,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, nav, sectio
 audio, canvas, video { display: inline-block; *display: inline; *zoom: 1; }
 
 /*! AUI Lozenge */
-.aui-lozenge { background: #ccc; border: 1px solid #ccc; border-radius: 3px; color: #333; display: inline-block; font-size: 11px; font-weight: bold; line-height: 1; margin: 0; padding: 2px 5px 1px 5px; text-align: center; text-decoration: none; text-transform: uppercase; }
+.aui-lozenge { margin: 0 3px; background: #ccc; border: 1px solid #ccc; border-radius: 3px; color: #333; display: inline-block; font-size: 11px; font-weight: bold; line-height: 1; margin: 0; padding: 2px 5px 1px 5px; text-align: center; text-decoration: none; text-transform: uppercase; }
 .aui-lozenge.aui-lozenge-subtle { background-color: #fff; border-color: #ccc; color: #333; }
 .aui-lozenge-success { background-color: #14892c; border-color: #14892c; color: #fff; }
 .aui-lozenge-success.aui-lozenge-subtle { background-color: #fff; border-color: #b2d8b9; color: #14892c; }
@@ -24,7 +24,6 @@ audio, canvas, video { display: inline-block; *display: inline; *zoom: 1; }
 .aui-lozenge-complete.aui-lozenge-subtle { background-color: #fff; border-color: #e4e8ed; color: #4a6785; }
 .aui-lozenge-moved { background-color: #815b3a; border-color: #815b3a; color: #fff; }
 .aui-lozenge-moved.aui-lozenge-subtle { background-color: #fff; border-color: #ece7e2; color: #815b3a; }/*! AUI Badge */
-
 
 /* Labels styles specific to lists */
 .commit-list { position: relative; width: 100%; }
@@ -49,26 +48,25 @@ audio, canvas, video { display: inline-block; *display: inline; *zoom: 1; }
 .commit-list td.author > div { width: 132px; white-space: nowrap; }
 .commit-list .count-badge { position: absolute; right: 110px; }
 
-
 #activity-list { margin: 0; padding: 0; list-style: none; }
 #activity-list .comment { position: relative; border-top: 1px solid #ccc; }
-#activity-list .comment article { padding-top: 10px; }
-#activity-list .comment header, #activity-list .comment .comment-content { padding-left: 42px; }
-#activity-list .comment .child-comments { clear: both; margin: 0 0 0 52px; padding: 0; list-style: none; }
-#activity-list .comment .author { font-weight: bold; line-height: 1; }
+#activity-list .activity-item { position: relative; border-top: 1px solid #ccc; min-height: 28px; /* semi-hack to provide good styling; could use better/more consistent markup eventually */ padding-top: 10px; }
 #activity-list .comment header .avatar { position: absolute; left: 0; top: 10px; }
+#activity-list .activity-item header .avatar { position: absolute; left: 0; }
+#activity-list .comment header, #activity-list .comment .comment-content { padding-left: 42px; }
+#activity-list .activity-item header { margin-bottom: 10px; min-height: 32px; }
+#activity-list .author { font-weight: bold; line-height: 1; }
+#activity-list .activity-item .content { margin-left: 42px; padding: 0 0 8px 0; }
+#activity-list .comment article { padding-top: 10px; }
+#activity-list .comment .child-comments { clear: both; margin: 0 0 0 52px; padding: 0; list-style: none; }
 #activity-list .comment .comment-content { margin-top: 5px; overflow: hidden; word-wrap: break-word; }
 #activity-list .comment .comment-actions { font-size: 12px; list-style: none; margin: 5px 0 0 42px; padding: 0 0 25px 0; }
-#activity-list .activity-item { position: relative; border-top: 1px solid #ccc; min-height: 28px; /* semi-hack to provide good styling; could use better/more consistent markup eventually */ padding-top: 10px; }
-#activity-list .activity-item .aui-lozenge { margin: 0 3px; }
-#activity-list .activity-item .content { padding: 0 0 8px 0; }
 #activity-list .activity-item .iterable-item { border-left: 2px solid transparent; }
-#activity-list .activity-item header .summary { display: inline; position: relative; padding-left: 42px; }
-#activity-list .activity-item header .avatar { position: absolute; left: 0; }
-#activity-list .activity-item header { margin-bottom: 10px; min-height: 32px; }
-#activity-list .activity-item .content { margin-left: 42px; }
-#activity-list .author { font-weight: bold; line-height: 1; }
-
-
-
+#activity-list .activity-item header .summary { display: inline; padding-left: 42px; }
+#activity-list .comment .comment-actions { font-size: 12px;  list-style: none;  margin: 5px 0 0 42px; padding: 0 0 25px 0; }
+#activity-list .comment article.loading .comment-actions { margin-left: 10px; padding-left: 32px; background: url('https://dir3o3ncbjs72.cloudfront.net/m/54593a8c76b5/img/loading.gif?9a8269421303') no-repeat top left; }
+#activity-list .comment .comment-actions > li { float: left; }
+#activity-list .comment .comment-actions > li:before { padding: 0 3px 0 6px; content: "¥"; color: #707070; }
+#activity-list .comment .comment-actions > li:first-child:before { content: none; }
+#activity-list .comment .comment-actions > li a { color: #707070; }
 
