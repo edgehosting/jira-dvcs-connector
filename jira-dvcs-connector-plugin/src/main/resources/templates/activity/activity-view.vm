@@ -2,7 +2,7 @@
 <ol id="activity-list">
 
 <li class="activity-item">
-  <article class="iterable-item">
+  <article>
     <header>
       <div class="summary">
         <a href="/detkin"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/e1ef8ef737e394a17ffbc27c889c2b22?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -15,7 +15,7 @@
   </article>
 </li>
 <li class="activity-item">
-  <article class="iterable-item">
+  <article>
     <header>
       <div class="summary">
         <a href="/nvenegas"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/283225c91c158f3a10927e9d76a71be7?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -28,7 +28,7 @@
   </article>
 </li>
 <li class="activity-item">
-  <article class="iterable-item">
+  <article>
     <header>
       <div class="summary">
         <a href="/detkin"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/e1ef8ef737e394a17ffbc27c889c2b22?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -41,11 +41,11 @@
   </article>
 </li>
 <li class="activity-item">
-  <article class="iterable-item">
+  <article>
     <header>
       <div class="summary">
-        <a href="/detkin"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/e1ef8ef737e394a17ffbc27c889c2b22?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
-        <a href="/detkin" class="author">Dusan Hornik</a>
+        <a href="/dhornik"><img class="avatar avatar32" src="https://i0.wp.com/d3oaxc4q5k2d6q.cloudfront.net/m/62affb77bca2/img/default_avatar/32/user_blue.png"></a>
+        <a href="/dhornik" class="author">Dusan Hornik</a>
         <span class="aui-lozenge pull-request-state aui-lozenge-moved">commited</span>
         changeset <a class="hash" href="/bitbucket/bitbucket/commits/60d4c78ea8749368af4d36e55660be5863694ae2">
                   60d4c78
@@ -101,7 +101,7 @@
     </article>
 </li>
 <li class="activity-item">
-  <article class="iterable-item">
+  <article>
     <header>
       <div class="summary">
         <a href="/jespern"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/191bc8371e6b2ad27f36f55fb6e26bcb?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -125,7 +125,7 @@
     </article>
 </li>
 <li class="activity-item">
-  <article class="iterable-item">
+  <article>
     <header>
       <div class="summary">
         <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -197,7 +197,7 @@
   </article>
 </li>
 <li class="activity-item">
-  <article class="iterable-item">
+  <article>
     <header>
       <div class="summary">
         <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -304,7 +304,7 @@
 
 
 <li class="comment">
-        <article id="comment-16411" class="iterable-item" data-comment-id="16411">
+        <article id="comment-16411" data-comment-id="16411">
             <header>
                 <a href="/brodie"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/bf177bdb506069ef00253f61a9a6f015?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
                 <a href="/brodie" class="author">ブロディ ラオ</a>
@@ -324,7 +324,7 @@
         </article>
             <ol class="child-comments iterable">
 <li class="comment">
-        <article id="comment-16417" class="iterable-item" data-comment-id="16417">
+        <article id="comment-16417" data-comment-id="16417">
             <header>
                 <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
                 <a href="/erik" class="author">Erik van Zĳst</a>
@@ -348,7 +348,7 @@
         </article>
             <ol class="child-comments iterable">
 <li class="comment">
-        <article id="comment-16440" class="iterable-item" data-comment-id="16440">
+        <article id="comment-16440" data-comment-id="16440">
             <header>
                 <a href="/brodie"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/bf177bdb506069ef00253f61a9a6f015?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
                 <a href="/brodie" class="author">ブロディ ラオ</a>
@@ -368,7 +368,7 @@
         </article>
             <ol class="child-comments iterable">
 <li class="comment">
-        <article id="comment-16443" class="iterable-item"  data-comment-id="16443">
+        <article id="comment-16443"  data-comment-id="16443">
             <header>
                 <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
                 <a href="/erik" class="author">Erik van Zĳst</a>
@@ -389,7 +389,7 @@
         </article>
             <ol class="child-comments iterable">
 <li class="comment">
-        <article id="comment-16501" class="iterable-item" data-comment-id="16501">
+        <article id="comment-16501" data-comment-id="16501">
             <header>
                 <a href="/shaldane"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/99a1bc597e528ac60324149da1819c73?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
                 <a href="/shaldane" class="author">shaldane</a>
@@ -419,7 +419,7 @@
             </ol>
 </li>
 <li class="comment">
-        <article id="comment-16500" class="iterable-item" data-comment-id="16500">
+        <article id="comment-16500" data-comment-id="16500">
             <header>
                 <a href="/juliushocman"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/23d0d498ca487a87a56289478380dd85?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
                 <a href="/juliushocman" class="author">Julius Hocman</a>

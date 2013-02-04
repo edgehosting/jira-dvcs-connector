@@ -51,7 +51,7 @@ audio, canvas, video { display: inline-block; *display: inline; *zoom: 1; }
 #activity-list { margin: 0; padding: 0; list-style: none; }
 #activity-list a.hash { font: 85% Monaco, monospace; }
 #activity-list .comment { position: relative; border-top: 1px solid #ccc; }
-#activity-list .activity-item {border-left: 2px solid transparent; position: relative; border-top: 1px solid #ccc; min-height: 28px; /* semi-hack to provide good styling; could use better/more consistent markup eventually */ padding-top: 10px; }
+#activity-list .activity-item {position: relative; border-top: 1px solid #ccc; min-height: 28px; /* semi-hack to provide good styling; could use better/more consistent markup eventually */ padding-top: 10px; }
 #activity-list .comment header .avatar { position: absolute; left: 0; top: 10px; }
 #activity-list .activity-item header .avatar { position: absolute; left: 0; }
 #activity-list .comment header, #activity-list .comment .comment-content { padding-left: 42px; }
@@ -69,4 +69,3 @@ audio, canvas, video { display: inline-block; *display: inline; *zoom: 1; }
 #activity-list .comment .comment-actions > li:before { padding: 0 3px 0 6px; content: "¥"; color: #707070; }
 #activity-list .comment .comment-actions > li:first-child:before { content: none; }
 #activity-list .comment .comment-actions > li a { color: #707070; }
-
