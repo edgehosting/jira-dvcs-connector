@@ -1,6 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.activeobjects;
 
+import java.util.Date;
+
 import net.java.ao.Entity;
+import net.java.ao.OneToMany;
 import net.java.ao.schema.Table;
 import net.java.ao.schema.Unique;
 
@@ -13,19 +16,41 @@ import com.atlassian.jira.util.NotNull;
  * @author Stanislav Dvorscak
  * 
  */
-@Table("GitHubPullRequestMapping")
+@Table("GitHubPullRequest")
 public interface GitHubPullRequestMapping extends Entity
 {
 
     /**
-     * AO map key of the {@link #getGitHubId()}.
+     * @see #getSynchronizedAt()
      */
-    String KEY_GIT_HUB_ID = "GIT_HUB_ID";
+    String COLUMN_GIT_SYNCHRONIZED_AT = "SYNCHRONIZED_AT";
 
     /**
-     * AO map key of the {@link #getTitle()}.
+     * @see #getGitHubId()
      */
-    String KEY_TITLE = "TITLE";
+    String COLUMN_GIT_HUB_ID = "GIT_HUB_ID";
+
+    /**
+     * @see #getTitle()
+     */
+    String COLUMN_TITLE = "TITLE";
+
+    /**
+     * @see #getActions()
+     */
+    String COLUMN_ACTIONS = "GIT_HUB";
+
+    /**
+     * @return {@link GitHubPullRequest#getSynchronizedAt()}
+     */
+    @NotNull
+    Date getSynchronizedAt();
+
+    /**
+     * @param synchronizedAt
+     *            {@link #getSynchronizedAt()}
+     */
+    void setSynchronizedAt(Date synchronizedAt);
 
     /**
      * @return {@link GitHubPullRequest#getGitHubId()}
@@ -50,5 +75,11 @@ public interface GitHubPullRequestMapping extends Entity
      *            {@link #getTitle()}
      */
     void setTitle(String title);
+
+    /**
+     * @return {@link GitHubPullRequestMapping#getActions()}
+     */
+    @OneToMany
+    GitHubPullRequestActionMapping[] getActions();
 
 }

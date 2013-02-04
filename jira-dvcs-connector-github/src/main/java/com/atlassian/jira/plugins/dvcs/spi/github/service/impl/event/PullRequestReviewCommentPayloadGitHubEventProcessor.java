@@ -107,7 +107,7 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
         GitHubPullRequestLineComment gitHubPullRequestLineComment = new GitHubPullRequestLineComment();
         GitHubPullRequest pullRequest = getPullRequestByComment(repository, commitComment);
         GitHubCommit commit = gitHubCommitService.getBySha(commitComment.getCommitId());
-        GitHubUser createdBy = gitHubUserService.synchronize(payload.getComment().getUser().getLogin(), repository);
+        GitHubUser createdBy = gitHubUserService.fetch(payload.getComment().getUser().getLogin(), repository);
         gitHubPullRequestLineCommentService.map(gitHubPullRequestLineComment, commitComment, pullRequest, createdBy, commit);
         gitHubPullRequestLineCommentService.save(gitHubPullRequestLineComment);
     }
@@ -149,7 +149,7 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
                         result = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
                         if (result == null)
                         {
-                            result = gitHubPullRequestService.synchronize(repository, pullRequest.getId(), pullRequest.getNumber());
+                            result = gitHubPullRequestService.fetch(repository, pullRequest.getId(), pullRequest.getNumber());
                             gitHubPullRequestService.save(result);
                         }
 
@@ -168,7 +168,7 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
                         result = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
                         if (result == null)
                         {
-                            result = gitHubPullRequestService.synchronize(repository, pullRequest.getId(), pullRequest.getNumber());
+                            result = gitHubPullRequestService.fetch(repository, pullRequest.getId(), pullRequest.getNumber());
                         }
 
                         return result;

@@ -96,7 +96,7 @@
         							<pluginExecutionFilter>
         								<groupId>org.apache.maven.plugins</groupId>
         								<artifactId>maven-dependency-plugin</artifactId>
-        								<versionRange>[2.4,)</versionRange>
+        								<versionRange>[0.0,)</versionRange>
         								<goals>
         									<goal>unpack</goal>
         								</goals>
@@ -109,7 +109,7 @@
         							<pluginExecutionFilter>
         								<groupId>com.atlassian.maven.plugins</groupId>
         								<artifactId>maven-jira-plugin</artifactId>
-        								<versionRange>[4.1.2,)</versionRange>
+        								<versionRange>[0.0.0,)</versionRange>
         								<goals>
         									<goal>copy-test-bundled-dependencies</goal>
         									<goal>copy-bundled-dependencies</goal>

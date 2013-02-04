@@ -16,29 +16,29 @@ import com.atlassian.jira.util.NotNull;
  * @author Stanislav Dvorscak
  * 
  */
-@Table("GitHubCommitMapping")
+@Table("GitHubCommit")
 public interface GitHubCommitMapping extends Entity
 {
 
     /**
      * @see #getSha()
      */
-    String KEY_SHA = "SHA";
+    String COLUMN_SHA = "SHA";
 
     /**
-     * @see #getDate()
+     * @see #getCreatedAt()
      */
-    String KEY_DATE = "DATE";
+    String COLUMN_CREATED_AT = "CREATED_AT";
 
     /**
-     * @see #getAuthor()
+     * @see #getCreatedBy()
      */
-    String KEY_AUTHOR = "AUTHOR";
+    String COLUMN_CREATED_BY = "CREATED_BY";
 
     /**
      * @see #getMessage()
      */
-    String KEY_MESSAGE = "MESSAGE";
+    String COLUMN_MESSAGE = "MESSAGE";
 
     /**
      * @return {@link GitHubCommit#getSha()}
@@ -54,28 +54,28 @@ public interface GitHubCommitMapping extends Entity
     void setSha(String sha);
 
     /**
-     * @return {@link GitHubCommit#getDate()}
+     * @return {@link GitHubCommit#getCreatedAt()}
      */
     @NotNull
-    Date getDate();
+    Date getCreatedAt();
 
     /**
-     * @param date
-     *            {@link #getDate()}
+     * @param createdAt
+     *            {@link #getCreatedAt()}
      */
-    void setDate(Date date);
+    void setCreatedAt(Date createdAt);
 
     /**
-     * @return {@link GitHubCommit#getAuthor()}
+     * @return {@link GitHubCommit#getCreatedBy()}
      */
     @NotNull
-    String getAuthor();
+    String getCreatedBy();
 
     /**
-     * @param author
-     *            {@link #getAuthor()}
+     * @param createdBy
+     *            {@link #getCreatedBy()}
      */
-    void setAuthor(String author);
+    void setCreatedBy(String createdBy);
 
     /**
      * @return {@link GitHubCommit#getMessage()}

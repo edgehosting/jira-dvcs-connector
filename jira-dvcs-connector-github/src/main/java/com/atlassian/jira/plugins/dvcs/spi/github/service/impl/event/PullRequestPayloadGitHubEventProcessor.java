@@ -56,7 +56,7 @@ public class PullRequestPayloadGitHubEventProcessor extends AbstractGitHubEventP
         PullRequest pullRequest = payload.getPullRequest();
 
         GitHubPullRequest gitHubPullRequest = gitHubPullRequestService
-                .synchronize(repository, pullRequest.getId(), pullRequest.getNumber());
+                .fetch(repository, pullRequest.getId(), pullRequest.getNumber());
 
         Action resolvedAction = resolveAction(payload);
         // was resolved appropriate action? with other words is supported action?
@@ -83,7 +83,7 @@ public class PullRequestPayloadGitHubEventProcessor extends AbstractGitHubEventP
             }
 
             action.setAt(event.getCreatedAt());
-            action.setActor(gitHubUserService.synchronize(event.getActor().getLogin(), repository));
+            action.setCreatedBy(gitHubUserService.fetch(event.getActor().getLogin(), repository));
             action.setAction(resolvedAction);
         }
 

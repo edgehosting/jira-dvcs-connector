@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.model;
 import java.util.Date;
 
 /**
+ * Action performed on the {@link GitHubPullRequest}.
  * 
  * @author Stanislav Dvorscak
  * 
@@ -41,14 +42,19 @@ public class GitHubPullRequestAction
     }
 
     /**
-     * @see #getActor()
+     * @see #getId()
      */
-    private GitHubUser actor;
+    private int id;
 
     /**
-     * @see #getAt()
+     * @see #getCreatedBy()
      */
-    private Date at;
+    private GitHubUser createdBy;
+
+    /**
+     * @see #getCreatedAt()
+     */
+    private Date createdAt;
 
     /**
      * @see #getAction()
@@ -68,37 +74,54 @@ public class GitHubPullRequestAction
     }
 
     /**
-     * @return Actor of the {@link #getAction()}.
+     * @return Identity of the entity.
      */
-    public GitHubUser getActor()
+    public int getId()
     {
-        return actor;
+        return id;
     }
 
     /**
-     * @param actor
-     *            {@link #getActor()}
+     * @param id
+     *            {@link #getId()}
      */
-    public void setActor(GitHubUser actor)
+    public void setId(int id)
     {
-        this.actor = actor;
+        this.id = id;
+    }
+
+    /**
+     * @return Actor of the {@link #getAction()}.
+     */
+    public GitHubUser getCreatedBy()
+    {
+        return createdBy;
+    }
+
+    /**
+     * @param createdBy
+     *            {@link #getCreatedBy()}
+     */
+    public void setCreatedBy(GitHubUser createdBy)
+    {
+        this.createdBy = createdBy;
     }
 
     /**
      * @return Date when {@link #getAction()} was performed.
      */
-    public Date getAt()
+    public Date getCreatedAt()
     {
-        return at;
+        return createdAt;
     }
 
     /**
-     * @param at
-     *            {@link #getAt()}
+     * @param createdAt
+     *            {@link #getCreatedAt()}
      */
-    public void setAt(Date at)
+    public void setAt(Date createdAt)
     {
-        this.at = at;
+        this.createdAt = createdAt;
     }
 
     /**

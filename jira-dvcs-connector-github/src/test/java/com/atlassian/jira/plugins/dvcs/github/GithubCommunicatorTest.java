@@ -1,7 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.github;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +27,9 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -33,11 +40,6 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.sal.api.net.ResponseException;
-
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
 
 /**
  * @author Martin Skurla
@@ -85,7 +87,7 @@ public class GithubCommunicatorTest
     {
         MockitoAnnotations.initMocks(this);
 
-        communicator = new GithubCommunicator(changesetCache = new ChangesetCacheImpl(), mock(GithubOAuth.class), githubClientProvider, null);
+        communicator = new GithubCommunicator(changesetCache = new ChangesetCacheImpl(), mock(GithubOAuth.class), githubClientProvider);
         when(githubClientProvider.getRepositoryService(repositoryMock)).thenReturn(repositoryService);
         when(githubClientProvider.getUserService(repositoryMock)).thenReturn(userService);
         when(githubClientProvider.getCommitService(repositoryMock)).thenReturn(commitService);

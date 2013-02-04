@@ -62,9 +62,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
         int changesetCount = 0;
         int jiraCount = 0;
-        
-        // FXME<Stanislav Dvorscak>
-        communicator.synchronize(repository);
 
         Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository);
 

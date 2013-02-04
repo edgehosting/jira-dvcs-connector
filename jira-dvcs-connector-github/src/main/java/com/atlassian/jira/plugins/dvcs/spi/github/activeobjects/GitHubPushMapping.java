@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.activeobjects;
 import java.util.Date;
 
 import net.java.ao.Entity;
+import net.java.ao.schema.Table;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
 
@@ -12,33 +13,34 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
  * @author Stanislav Dvorscak
  * 
  */
+@Table("GitHubPush")
 public interface GitHubPushMapping extends Entity
 {
 
     /**
      * AO map key of the {@link #getCreatedAt()}.
      */
-    String KEY_CREATED_AT = "CREATED_AT";
+    String COLUMN_CREATED_AT = "CREATED_AT";
 
     /**
      * AO map key of the {@link #getRef()}.
      */
-    String KEY_REF = "REF";
+    String COLUMN_REF = "REF";
 
     /**
      * AO map key of the {@link #getBefore()}.
      */
-    String KEY_BEFORE = "BEFORE";
+    String COLUMN_BEFORE = "BEFORE";
 
     /**
      * AO map key of the {@link #getHead()}.
      */
-    String KEY_HEAD = "HEAD";
+    String COLUMN_HEAD = "HEAD";
 
     /**
      * AO map key of the {@link #getCommits()}.
      */
-    String KEY_COMMITS = "COMMITS";
+    String COLUMN_COMMITS = "COMMITS";
 
     /**
      * @return {@link GitHubPushMapping#getCreatedAt()}

@@ -65,7 +65,13 @@
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestLikeMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping</entity>
-        
+
+        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping</entity>
+       	<entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestActionMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestCommentMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestLineCommentMapping</entity>
         
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
@@ -180,11 +186,11 @@
     
     <!-- GitHub - DAOs -->
     <component key="GitHubUserDAO" name="Git Hub User DAO"
-        class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubUserDAOMockImpl">
+        class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubUserDAOImpl">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubUserDAO</interface>
     </component>
 	<component key="gitHubCommitDAO" name="Git Hub Commit DAO"
-		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubCommitDAOMockImpl">
+		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubCommitDAOImpl">
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitDAO</interface>
 	</component>
 	<component key="gitHubCommitCommentDAO" name="Git Hub Commit Comment DAO"
@@ -200,15 +206,15 @@
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPushDAO</interface>
 	</component>
 	<component key="gitHubPullRequestDAO" name="Git Hub Pull Request DAO"
-		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPullRequestDAOMockImpl">
+		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPullRequestDAOImpl">
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestDAO</interface>
 	</component>
 	<component key="gitHubPullRequestCommentDAO" name="GitHub Pull Request Comment DAO"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPullRequestCommentDAOMockImpl">
+	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPullRequestCommentDAOImpl">
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestCommentDAO</interface>
 	</component>
 	<component key="gitHubPullRequestLineCommentDAO" name="Pull Request Line Comment DAO"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPullRequestLineCommentDAOMockImpl">
+	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPullRequestLineCommentDAOImpl">
 	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestLineCommentDAO</interface>
 	</component>
 	
@@ -244,10 +250,6 @@
 	<component key="gitHubPullRequestLineCommentServiceImpl" name="gitHubPullRequestLineCommentServiceImpl"
 	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubPullRequestLineCommentServiceImpl">
 	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestLineCommentService</interface>
-	</component>
-	<component key="gitHubRepositoryService" name="gitHubRepositoryService"
-		class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubRepositoryServiceImpl">
-		<interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService</interface>
 	</component>
         
     <!-- GitHub - Events -->
