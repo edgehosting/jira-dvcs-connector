@@ -197,10 +197,12 @@
 	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubCommitCommentDAOMockImpl">
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitCommentDAO</interface>
 	</component>
+	<!-- 
 	<component key="gitHubCommitLineCommentDAO" name="Git Hub Commit Line Comment DAO"
 	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubCommitLineCommentDAOMockImpl">
 	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitLineCommentDAO</interface>
 	</component>
+	 -->
 	<component key="gitHubPushDAO" name="Git Hub Push DAO"
 		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPushDAOMockImpl">
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPushDAO</interface>
@@ -231,10 +233,12 @@
 	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubCommitCommentServiceImpl">
 	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitCommentService</interface>
 	</component>
+	<!-- 
 	<component key="gitHubCommitLineCommentService" name="gitHubCommitLineCommentService"
 	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubCommitLineCommentServiceImpl">
 	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitLineCommentService</interface>
 	</component>
+	 -->
 	<component key="gitHubPushService" name="gitHubPushService"
 	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubPushServiceImpl">
 	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPushService</interface>
