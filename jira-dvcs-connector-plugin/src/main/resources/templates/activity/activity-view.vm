@@ -27,16 +27,77 @@
     </header>
   </article>
 </li>
+<li class="activity-item">
+  <article class="iterable-item">
+    <header>
+      <div class="summary">
+        <a href="/detkin"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/e1ef8ef737e394a17ffbc27c889c2b22?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+        <a href="/detkin" class="author">Dylan Etkin</a>
+        <span class="aui-lozenge pull-request-state aui-lozenge-success" title="The status of this pull request has been changed to merged.">merged</span>
+        this pull request
+        <time datetime="2013-01-03T23:46:23.774326">2013-01-03</time>
+      </div>
+    </header>
+  </article>
+</li>
+<li class="activity-item">
+  <article class="iterable-item">
+    <header>
+      <div class="summary">
+        <a href="/detkin"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/e1ef8ef737e394a17ffbc27c889c2b22?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+        <a href="/detkin" class="author">Dusan Hornik</a>
+        <span class="aui-lozenge pull-request-state aui-lozenge-moved">commited</span>
+        changeset <a class="hash" href="/bitbucket/bitbucket/commits/60d4c78ea8749368af4d36e55660be5863694ae2">
+                  60d4c78
+                </a>
+      </div>
+    </header>
+  </article>
+  <div class="content">
+    <table class="aui commit-list">
+    <thead>
+      <tr id="chg_0">
+        <th class="text">Message</th>
+        <th class="labels">Labels</th>
+        <th class="comments">Comments</th>
+        <th class="likes">Approvals</th>
+        <th class="date">Date</th>
+      </tr>
+      </thead>      
+      <tbody>
+        <tr class="" id="chg_1">
+          <td class="text">
+              <div title="BB-7053: API commit handler diffstat is broken.">
+                <a href="http://jira.atlassian.com/browse/BB-7053" rel="nofollow">BB-7053</a>: API commit handler diffstat is broken.
+              </div>
+          </td>
+          <td class="labels fade-left">
+<dl class="commit-labels clearfix">
+</dl>
+          </td>
+          <td class="comments count-badge">
+          </td>
+          <td class="likes count-badge">
+          </td>
+          <td class="date">
+            <div>
+              <time datetime="2013-01-03T03:08:40+01:00" data-title="true" title="3 January 2013 03:08">29 days ago</time>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</li>
 <li class="comment">
     <article data-comment-id="16415">
         <header>
             <a href="/nvenegas"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/283225c91c158f3a10927e9d76a71be7?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
             <a href="/nvenegas" class="author">Nicolas Venegas</a>
           commented on a file
+            <a href="hash">apps/api/v10/handlers.py</a>
         </header>
-          <div class="comment-content">
-                <b>apps/api/v10/handlers.py</b>
-          </div>
+          <div class="comment-content">&nbsp;</div>
     </article>
 </li>
 <li class="activity-item">
@@ -58,10 +119,9 @@
             <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
             <a href="/erik" class="author">Erik van Zĳst</a>
           commented on a file
+            <a href="hash">apps/api/v10/handlers.py</a>
         </header>
-        <div class="comment-content">
-  <b>apps/api/v10/handlers.py</b>
-          </div>
+        <div class="comment-content">&nbsp;</div>
     </article>
 </li>
 <li class="activity-item">
@@ -77,7 +137,7 @@
       </div>
     </header>
     <div class="content">
-<div id="commit-list-container">
+<div>
     <div id="commits-graph" data-graph="[]"></div>
     <table class="aui commit-list">
       <thead>
@@ -100,7 +160,7 @@
           </td>
           <td class="hash">
             <div>
-                <a class="execute" href="/bitbucket/bitbucket/commits/c99b66ab7e159c558f36c79e876b1ed9cd70fa1b">
+                <a class="hash" href="/bitbucket/bitbucket/commits/c99b66ab7e159c558f36c79e876b1ed9cd70fa1b">
                   c99b66a
                 </a>
             </div>
@@ -148,8 +208,7 @@
       </div>
     </header>
     <div class="content">
-<div id="commit-list-container">
-    <div id="commits-graph" data-graph="[]"></div>
+<div>
     <table class="aui commit-list">
       <thead>
       <tr id="chg_0">
@@ -171,7 +230,7 @@
           </td>
           <td class="hash">
             <div>
-                <a class="execute" href="/bitbucket/bitbucket/commits/60d4c78ea8749368af4d36e55660be5863694ae2">
+                <a class="hash" href="/bitbucket/bitbucket/commits/60d4c78ea8749368af4d36e55660be5863694ae2">
                   60d4c78
                 </a>
             </div>
@@ -203,7 +262,7 @@
           </td>
           <td class="hash">
             <div>
-                <a class="execute" href="/bitbucket/bitbucket/commits/60d4c78ea8749368af4d36e55660be5863694ae2">
+                <a class="hash" href="/bitbucket/bitbucket/commits/60d4c78ea8749368af4d36e55660be5863694ae2">
                   60d4c78
                 </a>
             </div>
@@ -256,7 +315,7 @@
                 </div>
                 <ul class="comment-actions">
                     <li>
-                        <a href="#reply" class="reply-link execute click" data-add-to-stack="true">Reply</a>
+                        <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
                     </li>
                     <li>
                         <a class="permalink" href="#comment-16411" title="Link directly to this comment"><time datetime="2013-01-03T19:40:41+01:00" data-title="true" title="3 January 2013 19:40">29 days ago</time></a>
@@ -280,7 +339,7 @@
                 </div>
                 <ul class="comment-actions">
                     <li>
-                        <a href="#reply" class="reply-link execute click" data-add-to-stack="true">Reply</a>
+                        <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
                     </li>
                     <li>
                         <a class="permalink" href="#comment-16417" title="Link directly to this comment"><time datetime="2013-01-03T19:51:56+01:00" data-title="true" title="3 January 2013 19:51">29 days ago</time></a>
@@ -300,7 +359,7 @@
                 </div>
                 <ul class="comment-actions">
                     <li>
-                        <a href="#reply" class="reply-link execute click" data-add-to-stack="true">Reply</a>
+                        <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
                     </li>
                     <li>
                         <a class="permalink" href="#comment-16440" title="Link directly to this comment"><time datetime="2013-01-03T23:02:22+01:00" data-title="true" title="3 January 2013 23:02">29 days ago</time></a>
@@ -321,7 +380,7 @@
                 </div>
                 <ul class="comment-actions">
                     <li>
-                        <a href="#reply" class="reply-link execute click" data-add-to-stack="true">Reply</a>
+                        <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
                     </li>
                     <li>
                         <a class="permalink" href="#comment-16443" title="Link directly to this comment"><time datetime="2013-01-04T00:28:45+01:00" data-title="true" title="4 January 2013 00:28">28 days ago</time></a>
@@ -341,7 +400,7 @@
                 </div>
                 <ul class="comment-actions">
                     <li>
-                        <a href="#reply" class="reply-link execute click" data-add-to-stack="true">Reply</a>
+                        <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
                     </li>
                     <li>
                         <a class="permalink" href="#comment-16501" title="Link directly to this comment"><time datetime="2013-01-07T23:24:15+01:00" data-title="true" title="7 January 2013 23:24">25 days ago</time></a>
@@ -371,7 +430,7 @@ This will be fixed in the next Connector release but existing customers will hav
                 </div>
                 <ul class="comment-actions">
                     <li>
-                        <a href="#reply" class="reply-link execute click" data-add-to-stack="true">Reply</a>
+                        <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
                     </li>
                     <li>
                         <a class="permalink" href="#comment-16500" title="Link directly to this comment"><time datetime="2013-01-07T14:11:04+01:00" data-title="true" title="7 January 2013 14:11">25 days ago</time></a>
