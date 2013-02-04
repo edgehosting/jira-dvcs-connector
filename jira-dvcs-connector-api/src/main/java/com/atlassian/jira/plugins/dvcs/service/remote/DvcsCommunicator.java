@@ -83,8 +83,4 @@ public interface DvcsCommunicator
 	 */
 	void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail);
 
-	// FIXME: consider refactor necessity
-
-	void synchronize(Repository repository);
-
 }

@@ -40,8 +40,8 @@ public interface GitHubUserService
      *            {@link GitHubUser#getLogin()}
      * @param repository
      *            over which repository
-     * @return newly created or refreshed user
+     * @return fetch the {@link GitHubUser} from the database, if it was already synchronized or synchronizes it
      */
-    GitHubUser synchronize(String login, Repository repository);
+    GitHubUser fetch(String login, Repository repository);
 
 }

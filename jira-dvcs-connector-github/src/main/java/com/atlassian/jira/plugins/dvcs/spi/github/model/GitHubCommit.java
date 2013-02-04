@@ -22,14 +22,14 @@ public class GitHubCommit
     private String sha;
 
     /**
-     * @see #getDate()
+     * @see #getCreatedAt()
      */
-    private Date date;
+    private Date createdAt;
 
     /**
-     * @see #getAuthor()
+     * @see #getCreatedBy()
      */
-    private String author;
+    private String createdBy;
 
     /**
      * @see #getMessage()
@@ -80,35 +80,35 @@ public class GitHubCommit
     /**
      * @return The date when the commit was introduced.
      */
-    public Date getDate()
+    public Date getCreatedAt()
     {
-        return date;
+        return createdAt;
     }
 
     /**
-     * @param date
-     *            {@link #getDate()}
+     * @param createdAt
+     *            {@link #getCreatedAt()}
      */
-    public void setDate(Date date)
+    public void setCreatedAt(Date createdAt)
     {
-        this.date = date;
+        this.createdAt = createdAt;
     }
 
     /**
      * @return Author of the commit.
      */
-    public String getAuthor()
+    public String getCreatedBy()
     {
-        return author;
+        return createdBy;
     }
 
     /**
-     * @param author
-     *            {@link #getAuthor()}
+     * @param createdBy
+     *            {@link #getCreatedBy()}
      */
-    public void setAuthor(String author)
+    public void setCreatedBy(String createdBy)
     {
-        this.author = author;
+        this.createdBy = createdBy;
     }
 
     /**

@@ -17,7 +17,7 @@ public class GitHubUser
     private int id;
 
     /**
-     * 
+     * @see #getSynchronizedAt()
      */
     private Date synchronizedAt;
 

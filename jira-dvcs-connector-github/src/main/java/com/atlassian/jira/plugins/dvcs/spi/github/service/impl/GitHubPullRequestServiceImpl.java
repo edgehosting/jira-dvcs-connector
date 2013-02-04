@@ -94,7 +94,7 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
     /**
      * {@inheritDoc}
      */
-    public GitHubPullRequest synchronize(Repository repository, long gitHubId, int pullRequestNumber)
+    public GitHubPullRequest fetch(Repository repository, long gitHubId, int pullRequestNumber)
     {
         GitHubPullRequest result = getByGitHubId(gitHubId);
         if (result == null)

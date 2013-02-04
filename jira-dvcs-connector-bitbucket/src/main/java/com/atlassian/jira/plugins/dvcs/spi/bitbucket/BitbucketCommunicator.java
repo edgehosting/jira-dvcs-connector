@@ -423,13 +423,5 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         return hostUrl + "/!api/1.0";
     }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void synchronize(Repository repository)
-    {
-    	// FIXME<Stanislav Dvorscak>
-    }
+
 }

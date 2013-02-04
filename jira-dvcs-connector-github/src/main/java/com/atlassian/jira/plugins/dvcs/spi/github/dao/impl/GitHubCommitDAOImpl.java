@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.dao.impl;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
  * AO implementation of the {@link GitHubCommitDAO}.
@@ -40,34 +42,56 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
      * {@inheritDoc}
      */
     @Override
-    public void save(GitHubCommit gitHubCommit)
+    public void save(final GitHubCommit gitHubCommit)
     {
-        if (gitHubCommit.getId() == 0)
-        {
-            Map<String, Object> params = new HashMap<String, Object>();
-            map(params, gitHubCommit);
-            GitHubCommitMapping created = activeObjects.create(GitHubCommitMapping.class, params);
-            map(gitHubCommit, created);
 
-        } else
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
-            GitHubCommitMapping loaded = activeObjects.get(GitHubCommitMapping.class, gitHubCommit.getId());
-            map(loaded, gitHubCommit);
-            loaded.save();
-            map(gitHubCommit, loaded);
 
-        }
+            @Override
+            public Void doInTransaction()
+            {
+                if (gitHubCommit.getId() == 0)
+                {
+                    Map<String, Object> params = new HashMap<String, Object>();
+                    map(params, gitHubCommit);
+                    GitHubCommitMapping created = activeObjects.create(GitHubCommitMapping.class, params);
+                    map(gitHubCommit, created);
+
+                } else
+                {
+                    GitHubCommitMapping loaded = activeObjects.get(GitHubCommitMapping.class, gitHubCommit.getId());
+                    map(loaded, gitHubCommit);
+                    loaded.save();
+                    map(gitHubCommit, loaded);
+
+                }
+
+                return null;
+            }
+
+        });
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void delete(GitHubCommit gitHubCommit)
+    public void delete(final GitHubCommit gitHubCommit)
     {
-        GitHubCommitMapping loaded = activeObjects.get(GitHubCommitMapping.class, gitHubCommit.getId());
-        activeObjects.delete(loaded);
-        gitHubCommit.setId(0);
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+
+            @Override
+            public Void doInTransaction()
+            {
+                GitHubCommitMapping toDelete = activeObjects.get(GitHubCommitMapping.class, gitHubCommit.getId());
+                activeObjects.delete(toDelete);
+                gitHubCommit.setId(0);
+                return null;
+            }
+
+        });
     }
 
     /**
@@ -76,8 +100,13 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
     @Override
     public GitHubCommit getById(int id)
     {
-        GitHubCommit result = new GitHubCommit();
         GitHubCommitMapping loaded = activeObjects.get(GitHubCommitMapping.class, id);
+        if (loaded == null)
+        {
+            return null;
+        }
+
+        GitHubCommit result = new GitHubCommit();
         map(result, loaded);
         return result;
     }
@@ -88,7 +117,7 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
     @Override
     public GitHubCommit getBySha(String sha)
     {
-        Query query = Query.select().where(GitHubCommitMapping.KEY_SHA + " = ?", sha);
+        Query query = Query.select().where(GitHubCommitMapping.COLUMN_SHA + " = ?", sha);
         GitHubCommitMapping[] founded = activeObjects.find(GitHubCommitMapping.class, query);
         if (founded.length == 1)
         {
@@ -113,8 +142,14 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
     @Override
     public List<GitHubCommit> getByIssueKey(String issueKey)
     {
-        // FIXME<Stanislav Dvorscak>
-        throw new UnsupportedOperationException();
+        List<GitHubCommit> result = new LinkedList<GitHubCommit>();
+        for (GitHubCommitMapping source : activeObjects.find(GitHubCommitMapping.class))
+        {
+            GitHubCommit target = new GitHubCommit();
+            map(target, source);
+            result.add(target);
+        }
+        return result;
     }
 
     // //
@@ -131,10 +166,10 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
      */
     private void map(Map<String, Object> target, GitHubCommit source)
     {
-        target.put(GitHubCommitMapping.KEY_SHA, source.getSha());
-        target.put(GitHubCommitMapping.KEY_DATE, source.getDate());
-        target.put(GitHubCommitMapping.KEY_AUTHOR, source.getAuthor());
-        target.put(GitHubCommitMapping.KEY_MESSAGE, source.getMessage());
+        target.put(GitHubCommitMapping.COLUMN_SHA, source.getSha());
+        target.put(GitHubCommitMapping.COLUMN_CREATED_AT, source.getCreatedAt());
+        target.put(GitHubCommitMapping.COLUMN_CREATED_BY, source.getCreatedBy());
+        target.put(GitHubCommitMapping.COLUMN_MESSAGE, source.getMessage());
     }
 
     /**
@@ -148,8 +183,8 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
     private void map(GitHubCommitMapping target, GitHubCommit source)
     {
         target.setSha(source.getSha());
-        target.setDate(source.getDate());
-        target.setAuthor(source.getAuthor());
+        target.setCreatedAt(source.getCreatedAt());
+        target.setCreatedBy(source.getCreatedBy());
         target.setMessage(source.getMessage());
     }
 
@@ -161,12 +196,12 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
      * @param source
      *            AO value
      */
-    private void map(GitHubCommit target, GitHubCommitMapping source)
+    static void map(GitHubCommit target, GitHubCommitMapping source)
     {
         target.setId(source.getID());
         target.setSha(source.getSha());
-        target.setDate(source.getDate());
-        target.setAuthor(source.getAuthor());
+        target.setCreatedAt(source.getCreatedAt());
+        target.setCreatedBy(source.getCreatedBy());
         target.setMessage(source.getMessage());
     }
 

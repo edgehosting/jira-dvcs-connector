@@ -85,8 +85,8 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
     public void map(GitHubCommit target, Commit source)
     {
         target.setSha(source.getSha());
-        target.setDate(source.getAuthor().getDate());
-        target.setAuthor(source.getAuthor().getName());
+        target.setCreatedAt(source.getAuthor().getDate());
+        target.setCreatedBy(source.getAuthor().getName());
         target.setMessage(source.getMessage());
     }
 

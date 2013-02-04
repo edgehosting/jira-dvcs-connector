@@ -20,6 +20,11 @@ public class GitHubPullRequestComment
      * @see #getGitHubId()
      */
     private long gitHubId;
+    
+    /**
+     * @see #getPullRequest()
+     */
+    private GitHubPullRequest pullRequest;
 
     /**
      * @see #getCreatedAt()
@@ -30,11 +35,6 @@ public class GitHubPullRequestComment
      * @see #getCreatedBy()
      */
     private GitHubUser createdBy;
-
-    /**
-     * @see #getPullRequest()
-     */
-    private GitHubPullRequest pullRequest;
 
     /**
      * @see #getText()
@@ -83,6 +83,23 @@ public class GitHubPullRequestComment
     }
 
     /**
+     * @return To which pull request was done commenting.
+     */
+    public GitHubPullRequest getPullRequest()
+    {
+        return pullRequest;
+    }
+
+    /**
+     * @param pullRequest
+     *            {@link #getPullRequest()}
+     */
+    public void setPullRequest(GitHubPullRequest pullRequest)
+    {
+        this.pullRequest = pullRequest;
+    }
+
+    /**
      * @return Date of the comment creation.
      */
     public Date getCreatedAt()
@@ -114,23 +131,6 @@ public class GitHubPullRequestComment
     public void setCreatedBy(GitHubUser createdBy)
     {
         this.createdBy = createdBy;
-    }
-
-    /**
-     * @return To which pull request was done commenting.
-     */
-    public GitHubPullRequest getPullRequest()
-    {
-        return pullRequest;
-    }
-
-    /**
-     * @param pullRequest
-     *            {@link #getPullRequest()}
-     */
-    public void setPullRequest(GitHubPullRequest pullRequest)
-    {
-        this.pullRequest = pullRequest;
     }
 
     /**

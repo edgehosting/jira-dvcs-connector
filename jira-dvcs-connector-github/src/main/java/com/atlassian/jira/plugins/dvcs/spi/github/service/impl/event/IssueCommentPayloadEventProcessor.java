@@ -93,11 +93,7 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
             GitHubPullRequest gitHubPullRequest = getPullRequestByHtmlUrl(repository, pullRequest.getHtmlUrl());
             if (gitHubPullRequest != null)
             {
-                GitHubUser createdBy = gitHubUserService.getByLogin(comment.getUser().getLogin());
-                if (createdBy == null) {
-                    createdBy = gitHubUserService.synchronize(comment.getUser().getLogin(), repository);
-                }
-
+                GitHubUser createdBy = gitHubUserService.fetch(comment.getUser().getLogin(), repository);
                 GitHubPullRequestComment gitHubPullRequestComment = gitHubPullRequestCommentService.getByGitHubId(comment.getId());
                 if (gitHubPullRequestComment == null)
                 {
@@ -137,7 +133,7 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
                     result = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
                     if (result == null)
                     {
-                        result = gitHubPullRequestService.synchronize(repository, pullRequest.getId(), pullRequest.getNumber());
+                        result = gitHubPullRequestService.fetch(repository, pullRequest.getId(), pullRequest.getNumber());
                         gitHubPullRequestService.save(result);
                     }
 
@@ -153,7 +149,7 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
                     result = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
                     if (result == null)
                     {
-                        result = gitHubPullRequestService.synchronize(repository, pullRequest.getId(), pullRequest.getNumber());
+                        result = gitHubPullRequestService.fetch(repository, pullRequest.getId(), pullRequest.getNumber());
                         gitHubPullRequestService.save(result);
                     }
 

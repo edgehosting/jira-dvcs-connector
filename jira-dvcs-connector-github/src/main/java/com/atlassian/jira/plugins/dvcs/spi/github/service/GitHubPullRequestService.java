@@ -59,6 +59,6 @@ public interface GitHubPullRequestService
      *            the number of the pull request
      * @return newly created or refreshed pull request
      */
-    GitHubPullRequest synchronize(Repository repository, long gitHubId, int pullRequestNumber);
+    GitHubPullRequest fetch(Repository repository, long gitHubId, int pullRequestNumber);
 
 }

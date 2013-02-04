@@ -88,8 +88,13 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
     @Override
     public GitHubPush getById(int id)
     {
-        GitHubPush result = new GitHubPush();
         GitHubPushMapping loaded = activeObjects.get(GitHubPushMapping.class, id);
+        if (loaded == null)
+        {
+            return null;
+        }
+
+        GitHubPush result = new GitHubPush();
         map(result, loaded);
         return result;
     }
@@ -100,7 +105,7 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
     @Override
     public GitHubPush getByBefore(String sha)
     {
-        Query query = Query.select().where(GitHubPushMapping.KEY_BEFORE + " = ?", sha);
+        Query query = Query.select().where(GitHubPushMapping.COLUMN_BEFORE + " = ?", sha);
         GitHubPushMapping[] founded = activeObjects.find(GitHubPushMapping.class, query);
         if (founded.length == 1)
         {
@@ -123,7 +128,7 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
     @Override
     public GitHubPush getByHead(String sha)
     {
-        Query query = Query.select().where(GitHubPushMapping.KEY_HEAD + " = ?", sha);
+        Query query = Query.select().where(GitHubPushMapping.COLUMN_HEAD + " = ?", sha);
         GitHubPushMapping[] founded = activeObjects.find(GitHubPushMapping.class, query);
         if (founded.length == 1)
         {
@@ -162,11 +167,11 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
         }
 
         // re-mapping
-        target.put(GitHubPushMapping.KEY_CREATED_AT, source.getCreatedAt());
-        target.put(GitHubPushMapping.KEY_BEFORE, source.getBefore());
-        target.put(GitHubPushMapping.KEY_HEAD, source.getHead());
-        target.put(GitHubPushMapping.KEY_REF, source.getRef());
-        target.put(GitHubPushMapping.KEY_COMMITS, commits);
+        target.put(GitHubPushMapping.COLUMN_CREATED_AT, source.getCreatedAt());
+        target.put(GitHubPushMapping.COLUMN_BEFORE, source.getBefore());
+        target.put(GitHubPushMapping.COLUMN_HEAD, source.getHead());
+        target.put(GitHubPushMapping.COLUMN_REF, source.getRef());
+        target.put(GitHubPushMapping.COLUMN_COMMITS, commits);
     }
 
     /**

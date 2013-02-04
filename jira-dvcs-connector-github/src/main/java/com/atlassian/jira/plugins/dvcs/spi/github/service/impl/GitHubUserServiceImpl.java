@@ -76,14 +76,16 @@ public class GitHubUserServiceImpl implements GitHubUserService
      * {@inheritDoc}
      */
     @Override
-    public GitHubUser synchronize(String login, Repository repository)
+    public GitHubUser fetch(String login, Repository repository)
     {
         GitHubUser result = getByLogin(login);
-        if (result == null)
+        if (result != null)
         {
-            result = new GitHubUser();
+            return result;
 
         }
+
+        result = new GitHubUser();
 
         UserService userService = githubClientProvider.getUserService(repository);
         User loaded;

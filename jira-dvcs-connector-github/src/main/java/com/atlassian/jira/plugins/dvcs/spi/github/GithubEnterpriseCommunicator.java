@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService;
 import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 
 public class GithubEnterpriseCommunicator extends GithubCommunicator
@@ -20,9 +19,9 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     public static final String GITHUB_ENTERPRISE = "githube";
 
     private GithubEnterpriseCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
-            GithubClientProvider githubClientProvider, GitHubRepositoryService gitHubRepositoryService)
+            GithubClientProvider githubClientProvider)
     {
-        super(changesetCache, githubOAuth, githubClientProvider, gitHubRepositoryService);
+        super(changesetCache, githubOAuth, githubClientProvider);
     }
         
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
