@@ -378,6 +378,15 @@
         <!--<resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>-->
         <supports-ajax-load>true</supports-ajax-load>
     </issue-tabpanel>
+    
+    <issue-tabpanel key="dvcs-pullrequets-tabpanel" name="Dvcs PullRequestss Tab Panel"
+                    class="com.atlassian.jira.plugins.dvcs.webwork.DvcsActivityTabPanel">
+
+        <description>Show Dvcs Pull Requests activities related to an issue in an issue tab panel.</description>
+        <label>PR</label>
+        <!--<resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>-->
+        <supports-ajax-load>true</supports-ajax-load>
+    </issue-tabpanel>
 
     <web-panel key="dvcs-commits-greenhopper-tab" location="atl.gh.issue.details.tab" weight="100">
 
@@ -517,7 +526,7 @@
 		<dependency>jira.webresources:viewissue</dependency>
 		<resource type="download" name="css/issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
 	</web-resource>
-
+	
     <web-resource key="requiredResourceForGreenHopperCommitsTab" name="Resources That Needs To be Loaded On GreenHopper Board">
         <context>gh-rapid</context>
         <resource type="download" name="issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
