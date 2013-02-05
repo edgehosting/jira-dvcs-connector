@@ -1,14 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
 import java.io.IOException;
-import java.net.URL;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
@@ -21,14 +20,14 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     public static final String GITHUB_ENTERPRISE = "githube";
 
     private GithubEnterpriseCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
-            GithubClientProvider githubClientProvider)
+            @Qualifier("githubEnterpriseClientProvider") GithubEnterpriseClientProvider githubClientProvider)
     {
         super(changesetCache, githubOAuth, githubClientProvider);
     }
         
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        UserService userService = new UserService(GithubOAuthUtils.createClient(hostUrl));
+        UserService userService = new UserService(GithubOAuthUtils.createClientForGithubEnteprise(hostUrl));
         boolean requiresOauth = StringUtils.isBlank(githubOAuth.getEnterpriseClientId()) || StringUtils.isBlank(githubOAuth.getEnterpriseClientSecret());
 
         try
