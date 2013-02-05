@@ -37,7 +37,7 @@ public interface GitHubPullRequestLineCommentMapping extends Entity
     /**
      * @see #getCreatedBy()
      */
-    String COLUMN_CREATED_BY = "CREATED_BY";
+    String COLUMN_CREATED_BY = "CREATED_BY_ID";
 
     /**
      * @see #getCommit()

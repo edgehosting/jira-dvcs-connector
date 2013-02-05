@@ -106,8 +106,9 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
         // not - will be proceed
         GitHubPullRequestLineComment gitHubPullRequestLineComment = new GitHubPullRequestLineComment();
         GitHubPullRequest pullRequest = getPullRequestByComment(repository, commitComment);
-        GitHubCommit commit = gitHubCommitService.getBySha(commitComment.getCommitId());
+        GitHubCommit commit = gitHubCommitService.fetch(repository, commitComment.getCommitId());
         GitHubUser createdBy = gitHubUserService.fetch(payload.getComment().getUser().getLogin(), repository);
+        
         gitHubPullRequestLineCommentService.map(gitHubPullRequestLineComment, commitComment, pullRequest, createdBy, commit);
         gitHubPullRequestLineCommentService.save(gitHubPullRequestLineComment);
     }

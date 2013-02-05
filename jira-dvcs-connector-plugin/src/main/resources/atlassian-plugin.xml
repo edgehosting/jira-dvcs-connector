@@ -67,6 +67,7 @@
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping</entity>
 
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubEventMapping</entity>
        	<entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestActionMapping</entity>
@@ -198,6 +199,7 @@
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitCommentDAO</interface>
 	</component>
 	<!-- 
+	FIXME
 	<component key="gitHubCommitLineCommentDAO" name="Git Hub Commit Line Comment DAO"
 	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubCommitLineCommentDAOMockImpl">
 	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitLineCommentDAO</interface>
@@ -215,9 +217,13 @@
 	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPullRequestCommentDAOImpl">
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestCommentDAO</interface>
 	</component>
-	<component key="gitHubPullRequestLineCommentDAO" name="Pull Request Line Comment DAO"
+	<component key="gitHubPullRequestLineCommentDAO" name="GitHub Pull Request Line Comment DAO"
 	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPullRequestLineCommentDAOImpl">
 	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestLineCommentDAO</interface>
+	</component>
+	<component key="GitHubEventDAO" name="GitHub Event DAO"
+		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubEventDAOImpl">
+		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubEventDAO</interface>
 	</component>
 	
 	<!-- GitHub - Services -->
@@ -234,6 +240,7 @@
 	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitCommentService</interface>
 	</component>
 	<!-- 
+	FIXME
 	<component key="gitHubCommitLineCommentService" name="gitHubCommitLineCommentService"
 	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubCommitLineCommentServiceImpl">
 	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitLineCommentService</interface>
@@ -255,7 +262,11 @@
 	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubPullRequestLineCommentServiceImpl">
 	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestLineCommentService</interface>
 	</component>
-        
+	<component key="GitHubEventService" name="GitHub Event Service"
+    	class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubEventServiceImpl">
+    	<interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService</interface>
+    </component>
+
     <!-- GitHub - Events -->
     <component key="defaultGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.DefaultGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
@@ -266,10 +277,13 @@
     <component key="pushPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.PushPayloadGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
+    <!-- 
+    FIXME
 	<component key="commitCommentPayloadGitHubEventProcessor"
 		class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.CommitCommentPayloadGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
 	</component>
+     -->
     <component key="pullRequestPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.PullRequestPayloadGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>

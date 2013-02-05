@@ -97,12 +97,13 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
     public GitHubPullRequest fetch(Repository repository, long gitHubId, int pullRequestNumber)
     {
         GitHubPullRequest result = getByGitHubId(gitHubId);
-        if (result == null)
+        if (result != null)
         {
-            result = new GitHubPullRequest();
+            return result;
 
         }
 
+        result = new GitHubPullRequest();
         RepositoryId egitRepository = RepositoryId.createFromUrl(repository.getRepositoryUrl());
 
         PullRequestService pullRequestService = githubClientProvider.getPullRequestService(repository);
