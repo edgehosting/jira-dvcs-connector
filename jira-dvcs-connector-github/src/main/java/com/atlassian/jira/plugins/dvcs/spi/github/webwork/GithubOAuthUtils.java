@@ -220,7 +220,9 @@ public class GithubOAuthUtils
                 host = HOST_API;
             }
             
-            return new GitHubClient(host, -1, urlObject.getProtocol());
+            GitHubClient result = new GitHubClient(host, -1, urlObject.getProtocol());
+            result.setUserAgent("JIRA DVCS Connector 1.2.6.x");
+            return result;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
