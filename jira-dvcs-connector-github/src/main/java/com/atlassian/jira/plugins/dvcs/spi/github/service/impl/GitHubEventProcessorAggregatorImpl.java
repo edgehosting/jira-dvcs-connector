@@ -70,7 +70,7 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
 
         for (Entry<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>> entry : eventProcessors.entrySet())
         {
-            if (entry.getKey().isAssignableFrom(eventPayloadType))
+            if (eventPayloadType.isAssignableFrom(entry.getKey()))
             {
                 result = (GitHubEventProcessor<T_EventPayload>) entry.getValue();
 
@@ -84,7 +84,7 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
         }
 
         // if no handler was found for this type, check super EventType
-        if (eventPayloadType.getSuperclass().isAssignableFrom(EventPayload.class))
+        if (EventPayload.class.isAssignableFrom(eventPayloadType.getSuperclass()))
         {
             resolveEventProcessor((Class<? extends T_EventPayload>) eventPayloadType.getSuperclass());
         }
