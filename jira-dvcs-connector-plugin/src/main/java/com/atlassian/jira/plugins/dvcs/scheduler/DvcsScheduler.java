@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.scheduler;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,6 @@ public class DvcsScheduler implements LifecycleAware
     {
         log.debug("onStart");
         this.interval = SystemUtils.getSystemPropertyLong(PROPERTY_KEY, DEFAULT_INTERVAL);
-        log.debug("Starting DVCSConnector Scheduler Job. interval=" + interval);
         reschedule();
     }
 	
@@ -48,11 +48,16 @@ public class DvcsScheduler implements LifecycleAware
 		Map<String, Object> data = Maps.newHashMap();
 		data.put("organizationService",organizationService);
 		data.put("repositoryService",repositoryService);
-
+		
+        long randomStartTimeWithinInterval = new Date().getTime() + (long) (new Random().nextDouble() * interval);
+        Date startTime = new Date(randomStartTimeWithinInterval);
+        
+        log.debug("DvcsScheduler start planned at " + startTime + ", interval=" + interval);
+		
 		pluginScheduler.scheduleJob(JOB_NAME, // unique name of the job
 		        DvcsSchedulerJob.class, // class of the job
 		        data, // data that needs to be passed to the job
-		        new Date(), // the time the job is to start
+		        startTime, // the time the job is to start
 		        interval); // interval between repeats, in milliseconds
 	}
 
