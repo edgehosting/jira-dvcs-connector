@@ -13,17 +13,21 @@ import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
 import org.eclipse.egit.github.core.service.EventService;
 
+import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubEvent;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestLineCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
  * {@link RepositoryActivitySynchronizer} implementation over GitHub repository.
@@ -35,42 +39,58 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 {
 
     /**
-     * @see #GithubRepositoryActivitySynchronizer(GithubClientProvider, GitHubEventProcessorAggregator, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     */
+    private final ActiveObjects activeObjects;
+
+    /**
+     * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
      */
     private final GithubClientProvider githubClientProvider;
 
     /**
-     * @see #GithubRepositoryActivitySynchronizer(GithubClientProvider, GitHubEventProcessorAggregator, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
      */
     private final GitHubEventProcessorAggregator<EventPayload> gitHubEventProcessorAggregator;
 
     /**
-     * @see #GithubRepositoryActivitySynchronizer(GithubClientProvider, GitHubEventProcessorAggregator, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     */
+    private final GitHubEventService gitHubEventService;
+
+    /**
+     * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
      */
     private final GitHubPullRequestService gitHubPullRequestService;
 
     /**
-     * @see #GithubRepositoryActivitySynchronizer(GithubClientProvider, GitHubEventProcessorAggregator, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
      */
     private final GitHubPullRequestCommentService gitHubPullRequestCommentService;
 
     /**
-     * @see #GithubRepositoryActivitySynchronizer(GithubClientProvider, GitHubEventProcessorAggregator, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
      */
     private final GitHubPullRequestLineCommentService gitHubPullRequestLineCommentService;
 
     /**
      * Constructor.
      * 
+     * @param activeObjects
+     *            injected {@link ActiveObjects} dependency
      * @param githubClientProvider
      *            injected {@link GithubClientProvider} dependency
      * @param gitHubEventProcessorAggregator
      *            injected {@link GitHubEventProcessorAggregator} dependency
+     * @param gitHubEventService
+     *            injected {@link GitHubEventService} dependency
      * @param gitHubPullRequestService
      *            injected {@link GitHubPullRequestService} dependency
      * @param gitHubPullRequestCommentService
@@ -79,15 +99,19 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
      *            injected {@link GitHubPullRequestLineCommentService} dependency
      */
     public GithubRepositoryActivitySynchronizer(//
+            ActiveObjects activeObjects, //
             GithubClientProvider githubClientProvider, //
             GitHubEventProcessorAggregator<EventPayload> gitHubEventProcessorAggregator, //
+            GitHubEventService gitHubEventService, //
             GitHubPullRequestService gitHubPullRequestService, //
             GitHubPullRequestCommentService gitHubPullRequestCommentService, //
             GitHubPullRequestLineCommentService gitHubPullRequestLineCommentService //
     )
     {
+        this.activeObjects = activeObjects;
         this.githubClientProvider = githubClientProvider;
         this.gitHubEventProcessorAggregator = gitHubEventProcessorAggregator;
+        this.gitHubEventService = gitHubEventService;
         this.gitHubPullRequestService = gitHubPullRequestService;
         this.gitHubPullRequestCommentService = gitHubPullRequestCommentService;
         this.gitHubPullRequestLineCommentService = gitHubPullRequestLineCommentService;
@@ -97,23 +121,66 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
      * {@inheritDoc}
      */
     @Override
-    public void synchronize(Repository forRepository, boolean softSync)
+    public void synchronize(final Repository forRepository, boolean softSync)
     {
         EventService eventService = githubClientProvider.getEventService(forRepository);
 
         // gets repository ID
         RepositoryId repositoryId = RepositoryId.create(forRepository.getOrgName(), forRepository.getSlug());
 
+        final GitHubEvent savePoint = gitHubEventService.getLastSavePoint();
+
         // goes over events
         Iterator<Collection<Event>> eventsIterator = eventService.pageEvents(repositoryId).iterator();
         while (eventsIterator.hasNext())
         {
-            Collection<Event> nextPage = eventsIterator.next();
-            for (Event event : nextPage)
+            final Collection<Event> nextPage = eventsIterator.next();
+
+            // process whole page in one transaction
+            activeObjects.executeInTransaction(new TransactionCallback<Void>()
             {
-                System.out.println("Event: " + event.toString());
-                gitHubEventProcessorAggregator.process(forRepository, event);
-            }
+
+                @Override
+                public Void doInTransaction()
+                {
+                    for (Event event : nextPage)
+                    {
+                        // before, not before or equals - there can exists several events with the same timestamp, but it does not mean that
+                        // all of them was already proceed
+                        if (savePoint != null && event.getCreatedAt().before(savePoint.getCreatedAt()))
+                        {
+                            // was all previous records proceed?
+                            break;
+
+                        } else if (gitHubEventService.getByGitHubId(event.getId()) != null)
+                        {
+                            // was already proceed? maybe partial synchronization, and there can exist remaining events for processing
+                            continue;
+
+                        }
+
+                        System.out.println("Event: " + event.toString());
+                        gitHubEventProcessorAggregator.process(forRepository, event);
+
+                        // saves proceed GitHub event
+                        GitHubEvent gitHubEvent = new GitHubEvent();
+                        gitHubEvent.setGitHubId(event.getId());
+                        gitHubEvent.setCreatedAt(event.getCreatedAt());
+                        gitHubEventService.save(gitHubEvent);
+                    }
+
+                    return null;
+                }
+            });
+
+        }
+
+        // marks new save point
+        GitHubEvent last = gitHubEventService.getLast();
+        if (last != null)
+        {
+            last.setSavePoint(true);
+            gitHubEventService.save(last);
         }
 
         // dump
@@ -171,5 +238,4 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         }
         System.out.println("==== End of: Activity dump ====");
     }
-
 }

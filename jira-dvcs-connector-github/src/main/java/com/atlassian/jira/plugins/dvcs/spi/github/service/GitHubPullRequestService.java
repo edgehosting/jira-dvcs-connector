@@ -57,7 +57,7 @@ public interface GitHubPullRequestService
      *            identity of the pull request
      * @param pullRequestNumber
      *            the number of the pull request
-     * @return newly created or refreshed pull request
+     * @return newly created or existing pull request
      */
     GitHubPullRequest fetch(Repository repository, long gitHubId, int pullRequestNumber);
 

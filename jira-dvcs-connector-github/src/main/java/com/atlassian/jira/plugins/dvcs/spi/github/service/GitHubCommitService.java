@@ -2,8 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
 import java.util.List;
 
-import org.eclipse.egit.github.core.Commit;
-
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 
 /**
@@ -53,11 +52,12 @@ public interface GitHubCommitService
     List<GitHubCommit> getByIssueKey(String issueKey);
 
     /**
-     * Re-maps egit commit into the {@link GitHubCommit}.
-     * 
-     * @param target
-     * @param source
+     * @param repository
+     *            where should be commit
+     * @param sha
+     *            of the commit
+     * @return newly created or existing commit
      */
-    void map(GitHubCommit target, Commit source);
+    public GitHubCommit fetch(Repository repository, String sha);
 
 }

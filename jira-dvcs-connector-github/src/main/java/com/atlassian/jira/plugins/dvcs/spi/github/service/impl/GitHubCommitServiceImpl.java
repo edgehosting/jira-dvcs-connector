@@ -1,9 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
+import java.io.IOException;
 import java.util.List;
 
-import org.eclipse.egit.github.core.Commit;
+import org.eclipse.egit.github.core.IRepositoryIdProvider;
+import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.service.CommitService;
 
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitService;
@@ -23,14 +29,22 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
     private final GitHubCommitDAO gitHubCommitDAO;
 
     /**
+     * @see #
+     */
+    private final GithubClientProvider githubClientProvider;
+
+    /**
      * Constructor.
      * 
      * @param gitHubCommitDAO
      *            injected {@link GitHubCommitDAO} dependency
+     * @param githubClientProvider
+     *            injected {@link GithubClientProvider} dependency
      */
-    public GitHubCommitServiceImpl(GitHubCommitDAO gitHubCommitDAO)
+    public GitHubCommitServiceImpl(GitHubCommitDAO gitHubCommitDAO, GithubClientProvider githubClientProvider)
     {
         this.gitHubCommitDAO = gitHubCommitDAO;
+        this.githubClientProvider = githubClientProvider;
     }
 
     /**
@@ -82,12 +96,38 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
      * {@inheritDoc}
      */
     @Override
-    public void map(GitHubCommit target, Commit source)
+    public GitHubCommit fetch(Repository repository, String sha)
     {
-        target.setSha(source.getSha());
-        target.setCreatedAt(source.getAuthor().getDate());
-        target.setCreatedBy(source.getAuthor().getName());
-        target.setMessage(source.getMessage());
-    }
+        GitHubCommit result = getBySha(sha);
+        if (result != null)
+        {
+            return result;
+        }
 
+        CommitService commitService = githubClientProvider.getCommitService(repository);
+        IRepositoryIdProvider egitRepository = RepositoryId.createFromUrl(repository.getRepositoryUrl());
+
+        RepositoryCommit commit;
+        try
+        {
+            commit = commitService.getCommit(egitRepository, sha);
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        if (commit == null)
+        {
+            return null;
+        }
+
+        result = new GitHubCommit();
+        result.setSha(commit.getSha());
+        result.setCreatedAt(commit.getCommit().getAuthor().getDate());
+        result.setCreatedBy(commit.getCommit().getAuthor().getName());
+        result.setMessage(commit.getCommit().getMessage());
+        save(result);
+
+        return result;
+    }
 }
