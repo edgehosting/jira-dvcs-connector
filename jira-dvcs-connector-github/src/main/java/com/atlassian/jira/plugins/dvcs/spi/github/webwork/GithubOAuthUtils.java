@@ -203,7 +203,9 @@ public class GithubOAuthUtils
             }
             
             GitHubClient result = new GitHubClient(host, -1, urlObject.getProtocol());
-            result.setUserAgent("JIRA DVCS Connector 1.3.x");
+            // FIXME: should be fixed properly - via plugin name and their version
+            // this one is just hot fix
+            result.setUserAgent("JIRA DVCS Connector 1.4.x");
             return result;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
