@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
+package com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -10,8 +10,9 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.github.DefaultGithubOauthProvider;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubEnterpriseCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
+import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
+import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;

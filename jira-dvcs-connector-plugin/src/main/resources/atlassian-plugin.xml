@@ -296,7 +296,7 @@
     </component>
 	
     <component key="githubEnterpriseCommunicator" name="githubEnterpriseCommunicator"
-               class="com.atlassian.jira.plugins.dvcs.spi.github.GithubEnterpriseCommunicator">
+               class="com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator">
         <description>githubEnterpriseCommunicator</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
     </component>
@@ -444,7 +444,7 @@
                 <view name="input">/templates/dvcs/add-github-organization.vm</view>
             </action>
             
-               <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.AddGithubEnterpriseOrganization"
+               <action name="com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork.AddGithubEnterpriseOrganization"
                     alias="AddGithubEnterpriseOrganization" roles-required="admin">
                 <view name="input">/templates/dvcs/add-githube-organization.vm</view>
             </action>
