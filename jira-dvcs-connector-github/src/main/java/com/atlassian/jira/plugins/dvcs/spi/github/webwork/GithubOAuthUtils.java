@@ -203,7 +203,7 @@ public class GithubOAuthUtils
             }
             
             GitHubClient result = new GitHubClient(host, -1, urlObject.getProtocol());
-            result.setUserAgent("JIRA DVCS Connector 1.2.6.x");
+            result.setUserAgent("JIRA DVCS Connector 1.3.x");
             return result;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
