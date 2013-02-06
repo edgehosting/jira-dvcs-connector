@@ -1,8 +1,9 @@
-package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
+package com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
+import com.atlassian.jira.plugins.dvcs.spi.github.webwork.ConfigureGithubOAuth;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.sal.api.ApplicationProperties;

@@ -15,17 +15,17 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
 
 	final Logger logger = LoggerFactory.getLogger(ConfigureGithubOAuth.class);
    
-	final GithubOAuth githubOAuth;
+	protected final GithubOAuth githubOAuth;
     final ApplicationProperties applicationProperties;
     
     // Client ID (from GitHub OAuth Application)
-    String clientID = "";
+    protected String clientID = "";
     // Client Secret (from GitHub OAuth Application)
-    String clientSecret = "";
+    protected String clientSecret = "";
     // Confirmation Messages
-    String messages = "";
+    protected String messages = "";
     
-    String forceClear = "";
+    protected String forceClear = "";
 
 
     public ConfigureGithubOAuth(GithubOAuth githubOAuth, ApplicationProperties applicationProperties)

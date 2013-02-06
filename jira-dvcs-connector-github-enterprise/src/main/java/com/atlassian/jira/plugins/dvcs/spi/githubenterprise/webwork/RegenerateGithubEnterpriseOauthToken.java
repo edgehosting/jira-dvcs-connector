@@ -1,8 +1,10 @@
-package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
+package com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork;
 
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.github.DefaultGithubOauthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
+import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
+import com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken;
 import com.atlassian.sal.api.ApplicationProperties;
 
 public class RegenerateGithubEnterpriseOauthToken extends RegenerateGithubOauthToken

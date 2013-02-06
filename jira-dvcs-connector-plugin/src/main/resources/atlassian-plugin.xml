@@ -434,7 +434,7 @@
                 <view name="input">/templates/configuregithuboauth.vm</view>
             </action>
             
-             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.ConfigureGithubEnterpriseOAuth" alias="ConfigureGithubEnterpriseOAuth">
+             <action name="com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork.ConfigureGithubEnterpriseOAuth" alias="ConfigureGithubEnterpriseOAuth">
                 <view name="input">/templates/configuregithubenterpriseoauth.vm</view>
             </action>
 
@@ -474,7 +474,7 @@
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
             
-            <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubEnterpriseOauthToken"
+            <action name="com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork.RegenerateGithubEnterpriseOauthToken"
                     alias="RegenerateGithubEnterpriseOauthToken" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
