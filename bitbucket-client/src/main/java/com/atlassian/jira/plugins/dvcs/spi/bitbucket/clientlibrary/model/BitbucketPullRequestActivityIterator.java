@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,15 +56,11 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     {
         if (wasDateOver)
         {
-
             this.currentFrame = new ArrayList<BitbucketPullRequestActivityInfo>();
-
         } else
         {
-
             requestor.get(createUrl(), createRequestParams(), createResponseCallback());
             start++;
-
         }
     }
 
@@ -136,13 +133,17 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
 
                 for (BitbucketPullRequestActivityInfo remoteActivity : remote.getValues())
                 {
-                    if (remoteActivity.getActivity().getUpdatedOn().after(upToDate))
-                    {
-                        ret.add(remoteActivity);
-                    } else
-                    {
-                        wasDateOver = true;
-                    }
+                	Date date = remoteActivity.getActivity().extractDate();
+                	if (date!=null)
+                	{
+		                if ( date.after(upToDate))
+		                {
+		                    ret.add(remoteActivity);
+		                } else
+		                {
+		                    wasDateOver = true;
+		                }
+                	}
                 }
                 //
                 BitbucketPullRequestActivityIterator.this.currentFrame = ret;
@@ -156,5 +157,4 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     {
         return String.format("/repositories/%s/%s/pullrequests/activity", forUser, forRepoSlug);
     }
-    
 }

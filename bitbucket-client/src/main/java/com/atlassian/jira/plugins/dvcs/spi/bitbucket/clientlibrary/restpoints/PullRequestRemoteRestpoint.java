@@ -57,7 +57,7 @@ public class PullRequestRemoteRestpoint
             @Override
             public BitbucketPullRequest onResponse(RemoteResponse response)
             {
-                return ClientUtils.fromJson(response.getResponse(), new TypeToken<Set<BitbucketPullRequest>>()
+                return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketPullRequest>()
                 {
                 }.getType());
             }

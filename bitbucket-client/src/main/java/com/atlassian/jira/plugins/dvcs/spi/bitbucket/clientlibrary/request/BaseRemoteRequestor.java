@@ -46,15 +46,16 @@ public class BaseRemoteRequestor implements RemoteRequestor
 {
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
 
-    protected final String apiUrl;
+    protected final ApiProvider apiProvider;
+    
     private final HttpClientProxyConfig proxyConfig;
 
-    public BaseRemoteRequestor(String apiUrl)
+    public BaseRemoteRequestor(ApiProvider apiProvider)
     {
-        this.apiUrl = apiUrl;
+        this.apiProvider = apiProvider;
         proxyConfig = new HttpClientProxyConfig();
     }
-
+    
     @Override
     public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
@@ -342,7 +343,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         try
         {
             // already has api prefix included ?
-            isApiUrl = uri.startsWith("/api/") ? "" : apiUrl;
+            isApiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
         } catch (Exception e)
         {
         }

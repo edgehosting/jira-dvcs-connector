@@ -199,30 +199,34 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                     {
                         // drop activities
                         int i = 0;
+                        HashSet<Integer> deletedIds = new java.util.HashSet<Integer>();
                         for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
                         {
-                            deleteFromTableByQuery(activityTable, activityDeleteQueries.get(i), null);
+                            deleteFromTableByQuery(activityTable, activityDeleteQueries.get(i), deletedIds);
                             i++;
                         }
                         // drop pull requests
-                        HashSet<Integer> deletedIds = new java.util.HashSet<Integer>();
-                        deleteFromTableByQuery(RepositoryActivityPullRequestMapping.class,
-                                Query
-                                .select()
-                                .from(RepositoryActivityPullRequestMapping.class)
-                                .where(RepositoryActivityPullRequestMapping.REPO_SLUG + " = ?",
-                                        new Object[] { forRepository.getSlug() })
-                                        , deletedIds);
+                        
+//                        deleteFromTableByQuery(RepositoryActivityPullRequestMapping.class,
+//                                Query
+//                                .select()
+//                                .from(RepositoryActivityPullRequestMapping.class)
+//                                .where(RepositoryActivityPullRequestMapping.REPO_SLUG + " = ?",
+//                                        new Object[] { forRepository.getSlug() })
+//                                        , deletedIds);
                         
                         // drop issue keys to PR mappings
-                        deleteFromTableByQuery(RepositoryPullRequestIssueKeyMapping.class,
-                                Query
-                                .select()
-                                .from(RepositoryPullRequestIssueKeyMapping.class)
-                                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds) +")",
-                                        new Object[] {  })
-                                        , null);
-                        return null;
+                        if (!deletedIds.isEmpty())
+                        {
+	                        deleteFromTableByQuery(RepositoryPullRequestIssueKeyMapping.class,
+	                                Query
+	                                .select()
+	                                .from(RepositoryPullRequestIssueKeyMapping.class)
+	                                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds) +")",
+	                                        new Object[] {  })
+	                                        , null);
+                        }
+	                    return null;
                     }
                 });
 

@@ -30,13 +30,26 @@ public class BitbucketPullRequestBaseActivity implements Serializable, HasMessag
     
     private BitbucketAccount user;
     
-    private BitbucketRepository repository;
-    
     public BitbucketPullRequestBaseActivity()
     {
         super();
     }
 
+    public Date extractDate()
+    {
+        Date date = getUpdatedOn();
+        
+        // fallbacks - order depends
+        if (date == null) {
+            date = getDate();
+        }
+        if (date == null) {
+            date = getCreatedOn();
+        }
+        
+        return date;
+    }
+    
     public Date getUpdatedOn()
     {
         return updatedOn;
@@ -57,16 +70,6 @@ public class BitbucketPullRequestBaseActivity implements Serializable, HasMessag
         this.user = user;
     }
 
-    public BitbucketRepository getRepository()
-    {
-        return repository;
-    }
-
-    public void setRepository(BitbucketRepository repository)
-    {
-        this.repository = repository;
-    }
-    
     @Override
     public List<String> getMessages()
     {
