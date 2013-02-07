@@ -33,18 +33,11 @@ import java.util.List;
 public class BitbucketPullRequestBaseActivityEnvelope implements Serializable
 {
     private static final long serialVersionUID = -4076516797342633690L;
-    
     private List<BitbucketPullRequestActivityInfo> values;
-    
     private Integer pagelen;
-
     private Integer size;
+    private String next;
     
-    public BitbucketPullRequestBaseActivityEnvelope()
-    {
-        super();
-    }
-
     public List<BitbucketPullRequestActivityInfo> getValues()
     {
         return values;
@@ -75,10 +68,12 @@ public class BitbucketPullRequestBaseActivityEnvelope implements Serializable
         this.size = size;
     }
 
-   
+	public String getNext() {
+		return next;
+	}
 
-   
-    
-
+	public void setNext(String next) {
+		this.next = next;
+	}
 }
 

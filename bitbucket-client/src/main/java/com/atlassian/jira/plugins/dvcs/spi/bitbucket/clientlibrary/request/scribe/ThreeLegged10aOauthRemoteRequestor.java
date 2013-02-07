@@ -12,6 +12,8 @@ import org.scribe.model.Token;
 import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ApiProvider;
+
 /**
  * ThreeLegged10aOauthRemoteRequestor
  * 
@@ -42,9 +44,9 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
      * @param accessTokenWithSecret
      *            the access token = TOKEN + '&' + TOKEN_SECRET
      */
-    public ThreeLegged10aOauthRemoteRequestor(String apiUrl, String key, String secret, String accessTokenWithSecret)
+    public ThreeLegged10aOauthRemoteRequestor(ApiProvider apiProvider, String key, String secret, String accessTokenWithSecret)
     {
-        super(apiUrl, key, secret);
+        super(apiProvider, key, secret);
         this.accessTokenWithSecret = accessTokenWithSecret;
         this.authHeaderCreator = new HeaderExtractorImpl();
     }

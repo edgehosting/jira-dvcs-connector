@@ -15,17 +15,12 @@ import java.util.List;
 public class BitbucketPullRequestCommitEnvelope implements Serializable
 {
     private static final long serialVersionUID = 8212352604704981087L;
-
     private List<BitbucketPullRequestCommit> values;
-
     private Integer size;
-
     private Integer pagelen;
-
     private Integer page;
-
     private String next;
-
+    
     public BitbucketPullRequestCommitEnvelope()
     {
         super();

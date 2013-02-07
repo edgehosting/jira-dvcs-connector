@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.java.ao.Entity;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 
@@ -39,7 +40,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     private final ActiveObjects activeObjects;
 
     private static final Class<RepositoryActivityPullRequestMapping>[] ALL_ACTIVITY_TABLES = new Class[] {
-            RepositoryActivityPullRequestCommentMapping.class, RepositoryActivityPullRequestLikeMapping.class,
+            RepositoryActivityPullRequestCommentMapping.class, RepositoryActivityPullRequestApprovalMapping.class,
             RepositoryActivityPullRequestUpdateMapping.class };
 
     public RepositoryActivityDaoImpl(ActiveObjects activeObjects)
@@ -206,23 +207,26 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                         }
                         // drop pull requests
                         HashSet<Integer> deletedIds = new java.util.HashSet<Integer>();
-                        deleteFromTableByQuery(RepositoryActivityPullRequestMapping.class,
+                        deleteFromTableByQuery(RepositoryPullRequestMapping.class,
                                 Query
                                 .select()
-                                .from(RepositoryActivityPullRequestMapping.class)
-                                .where(RepositoryActivityPullRequestMapping.REPO_SLUG + " = ?",
+                                .from(RepositoryPullRequestMapping.class)
+                                .where(RepositoryPullRequestMapping.TO_REPO_SLUG + " = ?",
                                         new Object[] { forRepository.getSlug() })
                                         , deletedIds);
                         
                         // drop issue keys to PR mappings
-                        deleteFromTableByQuery(RepositoryPullRequestIssueKeyMapping.class,
-                                Query
-                                .select()
-                                .from(RepositoryPullRequestIssueKeyMapping.class)
-                                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds) +")",
-                                        new Object[] {  })
-                                        , null);
-                        return null;
+                        if (!deletedIds.isEmpty())
+                        {
+	                        deleteFromTableByQuery(RepositoryPullRequestIssueKeyMapping.class,
+	                                Query
+	                                .select()
+	                                .from(RepositoryPullRequestIssueKeyMapping.class)
+	                                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds) +")",
+	                                        new Object[] {  })
+	                                        , null);
+                        }
+	                    return null;
                     }
                 });
 
@@ -234,13 +238,13 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
 
-    private void deleteFromTableByQuery(final Class activityTable, Query query, final Set<Integer> deletedIds)
+    private <T extends Entity> void deleteFromTableByQuery(final Class<T> activityTable, Query query, final Set<Integer> deletedIds)
     {
         activeObjects.stream(activityTable, query,
-                new EntityStreamCallback<RepositoryActivityPullRequestMapping, Integer>()
+                new EntityStreamCallback<T, Integer>()
                 {
                     @Override
-                    public void onRowRead(RepositoryActivityPullRequestMapping mapping)
+                    public void onRowRead(T mapping)
                     {
                         if (deletedIds != null) {
                             deletedIds.add(mapping.getID());

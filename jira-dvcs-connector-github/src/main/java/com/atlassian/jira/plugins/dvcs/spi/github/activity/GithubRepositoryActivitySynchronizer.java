@@ -3,8 +3,11 @@ package com.atlassian.jira.plugins.dvcs.spi.github.activity;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -14,7 +17,11 @@ import org.eclipse.egit.github.core.event.EventPayload;
 import org.eclipse.egit.github.core.service.EventService;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubEvent;
@@ -27,6 +34,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestLineCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
+import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
@@ -40,45 +48,51 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
-     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, RepositoryActivityDao)
      */
     private final ActiveObjects activeObjects;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
-     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, RepositoryActivityDao)
      */
     private final GithubClientProvider githubClientProvider;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
-     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, RepositoryActivityDao)
      */
     private final GitHubEventProcessorAggregator<EventPayload> gitHubEventProcessorAggregator;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
-     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, RepositoryActivityDao)
      */
     private final GitHubEventService gitHubEventService;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
-     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, RepositoryActivityDao)
      */
     private final GitHubPullRequestService gitHubPullRequestService;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
-     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, RepositoryActivityDao)
      */
     private final GitHubPullRequestCommentService gitHubPullRequestCommentService;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
-     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService)
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, RepositoryActivityDao)
      */
     private final GitHubPullRequestLineCommentService gitHubPullRequestLineCommentService;
+
+    /**
+     * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
+     *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, RepositoryActivityDao)
+     */
+    private final RepositoryActivityDao repositoryActivityDao;
 
     /**
      * Constructor.
@@ -97,6 +111,8 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
      *            injected {@link GitHubPullRequestCommentService} dependency
      * @param gitHubPullRequestLineCommentService
      *            injected {@link GitHubPullRequestLineCommentService} dependency
+     * @param repositoryActivityDao
+     *            injected {@link RepositoryActivityDao} dependency
      */
     public GithubRepositoryActivitySynchronizer(//
             ActiveObjects activeObjects, //
@@ -105,7 +121,8 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             GitHubEventService gitHubEventService, //
             GitHubPullRequestService gitHubPullRequestService, //
             GitHubPullRequestCommentService gitHubPullRequestCommentService, //
-            GitHubPullRequestLineCommentService gitHubPullRequestLineCommentService //
+            GitHubPullRequestLineCommentService gitHubPullRequestLineCommentService, //
+            RepositoryActivityDao repositoryActivityDao //
     )
     {
         this.activeObjects = activeObjects;
@@ -115,6 +132,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         this.gitHubPullRequestService = gitHubPullRequestService;
         this.gitHubPullRequestCommentService = gitHubPullRequestCommentService;
         this.gitHubPullRequestLineCommentService = gitHubPullRequestLineCommentService;
+        this.repositoryActivityDao = repositoryActivityDao;
     }
 
     /**
@@ -176,12 +194,25 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         }
 
         // marks new save point
-        GitHubEvent last = gitHubEventService.getLast();
-        if (last != null)
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
-            last.setSavePoint(true);
-            gitHubEventService.save(last);
-        }
+
+            @Override
+            public Void doInTransaction()
+            {
+                GitHubEvent last = gitHubEventService.getLast();
+                if (last != null)
+                {
+                    last.setSavePoint(true);
+                    gitHubEventService.save(last);
+                }
+                
+                return null;
+            }
+            
+        });
+        
+        repositoryActivityDao.removeAll(forRepository);
 
         // dump
         String issueKey = null;
@@ -198,8 +229,15 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
         for (GitHubPullRequest gitHubPullRequest : gitHubPullRequestService.getGitHubPullRequest(issueKey))
         {
+            RepositoryPullRequestMapping repositoryPullRequest = getRepositoryPullRequest(gitHubPullRequest);
+
             for (GitHubPullRequestAction gitHubPullRequestAction : gitHubPullRequest.getActions())
             {
+                Map<String, Object> activity = new HashMap<String, Object>();
+                map(activity, gitHubPullRequest, repositoryPullRequest);
+                map(activity, gitHubPullRequestAction);
+                repositoryActivityDao.saveActivity(activity);
+
                 dump.put(gitHubPullRequestAction.getCreatedAt(), //
                         gitHubPullRequestAction.getCreatedBy().getName() // name
                                 + " " + gitHubPullRequestAction.getAction().name() // action
@@ -238,4 +276,39 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         }
         System.out.println("==== End of: Activity dump ====");
     }
+
+    RepositoryPullRequestMapping getRepositoryPullRequest(GitHubPullRequest source)
+    {
+        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestById(source.getId(), source.getBaseRepository().getName());
+        if (result != null)
+        {
+            return result;
+        }
+
+        Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(source.getTitle());
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(RepositoryPullRequestMapping.LOCAL_ID, source.getId());
+        params.put(RepositoryPullRequestMapping.PULL_REQUEST_NAME, source.getTitle());
+        params.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
+        params.put(RepositoryPullRequestMapping.TO_REPO_SLUG, source.getBaseRepository().getName());
+        result = repositoryActivityDao.savePullRequest(params, issueKeys);
+
+        return result;
+    }
+
+    void map(Map<String, Object> activity, GitHubPullRequest pullRequest, RepositoryPullRequestMapping repositoryPullRequest)
+    {
+        activity.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, repositoryPullRequest.getID());
+        activity.put(RepositoryActivityPullRequestMapping.REPO_SLUG, pullRequest.getBaseRepository().getName());
+    }
+
+    void map(Map<String, Object> activity, GitHubPullRequestAction action)
+    {
+        activity.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
+        activity.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, action.getCreatedAt());
+        activity.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, action.getCreatedBy().getLogin());
+        activity.put(RepositoryActivityPullRequestUpdateMapping.STATUS, action.getAction().name());
+    }
+
 }

@@ -72,7 +72,7 @@ public class BitbucketPullRequestActivityEnvelopeDeserializer implements JsonDes
     }
     private JsonElement asLike(JsonObject jsonObject)
     {
-        return jsonObject.get("like");
+        return jsonObject.get("approval");
     }
     private JsonElement asUpdate(JsonObject jsonObject)
     {

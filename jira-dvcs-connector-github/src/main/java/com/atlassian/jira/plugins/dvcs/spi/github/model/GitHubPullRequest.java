@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.model;
 
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,9 +18,9 @@ public class GitHubPullRequest
     private int id;
 
     /**
-     * @see #getSynchronizedAt()
+     * @see #getBaseRepository()
      */
-    private Date synchronizedAt;
+    private GitHubRepository baseRepository;
 
     /**
      * @see #getGitHubId()
@@ -32,6 +31,11 @@ public class GitHubPullRequest
      * @see #getTitle()
      */
     private String title;
+
+    /**
+     * @see #getUrl()
+     */
+    private String url;
 
     /**
      * @see #getActions()
@@ -63,20 +67,20 @@ public class GitHubPullRequest
     }
 
     /**
-     * @return date when was last synchronized.
+     * @return Base repository on which will be this pull request applied.
      */
-    public Date getSynchronizedAt()
+    public GitHubRepository getBaseRepository()
     {
-        return synchronizedAt;
+        return baseRepository;
     }
 
     /**
-     * @param synchronizedAt
-     *            {@link #setSynchronizedAt(Date)}
+     * @param baseRepository
+     *            {@link #getBaseRepository()}
      */
-    public void setSynchronizedAt(Date synchronizedAt)
+    public void setBaseRepository(GitHubRepository baseRepository)
     {
-        this.synchronizedAt = synchronizedAt;
+        this.baseRepository = baseRepository;
     }
 
     /**
@@ -128,6 +132,23 @@ public class GitHubPullRequest
     public void setActions(List<GitHubPullRequestAction> actions)
     {
         this.actions = actions;
+    }
+
+    /**
+     * @return URL of repository
+     */
+    public String getUrl()
+    {
+        return url;
+    }
+
+    /**
+     * @param url
+     *            {@link #getUrl()}
+     */
+    public void setUrl(String url)
+    {
+        this.url = url;
     }
 
 }

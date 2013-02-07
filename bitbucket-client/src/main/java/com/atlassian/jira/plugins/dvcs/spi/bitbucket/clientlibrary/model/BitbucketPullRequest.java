@@ -26,11 +26,11 @@ public class BitbucketPullRequest implements Serializable, HasMessages
     
     private String description;
 
-    private String href;
-
     private BitbucketAccount user;
 
     private BitbucketPullRequestCommitInfo commits;
+    
+    private BitbucketPullRequestLinks links;
 
     //
     private transient List<BitbucketPullRequestCommit> commitsDetails;
@@ -68,16 +68,6 @@ public class BitbucketPullRequest implements Serializable, HasMessages
     public void setUser(BitbucketAccount user)
     {
         this.user = user;
-    }
-
-    public String getHref()
-    {
-        return href;
-    }
-
-    public void setHref(String href)
-    {
-        this.href = href;
     }
 
     public BitbucketPullRequestCommitInfo getCommits()
@@ -128,4 +118,11 @@ public class BitbucketPullRequest implements Serializable, HasMessages
         this.description = description;
     }
 
+	public BitbucketPullRequestLinks getLinks() {
+		return links;
+	}
+
+	public void setLinks(BitbucketPullRequestLinks links) {
+		this.links = links;
+	}
 }
