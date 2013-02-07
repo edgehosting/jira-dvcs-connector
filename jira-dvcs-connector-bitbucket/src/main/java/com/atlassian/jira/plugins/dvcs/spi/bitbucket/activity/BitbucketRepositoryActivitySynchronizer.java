@@ -65,6 +65,8 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         Iterable<BitbucketPullRequestActivityInfo> activities = pullRestpoint.getRepositoryActivity(
                 forRepository.getOrgName(), forRepository.getSlug(), forRepository.getActivityLastSync());
 
+        Date lastActivitySyncDate = forRepository.getActivityLastSync();
+        
         //
         // check whether there's some interesting issue keys in activity
         // and persist it if yes
@@ -72,10 +74,21 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         for (BitbucketPullRequestActivityInfo info : activities)
         {
             processActivity(info, forRepository, pullRestpoint);
+            Date activityDate = info.getActivity().extractDate();
+            if (lastActivitySyncDate == null)
+            {
+            	lastActivitySyncDate = activityDate;
+            } else
+            {
+            	if (activityDate!=null && activityDate.after(lastActivitySyncDate))
+            	{
+            		lastActivitySyncDate = activityDate;
+            	}
+            }
         }
 
         // { finally
-        repositoryDao.setLastActivitySyncDate(forRepository.getId(), new Date() /* ? TODO last success saved activity date ? */);
+        repositoryDao.setLastActivitySyncDate(forRepository.getId(), lastActivitySyncDate);
     }
 
     // -------------------------------------------------------------------------------------------------------
