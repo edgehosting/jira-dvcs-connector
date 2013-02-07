@@ -16,6 +16,7 @@ public class BitbucketPullRequestCommitIterator implements Iterator<BitbucketPul
 {
 
     // configs
+	private int requestLimit = 30;
     private BitbucketPullRequestCommitEnvelope currentPage = null;
 
     // services
@@ -39,13 +40,13 @@ public class BitbucketPullRequestCommitIterator implements Iterator<BitbucketPul
         // not initialized
         if (currentPage == null)
         {
-            readFrame();
+            readPage();
         }
 
         return !currentPage.getValues().isEmpty();
     }
 
-    private void readFrame()
+    private void readPage()
     {
         String url = currentPage == null ? urlIncludingApi : currentPage.getNext();
         // maybe we're just at the end
@@ -62,7 +63,7 @@ public class BitbucketPullRequestCommitIterator implements Iterator<BitbucketPul
     {
         if (currentPage.getValues().isEmpty())
         {
-            readFrame();
+            readPage();
         }
 
         if (currentPage.getValues().isEmpty())
@@ -73,11 +74,11 @@ public class BitbucketPullRequestCommitIterator implements Iterator<BitbucketPul
         BitbucketPullRequestCommit currentItem = currentPage.getValues().remove(0);
 
         //
-        // possibly read a next frame
+        // possibly read a next page
         //
         if (currentPage.getValues().isEmpty())
         {
-            readFrame();
+            readPage();
         }
 
         return currentItem;
@@ -104,6 +105,7 @@ public class BitbucketPullRequestCommitIterator implements Iterator<BitbucketPul
     private HashMap<String, String> createRequestParams()
     {
         HashMap<String, String> params = new HashMap<String, String>();
+        params.put("pagelen", requestLimit + "");
         return params;
     }
 

@@ -591,6 +591,13 @@
 	<component key="repositoryActivityDaoImpl" name="Repository Activity Dao Impl"
 		class="com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDaoImpl" />
 		
-		
+    <!-- Activity rendering -->
+	<component key="aggregatedIssueActionFactory" name="AggregatedIssueActionFactory"
+		class="com.atlassian.jira.plugins.dvcs.webwork.render.AggregatedIssueActionFactory" 
+		interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
+
+	<component key="changesetIssueActionFactory" name="ChangesetIssueActionFactory"
+		class="com.atlassian.jira.plugins.dvcs.webwork.render.ChangesetIssueActionFactory" 
+		interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
 
 </atlassian-plugin>

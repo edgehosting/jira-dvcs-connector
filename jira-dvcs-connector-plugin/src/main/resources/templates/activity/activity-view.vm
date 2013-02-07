@@ -1,7 +1,4 @@
-<div class="CommitContainer">
-<ol id="activity-list">
-
-<li class="activity-item">
+<div class="dvcs activity-item">
   <article>
     <header>
       <div class="summary">
@@ -13,8 +10,9 @@
       </div>
     </header>
   </article>
-</li>
-<li class="activity-item">
+</div>
+
+<div class="dvcs activity-item">
   <article>
     <header>
       <div class="summary">
@@ -26,8 +24,9 @@
       </div>
     </header>
   </article>
-</li>
-<li class="activity-item">
+</div>
+
+<div class="dvcs activity-item">
   <article>
     <header>
       <div class="summary">
@@ -39,8 +38,8 @@
       </div>
     </header>
   </article>
-</li>
-<li class="activity-item">
+</div>
+<div class="dvcs activity-item">
   <article>
     <header>
       <div class="summary">
@@ -88,8 +87,8 @@
       </tbody>
     </table>
   </div>
-</li>
-<li class="comment">
+</div>
+<div class="dvcs comment">
     <article data-comment-id="16415">
         <header>
             <a href="/nvenegas"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/283225c91c158f3a10927e9d76a71be7?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -99,8 +98,8 @@
         </header>
           <div class="comment-content">&nbsp;</div>
     </article>
-</li>
-<li class="activity-item">
+</div>
+<div class="dvcs activity-item">
   <article>
     <header>
       <div class="summary">
@@ -112,8 +111,8 @@
       </div>
     </header>
   </article>
-</li>
-<li class="comment">
+</div>
+<div class="dvcs comment">
     <article data-comment-id="16403">
         <header>
             <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -123,8 +122,8 @@
         </header>
         <div class="comment-content">&nbsp;</div>
     </article>
-</li>
-<li class="activity-item">
+</div>
+<div class="dvcs activity-item">
   <article>
     <header>
       <div class="summary">
@@ -195,8 +194,8 @@
 </script>
     </div>
   </article>
-</li>
-<li class="activity-item">
+</div>
+<div class="dvcs activity-item">
   <article>
     <header>
       <div class="summary">
@@ -297,13 +296,9 @@
 </script>
     </div>
   </article>
-</li>
+</div>
 
-
-
-
-
-<li class="comment">
+<div class="dvcs comment">
         <article id="comment-16411" data-comment-id="16411">
             <header>
                 <a href="/brodie"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/bf177bdb506069ef00253f61a9a6f015?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -323,7 +318,7 @@
                 </ul>
         </article>
             <ol class="child-comments iterable">
-<li class="comment">
+<div class="dvcs comment">
         <article id="comment-16417" data-comment-id="16417">
             <header>
                 <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -347,7 +342,7 @@
                 </ul>
         </article>
             <ol class="child-comments iterable">
-<li class="comment">
+<div class="dvcs comment">
         <article id="comment-16440" data-comment-id="16440">
             <header>
                 <a href="/brodie"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/bf177bdb506069ef00253f61a9a6f015?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -367,7 +362,7 @@
                 </ul>
         </article>
             <ol class="child-comments iterable">
-<li class="comment">
+<div class="dvcs comment">
         <article id="comment-16443"  data-comment-id="16443">
             <header>
                 <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -388,7 +383,7 @@
                 </ul>
         </article>
             <ol class="child-comments iterable">
-<li class="comment">
+<div class="dvcs comment">
         <article id="comment-16501" data-comment-id="16501">
             <header>
                 <a href="/shaldane"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/99a1bc597e528ac60324149da1819c73?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -417,8 +412,8 @@
             </ol>
 </li>
             </ol>
-</li>
-<li class="comment">
+</div>
+<div class="dvcs comment">
         <article id="comment-16500" data-comment-id="16500">
             <header>
                 <a href="/juliushocman"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/23d0d498ca487a87a56289478380dd85?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
@@ -439,28 +434,9 @@ This will be fixed in the next Connector release but existing customers will hav
         </article>
             <ol class="child-comments iterable">
             </ol>
-</li>
-
-
-
-
-
-
-
-
-</ol>
-
+</div>
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+  
     <!-- Gravatar -->
     <div class="CommitContainerMargin">
         <a href="$user_url" target="_blank">
@@ -487,4 +463,3 @@ This will be fixed in the next Connector release but existing customers will hav
             </div>
         </div>
     </div>
-</div>

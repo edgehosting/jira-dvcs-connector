@@ -11,6 +11,7 @@ import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ApiProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BaseRemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 
@@ -35,16 +36,16 @@ public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
 
     protected final String secret;
 
-    public ScribeOauthRemoteRequestor(String apiUrl, String key, String secret)
+    public ScribeOauthRemoteRequestor(ApiProvider apiProvider, String key, String secret)
     {
-        super(apiUrl);
+        super(apiProvider);
         this.key = key;
         this.secret = secret;
     }
 
     protected OAuthService createOauthService()
     {
-        return new ServiceBuilder().provider(new OAuthBitbucket10aApi(apiUrl, isTwoLegged())).apiKey(key)
+        return new ServiceBuilder().provider(new OAuthBitbucket10aApi(apiProvider.getApiUrl(), isTwoLegged())).apiKey(key)
                 .signatureType(SignatureType.Header).apiSecret(secret).debugStream(new DebugOutputStream(log)).build();
     }
     

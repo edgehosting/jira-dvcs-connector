@@ -62,14 +62,14 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         //
         // get activities iterator
         //
-        Iterable<BitbucketPullRequestActivityInfo> activites = pullRestpoint.getRepositoryActivity(
+        Iterable<BitbucketPullRequestActivityInfo> activities = pullRestpoint.getRepositoryActivity(
                 forRepository.getOrgName(), forRepository.getSlug(), forRepository.getActivityLastSync());
 
         //
         // check whether there's some interesting issue keys in activity
         // and persist it if yes
         //
-        for (BitbucketPullRequestActivityInfo info : activites)
+        for (BitbucketPullRequestActivityInfo info : activities)
         {
             processActivity(info, forRepository, pullRestpoint);
         }
@@ -90,7 +90,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         RepositoryPullRequestMapping localPullRequest = ensurePullRequestPresent(forRepository, pullRestpoint, info);
         Integer pullRequestId = localPullRequest.getID();
 
-        dao.saveActivity(toDaoModel(info.getActivity(), pullRequestId));
+        dao.saveActivity(toDaoModel(info.getActivity(), forRepository, pullRequestId));
     }
 
     // TODO improve performance here [***] , as this is gonna to call often 
@@ -157,9 +157,9 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         return ret;
     }
 
-    private Map<String, Object> toDaoModel(BitbucketPullRequestBaseActivity activity, Integer pullRequestId)
+    private Map<String, Object> toDaoModel(BitbucketPullRequestBaseActivity activity, Repository forRepository, Integer pullRequestId)
     {
-        Map<String, Object> ret = getAsCommonProperties(activity, pullRequestId);
+        Map<String, Object> ret = getAsCommonProperties(activity, forRepository, pullRequestId);
 
         if (activity instanceof BitbucketPullRequestCommentActivity)
         {
@@ -181,30 +181,14 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         return ret;
     }
 
-    private HashMap<String, Object> getAsCommonProperties(BitbucketPullRequestBaseActivity activity,
-            Integer pullRequestId)
+    private HashMap<String, Object> getAsCommonProperties(BitbucketPullRequestBaseActivity activity, Repository forRepository, Integer pullRequestId)
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
-        ret.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, extractDate(activity));
+        ret.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, activity.extractDate());
         ret.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, activity.getUser().getUsername());
         ret.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, pullRequestId);
-        ret.put(RepositoryActivityPullRequestMapping.REPO_SLUG, activity.getRepository().getSlug());
+        ret.put(RepositoryActivityPullRequestMapping.REPO_SLUG, forRepository.getSlug());
         return ret;
-    }
-
-    private Date extractDate(BitbucketPullRequestBaseActivity activity)
-    {
-        Date date = activity.getUpdatedOn();
-        
-        // fallbacks - order depends
-        if (date == null) {
-            date = activity.getDate();
-        }
-        if (date == null) {
-            date = activity.getCreatedOn();
-        }
-        
-        return date;
     }
 
     private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Set<String> issueKeys, Repository forRepo)
@@ -220,7 +204,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     private void fillCommits(BitbucketPullRequestActivityInfo activityInfo, PullRequestRemoteRestpoint pullRestpoint)
     {
         Iterable<BitbucketPullRequestCommit> commitsIterator = pullRestpoint.getPullRequestCommits(activityInfo
-                .getPullRequest().getCommits().getHref());
+                .getPullRequest().getLinks().getCommitsHref());
         List<BitbucketPullRequestCommit> prCommits = new ArrayList<BitbucketPullRequestCommit>();
         for (BitbucketPullRequestCommit bitbucketPullRequestCommit : commitsIterator)
         {

@@ -6,7 +6,8 @@ import net.java.ao.Entity;
 import net.java.ao.Polymorphic;
 
 @Polymorphic
-public interface RepositoryActivityPullRequestMapping extends Entity {
+public interface RepositoryActivityPullRequestMapping extends Entity 
+{
     
     String ENTITY_TYPE = "ENTITY_TYPE";
 

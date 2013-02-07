@@ -1,10 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
@@ -17,15 +15,13 @@ import com.google.gson.reflect.TypeToken;
 public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketPullRequestActivityInfo>,
         Iterable<BitbucketPullRequestActivityInfo>
 {
-
     // configs
-    private int start = 0;
     private int requestLimit = 30;
     private final Date upToDate;
     private boolean wasDateOver = false;
     private final String forUser;
     private final String forRepoSlug;
-    private List<BitbucketPullRequestActivityInfo> currentFrame = null;
+    private BitbucketPullRequestBaseActivityEnvelope currentPage = null;
 
     // services
     private final RemoteRequestor requestor;
@@ -43,53 +39,59 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     public boolean hasNext()
     {
         // not initialized
-        if (currentFrame == null)
+        if (currentPage == null)
         {
-            readFrame();
+            readPage();
         }
 
-        return !currentFrame.isEmpty();
+    	if (wasDateOver)
+    	{
+    		return false;
+    	}
+        
+        return !currentPage.getValues().isEmpty();
     }
 
-    private void readFrame()
+    private void readPage()
     {
         if (wasDateOver)
         {
-
-            this.currentFrame = new ArrayList<BitbucketPullRequestActivityInfo>();
-
+            this.currentPage.getValues().clear();
         } else
         {
-
-            requestor.get(createUrl(), createRequestParams(), createResponseCallback());
-            start++;
-
+        	String url = currentPage == null ? createUrl() : currentPage.getNext();
+        	if (url == null || url.trim().isEmpty())
+        	{
+        		return;
+        	}
+            requestor.get(url, createRequestParams(), createResponseCallback());
         }
     }
 
     @Override
     public BitbucketPullRequestActivityInfo next()
     {
-        if (currentFrame.isEmpty())
-        {
-            readFrame();
-        }
-
-        if (currentFrame.isEmpty())
-        {
-            throw new NoSuchElementException();
-        }
-
-        BitbucketPullRequestActivityInfo currentItem = currentFrame.remove(0);
+    	if (!hasNext())
+    	{
+    		throw new NoSuchElementException();
+    	}
+    	
+        BitbucketPullRequestActivityInfo currentItem = currentPage.getValues().remove(0);
 
         //
-        // possibly read a next frame
+        // possibly read a next page
         //
-        if (currentFrame.isEmpty())
+        if (currentPage.getValues().isEmpty())
         {
-            readFrame();
+            readPage();
         }
-
+        
+        if (!currentPage.getValues().isEmpty())
+        {
+        	BitbucketPullRequestActivityInfo nextItem = currentPage.getValues().get(0);
+        	checkDate(nextItem.getActivity());
+        }
+        
         return currentItem;
     }
 
@@ -111,42 +113,42 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     // ------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------
 
+    private void checkDate(BitbucketPullRequestBaseActivity activity)
+    {
+    	Date date = activity.extractDate();
+    	if (date!=null && !date.after(upToDate))
+    	{
+            wasDateOver = true;
+    	}
+    }
+    
     private HashMap<String, String> createRequestParams()
     {
         HashMap<String, String> params = new HashMap<String, String>();
-        params.put("start", start + "");
-        params.put("limit", requestLimit + "");
+        params.put("pagelen", requestLimit + "");
         return params;
     }
 
-    private ResponseCallback<List<BitbucketPullRequestActivityInfo>> createResponseCallback()
+    private ResponseCallback<BitbucketPullRequestBaseActivityEnvelope> createResponseCallback()
     {
-        return new ResponseCallback<List<BitbucketPullRequestActivityInfo>>()
+        return new ResponseCallback<BitbucketPullRequestBaseActivityEnvelope>()
         {
             @Override
-            public List<BitbucketPullRequestActivityInfo> onResponse(RemoteResponse response)
+            public BitbucketPullRequestBaseActivityEnvelope onResponse(RemoteResponse response)
             {
                 BitbucketPullRequestBaseActivityEnvelope remote = 
                         ClientUtils.fromJson(
                                                                   response.getResponse(), 
                                                                   new TypeToken<BitbucketPullRequestBaseActivityEnvelope>(){}.getType()
                                                               );
-                
-                List<BitbucketPullRequestActivityInfo> ret = new ArrayList<BitbucketPullRequestActivityInfo>();
 
-                for (BitbucketPullRequestActivityInfo remoteActivity : remote.getValues())
+                if (remote != null && remote.getValues() != null && !remote.getValues().isEmpty())
                 {
-                    if (remoteActivity.getActivity().getUpdatedOn().after(upToDate))
-                    {
-                        ret.add(remoteActivity);
-                    } else
-                    {
-                        wasDateOver = true;
-                    }
+                	checkDate(remote.getValues().get(0).getActivity());
                 }
-                //
-                BitbucketPullRequestActivityIterator.this.currentFrame = ret;
-                return ret;
+
+                BitbucketPullRequestActivityIterator.this.currentPage = remote;
+                return remote;
             }
 
         };
@@ -156,5 +158,4 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     {
         return String.format("/repositories/%s/%s/pullrequests/activity", forUser, forRepoSlug);
     }
-    
 }
