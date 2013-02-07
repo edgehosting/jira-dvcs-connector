@@ -3,14 +3,14 @@ package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
@@ -34,16 +34,17 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
 	private String accessToken = "";
 
-	private final GithubOAuth githubOAuth;
 	private final OrganizationService organizationService;
 	private final GithubOAuthUtils githubOAuthUtils;
+
+    private final OAuthStore oAuthStore;
 	
 
     public AddGithubOrganization(OrganizationService organizationService,
-            @Qualifier("githubOAuth") GithubOAuth githubOAuth, GithubOAuthUtils githubOAuthUtils)
+            OAuthStore oAuthStore, GithubOAuthUtils githubOAuthUtils)
 	{
 		this.organizationService = organizationService;
-		this.githubOAuth = githubOAuth;
+        this.oAuthStore = oAuthStore;
 		this.githubOAuthUtils = githubOAuthUtils;
 	}
 
@@ -63,7 +64,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
 	private void configureOAuth()
 	{
-		githubOAuth.setClient(null, oauthClientId, oauthSecret);
+	    oAuthStore.store(Host.GITHUB, oauthClientId, oauthSecret);
 	}
 
 	private String redirectUserToGithub()

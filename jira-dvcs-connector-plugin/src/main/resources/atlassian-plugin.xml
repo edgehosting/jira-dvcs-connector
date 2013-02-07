@@ -110,6 +110,10 @@
 		class="com.atlassian.jira.plugins.dvcs.upgrade.To_02_ProjectBasedRepositoryLinksUpgradeTask">
 		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
 	</component>
+	<component key="oAuthStorageUpgradeTask" name="Migrate OAuth details to new location" public="true"
+		class="com.atlassian.jira.plugins.dvcs.upgrade.To_03_UpgradeOAuthDetails">
+		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
+	</component>
 
     <component key="bitbucketLinker" name="bitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinkerImpl">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
@@ -306,20 +310,9 @@
         <description>dvcsCommunicatorProvider</description>
     </component>
 
-    <component key="githubOAuth" name="githubOAuth" class="com.atlassian.jira.plugins.dvcs.spi.github.DefaultGithubOAuth">
-        <description>githubOAuth</description>
-        <interface>com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth</interface>
-    </component>
-    <component key="githubEnterpriseOAuth" name="githubEnterpriseOAuth" class="com.atlassian.jira.plugins.dvcs.spi.github.DefaultGithubEnterpriseOAuth">
-        <description>githubEnterpriseOAuth</description>
-        <interface>com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth</interface>
-    </component>
-
-    <component key="bitbucketOAuth" name="bitbucketOAuth"
-               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketOAuth">
-        <description>bitbucketOAuth</description>
-        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth</interface>
-    </component>
+	<component key="oAuthStore" name="oAuthStore"
+		class="com.atlassian.jira.plugins.dvcs.auth.DefaultOAuthStore"
+		interface="com.atlassian.jira.plugins.dvcs.auth.OAuthStore" />
 
     <component key="organizationDao" name="organizationDao"
                class="com.atlassian.jira.plugins.dvcs.dao.impl.OrganizationDaoImpl">

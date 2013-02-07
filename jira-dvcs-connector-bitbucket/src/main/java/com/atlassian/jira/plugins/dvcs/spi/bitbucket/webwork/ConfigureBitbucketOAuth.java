@@ -3,32 +3,27 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
 
 public class ConfigureBitbucketOAuth extends JiraWebActionSupport
 {
-	private static final long serialVersionUID = 4351302596219869689L;
-
-	private final Logger logger = LoggerFactory.getLogger(ConfigureBitbucketOAuth.class);
-	
-    private final BitbucketOAuth bitbucketOAuth;
-    private final ApplicationProperties applicationProperties;
-    
+	private final Logger log = LoggerFactory.getLogger(ConfigureBitbucketOAuth.class);
     private String forceClear;
-
+    private final OAuthStore oAuthStore;
+    private final ApplicationProperties applicationProperties;
     private final FeatureManager featureManager;
 
-    public ConfigureBitbucketOAuth(@Qualifier("bitbucketOAuth") BitbucketOAuth bitbucketOAuth,
+    public ConfigureBitbucketOAuth(OAuthStore oAuthStore,
             ApplicationProperties applicationProperties, FeatureManager featureManager)
     {
-        this.bitbucketOAuth = bitbucketOAuth;
+        this.oAuthStore = oAuthStore;
         this.applicationProperties = applicationProperties;
         this.featureManager = featureManager;
     }
@@ -63,18 +58,18 @@ public class ConfigureBitbucketOAuth extends JiraWebActionSupport
 
     private void addClientIdentifiers()
     {
-        bitbucketOAuth.setClient(clientID, clientSecret);
+        oAuthStore.store(Host.BITBUCKET, clientID, clientSecret);
         messages = "Bitbucket client credentials set correctly.";
-    }
-
-    public String getSavedClientSecret()
-    {
-        return bitbucketOAuth.getClientSecret();
     }
 
     public String getSavedClientID()
     {
-        return bitbucketOAuth.getClientId();
+        return oAuthStore.getClientId(Host.BITBUCKET.id);
+    }
+    
+    public String getSavedClientSecret()
+    {
+        return oAuthStore.getSecret(Host.BITBUCKET.id);
     }
 
     // Client ID 

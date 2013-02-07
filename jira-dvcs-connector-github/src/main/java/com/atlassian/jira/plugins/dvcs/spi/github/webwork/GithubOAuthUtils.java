@@ -17,22 +17,22 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException.InvalidResponseException;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
-import com.atlassian.sal.api.ApplicationProperties;
 
 public class GithubOAuthUtils
 {
 
     private final Logger log = LoggerFactory.getLogger(GithubOAuthUtils.class);
+    private final String baseUrl;
+    private final String clientId;
+    private final String secret;
 
-    private final GithubOAuth githubOAuth;
-    private final ApplicationProperties applicationProperties;
 
-    public GithubOAuthUtils(GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
+    public GithubOAuthUtils(String baseUrl, String clientId, String secret)
     {
-        this.githubOAuth = githubOAuth;
-        this.applicationProperties = applicationProperties;
+        this.baseUrl = baseUrl;
+        this.clientId = clientId;
+        this.secret = secret;
     }
 
     public String createGithubRedirectUrl(String nextAction, String url, String xsrfToken,
@@ -41,7 +41,7 @@ public class GithubOAuthUtils
         String encodedRepositoryUrl = encode(url);
 
         // Redirect back URL
-        String redirectBackUrl = applicationProperties.getBaseUrl() + "/secure/admin/" + nextAction
+        String redirectBackUrl = baseUrl + "/secure/admin/" + nextAction
                 + "!finish.jspa?url=" + encodedRepositoryUrl + "&atl_token=" + xsrfToken + "&organization="
                 + organization + "&autoLinking=" + autoLinking + "&autoSmartCommits=" + autoSmartCommits;
         String encodedRedirectBackUrl = encode(redirectBackUrl);
@@ -49,7 +49,7 @@ public class GithubOAuthUtils
         // build URL to github
         //
         String githubAuthorizeUrl = url + "/login/oauth/authorize?scope=repo&client_id="
-                + githubOAuth.getClientId() + "&redirect_uri=" + encodedRedirectBackUrl;
+                + clientId + "&redirect_uri=" + encodedRedirectBackUrl;
 
         return githubAuthorizeUrl;
     }
@@ -75,7 +75,7 @@ public class GithubOAuthUtils
         {
             String requestUrl = githubUrl + "/login/oauth/access_token";
 
-            String urlParameters = "client_id=" + githubOAuth.getClientId() + "&client_secret=" + githubOAuth.getClientSecret() + "&code=" + code;
+            String urlParameters = "client_id=" + clientId + "&client_secret=" + secret + "&code=" + code;
             
             log.debug("requestAccessToken() - " + requestUrl + " with parameters " + urlParameters);
 

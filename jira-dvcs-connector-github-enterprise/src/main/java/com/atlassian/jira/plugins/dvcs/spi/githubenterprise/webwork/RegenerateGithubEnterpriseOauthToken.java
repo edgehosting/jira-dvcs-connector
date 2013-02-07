@@ -1,20 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import static com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator.GITHUB_ENTERPRISE;
 
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 import com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken;
 import com.atlassian.sal.api.ApplicationProperties;
 
 public class RegenerateGithubEnterpriseOauthToken extends RegenerateGithubOauthToken
 {
-    public RegenerateGithubEnterpriseOauthToken(OrganizationService organizationService,
-            @Qualifier("githubEnterpriseOAuth") GithubOAuth githubOAuth,
+    public RegenerateGithubEnterpriseOauthToken(OrganizationService organizationService, OAuthStore oAuthStore,
             ApplicationProperties applicationProperties)
 	{
-        super(organizationService, new GithubOAuthUtils(githubOAuth, applicationProperties));
+        super(organizationService, new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB_ENTERPRISE), oAuthStore.getSecret(GITHUB_ENTERPRISE)));
 	}
 	
     @Override

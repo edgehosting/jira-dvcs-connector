@@ -1,9 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork;
 
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
+import static com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator.GITHUB_ENTERPRISE;
 
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
+import org.apache.commons.lang.StringUtils;
+
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.spi.github.webwork.ConfigureGithubOAuth;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
@@ -14,11 +16,9 @@ public class ConfigureGithubEnterpriseOAuth extends ConfigureGithubOAuth
     // GitHub Enterprise host url
     private String hostUrl;
     
-    private static final long serialVersionUID = 5434744550819376738L;
-
-    public ConfigureGithubEnterpriseOAuth(@Qualifier("githubEnterpriseOAuth") GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
+    public ConfigureGithubEnterpriseOAuth(OAuthStore oAuthStore, ApplicationProperties applicationProperties)
     {
-        super(githubOAuth, applicationProperties);
+        super(oAuthStore, applicationProperties);
     }
 	
     @Override
@@ -60,25 +60,25 @@ public class ConfigureGithubEnterpriseOAuth extends ConfigureGithubOAuth
     @Override
     protected void addClientIdentifiers()
     {
-        githubOAuth.setClient(StringUtils.trim(hostUrl), StringUtils.trim(clientID), StringUtils.trim(clientSecret));
+        oAuthStore.store(new Host(GITHUB_ENTERPRISE, StringUtils.trim(hostUrl)), StringUtils.trim(clientID), StringUtils.trim(clientSecret));
         messages = "GitHub Host URL And Client Identifiers Set Correctly";
-    }
-
-    @Override
-    public String getSavedClientSecret()
-    {
-        return githubOAuth.getClientSecret();
     }
 
     @Override
     public String getSavedClientID()
     {
-        return githubOAuth.getClientId();
+        return oAuthStore.getClientId(GITHUB_ENTERPRISE);
+    }
+
+    @Override
+    public String getSavedClientSecret()
+    {
+        return oAuthStore.getSecret(GITHUB_ENTERPRISE);
     }
     
     public String getHostUrl()
     {
-        return githubOAuth.getHostUrl();
+        return oAuthStore.getUrl(GITHUB_ENTERPRISE);
     }
     
     public void setHostUrl(String hostUrl)

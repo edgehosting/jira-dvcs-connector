@@ -9,10 +9,11 @@ import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
@@ -35,14 +36,15 @@ public class RegenerateBitbucketOauthToken extends CommonDvcsConfigurationAction
 
     private final ApplicationProperties ap;
 
-    private final BitbucketOAuth bitbucketOauth;
+    private final OAuthStore oAuthStore;
+
 
     public RegenerateBitbucketOauthToken(OrganizationService organizationService, ApplicationProperties ap,
-            BitbucketOAuth bitbucketOauth)
+            OAuthStore oAuthStore)
     {
         this.organizationService = organizationService;
         this.ap = ap;
-        this.bitbucketOauth = bitbucketOauth;
+        this.oAuthStore = oAuthStore;
     }
 
     @Override
@@ -85,8 +87,8 @@ public class RegenerateBitbucketOauthToken extends CommonDvcsConfigurationAction
 
         Organization organizationInstance = organizationService.get(Integer.parseInt(organization), false);
 
-        ServiceBuilder sb = new ServiceBuilder().apiKey(bitbucketOauth.getClientId())
-                .signatureType(SignatureType.Header).apiSecret(bitbucketOauth.getClientSecret())
+        ServiceBuilder sb = new ServiceBuilder().apiKey(oAuthStore.getClientId(Host.BITBUCKET.id))
+                .signatureType(SignatureType.Header).apiSecret(oAuthStore.getSecret(Host.BITBUCKET.id))
                 .provider(new Bitbucket10aScribeApi(organizationInstance.getHostUrl()))
                 .debugStream(new DebugOutputStream(log));
 

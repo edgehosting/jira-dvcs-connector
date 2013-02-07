@@ -1,16 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork;
 
+import static com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator.GITHUB_ENTERPRISE;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException.InvalidResponseException;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
@@ -21,8 +23,6 @@ import com.atlassian.sal.api.ApplicationProperties;
 
 public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationAction
 {
-    private static final long serialVersionUID = -5043563666764556942L;
-
     private final Logger log = LoggerFactory.getLogger(AddGithubEnterpriseOrganization.class);
 
 	private String organization;
@@ -37,16 +37,17 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
 	private String accessToken = "";
 
-	private final GithubOAuth githubOAuth;
 	private final OrganizationService organizationService;
 	private final GithubOAuthUtils githubOAuthUtils;
 
+    private final OAuthStore oAuthStore;
+
     public AddGithubEnterpriseOrganization(OrganizationService organizationService,
-            @Qualifier("githubEnterpriseOAuth") GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
+            OAuthStore oAuthStore, ApplicationProperties applicationProperties)
 	{
 		this.organizationService = organizationService;
-		this.githubOAuth = githubOAuth;
-        this.githubOAuthUtils = new GithubOAuthUtils(githubOAuth, applicationProperties);
+        this.oAuthStore = oAuthStore;
+        this.githubOAuthUtils = new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB_ENTERPRISE), oAuthStore.getSecret(GITHUB_ENTERPRISE));
 	}
 
 	@Override
@@ -65,7 +66,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
 	private void configureOAuth()
 	{
-		githubOAuth.setClient(url, oauthClientIdGhe, oauthSecretGhe);
+        oAuthStore.store(new Host(GITHUB_ENTERPRISE, url), oauthClientIdGhe, oauthSecretGhe);
 	}
 
 	private String redirectUserToGithub()
@@ -89,7 +90,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         } else
         {
             // load saved GitHub Enterprise url
-            url = githubOAuth.getHostUrl();
+            url = oAuthStore.getUrl(GITHUB_ENTERPRISE);
         }
         
         if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
