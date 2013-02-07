@@ -37,7 +37,7 @@ public class BitbucketPullRequestLinksDeserializer implements JsonDeserializer<B
         	String href = jsonObject.get("href").getAsString();
         	if ("self".equals(rel))
         	{
-        		links.setSelfHref(href);
+        		links.setHref(href);
         	}
         	else if ("html".equals(rel))
         	{

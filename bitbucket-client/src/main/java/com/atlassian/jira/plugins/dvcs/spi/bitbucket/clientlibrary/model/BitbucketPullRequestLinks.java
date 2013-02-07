@@ -10,7 +10,7 @@ import java.io.Serializable;
 public class BitbucketPullRequestLinks implements Serializable {
 	private static final long serialVersionUID = -8503751637022859413L;
 
-	private String selfHref;
+	private String href;
 	private String htmlHref;
 	private String commitsHref;
 	private String approvalsHref;
@@ -18,14 +18,14 @@ public class BitbucketPullRequestLinks implements Serializable {
 	private String commentsHref;
 	private String activityHref;
 
-	public String getSelfHref()
+	public String getHref()
 	{
-		return selfHref;
+		return href;
 	}
 
-	public void setSelfHref(String selfHref)
+	public void setHref(String href)
 	{
-		this.selfHref = selfHref;
+		this.href = href;
 	}
 
 	public String getHtmlHref()
