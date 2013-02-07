@@ -1,14 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.activeobjects;
 
-import java.util.Date;
-
 import net.java.ao.Entity;
 import net.java.ao.OneToMany;
+import net.java.ao.schema.NotNull;
 import net.java.ao.schema.Table;
 import net.java.ao.schema.Unique;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
-import com.atlassian.jira.util.NotNull;
 
 /**
  * AO of the {@link GitHubPullRequest}.
@@ -21,14 +19,14 @@ public interface GitHubPullRequestMapping extends Entity
 {
 
     /**
-     * @see #getSynchronizedAt()
-     */
-    String COLUMN_GIT_SYNCHRONIZED_AT = "SYNCHRONIZED_AT";
-
-    /**
      * @see #getGitHubId()
      */
     String COLUMN_GIT_HUB_ID = "GIT_HUB_ID";
+
+    /**
+     * @see #getBaseRepository()
+     */
+    String COLUMN_BASE_REPOSITORY = "BASE_REPOSITORY_ID";
 
     /**
      * @see #getTitle()
@@ -36,21 +34,14 @@ public interface GitHubPullRequestMapping extends Entity
     String COLUMN_TITLE = "TITLE";
 
     /**
+     * @see #getUrl()
+     */
+    String COLUMN_URL = "URL";
+
+    /**
      * @see #getActions()
      */
-    String COLUMN_ACTIONS = "GIT_HUB";
-
-    /**
-     * @return {@link GitHubPullRequest#getSynchronizedAt()}
-     */
-    @NotNull
-    Date getSynchronizedAt();
-
-    /**
-     * @param synchronizedAt
-     *            {@link #getSynchronizedAt()}
-     */
-    void setSynchronizedAt(Date synchronizedAt);
+    String COLUMN_ACTIONS = "ACTIONS";
 
     /**
      * @return {@link GitHubPullRequest#getGitHubId()}
@@ -66,6 +57,18 @@ public interface GitHubPullRequestMapping extends Entity
     void setGitHubId(long gitHubId);
 
     /**
+     * @return {@link GitHubPullRequest#getBaseRepository()}
+     */
+    @NotNull
+    GitHubRepositoryMapping getBaseRepository();
+
+    /**
+     * @param baseRepository
+     *            {@link #getBaseRepository()}
+     */
+    void setBaseRepository(GitHubRepositoryMapping baseRepository);
+
+    /**
      * @return {@link GitHubPullRequest#getTitle()}
      */
     String getTitle();
@@ -75,6 +78,17 @@ public interface GitHubPullRequestMapping extends Entity
      *            {@link #getTitle()}
      */
     void setTitle(String title);
+
+    /**
+     * @return {@link GitHubPullRequest#getUrl()}
+     */
+    String getUrl();
+
+    /**
+     * @param url
+     *            {@link #getUrl()}
+     */
+    void setUrl(String url);
 
     /**
      * @return {@link GitHubPullRequestMapping#getActions()}

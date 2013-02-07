@@ -10,10 +10,12 @@ import net.java.ao.Query;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestActionMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
@@ -236,19 +238,31 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
      */
     private void map(Map<String, Object> target, GitHubPullRequest source)
     {
+        GitHubRepositoryMapping baseRepository = activeObjects.get(GitHubRepositoryMapping.class, source.getBaseRepository().getId());
+
         target.put(GitHubPullRequestMapping.COLUMN_GIT_HUB_ID, source.getGitHubId());
+        target.put(GitHubPullRequestMapping.COLUMN_BASE_REPOSITORY, baseRepository);
         target.put(GitHubPullRequestMapping.COLUMN_TITLE, source.getTitle());
+        target.put(GitHubPullRequestMapping.COLUMN_URL, source.getUrl());
     }
 
-    private void map(Map<String, Object> target, GitHubPullRequestMapping pullRequestMapping, GitHubPullRequestAction source)
+    /**
+     * Re-maps the provided model value into the AO value.
+     * 
+     * @param target
+     *            AO value
+     * @param source
+     *            model value
+     */
+    private void map(GitHubPullRequestMapping target, GitHubPullRequest source)
     {
-        GitHubUserMapping actor = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
+        GitHubRepositoryMapping baseRepository = activeObjects.get(GitHubRepositoryMapping.class, source.getBaseRepository().getId());
 
-        target.put(GitHubPullRequestActionMapping.COLUMN_GIT_HUB_EVENT_ID, source.getGitHubEventId());
-        target.put(GitHubPullRequestActionMapping.COLUMN_PULL_REQUEST, pullRequestMapping);
-        target.put(GitHubPullRequestActionMapping.COLUMN_CREATED_AT, source.getCreatedAt());
-        target.put(GitHubPullRequestActionMapping.COLUMN_CREATED_BY, actor);
-        target.put(GitHubPullRequestActionMapping.COLUMN_ACTION, source.getAction());
+        // re-mapping
+        target.setGitHubId(source.getGitHubId());
+        target.setBaseRepository(baseRepository);
+        target.setTitle(source.getTitle());
+        target.setUrl(source.getUrl());
     }
 
     /**
@@ -261,9 +275,14 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
      */
     static void map(GitHubPullRequest target, GitHubPullRequestMapping source)
     {
+        GitHubRepository baseRepository = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(baseRepository, source.getBaseRepository());
+
         target.setId(source.getID());
         target.setGitHubId(source.getGitHubId());
+        target.setBaseRepository(baseRepository);
         target.setTitle(source.getTitle());
+        target.setUrl(source.getUrl());
 
         target.getActions().clear();
         for (GitHubPullRequestActionMapping sourceAction : source.getActions())
@@ -272,6 +291,26 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
             map(targetAction, sourceAction);
             target.getActions().add(targetAction);
         }
+    }
+
+    /**
+     * Re-maps provided model value into the AO creation map.
+     * 
+     * @param target
+     *            creation AO map
+     * @param pullRequestMapping
+     * @param source
+     *            model value
+     */
+    private void map(Map<String, Object> target, GitHubPullRequestMapping pullRequestMapping, GitHubPullRequestAction source)
+    {
+        GitHubUserMapping actor = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
+
+        target.put(GitHubPullRequestActionMapping.COLUMN_GIT_HUB_EVENT_ID, source.getGitHubEventId());
+        target.put(GitHubPullRequestActionMapping.COLUMN_PULL_REQUEST, pullRequestMapping);
+        target.put(GitHubPullRequestActionMapping.COLUMN_CREATED_AT, source.getCreatedAt());
+        target.put(GitHubPullRequestActionMapping.COLUMN_CREATED_BY, actor);
+        target.put(GitHubPullRequestActionMapping.COLUMN_ACTION, source.getAction());
     }
 
     /**
@@ -292,21 +331,6 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
         target.setCreatedBy(targetActor);
         target.setAt(source.getCreatedAt());
         target.setGitHubEventId(source.getGitHubEventId());
-    }
-
-    /**
-     * Re-maps the provided model value into the AO value.
-     * 
-     * @param target
-     *            AO value
-     * @param source
-     *            model value
-     */
-    private void map(GitHubPullRequestMapping target, GitHubPullRequest source)
-    {
-        // re-mapping
-        target.setGitHubId(source.getGitHubId());
-        target.setTitle(source.getTitle());
     }
 
 }

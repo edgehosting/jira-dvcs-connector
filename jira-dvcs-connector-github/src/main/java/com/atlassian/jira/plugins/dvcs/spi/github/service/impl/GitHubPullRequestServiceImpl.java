@@ -11,7 +11,9 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService;
 
 /**
  * An {@link GitHubPullRequestService} implementation.
@@ -23,12 +25,17 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
 {
 
     /**
-     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GithubClientProvider)
+     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider)
      */
     private final GitHubPullRequestDAO gitHubPullRequestDAO;
 
     /**
-     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GithubClientProvider)
+     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider)
+     */
+    private final GitHubRepositoryService gitHubRepositoryService;
+
+    /**
+     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider)
      */
     private final GithubClientProvider githubClientProvider;
 
@@ -37,12 +44,16 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
      * 
      * @param gitHubPullRequestDAO
      *            injected {@link GitHubPullRequestDAO} dependency.
+     * @param gitHubRepositoryService
+     *            injected {@link GitHubRepositoryService} dependency
      * @param githubClientProvider
-     *            Injected {@link GithubClientProvider} dependency.
+     *            injected {@link GithubClientProvider} dependency.
      */
-    public GitHubPullRequestServiceImpl(GitHubPullRequestDAO gitHubPullRequestDAO, GithubClientProvider githubClientProvider)
+    public GitHubPullRequestServiceImpl(GitHubPullRequestDAO gitHubPullRequestDAO, GitHubRepositoryService gitHubRepositoryService,
+            GithubClientProvider githubClientProvider)
     {
         this.gitHubPullRequestDAO = gitHubPullRequestDAO;
+        this.gitHubRepositoryService = gitHubRepositoryService;
         this.githubClientProvider = githubClientProvider;
     }
 
@@ -94,6 +105,7 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
     /**
      * {@inheritDoc}
      */
+    @Override
     public GitHubPullRequest fetch(Repository repository, long gitHubId, int pullRequestNumber)
     {
         GitHubPullRequest result = getByGitHubId(gitHubId);
@@ -102,7 +114,6 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
             return result;
 
         }
-
         result = new GitHubPullRequest();
         RepositoryId egitRepository = RepositoryId.createFromUrl(repository.getRepositoryUrl());
 
@@ -116,9 +127,13 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
             throw new RuntimeException(e);
         }
 
+        GitHubRepository baseRepository = gitHubRepositoryService.fetch(repository, loaded.getBase().getRepo().getId());
+
         // re-mapping
         result.setGitHubId(loaded.getId());
+        result.setBaseRepository(baseRepository);
         result.setTitle(loaded.getTitle());
+        result.setUrl(loaded.getUrl());
 
         save(result);
 
