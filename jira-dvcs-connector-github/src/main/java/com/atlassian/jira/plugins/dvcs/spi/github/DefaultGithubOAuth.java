@@ -1,12 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 public class DefaultGithubOAuth implements GithubOAuth
 {
     private final PluginSettingsFactory pluginSettingsFactory;
+    private static final Logger log = LoggerFactory.getLogger(DefaultGithubOAuth.class);
 
     public DefaultGithubOAuth(PluginSettingsFactory pluginSettingsFactory)
     {
@@ -14,8 +17,12 @@ public class DefaultGithubOAuth implements GithubOAuth
     }
 
     @Override
-    public void setClient(String clientID, String clientSecret)
+    public void setClient(String hostUrl, String clientID, String clientSecret)
     {
+        if (hostUrl!=null)
+        {
+            log.error("host Url should be null for github.com");
+        }
         pluginSettingsFactory.createGlobalSettings().put("githubRepositoryClientID", StringUtils.trim(clientID));
         pluginSettingsFactory.createGlobalSettings().put("githubRepositoryClientSecret", StringUtils.trim(clientSecret));
     }
@@ -34,32 +41,10 @@ public class DefaultGithubOAuth implements GithubOAuth
         return StringUtils.isBlank(savedClientSecret) ? "" : savedClientSecret;
     }
 
-    @Override
-    public void setEnterpriseClient(String hostUrl, String clientID, String clientSecret)
-    {
-        pluginSettingsFactory.createGlobalSettings().put("ghEnterpriseRepositoryClientID", StringUtils.trim(clientID));
-        pluginSettingsFactory.createGlobalSettings().put("ghEnterpriseRepositoryClientSecret", StringUtils.trim(clientSecret));
-        pluginSettingsFactory.createGlobalSettings().put("ghEnterpriseRepositoryHostUrl", StringUtils.trim(hostUrl));
-    }
 
     @Override
-    public String getEnterpriseClientId()
+    public String getHostUrl()
     {
-        String savedClientSecret = (String) pluginSettingsFactory.createGlobalSettings().get("ghEnterpriseRepositoryClientID");
-        return StringUtils.isBlank(savedClientSecret) ? "" : savedClientSecret;
-    }
-
-    @Override
-    public String getEnterpriseClientSecret()
-    {
-        String savedClientSecret = (String) pluginSettingsFactory.createGlobalSettings().get("ghEnterpriseRepositoryClientSecret");
-        return StringUtils.isBlank(savedClientSecret) ? "" : savedClientSecret;
-    }
-
-    @Override
-    public String getEnterpriseHostUrl()
-    {
-        String savedHostUrl = (String) pluginSettingsFactory.createGlobalSettings().get("ghEnterpriseRepositoryHostUrl");
-        return StringUtils.isBlank(savedHostUrl) ? "" : savedHostUrl;
+        return null;
     }
 }

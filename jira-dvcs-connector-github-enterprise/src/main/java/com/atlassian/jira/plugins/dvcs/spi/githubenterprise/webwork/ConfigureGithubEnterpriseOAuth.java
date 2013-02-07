@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.github.webwork.ConfigureGithubOAuth;
@@ -15,7 +16,7 @@ public class ConfigureGithubEnterpriseOAuth extends ConfigureGithubOAuth
     
     private static final long serialVersionUID = 5434744550819376738L;
 
-    public ConfigureGithubEnterpriseOAuth(GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
+    public ConfigureGithubEnterpriseOAuth(@Qualifier("githubEnterpriseOAuth") GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
     {
         super(githubOAuth, applicationProperties);
     }
@@ -56,25 +57,28 @@ public class ConfigureGithubEnterpriseOAuth extends ConfigureGithubOAuth
         return INPUT;
     }
 
+    @Override
     protected void addClientIdentifiers()
     {
-        githubOAuth.setEnterpriseClient(StringUtils.trim(hostUrl), StringUtils.trim(clientID), StringUtils.trim(clientSecret));
+        githubOAuth.setClient(StringUtils.trim(hostUrl), StringUtils.trim(clientID), StringUtils.trim(clientSecret));
         messages = "GitHub Host URL And Client Identifiers Set Correctly";
     }
 
+    @Override
     public String getSavedClientSecret()
     {
-        return githubOAuth.getEnterpriseClientSecret();
+        return githubOAuth.getClientSecret();
     }
 
+    @Override
     public String getSavedClientID()
     {
-        return githubOAuth.getEnterpriseClientId();
+        return githubOAuth.getClientId();
     }
     
     public String getHostUrl()
     {
-        return githubOAuth.getEnterpriseHostUrl();
+        return githubOAuth.getHostUrl();
     }
     
     public void setHostUrl(String hostUrl)

@@ -306,13 +306,16 @@
         <description>dvcsCommunicatorProvider</description>
     </component>
 
-    <component key="githubOAuth" name="githubOAuth"
-               class="com.atlassian.jira.plugins.dvcs.spi.github.DefaultGithubOAuth">
+    <component key="githubOAuth" name="githubOAuth" class="com.atlassian.jira.plugins.dvcs.spi.github.DefaultGithubOAuth">
         <description>githubOAuth</description>
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth</interface>
     </component>
+    <component key="githubEnterpriseOAuth" name="githubEnterpriseOAuth" class="com.atlassian.jira.plugins.dvcs.spi.github.DefaultGithubEnterpriseOAuth">
+        <description>githubEnterpriseOAuth</description>
+        <interface>com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth</interface>
+    </component>
 
-       <component key="bitbucketOAuth" name="bitbucketOAuth"
+    <component key="bitbucketOAuth" name="bitbucketOAuth"
                class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketOAuth">
         <description>bitbucketOAuth</description>
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth</interface>
@@ -359,10 +362,6 @@
                class="com.atlassian.jira.plugins.dvcs.service.ChangesetCacheImpl">
         <description>changesetCache</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetCache</interface>
-    </component>
-
-    <component key="githubOauthUtils" class="com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils">
-    	<description>Utils used i.e. to build GH redirect URLs etc.</description>
     </component>
 
     <component key="webFragmentRenderer" name="webFragmentRenderer"

@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException.InvalidResponseException;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOauthProvider;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.sal.api.ApplicationProperties;
 
@@ -29,22 +28,12 @@ public class GithubOAuthUtils
 
     private final GithubOAuth githubOAuth;
     private final ApplicationProperties applicationProperties;
-    
-    private final GithubOauthProvider oauthProvider;
-    
 
     public GithubOAuthUtils(GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
     {
-        this(null, githubOAuth, applicationProperties);
-    }
-
-    public GithubOAuthUtils(GithubOauthProvider oauthProvider, GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
-    {
-        this.oauthProvider = oauthProvider;
         this.githubOAuth = githubOAuth;
         this.applicationProperties = applicationProperties;
     }
-
 
     public String createGithubRedirectUrl(String nextAction, String url, String xsrfToken,
             String organization, String autoLinking, String autoSmartCommits)
@@ -60,7 +49,7 @@ public class GithubOAuthUtils
         // build URL to github
         //
         String githubAuthorizeUrl = url + "/login/oauth/authorize?scope=repo&client_id="
-                + clentId() + "&redirect_uri=" + encodedRedirectBackUrl;
+                + githubOAuth.getClientId() + "&redirect_uri=" + encodedRedirectBackUrl;
 
         return githubAuthorizeUrl;
     }
@@ -86,7 +75,7 @@ public class GithubOAuthUtils
         {
             String requestUrl = githubUrl + "/login/oauth/access_token";
 
-            String urlParameters = "client_id=" + clentId() + "&client_secret=" + clientSecret() + "&code=" + code;
+            String urlParameters = "client_id=" + githubOAuth.getClientId() + "&client_secret=" + githubOAuth.getClientSecret() + "&code=" + code;
             
             log.debug("requestAccessToken() - " + requestUrl + " with parameters " + urlParameters);
 
@@ -166,23 +155,6 @@ public class GithubOAuthUtils
         return CustomStringUtils.encode(url);
     }
     
-    private String clientSecret()
-    {
-        if (oauthProvider != null)
-        {
-            return oauthProvider.provideClientSecret();
-        }
-        return githubOAuth.getClientSecret();
-    }
-    
-    private String clentId()
-    {
-        if (oauthProvider != null)
-        {
-            return oauthProvider.provideClientId();
-        }
-        return githubOAuth.getClientId();
-    }
     
     /**
      * Create a GitHubClient to connect to the api.

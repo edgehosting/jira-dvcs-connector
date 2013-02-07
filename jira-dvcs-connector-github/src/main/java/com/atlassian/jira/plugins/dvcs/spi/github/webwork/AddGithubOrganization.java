@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
@@ -38,9 +39,8 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	private final GithubOAuthUtils githubOAuthUtils;
 	
 
-	public AddGithubOrganization(OrganizationService organizationService,
-								GithubOAuth githubOAuth,
-								GithubOAuthUtils githubOAuthUtils)
+    public AddGithubOrganization(OrganizationService organizationService,
+            @Qualifier("githubOAuth") GithubOAuth githubOAuth, GithubOAuthUtils githubOAuthUtils)
 	{
 		this.organizationService = organizationService;
 		this.githubOAuth = githubOAuth;
@@ -63,7 +63,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
 	private void configureOAuth()
 	{
-		githubOAuth.setClient(oauthClientId, oauthSecret);
+		githubOAuth.setClient(null, oauthClientId, oauthSecret);
 	}
 
 	private String redirectUserToGithub()

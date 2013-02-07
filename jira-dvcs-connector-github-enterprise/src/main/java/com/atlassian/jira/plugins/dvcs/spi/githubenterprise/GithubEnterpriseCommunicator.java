@@ -7,6 +7,7 @@ import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
@@ -21,16 +22,17 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     
     public static final String GITHUB_ENTERPRISE = "githube";
 
-    private GithubEnterpriseCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
+    private GithubEnterpriseCommunicator(ChangesetCache changesetCache, @Qualifier("githubEnterpriseOAuth") GithubOAuth githubOAuth,
             GithubClientProvider githubClientProvider)
     {
         super(changesetCache, githubOAuth, githubClientProvider);
     }
         
+    @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
         UserService userService = new UserService(GithubOAuthUtils.createClient(hostUrl));
-        boolean requiresOauth = StringUtils.isBlank(githubOAuth.getEnterpriseClientId()) || StringUtils.isBlank(githubOAuth.getEnterpriseClientSecret());
+        boolean requiresOauth = StringUtils.isBlank(githubOAuth.getClientId()) || StringUtils.isBlank(githubOAuth.getClientSecret());
 
         try
         {
@@ -61,9 +63,9 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     @Override
     public boolean isOauthConfigured()
     {
-        return StringUtils.isNotBlank(githubOAuth.getEnterpriseHostUrl())
-                && StringUtils.isNotBlank(githubOAuth.getEnterpriseClientId())
-                && StringUtils.isNotBlank(githubOAuth.getEnterpriseClientSecret());
+        return StringUtils.isNotBlank(githubOAuth.getHostUrl())
+                && StringUtils.isNotBlank(githubOAuth.getClientId())
+                && StringUtils.isNotBlank(githubOAuth.getClientSecret());
     }
     
     @Override

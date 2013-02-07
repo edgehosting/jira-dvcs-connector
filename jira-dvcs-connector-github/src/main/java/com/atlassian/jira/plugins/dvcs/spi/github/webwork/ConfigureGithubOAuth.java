@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
@@ -28,7 +29,7 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
     protected String forceClear = "";
 
 
-    public ConfigureGithubOAuth(GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
+    public ConfigureGithubOAuth(@Qualifier("githubOAuth") GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
     {
         this.githubOAuth = githubOAuth;
         this.applicationProperties = applicationProperties;
@@ -64,7 +65,7 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
 
     protected void addClientIdentifiers()
     {
-        githubOAuth.setClient(StringUtils.trim(clientID), StringUtils.trim(clientSecret));
+        githubOAuth.setClient(null, StringUtils.trim(clientID), StringUtils.trim(clientSecret));
         messages = "GitHub Client Identifiers Set Correctly";
     }
 

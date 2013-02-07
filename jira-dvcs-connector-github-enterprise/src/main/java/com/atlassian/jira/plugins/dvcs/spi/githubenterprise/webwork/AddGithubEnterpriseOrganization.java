@@ -3,13 +3,13 @@ package com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException.InvalidResponseException;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.github.DefaultGithubOauthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator;
@@ -41,16 +41,12 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	private final OrganizationService organizationService;
 	private final GithubOAuthUtils githubOAuthUtils;
 
-	public AddGithubEnterpriseOrganization(OrganizationService organizationService,
-								GithubOAuth githubOAuth,
-								ApplicationProperties applicationProperties)
+    public AddGithubEnterpriseOrganization(OrganizationService organizationService,
+            @Qualifier("githubEnterpriseOAuth") GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
 	{
 		this.organizationService = organizationService;
 		this.githubOAuth = githubOAuth;
-		this.githubOAuthUtils = new GithubOAuthUtils(
-		                           DefaultGithubOauthProvider.createEnterpriseProvider(githubOAuth), 
-		                           githubOAuth,
-		                           applicationProperties);
+        this.githubOAuthUtils = new GithubOAuthUtils(githubOAuth, applicationProperties);
 	}
 
 	@Override
@@ -69,7 +65,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
 	private void configureOAuth()
 	{
-		githubOAuth.setEnterpriseClient(url, oauthClientIdGhe, oauthSecretGhe);
+		githubOAuth.setClient(url, oauthClientIdGhe, oauthSecretGhe);
 	}
 
 	private String redirectUserToGithub()
@@ -93,7 +89,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         } else
         {
             // load saved GitHub Enterprise url
-            url = githubOAuth.getEnterpriseHostUrl();
+            url = githubOAuth.getHostUrl();
         }
         
         if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
