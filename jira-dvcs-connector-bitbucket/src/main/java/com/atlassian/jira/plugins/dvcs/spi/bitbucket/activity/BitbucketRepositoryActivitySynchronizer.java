@@ -184,7 +184,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
             	ret.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
             }
             
-            ret.put(RepositoryActivityPullRequestCommentMapping.COMMENT_URL, "");
         } else if (activity instanceof BitbucketPullRequestApprovalActivity)
         {
             ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestApprovalMapping.class);
