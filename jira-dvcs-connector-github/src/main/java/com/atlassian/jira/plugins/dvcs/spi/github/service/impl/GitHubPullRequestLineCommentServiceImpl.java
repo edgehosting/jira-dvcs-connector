@@ -76,9 +76,9 @@ public class GitHubPullRequestLineCommentServiceImpl implements GitHubPullReques
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequestLineComment> getByIssueKey(String issueKey)
+    public List<GitHubPullRequestLineComment> getAll()
     {
-        return gitHubPullRequestLineCommentDAO.getByIssueKey(issueKey);
+        return gitHubPullRequestLineCommentDAO.getAll();
     }
 
     /**

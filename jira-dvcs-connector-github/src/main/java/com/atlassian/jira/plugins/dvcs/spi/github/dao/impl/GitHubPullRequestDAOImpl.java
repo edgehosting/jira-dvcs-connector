@@ -208,7 +208,7 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequest> getGitHubPullRequest(String issueKey)
+    public List<GitHubPullRequest> getAll()
     {
         // FIXME<Stanislav Dvorscak>
 

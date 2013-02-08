@@ -43,10 +43,8 @@ public interface GitHubPullRequestDAO
     GitHubPullRequest getByGitHubId(long gitHubId);
 
     /**
-     * @param issueKey
-     *            for which are resolved {@link GitHubPullRequest}-s
-     * @return resolved {@link GitHubPullRequest}-s
+     * @return all {@link GitHubPullRequest}-s
      */
-    List<GitHubPullRequest> getGitHubPullRequest(String issueKey);
+    List<GitHubPullRequest> getAll();
 
 }

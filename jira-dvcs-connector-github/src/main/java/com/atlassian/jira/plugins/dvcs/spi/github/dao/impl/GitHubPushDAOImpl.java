@@ -210,18 +210,10 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
      */
     private void map(GitHubPushMapping target, GitHubPush source)
     {
-        // pre-processing
-        GitHubCommitMapping[] commits = new GitHubCommitMapping[source.getCommits().size()];
-        for (int i = 0; i < commits.length; i++)
-        {
-            commits[i] = activeObjects.get(GitHubCommitMapping.class, source.getCommits().get(i).getId());
-        }
-
         // re-mapping
         target.setCreatedAt(source.getCreatedAt());
         target.setBefore(source.getBefore());
         target.setHead(source.getHead());
         target.setRef(source.getRef());
-        target.setCommits(commits);
     }
 }

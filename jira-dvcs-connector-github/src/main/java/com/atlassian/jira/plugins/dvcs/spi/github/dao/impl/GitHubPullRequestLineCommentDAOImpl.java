@@ -149,7 +149,7 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequestLineComment> getByIssueKey(String issueKey)
+    public List<GitHubPullRequestLineComment> getAll()
     {
         List<GitHubPullRequestLineComment> result = new LinkedList<GitHubPullRequestLineComment>();
         for (GitHubPullRequestLineCommentMapping source : activeObjects.get(GitHubPullRequestLineCommentMapping.class))

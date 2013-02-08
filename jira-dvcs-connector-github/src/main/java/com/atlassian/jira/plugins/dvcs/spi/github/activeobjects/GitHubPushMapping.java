@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.activeobjects;
 import java.util.Date;
 
 import net.java.ao.Entity;
+import net.java.ao.OneToMany;
 import net.java.ao.schema.Table;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
@@ -92,12 +93,7 @@ public interface GitHubPushMapping extends Entity
     /**
      * @return {@link GitHubPush#getCommits()}
      */
+    @OneToMany
     GitHubCommitMapping[] getCommits();
-
-    /**
-     * @param commits
-     *            {@link #getCommits()}
-     */
-    void setCommits(GitHubCommitMapping[] commits);
 
 }
