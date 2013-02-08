@@ -8,6 +8,7 @@ import java.util.Map;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPushMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPushDAO;
@@ -25,12 +26,22 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
 {
 
     /**
-     * @see #GitHubPushDAOImpl(ActiveObjects, GitHubCommitService)
+     * @see #GitHubPushDAOImpl(ActiveObjects, ColumnNameResolverService, GitHubCommitService)
      */
     private final ActiveObjects activeObjects;
 
     /**
-     * @see #GitHubPushDAOImpl(ActiveObjects, GitHubCommitService)
+     * @see #GitHubPushDAOImpl(ActiveObjects, ColumnNameResolverService, GitHubCommitService)
+     */
+    private final ColumnNameResolverService columnNameResolverService;
+
+    /**
+     * {@link ColumnNameResolverService#desc(Class)} of the {@link GitHubPushMapping}
+     */
+    private final GitHubPushMapping gitHubPushMappingDescription;
+
+    /**
+     * @see #GitHubPushDAOImpl(ActiveObjects, ColumnNameResolverService, GitHubCommitService)
      */
     private final GitHubCommitService gitHubCommitService;
 
@@ -38,13 +49,20 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
      * Constructor.
      * 
      * @param activeObjects
-     *            Injected {@link ActiveObjects} dependency.
+     *            injected {@link ActiveObjects} dependency
+     * @param columnNameResolverService
+     *            injected {@link ColumnNameResolverService} dependency
      * @param gitHubCommitService
-     *            Injected {@link GitHubCommitService} dependency.
+     *            injected {@link GitHubCommitService} dependency
      */
-    public GitHubPushDAOImpl(ActiveObjects activeObjects, GitHubCommitService gitHubCommitService)
+    public GitHubPushDAOImpl(ActiveObjects activeObjects, ColumnNameResolverService columnNameResolverService,
+            GitHubCommitService gitHubCommitService)
     {
         this.activeObjects = activeObjects;
+
+        this.columnNameResolverService = columnNameResolverService;
+        this.gitHubPushMappingDescription = columnNameResolverService.desc(GitHubPushMapping.class);
+
         this.gitHubCommitService = gitHubCommitService;
     }
 
@@ -105,7 +123,7 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
     @Override
     public GitHubPush getByBefore(String sha)
     {
-        Query query = Query.select().where(GitHubPushMapping.COLUMN_BEFORE + " = ?", sha);
+        Query query = Query.select().where(columnNameResolverService.column(gitHubPushMappingDescription.getBefore()) + " = ?", sha);
         GitHubPushMapping[] founded = activeObjects.find(GitHubPushMapping.class, query);
         if (founded.length == 1)
         {
@@ -128,7 +146,7 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
     @Override
     public GitHubPush getByHead(String sha)
     {
-        Query query = Query.select().where(GitHubPushMapping.COLUMN_HEAD + " = ?", sha);
+        Query query = Query.select().where(columnNameResolverService.column(gitHubPushMappingDescription.getHead()) + " = ?", sha);
         GitHubPushMapping[] founded = activeObjects.find(GitHubPushMapping.class, query);
         if (founded.length == 1)
         {
@@ -167,11 +185,11 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
         }
 
         // re-mapping
-        target.put(GitHubPushMapping.COLUMN_CREATED_AT, source.getCreatedAt());
-        target.put(GitHubPushMapping.COLUMN_BEFORE, source.getBefore());
-        target.put(GitHubPushMapping.COLUMN_HEAD, source.getHead());
-        target.put(GitHubPushMapping.COLUMN_REF, source.getRef());
-        target.put(GitHubPushMapping.COLUMN_COMMITS, commits);
+        target.put(columnNameResolverService.column(gitHubPushMappingDescription.getCreatedAt()), source.getCreatedAt());
+        target.put(columnNameResolverService.column(gitHubPushMappingDescription.getBefore()), source.getBefore());
+        target.put(columnNameResolverService.column(gitHubPushMappingDescription.getHead()), source.getHead());
+        target.put(columnNameResolverService.column(gitHubPushMappingDescription.getRef()), source.getRef());
+        target.put(columnNameResolverService.column(gitHubPushMappingDescription.getCommits()), commits);
     }
 
     /**

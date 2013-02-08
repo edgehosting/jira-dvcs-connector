@@ -20,31 +20,6 @@ public interface GitHubPullRequestActionMapping extends Entity
 {
 
     /**
-     * @see #getGitHubEventId()
-     */
-    String COLUMN_GIT_HUB_EVENT_ID = "GIT_HUB_EVENT_ID";
-
-    /**
-     * @see #getPullRequest()
-     */
-    String COLUMN_PULL_REQUEST = "PULL_REQUEST_ID";
-    
-    /**
-     * @see #getCreatedAt()
-     */
-    String COLUMN_CREATED_AT = "CREATED_AT";
-
-    /**
-     * @see #getCreatedBy()
-     */
-    String COLUMN_CREATED_BY = "CREATED_BY_ID";
-
-    /**
-     * @see #getAction()
-     */
-    String COLUMN_ACTION = "ACTION";
-
-    /**
      * @return {@link GitHubPullRequestAction#getGitHubEventId()}
      */
     @NotNull

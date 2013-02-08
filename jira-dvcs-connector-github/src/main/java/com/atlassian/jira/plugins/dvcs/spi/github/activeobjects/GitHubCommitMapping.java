@@ -19,27 +19,7 @@ import com.atlassian.jira.util.NotNull;
 @Table("GitHubCommit")
 public interface GitHubCommitMapping extends Entity
 {
-
-    /**
-     * @see #getSha()
-     */
-    String COLUMN_SHA = "SHA";
-
-    /**
-     * @see #getCreatedAt()
-     */
-    String COLUMN_CREATED_AT = "CREATED_AT";
-
-    /**
-     * @see #getCreatedBy()
-     */
-    String COLUMN_CREATED_BY = "CREATED_BY";
-
-    /**
-     * @see #getMessage()
-     */
-    String COLUMN_MESSAGE = "MESSAGE";
-
+    
     /**
      * @return {@link GitHubCommit#getSha()}
      */

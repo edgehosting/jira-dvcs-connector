@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.egit.github.core.event.Event;
@@ -27,10 +26,9 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
     private final Map<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>> eventProcessors = new ConcurrentHashMap<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>>();
 
     /**
-     * Cache of the already resolved processors. It is weak hash map - because class can be proxy class, which otherwise can result into the
-     * memory leak. The synchronization is done via direct object locking.
+     * Cache of the already resolved processors. The synchronization is done via direct object locking.
      */
-    private final Map<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>> resolvedProcessorCache = new WeakHashMap<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>>();
+    private final Map<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>> resolvedProcessorCache = new ConcurrentHashMap<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>>();
 
     /**
      * Constructor.
@@ -58,39 +56,39 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
     {
         GitHubEventProcessor<T_EventPayload> result;
 
-        synchronized (resolvedProcessorCache)
-        {
-            result = (GitHubEventProcessor<T_EventPayload>) resolvedProcessorCache.get(eventPayloadType);
-        }
-
+        result = (GitHubEventProcessor<T_EventPayload>) resolvedProcessorCache.get(eventPayloadType);
         if (result != null)
         {
             return result;
         }
 
-        for (Entry<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>> entry : eventProcessors.entrySet())
+        synchronized (resolvedProcessorCache)
         {
-            if (eventPayloadType.isAssignableFrom(entry.getKey()))
+            result = (GitHubEventProcessor<T_EventPayload>) resolvedProcessorCache.get(eventPayloadType);
+            if (result != null)
             {
-                result = (GitHubEventProcessor<T_EventPayload>) entry.getValue();
-
-                synchronized (resolvedProcessorCache)
-                {
-                    resolvedProcessorCache.put(eventPayloadType, result);
-                }
-
                 return result;
             }
-        }
 
-        // if no handler was found for this type, check super EventType
-        if (EventPayload.class.isAssignableFrom(eventPayloadType.getSuperclass()))
-        {
-            resolveEventProcessor((Class<? extends T_EventPayload>) eventPayloadType.getSuperclass());
-        }
+            for (Entry<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>> entry : eventProcessors.entrySet())
+            {
+                if (eventPayloadType.isAssignableFrom(entry.getKey()))
+                {
+                    result = (GitHubEventProcessor<T_EventPayload>) entry.getValue();
+                    resolvedProcessorCache.put(eventPayloadType, result);
+                    return result;
+                }
+            }
 
-        // by default there is no event processor - it means null
-        return null;
+            // if no handler was found for this type, check super EventType
+            if (EventPayload.class.isAssignableFrom(eventPayloadType.getSuperclass()))
+            {
+                resolveEventProcessor((Class<? extends T_EventPayload>) eventPayloadType.getSuperclass());
+            }
+
+            // by default there is no event processor - it means null
+            return null;
+        }
     }
 
     /**

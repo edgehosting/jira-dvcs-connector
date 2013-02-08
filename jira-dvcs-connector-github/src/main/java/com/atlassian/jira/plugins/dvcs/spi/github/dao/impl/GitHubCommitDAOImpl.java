@@ -8,6 +8,7 @@ import java.util.Map;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
@@ -23,19 +24,34 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
 {
 
     /**
-     * @see #GitHubCommitDAOImpl(ActiveObjects)
+     * @see #GitHubCommitDAOImpl(ActiveObjects, ColumnNameResolverService)
      */
     private final ActiveObjects activeObjects;
+
+    /**
+     * @see #GitHubCommitDAOImpl(ActiveObjects, ColumnNameResolverService)
+     */
+    private final ColumnNameResolverService columnNameResolverService;
+
+    /**
+     * {@link ColumnNameResolverService#desc(Class)} of the {@link GitHubCommitMapping}.
+     */
+    private final GitHubCommitMapping gitHubCommitMappingDescription;
 
     /**
      * Constructor.
      * 
      * @param activeObjects
-     *            Injected {@link ActiveObjects} dependency.
+     *            injected {@link ActiveObjects} dependency
+     * @param columnNameResolverService
+     *            injected {@link ColumnNameResolverService} dependency
      */
-    public GitHubCommitDAOImpl(ActiveObjects activeObjects)
+    public GitHubCommitDAOImpl(ActiveObjects activeObjects, ColumnNameResolverService columnNameResolverService)
     {
         this.activeObjects = activeObjects;
+
+        this.columnNameResolverService = columnNameResolverService;
+        this.gitHubCommitMappingDescription = columnNameResolverService.desc(GitHubCommitMapping.class);
     }
 
     /**
@@ -117,7 +133,7 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
     @Override
     public GitHubCommit getBySha(String sha)
     {
-        Query query = Query.select().where(GitHubCommitMapping.COLUMN_SHA + " = ?", sha);
+        Query query = Query.select().where(columnNameResolverService.column(gitHubCommitMappingDescription.getSha()) + " = ?", sha);
         GitHubCommitMapping[] founded = activeObjects.find(GitHubCommitMapping.class, query);
         if (founded.length == 1)
         {
@@ -166,10 +182,10 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
      */
     private void map(Map<String, Object> target, GitHubCommit source)
     {
-        target.put(GitHubCommitMapping.COLUMN_SHA, source.getSha());
-        target.put(GitHubCommitMapping.COLUMN_CREATED_AT, source.getCreatedAt());
-        target.put(GitHubCommitMapping.COLUMN_CREATED_BY, source.getCreatedBy());
-        target.put(GitHubCommitMapping.COLUMN_MESSAGE, source.getMessage());
+        target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getSha()), source.getSha());
+        target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getCreatedAt()), source.getCreatedAt());
+        target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getCreatedBy()), source.getCreatedBy());
+        target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getMessage()), source.getMessage());
     }
 
     /**

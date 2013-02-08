@@ -6,6 +6,7 @@ import java.util.Map;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubUserDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
@@ -21,19 +22,34 @@ public class GitHubUserDAOImpl implements GitHubUserDAO
 {
 
     /**
-     * @see #GitHubUserDAOImpl(ActiveObjects)
+     * @see #GitHubUserDAOImpl(ActiveObjects, ColumnNameResolverService)
      */
     private final ActiveObjects activeObjects;
+
+    /**
+     * @see #GitHubUserDAOImpl(ActiveObjects, ColumnNameResolverService)
+     */
+    private final ColumnNameResolverService columnNameResolverService;
+
+    /**
+     * {@link ColumnNameResolverService#desc(Class)} of te {@link GitHubUserMapping}
+     */
+    private final GitHubUserMapping gitHubUserDescription;
 
     /**
      * Constructor.
      * 
      * @param activeObjects
-     *            Injected {@link ActiveObjects} dependency.
+     *            injected {@link ActiveObjects} dependency
+     * @param columnNameResolverService
+     *            injected {@link ColumnNameResolverService} dependency
      */
-    public GitHubUserDAOImpl(ActiveObjects activeObjects)
+    public GitHubUserDAOImpl(ActiveObjects activeObjects, ColumnNameResolverService columnNameResolverService)
     {
         this.activeObjects = activeObjects;
+
+        this.columnNameResolverService = columnNameResolverService;
+        this.gitHubUserDescription = columnNameResolverService.desc(GitHubUserMapping.class);
     }
 
     /**
@@ -117,7 +133,7 @@ public class GitHubUserDAOImpl implements GitHubUserDAO
     @Override
     public GitHubUser getByLogin(String login)
     {
-        Query query = Query.select().where(GitHubUserMapping.COLUMN_LOGIN + " = ? ", login);
+        Query query = Query.select().where(columnNameResolverService.column(gitHubUserDescription.getLogin()) + " = ? ", login);
         GitHubUserMapping[] founded = activeObjects.find(GitHubUserMapping.class, query);
 
         if (founded.length == 0)
@@ -148,13 +164,13 @@ public class GitHubUserDAOImpl implements GitHubUserDAO
      */
     private void map(Map<String, Object> target, GitHubUser source)
     {
-        target.put(GitHubUserMapping.COLUMN_SYNCHRONIZED_AT, source.getSynchronizedAt());
-        target.put(GitHubUserMapping.COLUMN_GIT_HUB_ID, source.getGitHubId());
-        target.put(GitHubUserMapping.COLUMN_LOGIN, source.getLogin());
-        target.put(GitHubUserMapping.COLUMN_NAME, source.getName());
-        target.put(GitHubUserMapping.COLUMN_EMAIL, source.getEmail());
-        target.put(GitHubUserMapping.COLUMN_URL, source.getUrl());
-        target.put(GitHubUserMapping.COLUMN_AVATAR_URL, source.getAvatarUrl());
+        target.put(columnNameResolverService.column(gitHubUserDescription.getSynchronizedAt()), source.getSynchronizedAt());
+        target.put(columnNameResolverService.column(gitHubUserDescription.getGitHubId()), source.getGitHubId());
+        target.put(columnNameResolverService.column(gitHubUserDescription.getLogin()), source.getLogin());
+        target.put(columnNameResolverService.column(gitHubUserDescription.getName()), source.getName());
+        target.put(columnNameResolverService.column(gitHubUserDescription.getEmail()), source.getEmail());
+        target.put(columnNameResolverService.column(gitHubUserDescription.getUrl()), source.getUrl());
+        target.put(columnNameResolverService.column(gitHubUserDescription.getAvatarUrl()), source.getAvatarUrl());
     }
 
     /**

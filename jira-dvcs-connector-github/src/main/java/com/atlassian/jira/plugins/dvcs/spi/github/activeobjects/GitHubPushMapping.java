@@ -19,26 +19,6 @@ public interface GitHubPushMapping extends Entity
 {
 
     /**
-     * AO map key of the {@link #getCreatedAt()}.
-     */
-    String COLUMN_CREATED_AT = "CREATED_AT";
-
-    /**
-     * AO map key of the {@link #getRef()}.
-     */
-    String COLUMN_REF = "REF";
-
-    /**
-     * AO map key of the {@link #getBefore()}.
-     */
-    String COLUMN_BEFORE = "BEFORE";
-
-    /**
-     * AO map key of the {@link #getHead()}.
-     */
-    String COLUMN_HEAD = "HEAD";
-
-    /**
      * AO map key of the {@link #getCommits()}.
      */
     String COLUMN_COMMITS = "COMMITS";

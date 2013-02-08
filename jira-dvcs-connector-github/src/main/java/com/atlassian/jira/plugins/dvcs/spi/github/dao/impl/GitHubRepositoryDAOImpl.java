@@ -6,6 +6,7 @@ import java.util.Map;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubRepositoryDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
@@ -21,19 +22,34 @@ public class GitHubRepositoryDAOImpl implements GitHubRepositoryDAO
 {
 
     /**
-     * @see #GitHubRepositoryDAOImpl(ActiveObjects)
+     * @see #GitHubRepositoryDAOImpl(ActiveObjects, ColumnNameResolverService)
      */
     private final ActiveObjects activeObjects;
+
+    /**
+     * @see #GitHubRepositoryDAOImpl(ActiveObjects, ColumnNameResolverService)
+     */
+    private final ColumnNameResolverService columnNameResolverService;
+
+    /**
+     * {@link ColumnNameResolverService#desc(Class)} of the {@link GitHubRepositoryMapping}
+     */
+    private final GitHubRepositoryMapping gitHubRepositoryMappingDescription;
 
     /**
      * Constructor.
      * 
      * @param activeObjects
      *            injected {@link ActiveObjects} dependency
+     * @param columnNameResolverService
+     *            injected {@link ColumnNameResolverService} dependency
      */
-    public GitHubRepositoryDAOImpl(ActiveObjects activeObjects)
+    public GitHubRepositoryDAOImpl(ActiveObjects activeObjects, ColumnNameResolverService columnNameResolverService)
     {
         this.activeObjects = activeObjects;
+
+        this.columnNameResolverService = columnNameResolverService;
+        this.gitHubRepositoryMappingDescription = columnNameResolverService.desc(GitHubRepositoryMapping.class);
     }
 
     /**
@@ -98,7 +114,8 @@ public class GitHubRepositoryDAOImpl implements GitHubRepositoryDAO
     @Override
     public GitHubRepository getByGitHubId(long gitHubId)
     {
-        Query query = Query.select().where(GitHubRepositoryMapping.COLUMN_GIT_HUB_ID + " = ? ", gitHubId);
+        Query query = Query.select().where(columnNameResolverService.column(gitHubRepositoryMappingDescription.getGitHubId()) + " = ? ",
+                gitHubId);
         GitHubRepositoryMapping[] founded = activeObjects.find(GitHubRepositoryMapping.class, query);
 
         if (founded.length == 0)
@@ -129,8 +146,8 @@ public class GitHubRepositoryDAOImpl implements GitHubRepositoryDAO
      */
     private void map(Map<String, Object> target, GitHubRepository source)
     {
-        target.put(GitHubRepositoryMapping.COLUMN_GIT_HUB_ID, source.getGitHubId());
-        target.put(GitHubRepositoryMapping.COLUMN_NAME, source.getName());
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getGitHubId()), source.getGitHubId());
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getName()), source.getName());
     }
 
     /**

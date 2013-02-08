@@ -21,7 +21,7 @@ public interface RepositoryActivityPullRequestMapping extends Entity
     //
     Date getLastUpdatedOn();
     String getRepoSlug();
-    String getInitiatorUsername();
+    String getAuthor();
     String getPullRequestId();
 
     //
@@ -29,7 +29,7 @@ public interface RepositoryActivityPullRequestMapping extends Entity
     //
     void setLastUpdatedOn(Date date);
     void setRepoSlug(String slug);
-    void setInitiatorUsername(String username);
+    void setAuthor(String username);
     void setPullRequestId(Integer pullRequestId);
     
 }

@@ -8,6 +8,7 @@ import java.util.Map;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestCommentMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping;
@@ -27,19 +28,34 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
 {
 
     /**
-     * @see #GitHubPullRequestCommentDAOImpl(ActiveObjects)
+     * @see #GitHubPullRequestCommentDAOImpl(ActiveObjects, ColumnNameResolverService)
      */
     private final ActiveObjects activeObjects;
+
+    /**
+     * @see #GitHubPullRequestCommentDAOImpl(ActiveObjects, ColumnNameResolverService)
+     */
+    private final ColumnNameResolverService columnNameResolverService;
+
+    /**
+     * {@link ColumnNameResolverService#desc(Class)} of the {@link GitHubPullRequestCommentMapping}.
+     */
+    private final GitHubPullRequestCommentMapping gitHubPullRequestCommentDescription;
 
     /**
      * Constructor.
      * 
      * @param activeObjects
      *            injected {@link ActiveObjects} dependency
+     * @param columnNameResolverService
+     *            injected {@link ColumnNameResolverService} dependency
      */
-    public GitHubPullRequestCommentDAOImpl(ActiveObjects activeObjects)
+    public GitHubPullRequestCommentDAOImpl(ActiveObjects activeObjects, ColumnNameResolverService columnNameResolverService)
     {
         this.activeObjects = activeObjects;
+        this.columnNameResolverService = columnNameResolverService;
+
+        gitHubPullRequestCommentDescription = columnNameResolverService.desc(GitHubPullRequestCommentMapping.class);
     }
 
     /**
@@ -123,7 +139,8 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
     {
         GitHubPullRequestComment result = new GitHubPullRequestComment();
 
-        Query query = Query.select().where(GitHubPullRequestCommentMapping.COLUMN_GIT_HUB_ID + " = ?", gitHubId);
+        Query query = Query.select().where(columnNameResolverService.column(gitHubPullRequestCommentDescription.getGitHubId()) + " = ?",
+                gitHubId);
         GitHubPullRequestCommentMapping[] founded = activeObjects.find(GitHubPullRequestCommentMapping.class, query);
         if (founded.length == 1)
         {
@@ -173,11 +190,11 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
         GitHubUserMapping createdBy = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
         GitHubPullRequestMapping pullRequest = activeObjects.get(GitHubPullRequestMapping.class, source.getPullRequest().getId());
 
-        target.put(GitHubPullRequestCommentMapping.COLUMN_GIT_HUB_ID, source.getGitHubId());
-        target.put(GitHubPullRequestCommentMapping.COLUMN_PULL_REQUEST, pullRequest);
-        target.put(GitHubPullRequestCommentMapping.COLUMN_CREATED_AT, source.getCreatedAt());
-        target.put(GitHubPullRequestCommentMapping.COLUMN_CREATED_BY, createdBy);
-        target.put(GitHubPullRequestCommentMapping.COLUMN_TEXT, source.getText());
+        target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getGitHubId()), source.getGitHubId());
+        target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getPullRequest()), pullRequest);
+        target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getCreatedAt()), source.getCreatedAt());
+        target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getCreatedBy()), createdBy);
+        target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getText()), source.getText());
     }
 
     /**

@@ -8,6 +8,7 @@ import java.util.Map;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestActionMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping;
@@ -29,19 +30,40 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
 {
 
     /**
-     * @see #GitHubPullRequestDAOImpl(ActiveObjects)
+     * @see #GitHubPullRequestDAOImpl(ActiveObjects, ColumnNameResolverService)
      */
     private final ActiveObjects activeObjects;
+
+    /**
+     * @see #GitHubPullRequestDAOImpl(ActiveObjects, ColumnNameResolverService)
+     */
+    private ColumnNameResolverService columnNameResolverService;
+
+    /**
+     * {@link ColumnNameResolverService#desc(Class)} of the {@link GitHubPullRequestMapping}
+     */
+    private final GitHubPullRequestMapping gitHubRepositoryMappingDescription;
+
+    /**
+     * {@link ColumnNameResolverService#desc(Class)} of the {@link GitHubPullRequestActionMapping}
+     */
+    private final GitHubPullRequestActionMapping gitHubPullRequestActionMappingDescription;
 
     /**
      * Constructor.
      * 
      * @param activeObjects
      *            injected {@link ActiveObjects} dependency
+     * @param columnNameResolverService
+     *            injected {@link ColumnNameResolverService} dependency
      */
-    public GitHubPullRequestDAOImpl(ActiveObjects activeObjects)
+    public GitHubPullRequestDAOImpl(ActiveObjects activeObjects, ColumnNameResolverService columnNameResolverService)
     {
         this.activeObjects = activeObjects;
+
+        this.columnNameResolverService = columnNameResolverService;
+        this.gitHubRepositoryMappingDescription = columnNameResolverService.desc(GitHubPullRequestMapping.class);
+        this.gitHubPullRequestActionMappingDescription = columnNameResolverService.desc(GitHubPullRequestActionMapping.class);
     }
 
     /**
@@ -184,7 +206,8 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
     @Override
     public GitHubPullRequest getByGitHubId(long gitHubId)
     {
-        Query query = Query.select().where(GitHubPullRequestMapping.COLUMN_GIT_HUB_ID + " = ?", gitHubId);
+        Query query = Query.select().where(columnNameResolverService.column(gitHubRepositoryMappingDescription.getGitHubId()) + " = ?",
+                gitHubId);
         GitHubPullRequestMapping[] founded = activeObjects.find(GitHubPullRequestMapping.class, query);
         if (founded.length == 1)
         {
@@ -240,10 +263,10 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
     {
         GitHubRepositoryMapping baseRepository = activeObjects.get(GitHubRepositoryMapping.class, source.getBaseRepository().getId());
 
-        target.put(GitHubPullRequestMapping.COLUMN_GIT_HUB_ID, source.getGitHubId());
-        target.put(GitHubPullRequestMapping.COLUMN_BASE_REPOSITORY, baseRepository);
-        target.put(GitHubPullRequestMapping.COLUMN_TITLE, source.getTitle());
-        target.put(GitHubPullRequestMapping.COLUMN_URL, source.getUrl());
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getGitHubId()), source.getGitHubId());
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getBaseRepository()), baseRepository);
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getTitle()), source.getTitle());
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getUrl()), source.getUrl());
     }
 
     /**
@@ -306,11 +329,12 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
     {
         GitHubUserMapping actor = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
 
-        target.put(GitHubPullRequestActionMapping.COLUMN_GIT_HUB_EVENT_ID, source.getGitHubEventId());
-        target.put(GitHubPullRequestActionMapping.COLUMN_PULL_REQUEST, pullRequestMapping);
-        target.put(GitHubPullRequestActionMapping.COLUMN_CREATED_AT, source.getCreatedAt());
-        target.put(GitHubPullRequestActionMapping.COLUMN_CREATED_BY, actor);
-        target.put(GitHubPullRequestActionMapping.COLUMN_ACTION, source.getAction());
+        target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getGitHubEventId()),
+                source.getGitHubEventId());
+        target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getPullRequest()), pullRequestMapping);
+        target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getCreatedAt()), source.getCreatedAt());
+        target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getCreatedBy()), actor);
+        target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getAction()), source.getAction());
     }
 
     /**

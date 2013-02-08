@@ -20,21 +20,6 @@ public interface GitHubEventMapping extends Entity
 {
 
     /**
-     * @see #getGitHubId()
-     */
-    String COLUMN_GIT_HUB_ID = "GIT_HUB_ID";
-
-    /**
-     * @see #getCreatedAt()
-     */
-    String COLUMN_CREATED_AT = "CREATED_AT";
-
-    /**
-     * @see #isSavePoint()
-     */
-    String COLUMN_SAVE_POINT = "SAVE_POINT";
-
-    /**
      * @return {@link GitHubEvent#getGitHubId()}
      */
     @NotNull

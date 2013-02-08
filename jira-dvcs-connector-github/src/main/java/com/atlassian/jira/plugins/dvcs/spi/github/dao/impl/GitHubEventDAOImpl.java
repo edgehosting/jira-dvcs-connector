@@ -6,6 +6,7 @@ import java.util.Map;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubEventMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubEventDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubEvent;
@@ -21,19 +22,34 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
 {
 
     /**
-     * @see #GitHubEventDAOImpl(ActiveObjects)
+     * @see #GitHubEventDAOImpl(ActiveObjects, ColumnNameResolverService)
      */
     private final ActiveObjects activeObjects;
+
+    /**
+     * @see #GitHubEventDAOImpl(ActiveObjects, ColumnNameResolverService)
+     */
+    private final ColumnNameResolverService columnNameResolverService;
+
+    /**
+     * {@link ColumnNameResolverService#desc(Class)} of the {@link GitHubEventMapping}
+     */
+    private final GitHubEventMapping gitHubEventMappingDescription;
 
     /**
      * Constructor.
      * 
      * @param activeObjects
      *            injected {@link ActiveObjects} dependency
+     * @param columnNameResolverService
+     *            injected {@link ColumnNameResolverService} dependency
      */
-    public GitHubEventDAOImpl(ActiveObjects activeObjects)
+    public GitHubEventDAOImpl(ActiveObjects activeObjects, ColumnNameResolverService columnNameResolverService)
     {
         this.activeObjects = activeObjects;
+
+        this.columnNameResolverService = columnNameResolverService;
+        gitHubEventMappingDescription = columnNameResolverService.desc(GitHubEventMapping.class);
     }
 
     /**
@@ -77,7 +93,8 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
     @Override
     public GitHubEvent getByGitHubId(String gitHubId)
     {
-        Query query = Query.select().where(GitHubEventMapping.COLUMN_GIT_HUB_ID + " = ? ", gitHubId);
+        Query query = Query.select().where(columnNameResolverService.column(gitHubEventMappingDescription.getGitHubId()) + " = ? ",
+                gitHubId);
         GitHubEventMapping[] founded = activeObjects.find(GitHubEventMapping.class, query);
 
         if (founded.length == 0)
@@ -105,7 +122,7 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
     public GitHubEvent getLast()
     {
         Query query = Query.select();
-        query.setOrderClause(GitHubEventMapping.COLUMN_CREATED_AT + " desc ");
+        query.setOrderClause(columnNameResolverService.column(gitHubEventMappingDescription.getCreatedAt()) + " desc ");
         query.setLimit(1);
         GitHubEventMapping[] founded = activeObjects.find(GitHubEventMapping.class, query);
 
@@ -129,8 +146,8 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
     public GitHubEvent getLastSavePoint()
     {
         Query query = Query.select().from(GitHubEventMapping.class);
-        query.where(GitHubEventMapping.COLUMN_SAVE_POINT + " = ? ", true);
-        query.setOrderClause(GitHubEventMapping.COLUMN_CREATED_AT + " desc");
+        query.where(columnNameResolverService.column(gitHubEventMappingDescription.isSavePoint()) + " = ? ", true);
+        query.setOrderClause(columnNameResolverService.column(gitHubEventMappingDescription.getCreatedAt()) + " desc");
         query.setLimit(1);
 
         GitHubEventMapping[] founded = activeObjects.find(GitHubEventMapping.class, query);
@@ -157,9 +174,9 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
      */
     private void map(Map<String, Object> target, GitHubEvent source)
     {
-        target.put(GitHubEventMapping.COLUMN_GIT_HUB_ID, source.getGitHubId());
-        target.put(GitHubEventMapping.COLUMN_CREATED_AT, source.getCreatedAt());
-        target.put(GitHubEventMapping.COLUMN_SAVE_POINT, source.isSavePoint());
+        target.put(columnNameResolverService.column(gitHubEventMappingDescription.getGitHubId()), source.getGitHubId());
+        target.put(columnNameResolverService.column(gitHubEventMappingDescription.getCreatedAt()), source.getCreatedAt());
+        target.put(columnNameResolverService.column(gitHubEventMappingDescription.isSavePoint()), source.isSavePoint());
     }
 
     /**

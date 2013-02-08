@@ -20,46 +20,6 @@ public interface GitHubPullRequestLineCommentMapping extends Entity
 {
 
     /**
-     * @see #getGitHubId()
-     */
-    String COLUMN_GIT_HUB_ID = "GIT_HUB_ID";
-
-    /**
-     * @see #getPullRequest()
-     */
-    String COLUMN_PULL_REQUEST = "PULL_REQUEST_ID";
-
-    /**
-     * @see #getCreatedAt()
-     */
-    String COLUMN_CREATED_AT = "CREATED_AT";
-
-    /**
-     * @see #getCreatedBy()
-     */
-    String COLUMN_CREATED_BY = "CREATED_BY_ID";
-
-    /**
-     * @see #getCommit()
-     */
-    String COLUMN_COMMIT = "COMMIT_ID";
-
-    /**
-     * @see #getPath()
-     */
-    String COLUMN_PATH = "PATH";
-
-    /**
-     * @see #getLine()
-     */
-    String COLUMN_LINE = "LINE";
-
-    /**
-     * @see #getText()
-     */
-    String COLUMN_TEXT = "TEXT";
-
-    /**
      * @return {@link GitHubPullRequestLineComment#getGitHubId()}
      */
     @NotNull

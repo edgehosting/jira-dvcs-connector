@@ -19,31 +19,6 @@ public interface GitHubPullRequestMapping extends Entity
 {
 
     /**
-     * @see #getGitHubId()
-     */
-    String COLUMN_GIT_HUB_ID = "GIT_HUB_ID";
-
-    /**
-     * @see #getBaseRepository()
-     */
-    String COLUMN_BASE_REPOSITORY = "BASE_REPOSITORY_ID";
-
-    /**
-     * @see #getTitle()
-     */
-    String COLUMN_TITLE = "TITLE";
-
-    /**
-     * @see #getUrl()
-     */
-    String COLUMN_URL = "URL";
-
-    /**
-     * @see #getActions()
-     */
-    String COLUMN_ACTIONS = "ACTIONS";
-
-    /**
      * @return {@link GitHubPullRequest#getGitHubId()}
      */
     @Unique

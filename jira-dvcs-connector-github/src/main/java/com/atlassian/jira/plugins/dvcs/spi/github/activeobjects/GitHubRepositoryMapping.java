@@ -16,16 +16,6 @@ public interface GitHubRepositoryMapping extends Entity
 {
 
     /**
-     * @see #getGitHubId()
-     */
-    String COLUMN_GIT_HUB_ID = "GIT_HUB_ID";
-
-    /**
-     * @see #getName()
-     */
-    String COLUMN_NAME = "NAME";
-
-    /**
      * @return {@link GitHubRepository#getGitHubId()}
      */
     long getGitHubId();

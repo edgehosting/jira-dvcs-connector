@@ -20,43 +20,6 @@ public interface GitHubUserMapping extends Entity
 {
 
     /**
-     * @see #getSynchronizedAt()
-     */
-    String COLUMN_SYNCHRONIZED_AT = "SYNCHRONIZED_AT";
-
-    /**
-     * @see #getGitHubId()
-     */
-    String COLUMN_GIT_HUB_ID = "GIT_HUB_ID";
-
-    /**
-     * @see #getLogin()
-     */
-    String COLUMN_LOGIN = "LOGIN";
-
-    /**
-     * @see #getName()
-     */
-    String COLUMN_NAME = "NAME";
-
-    /**
-     * @see #getEmail()
-     */
-    String COLUMN_EMAIL = "EMAIL";
-
-    /**
-     * @see #getUrl()
-     */
-    String COLUMN_URL = "URL";
-
-    /**
-     * @see #getAvatarUrl()
-     */
-    String COLUMN_AVATAR_URL = "AVATAR_URL";
-
-    //
-
-    /**
      * @return {@link GitHubUser#getSynchronizedAt()}
      */
     @NotNull

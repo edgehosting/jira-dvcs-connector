@@ -8,6 +8,7 @@ import java.util.Map;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestLineCommentMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping;
@@ -29,19 +30,34 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
 {
 
     /**
-     * @see #GitHubPullRequestLineCommentDAOImpl(ActiveObjects)
+     * @see #GitHubPullRequestLineCommentDAOImpl(ActiveObjects, ColumnNameResolverService)
      */
     private final ActiveObjects activeObjects;
+
+    /**
+     * @see #GitHubPullRequestLineCommentDAOImpl(ActiveObjects, ColumnNameResolverService)
+     */
+    private final ColumnNameResolverService columnNameResolverService;
+
+    /**
+     * {@link ColumnNameResolverService#desc(Class)} of the {@link GitHubPullRequestLineCommentMapping}
+     */
+    private final GitHubPullRequestLineCommentMapping gitHubPullRequestLineCommentMappingDescription;
 
     /**
      * Constructor.
      * 
      * @param activeObjects
      *            injected {@link ActiveObjects} dependency
+     * @param columnNameResolverService
+     *            injected {@link ColumnNameResolverService} dependency
      */
-    public GitHubPullRequestLineCommentDAOImpl(ActiveObjects activeObjects)
+    public GitHubPullRequestLineCommentDAOImpl(ActiveObjects activeObjects, ColumnNameResolverService columnNameResolverService)
     {
         this.activeObjects = activeObjects;
+
+        this.columnNameResolverService = columnNameResolverService;
+        this.gitHubPullRequestLineCommentMappingDescription = columnNameResolverService.desc(GitHubPullRequestLineCommentMapping.class);
     }
 
     /**
@@ -124,7 +140,8 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
     @Override
     public GitHubPullRequestLineComment getByGitHubId(long gitHubId)
     {
-        Query query = Query.select().where(GitHubPullRequestLineCommentMapping.COLUMN_GIT_HUB_ID + " = ? ", gitHubId);
+        Query query = Query.select().where(
+                columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getGitHubId()) + " = ? ", gitHubId);
         GitHubPullRequestLineCommentMapping[] founded = activeObjects.find(GitHubPullRequestLineCommentMapping.class, query);
 
         if (founded.length == 1)
@@ -175,14 +192,14 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
         GitHubPullRequestMapping pullRequest = activeObjects.get(GitHubPullRequestMapping.class, source.getPullRequest().getId());
         GitHubCommitMapping commit = activeObjects.get(GitHubCommitMapping.class, source.getCommit().getId());
 
-        target.put(GitHubPullRequestLineCommentMapping.COLUMN_GIT_HUB_ID, source.getGitHubId());
-        target.put(GitHubPullRequestLineCommentMapping.COLUMN_CREATED_AT, source.getCreatedAt());
-        target.put(GitHubPullRequestLineCommentMapping.COLUMN_CREATED_BY, createdBy);
-        target.put(GitHubPullRequestLineCommentMapping.COLUMN_PULL_REQUEST, pullRequest);
-        target.put(GitHubPullRequestLineCommentMapping.COLUMN_COMMIT, commit);
-        target.put(GitHubPullRequestLineCommentMapping.COLUMN_PATH, source.getPath());
-        target.put(GitHubPullRequestLineCommentMapping.COLUMN_LINE, source.getLine());
-        target.put(GitHubPullRequestLineCommentMapping.COLUMN_TEXT, source.getText());
+        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getGitHubId()), source.getGitHubId());
+        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getCreatedAt()), source.getCreatedAt());
+        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getCreatedBy()), createdBy);
+        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getPullRequest()), pullRequest);
+        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getCommit()), commit);
+        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getPath()), source.getPath());
+        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getLine()), source.getLine());
+        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getText()), source.getText());
     }
 
     /**
