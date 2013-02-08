@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
+import static com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator.GITHUB;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.sal.api.ApplicationProperties;
 
 public class AddGithubOrganization extends CommonDvcsConfigurationAction
 {
@@ -41,11 +44,11 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	
 
     public AddGithubOrganization(OrganizationService organizationService,
-            OAuthStore oAuthStore, GithubOAuthUtils githubOAuthUtils)
+            OAuthStore oAuthStore, ApplicationProperties applicationProperties)
 	{
 		this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
-		this.githubOAuthUtils = githubOAuthUtils;
+        this.githubOAuthUtils = new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB), oAuthStore.getSecret(GITHUB));
 	}
 
 	@Override
