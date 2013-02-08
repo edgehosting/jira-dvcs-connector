@@ -20,7 +20,7 @@ public class GitHubPullRequestComment
      * @see #getGitHubId()
      */
     private long gitHubId;
-    
+
     /**
      * @see #getPullRequest()
      */

@@ -44,10 +44,8 @@ public interface GitHubPullRequestCommentDAO
     GitHubPullRequestComment getByGitHubId(long gitHubId);
     
     /**
-     * @param issueKey
-     *            key of the linked issue
-     * @return resolved {@link GitHubPullRequestComment}-s
+     * @return all {@link GitHubPullRequestComment}-s
      */
-    List<GitHubPullRequestComment> getByIssueKey(String issueKey);
+    List<GitHubPullRequestComment> getAll();
 
 }

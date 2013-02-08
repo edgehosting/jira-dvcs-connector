@@ -97,9 +97,9 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequest> getGitHubPullRequest(String issueKey)
+    public List<GitHubPullRequest> getAll()
     {
-        return gitHubPullRequestDAO.getGitHubPullRequest(issueKey);
+        return gitHubPullRequestDAO.getAll();
     }
 
     /**
@@ -133,7 +133,7 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
         result.setGitHubId(loaded.getId());
         result.setBaseRepository(baseRepository);
         result.setTitle(loaded.getTitle());
-        result.setUrl(loaded.getUrl());
+        result.setUrl(loaded.getHtmlUrl());
 
         save(result);
 

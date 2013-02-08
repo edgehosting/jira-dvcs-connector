@@ -66,10 +66,8 @@ public interface GitHubPullRequestLineCommentService
             GitHubCommit commit);
 
     /**
-     * @param issueKey
-     *            linked issue key
-     * @return resolved {@link GitHubPullRequestLineComment}-s.
+     * @return all {@link GitHubPullRequestLineComment}-s.
      */
-    List<GitHubPullRequestLineComment> getByIssueKey(String issueKey);
+    List<GitHubPullRequestLineComment> getAll();
 
 }

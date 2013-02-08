@@ -18,6 +18,7 @@ import org.eclipse.egit.github.core.service.EventService;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
@@ -206,16 +207,15 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
                     last.setSavePoint(true);
                     gitHubEventService.save(last);
                 }
-                
+
                 return null;
             }
-            
+
         });
-        
+
         repositoryActivityDao.removeAll(forRepository);
 
         // dump
-        String issueKey = null;
         SortedMap<Date, String> dump = new TreeMap<Date, String>(new Comparator<Date>()
         {
 
@@ -227,7 +227,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
         });
 
-        for (GitHubPullRequest gitHubPullRequest : gitHubPullRequestService.getGitHubPullRequest(issueKey))
+        for (GitHubPullRequest gitHubPullRequest : gitHubPullRequestService.getAll())
         {
             RepositoryPullRequestMapping repositoryPullRequest = getRepositoryPullRequest(gitHubPullRequest);
 
@@ -247,7 +247,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             }
         }
 
-        for (GitHubPullRequestLineComment gitHubPullRequestLineComment : gitHubPullRequestLineCommentService.getByIssueKey(issueKey))
+        for (GitHubPullRequestLineComment gitHubPullRequestLineComment : gitHubPullRequestLineCommentService.getAll())
         {
             dump.put(gitHubPullRequestLineComment.getCreatedAt(), //
                     gitHubPullRequestLineComment.getCreatedBy().getName() // name
@@ -258,8 +258,15 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             );
         }
 
-        for (GitHubPullRequestComment gitHubPullRequestComment : gitHubPullRequestCommentService.getByIssueKey(issueKey))
+        for (GitHubPullRequestComment gitHubPullRequestComment : gitHubPullRequestCommentService.getAll())
         {
+            RepositoryPullRequestMapping repositoryPullRequest = getRepositoryPullRequest(gitHubPullRequestComment.getPullRequest());
+
+            Map<String, Object> activity = new HashMap<String, Object>();
+            map(activity, gitHubPullRequestComment.getPullRequest(), repositoryPullRequest);
+            map(activity, gitHubPullRequestComment);
+            repositoryActivityDao.saveActivity(activity);
+
             dump.put(gitHubPullRequestComment.getCreatedAt(), //
                     gitHubPullRequestComment.getCreatedBy().getName() // name
                             + " left a comment " //
@@ -289,6 +296,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(RepositoryPullRequestMapping.LOCAL_ID, source.getId());
+        params.put(RepositoryPullRequestMapping.PULL_REQUEST_URL, source.getUrl());
         params.put(RepositoryPullRequestMapping.PULL_REQUEST_NAME, source.getTitle());
         params.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
         params.put(RepositoryPullRequestMapping.TO_REPO_SLUG, source.getBaseRepository().getName());
@@ -309,6 +317,14 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         activity.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, action.getCreatedAt());
         activity.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, action.getCreatedBy().getLogin());
         activity.put(RepositoryActivityPullRequestUpdateMapping.STATUS, action.getAction().name());
+    }
+
+    void map(Map<String, Object> activity, GitHubPullRequestComment comment)
+    {
+        activity.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestCommentMapping.class);
+        activity.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, comment.getCreatedAt());
+        activity.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, comment.getCreatedBy().getLogin());
+        activity.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, comment.getText());
     }
 
 }
