@@ -46,7 +46,7 @@ public class BitbucketPullRequestActivityEnvelopeDeserializer implements JsonDes
 
         } else if (asLike(jsonObject) != null)
         {
-            activity =  context.deserialize(asLike(jsonObject), BitbucketPullRequestLikeActivity.class);
+            activity =  context.deserialize(asLike(jsonObject), BitbucketPullRequestApprovalActivity.class);
 
         } else {
             

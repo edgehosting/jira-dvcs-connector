@@ -21,7 +21,8 @@ public class BitbucketPullRequestCommit implements Serializable
     private String href;
     private Date date;
     private String message;
-
+    private String sha;
+    
     public BitbucketPullRequestCommit()
     {
         super();
@@ -67,5 +68,12 @@ public class BitbucketPullRequestCommit implements Serializable
         this.date = date;
     }
 
+	public String getSha() {
+		return sha;
+	}
+
+	public void setSha(String sha) {
+		this.sha = sha;
+	}
 }
 

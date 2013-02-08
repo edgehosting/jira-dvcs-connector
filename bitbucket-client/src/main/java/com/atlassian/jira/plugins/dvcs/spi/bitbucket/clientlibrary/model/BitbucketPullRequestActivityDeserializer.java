@@ -41,7 +41,7 @@ public class BitbucketPullRequestActivityDeserializer implements JsonDeserialize
 
         } else if (asLike(jsonObject) != null)
         {
-            return context.deserialize(asLike(jsonObject), BitbucketPullRequestLikeActivity.class);
+            return context.deserialize(asLike(jsonObject), BitbucketPullRequestApprovalActivity.class);
         }
 
         throw new JsonParseException("Unknown type of activity : " + json);

@@ -25,7 +25,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommentActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestLikeActivity;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestApprovalActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.HasPossibleUpdatedMessages;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
@@ -177,20 +177,21 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
 
         if (activity instanceof BitbucketPullRequestCommentActivity)
         {
-
             ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestCommentMapping.class);
-
-        } else if (activity instanceof BitbucketPullRequestLikeActivity)
+            BitbucketPullRequestCommentActivity commentActivity = (BitbucketPullRequestCommentActivity) activity;
+            if (commentActivity.getContent() != null)
+            {
+            	ret.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
+            }
+            
+        } else if (activity instanceof BitbucketPullRequestApprovalActivity)
         {
-
             ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestApprovalMapping.class);
 
         } else if (activity instanceof BitbucketPullRequestUpdateActivity)
         {
-
             ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
             ret.put(RepositoryActivityPullRequestUpdateMapping.STATUS, ((BitbucketPullRequestUpdateActivity) activity).getStatus());
-
         }
         return ret;
     }
@@ -210,7 +211,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         HashMap<String, Object> ret = new HashMap<String, Object>();
         ret.put(RepositoryPullRequestMapping.LOCAL_ID, request.getId());
         ret.put(RepositoryPullRequestMapping.PULL_REQUEST_NAME, request.getTitle());
-        ret.put(RepositoryPullRequestMapping.PULL_REQUEST_URL, request.getLinks().getHref());
+        ret.put(RepositoryPullRequestMapping.PULL_REQUEST_URL, request.getLinks().getHtmlHref());
         ret.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
         ret.put(RepositoryPullRequestMapping.TO_REPO_SLUG, forRepo.getSlug());
         

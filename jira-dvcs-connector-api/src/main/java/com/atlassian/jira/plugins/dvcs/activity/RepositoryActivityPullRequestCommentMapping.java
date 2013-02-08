@@ -8,20 +8,17 @@ import net.java.ao.schema.Table;
 @Table("PrComment")
 public interface RepositoryActivityPullRequestCommentMapping extends RepositoryActivityPullRequestMapping
 {
-	String COMMENT_URL = "COMMENT_URL";
 	String MESSAGE = "MESSAGE";
 
 	//
     // getters
     //
-    String getCommentUrl();
 	@StringLength(StringLength.UNLIMITED)
     String getMessage();
 	
     //
     // setters
     //
-    void setCommentUrl(String url);
     @StringLength(StringLength.UNLIMITED)
     void setMessage(String message);
 }
