@@ -34,21 +34,6 @@ public class BitbucketPullRequestBaseActivity implements Serializable, HasMessag
     {
         super();
     }
-
-    public Date extractDate()
-    {
-        Date date = getUpdatedOn();
-        
-        // fallbacks - order depends
-        if (date == null) {
-            date = getDate();
-        }
-        if (date == null) {
-            date = getCreatedOn();
-        }
-        
-        return date;
-    }
     
     public Date getUpdatedOn()
     {

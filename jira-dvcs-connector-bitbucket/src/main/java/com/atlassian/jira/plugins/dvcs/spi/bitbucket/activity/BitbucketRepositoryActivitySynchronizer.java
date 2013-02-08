@@ -19,6 +19,7 @@ import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
@@ -74,7 +75,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         for (BitbucketPullRequestActivityInfo info : activities)
         {
             processActivity(info, forRepository, pullRestpoint);
-            Date activityDate = info.getActivity().extractDate();
+            Date activityDate = ClientUtils.extractActivityDate(info.getActivity());
             if (lastActivitySyncDate == null)
             {
             	lastActivitySyncDate = activityDate;
@@ -197,7 +198,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     private HashMap<String, Object> getAsCommonProperties(BitbucketPullRequestBaseActivity activity, Repository forRepository, Integer pullRequestId)
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
-        ret.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, activity.extractDate());
+        ret.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, ClientUtils.extractActivityDate(activity));
         ret.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, activity.getUser().getUsername());
         ret.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, pullRequestId);
         ret.put(RepositoryActivityPullRequestMapping.REPO_SLUG, forRepository.getSlug());

@@ -115,7 +115,7 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
 
     private void checkDate(BitbucketPullRequestBaseActivity activity)
     {
-    	Date date = activity.extractDate();
+    	Date date = ClientUtils.extractActivityDate(activity);
     	if (date!=null && !date.after(upToDate))
     	{
             wasDateOver = true;

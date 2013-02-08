@@ -12,6 +12,7 @@ import java.util.TimeZone;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityEnvelopeDeserializer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestLinks;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestLinksDeserializer;
 import com.google.gson.FieldNamingPolicy;
@@ -131,5 +132,20 @@ public class ClientUtils
             
             throw exception;
         }
+    }
+    
+    public static Date extractActivityDate(BitbucketPullRequestBaseActivity activity)
+    {
+        Date date = activity.getUpdatedOn();
+        
+        // fallbacks - order depends
+        if (date == null) {
+            date = activity.getDate();
+        }
+        if (date == null) {
+            date = activity.getCreatedOn();
+        }
+        
+        return date;
     }
 }
