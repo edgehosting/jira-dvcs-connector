@@ -105,6 +105,5 @@ public class GithubOrganizationsTest implements BasicOrganizationTests, MissingC
             jira.visit(JiraGithubOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
         }
     }
-    
 
 }

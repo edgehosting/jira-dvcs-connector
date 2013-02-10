@@ -9,13 +9,14 @@ import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
@@ -46,18 +47,19 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
 	private final OrganizationService organizationService;
 
-	private final BitbucketOAuth oauth;
 
 	private final com.atlassian.sal.api.ApplicationProperties ap;
 	
 	private String accessToken = "";
 
+    private final OAuthStore oAuthStore;
+
 	public AddBitbucketOrganization(com.atlassian.sal.api.ApplicationProperties ap,
-			OrganizationService organizationService, BitbucketOAuth oauth)
+			OrganizationService organizationService, OAuthStore oAuthStore)
 	{
 		this.ap = ap;
 		this.organizationService = organizationService;
-		this.oauth = oauth;
+        this.oAuthStore = oAuthStore;
 	}
 
 	@Override
@@ -104,9 +106,9 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
 	private OAuthService createBitbucketOAuthScribeService(String callbackUrl)
 	{
-		ServiceBuilder sb = new ServiceBuilder().apiKey(oauth.getClientId())
+		ServiceBuilder sb = new ServiceBuilder().apiKey(oAuthStore.getClientId(Host.BITBUCKET.id))
 		                                        .signatureType(SignatureType.Header)
-		                                        .apiSecret(oauth.getClientSecret())
+		                                        .apiSecret(oAuthStore.getSecret(Host.BITBUCKET.id))
 		                                        .provider(new Bitbucket10aScribeApi(url))
 		                                        .debugStream(new DebugOutputStream(log));
 		
@@ -120,7 +122,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
 	private void configureOAuth()
 	{
-		oauth.setClient(oauthBbClientId, oauthBbSecret);
+	    oAuthStore.store(Host.BITBUCKET, oauthBbClientId, oauthBbSecret);
 	}
 
 	private boolean isOAuthConfigurationRequired()
