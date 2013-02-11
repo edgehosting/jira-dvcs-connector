@@ -30,11 +30,13 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestLineCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
@@ -64,6 +66,11 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
      *      GitHubPullRequestService, GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, RepositoryActivityDao)
      */
     private final GitHubEventProcessorAggregator<EventPayload> gitHubEventProcessorAggregator;
+
+    /**
+     * @see
+     */
+    private final GitHubRepositoryService gitHubRepositoryService;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator, GitHubEventService,
@@ -105,6 +112,8 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
      * @param gitHubEventProcessorAggregator
      *            injected {@link GitHubEventProcessorAggregator} dependency
      * @param gitHubEventService
+     *            injected {@link GitHubRepositoryService} dependency
+     * @param gitHubEventService
      *            injected {@link GitHubEventService} dependency
      * @param gitHubPullRequestService
      *            injected {@link GitHubPullRequestService} dependency
@@ -119,6 +128,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             ActiveObjects activeObjects, //
             GithubClientProvider githubClientProvider, //
             GitHubEventProcessorAggregator<EventPayload> gitHubEventProcessorAggregator, //
+            GitHubRepositoryService gitHubRepositoryService, //
             GitHubEventService gitHubEventService, //
             GitHubPullRequestService gitHubPullRequestService, //
             GitHubPullRequestCommentService gitHubPullRequestCommentService, //
@@ -129,6 +139,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         this.activeObjects = activeObjects;
         this.githubClientProvider = githubClientProvider;
         this.gitHubEventProcessorAggregator = gitHubEventProcessorAggregator;
+        this.gitHubRepositoryService = gitHubRepositoryService;
         this.gitHubEventService = gitHubEventService;
         this.gitHubPullRequestService = gitHubPullRequestService;
         this.gitHubPullRequestCommentService = gitHubPullRequestCommentService;
@@ -146,8 +157,9 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
         // gets repository ID
         RepositoryId repositoryId = RepositoryId.create(forRepository.getOrgName(), forRepository.getSlug());
+        final GitHubRepository gitHubRepository = gitHubRepositoryService.fetch(forRepository, 0);
 
-        final GitHubEvent savePoint = gitHubEventService.getLastSavePoint();
+        final GitHubEvent savePoint = gitHubEventService.getLastSavePoint(gitHubRepository);
 
         // goes over events
         Iterator<Collection<Event>> eventsIterator = eventService.pageEvents(repositoryId).iterator();
@@ -182,9 +194,13 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
                         gitHubEventProcessorAggregator.process(forRepository, event);
 
                         // saves proceed GitHub event
-                        GitHubEvent gitHubEvent = new GitHubEvent();
+                        GitHubEvent gitHubEvent = gitHubEventService.getByGitHubId(event.getId());
+                        if (gitHubEvent == null) {
+                            gitHubEvent = new GitHubEvent();
+                        }
                         gitHubEvent.setGitHubId(event.getId());
                         gitHubEvent.setCreatedAt(event.getCreatedAt());
+                        gitHubEvent.setRepository(gitHubRepository);
                         gitHubEventService.save(gitHubEvent);
                     }
 
@@ -201,7 +217,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             @Override
             public Void doInTransaction()
             {
-                GitHubEvent last = gitHubEventService.getLast();
+                GitHubEvent last = gitHubEventService.getLast(gitHubRepository);
                 if (last != null)
                 {
                     last.setSavePoint(true);

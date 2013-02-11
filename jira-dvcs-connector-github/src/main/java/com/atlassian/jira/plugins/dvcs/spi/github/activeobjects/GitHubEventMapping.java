@@ -32,6 +32,18 @@ public interface GitHubEventMapping extends Entity
     void setGitHubId(String gitHubId);
 
     /**
+     * @return {@link GitHubEvent#getRepository()}
+     */
+    @NotNull
+    GitHubRepositoryMapping getRepository();
+
+    /**
+     * @param gitHubRepository
+     *            {@link #getRepository()}
+     */
+    void setReository(GitHubRepositoryMapping gitHubRepository);
+
+    /**
      * @return {@link GitHubEvent#getCreatedAt()}
      */
     @NotNull

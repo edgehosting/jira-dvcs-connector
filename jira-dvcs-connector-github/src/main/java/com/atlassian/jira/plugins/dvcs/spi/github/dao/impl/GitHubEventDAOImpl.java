@@ -8,8 +8,10 @@ import net.java.ao.Query;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubEventMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubEventDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubEvent;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
@@ -119,9 +121,10 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
      * {@inheritDoc}
      */
     @Override
-    public GitHubEvent getLast()
+    public GitHubEvent getLast(GitHubRepository gitHubRepository)
     {
         Query query = Query.select();
+        query.where(columnNameResolverService.column(gitHubEventMappingDescription.getRepository()) + " = ? ", gitHubRepository.getId());
         query.setOrderClause(columnNameResolverService.column(gitHubEventMappingDescription.getCreatedAt()) + " desc ");
         query.setLimit(1);
         GitHubEventMapping[] founded = activeObjects.find(GitHubEventMapping.class, query);
@@ -143,10 +146,13 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
      * {@inheritDoc}
      */
     @Override
-    public GitHubEvent getLastSavePoint()
+    public GitHubEvent getLastSavePoint(GitHubRepository gitHubRepository)
     {
         Query query = Query.select().from(GitHubEventMapping.class);
-        query.where(columnNameResolverService.column(gitHubEventMappingDescription.isSavePoint()) + " = ? ", true);
+        query.where(
+                columnNameResolverService.column(gitHubEventMappingDescription.isSavePoint()) + " = ? AND "
+                        + columnNameResolverService.column(gitHubEventMappingDescription.getRepository()) + " = ? ", true,
+                gitHubRepository.getId());
         query.setOrderClause(columnNameResolverService.column(gitHubEventMappingDescription.getCreatedAt()) + " desc");
         query.setLimit(1);
 
@@ -174,7 +180,10 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
      */
     private void map(Map<String, Object> target, GitHubEvent source)
     {
+        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+        
         target.put(columnNameResolverService.column(gitHubEventMappingDescription.getGitHubId()), source.getGitHubId());
+        target.put(columnNameResolverService.column(gitHubEventMappingDescription.getRepository()), repository);
         target.put(columnNameResolverService.column(gitHubEventMappingDescription.getCreatedAt()), source.getCreatedAt());
         target.put(columnNameResolverService.column(gitHubEventMappingDescription.isSavePoint()), source.isSavePoint());
     }
@@ -189,7 +198,10 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
      */
     private void map(GitHubEventMapping target, GitHubEvent source)
     {
+        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+        
         target.setGitHubId(source.getGitHubId());
+        target.setReository(repository);
         target.setCreatedAt(source.getCreatedAt());
         target.setSavePoint(source.isSavePoint());
     }
@@ -204,8 +216,12 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
      */
     private void map(GitHubEvent target, GitHubEventMapping source)
     {
+        GitHubRepository repository = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(repository, source.getRepository());
+
         target.setId(source.getID());
         target.setGitHubId(source.getGitHubId());
+        target.setRepository(repository);
         target.setCreatedAt(source.getCreatedAt());
         target.setSavePoint(source.isSavePoint());
     }

@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubEventDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubEvent;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 
 /**
@@ -51,18 +52,18 @@ public class GitHubEventServiceImpl implements GitHubEventService
      * {@inheritDoc}
      */
     @Override
-    public GitHubEvent getLast()
+    public GitHubEvent getLast(GitHubRepository gitHubRepository)
     {
-        return gitHubEventDAO.getLast();
+        return gitHubEventDAO.getLast(gitHubRepository);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public GitHubEvent getLastSavePoint()
+    public GitHubEvent getLastSavePoint(GitHubRepository gitHubRepository)
     {
-        return gitHubEventDAO.getLastSavePoint();
+        return gitHubEventDAO.getLastSavePoint(gitHubRepository);
     }
 
 }
