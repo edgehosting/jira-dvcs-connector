@@ -87,9 +87,9 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequest> getAll()
+    public List<GitHubPullRequest> getByRepository(GitHubRepository repository)
     {
-        return gitHubPullRequestDAO.getAll();
+        return gitHubPullRequestDAO.getByRepository(repository);
     }
 
     /**

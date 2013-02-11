@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.dao;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
 /**
  * Provides {@link GitHubPullRequestComment} related DAO services.
@@ -42,10 +43,12 @@ public interface GitHubPullRequestCommentDAO
      * @return resolved {@link GitHubPullRequestComment}
      */
     GitHubPullRequestComment getByGitHubId(long gitHubId);
-    
+
     /**
-     * @return all {@link GitHubPullRequestComment}-s
+     * @param repository
+     *            {@link GitHubPullRequestComment#getRepository()}
+     * @return resolved {@link GitHubPullRequestComment}-s
      */
-    List<GitHubPullRequestComment> getAll();
+    List<GitHubPullRequestComment> getByRepository(GitHubRepository repository);
 
 }

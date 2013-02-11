@@ -168,10 +168,14 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequestLineComment> getAll()
+    public List<GitHubPullRequestLineComment> getByRepository(GitHubRepository repository)
     {
+        Query query = Query.select().where(
+                columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getRepository()) + " = ? ",
+                repository.getId());
+
         List<GitHubPullRequestLineComment> result = new LinkedList<GitHubPullRequestLineComment>();
-        for (GitHubPullRequestLineCommentMapping source : activeObjects.get(GitHubPullRequestLineCommentMapping.class))
+        for (GitHubPullRequestLineCommentMapping source : activeObjects.find(GitHubPullRequestLineCommentMapping.class, query))
         {
             GitHubPullRequestLineComment target = new GitHubPullRequestLineComment();
             map(target, source);
@@ -244,7 +248,7 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
     {
         GitHubRepository repository = new GitHubRepository();
         GitHubRepositoryDAOImpl.map(repository, source.getRepository());
-        
+
         GitHubUser createdBy = new GitHubUser();
         GitHubUserDAOImpl.map(createdBy, source.getCreatedBy());
 

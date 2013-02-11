@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
@@ -45,9 +46,11 @@ public interface GitHubPullRequestService
     GitHubPullRequest getByGitHubId(long gitHubId);
 
     /**
-     * @return all {@link GitHubPullRequest}-s
+     * @param repository
+     *            {@link GitHubPullRequestMapping#getRepository()}
+     * @return resolved {@link GitHubPullRequest}-s
      */
-    List<GitHubPullRequest> getAll();
+    List<GitHubPullRequest> getByRepository(GitHubRepository repository);
 
     /**
      * @param gitHubRepository

@@ -165,10 +165,13 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequestComment> getAll()
+    public List<GitHubPullRequestComment> getByRepository(GitHubRepository repository)
     {
+        Query query = Query.select().where(columnNameResolverService.column(gitHubPullRequestCommentDescription.getRepository()) + " = ? ",
+                repository.getId());
+
         List<GitHubPullRequestComment> result = new LinkedList<GitHubPullRequestComment>();
-        for (GitHubPullRequestCommentMapping source : activeObjects.find(GitHubPullRequestCommentMapping.class))
+        for (GitHubPullRequestCommentMapping source : activeObjects.find(GitHubPullRequestCommentMapping.class, query))
         {
             GitHubPullRequestComment target = new GitHubPullRequestComment();
             map(target, source);

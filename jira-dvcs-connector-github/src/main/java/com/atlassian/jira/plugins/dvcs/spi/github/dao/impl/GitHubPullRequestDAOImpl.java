@@ -233,12 +233,13 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequest> getAll()
+    public List<GitHubPullRequest> getByRepository(GitHubRepository repository)
     {
-        // FIXME<Stanislav Dvorscak>
+        Query query = Query.select().where(columnNameResolverService.column(gitHubRepositoryMappingDescription.getRepository()) + " = ? ",
+                repository.getId());
 
         List<GitHubPullRequest> result = new ArrayList<GitHubPullRequest>();
-        GitHubPullRequestMapping[] founded = activeObjects.find(GitHubPullRequestMapping.class);
+        GitHubPullRequestMapping[] founded = activeObjects.find(GitHubPullRequestMapping.class, query);
         for (GitHubPullRequestMapping found : founded)
         {
             GitHubPullRequest pullRequest = new GitHubPullRequest();

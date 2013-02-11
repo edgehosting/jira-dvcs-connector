@@ -7,6 +7,7 @@ import org.eclipse.egit.github.core.CommitComment;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 
 /**
@@ -66,8 +67,10 @@ public interface GitHubPullRequestLineCommentService
             GitHubCommit commit);
 
     /**
-     * @return all {@link GitHubPullRequestLineComment}-s.
+     * @param repository
+     *            {@link GitHubPullRequestLineComment#getRepository()}
+     * @return resolved {@link GitHubPullRequestLineComment}-s
      */
-    List<GitHubPullRequestLineComment> getAll();
+    List<GitHubPullRequestLineComment> getByRepository(GitHubRepository repository);
 
 }

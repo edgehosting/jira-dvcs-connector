@@ -289,7 +289,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
         });
 
-        for (GitHubPullRequest gitHubPullRequest : gitHubPullRequestService.getAll())
+        for (GitHubPullRequest gitHubPullRequest : gitHubPullRequestService.getByRepository(gitHubRepository))
         {
             RepositoryPullRequestMapping repositoryPullRequest = getRepositoryPullRequest(gitHubPullRequest);
 
@@ -309,7 +309,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             }
         }
 
-        for (GitHubPullRequestLineComment gitHubPullRequestLineComment : gitHubPullRequestLineCommentService.getAll())
+        for (GitHubPullRequestLineComment gitHubPullRequestLineComment : gitHubPullRequestLineCommentService.getByRepository(gitHubRepository))
         {
             dump.put(gitHubPullRequestLineComment.getCreatedAt(), //
                     gitHubPullRequestLineComment.getCreatedBy().getName() // name
@@ -320,7 +320,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             );
         }
 
-        for (GitHubPullRequestComment gitHubPullRequestComment : gitHubPullRequestCommentService.getAll())
+        for (GitHubPullRequestComment gitHubPullRequestComment : gitHubPullRequestCommentService.getByRepository(gitHubRepository))
         {
             RepositoryPullRequestMapping repositoryPullRequest = getRepositoryPullRequest(gitHubPullRequestComment.getPullRequest());
 

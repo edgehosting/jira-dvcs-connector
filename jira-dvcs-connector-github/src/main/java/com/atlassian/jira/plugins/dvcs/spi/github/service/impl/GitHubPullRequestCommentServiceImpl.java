@@ -7,6 +7,7 @@ import org.eclipse.egit.github.core.Comment;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestCommentDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
@@ -76,9 +77,9 @@ public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCom
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequestComment> getAll()
+    public List<GitHubPullRequestComment> getByRepository(GitHubRepository repository)
     {
-        return gitHubPullRequestCommentDAO.getAll();
+        return gitHubPullRequestCommentDAO.getByRepository(repository);
     }
 
     /**
