@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
@@ -92,7 +93,7 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
      * {@inheritDoc}
      */
     @Override
-    public void process(Repository repository, Event event)
+    public void process(GitHubRepository gitHubRepository, Event event, Repository repository)
     {
         PullRequestReviewCommentPayload payload = getPayload(event);
         CommitComment commitComment = payload.getComment();
@@ -105,10 +106,12 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
 
         // not - will be proceed
         GitHubPullRequestLineComment gitHubPullRequestLineComment = new GitHubPullRequestLineComment();
-        GitHubPullRequest pullRequest = getPullRequestByComment(repository, commitComment);
-        GitHubCommit commit = gitHubCommitService.fetch(repository, commitComment.getCommitId());
-        GitHubUser createdBy = gitHubUserService.fetch(payload.getComment().getUser().getLogin(), repository);
+        gitHubPullRequestLineComment.setRepository(gitHubRepository);
         
+        GitHubPullRequest pullRequest = getPullRequestByComment(gitHubRepository, repository, commitComment);
+        GitHubCommit commit = gitHubCommitService.fetch(gitHubRepository, repository, commitComment.getCommitId());
+        GitHubUser createdBy = gitHubUserService.fetch(payload.getComment().getUser().getLogin(), gitHubRepository, repository);
+
         gitHubPullRequestLineCommentService.map(gitHubPullRequestLineComment, commitComment, pullRequest, createdBy, commit);
         gitHubPullRequestLineCommentService.save(gitHubPullRequestLineComment);
     }
@@ -131,7 +134,7 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
      *            for which comment
      * @return resolved {@link GitHubPullRequest}
      */
-    private GitHubPullRequest getPullRequestByComment(Repository repository, CommitComment commitComment)
+    private GitHubPullRequest getPullRequestByComment(GitHubRepository gitHubRepository, Repository repository, CommitComment commitComment)
     {
         GitHubPullRequest result;
 
@@ -150,7 +153,8 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
                         result = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
                         if (result == null)
                         {
-                            result = gitHubPullRequestService.fetch(repository, pullRequest.getId(), pullRequest.getNumber());
+                            result = gitHubPullRequestService.fetch(gitHubRepository, pullRequest.getId(), pullRequest.getNumber(),
+                                    repository);
                             gitHubPullRequestService.save(result);
                         }
 
@@ -169,7 +173,8 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
                         result = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
                         if (result == null)
                         {
-                            result = gitHubPullRequestService.fetch(repository, pullRequest.getId(), pullRequest.getNumber());
+                            result = gitHubPullRequestService.fetch(gitHubRepository, pullRequest.getId(), pullRequest.getNumber(),
+                                    repository);
                         }
 
                         return result;

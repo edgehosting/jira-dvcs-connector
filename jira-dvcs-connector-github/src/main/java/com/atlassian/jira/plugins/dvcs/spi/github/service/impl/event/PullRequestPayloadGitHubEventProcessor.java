@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction.Action;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubUserService;
@@ -50,13 +51,13 @@ public class PullRequestPayloadGitHubEventProcessor extends AbstractGitHubEventP
      * {@inheritDoc}
      */
     @Override
-    public void process(Repository repository, Event event)
+    public void process(GitHubRepository gitHubRepository, Event event, Repository repository)
     {
         PullRequestPayload payload = getPayload(event);
         PullRequest pullRequest = payload.getPullRequest();
 
-        GitHubPullRequest gitHubPullRequest = gitHubPullRequestService
-                .fetch(repository, pullRequest.getId(), pullRequest.getNumber());
+        GitHubPullRequest gitHubPullRequest = gitHubPullRequestService.fetch(gitHubRepository, pullRequest.getId(),
+                pullRequest.getNumber(), repository);
 
         Action resolvedAction = resolveAction(payload);
         // was resolved appropriate action? with other words is supported action?
@@ -78,12 +79,13 @@ public class PullRequestPayloadGitHubEventProcessor extends AbstractGitHubEventP
             if (action == null)
             {
                 action = new GitHubPullRequestAction();
+                action.setRepository(gitHubRepository);
                 action.setGitHubEventId(event.getId());
                 gitHubPullRequest.getActions().add(action);
             }
 
             action.setAt(event.getCreatedAt());
-            action.setCreatedBy(gitHubUserService.fetch(event.getActor().getLogin(), repository));
+            action.setCreatedBy(gitHubUserService.fetch(event.getActor().getLogin(), gitHubRepository, repository));
             action.setAction(resolvedAction);
         }
 

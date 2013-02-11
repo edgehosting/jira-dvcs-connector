@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.github.activeobjects;
 
 import java.util.Date;
 
-import net.java.ao.Entity;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 import net.java.ao.schema.Unique;
@@ -17,7 +16,7 @@ import com.atlassian.jira.util.NotNull;
  * 
  */
 @Table("GitHubCommit")
-public interface GitHubCommitMapping extends Entity
+public interface GitHubCommitMapping extends GitHubEntityMapping
 {
     
     /**

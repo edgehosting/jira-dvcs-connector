@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.github.activeobjects;
 
 import java.util.Date;
 
-import net.java.ao.Entity;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.Table;
 import net.java.ao.schema.Unique;
@@ -16,7 +15,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineCom
  * 
  */
 @Table("GitHubPRLComment")
-public interface GitHubPullRequestLineCommentMapping extends Entity
+public interface GitHubPullRequestLineCommentMapping extends GitHubEntityMapping
 {
 
     /**

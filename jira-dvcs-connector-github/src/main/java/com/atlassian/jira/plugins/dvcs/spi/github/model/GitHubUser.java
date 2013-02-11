@@ -8,13 +8,8 @@ import java.util.Date;
  * @author Stanislav Dvorscak
  * 
  */
-public class GitHubUser
+public class GitHubUser extends GitHubEntity
 {
-
-    /**
-     * @see #getId()
-     */
-    private int id;
 
     /**
      * @see #getSynchronizedAt()
@@ -56,23 +51,6 @@ public class GitHubUser
      */
     public GitHubUser()
     {
-    }
-
-    /**
-     * @return Identity of this entity.
-     */
-    public int getId()
-    {
-        return id;
-    }
-
-    /**
-     * @param id
-     *            {@link #getId()}
-     */
-    public void setId(int id)
-    {
-        this.id = id;
     }
 
     /**

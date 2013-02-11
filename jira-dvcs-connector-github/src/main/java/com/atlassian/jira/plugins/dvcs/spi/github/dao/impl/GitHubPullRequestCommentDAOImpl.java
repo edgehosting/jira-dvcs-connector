@@ -11,10 +11,12 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestCommentMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestCommentDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
@@ -187,9 +189,11 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
      */
     private void map(Map<String, Object> target, GitHubPullRequestComment source)
     {
+        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
         GitHubUserMapping createdBy = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
         GitHubPullRequestMapping pullRequest = activeObjects.get(GitHubPullRequestMapping.class, source.getPullRequest().getId());
 
+        target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getRepository()), repository);
         target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getGitHubId()), source.getGitHubId());
         target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getPullRequest()), pullRequest);
         target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getCreatedAt()), source.getCreatedAt());
@@ -207,9 +211,11 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
      */
     private void map(GitHubPullRequestCommentMapping target, GitHubPullRequestComment source)
     {
+        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getId());
         GitHubUserMapping createdBy = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
         GitHubPullRequestMapping pullRequest = activeObjects.get(GitHubPullRequestMapping.class, source.getPullRequest().getId());
 
+        target.setRepository(repository);
         target.setGitHubId(source.getGitHubId());
         target.setPullRequest(pullRequest);
         target.setCreatedBy(createdBy);
@@ -227,6 +233,8 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
      */
     private void map(GitHubPullRequestComment target, GitHubPullRequestCommentMapping source)
     {
+        GitHubRepository repository = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(repository, source.getRepository());
         GitHubPullRequest pullRequest = new GitHubPullRequest();
         GitHubPullRequestDAOImpl.map(pullRequest, source.getPullRequest());
 
@@ -234,6 +242,7 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
         GitHubUserDAOImpl.map(createdBy, source.getCreatedBy());
 
         target.setId(source.getID());
+        target.setRepository(repository);
         target.setGitHubId(source.getGitHubId());
         target.setPullRequest(pullRequest);
         target.setCreatedAt(source.getCreatedAt());

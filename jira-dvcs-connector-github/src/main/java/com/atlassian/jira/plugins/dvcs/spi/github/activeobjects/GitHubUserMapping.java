@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.github.activeobjects;
 
 import java.util.Date;
 
-import net.java.ao.Entity;
 import net.java.ao.schema.Table;
 import net.java.ao.schema.Unique;
 
@@ -16,7 +15,7 @@ import com.atlassian.jira.util.NotNull;
  * 
  */
 @Table("GitHubUser")
-public interface GitHubUserMapping extends Entity
+public interface GitHubUserMapping extends GitHubEntityMapping
 {
 
     /**

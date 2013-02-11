@@ -201,7 +201,7 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
         GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
         
         target.setGitHubId(source.getGitHubId());
-        target.setReository(repository);
+        target.setRepository(repository);
         target.setCreatedAt(source.getCreatedAt());
         target.setSavePoint(source.isSavePoint());
     }

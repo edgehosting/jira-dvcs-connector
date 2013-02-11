@@ -8,23 +8,13 @@ import java.util.Date;
  * @author Stanislav Dvorscak
  * 
  */
-public class GitHubEvent
+public class GitHubEvent extends GitHubEntity
 {
-
-    /**
-     * @see #getId()
-     */
-    private int id;
 
     /**
      * @see #getGitHubId()
      */
     private String gitHubId;
-
-    /**
-     * @see #getRepository()
-     */
-    private GitHubRepository repository;
 
     /**
      * @see #getCreatedAt()
@@ -44,45 +34,11 @@ public class GitHubEvent
     }
 
     /**
-     * @return Identity of this entity.
-     */
-    public int getId()
-    {
-        return id;
-    }
-
-    /**
-     * @param id
-     *            {@link #getId()}
-     */
-    public void setId(int id)
-    {
-        this.id = id;
-    }
-
-    /**
      * @return GitHub identity.
      */
     public String getGitHubId()
     {
         return gitHubId;
-    }
-
-    /**
-     * @return Repository owner of the event.
-     */
-    public GitHubRepository getRepository()
-    {
-        return repository;
-    }
-
-    /**
-     * @param repository
-     *            {@link #getRepository()}
-     */
-    public void setRepository(GitHubRepository repository)
-    {
-        this.repository = repository;
     }
 
     /**

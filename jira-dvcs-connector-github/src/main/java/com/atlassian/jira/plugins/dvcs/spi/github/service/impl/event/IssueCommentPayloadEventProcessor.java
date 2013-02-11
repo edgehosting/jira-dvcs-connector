@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
@@ -82,7 +83,7 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
      * {@inheritDoc}
      */
     @Override
-    public void process(Repository repository, Event event)
+    public void process(GitHubRepository gitHubRepository, Event event, Repository repository)
     {
         IssueCommentPayload payload = getPayload(event);
         Comment comment = payload.getComment();
@@ -90,16 +91,17 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
         PullRequest pullRequest = payload.getIssue().getPullRequest();
         if (pullRequest != null && !StringUtils.isBlank(pullRequest.getHtmlUrl()))
         {
-            GitHubPullRequest gitHubPullRequest = getPullRequestByHtmlUrl(repository, pullRequest.getHtmlUrl());
+            GitHubPullRequest gitHubPullRequest = getPullRequestByHtmlUrl(gitHubRepository, repository, pullRequest.getHtmlUrl());
             if (gitHubPullRequest != null)
             {
-                GitHubUser createdBy = gitHubUserService.fetch(comment.getUser().getLogin(), repository);
+                GitHubUser createdBy = gitHubUserService.fetch(comment.getUser().getLogin(), gitHubRepository, repository);
                 GitHubPullRequestComment gitHubPullRequestComment = gitHubPullRequestCommentService.getByGitHubId(comment.getId());
                 if (gitHubPullRequestComment == null)
                 {
                     gitHubPullRequestComment = new GitHubPullRequestComment();
                 }
 
+                gitHubPullRequestComment.setRepository(gitHubRepository);
                 gitHubPullRequestCommentService.map(gitHubPullRequestComment, comment, gitHubPullRequest, createdBy);
                 gitHubPullRequestCommentService.save(gitHubPullRequestComment);
             }
@@ -110,13 +112,15 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
     /**
      * Resolves {@link GitHubPullRequest} for the provided pull request html URL.
      * 
+     * @param gitHubRepository
+     *            over which repository
      * @param repository
      *            over which repository
      * @param htmlUrl
      *            of the {@link PullRequest}
      * @return resolved {@link GitHubPullRequest}
      */
-    private GitHubPullRequest getPullRequestByHtmlUrl(Repository repository, String htmlUrl)
+    private GitHubPullRequest getPullRequestByHtmlUrl(GitHubRepository gitHubRepository, Repository repository, String htmlUrl)
     {
         GitHubPullRequest result;
 
@@ -133,7 +137,7 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
                     result = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
                     if (result == null)
                     {
-                        result = gitHubPullRequestService.fetch(repository, pullRequest.getId(), pullRequest.getNumber());
+                        result = gitHubPullRequestService.fetch(gitHubRepository, pullRequest.getId(), pullRequest.getNumber(), repository);
                         gitHubPullRequestService.save(result);
                     }
 
@@ -149,7 +153,7 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
                     result = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
                     if (result == null)
                     {
-                        result = gitHubPullRequestService.fetch(repository, pullRequest.getId(), pullRequest.getNumber());
+                        result = gitHubPullRequestService.fetch(gitHubRepository, pullRequest.getId(), pullRequest.getNumber(), repository);
                         gitHubPullRequestService.save(result);
                     }
 

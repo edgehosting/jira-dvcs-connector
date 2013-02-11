@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
 /**
  * Defines {@link GitHubCommit}'s related services.
@@ -52,12 +53,14 @@ public interface GitHubCommitService
     List<GitHubCommit> getByIssueKey(String issueKey);
 
     /**
+     * @param gitHubRepository
+     *            over which repository it is done
      * @param repository
      *            where should be commit
      * @param sha
      *            of the commit
      * @return newly created or existing commit
      */
-    public GitHubCommit fetch(Repository repository, String sha);
+    public GitHubCommit fetch(GitHubRepository gitHubRepository, Repository repository, String sha);
 
 }

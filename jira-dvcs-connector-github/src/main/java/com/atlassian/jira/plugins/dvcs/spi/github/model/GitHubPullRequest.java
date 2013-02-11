@@ -9,13 +9,8 @@ import java.util.List;
  * @author Stanislav Dvorscak
  * 
  */
-public class GitHubPullRequest
+public class GitHubPullRequest extends GitHubEntity
 {
-
-    /**
-     * @see #getId()
-     */
-    private int id;
 
     /**
      * @see #getBaseRepository()
@@ -47,23 +42,6 @@ public class GitHubPullRequest
      */
     public GitHubPullRequest()
     {
-    }
-
-    /**
-     * @return The identity of the {@link GitHubPullRequest}.
-     */
-    public int getId()
-    {
-        return id;
-    }
-
-    /**
-     * @param id
-     *            {@link #getId()}
-     */
-    public void setId(int id)
-    {
-        this.id = id;
     }
 
     /**

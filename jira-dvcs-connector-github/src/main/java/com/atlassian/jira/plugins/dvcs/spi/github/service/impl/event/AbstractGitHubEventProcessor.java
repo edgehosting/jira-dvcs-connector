@@ -17,15 +17,6 @@ public abstract class AbstractGitHubEventProcessor<T_EventPayload extends EventP
 {
 
 	/**
-	 * @return Returns true if the event was already proceed and can be skipped.
-	 */
-	protected boolean wasAlreadyProceed()
-	{
-		// FIXME<Stanislav Dvorscak>
-		return false;
-	}
-
-	/**
 	 * @param event
 	 *            current proceed event
 	 * @return Casted version of the {@link Event#getPayload()}.

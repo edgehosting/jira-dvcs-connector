@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.activeobjects;
 
-import net.java.ao.Entity;
 import net.java.ao.OneToMany;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.Table;
@@ -15,7 +14,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
  * 
  */
 @Table("GitHubPullRequest")
-public interface GitHubPullRequestMapping extends Entity
+public interface GitHubPullRequestMapping extends GitHubEntityMapping
 {
 
     /**

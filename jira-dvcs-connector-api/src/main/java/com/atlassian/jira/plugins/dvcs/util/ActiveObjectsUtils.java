@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.activeobjects;
+package com.atlassian.jira.plugins.dvcs.util;
 
 import java.util.HashSet;
 import java.util.Set;

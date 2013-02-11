@@ -8,13 +8,8 @@ import java.util.Date;
  * @author Stanislav Dvorscak
  * 
  */
-public class GitHubPullRequestLineComment
+public class GitHubPullRequestLineComment extends GitHubEntity
 {
-
-    /**
-     * @see #getId()
-     */
-    private int id;
 
     /**
      * @see #getGitHubId()
@@ -61,23 +56,6 @@ public class GitHubPullRequestLineComment
      */
     public GitHubPullRequestLineComment()
     {
-    }
-
-    /**
-     * @return Identity of this entity.
-     */
-    public int getId()
-    {
-        return id;
-    }
-
-    /**
-     * @param id
-     *            {@link #getId()}
-     */
-    public void setId(int id)
-    {
-        this.id = id;
     }
 
     /**
