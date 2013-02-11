@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.activity;
+package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +16,13 @@ import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestApprovalMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Joiner;
@@ -33,13 +40,13 @@ import com.google.common.base.Joiner;
  * @author jhocman@atlassian.com
  * 
  */
-@SuppressWarnings("all")
 public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 {
 
     private final ActiveObjects activeObjects;
 
-    private static final Class<RepositoryActivityPullRequestMapping>[] ALL_ACTIVITY_TABLES = new Class[] {
+    @SuppressWarnings("unchecked")
+	private static final Class<RepositoryActivityPullRequestMapping>[] ALL_ACTIVITY_TABLES = new Class[] {
             RepositoryActivityPullRequestCommentMapping.class, RepositoryActivityPullRequestApprovalMapping.class,
             RepositoryActivityPullRequestUpdateMapping.class };
 
@@ -54,9 +61,10 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
-            public Void doInTransaction()
+            @SuppressWarnings("unchecked")
+			public Void doInTransaction()
             {
-                activeObjects.create((Class) activity.remove(RepositoryActivityPullRequestMapping.ENTITY_TYPE),
+                activeObjects.create((Class<? extends RepositoryActivityPullRequestMapping>) activity.remove(RepositoryActivityPullRequestMapping.ENTITY_TYPE),
                         activity);
                 return null;
             }
