@@ -581,7 +581,7 @@
 		class="com.atlassian.jira.plugins.dvcs.spi.github.activity.GithubRepositoryActivitySynchronizer" />
 		
 	<component key="repositoryActivityDaoImpl" name="Repository Activity Dao Impl"
-		class="com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDaoImpl" />
+		class="com.atlassian.jira.plugins.dvcs.dao.impl.RepositoryActivityDaoImpl" />
 		
     <!-- Activity rendering -->
 	<component key="aggregatedIssueActionFactory" name="AggregatedIssueActionFactory"
