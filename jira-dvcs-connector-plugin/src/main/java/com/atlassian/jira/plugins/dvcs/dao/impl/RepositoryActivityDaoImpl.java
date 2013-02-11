@@ -16,6 +16,7 @@ import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestApprovalMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
@@ -210,29 +211,28 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                         int i = 0;
                         for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
                         {
-                            deleteFromTableByQuery(activityTable, activityDeleteQueries.get(i), null);
+                            ActiveObjectsUtils.delete(activeObjects, activityTable, activityDeleteQueries.get(i));
                             i++;
                         }
                         // drop pull requests
-                        HashSet<Integer> deletedIds = new java.util.HashSet<Integer>();
-                        deleteFromTableByQuery(RepositoryPullRequestMapping.class,
+                        Set<Integer> deletedIds = ActiveObjectsUtils.deleteAndReturnIds(activeObjects,RepositoryPullRequestMapping.class,
                                 Query
                                 .select()
                                 .from(RepositoryPullRequestMapping.class)
                                 .where(RepositoryPullRequestMapping.TO_REPO_SLUG + " = ?",
                                         new Object[] { forRepository.getSlug() })
-                                        , deletedIds);
+                                        );
                         
                         // drop issue keys to PR mappings
                         if (!deletedIds.isEmpty())
                         {
-	                        deleteFromTableByQuery(RepositoryPullRequestIssueKeyMapping.class,
+                        	ActiveObjectsUtils.delete(activeObjects, RepositoryPullRequestIssueKeyMapping.class,
 	                                Query
 	                                .select()
 	                                .from(RepositoryPullRequestIssueKeyMapping.class)
 	                                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds) +")",
 	                                        new Object[] {  })
-	                                        , null);
+	                                        );
                         }
 	                    return null;
                     }
@@ -245,22 +245,6 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     // private helpers
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
-
-    private <T extends Entity> void deleteFromTableByQuery(final Class<T> activityTable, Query query, final Set<Integer> deletedIds)
-    {
-        activeObjects.stream(activityTable, query,
-                new EntityStreamCallback<T, Integer>()
-                {
-                    @Override
-                    public void onRowRead(T mapping)
-                    {
-                        if (deletedIds != null) {
-                            deletedIds.add(mapping.getID());
-                        }
-                        activeObjects.delete(activeObjects.get(activityTable, mapping.getID()));
-                    }
-                });
-    }
 
     private List<RepositoryActivityPullRequestMapping> sort(List<RepositoryActivityPullRequestMapping> sortable)
     {

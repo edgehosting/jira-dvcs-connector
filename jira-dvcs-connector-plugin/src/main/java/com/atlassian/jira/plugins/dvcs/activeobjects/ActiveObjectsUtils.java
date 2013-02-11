@@ -1,5 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.java.ao.Entity;
 import net.java.ao.Query;
 
@@ -15,15 +18,40 @@ public class ActiveObjectsUtils
 
     public static <T extends Entity> void delete(final ActiveObjects activeObjects, Class<T> entityType, Query query)
     {
-        //TODO: use activeObjects.deleteWithSQL() when AO update https://ecosystem.atlassian.net/browse/AO-348 is available.
-        log.debug("Deleting type {}", entityType);
+        delete(activeObjects, entityType, query, false);
+    }
+    
+    public static <T extends Entity> Set<Integer> deleteAndReturnIds(final ActiveObjects activeObjects, Class<T> entityType, Query query)
+    {
+        return delete(activeObjects, entityType, query, true);
+    }
+    
+    public static <T extends Entity> Set<Integer> delete(final ActiveObjects activeObjects, final Class<T> entityType, final Query query, final boolean returnIds)
+    {
+    	//TODO: use activeObjects.deleteWithSQL() when AO update https://ecosystem.atlassian.net/browse/AO-348 is available.
+    	log.debug("Deleting type {}", entityType);
         int remainingEntities = activeObjects.count(entityType, query);
+        
+        Set<Integer> deletedIds = null;
+        if (returnIds)
+        {
+        	deletedIds = new HashSet<Integer>();
+        }
         while (remainingEntities > 0)
         {
             log.debug("Deleting up to {} entities of {} remaining.", DELETION_WINDOW_SIZE, remainingEntities);
             T[] entities = activeObjects.find(entityType, query.limit(DELETION_WINDOW_SIZE));
+            if ( returnIds )
+            {
+	            for ( T entity : entities)
+	            {
+	            	deletedIds.add(entity.getID());
+	            }
+            }
             activeObjects.delete(entities);
             remainingEntities = activeObjects.count(entityType, query);
         }
+        
+        return deletedIds;
     }
 }
