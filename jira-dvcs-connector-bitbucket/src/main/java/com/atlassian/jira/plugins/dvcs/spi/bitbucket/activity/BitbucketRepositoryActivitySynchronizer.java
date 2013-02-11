@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestApprovalMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
@@ -22,10 +22,10 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Bitbuc
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestApprovalActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommentActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestApprovalActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.HasPossibleUpdatedMessages;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
@@ -112,7 +112,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
             PullRequestRemoteRestpoint pullRestpoint, BitbucketPullRequestActivityInfo info)
     {
         RepositoryPullRequestMapping localPullRequest = dao.findRequestById(info.getPullRequest().getId(),
-                forRepository.getSlug());
+                forRepository.getId());
 
         // don't have this pull request, let's save it
         if (localPullRequest == null)
@@ -202,7 +202,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         ret.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, ClientUtils.extractActivityDate(activity));
         ret.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, activity.getUser().getUsername());
         ret.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, pullRequestId);
-        ret.put(RepositoryActivityPullRequestMapping.REPO_SLUG, forRepository.getSlug());
+        ret.put(RepositoryActivityPullRequestMapping.REPO_ID, forRepository.getId());
         return ret;
     }
 
@@ -213,7 +213,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         ret.put(RepositoryPullRequestMapping.PULL_REQUEST_NAME, request.getTitle());
         ret.put(RepositoryPullRequestMapping.PULL_REQUEST_URL, request.getLinks().getHtmlHref());
         ret.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
-        ret.put(RepositoryPullRequestMapping.TO_REPO_SLUG, forRepo.getSlug());
+        ret.put(RepositoryPullRequestMapping.TO_REPO_ID, forRepo.getId());
         
         return ret;
     }

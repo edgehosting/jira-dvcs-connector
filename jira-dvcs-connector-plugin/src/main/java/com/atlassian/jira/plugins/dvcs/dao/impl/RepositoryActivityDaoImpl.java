@@ -134,12 +134,12 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
 
     @Override
-    public RepositoryPullRequestMapping findRequestById(Integer localId, String repoSlug)
+    public RepositoryPullRequestMapping findRequestById(Integer localId, int repoId)
     {
         Query query = Query.select()
                            .from(RepositoryPullRequestMapping.class)
                            .where(RepositoryPullRequestMapping.LOCAL_ID +  " = ? AND " 
-                                + RepositoryPullRequestMapping.TO_REPO_SLUG + " = ?", localId, repoSlug);
+                                + RepositoryPullRequestMapping.TO_REPO_ID + " = ?", localId, repoId);
         
         RepositoryPullRequestMapping[] found = activeObjects.find(RepositoryPullRequestMapping.class, query);
         return found.length == 1 ? found[0] : null;
@@ -194,8 +194,8 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                      Query
                     .select()
                     .from(activityTable)
-                    .where(RepositoryActivityPullRequestMapping.REPO_SLUG + " = ?",
-                            new Object[] { forRepository.getSlug() })
+                    .where(RepositoryActivityPullRequestMapping.REPO_ID + " = ?",
+                            new Object[] { forRepository.getId() })
                             );
         }
 
@@ -216,8 +216,8 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                                 Query
                                 .select()
                                 .from(RepositoryPullRequestMapping.class)
-                                .where(RepositoryPullRequestMapping.TO_REPO_SLUG + " = ?",
-                                        new Object[] { forRepository.getSlug() })
+                                .where(RepositoryPullRequestMapping.TO_REPO_ID + " = ?",
+                                        new Object[] { forRepository.getId() })
                                         );
                         
                         // drop issue keys to PR mappings

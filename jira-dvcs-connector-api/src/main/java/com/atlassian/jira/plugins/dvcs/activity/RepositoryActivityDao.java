@@ -21,7 +21,7 @@ public interface RepositoryActivityDao
     // R
     List<RepositoryActivityPullRequestMapping> getRepositoryActivityForIssue(String issueKey);
     
-    RepositoryPullRequestMapping findRequestById(Integer localId, String repoSlug);
+    RepositoryPullRequestMapping findRequestById(Integer localId, int repositoryId);
 
     Set<String> getExistingIssueKeysMapping(Integer pullRequestId);
     

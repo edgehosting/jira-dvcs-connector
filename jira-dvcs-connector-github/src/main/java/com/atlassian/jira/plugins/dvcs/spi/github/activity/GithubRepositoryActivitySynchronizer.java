@@ -348,7 +348,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
     RepositoryPullRequestMapping getRepositoryPullRequest(GitHubPullRequest source)
     {
-        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestById(source.getId(), source.getBaseRepository().getName());
+        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestById(source.getId(), source.getBaseRepository().getRepositoryId());
         if (result != null)
         {
             return result;
@@ -361,7 +361,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         params.put(RepositoryPullRequestMapping.PULL_REQUEST_URL, source.getUrl());
         params.put(RepositoryPullRequestMapping.PULL_REQUEST_NAME, source.getTitle());
         params.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
-        params.put(RepositoryPullRequestMapping.TO_REPO_SLUG, source.getBaseRepository().getName());
+        params.put(RepositoryPullRequestMapping.TO_REPO_ID, source.getBaseRepository().getRepositoryId());
         result = repositoryActivityDao.savePullRequest(params, issueKeys);
 
         return result;
@@ -370,7 +370,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
     private void map(Map<String, Object> activity, GitHubPullRequest pullRequest, RepositoryPullRequestMapping repositoryPullRequest)
     {
         activity.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, repositoryPullRequest.getID());
-        activity.put(RepositoryActivityPullRequestMapping.REPO_SLUG, pullRequest.getBaseRepository().getName());
+        activity.put(RepositoryActivityPullRequestMapping.REPO_ID, pullRequest.getBaseRepository().getRepositoryId());
     }
 
     private void map(Map<String, Object> activity, GitHubPullRequestAction action)

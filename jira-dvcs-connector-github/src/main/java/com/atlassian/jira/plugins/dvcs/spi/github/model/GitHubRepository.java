@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.model;
 
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+
 /**
  * GitHub repository representation.
  * 
@@ -13,6 +15,11 @@ public class GitHubRepository
      * @see #getId()
      */
     private int id;
+
+    /**
+     * @see #get
+     */
+    private int repositoryId;
 
     /**
      * @see #getGitHubId()
@@ -46,6 +53,23 @@ public class GitHubRepository
     public void setId(int id)
     {
         this.id = id;
+    }
+
+    /**
+     * @return {@link Repository#getId()}
+     */
+    public int getRepositoryId()
+    {
+        return repositoryId;
+    }
+
+    /**
+     * @param repositoryId
+     *            {@link #getRepositoryId()}
+     */
+    public void setRepositoryId(int repositoryId)
+    {
+        this.repositoryId = repositoryId;
     }
 
     /**
