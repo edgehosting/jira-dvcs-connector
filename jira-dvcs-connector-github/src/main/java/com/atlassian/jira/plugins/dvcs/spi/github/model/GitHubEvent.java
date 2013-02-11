@@ -22,6 +22,11 @@ public class GitHubEvent
     private String gitHubId;
 
     /**
+     * @see #getRepository()
+     */
+    private GitHubRepository repository;
+
+    /**
      * @see #getCreatedAt()
      */
     private Date createdAt;
@@ -61,6 +66,23 @@ public class GitHubEvent
     public String getGitHubId()
     {
         return gitHubId;
+    }
+
+    /**
+     * @return Repository owner of the event.
+     */
+    public GitHubRepository getRepository()
+    {
+        return repository;
+    }
+
+    /**
+     * @param repository
+     *            {@link #getRepository()}
+     */
+    public void setRepository(GitHubRepository repository)
+    {
+        this.repository = repository;
     }
 
     /**

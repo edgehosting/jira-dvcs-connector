@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.dao;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubEvent;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
 /**
  * DAO layer of the {@link GitHubEvent}.
@@ -25,15 +26,19 @@ public interface GitHubEventDAO
      * @return {@link GitHubEvent}
      */
     GitHubEvent getByGitHubId(String gitHubId);
-    
-    /**
-     * @return Returns last {@link GitHubEvent}.
-     */
-    GitHubEvent getLast();
 
     /**
+     * @param gitHubRepository
+     *            over which repository
+     * @return Returns last {@link GitHubEvent}.
+     */
+    GitHubEvent getLast(GitHubRepository gitHubRepository);
+
+    /**
+     * @param giHubRepository
+     *            over which repository
      * @return Returns last {@link GitHubEvent#isSavePoint()}.
      */
-    GitHubEvent getLastSavePoint();
+    GitHubEvent getLastSavePoint(GitHubRepository giHubRepositoryMapping);
 
 }

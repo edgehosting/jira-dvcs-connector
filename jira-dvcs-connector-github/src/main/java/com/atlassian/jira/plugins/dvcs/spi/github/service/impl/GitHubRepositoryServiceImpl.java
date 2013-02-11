@@ -83,7 +83,6 @@ public class GitHubRepositoryServiceImpl implements GitHubRepositoryService
             return result;
         }
 
-        result = new GitHubRepository();
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
 
         org.eclipse.egit.github.core.Repository loaded;
@@ -95,6 +94,10 @@ public class GitHubRepositoryServiceImpl implements GitHubRepositoryService
             throw new RuntimeException(e);
         }
 
+        result = gitHubId == 0 ? getByGitHubId(loaded.getId()) : null;
+        if (result == null) {
+            result = new GitHubRepository();
+        }
         result.setGitHubId(loaded.getId());
         result.setName(loaded.getName());
         save(result);

@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.activeobjects;
 
 import net.java.ao.Entity;
+import net.java.ao.schema.NotNull;
 import net.java.ao.schema.Table;
+import net.java.ao.schema.Unique;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
@@ -18,6 +20,8 @@ public interface GitHubRepositoryMapping extends Entity
     /**
      * @return {@link GitHubRepository#getGitHubId()}
      */
+    @Unique
+    @NotNull
     long getGitHubId();
 
     /**

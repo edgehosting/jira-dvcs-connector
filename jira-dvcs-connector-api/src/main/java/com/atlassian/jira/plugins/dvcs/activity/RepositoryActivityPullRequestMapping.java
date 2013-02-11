@@ -13,7 +13,7 @@ public interface RepositoryActivityPullRequestMapping extends Entity
 
     String LAST_UPDATED_ON = "LAST_UPDATED_ON";
     String REPO_SLUG = "REPO_SLUG";
-    String INITIATOR_USERNAME = "INITIATOR_USERNAME";
+    String INITIATOR_USERNAME = "author";
     String PULL_REQUEST_ID = "PULL_REQUEST_ID";
     
     //
