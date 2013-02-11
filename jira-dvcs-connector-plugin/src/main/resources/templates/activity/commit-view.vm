@@ -3,7 +3,7 @@
     <header>
       <div class="summary">
         <a href="$user_url"><img class="avatar avatar32" src="$gravatar_url"></a>
-        <a href="$user_url" class="author">Dusan Hornik</a>
+        <a href="$user_url" class="author">$authorName</a>
         <span class="aui-lozenge pull-request-state aui-lozenge-moved">commited</span> 
         changeset <a class="hash" href="$commit_url">$commit_hash</a>
       </div>

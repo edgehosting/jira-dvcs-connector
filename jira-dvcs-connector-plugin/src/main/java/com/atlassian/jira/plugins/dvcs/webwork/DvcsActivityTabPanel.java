@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -34,6 +36,19 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 
     private final IssueActionFactory issueActionFactory;
 
+    private static final Comparator<? super IssueAction> ISSUE_ACTION_COMPARATOR = new Comparator<IssueAction>()
+    {
+        @Override
+        public int compare(IssueAction o1, IssueAction o2)
+        {
+            if (o1 == null || o1.getTimePerformed() == null)
+                return -1;
+            if (o2 == null || o2.getTimePerformed() == null)
+                return 1;
+            return o1.getTimePerformed().compareTo(o2.getTimePerformed());
+        }
+    };
+
     public DvcsActivityTabPanel(PermissionManager permissionManager, ChangesetService changesetService,
             RepositoryService repositoryService, RepositoryActivityDao activityDao,
             @Qualifier("aggregatedIssueActionFactory") IssueActionFactory issueActionFactory)
@@ -49,7 +64,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
     public List<IssueAction> getActions(Issue issue, User user)
     {
         String issueKey = issue.getKey();
-        List<IssueAction> bitbucketActions = new ArrayList<IssueAction>();
+        List<IssueAction> issueActions = new ArrayList<IssueAction>();
         
         try
         {
@@ -61,7 +76,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
                 IssueAction issueAction = issueActionFactory.create(activity);
                 if (issueAction!=null)
                 {
-                    bitbucketActions.add(issueAction);
+                    issueActions.add(issueAction);
                 }
             }
             
@@ -71,20 +86,22 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
                 IssueAction issueAction = issueActionFactory.create(changeset);
                 if (issueAction!=null)
                 {
-                    bitbucketActions.add(issueAction);
+                    issueActions.add(issueAction);
                 }
             }
+            
         } catch (SourceControlException e)
         {
             logger.debug("Could not retrieve changeset for [ " + issueKey + " ]: " + e, e);
         }
 
-        if (bitbucketActions.isEmpty())
+        if (issueActions.isEmpty())
         {
-            bitbucketActions.add(DEFAULT_MESSAGE);
+            issueActions.add(DEFAULT_MESSAGE);
         }
         
-        return bitbucketActions;
+        Collections.sort(issueActions, ISSUE_ACTION_COMPARATOR);
+        return issueActions;
     }
 
     @Override

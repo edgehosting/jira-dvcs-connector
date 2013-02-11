@@ -1,0 +1,13 @@
+<div class="dvcs activity-item">
+  <article>
+    <header>
+      <div class="summary">
+        <a href="/$pullRequestUpdate.author"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/283225c91c158f3a10927e9d76a71be7?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+        <a href="/$pullRequestUpdate.author" class="author">$pullRequestUpdate.author</a>
+        <span class="aui-lozenge pull-request-state aui-lozenge-success aui-lozenge-subtle" title="">$pullRequestUpdate.status</span>
+        <a href="$pullRequestUrl">$pullRequestName</a> pull request
+        <time datetime="2013-01-03T20:07:06.550576">$pullRequestUpdate.lastUpdatedOn</time>
+      </div>
+    </header>
+  </article>
+</div>

@@ -6,13 +6,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.java.ao.Entity;
-import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
@@ -62,6 +59,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
+            @Override
             @SuppressWarnings("unchecked")
 			public Void doInTransaction()
             {
@@ -79,6 +77,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         return
         activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
                 {
+                    @Override
                     public RepositoryPullRequestMapping doInTransaction()
                     {
                         RepositoryPullRequestMapping pullRequest = activeObjects.create(RepositoryPullRequestMapping.class,
@@ -187,6 +186,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         return prIds;
     }
 
+    @Override
     public void removeAll(final Repository forRepository)
     {
         final List<Query> activityDeleteQueries = new ArrayList<Query>();
@@ -197,6 +197,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                      Query
                     .select()
                     .from(activityTable)
+                    // FIXME!!!
                     .where(RepositoryActivityPullRequestMapping.REPO_SLUG + " = ?",
                             new Object[] { forRepository.getSlug() })
                             );
@@ -205,6 +206,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
                 {
+                    @Override
                     public Void doInTransaction()
                     {
                         // drop activities

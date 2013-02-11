@@ -71,7 +71,7 @@ public class ChangesetIssueActionFactory implements IssueActionFactory
         templateMap.put("user_url", userUrl);
 
         templateMap.put("login", login);
-        templateMap.put("user_name", authorName);
+        templateMap.put("authorName", authorName);
         templateMap.put("commitMessage", commitMessage);
         templateMap.put("commitMessageHtml", issueLinker.createLinks(commitMessage));
         templateMap.put("commit_url", commitUrl);

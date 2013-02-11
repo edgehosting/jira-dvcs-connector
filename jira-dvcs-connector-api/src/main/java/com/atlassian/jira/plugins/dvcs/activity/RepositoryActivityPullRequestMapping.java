@@ -22,7 +22,7 @@ public interface RepositoryActivityPullRequestMapping extends Entity
     Date getLastUpdatedOn();
     String getRepoSlug();
     String getAuthor();
-    String getPullRequestId();
+    int getPullRequestId();
 
     //
     // setters
@@ -30,7 +30,7 @@ public interface RepositoryActivityPullRequestMapping extends Entity
     void setLastUpdatedOn(Date date);
     void setRepoSlug(String slug);
     void setAuthor(String username);
-    void setPullRequestId(Integer pullRequestId);
+    void setPullRequestId(int pullRequestId);
     
 }
 
