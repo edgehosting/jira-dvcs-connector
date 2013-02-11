@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
@@ -59,25 +60,23 @@ public class GithubCommunicator implements DvcsCommunicator
     public static final String GITHUB = "github";
 
     private final ChangesetCache changesetCache;
-    protected final GithubOAuth githubOAuth;
-
     protected final GithubClientProvider githubClientProvider;
-
     private final HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
+    protected final OAuthStore oAuthStore;
     
-    public GithubCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
+    public GithubCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
             GithubClientProvider githubClientProvider)
     {
         this.changesetCache = changesetCache;
-        this.githubOAuth = githubOAuth;
+        this.oAuthStore = oAuthStore;
         this.githubClientProvider = githubClientProvider;
     }
 
     @Override
     public boolean isOauthConfigured()
     {
-        return StringUtils.isNotBlank(githubOAuth.getClientId())
-                && StringUtils.isNotBlank(githubOAuth.getClientSecret());
+        return StringUtils.isNotBlank(oAuthStore.getClientId(GITHUB))
+                && StringUtils.isNotBlank(oAuthStore.getClientId(GITHUB));
     }
 
     @Override
@@ -93,10 +92,7 @@ public class GithubCommunicator implements DvcsCommunicator
         try
         {
             userService.getUser(accountName);
-            boolean requiresOauth = StringUtils.isBlank(githubOAuth.getClientId())
-                    || StringUtils.isBlank(githubOAuth.getClientSecret());
-
-            return new AccountInfo(GithubCommunicator.GITHUB, requiresOauth);
+            return new AccountInfo(GithubCommunicator.GITHUB, !isOauthConfigured());
 
         } catch (IOException e)
         {

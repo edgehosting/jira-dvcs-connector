@@ -1,19 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
+import static com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator.GITHUB;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.sal.api.ApplicationProperties;
 
 public class AddGithubOrganization extends CommonDvcsConfigurationAction
 {
@@ -33,18 +37,18 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
 	private String accessToken = "";
 
-	private final GithubOAuth githubOAuth;
 	private final OrganizationService organizationService;
 	private final GithubOAuthUtils githubOAuthUtils;
+
+    private final OAuthStore oAuthStore;
 	
 
-	public AddGithubOrganization(OrganizationService organizationService,
-								GithubOAuth githubOAuth,
-								GithubOAuthUtils githubOAuthUtils)
+    public AddGithubOrganization(OrganizationService organizationService,
+            OAuthStore oAuthStore, ApplicationProperties applicationProperties)
 	{
 		this.organizationService = organizationService;
-		this.githubOAuth = githubOAuth;
-		this.githubOAuthUtils = githubOAuthUtils;
+        this.oAuthStore = oAuthStore;
+        this.githubOAuthUtils = new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB), oAuthStore.getSecret(GITHUB));
 	}
 
 	@Override
@@ -63,7 +67,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
 	private void configureOAuth()
 	{
-		githubOAuth.setClient(oauthClientId, oauthSecret);
+	    oAuthStore.store(Host.GITHUB, oauthClientId, oauthSecret);
 	}
 
 	private String redirectUserToGithub()
