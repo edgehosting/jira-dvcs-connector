@@ -28,6 +28,11 @@ public class GitHubPullRequest extends GitHubEntity
     private String title;
 
     /**
+     * @see #getText()
+     */
+    private String text;
+
+    /**
      * @see #getUrl()
      */
     private String url;
@@ -93,6 +98,23 @@ public class GitHubPullRequest extends GitHubEntity
     public void setTitle(String title)
     {
         this.title = title;
+    }
+
+    /**
+     * @return Message/text assigned to the pull request.
+     */
+    public String getText()
+    {
+        return text;
+    }
+
+    /**
+     * @param text
+     *            {@link #getText()}
+     */
+    public void setText(String text)
+    {
+        this.text = text;
     }
 
     /**

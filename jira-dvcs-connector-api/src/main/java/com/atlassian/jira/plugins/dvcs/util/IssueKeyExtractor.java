@@ -5,6 +5,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * @author Martin Skurla
  */
@@ -36,6 +38,10 @@ public final class IssueKeyExtractor
             Pattern projectKeyPattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 
             for (String message : messages) {
+                if (StringUtils.isEmpty(message)) {
+                    continue;
+                }
+
                 Matcher match = projectKeyPattern.matcher(message);
                 
                 while (match.find())

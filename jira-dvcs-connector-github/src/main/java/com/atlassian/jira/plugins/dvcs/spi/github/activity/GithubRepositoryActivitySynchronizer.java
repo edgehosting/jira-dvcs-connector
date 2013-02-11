@@ -309,7 +309,8 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             }
         }
 
-        for (GitHubPullRequestLineComment gitHubPullRequestLineComment : gitHubPullRequestLineCommentService.getByRepository(gitHubRepository))
+        for (GitHubPullRequestLineComment gitHubPullRequestLineComment : gitHubPullRequestLineCommentService
+                .getByRepository(gitHubRepository))
         {
             dump.put(gitHubPullRequestLineComment.getCreatedAt(), //
                     gitHubPullRequestLineComment.getCreatedBy().getName() // name
@@ -348,18 +349,20 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
     RepositoryPullRequestMapping getRepositoryPullRequest(GitHubPullRequest source)
     {
-        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestById(source.getId(), source.getBaseRepository().getRepositoryId());
+        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestById(source.getId(), source.getBaseRepository()
+                .getRepositoryId());
         if (result != null)
         {
             return result;
         }
 
-        Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(source.getTitle());
+        Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(source.getTitle(), source.getText());
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(RepositoryPullRequestMapping.LOCAL_ID, source.getId());
         params.put(RepositoryPullRequestMapping.PULL_REQUEST_URL, source.getUrl());
         params.put(RepositoryPullRequestMapping.PULL_REQUEST_NAME, source.getTitle());
+        params.put(RepositoryPullRequestMapping.PULL_REQUEST_DESCRIPTION, source.getText());
         params.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
         params.put(RepositoryPullRequestMapping.TO_REPO_ID, source.getBaseRepository().getRepositoryId());
         result = repositoryActivityDao.savePullRequest(params, issueKeys);

@@ -54,6 +54,17 @@ public interface GitHubPullRequestMapping extends GitHubEntityMapping
     void setTitle(String title);
 
     /**
+     * @return {@link GitHubPullRequest#getText()}
+     */
+    String getText();
+
+    /**
+     * @param text
+     *            {@link #getText()}
+     */
+    void setText(String text);
+
+    /**
      * @return {@link GitHubPullRequest#getUrl()}
      */
     String getUrl();
