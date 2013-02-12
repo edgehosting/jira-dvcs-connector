@@ -20,7 +20,7 @@ public interface RepositoryActivityCommitMapping extends Entity
 	String ACTIVITY_ID = "ACTIVITY_ID";
 	String RAW_AUTHOR = "RAW_AUTHOR";
 	String AUTHOR= "AUTHOR";
-	String RAW_NODE = "RAW_NODE";
+	String NODE = "NODE";
 	String MESSAGE = "MESSAGE";
 	String DATE = "DATE";
 	String COMMIT_URL = "COMMIT_URL";
