@@ -65,7 +65,8 @@
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestApprovalMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping</entity>
-
+        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping</entity>
+        
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubEventMapping</entity>
