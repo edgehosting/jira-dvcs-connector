@@ -13,6 +13,7 @@ import java.util.Set;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestApprovalMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
@@ -55,16 +56,15 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
 
     @Override
-    public void saveActivity(final Map<String, Object> activity)
+    public RepositoryActivityPullRequestMapping saveActivity(final Map<String, Object> activity)
     {
-        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        return activeObjects.executeInTransaction(new TransactionCallback<RepositoryActivityPullRequestMapping>()
         {
             @SuppressWarnings("unchecked")
-			public Void doInTransaction()
+			public RepositoryActivityPullRequestMapping doInTransaction()
             {
-                activeObjects.create((Class<? extends RepositoryActivityPullRequestMapping>) activity.remove(RepositoryActivityPullRequestMapping.ENTITY_TYPE),
+                return activeObjects.create((Class<? extends RepositoryActivityPullRequestMapping>) activity.remove(RepositoryActivityPullRequestMapping.ENTITY_TYPE),
                         activity);
-                return null;
             }
 
         });
@@ -237,6 +237,19 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
     }
     
+	@Override
+	public void saveCommit(final Map<String, Object> commit)
+	{
+		activeObjects.executeInTransaction(new TransactionCallback<RepositoryActivityCommitMapping>()
+		        {
+					public RepositoryActivityCommitMapping doInTransaction()
+		            {
+		                return activeObjects.create(RepositoryActivityCommitMapping.class, commit);
+		            }
+
+		        });
+	}
+	
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
     // private helpers
@@ -263,6 +276,4 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
         return sortable;
     }
-
-
 }
