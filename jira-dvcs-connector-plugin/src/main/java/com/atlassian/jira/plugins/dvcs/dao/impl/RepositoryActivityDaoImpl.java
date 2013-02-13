@@ -60,6 +60,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     {
         return activeObjects.executeInTransaction(new TransactionCallback<RepositoryActivityPullRequestMapping>()
         {
+            @Override
             @SuppressWarnings("unchecked")
 			public RepositoryActivityPullRequestMapping doInTransaction()
             {
@@ -76,6 +77,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         return
         activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
                 {
+                    @Override
                     public RepositoryPullRequestMapping doInTransaction()
                     {
                         RepositoryPullRequestMapping pullRequest = activeObjects.create(RepositoryPullRequestMapping.class,
@@ -183,10 +185,12 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         return prIds;
     }
 
+    @Override
     public void removeAll(final Repository forRepository)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
                 {
+                    @Override
                     public Void doInTransaction()
                     {
                     	// drop commits

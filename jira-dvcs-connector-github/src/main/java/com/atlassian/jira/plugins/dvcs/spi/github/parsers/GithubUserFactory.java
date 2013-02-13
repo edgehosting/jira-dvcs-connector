@@ -12,7 +12,7 @@ public class GithubUserFactory
     {
         final String login = ghUser.getLogin();
         final String name = ghUser.getName();
-        String gravatarUrl = "https://secure.gravatar.com/avatar/" + ghUser.getGravatarId() + "?s=60";
+        final String gravatarUrl = ghUser.getAvatarUrl();
         
         return new DvcsUser(
                 login,
