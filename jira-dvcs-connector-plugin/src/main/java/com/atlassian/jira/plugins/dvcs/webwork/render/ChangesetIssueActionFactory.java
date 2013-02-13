@@ -52,9 +52,7 @@ public class ChangesetIssueActionFactory implements IssueActionFactory
         String documentJpgUrl = applicationProperties.getBaseUrl() + "/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/document.jpg";
         templateMap.put("document_jpg_url", documentJpgUrl);
 
-        String authorName = changeset.getRawAuthor();
         String login = changeset.getAuthor();
-
         String commitUrl = changesetService.getCommitUrl(repository, changeset);
 
         Map<ChangesetFile, String> fileCommitUrls = changesetService.getFileCommitUrls(repository, changeset);
@@ -71,7 +69,8 @@ public class ChangesetIssueActionFactory implements IssueActionFactory
         templateMap.put("user_url", userUrl);
 
         templateMap.put("login", login);
-        templateMap.put("authorName", authorName);
+        templateMap.put("user", user);
+        templateMap.put("changeset", changeset);
         templateMap.put("commitMessage", commitMessage);
         templateMap.put("commitMessageHtml", issueLinker.createLinks(commitMessage));
         templateMap.put("commit_url", commitUrl);

@@ -9,6 +9,7 @@ public interface RepositoryActivityPullRequestUpdateMapping extends RepositoryAc
     String STATUS = "STATUS";
     
     String getStatus();
+
     @OneToMany
     RepositoryActivityCommitMapping[] getCommits();
     
