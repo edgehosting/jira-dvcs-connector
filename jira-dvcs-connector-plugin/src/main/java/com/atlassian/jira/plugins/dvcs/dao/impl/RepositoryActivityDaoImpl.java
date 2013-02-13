@@ -136,12 +136,12 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
 
     @Override
-    public RepositoryPullRequestMapping findRequestById(Integer localId, int repoId)
+    public RepositoryPullRequestMapping findRequestById(int repositoryId, int localId)
     {
         Query query = Query.select()
                            .from(RepositoryPullRequestMapping.class)
                            .where(RepositoryPullRequestMapping.LOCAL_ID +  " = ? AND " 
-                                + RepositoryPullRequestMapping.TO_REPO_ID + " = ?", localId, repoId);
+                                + RepositoryPullRequestMapping.TO_REPO_ID + " = ?", localId, repositoryId);
         
         RepositoryPullRequestMapping[] found = activeObjects.find(RepositoryPullRequestMapping.class, query);
         return found.length == 1 ? found[0] : null;
@@ -203,7 +203,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                     	// drop activities
                         final Query activityDeleteQuery = Query
                                 .select()
-                                .where(RepositoryActivityPullRequestMapping.REPO_ID + " = ?", forRepository.getId());
+                                .where(RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", forRepository.getId());
                         for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
                         {
                             ActiveObjectsUtils.delete(activeObjects, activityTable, activityDeleteQuery);
@@ -235,7 +235,8 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 	{
 		activeObjects.executeInTransaction(new TransactionCallback<RepositoryActivityCommitMapping>()
 		        {
-					public RepositoryActivityCommitMapping doInTransaction()
+					@Override
+                    public RepositoryActivityCommitMapping doInTransaction()
 		            {
 		                return activeObjects.create(RepositoryActivityCommitMapping.class, commit);
 		            }

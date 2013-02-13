@@ -349,8 +349,8 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
     RepositoryPullRequestMapping getRepositoryPullRequest(GitHubPullRequest source)
     {
-        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestById(source.getId(), source.getBaseRepository()
-                .getRepositoryId());
+        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestById(source.getBaseRepository()
+                .getRepositoryId(), source.getId());
         if (result != null)
         {
             return result;
@@ -360,9 +360,9 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(RepositoryPullRequestMapping.LOCAL_ID, source.getId());
-        params.put(RepositoryPullRequestMapping.PULL_REQUEST_URL, source.getUrl());
-        params.put(RepositoryPullRequestMapping.PULL_REQUEST_NAME, source.getTitle());
-        params.put(RepositoryPullRequestMapping.PULL_REQUEST_DESCRIPTION, source.getText());
+        params.put(RepositoryPullRequestMapping.URL, source.getUrl());
+        params.put(RepositoryPullRequestMapping.NAME, source.getTitle());
+        params.put(RepositoryPullRequestMapping.DESCRIPTION, source.getText());
         params.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
         params.put(RepositoryPullRequestMapping.TO_REPO_ID, source.getBaseRepository().getRepositoryId());
         result = repositoryActivityDao.savePullRequest(params, issueKeys);
@@ -373,14 +373,14 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
     private void map(Map<String, Object> activity, GitHubPullRequest pullRequest, RepositoryPullRequestMapping repositoryPullRequest)
     {
         activity.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, repositoryPullRequest.getID());
-        activity.put(RepositoryActivityPullRequestMapping.REPO_ID, pullRequest.getBaseRepository().getRepositoryId());
+        activity.put(RepositoryActivityPullRequestMapping.REPOSITORY_ID, pullRequest.getBaseRepository().getRepositoryId());
     }
 
     private void map(Map<String, Object> activity, GitHubPullRequestAction action)
     {
         activity.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
         activity.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, action.getCreatedAt());
-        activity.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, action.getCreatedBy().getLogin());
+        activity.put(RepositoryActivityPullRequestMapping.AUTHOR, action.getCreatedBy().getLogin());
         activity.put(RepositoryActivityPullRequestUpdateMapping.STATUS, action.getAction().name());
     }
 
@@ -388,7 +388,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
     {
         activity.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestCommentMapping.class);
         activity.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, comment.getCreatedAt());
-        activity.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, comment.getCreatedBy().getLogin());
+        activity.put(RepositoryActivityPullRequestMapping.AUTHOR, comment.getCreatedBy().getLogin());
         activity.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, comment.getText());
     }
 

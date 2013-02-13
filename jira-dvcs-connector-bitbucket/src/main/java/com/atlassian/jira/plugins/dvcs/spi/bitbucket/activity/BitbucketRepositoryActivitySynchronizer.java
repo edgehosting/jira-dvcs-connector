@@ -153,8 +153,8 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     private RepositoryPullRequestMapping ensurePullRequestPresent(Repository forRepository,
             PullRequestRemoteRestpoint pullRestpoint, BitbucketPullRequestActivityInfo info)
     {
-        RepositoryPullRequestMapping localPullRequest = dao.findRequestById(info.getPullRequest().getId(),
-                forRepository.getId());
+        RepositoryPullRequestMapping localPullRequest = dao.findRequestById(forRepository.getId(),
+                info.getPullRequest().getId());
 
         // don't have this pull request, let's save it
         if (localPullRequest == null)
@@ -245,9 +245,9 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
         ret.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, ClientUtils.extractActivityDate(activity));
-        ret.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, activity.getUser().getUsername());
+        ret.put(RepositoryActivityPullRequestMapping.AUTHOR, activity.getUser().getUsername());
         ret.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, pullRequestId);
-        ret.put(RepositoryActivityPullRequestMapping.REPO_ID, forRepository.getId());
+        ret.put(RepositoryActivityPullRequestMapping.REPOSITORY_ID, forRepository.getId());
         return ret;
     }
 
@@ -255,8 +255,8 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
         ret.put(RepositoryPullRequestMapping.LOCAL_ID, request.getId());
-        ret.put(RepositoryPullRequestMapping.PULL_REQUEST_NAME, request.getTitle());
-        ret.put(RepositoryPullRequestMapping.PULL_REQUEST_URL, request.getLinks().getHtmlHref());
+        ret.put(RepositoryPullRequestMapping.NAME, request.getTitle());
+        ret.put(RepositoryPullRequestMapping.URL, request.getLinks().getHtmlHref());
         ret.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
         ret.put(RepositoryPullRequestMapping.TO_REPO_ID, forRepo.getId());
         

@@ -17,14 +17,14 @@ import net.java.ao.schema.Table;
 @Table("PR_COMMITS")
 public interface RepositoryActivityCommitMapping extends Entity
 {
-	String ACTIVITY_ID = "ACTIVITY_ID";
-	String RAW_AUTHOR = "RAW_AUTHOR";
-	String AUTHOR= "AUTHOR";
-	String NODE = "NODE";
-	String MESSAGE = "MESSAGE";
-	String DATE = "DATE";
-	String COMMIT_URL = "COMMIT_URL";
-	String AUTHOR_AVATAR_URL = "AUTHOR_AVATAR_URL";
+    String ACTIVITY_ID = "ACTIVITY_ID";
+    String RAW_AUTHOR = "RAW_AUTHOR";
+    String AUTHOR = "AUTHOR";
+    String NODE = "NODE";
+    String MESSAGE = "MESSAGE";
+    String DATE = "DATE";
+    String COMMIT_URL = "COMMIT_URL";
+    String AUTHOR_AVATAR_URL = "AUTHOR_AVATAR_URL";
 	
 	/**
 	 * @return {@link RepositoryActivityPullRequestUpdateMapping} of the commit

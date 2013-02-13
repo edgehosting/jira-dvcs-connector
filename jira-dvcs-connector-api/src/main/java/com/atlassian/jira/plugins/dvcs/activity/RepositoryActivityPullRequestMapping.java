@@ -12,15 +12,15 @@ public interface RepositoryActivityPullRequestMapping extends Entity
     String ENTITY_TYPE = "ENTITY_TYPE";
 
     String LAST_UPDATED_ON = "LAST_UPDATED_ON";
-    String REPO_ID = "REPO_ID";
-    String INITIATOR_USERNAME = "author";
+    String REPOSITORY_ID = "REPOSITORY_ID";
+    String AUTHOR = "AUTHOR";
     String PULL_REQUEST_ID = "PULL_REQUEST_ID";
     
     //
     // getters
     //
     Date getLastUpdatedOn();
-    int getRepoId();
+    int getRepositoryId();
     String getAuthor();
     int getPullRequestId();
 
@@ -28,7 +28,7 @@ public interface RepositoryActivityPullRequestMapping extends Entity
     // setters
     //
     void setLastUpdatedOn(Date date);
-    void setRepoId(int repodId);
+    void setRepositoryId(int repositoryId);
     void setAuthor(String username);
     void setPullRequestId(int pullRequestId);
     
