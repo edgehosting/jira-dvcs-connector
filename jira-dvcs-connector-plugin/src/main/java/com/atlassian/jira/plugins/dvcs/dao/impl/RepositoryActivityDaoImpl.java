@@ -173,8 +173,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         final Query query = Query
                 .select()
                 .from(RepositoryPullRequestIssueKeyMapping.class)
-                .where(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY + " = ?",
-                        new Object[] { issueKey.toUpperCase() });
+                .where(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY + " = ?", issueKey.toUpperCase());
         
         RepositoryPullRequestIssueKeyMapping[] mappings = activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, query);
         for (RepositoryPullRequestIssueKeyMapping issueKeyMapping : mappings)
@@ -186,20 +185,6 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
     public void removeAll(final Repository forRepository)
     {
-        final List<Query> activityDeleteQueries = new ArrayList<Query>();
-        
-        for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
-        {
-            activityDeleteQueries.add( 
-                     Query
-                    .select()
-                    .from(activityTable)
-                    .where(RepositoryActivityPullRequestMapping.REPO_ID + " = ?",
-                            new Object[] { forRepository.getId() })
-                            );
-        }
-
-
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
                 {
                     public Void doInTransaction()
@@ -210,21 +195,22 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                     			.join(RepositoryActivityPullRequestUpdateMapping.class,"ACTIVITY_ID=PR_UPDATE.ID")
                     			.alias(RepositoryActivityPullRequestUpdateMapping.class, "PR_UPDATE")
                     			.where("PR_UPDATE.REPO_ID = ?", forRepository.getId()));
-                        // drop activities
-                        int i = 0;
+                        
+                    	// drop activities
+                        final Query activityDeleteQuery = Query
+                                .select()
+                                .where(RepositoryActivityPullRequestMapping.REPO_ID + " = ?", forRepository.getId());
                         for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
                         {
-                            ActiveObjectsUtils.delete(activeObjects, activityTable, activityDeleteQueries.get(i));
-                            i++;
+                            ActiveObjectsUtils.delete(activeObjects, activityTable, activityDeleteQuery);
                         }
+                        
                         // drop pull requests
                         Set<Integer> deletedIds = ActiveObjectsUtils.deleteAndReturnIds(activeObjects,RepositoryPullRequestMapping.class,
                                 Query
                                 .select()
                                 .from(RepositoryPullRequestMapping.class)
-                                .where(RepositoryPullRequestMapping.TO_REPO_ID + " = ?",
-                                        new Object[] { forRepository.getId() })
-                                        );
+                                .where(RepositoryPullRequestMapping.TO_REPO_ID + " = ?", forRepository.getId()));
                         
                         // drop issue keys to PR mappings
                         if (!deletedIds.isEmpty())
@@ -233,14 +219,11 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 	                                Query
 	                                .select()
 	                                .from(RepositoryPullRequestIssueKeyMapping.class)
-	                                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds) +")",
-	                                        new Object[] {  })
-	                                        );
+	                                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds) +")"));
                         }
 	                    return null;
                     }
                 });
-
     }
     
 	@Override
