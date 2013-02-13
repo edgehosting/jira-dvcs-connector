@@ -18,6 +18,19 @@ public interface GitHubRepositoryMapping extends Entity
 {
 
     /**
+     * @return {@link GitHubRepository#getRepositoryId()}
+     */
+    @Unique
+    @NotNull
+    int getRepositoryId();
+
+    /**
+     * @param repositoryId
+     *            {@link #getRepositoryId()}
+     */
+    void setRepositoryId(int repositoryId);
+
+    /**
      * @return {@link GitHubRepository#getGitHubId()}
      */
     @Unique

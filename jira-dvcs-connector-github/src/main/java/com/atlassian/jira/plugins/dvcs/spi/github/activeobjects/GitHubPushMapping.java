@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.github.activeobjects;
 
 import java.util.Date;
 
-import net.java.ao.Entity;
 import net.java.ao.OneToMany;
 import net.java.ao.schema.Table;
 
@@ -15,7 +14,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
  * 
  */
 @Table("GitHubPush")
-public interface GitHubPushMapping extends Entity
+public interface GitHubPushMapping extends GitHubEntityMapping
 {
 
     /**

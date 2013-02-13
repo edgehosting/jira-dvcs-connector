@@ -10,13 +10,8 @@ import java.util.List;
  * @author Stanislav Dvorscak
  * 
  */
-public class GitHubPush
+public class GitHubPush extends GitHubEntity
 {
-
-    /**
-     * @see #getId()
-     */
-    private int id;
 
     /**
      * @see #getCreatedAt()
@@ -48,23 +43,6 @@ public class GitHubPush
      */
     public GitHubPush()
     {
-    }
-
-    /**
-     * @return Identity of this object.
-     */
-    public int getId()
-    {
-        return id;
-    }
-
-    /**
-     * @param id
-     *            {@link #getId()}
-     */
-    public void setId(int id)
-    {
-        this.id = id;
     }
 
     /**

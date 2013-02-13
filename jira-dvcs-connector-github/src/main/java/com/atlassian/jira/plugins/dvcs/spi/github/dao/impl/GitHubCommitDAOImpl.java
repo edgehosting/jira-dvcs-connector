@@ -10,8 +10,10 @@ import net.java.ao.Query;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
@@ -182,6 +184,9 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
      */
     private void map(Map<String, Object> target, GitHubCommit source)
     {
+        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+
+        target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getRepository()), repository);
         target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getSha()), source.getSha());
         target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getCreatedAt()), source.getCreatedAt());
         target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getCreatedBy()), source.getCreatedBy());
@@ -198,6 +203,9 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
      */
     private void map(GitHubCommitMapping target, GitHubCommit source)
     {
+        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+
+        target.setRepository(repository);
         target.setSha(source.getSha());
         target.setCreatedAt(source.getCreatedAt());
         target.setCreatedBy(source.getCreatedBy());
@@ -214,7 +222,11 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
      */
     static void map(GitHubCommit target, GitHubCommitMapping source)
     {
+        GitHubRepository repository = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(repository, source.getRepository());
+
         target.setId(source.getID());
+        target.setRepository(repository);
         target.setSha(source.getSha());
         target.setCreatedAt(source.getCreatedAt());
         target.setCreatedBy(source.getCreatedBy());

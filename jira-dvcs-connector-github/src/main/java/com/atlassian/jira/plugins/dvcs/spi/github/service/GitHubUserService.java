@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 
 /**
@@ -38,10 +39,12 @@ public interface GitHubUserService
     /**
      * @param login
      *            {@link GitHubUser#getLogin()}
+     * @param gitHubRepository
+     *            over which repository
      * @param repository
      *            over which repository
      * @return fetch the {@link GitHubUser} from the database, if it was already synchronized or synchronizes it
      */
-    GitHubUser fetch(String login, Repository repository);
+    GitHubUser fetch(String login, GitHubRepository gitHubRepository, Repository repository);
 
 }

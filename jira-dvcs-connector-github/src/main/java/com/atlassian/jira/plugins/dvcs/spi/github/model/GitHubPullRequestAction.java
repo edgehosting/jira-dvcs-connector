@@ -8,7 +8,7 @@ import java.util.Date;
  * @author Stanislav Dvorscak
  * 
  */
-public class GitHubPullRequestAction
+public class GitHubPullRequestAction extends GitHubEntity
 {
 
     /**
@@ -42,11 +42,6 @@ public class GitHubPullRequestAction
     }
 
     /**
-     * @see #getId()
-     */
-    private int id;
-
-    /**
      * @see #getCreatedBy()
      */
     private GitHubUser createdBy;
@@ -71,23 +66,6 @@ public class GitHubPullRequestAction
      */
     public GitHubPullRequestAction()
     {
-    }
-
-    /**
-     * @return Identity of the entity.
-     */
-    public int getId()
-    {
-        return id;
-    }
-
-    /**
-     * @param id
-     *            {@link #getId()}
-     */
-    public void setId(int id)
-    {
-        this.id = id;
     }
 
     /**

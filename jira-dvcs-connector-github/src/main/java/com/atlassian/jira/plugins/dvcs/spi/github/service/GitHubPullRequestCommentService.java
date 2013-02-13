@@ -6,6 +6,7 @@ import org.eclipse.egit.github.core.Comment;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 
 /**
@@ -48,9 +49,11 @@ public interface GitHubPullRequestCommentService
     GitHubPullRequestComment getByGitHubId(long gitHubId);
 
     /**
-     * @return all {@link GitHubPullRequestComment}-s
+     * @param repository
+     *            {@link GitHubPullRequestComment#getRepository()}
+     * @return resolved {@link GitHubPullRequestComment}-s
      */
-    List<GitHubPullRequestComment> getAll();
+    List<GitHubPullRequestComment> getByRepository(GitHubRepository repository);
 
     /**
      * Re-maps egit model into the internal model.

@@ -10,7 +10,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 public interface RepositoryActivityDao
 {
     // C-U-D
-    void saveActivity (Map<String, Object> activity);
+	RepositoryActivityPullRequestMapping saveActivity (Map<String, Object> activity);
 
     RepositoryPullRequestMapping savePullRequest (Map<String, Object> activity, Set<String> issueKeys);
     
@@ -21,9 +21,10 @@ public interface RepositoryActivityDao
     // R
     List<RepositoryActivityPullRequestMapping> getRepositoryActivityForIssue(String issueKey);
     
-    RepositoryPullRequestMapping findRequestById(Integer localId, String repoSlug);
+    RepositoryPullRequestMapping findRequestById(Integer localId, int repositoryId);
 
     Set<String> getExistingIssueKeysMapping(Integer pullRequestId);
     
+    void saveCommit(Map<String,Object> commit);
 }
 

@@ -9,13 +9,8 @@ import java.util.List;
  * @author Stanislav Dvorscak
  * 
  */
-public class GitHubPullRequest
+public class GitHubPullRequest extends GitHubEntity
 {
-
-    /**
-     * @see #getId()
-     */
-    private int id;
 
     /**
      * @see #getBaseRepository()
@@ -33,6 +28,11 @@ public class GitHubPullRequest
     private String title;
 
     /**
+     * @see #getText()
+     */
+    private String text;
+
+    /**
      * @see #getUrl()
      */
     private String url;
@@ -47,23 +47,6 @@ public class GitHubPullRequest
      */
     public GitHubPullRequest()
     {
-    }
-
-    /**
-     * @return The identity of the {@link GitHubPullRequest}.
-     */
-    public int getId()
-    {
-        return id;
-    }
-
-    /**
-     * @param id
-     *            {@link #getId()}
-     */
-    public void setId(int id)
-    {
-        this.id = id;
     }
 
     /**
@@ -115,6 +98,23 @@ public class GitHubPullRequest
     public void setTitle(String title)
     {
         this.title = title;
+    }
+
+    /**
+     * @return Message/text assigned to the pull request.
+     */
+    public String getText()
+    {
+        return text;
+    }
+
+    /**
+     * @param text
+     *            {@link #getText()}
+     */
+    public void setText(String text)
+    {
+        this.text = text;
     }
 
     /**

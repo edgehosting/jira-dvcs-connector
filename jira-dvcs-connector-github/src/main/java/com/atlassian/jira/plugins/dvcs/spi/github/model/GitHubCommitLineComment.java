@@ -6,13 +6,8 @@ package com.atlassian.jira.plugins.dvcs.spi.github.model;
  * @author Stanislav Dvorscak
  * 
  */
-public class GitHubCommitLineComment
+public class GitHubCommitLineComment extends GitHubEntity
 {
-
-    /**
-     * @see #getId()
-     */
-    private int id;
 
     /**
      * @see #getGitHubId()
@@ -41,23 +36,6 @@ public class GitHubCommitLineComment
      */
     public GitHubCommitLineComment()
     {
-    }
-
-    /**
-     * @return Identity of this object.
-     */
-    public int getId()
-    {
-        return id;
-    }
-
-    /**
-     * @param id
-     *            {@link #getId()}
-     */
-    public void setId(int id)
-    {
-        this.id = id;
     }
 
     /**

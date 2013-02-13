@@ -9,6 +9,7 @@ import org.eclipse.egit.github.core.service.UserService;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubUserDAO;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubUserService;
 
@@ -76,7 +77,7 @@ public class GitHubUserServiceImpl implements GitHubUserService
      * {@inheritDoc}
      */
     @Override
-    public GitHubUser fetch(String login, Repository repository)
+    public GitHubUser fetch(String login, GitHubRepository gitHubRepository, Repository repository)
     {
         GitHubUser result = getByLogin(login);
         if (result != null)
@@ -98,6 +99,7 @@ public class GitHubUserServiceImpl implements GitHubUserService
             throw new RuntimeException(e);
         }
 
+        result.setRepository(gitHubRepository);
         result.setSynchronizedAt(new Date());
         result.setGitHubId(loaded.getId());
         result.setLogin(loaded.getLogin());

@@ -7,8 +7,10 @@ import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubUserDAO;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
@@ -164,8 +166,11 @@ public class GitHubUserDAOImpl implements GitHubUserDAO
      */
     private void map(Map<String, Object> target, GitHubUser source)
     {
-        target.put(columnNameResolverService.column(gitHubUserDescription.getSynchronizedAt()), source.getSynchronizedAt());
+        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+
+        target.put(columnNameResolverService.column(gitHubUserDescription.getRepository()), repository);
         target.put(columnNameResolverService.column(gitHubUserDescription.getGitHubId()), source.getGitHubId());
+        target.put(columnNameResolverService.column(gitHubUserDescription.getSynchronizedAt()), source.getSynchronizedAt());
         target.put(columnNameResolverService.column(gitHubUserDescription.getLogin()), source.getLogin());
         target.put(columnNameResolverService.column(gitHubUserDescription.getName()), source.getName());
         target.put(columnNameResolverService.column(gitHubUserDescription.getEmail()), source.getEmail());
@@ -183,6 +188,10 @@ public class GitHubUserDAOImpl implements GitHubUserDAO
      */
     private void map(GitHubUserMapping target, GitHubUser source)
     {
+        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+
+        target.setRepository(repository);
+        target.setGitHubId(source.getGitHubId());
         target.setSynchronizedAt(source.getSynchronizedAt());
         target.setLogin(source.getLogin());
         target.setName(source.getName());
@@ -201,9 +210,13 @@ public class GitHubUserDAOImpl implements GitHubUserDAO
      */
     static void map(GitHubUser target, GitHubUserMapping source)
     {
+        GitHubRepository repository = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(repository, source.getRepository());
+
         target.setId(source.getID());
-        target.setSynchronizedAt(source.getSynchronizedAt());
+        target.setRepository(repository);
         target.setGitHubId(source.getGitHubId());
+        target.setSynchronizedAt(source.getSynchronizedAt());
         target.setLogin(source.getLogin());
         target.setName(source.getName());
         target.setEmail(source.getEmail());

@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.github.activeobjects;
 
 import java.util.Date;
 
-import net.java.ao.Entity;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.Table;
 import net.java.ao.schema.Unique;
@@ -16,7 +15,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubEvent;
  * 
  */
 @Table("GitHubEvent")
-public interface GitHubEventMapping extends Entity
+public interface GitHubEventMapping extends GitHubEntityMapping
 {
 
     /**
@@ -30,18 +29,6 @@ public interface GitHubEventMapping extends Entity
      * @param gitHubId
      */
     void setGitHubId(String gitHubId);
-
-    /**
-     * @return {@link GitHubEvent#getRepository()}
-     */
-    @NotNull
-    GitHubRepositoryMapping getRepository();
-
-    /**
-     * @param gitHubRepository
-     *            {@link #getRepository()}
-     */
-    void setReository(GitHubRepositoryMapping gitHubRepository);
 
     /**
      * @return {@link GitHubEvent#getCreatedAt()}

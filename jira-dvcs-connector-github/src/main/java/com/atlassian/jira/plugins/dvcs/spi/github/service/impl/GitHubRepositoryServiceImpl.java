@@ -98,6 +98,7 @@ public class GitHubRepositoryServiceImpl implements GitHubRepositoryService
         if (result == null) {
             result = new GitHubRepository();
         }
+        result.setRepositoryId(repository.getId());
         result.setGitHubId(loaded.getId());
         result.setName(loaded.getName());
         save(result);

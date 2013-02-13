@@ -3,7 +3,9 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
 /**
  * Defines {@link GitHubPullRequest}'s related services.
@@ -44,19 +46,23 @@ public interface GitHubPullRequestService
     GitHubPullRequest getByGitHubId(long gitHubId);
 
     /**
-     * @return all {@link GitHubPullRequest}-s
+     * @param repository
+     *            {@link GitHubPullRequestMapping#getRepository()}
+     * @return resolved {@link GitHubPullRequest}-s
      */
-    List<GitHubPullRequest> getAll();
+    List<GitHubPullRequest> getByRepository(GitHubRepository repository);
 
     /**
-     * @param repository
-     *            owning pull request
+     * @param gitHubRepository
+     *            for which repository it is loaded
      * @param gitHubId
      *            identity of the pull request
      * @param pullRequestNumber
      *            the number of the pull request
+     * @param repository
+     *            owning pull request
      * @return newly created or existing pull request
      */
-    GitHubPullRequest fetch(Repository repository, long gitHubId, int pullRequestNumber);
+    GitHubPullRequest fetch(GitHubRepository gitHubRepository, long gitHubId, int pullRequestNumber, Repository repository);
 
 }

@@ -8,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestLineComme
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestLineCommentService;
 
@@ -76,9 +77,9 @@ public class GitHubPullRequestLineCommentServiceImpl implements GitHubPullReques
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequestLineComment> getAll()
+    public List<GitHubPullRequestLineComment> getByRepository(GitHubRepository repository)
     {
-        return gitHubPullRequestLineCommentDAO.getAll();
+        return gitHubPullRequestLineCommentDAO.getByRepository(repository);
     }
 
     /**

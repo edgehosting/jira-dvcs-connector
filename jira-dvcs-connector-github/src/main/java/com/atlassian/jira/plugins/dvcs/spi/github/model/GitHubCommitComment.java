@@ -8,13 +8,8 @@ import java.util.Date;
  * @author Stanislav Dvorscak
  * 
  */
-public class GitHubCommitComment
+public class GitHubCommitComment extends GitHubEntity
 {
-
-    /**
-     * @see #getId()
-     */
-    private int id;
 
     /**
      * @see #getGitHubId()
@@ -41,23 +36,6 @@ public class GitHubCommitComment
      */
     public GitHubCommitComment()
     {
-    }
-
-    /**
-     * @return Identity of this object.
-     */
-    public int getId()
-    {
-        return id;
-    }
-
-    /**
-     * @param id
-     *            {@link #getId()}
-     */
-    public void setId(int id)
-    {
-        this.id = id;
     }
 
     /**

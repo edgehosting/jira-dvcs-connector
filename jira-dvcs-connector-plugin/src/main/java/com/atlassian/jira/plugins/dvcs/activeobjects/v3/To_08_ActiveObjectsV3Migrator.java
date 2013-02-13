@@ -18,10 +18,10 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
-import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.google.common.collect.Maps;
 
 /**

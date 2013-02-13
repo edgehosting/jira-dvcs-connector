@@ -12,11 +12,13 @@ import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestLineCommentMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestLineCommentDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
@@ -166,10 +168,14 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequestLineComment> getAll()
+    public List<GitHubPullRequestLineComment> getByRepository(GitHubRepository repository)
     {
+        Query query = Query.select().where(
+                columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getRepository()) + " = ? ",
+                repository.getId());
+
         List<GitHubPullRequestLineComment> result = new LinkedList<GitHubPullRequestLineComment>();
-        for (GitHubPullRequestLineCommentMapping source : activeObjects.get(GitHubPullRequestLineCommentMapping.class))
+        for (GitHubPullRequestLineCommentMapping source : activeObjects.find(GitHubPullRequestLineCommentMapping.class, query))
         {
             GitHubPullRequestLineComment target = new GitHubPullRequestLineComment();
             map(target, source);
@@ -188,10 +194,12 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
      */
     private void map(Map<String, Object> target, GitHubPullRequestLineComment source)
     {
+        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
         GitHubUserMapping createdBy = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
         GitHubPullRequestMapping pullRequest = activeObjects.get(GitHubPullRequestMapping.class, source.getPullRequest().getId());
         GitHubCommitMapping commit = activeObjects.get(GitHubCommitMapping.class, source.getCommit().getId());
 
+        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getRepository()), repository);
         target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getGitHubId()), source.getGitHubId());
         target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getCreatedAt()), source.getCreatedAt());
         target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getCreatedBy()), createdBy);
@@ -212,10 +220,12 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
      */
     private void map(GitHubPullRequestLineCommentMapping target, GitHubPullRequestLineComment source)
     {
+        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
         GitHubUserMapping createdBy = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
         GitHubPullRequestMapping pullRequest = activeObjects.get(GitHubPullRequestMapping.class, source.getPullRequest().getId());
         GitHubCommitMapping commit = activeObjects.get(GitHubCommitMapping.class, source.getCommit().getId());
 
+        target.setRepository(repository);
         target.setGitHubId(source.getGitHubId());
         target.setCreatedAt(source.getCreatedAt());
         target.setCreatedBy(createdBy);
@@ -236,6 +246,9 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
      */
     private void map(GitHubPullRequestLineComment target, GitHubPullRequestLineCommentMapping source)
     {
+        GitHubRepository repository = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(repository, source.getRepository());
+
         GitHubUser createdBy = new GitHubUser();
         GitHubUserDAOImpl.map(createdBy, source.getCreatedBy());
 
@@ -246,6 +259,7 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
         GitHubCommitDAOImpl.map(commit, source.getCommit());
 
         target.setId(source.getID());
+        target.setRepository(repository);
         target.setGitHubId(source.getGitHubId());
         target.setCreatedAt(source.getCreatedAt());
         target.setCreatedBy(createdBy);

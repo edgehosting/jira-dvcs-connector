@@ -2,7 +2,9 @@ package com.atlassian.jira.plugins.dvcs.spi.github.dao;
 
 import java.util.List;
 
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
 /**
  * Provides DAO services related to an {@link GitHubPullRequest}.
@@ -43,8 +45,10 @@ public interface GitHubPullRequestDAO
     GitHubPullRequest getByGitHubId(long gitHubId);
 
     /**
-     * @return all {@link GitHubPullRequest}-s
+     * @param repository
+     *            {@link GitHubPullRequestMapping#getRepository()}
+     * @return resolved {@link GitHubPullRequest}-s
      */
-    List<GitHubPullRequest> getAll();
+    List<GitHubPullRequest> getByRepository(GitHubRepository repository);
 
 }

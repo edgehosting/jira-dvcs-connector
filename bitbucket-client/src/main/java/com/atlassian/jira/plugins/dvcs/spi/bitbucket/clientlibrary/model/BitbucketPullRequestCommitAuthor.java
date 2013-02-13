@@ -22,7 +22,7 @@ public class BitbucketPullRequestCommitAuthor implements Serializable
     
 	private String raw;
 	
-	private BitbucketPullRequestCommitAuthor user;
+	private BitbucketPullRequestCommitAuthorInfo user;
 
 	public BitbucketPullRequestCommitAuthor()
     {
@@ -39,12 +39,12 @@ public class BitbucketPullRequestCommitAuthor implements Serializable
         this.raw = raw;
     }
 
-    public BitbucketPullRequestCommitAuthor getUser()
+    public BitbucketPullRequestCommitAuthorInfo getUser()
     {
         return user;
     }
 
-    public void setUser(BitbucketPullRequestCommitAuthor user)
+    public void setUser(BitbucketPullRequestCommitAuthorInfo user)
     {
         this.user = user;
     }

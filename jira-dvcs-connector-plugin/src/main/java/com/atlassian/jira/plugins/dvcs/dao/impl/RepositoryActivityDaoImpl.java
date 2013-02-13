@@ -13,7 +13,7 @@ import java.util.Set;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestApprovalMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
@@ -22,6 +22,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpd
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Joiner;
 
@@ -55,17 +56,16 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
 
     @Override
-    public void saveActivity(final Map<String, Object> activity)
+    public RepositoryActivityPullRequestMapping saveActivity(final Map<String, Object> activity)
     {
-        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        return activeObjects.executeInTransaction(new TransactionCallback<RepositoryActivityPullRequestMapping>()
         {
             @Override
             @SuppressWarnings("unchecked")
-			public Void doInTransaction()
+			public RepositoryActivityPullRequestMapping doInTransaction()
             {
-                activeObjects.create((Class<? extends RepositoryActivityPullRequestMapping>) activity.remove(RepositoryActivityPullRequestMapping.ENTITY_TYPE),
+                return activeObjects.create((Class<? extends RepositoryActivityPullRequestMapping>) activity.remove(RepositoryActivityPullRequestMapping.ENTITY_TYPE),
                         activity);
-                return null;
             }
 
         });
@@ -136,12 +136,12 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
 
     @Override
-    public RepositoryPullRequestMapping findRequestById(Integer localId, String repoSlug)
+    public RepositoryPullRequestMapping findRequestById(Integer localId, int repoId)
     {
         Query query = Query.select()
                            .from(RepositoryPullRequestMapping.class)
                            .where(RepositoryPullRequestMapping.LOCAL_ID +  " = ? AND " 
-                                + RepositoryPullRequestMapping.TO_REPO_SLUG + " = ?", localId, repoSlug);
+                                + RepositoryPullRequestMapping.TO_REPO_ID + " = ?", localId, repoId);
         
         RepositoryPullRequestMapping[] found = activeObjects.find(RepositoryPullRequestMapping.class, query);
         return found.length == 1 ? found[0] : null;
@@ -175,8 +175,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         final Query query = Query
                 .select()
                 .from(RepositoryPullRequestIssueKeyMapping.class)
-                .where(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY + " = ?",
-                        new Object[] { issueKey.toUpperCase() });
+                .where(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY + " = ?", issueKey.toUpperCase());
         
         RepositoryPullRequestIssueKeyMapping[] mappings = activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, query);
         for (RepositoryPullRequestIssueKeyMapping issueKeyMapping : mappings)
@@ -189,41 +188,33 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     @Override
     public void removeAll(final Repository forRepository)
     {
-        final List<Query> activityDeleteQueries = new ArrayList<Query>();
-        
-        for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
-        {
-            activityDeleteQueries.add( 
-                     Query
-                    .select()
-                    .from(activityTable)
-                    // FIXME!!!
-                    .where(RepositoryActivityPullRequestMapping.REPO_SLUG + " = ?",
-                            new Object[] { forRepository.getSlug() })
-                            );
-        }
-
-
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
                 {
                     @Override
                     public Void doInTransaction()
                     {
-                        // drop activities
-                        int i = 0;
+                    	// drop commits
+                    	ActiveObjectsUtils.delete(activeObjects, RepositoryActivityCommitMapping.class,
+                    			Query.select()
+                    			.join(RepositoryActivityPullRequestUpdateMapping.class,"ACTIVITY_ID=PR_UPDATE.ID")
+                    			.alias(RepositoryActivityPullRequestUpdateMapping.class, "PR_UPDATE")
+                    			.where("PR_UPDATE.REPO_ID = ?", forRepository.getId()));
+                        
+                    	// drop activities
+                        final Query activityDeleteQuery = Query
+                                .select()
+                                .where(RepositoryActivityPullRequestMapping.REPO_ID + " = ?", forRepository.getId());
                         for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
                         {
-                            ActiveObjectsUtils.delete(activeObjects, activityTable, activityDeleteQueries.get(i));
-                            i++;
+                            ActiveObjectsUtils.delete(activeObjects, activityTable, activityDeleteQuery);
                         }
+                        
                         // drop pull requests
                         Set<Integer> deletedIds = ActiveObjectsUtils.deleteAndReturnIds(activeObjects,RepositoryPullRequestMapping.class,
                                 Query
                                 .select()
                                 .from(RepositoryPullRequestMapping.class)
-                                .where(RepositoryPullRequestMapping.TO_REPO_SLUG + " = ?",
-                                        new Object[] { forRepository.getSlug() })
-                                        );
+                                .where(RepositoryPullRequestMapping.TO_REPO_ID + " = ?", forRepository.getId()));
                         
                         // drop issue keys to PR mappings
                         if (!deletedIds.isEmpty())
@@ -232,16 +223,26 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 	                                Query
 	                                .select()
 	                                .from(RepositoryPullRequestIssueKeyMapping.class)
-	                                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds) +")",
-	                                        new Object[] {  })
-	                                        );
+	                                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds) +")"));
                         }
 	                    return null;
                     }
                 });
-
     }
     
+	@Override
+	public void saveCommit(final Map<String, Object> commit)
+	{
+		activeObjects.executeInTransaction(new TransactionCallback<RepositoryActivityCommitMapping>()
+		        {
+					public RepositoryActivityCommitMapping doInTransaction()
+		            {
+		                return activeObjects.create(RepositoryActivityCommitMapping.class, commit);
+		            }
+
+		        });
+	}
+	
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
     // private helpers
@@ -268,6 +269,4 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
         return sortable;
     }
-
-
 }

@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommitComment;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommitLineComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitLineCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitService;
@@ -60,7 +61,7 @@ public class CommitCommentPayloadGitHubEventProcessor extends AbstractGitHubEven
      * {@inheritDoc}
      */
     @Override
-    public void process(Repository repository, Event event)
+    public void process(GitHubRepository gitHubRepository, Event event, Repository repository)
     {
         CommitComment commitComment = getPayload(event).getComment();
 

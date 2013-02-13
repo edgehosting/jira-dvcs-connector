@@ -1,68 +1,75 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
+import java.util.Date;
+
+import net.java.ao.Entity;
+import net.java.ao.Preload;
+import net.java.ao.schema.StringLength;
+import net.java.ao.schema.Table;
+
 /**
  * Represents single repository commit.
  * 
  * @author Stanislav Dvorscak
  * 
  */
-public interface RepositoryActivityCommitMapping
+@Preload
+@Table("PR_COMMITS")
+public interface RepositoryActivityCommitMapping extends Entity
 {
-
+	String ACTIVITY_ID = "ACTIVITY_ID";
+	String RAW_AUTHOR = "RAW_AUTHOR";
+	String AUTHOR= "AUTHOR";
+	String NODE = "NODE";
+	String MESSAGE = "MESSAGE";
+	String DATE = "DATE";
+	String COMMIT_URL = "COMMIT_URL";
+	String AUTHOR_AVATAR_URL = "AUTHOR_AVATAR_URL";
+	
+	/**
+	 * @return {@link RepositoryActivityPullRequestUpdateMapping} of the commit
+	 */
+    RepositoryActivityPullRequestUpdateMapping getActivity();
+    /**
+     *  @return Author's full name of the commit, useful if the {@link #getAuthor()} username is not available.
+     */
+    String getRawAuthor();
     /**
      * @return Author's username of the commit.
      */
     String getAuthor();
-
     /**
-     * @param author
-     *            {@link #getAuthor()}
+     * @return Message of this commit.
      */
-    void setAuthor(String author);
-
+    @StringLength(StringLength.UNLIMITED)
+    String getMessage();
     /**
-     * @return Author's full name of the commit, useful if the {@link #getAuthor()} username is not available.
+     * @return SHA/commit ID/hash ID of the commit.
      */
-    String getAuthorName();
-
+    String getNode();
     /**
-     * @param rawAuthor
-     *            {@link #getAuthorName()}
+     * @return Date of the commit
      */
-    void setAuthorName(String authorName);
-
+    Date getDate();
+    /**
+     * @return Url of the commit
+     */
+    String getCommitUrl();
     /**
      * @return Author's avatar URL, useful if the {@link #getAuthor()} username is not available. Can be null, then internal resolver will
      *         be used, otherwise it has precedence.
      */
     String getAuthorAvatarUrl();
 
-    /**
-     * @param authorAvatarUrl
-     *            {@link #getAuthorAvatarUrl()}
-     */
-    void setAuthorAvatarUrl(String authorAvatarUrl);
+    void setActivity(RepositoryActivityPullRequestUpdateMapping activity);
 
-    /**
-     * @return Message of this commit.
-     */
-    String getMessage();
-
-    /**
-     * @param message
-     *            {@link #getMessage()}
-     */
+    void setAuthor(String author);
+    
+    void setAuthorName(String authorName);
+    @StringLength(StringLength.UNLIMITED)
     void setMessage(String message);
-
-    /**
-     * @return SHA/commit ID/hash ID of the commit.
-     */
-    String getNode();
-
-    /**
-     * @param node
-     *            {@link #getNode()}
-     */
     void setNode(String node);
-
+    void setDate(Date date);
+    void setCommitUrl(String url);
+    void setAuthorAvatarUrl(String authorAvatarUrl);
 }

@@ -5,6 +5,7 @@ import org.eclipse.egit.github.core.event.PushPayload;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPushService;
 
@@ -37,11 +38,12 @@ public class PushPayloadGitHubEventProcessor extends AbstractGitHubEventProcesso
      * {@inheritDoc}
      */
     @Override
-    public void process(Repository repository, Event event)
+    public void process(GitHubRepository gitHubRepository, Event event, Repository repository)
     {
         PushPayload pushPayload = getPayload(event);
 
         GitHubPush gitHubPush = new GitHubPush();
+        gitHubPush.setRepository(gitHubRepository);
         gitHubPush.setBefore(pushPayload.getBefore());
         gitHubPush.setHead(pushPayload.getHead());
         gitHubPush.setRef(pushPayload.getRef());

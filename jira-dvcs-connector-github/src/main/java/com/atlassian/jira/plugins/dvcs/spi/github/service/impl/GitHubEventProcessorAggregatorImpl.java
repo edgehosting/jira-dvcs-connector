@@ -8,6 +8,7 @@ import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
 
@@ -95,12 +96,12 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
      * {@inheritDoc}
      */
     @Override
-    public void process(Repository repository, Event event)
+    public void process(GitHubRepository gitHubRepository, Event event, Repository repository)
     {
         GitHubEventProcessor<EventPayload> resolvedEventProcessor = resolveEventProcessor(event.getPayload().getClass());
         if (resolvedEventProcessor != null)
         {
-            resolvedEventProcessor.process(repository, event);
+            resolvedEventProcessor.process(gitHubRepository, event, repository);
         }
     }
 

@@ -12,6 +12,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitService;
 
 /**
@@ -96,7 +97,7 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
      * {@inheritDoc}
      */
     @Override
-    public GitHubCommit fetch(Repository repository, String sha)
+    public GitHubCommit fetch(GitHubRepository gitHubRepository, Repository repository, String sha)
     {
         GitHubCommit result = getBySha(sha);
         if (result != null)
@@ -122,6 +123,7 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
         }
 
         result = new GitHubCommit();
+        result.setRepository(gitHubRepository);
         result.setSha(commit.getSha());
         result.setCreatedAt(commit.getCommit().getAuthor().getDate());
         result.setCreatedBy(commit.getCommit().getAuthor().getName());
