@@ -204,6 +204,12 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                 {
                     public Void doInTransaction()
                     {
+                    	// drop commits
+                    	ActiveObjectsUtils.delete(activeObjects, RepositoryActivityCommitMapping.class,
+                    			Query.select()
+                    			.join(RepositoryActivityPullRequestUpdateMapping.class,"ACTIVITY_ID=PR_UPDATE.ID")
+                    			.alias(RepositoryActivityPullRequestUpdateMapping.class, "PR_UPDATE")
+                    			.where("PR_UPDATE.REPO_ID = ?", forRepository.getId()));
                         // drop activities
                         int i = 0;
                         for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
