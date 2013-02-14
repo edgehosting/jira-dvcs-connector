@@ -46,7 +46,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
     @SuppressWarnings("unchecked")
 	private static final Class<RepositoryActivityPullRequestMapping>[] ALL_ACTIVITY_TABLES = new Class[] {
-            RepositoryActivityPullRequestCommentMapping.class, RepositoryActivityPullRequestApprovalMapping.class,
+            RepositoryActivityPullRequestCommentMapping.class, 
             RepositoryActivityPullRequestUpdateMapping.class };
 
     public RepositoryActivityDaoImpl(ActiveObjects activeObjects)
@@ -198,7 +198,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                     			Query.select()
                     			.join(RepositoryActivityPullRequestUpdateMapping.class,"ACTIVITY_ID=PR_UPDATE.ID")
                     			.alias(RepositoryActivityPullRequestUpdateMapping.class, "PR_UPDATE")
-                    			.where("PR_UPDATE.REPO_ID = ?", forRepository.getId()));
+                    			.where("PR_UPDATE." + RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", forRepository.getId()));
                         
                     	// drop activities
                         final Query activityDeleteQuery = Query
