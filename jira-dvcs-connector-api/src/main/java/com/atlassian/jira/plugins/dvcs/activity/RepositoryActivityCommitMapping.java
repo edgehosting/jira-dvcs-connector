@@ -25,10 +25,10 @@ public interface RepositoryActivityCommitMapping extends Entity
     String DATE = "DATE";
     String COMMIT_URL = "COMMIT_URL";
     String AUTHOR_AVATAR_URL = "AUTHOR_AVATAR_URL";
-	
-	/**
-	 * @return {@link RepositoryActivityPullRequestUpdateMapping} of the commit
-	 */
+    
+    /**
+     * @return {@link RepositoryActivityPullRequestUpdateMapping} of the commit
+     */
     RepositoryActivityPullRequestUpdateMapping getActivity();
     /**
      *  @return Author's full name of the commit, useful if the {@link #getAuthor()} username is not available.

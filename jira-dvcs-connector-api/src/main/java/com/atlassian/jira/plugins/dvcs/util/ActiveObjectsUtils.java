@@ -28,14 +28,14 @@ public class ActiveObjectsUtils
     
     public static <T extends Entity> Set<Integer> delete(final ActiveObjects activeObjects, final Class<T> entityType, final Query query, final boolean returnIds)
     {
-    	//TODO: use activeObjects.deleteWithSQL() when AO update https://ecosystem.atlassian.net/browse/AO-348 is available.
-    	log.debug("Deleting type {}", entityType);
+        //TODO: use activeObjects.deleteWithSQL() when AO update https://ecosystem.atlassian.net/browse/AO-348 is available.
+        log.debug("Deleting type {}", entityType);
         int remainingEntities = activeObjects.count(entityType, query);
         
         Set<Integer> deletedIds = null;
         if (returnIds)
         {
-        	deletedIds = new HashSet<Integer>();
+            deletedIds = new HashSet<Integer>();
         }
         while (remainingEntities > 0)
         {
@@ -43,10 +43,10 @@ public class ActiveObjectsUtils
             T[] entities = activeObjects.find(entityType, query.limit(DELETION_WINDOW_SIZE));
             if ( returnIds )
             {
-	            for ( T entity : entities)
-	            {
-	            	deletedIds.add(entity.getID());
-	            }
+                for ( T entity : entities)
+                {
+                    deletedIds.add(entity.getID());
+                }
             }
             activeObjects.delete(entities);
             remainingEntities = activeObjects.count(entityType, query);

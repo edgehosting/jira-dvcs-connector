@@ -44,7 +44,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     private final ActiveObjects activeObjects;
 
     @SuppressWarnings("unchecked")
-	private static final Class<RepositoryActivityPullRequestMapping>[] ALL_ACTIVITY_TABLES = new Class[] {
+    private static final Class<RepositoryActivityPullRequestMapping>[] ALL_ACTIVITY_TABLES = new Class[] {
             RepositoryActivityPullRequestCommentMapping.class, 
             RepositoryActivityPullRequestUpdateMapping.class };
 
@@ -61,7 +61,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         {
             @Override
             @SuppressWarnings("unchecked")
-			public RepositoryActivityPullRequestMapping doInTransaction()
+            public RepositoryActivityPullRequestMapping doInTransaction()
             {
                 return activeObjects.create((Class<? extends RepositoryActivityPullRequestMapping>) activity.remove(RepositoryActivityPullRequestMapping.ENTITY_TYPE),
                         activity);
@@ -154,18 +154,18 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
         if ( !pullRequestIds.isEmpty() )
         {
-		    for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
-		    {
-		        final Query query = Query
-		                .select()
-		                .from(activityTable)
-		                .where(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(pullRequestIds) + ")");
-		
-		        ret.addAll(Arrays.asList(activeObjects.find(activityTable, query)));
-		
-		    }
+            for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
+            {
+                final Query query = Query
+                        .select()
+                        .from(activityTable)
+                        .where(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(pullRequestIds) + ")");
+        
+                ret.addAll(Arrays.asList(activeObjects.find(activityTable, query)));
+        
+            }
         }
-		return sort(ret);
+        return sort(ret);
     }
 
     private List<Integer> findRelatedPullRequests(String issueKey)
@@ -192,14 +192,14 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                     @Override
                     public Void doInTransaction()
                     {
-                    	// drop commits
-                    	ActiveObjectsUtils.delete(activeObjects, RepositoryActivityCommitMapping.class,
-                    			Query.select()
-                    			.join(RepositoryActivityPullRequestUpdateMapping.class,"ACTIVITY_ID=PR_UPDATE.ID")
-                    			.alias(RepositoryActivityPullRequestUpdateMapping.class, "PR_UPDATE")
-                    			.where("PR_UPDATE." + RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", forRepository.getId()));
+                        // drop commits
+                        ActiveObjectsUtils.delete(activeObjects, RepositoryActivityCommitMapping.class,
+                                Query.select()
+                                .join(RepositoryActivityPullRequestUpdateMapping.class,"ACTIVITY_ID=PR_UPDATE.ID")
+                                .alias(RepositoryActivityPullRequestUpdateMapping.class, "PR_UPDATE")
+                                .where("PR_UPDATE." + RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", forRepository.getId()));
                         
-                    	// drop activities
+                        // drop activities
                         final Query activityDeleteQuery = Query
                                 .select()
                                 .where(RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", forRepository.getId());
@@ -218,31 +218,31 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                         // drop issue keys to PR mappings
                         if (!deletedIds.isEmpty())
                         {
-                        	ActiveObjectsUtils.delete(activeObjects, RepositoryPullRequestIssueKeyMapping.class,
-	                                Query
-	                                .select()
-	                                .from(RepositoryPullRequestIssueKeyMapping.class)
-	                                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds) +")"));
+                            ActiveObjectsUtils.delete(activeObjects, RepositoryPullRequestIssueKeyMapping.class,
+                                    Query
+                                    .select()
+                                    .from(RepositoryPullRequestIssueKeyMapping.class)
+                                    .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds) +")"));
                         }
-	                    return null;
+                        return null;
                     }
                 });
     }
     
-	@Override
-	public void saveCommit(final Map<String, Object> commit)
-	{
-		activeObjects.executeInTransaction(new TransactionCallback<RepositoryActivityCommitMapping>()
-		        {
-					@Override
+    @Override
+    public void saveCommit(final Map<String, Object> commit)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<RepositoryActivityCommitMapping>()
+                {
+                    @Override
                     public RepositoryActivityCommitMapping doInTransaction()
-		            {
-		                return activeObjects.create(RepositoryActivityCommitMapping.class, commit);
-		            }
+                    {
+                        return activeObjects.create(RepositoryActivityCommitMapping.class, commit);
+                    }
 
-		        });
-	}
-	
+                });
+    }
+    
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
     // private helpers
