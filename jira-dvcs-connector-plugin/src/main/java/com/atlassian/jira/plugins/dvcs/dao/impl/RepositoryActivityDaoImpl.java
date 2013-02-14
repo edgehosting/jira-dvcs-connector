@@ -135,12 +135,18 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
 
     @Override
-    public RepositoryPullRequestMapping findRequestById(int repositoryId, int localId)
+    public RepositoryPullRequestMapping findRequestById(int localId)
+    {
+        return activeObjects.get(RepositoryPullRequestMapping.class, localId);
+    }
+    
+    @Override
+    public RepositoryPullRequestMapping findRequestByRemoteId(int repositoryId, int remoteId)
     {
         Query query = Query.select()
                            .from(RepositoryPullRequestMapping.class)
-                           .where(RepositoryPullRequestMapping.LOCAL_ID +  " = ? AND " 
-                                + RepositoryPullRequestMapping.TO_REPO_ID + " = ?", localId, repositoryId);
+                           .where(RepositoryPullRequestMapping.REMOTE_ID +  " = ? AND " 
+                                + RepositoryPullRequestMapping.TO_REPO_ID + " = ?", remoteId, repositoryId);
         
         RepositoryPullRequestMapping[] found = activeObjects.find(RepositoryPullRequestMapping.class, query);
         return found.length == 1 ? found[0] : null;
@@ -241,7 +247,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
                 });
     }
-    
+
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
     // private helpers

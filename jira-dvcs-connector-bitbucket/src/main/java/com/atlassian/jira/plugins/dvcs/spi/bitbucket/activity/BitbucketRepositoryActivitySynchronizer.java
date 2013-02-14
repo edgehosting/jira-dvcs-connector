@@ -152,7 +152,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     private RepositoryPullRequestMapping ensurePullRequestPresent(Repository forRepository,
             PullRequestRemoteRestpoint pullRestpoint, BitbucketPullRequestActivityInfo info)
     {
-        RepositoryPullRequestMapping localPullRequest = dao.findRequestById(forRepository.getId(),
+        RepositoryPullRequestMapping localPullRequest = dao.findRequestByRemoteId(forRepository.getId(),
                 info.getPullRequest().getId());
 
         // don't have this pull request, let's save it
@@ -275,7 +275,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Set<String> issueKeys, Repository forRepo)
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
-        ret.put(RepositoryPullRequestMapping.LOCAL_ID, request.getId());
+        ret.put(RepositoryPullRequestMapping.REMOTE_ID, request.getId());
         ret.put(RepositoryPullRequestMapping.NAME, request.getTitle());
         ret.put(RepositoryPullRequestMapping.URL, request.getLinks().getHtmlHref());
         ret.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());

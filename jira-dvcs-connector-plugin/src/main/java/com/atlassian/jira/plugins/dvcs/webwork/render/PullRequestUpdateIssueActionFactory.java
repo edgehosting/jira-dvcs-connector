@@ -39,7 +39,7 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
         int pullRequestId = pullRequestUpdate.getPullRequest().getID();
         
         RepositoryPullRequestMapping pullRequest;
-        pullRequest = repositoryActivityDao.findRequestById(repositoryId, pullRequestId);
+        pullRequest = repositoryActivityDao.findRequestById(pullRequestId);
         String pullRequestName = pullRequest.getName();
         Repository repository = repositoryService.get(repositoryId);
 

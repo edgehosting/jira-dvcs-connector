@@ -444,7 +444,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
     RepositoryPullRequestMapping getRepositoryPullRequest(GitHubPullRequest source, Repository forRepository)
     {
-        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestById(forRepository.getId(), source.getId());
+        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestByRemoteId(forRepository.getId(), source.getId());
 
         if (result != null)
         {
@@ -454,7 +454,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(source.getTitle(), source.getText());
 
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put(RepositoryPullRequestMapping.LOCAL_ID, source.getId());
+        params.put(RepositoryPullRequestMapping.REMOTE_ID, source.getId());
         params.put(RepositoryPullRequestMapping.URL, source.getUrl());
         params.put(RepositoryPullRequestMapping.NAME, source.getTitle());
         params.put(RepositoryPullRequestMapping.DESCRIPTION, source.getText());
