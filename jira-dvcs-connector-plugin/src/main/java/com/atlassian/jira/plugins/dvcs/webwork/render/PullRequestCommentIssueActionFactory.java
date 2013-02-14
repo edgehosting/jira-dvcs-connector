@@ -36,10 +36,9 @@ public class PullRequestCommentIssueActionFactory implements IssueActionFactory
     {
         RepositoryActivityPullRequestCommentMapping pullRequestComment = (RepositoryActivityPullRequestCommentMapping) activityItem;
         int repositoryId = pullRequestComment.getRepositoryId();
-        int pullRequestId = pullRequestComment.getPullRequestId();
+        RepositoryPullRequestMapping pullRequest = pullRequestComment.getPullRequest();
         
-        RepositoryPullRequestMapping pullRequest;
-        pullRequest = repositoryActivityDao.findRequestById(repositoryId, pullRequestId);
+        pullRequest = repositoryActivityDao.findRequestById(pullRequest.getID());
         String pullRequestName = pullRequest.getName();
         Repository repository = repositoryService.get(repositoryId);
 

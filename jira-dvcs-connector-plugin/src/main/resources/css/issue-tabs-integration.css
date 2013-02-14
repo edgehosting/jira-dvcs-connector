@@ -66,10 +66,9 @@
 .dvcs.comment .comment-actions { font-size: 12px; list-style: none; margin: 5px 0 0 42px; padding: 0 0 25px 0; }
 .dvcs.comment .comment-actions { font-size: 12px;  list-style: none;  margin: 5px 0 0 42px; padding: 0 0 25px 0; }
 .dvcs.comment .comment-actions > li { float: left; }
-.dvcs.comment .comment-actions > li:before { padding: 0 3px 0 6px; content: "¥"; color: #707070; }
+.dvcs.comment .comment-actions > li:before { padding: 0 3px 0 6px; content: "â€¢"; color: #707070; }
 .dvcs.comment .comment-actions > li:first-child:before { content: none; }
 .dvcs.comment .comment-actions > li a { color: #707070; }
-
 
 
 /* Old Commit tabs styles WILL BE REMOVED 
