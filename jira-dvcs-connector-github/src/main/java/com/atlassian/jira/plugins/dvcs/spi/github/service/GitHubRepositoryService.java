@@ -36,12 +36,16 @@ public interface GitHubRepositoryService
     GitHubRepository getByGitHubId(long gitHubId);
 
     /**
-     * 
-     * @param repository
+     * @param domainRepository
+     *            domain repository
+     * @param owner
+     *            of the repository - username/organization name
+     * @param name
+     *            of the repository
      * @param gitHubId
-     *            {@link GitHubRepository#getGitHubId()}
+     *            if it is known - if it is not provided, means equals to zero, it will be still refreshed
      * @return creates new or returns existing {@link GitHubRepository}
      */
-    GitHubRepository fetch(Repository repository, long gitHubId);
+    GitHubRepository fetch(Repository domainRepository, String owner, String name, long gitHubId);
 
 }

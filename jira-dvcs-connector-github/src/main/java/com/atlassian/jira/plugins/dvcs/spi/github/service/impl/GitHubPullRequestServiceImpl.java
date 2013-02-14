@@ -13,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService;
 
 /**
  * An {@link GitHubPullRequestService} implementation.
@@ -24,12 +25,17 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
 {
 
     /**
-     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GithubClientProvider)
+     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider)
      */
     private final GitHubPullRequestDAO gitHubPullRequestDAO;
 
     /**
-     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GithubClientProvider)
+     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider)
+     */
+    private final GitHubRepositoryService gitHubRepositoryService;
+
+    /**
+     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider)
      */
     private final GithubClientProvider githubClientProvider;
 
@@ -37,14 +43,18 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
      * Constructor.
      * 
      * @param gitHubPullRequestDAO
-     *            injected {@link GitHubPullRequestDAO} dependency.
+     *            injected {@link GitHubPullRequestDAO} dependency
+     * @param injected
+     *            {@link GitHubRepositoryService} dependency
      * @param githubClientProvider
-     *            injected {@link GithubClientProvider} dependency.
+     *            injected {@link GithubClientProvider} dependency
      */
-    public GitHubPullRequestServiceImpl(GitHubPullRequestDAO gitHubPullRequestDAO, GithubClientProvider githubClientProvider)
+    public GitHubPullRequestServiceImpl(GitHubPullRequestDAO gitHubPullRequestDAO, GitHubRepositoryService gitHubRepositoryService,
+            GithubClientProvider githubClientProvider)
     {
         this.gitHubPullRequestDAO = gitHubPullRequestDAO;
         this.githubClientProvider = githubClientProvider;
+        this.gitHubRepositoryService = gitHubRepositoryService;
     }
 
     /**
@@ -96,7 +106,7 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
      * {@inheritDoc}
      */
     @Override
-    public GitHubPullRequest fetch(GitHubRepository gitHubRepository, long gitHubId, int pullRequestNumber, Repository repository)
+    public GitHubPullRequest fetch(Repository domainRepository, GitHubRepository domain, long gitHubId, int pullRequestNumber)
     {
         GitHubPullRequest result = getByGitHubId(gitHubId);
         if (result != null)
@@ -105,22 +115,33 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
 
         }
         result = new GitHubPullRequest();
-        RepositoryId egitRepository = RepositoryId.createFromUrl(repository.getRepositoryUrl());
 
-        PullRequestService pullRequestService = githubClientProvider.getPullRequestService(repository);
+        PullRequestService pullRequestService = githubClientProvider.getPullRequestService(domainRepository);
         PullRequest loaded;
         try
         {
-            loaded = pullRequestService.getPullRequest(egitRepository, pullRequestNumber);
+            loaded = pullRequestService.getPullRequest(RepositoryId.createFromUrl(domain.getUrl()), pullRequestNumber);
         } catch (IOException e)
         {
             throw new RuntimeException(e);
         }
 
+        org.eclipse.egit.github.core.Repository baseRepo = loaded.getBase().getRepo();
+        GitHubRepository baseRepository = gitHubRepositoryService.fetch(domainRepository, baseRepo.getOwner().getLogin(),
+                baseRepo.getName(), baseRepo.getId());
+
+        org.eclipse.egit.github.core.Repository headRepo = loaded.getHead().getRepo();
+        GitHubRepository headRepository = gitHubRepositoryService.fetch(domainRepository, headRepo.getOwner().getLogin(),
+                headRepo.getName(), headRepo.getId());
+
         // re-mapping
         result.setGitHubId(loaded.getId());
-        result.setRepository(gitHubRepository);
-        result.setBaseRepository(gitHubRepository);
+        result.setDomain(domain);
+        result.setNumber(loaded.getNumber());
+        result.setBaseRepository(baseRepository);
+        result.setBaseSha(loaded.getBase().getSha());
+        result.setHeadRepository(headRepository);
+        result.setHeadSha(loaded.getHead().getSha());
         result.setTitle(loaded.getTitle());
         result.setText(loaded.getBodyText());
         result.setUrl(loaded.getHtmlUrl());

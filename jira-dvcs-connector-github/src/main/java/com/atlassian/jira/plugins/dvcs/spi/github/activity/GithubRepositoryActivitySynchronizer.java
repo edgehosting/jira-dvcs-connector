@@ -1,24 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.activity;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import net.java.ao.Query;
 
+import org.eclipse.egit.github.core.IRepositoryIdProvider;
+import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
+import org.eclipse.egit.github.core.event.PushPayload;
 import org.eclipse.egit.github.core.service.EventService;
+import org.eclipse.egit.github.core.service.PullRequestService;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
@@ -28,24 +31,29 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubEntityMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubEventMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestActionMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestCommentMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestLineCommentMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPushCommitMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPushMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubEvent;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestLineCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPushService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
@@ -57,6 +65,7 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
  * @author Stanislav Dvorscak
  * 
  */
+// FIXME<stanislav-dvorscak>: remove system out
 public class GithubRepositoryActivitySynchronizer implements RepositoryActivitySynchronizer
 {
 
@@ -117,6 +126,11 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
     private final GitHubPullRequestLineCommentService gitHubPullRequestLineCommentService;
 
     /**
+     * 
+     */
+    private final GitHubPushService gitHubPushService;
+
+    /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GithubClientProvider, GitHubEventProcessorAggregator,
      *      GitHubRepositoryService, GitHubEventService, GitHubPullRequestService, GitHubPullRequestCommentService,
      *      GitHubPullRequestLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
@@ -144,7 +158,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
      *            injected {@link GithubClientProvider} dependency
      * @param gitHubEventProcessorAggregator
      *            injected {@link GitHubEventProcessorAggregator} dependency
-     * @param gitHubEventService
+     * @param gitHubRepositoryService
      *            injected {@link GitHubRepositoryService} dependency
      * @param gitHubEventService
      *            injected {@link GitHubEventService} dependency
@@ -154,6 +168,8 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
      *            injected {@link GitHubPullRequestCommentService} dependency
      * @param gitHubPullRequestLineCommentService
      *            injected {@link GitHubPullRequestLineCommentService} dependency
+     * @param gitHubPushService
+     *            injected {@link GitHubPushService} dependency
      * @param repositoryActivityDao
      *            injected {@link RepositoryActivityDao} dependency
      * @param columnNameResolverService
@@ -168,6 +184,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             GitHubPullRequestService gitHubPullRequestService, //
             GitHubPullRequestCommentService gitHubPullRequestCommentService, //
             GitHubPullRequestLineCommentService gitHubPullRequestLineCommentService, //
+            GitHubPushService gitHubPushService, //
             RepositoryActivityDao repositoryActivityDao, //
             ColumnNameResolverService columnNameResolverService //
     )
@@ -180,6 +197,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         this.gitHubPullRequestService = gitHubPullRequestService;
         this.gitHubPullRequestCommentService = gitHubPullRequestCommentService;
         this.gitHubPullRequestLineCommentService = gitHubPullRequestLineCommentService;
+        this.gitHubPushService = gitHubPushService;
         this.repositoryActivityDao = repositoryActivityDao;
 
         this.columnNameResolverService = columnNameResolverService;
@@ -192,22 +210,23 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
     @Override
     public void synchronize(final Repository forRepository, boolean softSync)
     {
-        final GitHubRepository gitHubRepository = gitHubRepositoryService.fetch(forRepository, 0);
+        final GitHubRepository domain = gitHubRepositoryService
+                .fetch(forRepository, forRepository.getOrgName(), forRepository.getName(), 0);
 
         if (!softSync)
         {
-            cleanAll(forRepository, gitHubRepository);
+            cleanAll(forRepository, domain);
         }
 
         EventService eventService = githubClientProvider.getEventService(forRepository);
 
         // gets repository ID
-        RepositoryId repositoryId = RepositoryId.create(forRepository.getOrgName(), forRepository.getSlug());
+        RepositoryId forRepositoryId = RepositoryId.create(forRepository.getOrgName(), forRepository.getSlug());
 
-        final GitHubEvent savePoint = gitHubEventService.getLastSavePoint(gitHubRepository);
+        final GitHubEvent savePoint = gitHubEventService.getLastSavePoint(domain);
 
         // goes over events
-        Iterator<Collection<Event>> eventsIterator = eventService.pageEvents(repositoryId).iterator();
+        Iterator<Collection<Event>> eventsIterator = eventService.pageEvents(forRepositoryId).iterator();
         while (eventsIterator.hasNext())
         {
             final Collection<Event> nextPage = eventsIterator.next();
@@ -236,7 +255,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
                         }
 
                         System.out.println("Event: " + event.toString());
-                        gitHubEventProcessorAggregator.process(gitHubRepository, event, forRepository);
+                        gitHubEventProcessorAggregator.process(forRepository, domain, event);
 
                         // saves proceed GitHub event
                         GitHubEvent gitHubEvent = gitHubEventService.getByGitHubId(event.getId());
@@ -246,7 +265,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
                         }
                         gitHubEvent.setGitHubId(event.getId());
                         gitHubEvent.setCreatedAt(event.getCreatedAt());
-                        gitHubEvent.setRepository(gitHubRepository);
+                        gitHubEvent.setDomain(domain);
                         gitHubEventService.save(gitHubEvent);
                     }
 
@@ -263,7 +282,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             @Override
             public Void doInTransaction()
             {
-                GitHubEvent last = gitHubEventService.getLast(gitHubRepository);
+                GitHubEvent last = gitHubEventService.getLast(domain);
                 if (last != null)
                 {
                     last.setSavePoint(true);
@@ -275,82 +294,157 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
         });
 
+        for (GitHubPullRequest gitHubPullRequest : gitHubPullRequestService.getByRepository(domain))
+        {
+            downloadPullRequestPushes(forRepository, domain, gitHubPullRequest);
+        }
+
+        // clean & rebuild activities
         repositoryActivityDao.removeAll(forRepository);
 
-        // dump
-        SortedMap<Date, String> dump = new TreeMap<Date, String>(new Comparator<Date>()
+        for (GitHubPullRequest gitHubPullRequest : gitHubPullRequestService.getByRepository(domain))
         {
-
-            @Override
-            public int compare(Date o1, Date o2)
-            {
-                return o1.compareTo(o2);
-            }
-
-        });
-
-        for (GitHubPullRequest gitHubPullRequest : gitHubPullRequestService.getByRepository(gitHubRepository))
-        {
-            RepositoryPullRequestMapping repositoryPullRequest = getRepositoryPullRequest(gitHubPullRequest);
+            RepositoryPullRequestMapping repositoryPullRequest = getRepositoryPullRequest(gitHubPullRequest, forRepository);
 
             for (GitHubPullRequestAction gitHubPullRequestAction : gitHubPullRequest.getActions())
             {
                 Map<String, Object> activity = new HashMap<String, Object>();
-                map(activity, gitHubPullRequest, repositoryPullRequest);
+                map(activity, repositoryPullRequest);
                 map(activity, gitHubPullRequestAction);
-                repositoryActivityDao.saveActivity(activity);
 
-                dump.put(gitHubPullRequestAction.getCreatedAt(), //
-                        gitHubPullRequestAction.getCreatedBy().getName() // name
-                                + " " + gitHubPullRequestAction.getAction().name() // action
-                                + " the pull request " + gitHubPullRequest.getTitle() // title
-                                + " on " + gitHubPullRequestAction.getCreatedAt() // date
-                );
+                // skip unsupported status
+                if (activity.get(RepositoryActivityPullRequestUpdateMapping.STATUS) == null)
+                {
+                    continue;
+                }
+
+                RepositoryActivityPullRequestMapping createdActivity = repositoryActivityDao.saveActivity(activity);
+
+                if (GitHubPullRequestAction.Action.OPENED.equals(gitHubPullRequestAction.getAction()))
+                {
+                    updateCommits(forRepository, forRepositoryId, repositoryPullRequest, gitHubPullRequest,
+                            (RepositoryActivityPullRequestUpdateMapping) createdActivity);
+                }
             }
         }
 
-        for (GitHubPullRequestLineComment gitHubPullRequestLineComment : gitHubPullRequestLineCommentService
-                .getByRepository(gitHubRepository))
+        for (GitHubPullRequestComment gitHubPullRequestComment : gitHubPullRequestCommentService.getByRepository(domain))
         {
-            dump.put(gitHubPullRequestLineComment.getCreatedAt(), //
-                    gitHubPullRequestLineComment.getCreatedBy().getName() // name
-                            + " left a comment " + gitHubPullRequestLineComment.getPath() + ":" + gitHubPullRequestLineComment.getLine() // position
-                            + " on a pull request " + gitHubPullRequestLineComment.getPullRequest().getTitle() // title
-                            + " on " + gitHubPullRequestLineComment.getCreatedAt() // date
-                            + "(" + gitHubPullRequestLineComment.getText() + ")" //
-            );
-        }
-
-        for (GitHubPullRequestComment gitHubPullRequestComment : gitHubPullRequestCommentService.getByRepository(gitHubRepository))
-        {
-            RepositoryPullRequestMapping repositoryPullRequest = getRepositoryPullRequest(gitHubPullRequestComment.getPullRequest());
+            RepositoryPullRequestMapping repositoryPullRequest = getRepositoryPullRequest(gitHubPullRequestComment.getPullRequest(),
+                    forRepository);
 
             Map<String, Object> activity = new HashMap<String, Object>();
-            map(activity, gitHubPullRequestComment.getPullRequest(), repositoryPullRequest);
+            map(activity, repositoryPullRequest);
             map(activity, gitHubPullRequestComment);
             repositoryActivityDao.saveActivity(activity);
-
-            dump.put(gitHubPullRequestComment.getCreatedAt(), //
-                    gitHubPullRequestComment.getCreatedBy().getName() // name
-                            + " left a comment " //
-                            + " on a pull request " + gitHubPullRequestComment.getPullRequest().getTitle() // title
-                            + " on " + gitHubPullRequestComment.getCreatedAt() // date
-                            + " (" + gitHubPullRequestComment.getText() + ")" //
-            );
         }
 
-        System.out.println("==== Begin: Activity dump ====");
-        for (Entry<Date, String> entry : dump.entrySet())
+        // FIXME
+        Query query = Query.select().where(RepositoryActivityPullRequestUpdateMapping.REPOSITORY_ID + " = ? ", forRepository.getId());
+        query.order(RepositoryActivityPullRequestUpdateMapping.LAST_UPDATED_ON);
+        for (RepositoryActivityPullRequestUpdateMapping activity : activeObjects.find(RepositoryActivityPullRequestUpdateMapping.class,
+                query))
         {
-            System.out.println(entry.getValue());
+            System.out.println(activity.getPullRequestId() + ":" + activity.getStatus());
+            for (RepositoryActivityCommitMapping commit : activity.getCommits())
+            {
+                System.out.println("\t" + commit.getNode() + ":" + commit.getMessage());
+            }
         }
-        System.out.println("==== End of: Activity dump ====");
     }
 
-    RepositoryPullRequestMapping getRepositoryPullRequest(GitHubPullRequest source)
+    private void downloadPullRequestPushes(Repository domainRepository, GitHubRepository domain, GitHubPullRequest pullRequest)
     {
-        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestById(source.getId(), source.getBaseRepository()
-                .getRepositoryId());
+        EventService eventService = githubClientProvider.getEventService(domainRepository);
+        PageIterator<Event> pageEvents = eventService.pageEvents(RepositoryId.createFromUrl(pullRequest.getHeadRepository().getUrl()));
+        while (pageEvents.hasNext())
+        {
+            for (Event event : pageEvents.next())
+            {
+                if (event.getPayload() instanceof PushPayload)
+                {
+                    gitHubEventProcessorAggregator.process(domainRepository, domain, event);
+                }
+            }
+        }
+    }
+
+    private void updateCommits(Repository forRepository, IRepositoryIdProvider forRepositoryId,
+            RepositoryPullRequestMapping repositoryPullRequest, GitHubPullRequest pullRequest,
+            RepositoryActivityPullRequestUpdateMapping pullRequestCreatedUpdateActivity)
+    {
+        String firstHeadSha;
+        String initialHeadSha = null;
+        String currentHeadSha;
+
+        for (GitHubPullRequestAction action : pullRequest.getActions())
+        {
+            if (GitHubPullRequestAction.Action.OPENED.equals(action.getAction()))
+            {
+                initialHeadSha = action.getHeadSha();
+
+                break;
+            }
+        }
+
+        PullRequestService pullRequestService = githubClientProvider.getPullRequestService(forRepository);
+        List<RepositoryCommit> commits;
+        try
+        {
+            commits = pullRequestService.getCommits(forRepositoryId, pullRequest.getNumber());
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        firstHeadSha = commits.get(0).getSha();
+        currentHeadSha = commits.get(commits.size() - 1).getSha();
+
+        GitHubPush pushCursor;
+        Map<String, Object> commitActivity = new HashMap<String, Object>();
+
+        // initial commits
+        {
+            Iterator<GitHubPush> initialPushes = gitHubPushService.getByBetween(pullRequest.getHeadRepository(), firstHeadSha,
+                    initialHeadSha).iterator();
+            do
+            {
+                pushCursor = initialPushes.next();
+                for (GitHubCommit commit : pushCursor.getCommits())
+                {
+                    map(commitActivity, commit, pullRequestCreatedUpdateActivity);
+                    activeObjects.create(RepositoryActivityCommitMapping.class, commitActivity);
+                    commitActivity.clear();
+                }
+            } while (initialPushes.hasNext());
+        }
+
+        // update commits
+        {
+            Iterator<GitHubPush> updatePushes = gitHubPushService.getByBetween(pullRequest.getHeadRepository(), pushCursor.getHead(),
+                    currentHeadSha).iterator();
+            while (updatePushes.hasNext())
+            {
+                pushCursor = updatePushes.next();
+                Map<String, Object> commitsUpdateActivity = new HashMap<String, Object>();
+                map(commitsUpdateActivity, repositoryPullRequest);
+                map(commitsUpdateActivity, pushCursor);
+                RepositoryActivityPullRequestUpdateMapping commitsUpdateActivityMapping = (RepositoryActivityPullRequestUpdateMapping) repositoryActivityDao
+                        .saveActivity(commitsUpdateActivity);
+                for (GitHubCommit commit : pushCursor.getCommits())
+                {
+                    map(commitActivity, commit, commitsUpdateActivityMapping);
+                    repositoryActivityDao.saveCommit(commitActivity);
+                    commitActivity.clear();
+                }
+            }
+        }
+    }
+
+    RepositoryPullRequestMapping getRepositoryPullRequest(GitHubPullRequest source, Repository forRepository)
+    {
+        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestById(source.getId(), forRepository.getId());
+
         if (result != null)
         {
             return result;
@@ -360,36 +454,73 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(RepositoryPullRequestMapping.LOCAL_ID, source.getId());
-        params.put(RepositoryPullRequestMapping.PULL_REQUEST_URL, source.getUrl());
-        params.put(RepositoryPullRequestMapping.PULL_REQUEST_NAME, source.getTitle());
-        params.put(RepositoryPullRequestMapping.PULL_REQUEST_DESCRIPTION, source.getText());
+        params.put(RepositoryPullRequestMapping.URL, source.getUrl());
+        params.put(RepositoryPullRequestMapping.NAME, source.getTitle());
+        params.put(RepositoryPullRequestMapping.DESCRIPTION, source.getText());
         params.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
-        params.put(RepositoryPullRequestMapping.TO_REPO_ID, source.getBaseRepository().getRepositoryId());
+        params.put(RepositoryPullRequestMapping.TO_REPO_ID, forRepository.getId());
         result = repositoryActivityDao.savePullRequest(params, issueKeys);
 
         return result;
     }
 
-    private void map(Map<String, Object> activity, GitHubPullRequest pullRequest, RepositoryPullRequestMapping repositoryPullRequest)
+    private void map(Map<String, Object> activity, RepositoryPullRequestMapping repositoryPullRequest)
     {
         activity.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, repositoryPullRequest.getID());
-        activity.put(RepositoryActivityPullRequestMapping.REPO_ID, pullRequest.getBaseRepository().getRepositoryId());
+        activity.put(RepositoryActivityPullRequestMapping.REPOSITORY_ID, repositoryPullRequest.getToRepositoryId());
     }
 
     private void map(Map<String, Object> activity, GitHubPullRequestAction action)
     {
         activity.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
         activity.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, action.getCreatedAt());
-        activity.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, action.getCreatedBy().getLogin());
-        activity.put(RepositoryActivityPullRequestUpdateMapping.STATUS, action.getAction().name());
+        activity.put(RepositoryActivityPullRequestMapping.AUTHOR, action.getCreatedBy().getLogin());
+
+        RepositoryActivityPullRequestUpdateMapping.Status status = null;
+        if (GitHubPullRequestAction.Action.OPENED.equals(action.getAction()))
+        {
+            status = RepositoryActivityPullRequestUpdateMapping.Status.OPENED;
+
+        } else if (GitHubPullRequestAction.Action.MERGED.equals(action.getAction()))
+        {
+            status = RepositoryActivityPullRequestUpdateMapping.Status.MERGED;
+
+        } else if (GitHubPullRequestAction.Action.CLOSED.equals(action.getAction()))
+        {
+            status = RepositoryActivityPullRequestUpdateMapping.Status.DECLINED;
+
+        } else if (GitHubPullRequestAction.Action.REOPENED.equals(action.getAction()))
+        {
+            status = RepositoryActivityPullRequestUpdateMapping.Status.REOPENED;
+
+        }
+        activity.put(RepositoryActivityPullRequestUpdateMapping.STATUS, status);
+    }
+
+    private void map(Map<String, Object> activity, GitHubPush push)
+    {
+        activity.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
+        activity.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, push.getCreatedAt());
+        activity.put(RepositoryActivityPullRequestMapping.AUTHOR, push.getCreatedBy().getLogin());
+        activity.put(RepositoryActivityPullRequestUpdateMapping.STATUS, RepositoryActivityPullRequestUpdateMapping.Status.UPDATED);
     }
 
     private void map(Map<String, Object> activity, GitHubPullRequestComment comment)
     {
         activity.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestCommentMapping.class);
         activity.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, comment.getCreatedAt());
-        activity.put(RepositoryActivityPullRequestMapping.INITIATOR_USERNAME, comment.getCreatedBy().getLogin());
+        activity.put(RepositoryActivityPullRequestMapping.AUTHOR, comment.getCreatedBy().getLogin());
         activity.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, comment.getText());
+    }
+
+    private void map(Map<String, Object> commitActivity, GitHubCommit commit, RepositoryActivityPullRequestUpdateMapping activity)
+    {
+        commitActivity.put(RepositoryActivityCommitMapping.ACTIVITY_ID, activity.getID());
+        commitActivity.put(RepositoryActivityCommitMapping.AUTHOR, commit.getCreatedBy());
+        commitActivity.put(RepositoryActivityCommitMapping.RAW_AUTHOR, commit.getCreatedByName());
+        commitActivity.put(RepositoryActivityCommitMapping.AUTHOR_AVATAR_URL, commit.getCreatedByAvatarUrl());
+        commitActivity.put(RepositoryActivityCommitMapping.NODE, commit.getSha());
+        commitActivity.put(RepositoryActivityCommitMapping.MESSAGE, commit.getMessage());
     }
 
     /**
@@ -405,14 +536,15 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         @SuppressWarnings("unchecked")
         Class<? extends GitHubEntityMapping>[] entitiesForClean = (Class<? extends GitHubEntityMapping>[]) new Class[] {
                 GitHubPullRequestLineCommentMapping.class, GitHubPullRequestCommentMapping.class, GitHubPullRequestActionMapping.class,
-                GitHubPullRequestMapping.class, GitHubUserMapping.class, GitHubEventMapping.class };
+                GitHubPullRequestMapping.class, GitHubPushCommitMapping.class, GitHubCommitMapping.class, GitHubPushMapping.class,
+                GitHubUserMapping.class, GitHubEventMapping.class };
 
         for (Class<? extends GitHubEntityMapping> entityToClean : entitiesForClean)
         {
             ActiveObjectsUtils.delete(
                     activeObjects,
                     entityToClean,
-                    Query.select().where(columnNameResolverService.column(gitHubEntityMappingDescription.getRepository()) + " = ? ",
+                    Query.select().where(columnNameResolverService.column(gitHubEntityMappingDescription.getDomain()) + " = ? ",
                             gitHubRepository.getId()));
         }
 

@@ -23,12 +23,12 @@ public class GitHubRepositoryServiceImpl implements GitHubRepositoryService
     /**
      * @see #GitHubRepositoryServiceImpl(GitHubRepositoryDAO, GithubClientProvider)
      */
-    private GitHubRepositoryDAO gitHubRepositoryDAO;
+    private final GitHubRepositoryDAO gitHubRepositoryDAO;
 
     /**
      * @see #GitHubRepositoryServiceImpl(GitHubRepositoryDAO, GithubClientProvider)
      */
-    private GithubClientProvider githubClientProvider;
+    private final GithubClientProvider githubClientProvider;
 
     /**
      * Constructor.
@@ -75,33 +75,39 @@ public class GitHubRepositoryServiceImpl implements GitHubRepositoryService
      * {@inheritDoc}
      */
     @Override
-    public GitHubRepository fetch(Repository repository, long gitHubId)
+    public GitHubRepository fetch(Repository domainRepository, String owner, String name, long gitHubId)
     {
-        GitHubRepository result = getByGitHubId(gitHubId);
+        // loaded by GitHubId
+        GitHubRepository result = gitHubId != 0 ? getByGitHubId(gitHubId) : null;
         if (result != null)
         {
             return result;
         }
 
-        RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
-
+        // loaded via REST
+        RepositoryService egitRepositoryService = githubClientProvider.getRepositoryService(domainRepository);
         org.eclipse.egit.github.core.Repository loaded;
         try
         {
-            loaded = repositoryService.getRepository(RepositoryId.createFromUrl(repository.getRepositoryUrl()));
+            loaded = egitRepositoryService.getRepository(RepositoryId.createFromId(owner + "/" + name));
         } catch (IOException e)
         {
             throw new RuntimeException(e);
         }
 
+        // reuse existing
         result = gitHubId == 0 ? getByGitHubId(loaded.getId()) : null;
-        if (result == null) {
+        if (result == null)
+        {
             result = new GitHubRepository();
         }
-        result.setRepositoryId(repository.getId());
+
+        // re-maps fetched values
         result.setGitHubId(loaded.getId());
         result.setName(loaded.getName());
+        result.setUrl(loaded.getHtmlUrl());
         save(result);
+
         return result;
 
     }

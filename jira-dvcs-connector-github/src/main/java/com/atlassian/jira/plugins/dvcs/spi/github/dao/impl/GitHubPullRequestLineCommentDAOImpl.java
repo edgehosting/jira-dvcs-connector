@@ -171,7 +171,7 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
     public List<GitHubPullRequestLineComment> getByRepository(GitHubRepository repository)
     {
         Query query = Query.select().where(
-                columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getRepository()) + " = ? ",
+                columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getDomain()) + " = ? ",
                 repository.getId());
 
         List<GitHubPullRequestLineComment> result = new LinkedList<GitHubPullRequestLineComment>();
@@ -194,12 +194,12 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
      */
     private void map(Map<String, Object> target, GitHubPullRequestLineComment source)
     {
-        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+        GitHubRepositoryMapping domain = activeObjects.get(GitHubRepositoryMapping.class, source.getDomain().getId());
         GitHubUserMapping createdBy = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
         GitHubPullRequestMapping pullRequest = activeObjects.get(GitHubPullRequestMapping.class, source.getPullRequest().getId());
         GitHubCommitMapping commit = activeObjects.get(GitHubCommitMapping.class, source.getCommit().getId());
 
-        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getRepository()), repository);
+        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getDomain()), domain);
         target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getGitHubId()), source.getGitHubId());
         target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getCreatedAt()), source.getCreatedAt());
         target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getCreatedBy()), createdBy);
@@ -220,12 +220,12 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
      */
     private void map(GitHubPullRequestLineCommentMapping target, GitHubPullRequestLineComment source)
     {
-        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+        GitHubRepositoryMapping domain = activeObjects.get(GitHubRepositoryMapping.class, source.getDomain().getId());
         GitHubUserMapping createdBy = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
         GitHubPullRequestMapping pullRequest = activeObjects.get(GitHubPullRequestMapping.class, source.getPullRequest().getId());
         GitHubCommitMapping commit = activeObjects.get(GitHubCommitMapping.class, source.getCommit().getId());
 
-        target.setRepository(repository);
+        target.setDomain(domain);
         target.setGitHubId(source.getGitHubId());
         target.setCreatedAt(source.getCreatedAt());
         target.setCreatedBy(createdBy);
@@ -246,8 +246,8 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
      */
     private void map(GitHubPullRequestLineComment target, GitHubPullRequestLineCommentMapping source)
     {
-        GitHubRepository repository = new GitHubRepository();
-        GitHubRepositoryDAOImpl.map(repository, source.getRepository());
+        GitHubRepository domain = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(domain, source.getDomain());
 
         GitHubUser createdBy = new GitHubUser();
         GitHubUserDAOImpl.map(createdBy, source.getCreatedBy());
@@ -259,7 +259,7 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
         GitHubCommitDAOImpl.map(commit, source.getCommit());
 
         target.setId(source.getID());
-        target.setRepository(repository);
+        target.setDomain(domain);
         target.setGitHubId(source.getGitHubId());
         target.setCreatedAt(source.getCreatedAt());
         target.setCreatedBy(createdBy);

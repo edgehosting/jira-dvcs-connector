@@ -35,12 +35,12 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
     public IssueAction create(Object activityItem)
     {
         RepositoryActivityPullRequestUpdateMapping pullRequestUpdate = (RepositoryActivityPullRequestUpdateMapping) activityItem;
-        int repositoryId = pullRequestUpdate.getRepoId();
+        int repositoryId = pullRequestUpdate.getRepositoryId();
         int pullRequestId = pullRequestUpdate.getPullRequestId();
         
         RepositoryPullRequestMapping pullRequest;
-        pullRequest = repositoryActivityDao.findRequestById(pullRequestId, repositoryId);
-        String pullRequestName = pullRequest.getPullRequestName();
+        pullRequest = repositoryActivityDao.findRequestById(repositoryId, pullRequestId);
+        String pullRequestName = pullRequest.getName();
         Repository repository = repositoryService.get(repositoryId);
 
         DvcsUser user = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType()).getUser(repository, pullRequestUpdate.getAuthor());

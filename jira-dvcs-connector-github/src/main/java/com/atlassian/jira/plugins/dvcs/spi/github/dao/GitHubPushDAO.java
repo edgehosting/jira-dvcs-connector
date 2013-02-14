@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.dao;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
 /**
  * Provides {@link GitHubPush} DAO services.
@@ -31,17 +32,21 @@ public interface GitHubPushDAO
     GitHubPush getById(int id);
 
     /**
+     * @param repository
+     *            for which repository
      * @param sha
      *            {@link GitHubPush#getBefore()}
      * @return resolved {@link GitHubPush}
      */
-    GitHubPush getByBefore(String sha);
+    GitHubPush getByBefore(GitHubRepository repository, String sha);
 
     /**
+     * @param repository
+     *            for which repository
      * @param sha
      *            {@link GitHubPush#getHead()}
      * @return resolved {@link GitHubPush}
      */
-    GitHubPush getByHead(String sha);
+    GitHubPush getByHead(GitHubRepository repository, String sha);
 
 }

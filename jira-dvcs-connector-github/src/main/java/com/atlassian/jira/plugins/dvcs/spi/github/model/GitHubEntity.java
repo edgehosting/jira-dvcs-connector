@@ -15,9 +15,9 @@ public class GitHubEntity
     private int id;
 
     /**
-     * @see #getRepository()
+     * @see #getDomain()
      */
-    private GitHubRepository repository;
+    private GitHubRepository domain;
 
     /**
      * Constructor.
@@ -46,20 +46,20 @@ public class GitHubEntity
     /**
      * Over which repository is this entity instance.
      * 
-     * @return repository
+     * @return domain
      */
-    public GitHubRepository getRepository()
+    public GitHubRepository getDomain()
     {
-        return repository;
+        return domain;
     }
 
     /**
-     * @param repository
-     *            {@link #getRepository()}
+     * @param domain
+     *            {@link #getDomain()}
      */
-    public void setRepository(GitHubRepository repository)
+    public void setDomain(GitHubRepository domain)
     {
-        this.repository = repository;
+        this.domain = domain;
     }
 
 }

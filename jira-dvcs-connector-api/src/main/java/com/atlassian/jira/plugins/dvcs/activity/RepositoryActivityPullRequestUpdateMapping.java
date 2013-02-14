@@ -7,12 +7,18 @@ import net.java.ao.schema.Table;
 public interface RepositoryActivityPullRequestUpdateMapping extends RepositoryActivityPullRequestMapping
 {
     String STATUS = "STATUS";
+
+    // Status constants
+    enum Status
+    {
+    	APPROVED, OPENED, MERGED, DECLINED, REOPENED, UPDATED;
+    }
     
-    String getStatus();
+    Status getStatus();
 
     @OneToMany
     RepositoryActivityCommitMapping[] getCommits();
     
-    void setStatus(String status);
+    void setStatus(Status status);
 }
 

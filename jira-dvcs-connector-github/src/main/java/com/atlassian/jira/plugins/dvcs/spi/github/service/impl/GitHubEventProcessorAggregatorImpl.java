@@ -96,12 +96,12 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
      * {@inheritDoc}
      */
     @Override
-    public void process(GitHubRepository gitHubRepository, Event event, Repository repository)
+    public void process(Repository domainRepository, GitHubRepository domain, Event event)
     {
         GitHubEventProcessor<EventPayload> resolvedEventProcessor = resolveEventProcessor(event.getPayload().getClass());
         if (resolvedEventProcessor != null)
         {
-            resolvedEventProcessor.process(gitHubRepository, event, repository);
+            resolvedEventProcessor.process(domainRepository, domain, event);
         }
     }
 

@@ -52,6 +52,16 @@ public class GitHubPullRequestAction extends GitHubEntity
     private Date createdAt;
 
     /**
+     * @see #getBaseSha()
+     */
+    private String baseSha;
+
+    /**
+     * @see #getHeadSha()
+     */
+    private String headSha;
+
+    /**
      * @see #getAction()
      */
     private Action action;
@@ -97,9 +107,43 @@ public class GitHubPullRequestAction extends GitHubEntity
      * @param createdAt
      *            {@link #getCreatedAt()}
      */
-    public void setAt(Date createdAt)
+    public void setCreatedAt(Date createdAt)
     {
         this.createdAt = createdAt;
+    }
+
+    /**
+     * @return SHA of the base when this action happened.
+     */
+    public String getBaseSha()
+    {
+        return baseSha;
+    }
+
+    /**
+     * @param baseSha
+     *            {@link #getBaseSha()}
+     */
+    public void setBaseSha(String baseSha)
+    {
+        this.baseSha = baseSha;
+    }
+
+    /**
+     * @return SHA of the head when this action happened.
+     */
+    public String getHeadSha()
+    {
+        return headSha;
+    }
+
+    /**
+     * @param headSha
+     *            {@link #getHeadSha()}
+     */
+    public void setHeadSha(String headSha)
+    {
+        this.headSha = headSha;
     }
 
     /**

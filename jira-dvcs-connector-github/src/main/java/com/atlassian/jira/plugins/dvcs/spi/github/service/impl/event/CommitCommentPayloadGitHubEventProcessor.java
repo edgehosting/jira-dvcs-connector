@@ -61,7 +61,7 @@ public class CommitCommentPayloadGitHubEventProcessor extends AbstractGitHubEven
      * {@inheritDoc}
      */
     @Override
-    public void process(GitHubRepository gitHubRepository, Event event, Repository repository)
+    public void process(Repository domainRepository, GitHubRepository domain, Event event)
     {
         CommitComment commitComment = getPayload(event).getComment();
 
@@ -75,7 +75,7 @@ public class CommitCommentPayloadGitHubEventProcessor extends AbstractGitHubEven
             }
 
             //
-            GitHubCommit commit = gitHubCommitService.getBySha(commitComment.getCommitId());
+            GitHubCommit commit = gitHubCommitService.getBySha(domain, domain, commitComment.getCommitId());
             GitHubCommitComment gitHubCommitComment = new GitHubCommitComment();
             gitHubCommitCommentService.map(gitHubCommitComment, commitComment, commit);
             gitHubCommitCommentService.save(gitHubCommitComment);
@@ -89,7 +89,7 @@ public class CommitCommentPayloadGitHubEventProcessor extends AbstractGitHubEven
             }
 
             //
-            GitHubCommit commit = gitHubCommitService.getBySha(commitComment.getCommitId());
+            GitHubCommit commit = gitHubCommitService.getBySha(domain, domain, commitComment.getCommitId());
             GitHubCommitLineComment gitHubCommitLineComment = new GitHubCommitLineComment();
             gitHubCommitLineCommentService.map(gitHubCommitLineComment, commitComment, commit);
             gitHubCommitLineCommentService.save(gitHubCommitLineComment);

@@ -5,17 +5,17 @@ import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
 @Preload
-@Table("PrComment")
+@Table("PR_COMMENT")
 public interface RepositoryActivityPullRequestCommentMapping extends RepositoryActivityPullRequestMapping
 {
-	String MESSAGE = "MESSAGE";
+    String MESSAGE = "MESSAGE";
 
-	//
+    //
     // getters
     //
-	@StringLength(StringLength.UNLIMITED)
+    @StringLength(StringLength.UNLIMITED)
     String getMessage();
-	
+    
     //
     // setters
     //

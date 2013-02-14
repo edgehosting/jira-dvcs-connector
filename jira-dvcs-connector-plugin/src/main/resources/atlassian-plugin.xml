@@ -21,38 +21,38 @@
     <component-import key="userManager" interface="com.atlassian.jira.user.util.UserManager" />
     <component-import key="crowdService" interface="com.atlassian.crowd.embedded.api.CrowdService" />
 
-	<component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
+    <component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
 
- 	<!-- ===============================================================================================================================
-		 smartcommits
-	 	 =============================================================================================================================== -->
+    <!-- ===============================================================================================================================
+         smartcommits
+          =============================================================================================================================== -->
 
-	<component-import key="issueManager" interface="com.atlassian.jira.issue.IssueManager" />
+    <component-import key="issueManager" interface="com.atlassian.jira.issue.IssueManager" />
 
-	<component key="smartcommitsService" name="DVCS Smartcommits Service Job"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsService" public="true">
-		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsService</interface>
-	</component>
-	<component key="smartcommitsParser" name="DVCS Smartcommits Parser"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultCommitMessageParser" public="true">
-		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.CommitMessageParser</interface>
-	</component>
+    <component key="smartcommitsService" name="DVCS Smartcommits Service Job"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsService" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsService</interface>
+    </component>
+    <component key="smartcommitsParser" name="DVCS Smartcommits Parser"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultCommitMessageParser" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.smartcommits.CommitMessageParser</interface>
+    </component>
 
-	<component key="smartcommitsWorklogHandler" name="DVCS Smartcommits Worklog Time Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler" public="true">
-		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommandHandler</interface>
-	</component>
+    <component key="smartcommitsWorklogHandler" name="DVCS Smartcommits Worklog Time Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommandHandler</interface>
+    </component>
 
-	<component key="smartcommitsCommentHandler" name="DVCS Smartcommits Comment Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommentHandler" public="true">
-		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommandHandler</interface>
-	</component>
+    <component key="smartcommitsCommentHandler" name="DVCS Smartcommits Comment Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommentHandler" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommandHandler</interface>
+    </component>
 
-	<component key="smartcommitsTransitionsHandler" name="DVCS Smartcommits workflow Transition Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler" public="true">
-		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommandHandler</interface>
-	</component>
+    <component key="smartcommitsTransitionsHandler" name="DVCS Smartcommits workflow Transition Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommandHandler</interface>
+    </component>
 
-	<component key="smartcommitsChangesetsProcessor" name="DVCS Smartcommits Changesets Processor"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsChangesetsProcessor" public="true">
-		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor</interface>
-	</component>
+    <component key="smartcommitsChangesetsProcessor" name="DVCS Smartcommits Changesets Processor"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsChangesetsProcessor" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor</interface>
+    </component>
 
     <!-- Active Objects -->
     <ao key="ao-module" name="Active Objects Module">
@@ -62,7 +62,6 @@
 
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestApprovalMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping</entity>
@@ -71,6 +70,8 @@
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubEventMapping</entity>
        	<entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping</entity>
+       	<entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPushMapping</entity>
+       	<entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPushCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestActionMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestCommentMapping</entity>
@@ -88,7 +89,7 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_11_NewRepositoryColumn</upgradeTask>
     </ao>
 
-	<!-- Integrated account -->
+    <!-- Integrated account -->
 
     <navigation-link key="app-switcher-nav-link" menu-key="home" state="disabled" weight="400">
         <link>https://bitbucket.org</link>
@@ -102,20 +103,20 @@
     <component key="jsonFileBasedAccountsConfigProvider" name="Json File Based Accounts Config Provider" class="com.atlassian.jira.plugins.dvcs.ondemand.JsonFileBasedAccountsConfigProvider" public="true">
         <interface>com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigProvider</interface>
     </component>
-	<component key="accountsConfigLifecycler" name="Accounts Config Lifecycler" class="com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigLifecycler" public="true">
+    <component key="accountsConfigLifecycler" name="Accounts Config Lifecycler" class="com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigLifecycler" public="true">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
-	
+    
 
     <!-- Plugin upgrade Tasks -->
-	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task" public="true"
-		class="com.atlassian.jira.plugins.dvcs.upgrade.To_02_ProjectBasedRepositoryLinksUpgradeTask">
-		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
-	</component>
-	<component key="oAuthStorageUpgradeTask" name="Migrate OAuth details to new location" public="true"
-		class="com.atlassian.jira.plugins.dvcs.upgrade.To_03_UpgradeOAuthDetails">
-		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
-	</component>
+    <component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task" public="true"
+        class="com.atlassian.jira.plugins.dvcs.upgrade.To_02_ProjectBasedRepositoryLinksUpgradeTask">
+        <interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
+    </component>
+    <component key="oAuthStorageUpgradeTask" name="Migrate OAuth details to new location" public="true"
+        class="com.atlassian.jira.plugins.dvcs.upgrade.To_03_UpgradeOAuthDetails">
+        <interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
+    </component>
 
     <component key="bitbucketLinker" name="bitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinkerImpl">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
@@ -197,9 +198,10 @@
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubUserDAO</interface>
     </component>
     <component key="gitHubRepositoryDAO" name="GitHub Repository DAO"
-    	class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubRepositoryDAOImpl">
-    	<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubRepositoryDAO</interface>
+        class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubRepositoryDAOImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubRepositoryDAO</interface>
     </component>
+
 	<component key="gitHubCommitDAO" name="GitHub Commit DAO"
 		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubCommitDAOImpl">
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitDAO</interface>
@@ -216,7 +218,7 @@
 	</component>
 	 -->
 	<component key="gitHubPushDAO" name="GitHub Push DAO"
-		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPushDAOMockImpl">
+		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPushDAOImpl">
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPushDAO</interface>
 	</component>
 	<component key="gitHubPullRequestDAO" name="GitHub Pull Request DAO"
@@ -293,10 +295,10 @@
     </component>
     <!-- 
     FIXME
-	<component key="commitCommentPayloadGitHubEventProcessor"
-		class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.CommitCommentPayloadGitHubEventProcessor">
+    <component key="commitCommentPayloadGitHubEventProcessor"
+        class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.CommitCommentPayloadGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
-	</component>
+    </component>
      -->
     <component key="pullRequestPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.PullRequestPayloadGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
@@ -305,10 +307,10 @@
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
     <component key="issueCommentPayloadEventProcessor"
-    	class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.IssueCommentPayloadEventProcessor">
-    	<interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
+        class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.IssueCommentPayloadEventProcessor">
+        <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
-	
+    
     <component key="githubEnterpriseCommunicator" name="githubEnterpriseCommunicator"
                class="com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator">
         <description>githubEnterpriseCommunicator</description>
@@ -320,9 +322,9 @@
         <description>dvcsCommunicatorProvider</description>
     </component>
 
-	<component key="oAuthStore" name="oAuthStore"
-		class="com.atlassian.jira.plugins.dvcs.auth.DefaultOAuthStore"
-		interface="com.atlassian.jira.plugins.dvcs.auth.OAuthStore" />
+    <component key="oAuthStore" name="oAuthStore"
+        class="com.atlassian.jira.plugins.dvcs.auth.DefaultOAuthStore"
+        interface="com.atlassian.jira.plugins.dvcs.auth.OAuthStore" />
 
     <component key="organizationDao" name="organizationDao"
                class="com.atlassian.jira.plugins.dvcs.dao.impl.OrganizationDaoImpl">
@@ -427,7 +429,7 @@
         </description>
         <actions>
 
-			<action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
+            <action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
                     alias="ConfigureDvcsOrganizations" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
@@ -440,7 +442,7 @@
                 <view name="input">/templates/configuregithubenterpriseoauth.vm</view>
             </action>
 
-			<!-- New organization driven actions -->
+            <!-- New organization driven actions -->
             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.AddGithubOrganization"
                     alias="AddGithubOrganization" roles-required="admin">
                 <view name="input">/templates/dvcs/add-github-organization.vm</view>
@@ -461,17 +463,17 @@
                 <view name="input">/templates/dvcs/update-bitbucket-password.vm</view>
             </action>
 
-			<action name="com.atlassian.jira.plugins.dvcs.webwork.SyncRepositoryListAction"
+            <action name="com.atlassian.jira.plugins.dvcs.webwork.SyncRepositoryListAction"
                     alias="SyncRepositoryListAction" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
 
-			<action name="com.atlassian.jira.plugins.dvcs.webwork.DeleteOrganizationAction"
+            <action name="com.atlassian.jira.plugins.dvcs.webwork.DeleteOrganizationAction"
                     alias="DeleteOrganizationAction" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
 
-			<action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken"
+            <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken"
                     alias="RegenerateGithubOauthToken" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
@@ -486,7 +488,7 @@
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
 
-			<action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.ConfigureDefaultBitbucketGroups"
+            <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.ConfigureDefaultBitbucketGroups"
                     alias="ConfigureDefaultBitbucketGroups" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
@@ -537,16 +539,16 @@
     <web-resource name="resources" key="resources">
         <resource type="download" name="javascripts/bitbucket.js" location="javascripts/bitbucket.js"/>
         <resource type="download" name="javascripts/validation.js" location="javascripts/validation.js"/>
-	    <resource type="download" name="css/styles.css" location="css/styles.css" />
+        <resource type="download" name="css/styles.css" location="css/styles.css" />
         <context>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin</context>
     </web-resource>
 
     <web-resource key="requiredResourceForAjaxCommitsTab" name="Resources That Needs To be Loaded On Issue View">
-		<context>jira.view.issue</context>
-		<dependency>jira.webresources:viewissue</dependency>
-		<resource type="download" name="css/issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
-	</web-resource>
-	
+        <context>jira.view.issue</context>
+        <dependency>jira.webresources:viewissue</dependency>
+        <resource type="download" name="css/issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
+    </web-resource>
+    
     <web-resource key="requiredResourceForGreenHopperCommitsTab" name="Resources That Needs To be Loaded On GreenHopper Board">
         <context>gh-rapid</context>
         <resource type="download" name="issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
@@ -565,42 +567,42 @@
                        class="com.atlassian.jira.plugins.dvcs.streams.DvcsStreamsActivityProvider">
     </activity-streams-provider>
 
-	<!-- Web Panels -->
-	<web-panel key="add-user-dvcs-extension" weight="2000" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />
+    <!-- Web Panels -->
+    <web-panel key="add-user-dvcs-extension" weight="2000" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />
 
-	<!-- 
-		Activity synchronizer
-	 -->
-	 
-	<component key="delegatingRepositoryActivitySynchronizer" name="Delegating Repository Activity Synchronizer"
-		class="com.atlassian.jira.plugins.dvcs.sync.impl.DelegatingRepositoryActivitySynchronizer" />
-		
-	<component key="bitbucketRepositoryActivitySynchronizer" name="Bitbucket Repository Activity Synchronizer"
-		class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.activity.BitbucketRepositoryActivitySynchronizer" />
-		
-	<component key="githubRepositoryActivitySynchronizer" name="Github Repository Activity Synchronizer"
-		class="com.atlassian.jira.plugins.dvcs.spi.github.activity.GithubRepositoryActivitySynchronizer" />
-		
-	<component key="repositoryActivityDaoImpl" name="Repository Activity Dao Impl"
-		class="com.atlassian.jira.plugins.dvcs.dao.impl.RepositoryActivityDaoImpl" />
-		
+    <!-- 
+        Activity synchronizer
+     -->
+     
+    <component key="delegatingRepositoryActivitySynchronizer" name="Delegating Repository Activity Synchronizer"
+        class="com.atlassian.jira.plugins.dvcs.sync.impl.DelegatingRepositoryActivitySynchronizer" />
+        
+    <component key="bitbucketRepositoryActivitySynchronizer" name="Bitbucket Repository Activity Synchronizer"
+        class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.activity.BitbucketRepositoryActivitySynchronizer" />
+        
+    <component key="githubRepositoryActivitySynchronizer" name="Github Repository Activity Synchronizer"
+        class="com.atlassian.jira.plugins.dvcs.spi.github.activity.GithubRepositoryActivitySynchronizer" />
+        
+    <component key="repositoryActivityDaoImpl" name="Repository Activity Dao Impl"
+        class="com.atlassian.jira.plugins.dvcs.dao.impl.RepositoryActivityDaoImpl" />
+        
     <!-- Activity rendering -->
-	<component key="aggregatedIssueActionFactory" name="AggregatedIssueActionFactory"
-		class="com.atlassian.jira.plugins.dvcs.webwork.render.AggregatedIssueActionFactory" 
-		interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
+    <component key="aggregatedIssueActionFactory" name="AggregatedIssueActionFactory"
+        class="com.atlassian.jira.plugins.dvcs.webwork.render.AggregatedIssueActionFactory" 
+        interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
 
-	<component key="changesetIssueActionFactory" name="ChangesetIssueActionFactory"
-		class="com.atlassian.jira.plugins.dvcs.webwork.render.ChangesetIssueActionFactory" 
-		interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
-		
-	<component key="pullRequestUpdateIssueActionFactory" name="PullRequestUpdateIssueActionFactory"
-		class="com.atlassian.jira.plugins.dvcs.webwork.render.PullRequestUpdateIssueActionFactory" 
-		interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
-		
-	<!--  -->
-	<component key="columnNameResolverService" name="Column Name Resolver Service"
-		class="com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverServiceImpl">
-		<interface>com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService</interface>
-	</component>
+    <component key="changesetIssueActionFactory" name="ChangesetIssueActionFactory"
+        class="com.atlassian.jira.plugins.dvcs.webwork.render.ChangesetIssueActionFactory" 
+        interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
+        
+    <component key="pullRequestUpdateIssueActionFactory" name="PullRequestUpdateIssueActionFactory"
+        class="com.atlassian.jira.plugins.dvcs.webwork.render.PullRequestUpdateIssueActionFactory" 
+        interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
+        
+    <!--  -->
+    <component key="columnNameResolverService" name="Column Name Resolver Service"
+        class="com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverServiceImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService</interface>
+    </component>
 
 </atlassian-plugin>

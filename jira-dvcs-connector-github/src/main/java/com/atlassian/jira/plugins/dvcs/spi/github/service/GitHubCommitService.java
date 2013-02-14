@@ -39,11 +39,15 @@ public interface GitHubCommitService
     GitHubCommit getById(int id);
 
     /**
+     * @param domain
+     *            for repository
+     * @param repository
+     *            {@link GitHubCommit#getRepository()}
      * @param sha
      *            {@link GitHubCommit#getSha()}
      * @return resolved {@link GitHubCommit}
      */
-    GitHubCommit getBySha(String sha);
+    GitHubCommit getBySha(GitHubRepository domain, GitHubRepository repository, String sha);
 
     /**
      * @param issueKey
@@ -53,14 +57,16 @@ public interface GitHubCommitService
     List<GitHubCommit> getByIssueKey(String issueKey);
 
     /**
-     * @param gitHubRepository
-     *            over which repository it is done
+     * @param domainRepository
+     *            for repository
+     * @param domain
+     *            for repository
      * @param repository
-     *            where should be commit
+     *            owner of the commit
      * @param sha
      *            of the commit
      * @return newly created or existing commit
      */
-    public GitHubCommit fetch(GitHubRepository gitHubRepository, Repository repository, String sha);
+    public GitHubCommit fetch(Repository domainRepository, GitHubRepository domain, GitHubRepository repository, String sha);
 
 }

@@ -4,7 +4,6 @@ import java.util.Date;
 
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
-import net.java.ao.schema.Unique;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.util.NotNull;
@@ -18,11 +17,22 @@ import com.atlassian.jira.util.NotNull;
 @Table("GitHubCommit")
 public interface GitHubCommitMapping extends GitHubEntityMapping
 {
-    
+
+    /**
+     * @return {@link GitHubCommit#getRepository()}
+     */
+    @NotNull
+    GitHubRepositoryMapping getRepository();
+
+    /**
+     * @param repository
+     *            {@link #getRepository()}
+     */
+    void setRepository(GitHubRepositoryMapping repository);
+
     /**
      * @return {@link GitHubCommit#getSha()}
      */
-    @Unique
     @NotNull
     String getSha();
 
@@ -55,6 +65,28 @@ public interface GitHubCommitMapping extends GitHubEntityMapping
      *            {@link #getCreatedBy()}
      */
     void setCreatedBy(String createdBy);
+
+    /**
+     * @return {@link GitHubCommit#getCreatedByName()}
+     */
+    String getCreatedByName();
+
+    /**
+     * @param createdByName
+     *            {@link #getCreatedByName()}
+     */
+    void setCreatedByName(String createdByName);
+
+    /**
+     * @return {@link GitHubCommit#getCreatedByAvatarUrl()}
+     */
+    String getCreatedByAvatarUrl();
+
+    /**
+     * @param createdByAvatarUrl
+     *            {@link #getCreatedByAvatarUrl()}
+     */
+    void setCreatedByAvatarUrl(String createdByAvatarUrl);
 
     /**
      * @return {@link GitHubCommit#getMessage()}

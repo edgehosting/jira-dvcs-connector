@@ -50,7 +50,7 @@ public interface GitHubPullRequestCommentService
 
     /**
      * @param repository
-     *            {@link GitHubPullRequestComment#getRepository()}
+     *            {@link GitHubPullRequestComment#getDomain()}
      * @return resolved {@link GitHubPullRequestComment}-s
      */
     List<GitHubPullRequestComment> getByRepository(GitHubRepository repository);

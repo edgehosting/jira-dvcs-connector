@@ -39,9 +39,9 @@ public class BitbucketPullRequestActivityDeserializer implements JsonDeserialize
         {
             return context.deserialize(asUpdate(jsonObject), BitbucketPullRequestUpdateActivity.class);
 
-        } else if (asLike(jsonObject) != null)
+        } else if (asApproval(jsonObject) != null)
         {
-            return context.deserialize(asLike(jsonObject), BitbucketPullRequestApprovalActivity.class);
+            return context.deserialize(asApproval(jsonObject), BitbucketPullRequestApprovalActivity.class);
         }
 
         throw new JsonParseException("Unknown type of activity : " + json);
@@ -58,9 +58,9 @@ public class BitbucketPullRequestActivityDeserializer implements JsonDeserialize
     {
         return jsonObject.get("comment");
     }
-    private JsonElement asLike(JsonObject jsonObject)
+    private JsonElement asApproval(JsonObject jsonObject)
     {
-        return jsonObject.get("like");
+        return jsonObject.get("approval");
     }
     private JsonElement asUpdate(JsonObject jsonObject)
     {

@@ -51,13 +51,13 @@ public class PullRequestPayloadGitHubEventProcessor extends AbstractGitHubEventP
      * {@inheritDoc}
      */
     @Override
-    public void process(GitHubRepository gitHubRepository, Event event, Repository repository)
+    public void process(Repository domainRepository, GitHubRepository domain, Event event)
     {
         PullRequestPayload payload = getPayload(event);
         PullRequest pullRequest = payload.getPullRequest();
 
-        GitHubPullRequest gitHubPullRequest = gitHubPullRequestService.fetch(gitHubRepository, pullRequest.getId(),
-                pullRequest.getNumber(), repository);
+        GitHubPullRequest gitHubPullRequest = gitHubPullRequestService.fetch(domainRepository, domain, pullRequest.getId(),
+                pullRequest.getNumber());
 
         Action resolvedAction = resolveAction(payload);
         // was resolved appropriate action? with other words is supported action?
@@ -79,13 +79,15 @@ public class PullRequestPayloadGitHubEventProcessor extends AbstractGitHubEventP
             if (action == null)
             {
                 action = new GitHubPullRequestAction();
-                action.setRepository(gitHubRepository);
+                action.setDomain(domain);
                 action.setGitHubEventId(event.getId());
+                action.setBaseSha(pullRequest.getBase().getSha());
+                action.setHeadSha(pullRequest.getHead().getSha());
                 gitHubPullRequest.getActions().add(action);
             }
 
-            action.setAt(event.getCreatedAt());
-            action.setCreatedBy(gitHubUserService.fetch(event.getActor().getLogin(), gitHubRepository, repository));
+            action.setCreatedAt(event.getCreatedAt());
+            action.setCreatedBy(gitHubUserService.fetch(domainRepository, domain, event.getActor().getLogin()));
             action.setAction(resolvedAction);
         }
 

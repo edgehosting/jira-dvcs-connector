@@ -14,7 +14,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction.
  * @author Stanislav Dvorscak
  * 
  */
-@Table("GitHubPRAction")
+@Table("GitHubPR_Action")
 public interface GitHubPullRequestActionMapping extends GitHubEntityMapping
 {
 
@@ -63,6 +63,30 @@ public interface GitHubPullRequestActionMapping extends GitHubEntityMapping
      *            {@link #getCreatedBy()}
      */
     void setCreatedBy(GitHubUserMapping createdBy);
+
+    /**
+     * @return {@link GitHubPullRequestAction#getBaseSha()}
+     */
+    @NotNull
+    String getBaseSha();
+
+    /**
+     * @param baseSha
+     *            {@link #getBaseSha()}
+     */
+    void setBaseSha(String baseSha);
+
+    /**
+     * @return {@link GitHubPullRequestAction#getHeadSha()}
+     */
+    @NotNull
+    String getHeadSha();
+
+    /**
+     * @param headSha
+     *            {@link #getHeadSha()}
+     */
+    void setHeadSha(String headSha);
 
     /**
      * @return {@link GitHubPullRequestAction#getAction()}

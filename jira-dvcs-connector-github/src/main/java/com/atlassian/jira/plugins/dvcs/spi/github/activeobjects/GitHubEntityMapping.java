@@ -17,15 +17,15 @@ public interface GitHubEntityMapping extends Entity
 {
 
     /**
-     * @return {@link GitHubEntity#getRepository()}
+     * @return {@link GitHubEntity#getDomain()}
      */
     @NotNull
-    GitHubRepositoryMapping getRepository();
+    GitHubRepositoryMapping getDomain();
 
     /**
-     * @param repository
-     *            {@link #getRepository()}
+     * @param domain
+     *            {@link #getDomain()}
      */
-    void setRepository(GitHubRepositoryMapping repository);
+    void setDomain(GitHubRepositoryMapping domain);
 
 }
