@@ -25,7 +25,7 @@ public class GitHubCommitLineCommentServiceImpl implements GitHubCommitLineComme
      * Constructor.
      * 
      * @param gitHubCommitLineCommentDAO
-     *            Injected {@link GitHubCommitLineCommentDAO} dependency.
+     *            injected {@link GitHubCommitLineCommentDAO} dependency
      */
     public GitHubCommitLineCommentServiceImpl(GitHubCommitLineCommentDAO gitHubCommitLineCommentDAO)
     {
@@ -80,5 +80,4 @@ public class GitHubCommitLineCommentServiceImpl implements GitHubCommitLineComme
         target.setLine(source.getLine());
         target.setText(source.getBodyText());
     }
-
 }

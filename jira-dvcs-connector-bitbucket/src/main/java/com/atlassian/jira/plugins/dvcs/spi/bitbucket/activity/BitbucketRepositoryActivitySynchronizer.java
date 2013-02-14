@@ -39,9 +39,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     private final RepositoryActivityDao dao;
     private final RepositoryDao repositoryDao;
 
-    private Integer lastUpdateActivityId;
-    private String lastCommitSha;
-    
     public BitbucketRepositoryActivitySynchronizer(BitbucketClientRemoteFactory clientFactory, RepositoryActivityDao dao,
             RepositoryDao repositoryDao)
     {
@@ -90,10 +87,10 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
                 }
             }
         }
-
+        
         // { finally
         repositoryDao.setLastActivitySyncDate(forRepository.getId(), lastActivitySyncDate);
-        commits.clear();
+        context.clear();
     }
 
     // -------------------------------------------------------------------------------------------------------
@@ -113,33 +110,16 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         
         if (isUpdateActivity(activity))
         {
-            String commitSha = ((BitbucketPullRequestUpdateActivity) activity).getSource().getCommit().getSha();
+            PullRequestContext pullRequestContext = context.get(info.getPullRequest().getId());
             
-            if (info.getPullRequest().getCommitsDetails() != null)
+            BitbucketPullRequestCommit firstCommit = pullRequestContext.getFirstCommit();
+                        
+            if (firstCommit != null && !pullRequestContext.isFirstCommitProcessed())
             {
-                for ( BitbucketPullRequestCommit commit : info.getPullRequest().getCommitsDetails())
-                {
-                    if (commit.getSha().startsWith(lastCommitSha))
-                    {
-                        lastCommitSha = null;
-                    }
-                    
-                    if (lastCommitSha==null)
-                    {
-                        if (commit.getSha().startsWith(commitSha))
-                        {
-                            lastCommitSha = commitSha;
-                            break;
-                        } else
-                        {
-                            saveCommit(mapping.getID(), commit);
-                        }
-                    }
-                }
+                saveCommit(mapping.getID(), firstCommit);
+                pullRequestContext.setLastUpdateActivityId(mapping.getID());
+                pullRequestContext.setFirstCommitProcessed(true);
             }
-            
-            lastUpdateActivityId = mapping.getID();
-            lastCommitSha = commitSha;
         }
     }
 
@@ -152,7 +132,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     private RepositoryPullRequestMapping ensurePullRequestPresent(Repository forRepository,
             PullRequestRemoteRestpoint pullRestpoint, BitbucketPullRequestActivityInfo info)
     {
-        RepositoryPullRequestMapping localPullRequest = dao.findRequestById(forRepository.getId(),
+        RepositoryPullRequestMapping localPullRequest = dao.findRequestByRemoteId(forRepository.getId(),
                 info.getPullRequest().getId());
 
         // don't have this pull request, let's save it
@@ -227,10 +207,12 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
             {
                 ret.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
             }
+            
         } else if (activity instanceof BitbucketPullRequestApprovalActivity)
         {
             ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
             ret.put(RepositoryActivityPullRequestUpdateMapping.STATUS, RepositoryActivityPullRequestUpdateMapping.Status.APPROVED);
+
         } else if (activity instanceof BitbucketPullRequestUpdateActivity)
         {
             ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
@@ -275,7 +257,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Set<String> issueKeys, Repository forRepo)
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
-        ret.put(RepositoryPullRequestMapping.LOCAL_ID, request.getId());
+        ret.put(RepositoryPullRequestMapping.REMOTE_ID, request.getId());
         ret.put(RepositoryPullRequestMapping.NAME, request.getTitle());
         ret.put(RepositoryPullRequestMapping.URL, request.getLinks().getHtmlHref());
         ret.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
@@ -298,40 +280,105 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         return ret;
     }
     
-    private Map<Integer, Iterable<BitbucketPullRequestCommit>> commits = new HashMap<Integer, Iterable<BitbucketPullRequestCommit>>();
-    private BitbucketPullRequestCommit lastCommit;
+    private class PullRequestContext
+    {
+        private Iterable<BitbucketPullRequestCommit> commitIterator;
+        private BitbucketPullRequestCommit firstCommit;
+        private boolean firstCommitProcessed;
+        private Integer lastUpdateActivityId;
+        private String lastCommitSha;
+        
+        public Iterable<BitbucketPullRequestCommit> getCommitIterator() {
+            return commitIterator;
+        }
+        
+        public void setCommitIterator(
+                Iterable<BitbucketPullRequestCommit> commitIterator) {
+            this.commitIterator = commitIterator;
+        }
+        
+        public BitbucketPullRequestCommit getFirstCommit() {
+            return firstCommit;
+        }
+        
+        public void setFirstCommit(BitbucketPullRequestCommit firstCommit) {
+            this.firstCommit = firstCommit;
+        }
+
+        public Integer getLastUpdateActivityId() {
+            return lastUpdateActivityId;
+        }
+
+        public void setLastUpdateActivityId(Integer lastUpdateActivityId) {
+            this.lastUpdateActivityId = lastUpdateActivityId;
+        }
+
+        public String getLastCommitSha() {
+            return lastCommitSha;
+        }
+
+        public void setLastCommitSha(String lastCommitSha) {
+            this.lastCommitSha = lastCommitSha;
+        }
+
+        public boolean isFirstCommitProcessed() {
+            return firstCommitProcessed;
+        }
+
+        public void setFirstCommitProcessed(boolean firstCommitProcessed) {
+            this.firstCommitProcessed = firstCommitProcessed;
+        }
+        
+    }
+   
+    private Map<Long, PullRequestContext> context = new HashMap<Long, PullRequestContext>();
     
     private void fillCommits(BitbucketPullRequestActivityInfo activityInfo, PullRequestRemoteRestpoint pullRestpoint)
     {
-        if (lastCommit != null)
+        if ( !isUpdateActivity(activityInfo.getActivity()))
         {
-            System.out.println("First Commit:");
-            saveCommit(lastUpdateActivityId, lastCommit);
-            lastCommit = null;
+            return;
         }
-        Iterable<BitbucketPullRequestCommit> commitsIterator = commits.get(activityInfo.getPullRequest().getId());
+        
+        PullRequestContext pullRequestContext = context.get(activityInfo.getPullRequest().getId());
+        
+        if (pullRequestContext == null)
+        {
+            pullRequestContext = new PullRequestContext();
+            context.put(activityInfo.getPullRequest().getId(), pullRequestContext);
+        }
+
+        BitbucketPullRequestCommit firstCommit = pullRequestContext.getFirstCommit();
+        
+        // check for duplicate activity
+        if ( firstCommit != null && pullRequestContext.isFirstCommitProcessed() && firstCommit.getSha().startsWith(((BitbucketPullRequestUpdateActivity)activityInfo.getActivity()).getSource().getCommit().getSha()))
+        {
+            return;
+        }
+        
+        Iterable<BitbucketPullRequestCommit> commitsIterator = pullRequestContext.getCommitIterator();
         if (commitsIterator == null)
         {
             commitsIterator = pullRestpoint.getPullRequestCommits(activityInfo.getPullRequest().getLinks().getCommitsHref());
-            commits.put(activityInfo.getPullRequest().getId(),commitsIterator);
+            pullRequestContext.setCommitIterator(commitsIterator);
         }
         List<BitbucketPullRequestCommit> prCommits = new ArrayList<BitbucketPullRequestCommit>();
-        if ( isUpdateActivity(activityInfo.getActivity()))
+
+        for (BitbucketPullRequestCommit bitbucketPullRequestCommit : commitsIterator)
         {
-            for (BitbucketPullRequestCommit bitbucketPullRequestCommit : commitsIterator)
+        	prCommits.add(bitbucketPullRequestCommit);
+            if ( bitbucketPullRequestCommit.getSha().startsWith(((BitbucketPullRequestUpdateActivity)activityInfo.getActivity()).getSource().getCommit().getSha()))
             {
-                if ( bitbucketPullRequestCommit.getSha().startsWith(((BitbucketPullRequestUpdateActivity)activityInfo.getActivity()).getSource().getCommit().getSha()))
-                {
-                    if (lastUpdateActivityId!=null)
-                    {
-                        lastCommit = bitbucketPullRequestCommit;
-                    }
-                    break;
-                }
-                saveCommit(lastUpdateActivityId, bitbucketPullRequestCommit);
-//                prCommits.add(bitbucketPullRequestCommit);
+            	pullRequestContext.setFirstCommit(bitbucketPullRequestCommit);
+                pullRequestContext.setFirstCommitProcessed(false);
+                break;
+            }
+            if (pullRequestContext.getLastUpdateActivityId() != null)
+            {
+                saveCommit(pullRequestContext.getLastUpdateActivityId(), bitbucketPullRequestCommit);
             }
         }
+
         if (!prCommits.isEmpty())
         {
             activityInfo.getPullRequest().setCommitsDetails(prCommits);
@@ -340,7 +387,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     
     private void saveCommit(Integer activityId, BitbucketPullRequestCommit commit)
     {
-        System.out.println("Saving commit '"+commit.getSha()+"' for " + activityId);
         dao.saveCommit(toDaoModelCommit(commit,activityId));
     }
 }

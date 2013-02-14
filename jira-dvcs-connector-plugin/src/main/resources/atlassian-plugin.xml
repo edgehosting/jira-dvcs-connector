@@ -63,6 +63,7 @@
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestLineCommentMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping</entity>
         

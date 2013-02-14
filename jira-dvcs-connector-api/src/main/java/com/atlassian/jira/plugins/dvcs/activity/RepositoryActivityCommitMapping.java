@@ -4,6 +4,7 @@ import java.util.Date;
 
 import net.java.ao.Entity;
 import net.java.ao.Preload;
+import net.java.ao.schema.NotNull;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
@@ -50,6 +51,7 @@ public interface RepositoryActivityCommitMapping extends Entity
     /**
      * @return Date of the commit
      */
+    @NotNull
     Date getDate();
     /**
      * @return Url of the commit

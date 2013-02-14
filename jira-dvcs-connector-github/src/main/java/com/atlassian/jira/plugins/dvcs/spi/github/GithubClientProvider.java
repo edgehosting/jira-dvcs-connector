@@ -24,7 +24,7 @@ public class GithubClientProvider
         this.authenticationFactory = authenticationFactory;
     }
 
-    private GitHubClient createClient(Repository repository)
+    public GitHubClient createClient(Repository repository)
     {
         GitHubClient client = GithubOAuthUtils.createClient(repository.getOrgHostUrl());
 
@@ -34,7 +34,7 @@ public class GithubClientProvider
         return client;
     }
 
-    private GitHubClient createClient(Organization organization)
+    public GitHubClient createClient(Organization organization)
     {
         GitHubClient client = GithubOAuthUtils.createClient(organization.getHostUrl());
 

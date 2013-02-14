@@ -7,7 +7,7 @@ import net.java.ao.schema.Table;
 public interface RepositoryPullRequestMapping extends Entity
 {
     
-    String LOCAL_ID = "LOCAL_ID";
+    String REMOTE_ID = "REMOTE_ID";
     String TO_REPO_ID = "TO_REPOSITORY_ID";
     String NAME = "NAME";
     String DESCRIPTION = "DESCRIPTION";
@@ -17,7 +17,7 @@ public interface RepositoryPullRequestMapping extends Entity
     //
     // getters
     //
-    Integer getLocalId();
+    Long getRemoteId();
     int getToRepositoryId();
     String getName();
     String getDescription();
@@ -27,7 +27,7 @@ public interface RepositoryPullRequestMapping extends Entity
     //
     // setters
     //
-    void setLocalId(Integer id);
+    void setRemoteId(Long id);
     void setToRepoId(int repoId);
     void setPullRequestName(String name);
     void setPullRequestDescription(String description);

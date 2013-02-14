@@ -16,6 +16,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestLineCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
@@ -45,7 +46,8 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
     @SuppressWarnings("unchecked")
     private static final Class<RepositoryActivityPullRequestMapping>[] ALL_ACTIVITY_TABLES = new Class[] {
-            RepositoryActivityPullRequestCommentMapping.class, 
+            RepositoryActivityPullRequestCommentMapping.class,
+            RepositoryActivityPullRequestLineCommentMapping.class,
             RepositoryActivityPullRequestUpdateMapping.class };
 
     public RepositoryActivityDaoImpl(ActiveObjects activeObjects)
@@ -135,12 +137,18 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
 
     @Override
-    public RepositoryPullRequestMapping findRequestById(int repositoryId, int localId)
+    public RepositoryPullRequestMapping findRequestById(int localId)
+    {
+        return activeObjects.get(RepositoryPullRequestMapping.class, localId);
+    }
+    
+    @Override
+    public RepositoryPullRequestMapping findRequestByRemoteId(int repositoryId, long remoteId)
     {
         Query query = Query.select()
                            .from(RepositoryPullRequestMapping.class)
-                           .where(RepositoryPullRequestMapping.LOCAL_ID +  " = ? AND " 
-                                + RepositoryPullRequestMapping.TO_REPO_ID + " = ?", localId, repositoryId);
+                           .where(RepositoryPullRequestMapping.REMOTE_ID +  " = ? AND " 
+                                + RepositoryPullRequestMapping.TO_REPO_ID + " = ?", remoteId, repositoryId);
         
         RepositoryPullRequestMapping[] found = activeObjects.find(RepositoryPullRequestMapping.class, query);
         return found.length == 1 ? found[0] : null;
@@ -200,12 +208,11 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                                 .where("PR_UPDATE." + RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", forRepository.getId()));
                         
                         // drop activities
-                        final Query activityDeleteQuery = Query
-                                .select()
-                                .where(RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", forRepository.getId());
                         for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
                         {
-                            ActiveObjectsUtils.delete(activeObjects, activityTable, activityDeleteQuery);
+                            ActiveObjectsUtils.delete(activeObjects, activityTable, Query
+                                    .select()
+                                    .where(RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", forRepository.getId()));
                         }
                         
                         // drop pull requests
@@ -242,7 +249,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
                 });
     }
-    
+
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
     // private helpers

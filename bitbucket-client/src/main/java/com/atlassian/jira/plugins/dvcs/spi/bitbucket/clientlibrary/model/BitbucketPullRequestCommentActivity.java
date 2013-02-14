@@ -15,11 +15,12 @@ import java.util.List;
  */
 public class BitbucketPullRequestCommentActivity extends BitbucketPullRequestBaseActivity implements Serializable, HasPossibleUpdatedMessages
 {
-
     private static final long serialVersionUID = 8212352604704981087L;
-    
-    private BitbucketPullRequestCommentActivityContent content;
 
+    private Integer id;
+    private BitbucketPullRequestCommentActivityContent content;
+    private BitbucketPullRequestCommentActivity parent;
+    
     public BitbucketPullRequestCommentActivity()
     {
         super();
@@ -46,5 +47,20 @@ public class BitbucketPullRequestCommentActivity extends BitbucketPullRequestBas
         return messages;
     }
 
+	public BitbucketPullRequestCommentActivity getParent() {
+		return parent;
+	}
+
+	public void setParent(BitbucketPullRequestCommentActivity parent) {
+		this.parent = parent;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
 }
 

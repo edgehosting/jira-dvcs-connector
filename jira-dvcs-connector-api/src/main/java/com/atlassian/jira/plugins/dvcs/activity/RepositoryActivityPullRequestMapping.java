@@ -30,7 +30,7 @@ public interface RepositoryActivityPullRequestMapping extends Entity
     String getAuthor();
 
     @NotNull
-    int getPullRequestId();
+    RepositoryPullRequestMapping getPullRequest();
 
     //
     // setters
@@ -41,6 +41,6 @@ public interface RepositoryActivityPullRequestMapping extends Entity
 
     void setAuthor(String username);
 
-    void setPullRequestId(int pullRequestId);
+    void setPullRequest(RepositoryPullRequestMapping pullRequest);
 
 }

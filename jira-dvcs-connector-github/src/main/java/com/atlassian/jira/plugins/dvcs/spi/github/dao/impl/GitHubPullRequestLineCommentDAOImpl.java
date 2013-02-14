@@ -204,6 +204,8 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
         target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getCreatedAt()), source.getCreatedAt());
         target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getCreatedBy()), createdBy);
         target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getPullRequest()), pullRequest);
+        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getUrl()), source.getUrl());
+        target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getHtmlUrl()), source.getHtmlUrl());
         target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getCommit()), commit);
         target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getPath()), source.getPath());
         target.put(columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getLine()), source.getLine());
@@ -230,6 +232,8 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
         target.setCreatedAt(source.getCreatedAt());
         target.setCreatedBy(createdBy);
         target.setPullRequest(pullRequest);
+        target.setUrl(source.getUrl());
+        target.setHtmlUrl(source.getHtmlUrl());
         target.setCommit(commit);
         target.setPath(source.getPath());
         target.setLine(source.getLine());
@@ -264,6 +268,8 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
         target.setCreatedAt(source.getCreatedAt());
         target.setCreatedBy(createdBy);
         target.setPullRequest(pullRequest);
+        target.setUrl(source.getUrl());
+        target.setHtmlUrl(source.getHtmlUrl());
         target.setCommit(commit);
         target.setPath(source.getPath());
         target.setLine(source.getLine());
