@@ -68,6 +68,29 @@ public interface GitHubPullRequestLineCommentMapping extends GitHubEntityMapping
     void setCreatedBy(GitHubUserMapping createdBy);
 
     /**
+     * @return {@link GitHubPullRequestLineComment#getUrl()}
+     */
+    String getUrl();
+
+    /**
+     * @param url
+     *            {@link #getUrl()}
+     */
+    void setUrl(String url);
+
+    /**
+     * @return {@link GitHubPullRequestLineComment#getHtmlUrl()}
+     */
+    @NotNull
+    String getHtmlUrl();
+
+    /**
+     * @param url
+     *            {@link #getHtmlUrl()}
+     */
+    void setHtmlUrl(String url);
+
+    /**
      * @return {@link GitHubPullRequestLineComment#getCommit()}
      */
     @NotNull

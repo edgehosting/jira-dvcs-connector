@@ -25,7 +25,7 @@ public interface RepositoryActivityDao
     
     RepositoryPullRequestMapping findRequestById(int localId);
     
-    RepositoryPullRequestMapping findRequestByRemoteId(int repositoryId, int remoteId);
+    RepositoryPullRequestMapping findRequestByRemoteId(int repositoryId, long remoteId);
 
     Set<String> getExistingIssueKeysMapping(Integer pullRequestId);
 }

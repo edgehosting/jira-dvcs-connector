@@ -1,10 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.eclipse.egit.github.core.CommitComment;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.client.GitHubRequest;
+import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.PullRequestReviewCommentPayload;
 import org.eclipse.egit.github.core.service.PullRequestService;
@@ -22,6 +28,8 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestLineC
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubUserService;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 /**
  * The {@link PullRequestReviewCommentPayload} implementation of the {@link GitHubEventProcessor}.
@@ -128,7 +136,45 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
         GitHubCommit commit = gitHubCommitService.fetch(domainRepository, domain, repository, commitComment.getCommitId());
         GitHubUser createdBy = gitHubUserService.fetch(domainRepository, domain, payload.getComment().getUser().getLogin());
 
-        gitHubPullRequestLineCommentService.map(gitHubPullRequestLineComment, commitComment, pullRequest, createdBy, commit);
+        // TODO: workaround to get access to the HTML URL of the comment
+        String htmlUrl = "";
+        try
+        {
+            GitHubRequest request = new GitHubRequest();
+            request.setUri(new URL(commitComment.getUrl()).toURI().getRawPath());
+            InputStream response = githubClientProvider.createClient(domainRepository).getStream(request);
+            JsonElement element = new JsonParser().parse(new InputStreamReader(response, "UTF-8"));
+            htmlUrl = element.getAsJsonObject().get("_links").getAsJsonObject().get("html").getAsJsonObject().get("href").getAsString();
+            response.close();
+
+        } catch (RequestException e)
+        {
+            if (e.getStatus() == 404)
+            {
+                // silently ignored, comment was already deleted
+                return;
+
+            }
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e)
+        {
+            throw new RuntimeException(e);
+        }
+        //
+
+        gitHubPullRequestLineComment.setGitHubId(commitComment.getId());
+        gitHubPullRequestLineComment.setCreatedAt(commitComment.getCreatedAt());
+        gitHubPullRequestLineComment.setCreatedBy(createdBy);
+        gitHubPullRequestLineComment.setPullRequest(pullRequest);
+        gitHubPullRequestLineComment.setUrl(commitComment.getUrl());
+        gitHubPullRequestLineComment.setHtmlUrl(htmlUrl);
+        gitHubPullRequestLineComment.setCommit(commit);
+        gitHubPullRequestLineComment.setPath(commitComment.getPath());
+        gitHubPullRequestLineComment.setLine(commitComment.getPosition());
+        gitHubPullRequestLineComment.setText(commitComment.getBody());
+
         gitHubPullRequestLineCommentService.save(gitHubPullRequestLineComment);
     }
 

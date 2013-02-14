@@ -2,14 +2,9 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
 import java.util.List;
 
-import org.eclipse.egit.github.core.CommitComment;
-
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestLineCommentDAO;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestLineCommentService;
 
 /**
@@ -80,23 +75,6 @@ public class GitHubPullRequestLineCommentServiceImpl implements GitHubPullReques
     public List<GitHubPullRequestLineComment> getByRepository(GitHubRepository repository)
     {
         return gitHubPullRequestLineCommentDAO.getByRepository(repository);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void map(GitHubPullRequestLineComment target, CommitComment source, GitHubPullRequest pullRequest, GitHubUser createdBy,
-            GitHubCommit commit)
-    {
-        target.setGitHubId(source.getId());
-        target.setCreatedAt(source.getCreatedAt());
-        target.setCreatedBy(createdBy);
-        target.setPullRequest(pullRequest);
-        target.setCommit(commit);
-        target.setPath(source.getPath());
-        target.setLine(source.getPosition());
-        target.setText(source.getBody());
     }
 
 }

@@ -2,13 +2,8 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
 import java.util.List;
 
-import org.eclipse.egit.github.core.CommitComment;
-
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 
 /**
  * The {@link GitHubPullRequestLineComment} related services.
@@ -48,23 +43,6 @@ public interface GitHubPullRequestLineCommentService
      * @return {@link GitHubPullRequestLineComment}
      */
     GitHubPullRequestLineComment getByGitHubId(long gitHubId);
-
-    /**
-     * Re-maps egit model to the internal model.
-     * 
-     * @param target
-     *            internal model
-     * @param source
-     *            egit model
-     * @param pullRequest
-     *            {@link GitHubPullRequestLineComment#getPullRequest()}
-     * @param createdBy
-     *            {@link GitHubPullRequestLineComment#getCreatedBy()}
-     * @param commit
-     *            {@link CommitComment#getCommitId()}
-     */
-    public void map(GitHubPullRequestLineComment target, CommitComment source, GitHubPullRequest pullRequest, GitHubUser createdBy,
-            GitHubCommit commit);
 
     /**
      * @param repository

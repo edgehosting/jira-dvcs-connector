@@ -1,9 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.activity;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +28,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestLineCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
@@ -46,6 +51,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubEvent;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
@@ -254,7 +260,6 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
                         }
 
-                        System.out.println("Event: " + event.toString());
                         gitHubEventProcessorAggregator.process(forRepository, domain, event);
 
                         // saves proceed GitHub event
@@ -339,16 +344,66 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             repositoryActivityDao.saveActivity(activity);
         }
 
-        // FIXME
-        Query query = Query.select().where(RepositoryActivityPullRequestUpdateMapping.REPOSITORY_ID + " = ? ", forRepository.getId());
-        query.order(RepositoryActivityPullRequestUpdateMapping.LAST_UPDATED_ON);
-        for (RepositoryActivityPullRequestUpdateMapping activity : activeObjects.find(RepositoryActivityPullRequestUpdateMapping.class,
-                query))
+        for (GitHubPullRequestLineComment gitHubPullRequestLineComment : gitHubPullRequestLineCommentService.getByRepository(domain))
         {
-            System.out.println(activity.getPullRequest().getID() + ":" + activity.getPullRequest().getName() + ":" + activity.getStatus());
-            for (RepositoryActivityCommitMapping commit : activity.getCommits())
+            RepositoryPullRequestMapping repositoryPullRequest = getRepositoryPullRequest(gitHubPullRequestLineComment.getPullRequest(),
+                    forRepository);
+
+            Map<String, Object> activity = new HashMap<String, Object>();
+            map(activity, repositoryPullRequest);
+            map(activity, gitHubPullRequestLineComment);
+            repositoryActivityDao.saveActivity(activity);
+        }
+
+        // FIXME
+        Query query;
+        List<RepositoryActivityPullRequestMapping> activities = new LinkedList<RepositoryActivityPullRequestMapping>();
+
+        query = Query.select().where(RepositoryActivityPullRequestUpdateMapping.REPOSITORY_ID + " = ? ", forRepository.getId());
+        activities.addAll(Arrays.asList(activeObjects.find(RepositoryActivityPullRequestUpdateMapping.class, query)));
+        
+        query = Query.select().where(RepositoryActivityPullRequestUpdateMapping.REPOSITORY_ID + " = ? ", forRepository.getId());
+        activities.addAll(Arrays.asList(activeObjects.find(RepositoryActivityPullRequestCommentMapping.class, query)));
+
+        query = Query.select().where(RepositoryActivityPullRequestUpdateMapping.REPOSITORY_ID + " = ? ", forRepository.getId());
+        activities.addAll(Arrays.asList(activeObjects.find(RepositoryActivityPullRequestLineCommentMapping.class, query)));
+
+        Collections.sort(activities, new Comparator<RepositoryActivityPullRequestMapping>()
+        {
+
+            @Override
+            public int compare(RepositoryActivityPullRequestMapping o1, RepositoryActivityPullRequestMapping o2)
             {
-                System.out.println("\t" + commit.getNode() + ":" + commit.getMessage());
+                return o1.getLastUpdatedOn().compareTo(o2.getLastUpdatedOn());
+            }
+
+        });
+
+        for (RepositoryActivityPullRequestMapping activity : activities)
+        {
+            if (activity instanceof RepositoryActivityPullRequestUpdateMapping)
+            {
+                RepositoryActivityPullRequestUpdateMapping castedActivity = (RepositoryActivityPullRequestUpdateMapping) activity;
+
+                System.out.println(castedActivity.getAuthor() + " created a pull request '" + castedActivity.getPullRequest().getName()
+                        + "' on: " + castedActivity.getLastUpdatedOn());
+                for (RepositoryActivityCommitMapping commit : castedActivity.getCommits())
+                {
+                    System.out.println("\t" + commit.getRawAuthor() + " " + commit.getNode() + " " + commit.getMessage() + " on : "
+                            + commit.getDate());
+                }
+
+            } else if (activity instanceof RepositoryActivityPullRequestCommentMapping)
+            {
+                RepositoryActivityPullRequestCommentMapping castedActivity = (RepositoryActivityPullRequestCommentMapping) activity;
+                System.out.println(castedActivity.getAuthor() + " left a comment on a pull request on: " + activity.getLastUpdatedOn());
+
+            } else if (activity instanceof RepositoryActivityPullRequestLineCommentMapping)
+            {
+                RepositoryActivityPullRequestLineCommentMapping castedActivity = (RepositoryActivityPullRequestLineCommentMapping) activity;
+                System.out.println(castedActivity.getAuthor() + " commented on file " + castedActivity.getCommentUrl()
+                        + " in the pull request '" + castedActivity.getPullRequest().getName() + "'");
+
             }
         }
     }
@@ -444,7 +499,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
     RepositoryPullRequestMapping getRepositoryPullRequest(GitHubPullRequest source, Repository forRepository)
     {
-        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestByRemoteId(forRepository.getId(), source.getId());
+        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestByRemoteId(forRepository.getId(), source.getGitHubId());
 
         if (result != null)
         {
@@ -454,7 +509,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(source.getTitle(), source.getText());
 
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put(RepositoryPullRequestMapping.REMOTE_ID, source.getId());
+        params.put(RepositoryPullRequestMapping.REMOTE_ID, source.getGitHubId());
         params.put(RepositoryPullRequestMapping.URL, source.getUrl());
         params.put(RepositoryPullRequestMapping.NAME, source.getTitle());
         params.put(RepositoryPullRequestMapping.DESCRIPTION, source.getText());
@@ -514,9 +569,19 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         activity.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, comment.getText());
     }
 
+    private void map(Map<String, Object> activity, GitHubPullRequestLineComment comment)
+    {
+        activity.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestLineCommentMapping.class);
+        activity.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, comment.getCreatedAt());
+        activity.put(RepositoryActivityPullRequestMapping.AUTHOR, comment.getCreatedBy().getLogin());
+        activity.put(RepositoryActivityPullRequestLineCommentMapping.COMMENT_URL, comment.getHtmlUrl());
+        activity.put(RepositoryActivityPullRequestLineCommentMapping.MESSAGE, comment.getText());
+    }
+
     private void map(Map<String, Object> commitActivity, GitHubCommit commit, RepositoryActivityPullRequestUpdateMapping activity)
     {
         commitActivity.put(RepositoryActivityCommitMapping.ACTIVITY_ID, activity.getID());
+        commitActivity.put(RepositoryActivityCommitMapping.DATE, commit.getCreatedAt());
         commitActivity.put(RepositoryActivityCommitMapping.AUTHOR, commit.getCreatedBy());
         commitActivity.put(RepositoryActivityCommitMapping.RAW_AUTHOR, commit.getCreatedByName());
         commitActivity.put(RepositoryActivityCommitMapping.AUTHOR_AVATAR_URL, commit.getCreatedByAvatarUrl());

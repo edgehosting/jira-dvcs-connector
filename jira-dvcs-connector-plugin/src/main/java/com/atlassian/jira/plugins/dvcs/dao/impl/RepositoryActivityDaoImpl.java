@@ -16,6 +16,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestLineCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
@@ -45,7 +46,8 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
     @SuppressWarnings("unchecked")
     private static final Class<RepositoryActivityPullRequestMapping>[] ALL_ACTIVITY_TABLES = new Class[] {
-            RepositoryActivityPullRequestCommentMapping.class, 
+            RepositoryActivityPullRequestCommentMapping.class,
+            RepositoryActivityPullRequestLineCommentMapping.class,
             RepositoryActivityPullRequestUpdateMapping.class };
 
     public RepositoryActivityDaoImpl(ActiveObjects activeObjects)
@@ -141,7 +143,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
     
     @Override
-    public RepositoryPullRequestMapping findRequestByRemoteId(int repositoryId, int remoteId)
+    public RepositoryPullRequestMapping findRequestByRemoteId(int repositoryId, long remoteId)
     {
         Query query = Query.select()
                            .from(RepositoryPullRequestMapping.class)

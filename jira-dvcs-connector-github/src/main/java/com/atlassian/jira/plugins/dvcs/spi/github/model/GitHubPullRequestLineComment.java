@@ -32,6 +32,16 @@ public class GitHubPullRequestLineComment extends GitHubEntity
     private GitHubUser createdBy;
 
     /**
+     * @see #getUrl()
+     */
+    private String url;
+
+    /**
+     * @see #get
+     */
+    private String htmlUrl;
+
+    /**
      * @see #getCommit()
      */
     private GitHubCommit commit;
@@ -124,6 +134,40 @@ public class GitHubPullRequestLineComment extends GitHubEntity
     public void setCreatedBy(GitHubUser createdBy)
     {
         this.createdBy = createdBy;
+    }
+
+    /**
+     * @return URL of the comment.
+     */
+    public String getUrl()
+    {
+        return url;
+    }
+
+    /**
+     * @param url
+     *            {@link #getUrl()}
+     */
+    public void setUrl(String url)
+    {
+        this.url = url;
+    }
+
+    /**
+     * @return HTML version of the {@link #getUrl()}
+     */
+    public String getHtmlUrl()
+    {
+        return htmlUrl;
+    }
+
+    /**
+     * @param htmlUrl
+     *            {@link #getHtmlUrl()}
+     */
+    public void setHtmlUrl(String htmlUrl)
+    {
+        this.htmlUrl = htmlUrl;
     }
 
     /**
