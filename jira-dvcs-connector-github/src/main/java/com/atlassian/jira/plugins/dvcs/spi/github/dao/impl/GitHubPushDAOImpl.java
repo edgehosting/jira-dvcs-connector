@@ -10,11 +10,17 @@ import net.java.ao.Query;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPushCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPushMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPushDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitService;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
  * AO implementation of the {@link GitHubPushDAO}.
@@ -41,6 +47,11 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
     private final GitHubPushMapping gitHubPushMappingDescription;
 
     /**
+     * {@link ColumnNameResolverService} of the {@link GitHubPushCommitMapping}
+     */
+    private final GitHubPushCommitMapping gitHubPushCommitMappingDescription;
+
+    /**
      * @see #GitHubPushDAOImpl(ActiveObjects, ColumnNameResolverService, GitHubCommitService)
      */
     private final GitHubCommitService gitHubCommitService;
@@ -62,6 +73,7 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
 
         this.columnNameResolverService = columnNameResolverService;
         this.gitHubPushMappingDescription = columnNameResolverService.desc(GitHubPushMapping.class);
+        this.gitHubPushCommitMappingDescription = columnNameResolverService.desc(GitHubPushCommitMapping.class);
 
         this.gitHubCommitService = gitHubCommitService;
     }
@@ -70,34 +82,110 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
      * {@inheritDoc}
      */
     @Override
-    public void save(GitHubPush gitHubPush)
+    public void save(final GitHubPush gitHubPush)
     {
-        if (gitHubPush.getId() == 0)
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
-            Map<String, Object> params = new HashMap<String, Object>();
-            map(params, gitHubPush);
-            GitHubPushMapping created = activeObjects.create(GitHubPushMapping.class, params);
-            map(gitHubPush, created);
 
-        } else
+            @Override
+            public Void doInTransaction()
+            {
+                if (gitHubPush.getId() == 0)
+                {
+                    Map<String, Object> params = new HashMap<String, Object>();
+                    map(params, gitHubPush);
+                    GitHubPushMapping created = activeObjects.create(GitHubPushMapping.class, params);
+                    updateCommits(created, gitHubPush);
+
+                    map(gitHubPush, created);
+                } else
+                {
+                    GitHubPushMapping loaded = activeObjects.get(GitHubPushMapping.class, gitHubPush.getId());
+                    map(loaded, gitHubPush);
+                    loaded.save();
+                    updateCommits(loaded, gitHubPush);
+
+                    map(gitHubPush, loaded);
+                }
+
+                return null;
+            }
+
+        });
+    }
+
+    /**
+     * Updates {@link GitHubPush#getCommits()} relations.
+     * 
+     * @param target
+     *            AO value
+     * @param source
+     *            model value
+     */
+    private void updateCommits(GitHubPushMapping target, GitHubPush source)
+    {
+        Map<Integer, GitHubPushCommitMapping> remainingCommitIdToPushCommitMapping = new HashMap<Integer, GitHubPushCommitMapping>();
+        for (GitHubPushCommitMapping pushCommitMapping : target.getCommits())
         {
-            GitHubPushMapping loaded = activeObjects.get(GitHubPushMapping.class, gitHubPush.getId());
-            map(loaded, gitHubPush);
-            loaded.save();
-            map(gitHubPush, loaded);
-
+            remainingCommitIdToPushCommitMapping.put(pushCommitMapping.getCommit().getID(), pushCommitMapping);
         }
+
+        for (GitHubCommit commit : source.getCommits())
+        {
+            GitHubPushCommitMapping loaded = remainingCommitIdToPushCommitMapping.get(commit.getId());
+            if (loaded != null)
+            {
+                map(loaded, target, commit);
+
+            } else
+            {
+                addCommit(target, commit);
+            }
+        }
+
+        for (GitHubPushCommitMapping toDelete : remainingCommitIdToPushCommitMapping.values())
+        {
+            activeObjects.delete(toDelete);
+        }
+
+    }
+
+    /**
+     * Adds provided commit to the provided push.
+     * 
+     * @param gitHubPushMapping
+     *            owner of the commit
+     * @param gitHubCommit
+     *            related commit
+     */
+    private void addCommit(GitHubPushMapping gitHubPushMapping, GitHubCommit gitHubCommit)
+    {
+        GitHubCommitMapping gitHubCommitMapping = activeObjects.get(GitHubCommitMapping.class, gitHubCommit.getId());
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        map(params, gitHubPushMapping, gitHubCommitMapping);
+        activeObjects.create(GitHubPushCommitMapping.class, params);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void delete(GitHubPush gitHubPush)
+    public void delete(final GitHubPush gitHubPush)
     {
-        GitHubPushMapping loaded = activeObjects.get(GitHubPushMapping.class, gitHubPush.getId());
-        activeObjects.delete(loaded);
-        gitHubPush.setId(0);
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+
+            @Override
+            public Void doInTransaction()
+            {
+                GitHubPushMapping loaded = activeObjects.get(GitHubPushMapping.class, gitHubPush.getId());
+                activeObjects.delete(loaded);
+                gitHubPush.setId(0);
+                return null;
+            }
+
+        });
     }
 
     /**
@@ -121,9 +209,11 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
      * {@inheritDoc}
      */
     @Override
-    public GitHubPush getByBefore(String sha)
+    public GitHubPush getByBefore(GitHubRepository repository, String sha)
     {
-        Query query = Query.select().where(columnNameResolverService.column(gitHubPushMappingDescription.getBefore()) + " = ?", sha);
+        Query query = Query.select().where(
+                columnNameResolverService.column(gitHubPushMappingDescription.getRepository()) + " = ? AND "
+                        + columnNameResolverService.column(gitHubPushMappingDescription.getBefore()) + " = ?", repository.getId(), sha);
         GitHubPushMapping[] founded = activeObjects.find(GitHubPushMapping.class, query);
         if (founded.length == 1)
         {
@@ -144,9 +234,11 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
      * {@inheritDoc}
      */
     @Override
-    public GitHubPush getByHead(String sha)
+    public GitHubPush getByHead(GitHubRepository repository, String sha)
     {
-        Query query = Query.select().where(columnNameResolverService.column(gitHubPushMappingDescription.getHead()) + " = ?", sha);
+        Query query = Query.select().where(
+                columnNameResolverService.column(gitHubPushMappingDescription.getRepository()) + " = ? AND "
+                        + columnNameResolverService.column(gitHubPushMappingDescription.getHead()) + " = ? ", repository.getId(), sha);
         GitHubPushMapping[] founded = activeObjects.find(GitHubPushMapping.class, query);
         if (founded.length == 1)
         {
@@ -184,12 +276,16 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
             commits[i] = activeObjects.get(GitHubCommitMapping.class, source.getCommits().get(i).getId());
         }
 
+        GitHubRepositoryMapping domain = activeObjects.get(GitHubRepositoryMapping.class, source.getDomain().getId());
+
         // re-mapping
+        target.put(columnNameResolverService.column(gitHubPushMappingDescription.getDomain()), domain);
         target.put(columnNameResolverService.column(gitHubPushMappingDescription.getCreatedAt()), source.getCreatedAt());
+        target.put(columnNameResolverService.column(gitHubPushMappingDescription.getCreatedBy()), source.getCreatedBy().getId());
+        target.put(columnNameResolverService.column(gitHubPushMappingDescription.getRepository()), source.getRepository().getId());
+        target.put(columnNameResolverService.column(gitHubPushMappingDescription.getRef()), source.getRef());
         target.put(columnNameResolverService.column(gitHubPushMappingDescription.getBefore()), source.getBefore());
         target.put(columnNameResolverService.column(gitHubPushMappingDescription.getHead()), source.getHead());
-        target.put(columnNameResolverService.column(gitHubPushMappingDescription.getRef()), source.getRef());
-        target.put(columnNameResolverService.column(gitHubPushMappingDescription.getCommits()), commits);
     }
 
     /**
@@ -204,14 +300,26 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
     {
         // pre-processing
         List<GitHubCommit> commits = new LinkedList<GitHubCommit>();
-        for (GitHubCommitMapping commit : source.getCommits())
+        for (GitHubPushCommitMapping pushToCommit : source.getCommits())
         {
-            commits.add(gitHubCommitService.getById(commit.getID()));
+            commits.add(gitHubCommitService.getById(pushToCommit.getCommit().getID()));
         }
+
+        GitHubRepository domain = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(domain, source.getDomain());
+
+        GitHubRepository repository = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(repository, source.getRepository());
+
+        GitHubUser createdBy = new GitHubUser();
+        GitHubUserDAOImpl.map(createdBy, source.getCreatedBy());
 
         // re-mapping
         target.setId(source.getID());
+        target.setDomain(domain);
+        target.setRepository(repository);
         target.setCreatedAt(source.getCreatedAt());
+        target.setCreatedBy(createdBy);
         target.setBefore(source.getBefore());
         target.setHead(source.getHead());
         target.setRef(source.getRef());
@@ -228,10 +336,54 @@ public class GitHubPushDAOImpl implements GitHubPushDAO
      */
     private void map(GitHubPushMapping target, GitHubPush source)
     {
+        GitHubRepositoryMapping domain = activeObjects.get(GitHubRepositoryMapping.class, source.getDomain().getId());
+        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+        GitHubUserMapping createdBy = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
+
         // re-mapping
+        target.setDomain(domain);
+        target.setRepository(repository);
         target.setCreatedAt(source.getCreatedAt());
+        target.setCreatedBy(createdBy);
         target.setBefore(source.getBefore());
         target.setHead(source.getHead());
         target.setRef(source.getRef());
     }
+
+    /**
+     * Re-maps provided {@link GitHubPush#getCommits()} information into the AO creation map of the {@link GitHubPushCommitMapping}.
+     * 
+     * @param target
+     *            creation AO map
+     * @param pushOwner
+     *            push owner of the commit
+     * @param commit
+     *            commit reference
+     */
+    private void map(Map<String, Object> target, GitHubPushMapping pushOwner, GitHubCommitMapping commit)
+    {
+        target.put(columnNameResolverService.column(gitHubPushCommitMappingDescription.getDomain()), commit.getDomain());
+        target.put(columnNameResolverService.column(gitHubPushCommitMappingDescription.getPush()), pushOwner);
+        target.put(columnNameResolverService.column(gitHubPushCommitMappingDescription.getCommit()), commit);
+    }
+
+    /**
+     * Re-maps provided {@link GitHubPush#getCommits()} information into the AO value of the {@link GitHubPushCommitMapping}.
+     * 
+     * @param target
+     *            AO value
+     * @param pushOwner
+     *            push owner of the commit
+     * @param commit
+     *            commit reference
+     */
+    private void map(GitHubPushCommitMapping target, GitHubPushMapping pushOwner, GitHubCommit commit)
+    {
+        GitHubCommitMapping commitMapping = activeObjects.get(GitHubCommitMapping.class, commit.getId());
+
+        target.setDomain(commitMapping.getDomain());
+        target.setPush(pushOwner);
+        target.setCommit(commitMapping);
+    }
+
 }

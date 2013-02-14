@@ -46,7 +46,7 @@ public interface GitHubPullRequestLineCommentDAO
 
     /**
      * @param repository
-     *            {@link GitHubPullRequestLineComment#getRepository()}
+     *            {@link GitHubPullRequestLineComment#getDomain()}
      * @return resolved {@link GitHubPullRequestLineComment}-s
      */
     List<GitHubPullRequestLineComment> getByRepository(GitHubRepository repository);

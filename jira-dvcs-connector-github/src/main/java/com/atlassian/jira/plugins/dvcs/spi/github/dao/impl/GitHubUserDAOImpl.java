@@ -166,9 +166,9 @@ public class GitHubUserDAOImpl implements GitHubUserDAO
      */
     private void map(Map<String, Object> target, GitHubUser source)
     {
-        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+        GitHubRepositoryMapping domain = activeObjects.get(GitHubRepositoryMapping.class, source.getDomain().getId());
 
-        target.put(columnNameResolverService.column(gitHubUserDescription.getRepository()), repository);
+        target.put(columnNameResolverService.column(gitHubUserDescription.getDomain()), domain);
         target.put(columnNameResolverService.column(gitHubUserDescription.getGitHubId()), source.getGitHubId());
         target.put(columnNameResolverService.column(gitHubUserDescription.getSynchronizedAt()), source.getSynchronizedAt());
         target.put(columnNameResolverService.column(gitHubUserDescription.getLogin()), source.getLogin());
@@ -188,9 +188,9 @@ public class GitHubUserDAOImpl implements GitHubUserDAO
      */
     private void map(GitHubUserMapping target, GitHubUser source)
     {
-        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+        GitHubRepositoryMapping domain = activeObjects.get(GitHubRepositoryMapping.class, source.getDomain().getId());
 
-        target.setRepository(repository);
+        target.setDomain(domain);
         target.setGitHubId(source.getGitHubId());
         target.setSynchronizedAt(source.getSynchronizedAt());
         target.setLogin(source.getLogin());
@@ -210,11 +210,11 @@ public class GitHubUserDAOImpl implements GitHubUserDAO
      */
     static void map(GitHubUser target, GitHubUserMapping source)
     {
-        GitHubRepository repository = new GitHubRepository();
-        GitHubRepositoryDAOImpl.map(repository, source.getRepository());
+        GitHubRepository domain = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(domain, source.getDomain());
 
         target.setId(source.getID());
-        target.setRepository(repository);
+        target.setDomain(domain);
         target.setGitHubId(source.getGitHubId());
         target.setSynchronizedAt(source.getSynchronizedAt());
         target.setLogin(source.getLogin());

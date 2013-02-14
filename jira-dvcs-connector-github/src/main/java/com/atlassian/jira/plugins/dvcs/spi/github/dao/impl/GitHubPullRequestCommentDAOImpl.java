@@ -167,7 +167,7 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
     @Override
     public List<GitHubPullRequestComment> getByRepository(GitHubRepository repository)
     {
-        Query query = Query.select().where(columnNameResolverService.column(gitHubPullRequestCommentDescription.getRepository()) + " = ? ",
+        Query query = Query.select().where(columnNameResolverService.column(gitHubPullRequestCommentDescription.getDomain()) + " = ? ",
                 repository.getId());
 
         List<GitHubPullRequestComment> result = new LinkedList<GitHubPullRequestComment>();
@@ -192,11 +192,11 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
      */
     private void map(Map<String, Object> target, GitHubPullRequestComment source)
     {
-        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+        GitHubRepositoryMapping domain = activeObjects.get(GitHubRepositoryMapping.class, source.getDomain().getId());
         GitHubUserMapping createdBy = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
         GitHubPullRequestMapping pullRequest = activeObjects.get(GitHubPullRequestMapping.class, source.getPullRequest().getId());
 
-        target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getRepository()), repository);
+        target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getDomain()), domain);
         target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getGitHubId()), source.getGitHubId());
         target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getPullRequest()), pullRequest);
         target.put(columnNameResolverService.column(gitHubPullRequestCommentDescription.getCreatedAt()), source.getCreatedAt());
@@ -218,7 +218,7 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
         GitHubUserMapping createdBy = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
         GitHubPullRequestMapping pullRequest = activeObjects.get(GitHubPullRequestMapping.class, source.getPullRequest().getId());
 
-        target.setRepository(repository);
+        target.setDomain(repository);
         target.setGitHubId(source.getGitHubId());
         target.setPullRequest(pullRequest);
         target.setCreatedBy(createdBy);
@@ -236,8 +236,8 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
      */
     private void map(GitHubPullRequestComment target, GitHubPullRequestCommentMapping source)
     {
-        GitHubRepository repository = new GitHubRepository();
-        GitHubRepositoryDAOImpl.map(repository, source.getRepository());
+        GitHubRepository domain = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(domain, source.getDomain());
         GitHubPullRequest pullRequest = new GitHubPullRequest();
         GitHubPullRequestDAOImpl.map(pullRequest, source.getPullRequest());
 
@@ -245,7 +245,7 @@ public class GitHubPullRequestCommentDAOImpl implements GitHubPullRequestComment
         GitHubUserDAOImpl.map(createdBy, source.getCreatedBy());
 
         target.setId(source.getID());
-        target.setRepository(repository);
+        target.setDomain(domain);
         target.setGitHubId(source.getGitHubId());
         target.setPullRequest(pullRequest);
         target.setCreatedAt(source.getCreatedAt());

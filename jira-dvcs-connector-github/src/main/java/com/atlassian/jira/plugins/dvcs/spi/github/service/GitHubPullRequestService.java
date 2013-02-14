@@ -47,22 +47,22 @@ public interface GitHubPullRequestService
 
     /**
      * @param repository
-     *            {@link GitHubPullRequestMapping#getRepository()}
+     *            {@link GitHubPullRequestMapping#getDomain()}
      * @return resolved {@link GitHubPullRequest}-s
      */
     List<GitHubPullRequest> getByRepository(GitHubRepository repository);
 
     /**
-     * @param gitHubRepository
-     *            for which repository it is loaded
+     * @param domainRepository
+     *            for which repository
+     * @param domain
+     *            for which repository
      * @param gitHubId
-     *            identity of the pull request
+     *            {@link GitHubPullRequest#getGitHubId()}
      * @param pullRequestNumber
-     *            the number of the pull request
-     * @param repository
-     *            owning pull request
+     *            {@link GitHubPullRequest#getNumber()}
      * @return newly created or existing pull request
      */
-    GitHubPullRequest fetch(GitHubRepository gitHubRepository, long gitHubId, int pullRequestNumber, Repository repository);
+    GitHubPullRequest fetch(Repository domainRepository, GitHubRepository domain, long gitHubId, int pullRequestNumber);
 
 }

@@ -18,9 +18,29 @@ public class GitHubPullRequest extends GitHubEntity
     private GitHubRepository baseRepository;
 
     /**
+     * @see #getBaseSha()
+     */
+    private String baseSha;
+
+    /**
+     * @see #getHeadRepository()
+     */
+    private GitHubRepository headRepository;
+
+    /**
+     * @see #getHeadSha()
+     */
+    private String headSha;
+
+    /**
      * @see #getGitHubId()
      */
     private long gitHubId;
+
+    /**
+     * @see #getNumber()
+     */
+    private int number;
 
     /**
      * @see #getTitle()
@@ -67,6 +87,57 @@ public class GitHubPullRequest extends GitHubEntity
     }
 
     /**
+     * @return Base SHA.
+     */
+    public String getBaseSha()
+    {
+        return baseSha;
+    }
+
+    /**
+     * @param baseSha
+     *            {@link #getBaseSha()}
+     */
+    public void setBaseSha(String baseSha)
+    {
+        this.baseSha = baseSha;
+    }
+
+    /**
+     * @return Head repository on which will be this pull request applied.
+     */
+    public GitHubRepository getHeadRepository()
+    {
+        return headRepository;
+    }
+
+    /**
+     * @param headRepository
+     *            {@link #getHeadRepository()}
+     */
+    public void setHeadRepository(GitHubRepository headRepository)
+    {
+        this.headRepository = headRepository;
+    }
+
+    /**
+     * @return Current SHA of the head.
+     */
+    public String getHeadSha()
+    {
+        return headSha;
+    }
+
+    /**
+     * @param headSha
+     *            {@link #getHeadSha()}
+     */
+    public void setHeadSha(String headSha)
+    {
+        this.headSha = headSha;
+    }
+
+    /**
      * @return GitHub identity of object.
      */
     public long getGitHubId()
@@ -81,6 +152,23 @@ public class GitHubPullRequest extends GitHubEntity
     public void setGitHubId(long gitHubId)
     {
         this.gitHubId = gitHubId;
+    }
+
+    /**
+     * @return PullRequest number.
+     */
+    public int getNumber()
+    {
+        return number;
+    }
+
+    /**
+     * @param number
+     *            {@link #getNumber()}
+     */
+    public void setNumber(int number)
+    {
+        this.number = number;
     }
 
     /**

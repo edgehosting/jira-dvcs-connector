@@ -20,7 +20,7 @@ public class DefaultGitHubEventProcessor implements GitHubEventProcessor<EventPa
      * {@inheritDoc}
      */
     @Override
-    public void process(GitHubRepository gitHubRepository, Event event, Repository repository)
+    public void process(Repository domainRepository, GitHubRepository domain, Event event)
     {
         // nothing to do
     }

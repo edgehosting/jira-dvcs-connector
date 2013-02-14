@@ -83,7 +83,7 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
      * {@inheritDoc}
      */
     @Override
-    public void process(GitHubRepository gitHubRepository, Event event, Repository repository)
+    public void process(Repository domainRepository, GitHubRepository domain, Event event)
     {
         IssueCommentPayload payload = getPayload(event);
         Comment comment = payload.getComment();
@@ -91,17 +91,17 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
         PullRequest pullRequest = payload.getIssue().getPullRequest();
         if (pullRequest != null && !StringUtils.isBlank(pullRequest.getHtmlUrl()))
         {
-            GitHubPullRequest gitHubPullRequest = getPullRequestByHtmlUrl(gitHubRepository, repository, pullRequest.getHtmlUrl());
+            GitHubPullRequest gitHubPullRequest = getPullRequestByHtmlUrl(domainRepository, domain, pullRequest.getHtmlUrl());
             if (gitHubPullRequest != null)
             {
-                GitHubUser createdBy = gitHubUserService.fetch(comment.getUser().getLogin(), gitHubRepository, repository);
+                GitHubUser createdBy = gitHubUserService.fetch(domainRepository, domain, comment.getUser().getLogin());
                 GitHubPullRequestComment gitHubPullRequestComment = gitHubPullRequestCommentService.getByGitHubId(comment.getId());
                 if (gitHubPullRequestComment == null)
                 {
                     gitHubPullRequestComment = new GitHubPullRequestComment();
                 }
 
-                gitHubPullRequestComment.setRepository(gitHubRepository);
+                gitHubPullRequestComment.setDomain(domain);
                 gitHubPullRequestCommentService.map(gitHubPullRequestComment, comment, gitHubPullRequest, createdBy);
                 gitHubPullRequestCommentService.save(gitHubPullRequestComment);
             }
@@ -112,20 +112,20 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
     /**
      * Resolves {@link GitHubPullRequest} for the provided pull request html URL.
      * 
-     * @param gitHubRepository
+     * @param domain
      *            over which repository
-     * @param repository
+     * @param domainRepository
      *            over which repository
      * @param htmlUrl
      *            of the {@link PullRequest}
      * @return resolved {@link GitHubPullRequest}
      */
-    private GitHubPullRequest getPullRequestByHtmlUrl(GitHubRepository gitHubRepository, Repository repository, String htmlUrl)
+    private GitHubPullRequest getPullRequestByHtmlUrl(Repository domainRepository, GitHubRepository domain, String htmlUrl)
     {
         GitHubPullRequest result;
 
-        PullRequestService pullRequestService = githubClientProvider.getPullRequestService(repository);
-        RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
+        PullRequestService pullRequestService = githubClientProvider.getPullRequestService(domainRepository);
+        RepositoryId repositoryId = RepositoryId.create(domainRepository.getOrgName(), domainRepository.getSlug());
 
         try
         {
@@ -137,7 +137,7 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
                     result = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
                     if (result == null)
                     {
-                        result = gitHubPullRequestService.fetch(gitHubRepository, pullRequest.getId(), pullRequest.getNumber(), repository);
+                        result = gitHubPullRequestService.fetch(domainRepository, domain, pullRequest.getId(), pullRequest.getNumber());
                         gitHubPullRequestService.save(result);
                     }
 
@@ -153,7 +153,7 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
                     result = gitHubPullRequestService.getByGitHubId(pullRequest.getId());
                     if (result == null)
                     {
-                        result = gitHubPullRequestService.fetch(gitHubRepository, pullRequest.getId(), pullRequest.getNumber(), repository);
+                        result = gitHubPullRequestService.fetch(domainRepository, domain, pullRequest.getId(), pullRequest.getNumber());
                         gitHubPullRequestService.save(result);
                     }
 

@@ -46,7 +46,7 @@ public interface GitHubPullRequestDAO
 
     /**
      * @param repository
-     *            {@link GitHubPullRequestMapping#getRepository()}
+     *            {@link GitHubPullRequestMapping#getDomain()}
      * @return resolved {@link GitHubPullRequest}-s
      */
     List<GitHubPullRequest> getByRepository(GitHubRepository repository);

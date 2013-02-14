@@ -235,7 +235,7 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
     @Override
     public List<GitHubPullRequest> getByRepository(GitHubRepository repository)
     {
-        Query query = Query.select().where(columnNameResolverService.column(gitHubRepositoryMappingDescription.getRepository()) + " = ? ",
+        Query query = Query.select().where(columnNameResolverService.column(gitHubRepositoryMappingDescription.getDomain()) + " = ? ",
                 repository.getId());
 
         List<GitHubPullRequest> result = new ArrayList<GitHubPullRequest>();
@@ -264,12 +264,20 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
      */
     private void map(Map<String, Object> target, GitHubPullRequest source)
     {
+        GitHubRepositoryMapping domain = activeObjects.get(GitHubRepositoryMapping.class, source.getDomain().getId());
         GitHubRepositoryMapping baseRepository = activeObjects.get(GitHubRepositoryMapping.class, source.getBaseRepository().getId());
-        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+        GitHubRepositoryMapping headRepository = activeObjects.get(GitHubRepositoryMapping.class, source.getHeadRepository().getId());
 
         target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getGitHubId()), source.getGitHubId());
-        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getRepository()), repository);
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getPullRequestNumber()), source.getNumber());
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getDomain()), domain);
+
         target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getBaseRepository()), baseRepository);
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getBaseSha()), source.getBaseSha());
+
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getHeadRepository()), headRepository);
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getHeadSha()), source.getHeadSha());
+
         target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getTitle()), source.getTitle());
         target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getText()), source.getText());
         target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getUrl()), source.getUrl());
@@ -285,13 +293,21 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
      */
     private void map(GitHubPullRequestMapping target, GitHubPullRequest source)
     {
+        GitHubRepositoryMapping domain = activeObjects.get(GitHubRepositoryMapping.class, source.getDomain().getId());
         GitHubRepositoryMapping baseRepository = activeObjects.get(GitHubRepositoryMapping.class, source.getBaseRepository().getId());
-        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
+        GitHubRepositoryMapping headRepository = activeObjects.get(GitHubRepositoryMapping.class, source.getHeadRepository().getId());
 
         // re-mapping
         target.setGitHubId(source.getGitHubId());
-        target.setRepository(repository);
+        target.setPullRequestNumber(source.getNumber());
+        target.setDomain(domain);
+
         target.setBaseRepository(baseRepository);
+        target.setBaseSha(source.getBaseSha());
+
+        target.setHeadRepository(headRepository);
+        target.setHeadSha(source.getHeadSha());
+
         target.setTitle(source.getTitle());
         target.setText(source.getText());
         target.setUrl(source.getUrl());
@@ -307,16 +323,26 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
      */
     static void map(GitHubPullRequest target, GitHubPullRequestMapping source)
     {
+        GitHubRepository domain = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(domain, source.getDomain());
+
         GitHubRepository baseRepository = new GitHubRepository();
         GitHubRepositoryDAOImpl.map(baseRepository, source.getBaseRepository());
 
-        GitHubRepository repository = new GitHubRepository();
-        GitHubRepositoryDAOImpl.map(repository, source.getRepository());
+        GitHubRepository headRepository = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(headRepository, source.getHeadRepository());
 
         target.setId(source.getID());
         target.setGitHubId(source.getGitHubId());
-        target.setRepository(repository);
+        target.setNumber(source.getPullRequestNumber());
+        target.setDomain(domain);
+
         target.setBaseRepository(baseRepository);
+        target.setBaseSha(source.getBaseSha());
+
+        target.setHeadRepository(headRepository);
+        target.setHeadSha(source.getHeadSha());
+
         target.setTitle(source.getTitle());
         target.setText(source.getText());
         target.setUrl(source.getUrl());
@@ -341,15 +367,17 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
      */
     private void map(Map<String, Object> target, GitHubPullRequestMapping pullRequestMapping, GitHubPullRequestAction source)
     {
-        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
-        GitHubUserMapping actor = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
+        GitHubRepositoryMapping domain = activeObjects.get(GitHubRepositoryMapping.class, source.getDomain().getId());
+        GitHubUserMapping createdBy = activeObjects.get(GitHubUserMapping.class, source.getCreatedBy().getId());
 
-        target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getRepository()), repository);
+        target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getDomain()), domain);
         target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getGitHubEventId()),
                 source.getGitHubEventId());
         target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getPullRequest()), pullRequestMapping);
         target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getCreatedAt()), source.getCreatedAt());
-        target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getCreatedBy()), actor);
+        target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getCreatedBy()), createdBy);
+        target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getBaseSha()), source.getBaseSha());
+        target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getHeadSha()), source.getHeadSha());
         target.put(columnNameResolverService.column(gitHubPullRequestActionMappingDescription.getAction()), source.getAction());
     }
 
@@ -363,17 +391,19 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
      */
     private static void map(GitHubPullRequestAction target, GitHubPullRequestActionMapping source)
     {
-        GitHubRepository repository = new GitHubRepository();
-        GitHubRepositoryDAOImpl.map(repository, source.getRepository());
+        GitHubRepository domain = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(domain, source.getDomain());
 
         GitHubUser targetActor = new GitHubUser();
         GitHubUserDAOImpl.map(targetActor, source.getCreatedBy());
 
         target.setId(source.getID());
-        target.setRepository(repository);
+        target.setDomain(domain);
         target.setAction(source.getAction());
         target.setCreatedBy(targetActor);
-        target.setAt(source.getCreatedAt());
+        target.setCreatedAt(source.getCreatedAt());
+        target.setBaseSha(source.getBaseSha());
+        target.setHeadSha(source.getHeadSha());
         target.setGitHubEventId(source.getGitHubEventId());
     }
 

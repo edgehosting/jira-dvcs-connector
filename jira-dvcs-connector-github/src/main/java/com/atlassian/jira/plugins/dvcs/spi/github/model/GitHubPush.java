@@ -19,6 +19,16 @@ public class GitHubPush extends GitHubEntity
     private Date createdAt;
 
     /**
+     * @see #getCreatedBy()
+     */
+    private GitHubUser createdBy;
+
+    /**
+     * @see #getC
+     */
+    private GitHubRepository repository;
+
+    /**
      * @see #getRef()
      */
     private String ref;
@@ -60,6 +70,40 @@ public class GitHubPush extends GitHubEntity
     public void setCreatedAt(Date createdAt)
     {
         this.createdAt = createdAt;
+    }
+
+    /**
+     * @return Creator of the push.
+     */
+    public GitHubUser getCreatedBy()
+    {
+        return createdBy;
+    }
+
+    /**
+     * @param createdBy
+     *            {@link #getCreatedBy()}
+     */
+    public void setCreatedBy(GitHubUser createdBy)
+    {
+        this.createdBy = createdBy;
+    }
+
+    /**
+     * @return Owner of the push.
+     */
+    public GitHubRepository getRepository()
+    {
+        return repository;
+    }
+
+    /**
+     * @param repository
+     *            {@link #getRepository()}
+     */
+    public void setRepository(GitHubRepository repository)
+    {
+        this.repository = repository;
     }
 
     /**

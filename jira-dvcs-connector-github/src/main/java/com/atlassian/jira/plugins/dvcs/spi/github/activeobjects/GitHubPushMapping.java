@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.activeobjects;
 import java.util.Date;
 
 import net.java.ao.OneToMany;
+import net.java.ao.schema.NotNull;
 import net.java.ao.schema.Table;
 
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPush;
@@ -18,13 +19,9 @@ public interface GitHubPushMapping extends GitHubEntityMapping
 {
 
     /**
-     * AO map key of the {@link #getCommits()}.
+     * @return {@link GitHubPush#getCreatedAt()}
      */
-    String COLUMN_COMMITS = "COMMITS";
-
-    /**
-     * @return {@link GitHubPushMapping#getCreatedAt()}
-     */
+    @NotNull
     Date getCreatedAt();
 
     /**
@@ -34,9 +31,34 @@ public interface GitHubPushMapping extends GitHubEntityMapping
     void setCreatedAt(Date createdAt);
 
     /**
-     * 
-     * @return {@link GitHubPushMapping#getRef()}
+     * @return {@link GitHubPush#getCreatedBy()}
      */
+    @NotNull
+    GitHubUserMapping getCreatedBy();
+
+    /**
+     * @param gitHubUser
+     *            {@link #getCreatedBy()}
+     */
+    void setCreatedBy(GitHubUserMapping gitHubUser);
+
+    /**
+     * @return {@link GitHubPush#getRepository()}
+     */
+    @NotNull
+    GitHubRepositoryMapping getRepository();
+
+    /**
+     * @param repository
+     *            {@link #getRepository()}
+     */
+    void setRepository(GitHubRepositoryMapping repository);
+
+    /**
+     * 
+     * @return {@link GitHubPush#getRef()}
+     */
+    @NotNull
     String getRef();
 
     /**
@@ -47,8 +69,9 @@ public interface GitHubPushMapping extends GitHubEntityMapping
 
     /**
      * 
-     * @return {@link GitHubPushMapping#getBefore()}
+     * @return {@link GitHubPush#getBefore()}
      */
+    @NotNull
     String getBefore();
 
     /**
@@ -59,8 +82,9 @@ public interface GitHubPushMapping extends GitHubEntityMapping
 
     /**
      * 
-     * @return {@link GitHubPushMapping#getHead()}
+     * @return {@link GitHubPush#getHead()}
      */
+    @NotNull
     String getHead();
 
     /**
@@ -73,6 +97,6 @@ public interface GitHubPushMapping extends GitHubEntityMapping
      * @return {@link GitHubPush#getCommits()}
      */
     @OneToMany
-    GitHubCommitMapping[] getCommits();
+    GitHubPushCommitMapping[] getCommits();
 
 }

@@ -37,14 +37,15 @@ public interface GitHubUserService
     GitHubUser getByLogin(String login);
 
     /**
+     * 
+     * @param domainRepository
+     *            {@link GitHubUser#getDomain()}
+     * @param domain
+     *            for repository
      * @param login
      *            {@link GitHubUser#getLogin()}
-     * @param gitHubRepository
-     *            over which repository
-     * @param repository
-     *            over which repository
      * @return fetch the {@link GitHubUser} from the database, if it was already synchronized or synchronizes it
      */
-    GitHubUser fetch(String login, GitHubRepository gitHubRepository, Repository repository);
+    GitHubUser fetch(Repository domainRepository, GitHubRepository domain, String login);
 
 }

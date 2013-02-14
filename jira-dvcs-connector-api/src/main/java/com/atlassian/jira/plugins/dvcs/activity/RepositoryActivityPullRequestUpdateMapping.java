@@ -11,7 +11,7 @@ public interface RepositoryActivityPullRequestUpdateMapping extends RepositoryAc
     // Status constants
     enum Status
     {
-    	APPROVED, OPENED, MERGED, DECLINED, UPDATED;
+    	APPROVED, OPENED, MERGED, DECLINED, REOPENED, UPDATED;
     }
     
     Status getStatus();

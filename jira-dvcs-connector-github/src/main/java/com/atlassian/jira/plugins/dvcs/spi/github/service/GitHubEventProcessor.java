@@ -20,13 +20,14 @@ public interface GitHubEventProcessor<T_Payload extends EventPayload>
     /**
      * Processes incoming event.
      * 
-     * @param gitHubRepository
+     * @param domainRepository
+     *            current proceed repository
+     * @param domain
      *            current proceed repository
      * @param event
      *            to process
-     * @param repository current proceed repository
      */
-    void process(GitHubRepository gitHubRepository, Event event, Repository repository);
+    void process(Repository domainRepository, GitHubRepository domain, Event event);
 
     /**
      * @return The type of the payload which is supported by this processor.

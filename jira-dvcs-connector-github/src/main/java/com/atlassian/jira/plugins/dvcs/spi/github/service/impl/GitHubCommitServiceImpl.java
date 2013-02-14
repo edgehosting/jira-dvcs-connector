@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 import java.io.IOException;
 import java.util.List;
 
+import org.eclipse.egit.github.core.CommitUser;
 import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
@@ -79,9 +80,9 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
      * {@inheritDoc}
      */
     @Override
-    public GitHubCommit getBySha(String sha)
+    public GitHubCommit getBySha(GitHubRepository domain, GitHubRepository repository, String sha)
     {
-        return gitHubCommitDAO.getBySha(sha);
+        return gitHubCommitDAO.getBySha(domain, repository, sha);
     }
 
     /**
@@ -92,21 +93,21 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
     {
         return gitHubCommitDAO.getByIssueKey(issueKey);
     }
-
+    
     /**
      * {@inheritDoc}
      */
     @Override
-    public GitHubCommit fetch(GitHubRepository gitHubRepository, Repository repository, String sha)
+    public GitHubCommit fetch(Repository domainRepository, GitHubRepository domain, GitHubRepository repository, String sha)
     {
-        GitHubCommit result = getBySha(sha);
+        GitHubCommit result = getBySha(domain, repository, sha);
         if (result != null)
         {
             return result;
         }
 
-        CommitService commitService = githubClientProvider.getCommitService(repository);
-        IRepositoryIdProvider egitRepository = RepositoryId.createFromUrl(repository.getRepositoryUrl());
+        CommitService commitService = githubClientProvider.getCommitService(domainRepository);
+        IRepositoryIdProvider egitRepository = RepositoryId.createFromUrl(repository.getUrl());
 
         RepositoryCommit commit;
         try
@@ -122,11 +123,15 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
             return null;
         }
 
+        CommitUser author = commit.getCommit().getAuthor();
+
         result = new GitHubCommit();
-        result.setRepository(gitHubRepository);
+        result.setDomain(domain);
+        result.setRepository(repository);
         result.setSha(commit.getSha());
-        result.setCreatedAt(commit.getCommit().getAuthor().getDate());
-        result.setCreatedBy(commit.getCommit().getAuthor().getName());
+        result.setCreatedAt(author.getDate());
+        result.setCreatedBy(author.getName());
+        result.setCreatedByName(author.getName());
         result.setMessage(commit.getCommit().getMessage());
         save(result);
 

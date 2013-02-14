@@ -216,7 +216,8 @@ public class ColumnNameResolverServiceImpl implements ColumnNameResolverService
                 result = (T) byClassLoader.get(clazz);
                 if (result == null)
                 {
-                    result = (T) Proxy.newProxyInstance(classLoader, new Class<?>[] { clazz }, descriptionHandler);
+                    byClassLoader
+                            .put(clazz, result = (T) Proxy.newProxyInstance(classLoader, new Class<?>[] { clazz }, descriptionHandler));
                 }
             }
         }

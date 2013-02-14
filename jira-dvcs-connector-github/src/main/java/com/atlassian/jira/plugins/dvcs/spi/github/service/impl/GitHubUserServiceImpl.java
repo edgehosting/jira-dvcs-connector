@@ -77,7 +77,7 @@ public class GitHubUserServiceImpl implements GitHubUserService
      * {@inheritDoc}
      */
     @Override
-    public GitHubUser fetch(String login, GitHubRepository gitHubRepository, Repository repository)
+    public GitHubUser fetch(Repository domainRepository, GitHubRepository domain, String login)
     {
         GitHubUser result = getByLogin(login);
         if (result != null)
@@ -88,7 +88,7 @@ public class GitHubUserServiceImpl implements GitHubUserService
 
         result = new GitHubUser();
 
-        UserService userService = githubClientProvider.getUserService(repository);
+        UserService userService = githubClientProvider.getUserService(domainRepository);
         User loaded;
         try
         {
@@ -99,7 +99,7 @@ public class GitHubUserServiceImpl implements GitHubUserService
             throw new RuntimeException(e);
         }
 
-        result.setRepository(gitHubRepository);
+        result.setDomain(domain);
         result.setSynchronizedAt(new Date());
         result.setGitHubId(loaded.getId());
         result.setLogin(loaded.getLogin());

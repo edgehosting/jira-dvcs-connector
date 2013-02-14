@@ -133,9 +133,24 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
      * {@inheritDoc}
      */
     @Override
-    public GitHubCommit getBySha(String sha)
+    public GitHubCommit getBySha(GitHubRepository domain, GitHubRepository repository, String sha)
     {
-        Query query = Query.select().where(columnNameResolverService.column(gitHubCommitMappingDescription.getSha()) + " = ?", sha);
+        // prepares query
+        StringBuilder whereClause = new StringBuilder();
+        List<Object> params = new LinkedList<Object>();
+
+        whereClause.append(columnNameResolverService.column(gitHubCommitMappingDescription.getDomain())).append(" = ? AND ");
+        params.add(domain.getId());
+
+        whereClause.append(columnNameResolverService.column(gitHubCommitMappingDescription.getRepository())).append(" = ? AND ");
+        params.add(repository.getId());
+
+        whereClause.append(columnNameResolverService.column(gitHubCommitMappingDescription.getSha())).append(" = ? ");
+        params.add(sha);
+
+        Query query = Query.select().where(whereClause.toString(), params.toArray());
+        
+        //
         GitHubCommitMapping[] founded = activeObjects.find(GitHubCommitMapping.class, query);
         if (founded.length == 1)
         {
@@ -184,12 +199,13 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
      */
     private void map(Map<String, Object> target, GitHubCommit source)
     {
-        GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
-
-        target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getRepository()), repository);
+        target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getDomain()), source.getDomain().getId());
+        target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getRepository()), source.getRepository().getId());
         target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getSha()), source.getSha());
         target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getCreatedAt()), source.getCreatedAt());
         target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getCreatedBy()), source.getCreatedBy());
+        target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getCreatedByName()), source.getCreatedByName());
+        target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getCreatedByAvatarUrl()), source.getCreatedByAvatarUrl());
         target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getMessage()), source.getMessage());
     }
 
@@ -203,12 +219,16 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
      */
     private void map(GitHubCommitMapping target, GitHubCommit source)
     {
+        GitHubRepositoryMapping domain = activeObjects.get(GitHubRepositoryMapping.class, source.getDomain().getId());
         GitHubRepositoryMapping repository = activeObjects.get(GitHubRepositoryMapping.class, source.getRepository().getId());
 
+        target.setDomain(domain);
         target.setRepository(repository);
         target.setSha(source.getSha());
         target.setCreatedAt(source.getCreatedAt());
         target.setCreatedBy(source.getCreatedBy());
+        target.setCreatedByName(source.getCreatedByName());
+        target.setCreatedByAvatarUrl(source.getCreatedByAvatarUrl());
         target.setMessage(source.getMessage());
     }
 
@@ -222,14 +242,20 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
      */
     static void map(GitHubCommit target, GitHubCommitMapping source)
     {
+        GitHubRepository domain = new GitHubRepository();
+        GitHubRepositoryDAOImpl.map(domain, source.getDomain());
+
         GitHubRepository repository = new GitHubRepository();
         GitHubRepositoryDAOImpl.map(repository, source.getRepository());
 
         target.setId(source.getID());
+        target.setDomain(domain);
         target.setRepository(repository);
         target.setSha(source.getSha());
         target.setCreatedAt(source.getCreatedAt());
         target.setCreatedBy(source.getCreatedBy());
+        target.setCreatedByName(source.getCreatedByName());
+        target.setCreatedByAvatarUrl(source.getCreatedByAvatarUrl());
         target.setMessage(source.getMessage());
     }
 

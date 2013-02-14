@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.model;
 
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-
 /**
  * GitHub repository representation.
  * 
@@ -17,11 +15,6 @@ public class GitHubRepository
     private int id;
 
     /**
-     * @see #get
-     */
-    private int repositoryId;
-
-    /**
      * @see #getGitHubId()
      */
     private long gitHubId;
@@ -30,6 +23,11 @@ public class GitHubRepository
      * @see #getName()
      */
     private String name;
+
+    /**
+     * @return {@link #getUrl()}
+     */
+    private String url;
 
     /**
      * Constructor.
@@ -53,23 +51,6 @@ public class GitHubRepository
     public void setId(int id)
     {
         this.id = id;
-    }
-
-    /**
-     * @return {@link Repository#getId()}
-     */
-    public int getRepositoryId()
-    {
-        return repositoryId;
-    }
-
-    /**
-     * @param repositoryId
-     *            {@link #getRepositoryId()}
-     */
-    public void setRepositoryId(int repositoryId)
-    {
-        this.repositoryId = repositoryId;
     }
 
     /**
@@ -104,6 +85,23 @@ public class GitHubRepository
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    /**
+     * @return URL of the repository.
+     */
+    public String getUrl()
+    {
+        return url;
+    }
+
+    /**
+     * @param url
+     *            {@link #getUrl()}
+     */
+    public void setUrl(String url)
+    {
+        this.url = url;
     }
 
 }

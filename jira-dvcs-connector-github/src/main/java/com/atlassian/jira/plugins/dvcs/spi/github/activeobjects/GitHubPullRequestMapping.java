@@ -43,6 +43,54 @@ public interface GitHubPullRequestMapping extends GitHubEntityMapping
     void setBaseRepository(GitHubRepositoryMapping baseRepository);
 
     /**
+     * @return {@link GitHubPullRequest#getBaseSha()}
+     */
+    @NotNull
+    String getBaseSha();
+
+    /**
+     * @param baseSha
+     *            {@link #getBaseSha()}
+     */
+    void setBaseSha(String baseSha);
+
+    /**
+     * @return {@link GitHubPullRequest#getHeadRepository()}
+     */
+    @NotNull
+    GitHubRepositoryMapping getHeadRepository();
+
+    /**
+     * @param headRepository
+     *            {@link #getHeadRepository()}
+     */
+    void setHeadRepository(GitHubRepositoryMapping headRepository);
+
+    /**
+     * @return {@link GitHubPullRequest#getHeadSha()}
+     */
+    @NotNull
+    String getHeadSha();
+
+    /**
+     * @param sha
+     *            {@link #getHeadSha()}
+     */
+    void setHeadSha(String sha);
+
+    /**
+     * @return {@link GitHubPullRequest#getNumber()}
+     */
+    @NotNull
+    int getPullRequestNumber();
+
+    /**
+     * @param pullRequestNumber
+     *            {@link #getPullRequestNumber()}
+     */
+    void setPullRequestNumber(int pullRequestNumber);
+
+    /**
      * @return {@link GitHubPullRequest#getTitle()}
      */
     String getTitle();

@@ -146,9 +146,9 @@ public class GitHubRepositoryDAOImpl implements GitHubRepositoryDAO
      */
     private void map(Map<String, Object> target, GitHubRepository source)
     {
-        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getRepositoryId()), source.getRepositoryId());
         target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getGitHubId()), source.getGitHubId());
         target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getName()), source.getName());
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getUrl()), source.getUrl());
     }
 
     /**
@@ -161,9 +161,9 @@ public class GitHubRepositoryDAOImpl implements GitHubRepositoryDAO
      */
     private void map(GitHubRepositoryMapping target, GitHubRepository source)
     {
-        target.setRepositoryId(source.getRepositoryId());
         target.setGitHubId(source.getGitHubId());
         target.setName(source.getName());
+        target.setUrl(source.getUrl());
     }
 
     /**
@@ -177,9 +177,9 @@ public class GitHubRepositoryDAOImpl implements GitHubRepositoryDAO
     static void map(GitHubRepository target, GitHubRepositoryMapping source)
     {
         target.setId(source.getID());
-        target.setRepositoryId(source.getRepositoryId());
         target.setGitHubId(source.getGitHubId());
         target.setName(source.getName());
+        target.setUrl(source.getUrl());
     }
 
 }
