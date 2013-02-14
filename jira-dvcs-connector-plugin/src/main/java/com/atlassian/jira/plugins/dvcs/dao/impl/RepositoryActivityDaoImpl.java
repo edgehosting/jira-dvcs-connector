@@ -200,12 +200,11 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                                 .where("PR_UPDATE." + RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", forRepository.getId()));
                         
                         // drop activities
-                        final Query activityDeleteQuery = Query
-                                .select()
-                                .where(RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", forRepository.getId());
                         for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
                         {
-                            ActiveObjectsUtils.delete(activeObjects, activityTable, activityDeleteQuery);
+                            ActiveObjectsUtils.delete(activeObjects, activityTable, Query
+                                    .select()
+                                    .where(RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", forRepository.getId()));
                         }
                         
                         // drop pull requests
