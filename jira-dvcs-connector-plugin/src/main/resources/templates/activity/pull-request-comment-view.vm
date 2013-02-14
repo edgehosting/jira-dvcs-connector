@@ -1,10 +1,10 @@
-<div class="dvcs comment">
+<div class="dvcs comment"  style="background-color:#fff8f8">
     <article data-comment-id="16415">
         <header>
             <a href="/$pullRequestComment"><img class="avatar avatar32" src="$user.avatar"></a>
             <a href="/$pullRequestComment" class="author">$user.fullName</a> 
             <span class="aui-lozenge pull-request-state aui-lozenge-success" title="">commented</span>
-            on a pull request <a href="$pullRequestUrl">$pullRequestName</a>
+            on a pull request <a href="$pullRequestUrl">$pullRequest.name</a>
         </header>
             <div class="comment-content">$pullRequestComment.message</div>
             <ul class="comment-actions">
@@ -12,11 +12,12 @@
                     <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
                 </li>
                 <li>
-                    <a class="permalink" href="#comment-16500" title="Link directly to this comment"><time datetime="2013-01-07T14:11:04+01:00" data-title="true" title="7 January 2013 14:11">25 days ago</time></a>
+                    <a class="permalink" href="#comment-16500" title="Link directly to this comment">
+                        <time title="$pullRequestComment.lastUpdatedOn">$velocityUtils.getRelativePastDate($pullRequestComment.lastUpdatedOn)</time></a>
                 </li>
             </ul>
         </article>
-            <ol class="child-comments iterable">
-            </ol>
+        <ol class="child-comments iterable">
+        </ol>
 
 </div>

@@ -46,7 +46,7 @@ public class ChangesetIssueActionFactory implements IssueActionFactory
         }
 
         Map<String, Object> templateMap = new HashMap<String, Object>();
-        templateMap.put("velocity_utils", new VelocityUtils());
+        templateMap.put("velocityUtils", new VelocityUtils());
         templateMap.put("changeset", changeset);
 
         String documentJpgUrl = applicationProperties.getBaseUrl() + "/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/document.jpg";

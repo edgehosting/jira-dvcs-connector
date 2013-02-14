@@ -1,13 +1,65 @@
-<div class="dvcs activity-item">
+<div class="dvcs activity-item" style="background-color:#fffff8">
   <article>
     <header>
       <div class="summary">
         <a href="/$pullRequestUpdate.author"><img class="avatar avatar32" src="$user.avatar"></a>
         <a href="/$pullRequestUpdate.author" class="author">$user.fullName</a>
         <span class="aui-lozenge pull-request-state aui-lozenge-success aui-lozenge-subtle" title="">$pullRequestUpdate.status</span> a pull request
-        <a href="$pullRequestUrl">$pullRequestName</a>
+        <a href="$pullRequestUrl">$pullRequest.name</a>
         on <time datetime="2013-01-03T20:07:06.550576">$pullRequestUpdate.lastUpdatedOn</time>
       </div>
     </header>
+    
+    
+    
+    <div class="content">
+    <table class="aui commit-list">
+      <thead>
+      <tr id="chg_0">
+        <th class="author">Author</th>
+        <th class="hash">Commit</th>
+        <th class="text">Message</th>
+        <th class="labels">Labels</th>
+        <th class="date">Date</th>
+      </tr>
+      </thead>
+      <tbody>
+        #set( $commits = $pullRequestUpdate.commits)
+        #foreach( $commit in $commits )
+        <tr class="" id="chg_1">
+          <td class="author">
+            <div>
+                <span><a href="/$commit.author" title="$commit.author"><img class="avatar avatar16" src="$commit.getAuthorAvatarUrl()" alt="$commit.author"></a><span>$commit.author</span></span>
+            </div>
+          </td>
+          <td class="hash">
+            <div><a class="hash" href="#">$commit.node.substring(0,7)</a></div>
+          </td>
+          <td class="text">
+            <div title="$commit.message">$commit.message</div>
+          </td>
+          <td class="labels fade-left">
+            <dl class="commit-labels clearfix">
+            </dl>
+          </td>
+          <td class="date">
+            <div>
+              <time datetime="" title="$commit.date">$velocityUtils.getRelativePastDate($commit.date)</time>
+            </div>
+          </td>
+        </tr>
+        #end
+
+        
+        
+      </tbody>
+    </table>
+  </div>
+    
+    
+    
   </article>
+  
 </div>
+    
+

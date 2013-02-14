@@ -1,4 +1,4 @@
-<div class="dvcs activity-item">
+<div class="dvcs activity-item"  style="background-color:#f8fff8">
   <article>
     <header>
       <div class="summary">
@@ -26,8 +26,8 @@
               <div title="$commitMessage">$commitMessageHtml</div>
           </td>
           <td class="labels fade-left">
-<dl class="commit-labels clearfix">
-</dl>
+            <dl class="commit-labels clearfix">
+            </dl>
           </td>
           <td class="comments count-badge">
           </td>
@@ -35,7 +35,7 @@
           </td>
           <td class="date">
             <div>
-              <time datetime="2013-01-03T03:08:40+01:00" data-title="true" title="3 January 2013 03:08">29 days ago</time>
+              <time title="$changeset.date">$velocityUtils.getRelativePastDate($changeset.date)</time>
             </div>
           </td>
         </tr>

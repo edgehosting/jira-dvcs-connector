@@ -38,17 +38,14 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
         int repositoryId = pullRequestUpdate.getRepositoryId();
         int pullRequestId = pullRequestUpdate.getPullRequest().getID();
         
-        RepositoryPullRequestMapping pullRequest;
-        pullRequest = repositoryActivityDao.findRequestById(pullRequestId);
-        String pullRequestName = pullRequest.getName();
+        RepositoryPullRequestMapping pullRequest = repositoryActivityDao.findRequestById(pullRequestId);
         Repository repository = repositoryService.get(repositoryId);
 
         DvcsUser user = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType()).getUser(repository, pullRequestUpdate.getAuthor());
-
         Map<String, Object> templateMap = new HashMap<String, Object>();
-        templateMap.put("velocity_utils", new VelocityUtils());
+        templateMap.put("velocityUtils", new VelocityUtils());
         templateMap.put("pullRequestUpdate", pullRequestUpdate);
-        templateMap.put("pullRequestName", pullRequestName);
+        templateMap.put("pullRequest", pullRequest);
         templateMap.put("user", user);
         
         return new DefaultIssueAction(templateRenderer, "/templates/activity/pull-request-update-view.vm", templateMap,
