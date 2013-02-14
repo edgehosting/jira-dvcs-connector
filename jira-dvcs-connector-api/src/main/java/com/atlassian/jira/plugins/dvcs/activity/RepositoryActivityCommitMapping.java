@@ -65,7 +65,6 @@ public interface RepositoryActivityCommitMapping extends Entity
 
     void setAuthor(String author);
     
-    void setAuthorName(String authorName);
     @StringLength(StringLength.UNLIMITED)
     void setMessage(String message);
     void setNode(String node);
