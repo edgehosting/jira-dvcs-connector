@@ -154,6 +154,10 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
                 // silently ignored, comment was already deleted
                 return;
 
+            } else
+            {
+                // otherwise exception propagation
+                throw new RuntimeException(e);
             }
         } catch (IOException e)
         {
