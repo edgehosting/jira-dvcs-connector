@@ -10,7 +10,6 @@ import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestApprovalMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
@@ -228,11 +227,10 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
             {
             	ret.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
             }
-            
         } else if (activity instanceof BitbucketPullRequestApprovalActivity)
         {
-            ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestApprovalMapping.class);
-
+        	ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
+            ret.put(RepositoryActivityPullRequestUpdateMapping.STATUS, RepositoryActivityPullRequestUpdateMapping.Status.APPROVED);
         } else if (activity instanceof BitbucketPullRequestUpdateActivity)
         {
             ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
