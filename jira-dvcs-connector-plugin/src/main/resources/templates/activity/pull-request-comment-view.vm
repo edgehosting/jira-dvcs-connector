@@ -1,0 +1,54 @@
+<hr>
+<div class="dvcs activity-item">
+  <article>
+    <header>
+      <div class="summary">
+        <a href="/$pullRequestComment.author"><img class="avatar avatar32" src="$user.avatar"></a>
+        <a href="/$pullRequestComment.author" class="author">$user.fullName</a>
+        <span class="aui-lozenge pull-request-state aui-lozenge-success aui-lozenge-subtle" title="">$pullRequestComment.status</span> a pull request
+        <a href="$pullRequestUrl">$pullRequestName</a>
+        on <time datetime="2013-01-03T20:07:06.550576">$pullRequestComment.lastUpdatedOn</time>
+      </div>
+    </header>
+  </article>
+</div>
+    
+<div class="dvcs comment">
+    <article data-comment-id="16415">
+        <header>
+            <a href="/$pullRequestComment"><img class="avatar avatar32" src="$user.avatar"></a>
+            <a href="/$pullRequestComment" class="author">$user.fullName</a>
+          commented on a file
+            <a href="hash">apps/api/v10/handlers.py</a>
+        </header>
+          <div class="comment-content">&nbsp;</div>
+    </article>
+</div>
+    
+   <div class="CommitContainerMargin">
+        <a href="$user_url" target="_blank">
+            <div class="ComiterImage">
+                <img src="$gravatar_url" alt="" title="" width="32" height="32"/>
+            </div>
+        </a>
+        <!-- Body -->
+        <div class="CommiterBody">
+            <!-- name and date -->
+            <div class="CommiterInfoPanel">
+                <a href="$user_url" target="_blank">
+                    <span class="CommitUser">$user_name</span>
+                </a>
+                committed
+                <a href="$commit_url" target="_blank">
+                    <span>$commit_hash</span>
+                </a>
+                <span>&#39;$issue_linker.createLinks($commit_message)&#39;</span>
+                <span>$velocity_utils.getRelativePastDate($changeset.getDate())</span>
+                #if ($changeset.getBranch()!="null")
+                    <span>$changeset.getBranch()</span>
+                #end
+            </div>
+        </div>
+    </div>
+<hr>
+    
