@@ -236,11 +236,34 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         } else if (activity instanceof BitbucketPullRequestUpdateActivity)
         {
             ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
-            ret.put(RepositoryActivityPullRequestUpdateMapping.STATUS, ((BitbucketPullRequestUpdateActivity) activity).getStatus());
+            ret.put(RepositoryActivityPullRequestUpdateMapping.STATUS, transformStatus((BitbucketPullRequestUpdateActivity) activity));
         }
         return ret;
     }
 
+    private RepositoryActivityPullRequestUpdateMapping.Status transformStatus(BitbucketPullRequestUpdateActivity activity)
+    {
+    	String status = activity.getStatus();
+    	if ("open".equals(status))
+    	{
+    		return RepositoryActivityPullRequestUpdateMapping.Status.OPENED;
+    	}
+    	if ("fulfilled".equals(status))
+    	{
+    		return RepositoryActivityPullRequestUpdateMapping.Status.MERGED;
+    	}
+    	if ("rejected".equals(status))
+    	{
+    		return RepositoryActivityPullRequestUpdateMapping.Status.DECLINED;
+    	}
+    	if ("open".equals(status))
+    	{
+    		return RepositoryActivityPullRequestUpdateMapping.Status.UPDATED;
+    	}
+    	
+    	return null;
+    }
+    
     private HashMap<String, Object> getAsCommonProperties(BitbucketPullRequestBaseActivity activity, Repository forRepository, Integer pullRequestId)
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
