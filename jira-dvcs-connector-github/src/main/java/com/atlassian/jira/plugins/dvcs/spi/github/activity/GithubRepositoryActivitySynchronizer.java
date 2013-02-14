@@ -345,7 +345,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         for (RepositoryActivityPullRequestUpdateMapping activity : activeObjects.find(RepositoryActivityPullRequestUpdateMapping.class,
                 query))
         {
-            System.out.println(activity.getPullRequestId() + ":" + activity.getStatus());
+            System.out.println(activity.getPullRequest().getID() + ":" + activity.getPullRequest().getName() + ":" + activity.getStatus());
             for (RepositoryActivityCommitMapping commit : activity.getCommits())
             {
                 System.out.println("\t" + commit.getNode() + ":" + commit.getMessage());
@@ -423,6 +423,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         {
             Iterator<GitHubPush> updatePushes = gitHubPushService.getByBetween(pullRequest.getHeadRepository(), pushCursor.getHead(),
                     currentHeadSha).iterator();
+            updatePushes.next(); // skip first - which is already part of the initial commits
             while (updatePushes.hasNext())
             {
                 pushCursor = updatePushes.next();
@@ -443,7 +444,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
     RepositoryPullRequestMapping getRepositoryPullRequest(GitHubPullRequest source, Repository forRepository)
     {
-        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestById(source.getId(), forRepository.getId());
+        RepositoryPullRequestMapping result = repositoryActivityDao.findRequestById(forRepository.getId(), source.getId());
 
         if (result != null)
         {
