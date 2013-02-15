@@ -206,6 +206,7 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
         target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getCreatedBy()), source.getCreatedBy());
         target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getCreatedByName()), source.getCreatedByName());
         target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getCreatedByAvatarUrl()), source.getCreatedByAvatarUrl());
+        target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getHtmlUrl()), source.getHtmlUrl());
         target.put(columnNameResolverService.column(gitHubCommitMappingDescription.getMessage()), source.getMessage());
     }
 
@@ -229,6 +230,7 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
         target.setCreatedBy(source.getCreatedBy());
         target.setCreatedByName(source.getCreatedByName());
         target.setCreatedByAvatarUrl(source.getCreatedByAvatarUrl());
+        target.setHtmlUrl(source.getHtmlUrl());
         target.setMessage(source.getMessage());
     }
 
@@ -256,6 +258,7 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
         target.setCreatedBy(source.getCreatedBy());
         target.setCreatedByName(source.getCreatedByName());
         target.setCreatedByAvatarUrl(source.getCreatedByAvatarUrl());
+        target.setHtmlUrl(source.getHtmlUrl());
         target.setMessage(source.getMessage());
     }
 

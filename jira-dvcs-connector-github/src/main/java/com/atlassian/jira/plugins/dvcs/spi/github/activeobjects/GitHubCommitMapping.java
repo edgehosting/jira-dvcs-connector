@@ -89,6 +89,17 @@ public interface GitHubCommitMapping extends GitHubEntityMapping
     void setCreatedByAvatarUrl(String createdByAvatarUrl);
 
     /**
+     * @return {@link GitHubCommit#getHtmlUrl()}
+     */
+    String getHtmlUrl();
+
+    /**
+     * @param htmlUrl
+     *            {@link #getHtmlUrl()}
+     */
+    void setHtmlUrl(String htmlUrl);
+
+    /**
      * @return {@link GitHubCommit#getMessage()}
      */
     @StringLength(StringLength.UNLIMITED)

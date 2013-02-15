@@ -42,6 +42,11 @@ public class GitHubCommit extends GitHubEntity
     private String createdByAvatarUrl;
 
     /**
+     * @see #getHtmlUrl()
+     */
+    private String htmlUrl;
+
+    /**
      * @see #getMessage()
      */
     private String message;
@@ -153,6 +158,23 @@ public class GitHubCommit extends GitHubEntity
     public void setCreatedByAvatarUrl(String createdByAvatarUrl)
     {
         this.createdByAvatarUrl = createdByAvatarUrl;
+    }
+
+    /**
+     * @return HTML URL of this commit.
+     */
+    public String getHtmlUrl()
+    {
+        return htmlUrl;
+    }
+
+    /**
+     * @param htmlUrl
+     *            {@link #getHtmlUrl()}
+     */
+    public void setHtmlUrl(String htmlUrl)
+    {
+        this.htmlUrl = htmlUrl;
     }
 
     /**

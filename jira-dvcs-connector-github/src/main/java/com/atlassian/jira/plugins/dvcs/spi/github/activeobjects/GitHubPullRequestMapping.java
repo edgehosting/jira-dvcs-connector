@@ -67,6 +67,17 @@ public interface GitHubPullRequestMapping extends GitHubEntityMapping
     void setHeadRepository(GitHubRepositoryMapping headRepository);
 
     /**
+     * @return {@link GitHubPullRequest#getHeadRef()}
+     */
+    String getHeadRef();
+
+    /**
+     * @param headRef
+     *            {@link #getHeadRef()}
+     */
+    void setHeadRef(String headRef);
+
+    /**
      * @return {@link GitHubPullRequest#getHeadSha()}
      */
     @NotNull

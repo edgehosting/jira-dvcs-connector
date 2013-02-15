@@ -141,6 +141,7 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
         result.setBaseRepository(baseRepository);
         result.setBaseSha(loaded.getBase().getSha());
         result.setHeadRepository(headRepository);
+        result.setHeadRef(loaded.getHead().getRef());
         result.setHeadSha(loaded.getHead().getSha());
         result.setTitle(loaded.getTitle());
         result.setText(loaded.getBodyText());

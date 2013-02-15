@@ -28,6 +28,11 @@ public class GitHubPullRequest extends GitHubEntity
     private GitHubRepository headRepository;
 
     /**
+     * @see #getHeadRef()
+     */
+    private String headRef;
+
+    /**
      * @see #getHeadSha()
      */
     private String headSha;
@@ -118,6 +123,23 @@ public class GitHubPullRequest extends GitHubEntity
     public void setHeadRepository(GitHubRepository headRepository)
     {
         this.headRepository = headRepository;
+    }
+
+    /**
+     * @return Reference/appropriate branch of the current head.
+     */
+    public String getHeadRef()
+    {
+        return headRef;
+    }
+
+    /**
+     * @param headRef
+     *            {@link #getHeadRef()}
+     */
+    public void setHeadRef(String headRef)
+    {
+        this.headRef = headRef;
     }
 
     /**
