@@ -5,7 +5,7 @@
         <a href="/$pullRequestUpdate.author"><img class="avatar avatar32" src="$user.avatar"></a>
         <a href="/$pullRequestUpdate.author" class="author">$user.fullName</a>
         <span class="aui-lozenge pull-request-state aui-lozenge-success aui-lozenge-subtle" title="">$pullRequestUpdate.status</span> a pull request
-        <a href="$pullRequestUrl">$pullRequest.name</a>
+        <a href="$pullRequest.url">$pullRequest.name</a>
         on <time datetime="2013-01-03T20:07:06.550576">$pullRequestUpdate.lastUpdatedOn</time>
       </div>
     </header>
@@ -33,7 +33,7 @@
             </div>
           </td>
           <td class="hash">
-            <div><a class="hash" href="#">$commit.node.substring(0,7)</a></div>
+            <div><a class="hash" href="$commit.commitUrl">$commit.node.substring(0,7)</a></div>
           </td>
           <td class="text">
             <div title="$commit.message">$commit.message</div>
