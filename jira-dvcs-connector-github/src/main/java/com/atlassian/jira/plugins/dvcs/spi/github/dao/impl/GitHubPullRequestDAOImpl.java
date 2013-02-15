@@ -276,6 +276,7 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
         target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getBaseSha()), source.getBaseSha());
 
         target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getHeadRepository()), headRepository);
+        target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getHeadRef()), source.getHeadRef());
         target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getHeadSha()), source.getHeadSha());
 
         target.put(columnNameResolverService.column(gitHubRepositoryMappingDescription.getTitle()), source.getTitle());
@@ -306,6 +307,7 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
         target.setBaseSha(source.getBaseSha());
 
         target.setHeadRepository(headRepository);
+        target.setHeadRef(source.getHeadRef());
         target.setHeadSha(source.getHeadSha());
 
         target.setTitle(source.getTitle());
@@ -341,6 +343,7 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
         target.setBaseSha(source.getBaseSha());
 
         target.setHeadRepository(headRepository);
+        target.setHeadRef(source.getHeadRef());
         target.setHeadSha(source.getHeadSha());
 
         target.setTitle(source.getTitle());
