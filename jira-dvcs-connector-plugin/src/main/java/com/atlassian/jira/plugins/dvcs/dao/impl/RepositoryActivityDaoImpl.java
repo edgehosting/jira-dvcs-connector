@@ -244,9 +244,9 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
     
     @Override
-    public void saveCommit(final Map<String, Object> commit)
+    public RepositoryActivityCommitMapping saveCommit(final Map<String, Object> commit)
     {
-        activeObjects.executeInTransaction(new TransactionCallback<RepositoryActivityCommitMapping>()
+        return activeObjects.executeInTransaction(new TransactionCallback<RepositoryActivityCommitMapping>()
                 {
                     @Override
                     public RepositoryActivityCommitMapping doInTransaction()
@@ -257,6 +257,15 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                 });
     }
 
+	@Override
+	public List<RepositoryActivityCommitMapping> getCommits(List<Integer> pullRequesCommitIds) {
+		Query query = Query.select()
+                .from(RepositoryActivityCommitMapping.class)
+                .where("ID IN (" + Joiner.on(",").join(pullRequesCommitIds) + ")");
+
+		return Arrays.asList(activeObjects.find(RepositoryActivityCommitMapping.class, query));
+	}
+    
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
     // private helpers
