@@ -69,13 +69,13 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
 
         Date lastActivitySyncDate = forRepository.getActivityLastSync();
         
+        Date previousActivityDate = null;
         //
         // check whether there's some interesting issue keys in activity
         // and persist it if yes
         //
         for (BitbucketPullRequestActivityInfo info : activities)
         {
-            processActivity(info, forRepository, pullRestpoint);
             Date activityDate = ClientUtils.extractActivityDate(info.getActivity());
             if (lastActivitySyncDate == null)
             {
@@ -87,6 +87,14 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
                     lastActivitySyncDate = activityDate;
                 }
             }
+            
+            // filtering duplicated activities in response
+            //TODO implement better checking whether activity is duplicated than comparing dates
+            if (!activityDate.equals(previousActivityDate))
+            {
+            	processActivity(info, forRepository, pullRestpoint);
+            }
+            previousActivityDate = activityDate;
         }
         
         for ( Long pullRequestRemoteId : context.keySet() )
