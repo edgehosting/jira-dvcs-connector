@@ -20,6 +20,8 @@ public interface RepositoryActivityDao
 
     RepositoryActivityCommitMapping saveCommit(Map<String,Object> commit);
     
+    void updateActivityStatus(int activityId, RepositoryActivityPullRequestUpdateMapping.Status status);
+    
     // R
     List<RepositoryActivityPullRequestMapping> getRepositoryActivityForIssue(String issueKey);
     

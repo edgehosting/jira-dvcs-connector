@@ -19,6 +19,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCom
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestLineCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping.Status;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -266,6 +267,14 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 		return Arrays.asList(activeObjects.find(RepositoryActivityCommitMapping.class, query));
 	}
     
+	@Override
+	public void updateActivityStatus(int activityId, Status status)
+	{
+		RepositoryActivityPullRequestUpdateMapping activity = activeObjects.get(RepositoryActivityPullRequestUpdateMapping.class, activityId);
+		activity.setStatus(status);
+		activity.save();
+	}
+	
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
     // private helpers

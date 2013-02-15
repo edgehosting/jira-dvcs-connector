@@ -93,6 +93,12 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         {
         	PullRequestContext pullRequestContext = context.get(pullRequestRemoteId);
         	fillCommits(null, pullRequestContext);
+        	// there are no more commits, this activity must be the first
+        	if (!pullRequestContext.getCommitIterator().iterator().hasNext())
+        	{
+        		dao.updateActivityStatus(pullRequestContext.getLastUpdateActivityId(), RepositoryActivityPullRequestUpdateMapping.Status.OPENED);
+        		
+        	}
         	Set<String> issueKeys = extractIssueKeysFromCommits(pullRequestContext.getPullRequesCommitIds());
     		updateIssueKeysMapping(pullRequestContext.getLocalPullRequestId(), issueKeys);
         }
@@ -248,7 +254,12 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         String status = activity.getStatus();
         if ("open".equals(status))
         {
-            return RepositoryActivityPullRequestUpdateMapping.Status.OPENED;
+        	// we save all updates with status updated, first update will be updated to opened
+            return RepositoryActivityPullRequestUpdateMapping.Status.UPDATED;
+        }
+        if ("update".equals(status))
+        {
+        	return RepositoryActivityPullRequestUpdateMapping.Status.UPDATED;
         }
         if ("fulfilled".equals(status))
         {
@@ -257,10 +268,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         if ("rejected".equals(status))
         {
             return RepositoryActivityPullRequestUpdateMapping.Status.DECLINED;
-        }
-        if ("open".equals(status))
-        {
-            return RepositoryActivityPullRequestUpdateMapping.Status.UPDATED;
         }
         
         return null;
