@@ -18,7 +18,7 @@ public interface RepositoryActivityDao
     
     void removeAll(final Repository forRepository);
 
-    void saveCommit(Map<String,Object> commit);
+    RepositoryActivityCommitMapping saveCommit(Map<String,Object> commit);
     
     // R
     List<RepositoryActivityPullRequestMapping> getRepositoryActivityForIssue(String issueKey);
@@ -28,5 +28,7 @@ public interface RepositoryActivityDao
     RepositoryPullRequestMapping findRequestByRemoteId(int repositoryId, long remoteId);
 
     Set<String> getExistingIssueKeysMapping(Integer pullRequestId);
+
+	List<RepositoryActivityCommitMapping> getCommits(List<Integer> pullRequesCommitIds);
 }
 
