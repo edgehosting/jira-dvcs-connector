@@ -64,9 +64,8 @@ public interface RepositoryActivityCommitMapping extends Entity
     String getAuthorAvatarUrl();
 
     void setActivity(RepositoryActivityPullRequestUpdateMapping activity);
-
+    void setRawAuthor(String rawAuthor);
     void setAuthor(String author);
-    
     @StringLength(StringLength.UNLIMITED)
     void setMessage(String message);
     void setNode(String node);
