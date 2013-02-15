@@ -4,8 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -14,48 +13,46 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.templaterenderer.TemplateRenderer;
 
-public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
+public class PullRequestCommentIssueActionFactory implements IssueActionFactory
 {
     private final RepositoryService repositoryService;
     private final TemplateRenderer templateRenderer;
-    private final RepositoryActivityDao repositoryActivityDao;
     private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
-    public PullRequestUpdateIssueActionFactory(RepositoryService repositoryService, 
-            TemplateRenderer templateRenderer, RepositoryActivityDao repositoryActivityDao,
+    public PullRequestCommentIssueActionFactory(RepositoryService repositoryService, 
+            TemplateRenderer templateRenderer, 
             DvcsCommunicatorProvider dvcsCommunicatorProvider)
     {
         this.repositoryService = repositoryService;
         this.templateRenderer = templateRenderer;
-        this.repositoryActivityDao = repositoryActivityDao;
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
     }
 
     @Override
     public IssueAction create(Object activityItem)
     {
-        RepositoryActivityPullRequestUpdateMapping pullRequestUpdate = (RepositoryActivityPullRequestUpdateMapping) activityItem;
-        int repositoryId = pullRequestUpdate.getRepositoryId();
-        int pullRequestId = pullRequestUpdate.getPullRequest().getID();
+        RepositoryActivityPullRequestCommentMapping pullRequestComment = (RepositoryActivityPullRequestCommentMapping) activityItem;
+        int repositoryId = pullRequestComment.getRepositoryId();
+        RepositoryPullRequestMapping pullRequest = pullRequestComment.getPullRequest();
         
-        RepositoryPullRequestMapping pullRequest = repositoryActivityDao.findRequestById(pullRequestId);
         Repository repository = repositoryService.get(repositoryId);
 
-        DvcsUser user = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType()).getUser(repository, pullRequestUpdate.getAuthor());
+        DvcsUser user = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType()).getUser(repository, pullRequestComment.getAuthor());
+
         Map<String, Object> templateMap = new HashMap<String, Object>();
         templateMap.put("velocityUtils", new VelocityUtils());
-        templateMap.put("pullRequestUpdate", pullRequestUpdate);
+        templateMap.put("pullRequestComment", pullRequestComment);
         templateMap.put("pullRequest", pullRequest);
         templateMap.put("user", user);
         
-        return new DefaultIssueAction(templateRenderer, "/templates/activity/pull-request-update-view.vm", templateMap,
-                pullRequestUpdate.getLastUpdatedOn());
+        return new DefaultIssueAction(templateRenderer, "/templates/activity/pull-request-comment-view.vm", templateMap,
+                pullRequestComment.getLastUpdatedOn());
     }
 
     @Override
     public Class<? extends Object> getSupportedClass()
     {
-        return RepositoryActivityPullRequestUpdateMapping.class;
+        return RepositoryActivityPullRequestCommentMapping.class;
     }
 
 }
