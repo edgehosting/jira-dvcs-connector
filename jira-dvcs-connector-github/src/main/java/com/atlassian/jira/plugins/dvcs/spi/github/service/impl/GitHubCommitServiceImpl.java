@@ -10,6 +10,7 @@ import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.service.CommitService;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.spi.github.GitHubUtils;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
@@ -93,7 +94,7 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
     {
         return gitHubCommitDAO.getByIssueKey(issueKey);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -132,6 +133,8 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
         result.setCreatedAt(author.getDate());
         result.setCreatedBy(author.getName());
         result.setCreatedByName(author.getName());
+        result.setCreatedByAvatarUrl(commit.getCommitter() != null ? commit.getCommitter().getAvatarUrl() : null);
+        result.setHtmlUrl(GitHubUtils.getHtmlUrlCommit(domainRepository.getOrgName(), domainRepository.getSlug(), sha));
         result.setMessage(commit.getCommit().getMessage());
         save(result);
 

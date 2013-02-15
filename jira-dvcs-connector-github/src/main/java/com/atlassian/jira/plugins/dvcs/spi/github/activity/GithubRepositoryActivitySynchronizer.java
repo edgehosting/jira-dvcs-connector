@@ -585,6 +585,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         commitActivity.put(RepositoryActivityCommitMapping.AUTHOR, commit.getCreatedBy());
         commitActivity.put(RepositoryActivityCommitMapping.RAW_AUTHOR, commit.getCreatedByName());
         commitActivity.put(RepositoryActivityCommitMapping.AUTHOR_AVATAR_URL, commit.getCreatedByAvatarUrl());
+        commitActivity.put(RepositoryActivityCommitMapping.COMMIT_URL, commit.getHtmlUrl());
         commitActivity.put(RepositoryActivityCommitMapping.NODE, commit.getSha());
         commitActivity.put(RepositoryActivityCommitMapping.MESSAGE, commit.getMessage());
     }
