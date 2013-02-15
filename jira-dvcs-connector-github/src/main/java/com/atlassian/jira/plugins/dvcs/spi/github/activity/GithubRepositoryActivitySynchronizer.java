@@ -429,7 +429,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             RepositoryActivityPullRequestUpdateMapping pullRequestCreatedUpdateActivity)
     {
         // FIXME: workaround
-        if (!pullRequest.getHeadRef().matches("/master$")) {
+        if (!pullRequest.getHeadRef().equals("master")) {
             return;
         }
         
