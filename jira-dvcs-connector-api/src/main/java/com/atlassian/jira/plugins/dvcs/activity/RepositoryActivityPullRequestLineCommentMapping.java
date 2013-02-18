@@ -11,6 +11,7 @@ public interface RepositoryActivityPullRequestLineCommentMapping extends Reposit
 {
     String COMMENT_URL = "COMMENT_URL";
     String MESSAGE = "MESSAGE";
+    String FILE = "FILE";
 
     //
     // getters
@@ -21,6 +22,9 @@ public interface RepositoryActivityPullRequestLineCommentMapping extends Reposit
     @StringLength(StringLength.UNLIMITED)
     String getMessage();
 
+    @StringLength(StringLength.UNLIMITED)
+    String getFile();
+    
     //
     // setters
     //
@@ -28,4 +32,6 @@ public interface RepositoryActivityPullRequestLineCommentMapping extends Reposit
     void setCommentUrl(String commentUrl);
 
     void setMessage(String message);
+    
+    void setPath(String file);
 }
