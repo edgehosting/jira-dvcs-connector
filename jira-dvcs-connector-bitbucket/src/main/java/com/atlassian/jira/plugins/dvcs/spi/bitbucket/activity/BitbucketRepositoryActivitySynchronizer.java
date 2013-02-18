@@ -11,6 +11,7 @@ import java.util.Set;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestLineCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
@@ -28,7 +29,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.HasMessages;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.HasPossibleUpdatedMessages;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
@@ -237,12 +237,23 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
 
         if (activity instanceof BitbucketPullRequestCommentActivity)
         {
-            ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestCommentMapping.class);
-            BitbucketPullRequestCommentActivity commentActivity = (BitbucketPullRequestCommentActivity) activity;
-            if (commentActivity.getContent() != null)
-            {
-                ret.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
-            }
+        	BitbucketPullRequestCommentActivity commentActivity = (BitbucketPullRequestCommentActivity) activity;
+        	if (commentActivity.getInline() != null)
+        	{
+        		ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestLineCommentMapping.class);
+        		ret.put(RepositoryActivityPullRequestLineCommentMapping.FILE, commentActivity.getInline().getPath());
+        		if (commentActivity.getContent() != null)
+                {
+                    ret.put(RepositoryActivityPullRequestLineCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
+                }
+        	} else
+        	{
+        		ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestCommentMapping.class);
+        		if (commentActivity.getContent() != null)
+                {
+                    ret.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
+                }
+        	}
             
         } else if (activity instanceof BitbucketPullRequestApprovalActivity)
         {
