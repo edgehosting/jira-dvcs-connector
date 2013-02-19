@@ -125,9 +125,10 @@ public class ClientUtils
 	                    return dateFormat.parse(dateString);
 	                }
 	            	
-	            } catch (ParseException e) {
-	                exception = new JsonParseException("Not parseable datetime string: '" + dateString + "'");
-	            }
+                } catch (ParseException e)
+                {
+                    exception = new JsonParseException("Not parseable datetime string: '" + dateString + "'");
+                }
         	}
             
             throw exception;
@@ -137,15 +138,15 @@ public class ClientUtils
     public static Date extractActivityDate(BitbucketPullRequestBaseActivity activity)
     {
         Date date = activity.getUpdatedOn();
-        
         // fallbacks - order depends
-        if (date == null) {
+        if (date == null)
+        {
             date = activity.getDate();
         }
-        if (date == null) {
+        if (date == null)
+        {
             date = activity.getCreatedOn();
         }
-        
         return date;
     }
 }

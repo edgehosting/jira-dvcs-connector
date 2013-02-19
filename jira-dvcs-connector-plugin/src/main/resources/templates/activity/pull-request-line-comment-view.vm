@@ -1,0 +1,35 @@
+<div class="dvcs comment"  style="background-color:yellow">
+    <article data-comment-id="16415">
+        <header>
+            <a href="/$pullRequestComment"><img class="avatar avatar32" src="$user.avatar"></a>
+            <a href="/$pullRequestComment" class="author">$user.fullName</a> 
+            <span class="aui-lozenge pull-request-state aui-lozenge-success" title="">commented</span>
+            on a pull request <a href="$pullRequestUrl">$pullRequest.name</a>
+        </header>
+            <div class="comment-content">$pullRequestComment.message</div>
+            <ul class="comment-actions">
+                <li>
+                    <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
+                </li>
+                <li>
+                    <a class="permalink" href="#comment-16500" title="Link directly to this comment">
+                        <time title="$pullRequestComment.lastUpdatedOn">$velocityUtils.getRelativePastDate($pullRequestComment.lastUpdatedOn)</time></a>
+                </li>
+            </ul>
+        </article>
+        <ol class="child-comments iterable">
+        </ol>
+
+</div>
+
+<div class="dvcs comment" style="background-color:yellow">
+    <article data-comment-id="16415">
+        <header>
+            <a href="/nvenegas"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/283225c91c158f3a10927e9d76a71be7?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+            <a href="/nvenegas" class="author">Nicolas Venegas</a>
+          commented on a file
+            <a href="hash">apps/api/v10/handlers.py</a>
+        </header>
+          <div class="comment-content">&nbsp;</div>
+    </article>
+</div>

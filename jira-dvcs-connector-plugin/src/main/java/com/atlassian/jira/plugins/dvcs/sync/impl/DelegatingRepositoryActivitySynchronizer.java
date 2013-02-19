@@ -24,14 +24,12 @@ public final class DelegatingRepositoryActivitySynchronizer implements Repositor
     @Override
     public void synchronize(Repository forRepository, boolean softSync)
     {
-        if (isBitbucketRepo(forRepository)) {
-            
+        if (isBitbucketRepo(forRepository))
+        {
             bitbucketSynchronizer.synchronize(forRepository, softSync);
-            
-        } else {
-            
+        } else
+        {
             githubSynchronizer.synchronize(forRepository, softSync);
-            
         }
     }
 

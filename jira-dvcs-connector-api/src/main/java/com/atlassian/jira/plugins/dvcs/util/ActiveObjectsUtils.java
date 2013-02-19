@@ -14,7 +14,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 public class ActiveObjectsUtils
 {
     private static final Logger log = LoggerFactory.getLogger(ActiveObjectsUtils.class);
-    private static final int DELETION_WINDOW_SIZE = 5000;
+    private static final int DELETION_WINDOW_SIZE = 1000;
 
     public static <T extends Entity> void delete(final ActiveObjects activeObjects, Class<T> entityType, Query query)
     {

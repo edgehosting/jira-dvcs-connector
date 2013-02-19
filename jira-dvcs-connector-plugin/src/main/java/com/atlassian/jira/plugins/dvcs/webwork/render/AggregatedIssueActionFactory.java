@@ -53,11 +53,5 @@ public class AggregatedIssueActionFactory<E> implements IssueActionFactory
     {
         throw new UnsupportedOperationException();
     }
-    
-    public static void main(String[] args)
-    {
-        System.out.println(IssueActionFactory.class.isAssignableFrom(AggregatedIssueActionFactory.class));
-        System.out.println(AggregatedIssueActionFactory.class.isAssignableFrom(IssueActionFactory.class));
-    }
 
 }

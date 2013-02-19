@@ -28,7 +28,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.HasMessages;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.HasPossibleUpdatedMessages;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
@@ -43,7 +42,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     public BitbucketRepositoryActivitySynchronizer(BitbucketClientRemoteFactory clientFactory, RepositoryActivityDao dao,
             RepositoryDao repositoryDao)
     {
-        super();
         this.clientFactory = clientFactory;
         this.dao = dao;
         this.repositoryDao = repositoryDao;
@@ -97,7 +95,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
             previousActivityDate = activityDate;
         }
         
-        for ( Long pullRequestRemoteId : context.keySet() )
+        for (Long pullRequestRemoteId : context.keySet())
         {
         	PullRequestContext pullRequestContext = context.get(pullRequestRemoteId);
         	fillCommits(null, pullRequestContext);
@@ -105,7 +103,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         	if (!pullRequestContext.getCommitIterator().iterator().hasNext())
         	{
         		dao.updateActivityStatus(pullRequestContext.getLastUpdateActivityId(), RepositoryActivityPullRequestUpdateMapping.Status.OPENED);
-        		
         	}
         	Set<String> issueKeys = extractIssueKeysFromCommits(pullRequestContext.getPullRequesCommitIds());
     		updateIssueKeysMapping(pullRequestContext.getLocalPullRequestId(), issueKeys);
@@ -195,12 +192,14 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     	Set<String> existingIssueKeysMapping = dao.getExistingIssueKeysMapping(localPullRequestId);
     	for (String possibleNewIssueKey : issueKeys)
     	{
-    		if (existingIssueKeysMapping.contains(possibleNewIssueKey)) {
-    			issueKeys.remove(possibleNewIssueKey);
-    		}
+            if (existingIssueKeysMapping.contains(possibleNewIssueKey))
+            {
+                issueKeys.remove(possibleNewIssueKey);
+            }
     	}
     	
-        if (!issueKeys.isEmpty()) {
+        if (!issueKeys.isEmpty())
+        {
             dao.saveIssueKeysMappings(issueKeys, localPullRequestId);
         }
     }
@@ -378,7 +377,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
 		}
     }
    
-    private Map<Long, PullRequestContext> context = new HashMap<Long, PullRequestContext>();
+    private final Map<Long, PullRequestContext> context = new HashMap<Long, PullRequestContext>();
     
     private void fillCommits(BitbucketPullRequestUpdateActivity activity, PullRequestContext pullRequestContext)
     {
