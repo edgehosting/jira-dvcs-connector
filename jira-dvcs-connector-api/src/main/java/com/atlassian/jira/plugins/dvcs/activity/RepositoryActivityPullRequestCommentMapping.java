@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
 import net.java.ao.Preload;
-import net.java.ao.schema.NotNull;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 

@@ -247,15 +247,19 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         	{
         		ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestLineCommentMapping.class);
         		ret.put(RepositoryActivityPullRequestLineCommentMapping.FILE, commentActivity.getInline().getPath());
+        		if (commentActivity.getContent() != null)
+                {
+                    ret.put(RepositoryActivityPullRequestLineCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
+                }
         	} else
         	{
         		ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestCommentMapping.class);
-        		
+        		if (commentActivity.getContent() != null)
+                {
+                    ret.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
+                }
         	}
-        	if (commentActivity.getContent() != null)
-            {
-                ret.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
-            }
+        	
             
         } else if (activity instanceof BitbucketPullRequestApprovalActivity)
         {
@@ -269,7 +273,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         }
         return ret;
     }
-
+    
     private RepositoryActivityPullRequestUpdateMapping.Status transformStatus(BitbucketPullRequestUpdateActivity activity)
     {
         String status = activity.getStatus();
