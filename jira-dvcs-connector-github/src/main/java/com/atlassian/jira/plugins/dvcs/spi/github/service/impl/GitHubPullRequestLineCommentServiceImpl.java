@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestLineCommentMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -126,11 +126,12 @@ public class GitHubPullRequestLineCommentServiceImpl implements GitHubPullReques
         target.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, pullRequest.getID());
         target.put(RepositoryActivityPullRequestMapping.REPOSITORY_ID, pullRequest.getToRepositoryId());
 
-        target.put(RepositoryActivityPullRequestLineCommentMapping.ENTITY_TYPE, RepositoryActivityPullRequestLineCommentMapping.class);
-        target.put(RepositoryActivityPullRequestLineCommentMapping.LAST_UPDATED_ON, source.getCreatedAt());
-        target.put(RepositoryActivityPullRequestLineCommentMapping.AUTHOR, source.getCreatedBy().getLogin());
-        target.put(RepositoryActivityPullRequestLineCommentMapping.COMMENT_URL, source.getHtmlUrl());
-        target.put(RepositoryActivityPullRequestLineCommentMapping.MESSAGE, source.getText());
+        target.put(RepositoryActivityPullRequestCommentMapping.ENTITY_TYPE, RepositoryActivityPullRequestCommentMapping.class);
+        target.put(RepositoryActivityPullRequestCommentMapping.LAST_UPDATED_ON, source.getCreatedAt());
+        target.put(RepositoryActivityPullRequestCommentMapping.AUTHOR, source.getCreatedBy().getLogin());
+        target.put(RepositoryActivityPullRequestCommentMapping.COMMENT_URL, source.getHtmlUrl());
+        target.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, source.getText());
+        target.put(RepositoryActivityPullRequestCommentMapping.FILE, source.getPath());
     }
 
 }

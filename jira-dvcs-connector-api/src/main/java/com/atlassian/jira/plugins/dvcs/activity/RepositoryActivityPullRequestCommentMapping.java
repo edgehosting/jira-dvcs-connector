@@ -10,8 +10,9 @@ public interface RepositoryActivityPullRequestCommentMapping extends RepositoryA
 {
     String MESSAGE = "MESSAGE";
     String COMMENT_URL = "COMMENT_URL";
-    String PARENT_ID = "PARENT_ID";
     String REMOTE_ID = "REMOTE_ID";
+    String REMOTE_PARENT_ID = "REMOTE_PARENT_ID";
+    String FILE = "FILE";
     
     //
     // getters
@@ -19,8 +20,9 @@ public interface RepositoryActivityPullRequestCommentMapping extends RepositoryA
     @StringLength(StringLength.UNLIMITED)
     String getMessage();
     String getCommentUrl();
-    Integer getParentId();
-    Integer getRemoteId();
+    Integer getRemoteParentId();
+    int getRemoteId();
+    String getFile();
     
     //
     // setters
@@ -28,7 +30,8 @@ public interface RepositoryActivityPullRequestCommentMapping extends RepositoryA
     @StringLength(StringLength.UNLIMITED)
     void setMessage(String message);
     void setCommentUrl(String commentUrl);
-    void setParentId(Integer parentId);
-    void setRemoteId(Integer remoteId);
+    void setRemoteParentId(Integer remoteParentId);
+    void setRemoteId(int remoteId);
+    void setFile(String file);
 }
 
