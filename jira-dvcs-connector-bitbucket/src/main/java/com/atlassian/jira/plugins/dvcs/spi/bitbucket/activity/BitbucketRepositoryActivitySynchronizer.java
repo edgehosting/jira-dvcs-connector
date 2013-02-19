@@ -28,7 +28,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.HasMessages;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.HasPossibleUpdatedMessages;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
@@ -297,7 +296,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         ret.put(RepositoryPullRequestMapping.REMOTE_ID, request.getId());
         ret.put(RepositoryPullRequestMapping.NAME, request.getTitle());
         ret.put(RepositoryPullRequestMapping.URL, request.getLinks().getHtmlHref());
-        ret.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
         ret.put(RepositoryPullRequestMapping.TO_REPO_ID, forRepo.getId());
         
         return ret;

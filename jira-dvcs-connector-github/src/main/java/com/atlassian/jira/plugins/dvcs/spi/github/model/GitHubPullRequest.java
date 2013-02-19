@@ -68,6 +68,11 @@ public class GitHubPullRequest extends GitHubEntity
     private List<GitHubPullRequestAction> actions = new LinkedList<GitHubPullRequestAction>();
 
     /**
+     * @see #getCommits()
+     */
+    private List<GitHubCommit> commits = new LinkedList<GitHubCommit>();
+
+    /**
      * Constructor.
      */
     public GitHubPullRequest()
@@ -228,6 +233,23 @@ public class GitHubPullRequest extends GitHubEntity
     }
 
     /**
+     * @return URL of repository
+     */
+    public String getUrl()
+    {
+        return url;
+    }
+
+    /**
+     * @param url
+     *            {@link #getUrl()}
+     */
+    public void setUrl(String url)
+    {
+        this.url = url;
+    }
+
+    /**
      * @return The actions performed on this {@link GitHubPullRequest}.
      */
     public List<GitHubPullRequestAction> getActions()
@@ -245,20 +267,20 @@ public class GitHubPullRequest extends GitHubEntity
     }
 
     /**
-     * @return URL of repository
+     * @return Commits associated to this pull request.
      */
-    public String getUrl()
+    public List<GitHubCommit> getCommits()
     {
-        return url;
+        return commits;
     }
 
     /**
-     * @param url
-     *            {@link #getUrl()}
+     * @param commits
+     *            {@link #getCommits()}
      */
-    public void setUrl(String url)
+    public void setCommits(List<GitHubCommit> commits)
     {
-        this.url = url;
+        this.commits = commits;
     }
 
 }

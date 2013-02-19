@@ -169,22 +169,6 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<GitHubCommit> getByIssueKey(String issueKey)
-    {
-        List<GitHubCommit> result = new LinkedList<GitHubCommit>();
-        for (GitHubCommitMapping source : activeObjects.find(GitHubCommitMapping.class))
-        {
-            GitHubCommit target = new GitHubCommit();
-            map(target, source);
-            result.add(target);
-        }
-        return result;
-    }
-
     // //
     // Mapping functionality
     // //

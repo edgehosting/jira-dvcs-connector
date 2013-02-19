@@ -75,6 +75,7 @@
        	<entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPushCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestActionMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestCommentMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestLineCommentMapping</entity>
         

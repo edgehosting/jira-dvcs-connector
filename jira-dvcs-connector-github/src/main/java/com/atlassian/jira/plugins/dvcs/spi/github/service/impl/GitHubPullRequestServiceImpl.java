@@ -1,19 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.service.PullRequestService;
 
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService;
+import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
 /**
  * An {@link GitHubPullRequestService} implementation.
@@ -25,19 +33,24 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
 {
 
     /**
-     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider)
+     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider, RepositoryActivityDao)
      */
     private final GitHubPullRequestDAO gitHubPullRequestDAO;
 
     /**
-     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider)
+     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider, RepositoryActivityDao)
      */
     private final GitHubRepositoryService gitHubRepositoryService;
 
     /**
-     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider)
+     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider, RepositoryActivityDao)
      */
     private final GithubClientProvider githubClientProvider;
+
+    /**
+     * @see #GitHubPullRequestServiceImpl(GitHubPullRequestDAO, GitHubRepositoryService, GithubClientProvider, RepositoryActivityDao)
+     */
+    private final RepositoryActivityDao repositoryActivityDao;
 
     /**
      * Constructor.
@@ -48,13 +61,16 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
      *            {@link GitHubRepositoryService} dependency
      * @param githubClientProvider
      *            injected {@link GithubClientProvider} dependency
+     * @param repositoryActivityDao
+     *            injected {@link RepositoryActivityDao} dependency
      */
     public GitHubPullRequestServiceImpl(GitHubPullRequestDAO gitHubPullRequestDAO, GitHubRepositoryService gitHubRepositoryService,
-            GithubClientProvider githubClientProvider)
+            GithubClientProvider githubClientProvider, RepositoryActivityDao repositoryActivityDao)
     {
         this.gitHubPullRequestDAO = gitHubPullRequestDAO;
-        this.githubClientProvider = githubClientProvider;
         this.gitHubRepositoryService = gitHubRepositoryService;
+        this.githubClientProvider = githubClientProvider;
+        this.repositoryActivityDao = repositoryActivityDao;
     }
 
     /**
@@ -106,6 +122,23 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
      * {@inheritDoc}
      */
     @Override
+    public GitHubPullRequestAction getOpenAction(GitHubPullRequest pullRequest)
+    {
+        for (GitHubPullRequestAction action : pullRequest.getActions())
+        {
+            if (GitHubPullRequestAction.Action.OPENED.equals(action.getAction()))
+            {
+                return action;
+            }
+        }
+
+        throw new IllegalStateException("Unable to find open action, for provided pull request ID: " + pullRequest.getId());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GitHubPullRequest fetch(Repository domainRepository, GitHubRepository domain, long gitHubId, int pullRequestNumber)
     {
         GitHubPullRequest result = getByGitHubId(gitHubId);
@@ -151,4 +184,92 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
 
         return result;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void synchronize(Repository domainRepository, GitHubRepository domain)
+    {
+        Map<String, Object> repositoryPullRequestParams = new HashMap<String, Object>();
+        Map<String, Object> activity = new HashMap<String, Object>();
+
+        for (GitHubPullRequest pullRequest : getByRepository(domain))
+        {
+            // saves pull request
+            map(domainRepository, repositoryPullRequestParams, pullRequest);
+            RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.savePullRequest(repositoryPullRequestParams,
+                    IssueKeyExtractor.extractIssueKeys(pullRequest.getTitle(), pullRequest.getText()));
+            repositoryPullRequestParams.clear();
+
+            // saves pull request activities
+            for (GitHubPullRequestAction action : pullRequest.getActions())
+            {
+                map(activity, repositoryPullRequest, action);
+            }
+            repositoryActivityDao.saveActivity(activity);
+            activity.clear();
+        }
+    }
+
+    /**
+     * Re-maps provided pull request to repository pull request.
+     * 
+     * @param domainRepository
+     *            domain repository
+     * @param target
+     *            repository pull request
+     * @param source
+     *            pull request
+     */
+    private void map(Repository domainRepository, Map<String, Object> target, GitHubPullRequest source)
+    {
+        target.put(RepositoryPullRequestMapping.REMOTE_ID, source.getGitHubId());
+        target.put(RepositoryPullRequestMapping.URL, source.getUrl());
+        target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
+        target.put(RepositoryPullRequestMapping.DESCRIPTION, source.getText());
+        target.put(RepositoryPullRequestMapping.TO_REPO_ID, domainRepository.getId());
+    }
+
+    /**
+     * Re-maps provided pull request action to the pull request.
+     * 
+     * @param target
+     *            activity
+     * @param pullRequest
+     *            for which pull request is this action
+     * @param source
+     *            action
+     */
+    private void map(Map<String, Object> target, RepositoryPullRequestMapping pullRequest, GitHubPullRequestAction source)
+    {
+        target.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, pullRequest.getID());
+        target.put(RepositoryActivityPullRequestMapping.REPOSITORY_ID, pullRequest.getToRepositoryId());
+
+        RepositoryActivityPullRequestUpdateMapping.Status status = null;
+
+        if (GitHubPullRequestAction.Action.OPENED.equals(source.getAction()))
+        {
+            status = RepositoryActivityPullRequestUpdateMapping.Status.OPENED;
+
+        } else if (GitHubPullRequestAction.Action.MERGED.equals(source.getAction()))
+        {
+            status = RepositoryActivityPullRequestUpdateMapping.Status.MERGED;
+
+        } else if (GitHubPullRequestAction.Action.CLOSED.equals(source.getAction()))
+        {
+            status = RepositoryActivityPullRequestUpdateMapping.Status.DECLINED;
+
+        } else if (GitHubPullRequestAction.Action.REOPENED.equals(source.getAction()))
+        {
+            status = RepositoryActivityPullRequestUpdateMapping.Status.REOPENED;
+
+        }
+
+        target.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
+        target.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, source.getCreatedAt());
+        target.put(RepositoryActivityPullRequestMapping.AUTHOR, source.getCreatedBy().getLogin());
+        target.put(RepositoryActivityPullRequestUpdateMapping.STATUS, status);
+    }
+
 }

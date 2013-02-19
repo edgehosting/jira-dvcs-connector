@@ -32,5 +32,8 @@ public interface RepositoryActivityDao
     Set<String> getExistingIssueKeysMapping(Integer pullRequestId);
 
 	List<RepositoryActivityCommitMapping> getCommits(List<Integer> pullRequesCommitIds);
+	
+	List<RepositoryActivityPullRequestUpdateMapping> getByPullRequestStatus(RepositoryPullRequestMapping pullRequest, RepositoryActivityPullRequestUpdateMapping.Status status);
+	
 }
 

@@ -102,7 +102,13 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
                 }
 
                 gitHubPullRequestComment.setDomain(domain);
-                gitHubPullRequestCommentService.map(gitHubPullRequestComment, comment, gitHubPullRequest, createdBy);
+                
+                gitHubPullRequestComment.setGitHubId(comment.getId());
+                gitHubPullRequestComment.setPullRequest(gitHubPullRequest);
+                gitHubPullRequestComment.setCreatedAt(comment.getCreatedAt());
+                gitHubPullRequestComment.setCreatedBy(createdBy);
+                gitHubPullRequestComment.setText(comment.getBody());
+
                 gitHubPullRequestCommentService.save(gitHubPullRequestComment);
             }
         }

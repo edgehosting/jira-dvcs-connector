@@ -10,10 +10,12 @@ import net.java.ao.Query;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestActionMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestDAO;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
@@ -50,6 +52,11 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
     private final GitHubPullRequestActionMapping gitHubPullRequestActionMappingDescription;
 
     /**
+     * {@link ColumnNameResolverService#desc(Class)} of the {@link GitHubPullRequestCommitMapping}
+     */
+    private final GitHubPullRequestCommitMapping gitHubPullRequestCommitMappingDescription;
+
+    /**
      * Constructor.
      * 
      * @param activeObjects
@@ -64,6 +71,7 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
         this.columnNameResolverService = columnNameResolverService;
         this.gitHubRepositoryMappingDescription = columnNameResolverService.desc(GitHubPullRequestMapping.class);
         this.gitHubPullRequestActionMappingDescription = columnNameResolverService.desc(GitHubPullRequestActionMapping.class);
+        this.gitHubPullRequestCommitMappingDescription = columnNameResolverService.desc(GitHubPullRequestCommitMapping.class);
     }
 
     /**
@@ -89,6 +97,11 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
                         addAction(created, action);
                     }
 
+                    for (GitHubCommit commit : gitHubPullRequest.getCommits())
+                    {
+                        addCommit(gitHubPullRequest, commit);
+                    }
+
                     map(gitHubPullRequest, created);
 
                 } else
@@ -98,6 +111,7 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
                     loaded.save();
 
                     updateActions(gitHubPullRequest, loaded);
+                    updateCommits(gitHubPullRequest, loaded);
 
                     map(gitHubPullRequest, loaded);
 
@@ -112,12 +126,12 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
     /**
      * Updates {@link GitHubPullRequest#getActions()}.
      * 
-     * @param newPullRequest
+     * @param pullRequest
      *            new state
      * @param loadedPullRequest
      *            previous/loaded state
      */
-    private void updateActions(GitHubPullRequest newPullRequest, GitHubPullRequestMapping loadedPullRequest)
+    private void updateActions(GitHubPullRequest pullRequest, GitHubPullRequestMapping loadedPullRequest)
     {
         Map<Integer, GitHubPullRequestActionMapping> remainingLoadedActions = new HashMap<Integer, GitHubPullRequestActionMapping>();
         for (GitHubPullRequestActionMapping actionMapping : loadedPullRequest.getActions())
@@ -126,7 +140,7 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
         }
 
         // adds new actions
-        for (GitHubPullRequestAction action : newPullRequest.getActions())
+        for (GitHubPullRequestAction action : pullRequest.getActions())
         {
             if (remainingLoadedActions.containsKey(action.getId()))
             {
@@ -144,6 +158,41 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
         {
             activeObjects.delete(remainingAction);
         }
+    }
+
+    private void updateCommits(GitHubPullRequest pullRequest, GitHubPullRequestMapping loadedPullRequest)
+    {
+        Map<Integer, GitHubPullRequestCommitMapping> remainingLoadedCommits = new HashMap<Integer, GitHubPullRequestCommitMapping>();
+        for (GitHubPullRequestCommitMapping commitMapping : loadedPullRequest.getCommits())
+        {
+            remainingLoadedCommits.put(commitMapping.getID(), commitMapping);
+        }
+
+        // adds new commits
+        for (GitHubCommit commit : pullRequest.getCommits())
+        {
+            if (remainingLoadedCommits.containsKey(commit.getId()))
+            {
+                remainingLoadedCommits.remove(commit.getId());
+
+            } else
+            {
+                addCommit(pullRequest, commit);
+            }
+        }
+
+        // removes remaining/obsolete commits
+        for (GitHubPullRequestCommitMapping remainingCommit : remainingLoadedCommits.values())
+        {
+            activeObjects.delete(remainingCommit);
+        }
+    }
+
+    private void addCommit(GitHubPullRequest pullRequest, GitHubCommit commit)
+    {
+        Map<String, Object> params = new HashMap<String, Object>();
+        map(params, pullRequest, commit);
+        activeObjects.create(GitHubPullRequestCommitMapping.class, params);
     }
 
     /**
@@ -357,6 +406,14 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
             map(targetAction, sourceAction);
             target.getActions().add(targetAction);
         }
+
+        target.getCommits().clear();
+        for (GitHubPullRequestCommitMapping sourceCommit : source.getCommits())
+        {
+            GitHubCommit targetCommit = new GitHubCommit();
+            GitHubCommitDAOImpl.map(targetCommit, sourceCommit.getCommit());
+            target.getCommits().add(targetCommit);
+        }
     }
 
     /**
@@ -408,6 +465,23 @@ public class GitHubPullRequestDAOImpl implements GitHubPullRequestDAO
         target.setBaseSha(source.getBaseSha());
         target.setHeadSha(source.getHeadSha());
         target.setGitHubEventId(source.getGitHubEventId());
+    }
+
+    /**
+     * Re-maps the provided model value into the AO creation map.
+     * 
+     * @param target
+     *            model value
+     * @param pullRequest
+     *            owner of the commit
+     * @param source
+     *            commit
+     */
+    private void map(Map<String, Object> target, GitHubPullRequest pullRequest, GitHubCommit source)
+    {
+        target.put(columnNameResolverService.column(gitHubPullRequestCommitMappingDescription.getDomain()), pullRequest.getDomain().getId());
+        target.put(columnNameResolverService.column(gitHubPullRequestCommitMappingDescription.getPullRequest()), pullRequest.getId());
+        target.put(columnNameResolverService.column(gitHubPullRequestCommitMappingDescription.getCommit()), source.getId());
     }
 
 }

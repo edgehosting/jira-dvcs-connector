@@ -12,7 +12,6 @@ public interface RepositoryPullRequestMapping extends Entity
     String NAME = "NAME";
     String DESCRIPTION = "DESCRIPTION";
     String URL = "URL";
-    String FOUND_ISSUE_KEY = "FOUND_ISSUE_KEY";
     
     //
     // getters
@@ -22,7 +21,6 @@ public interface RepositoryPullRequestMapping extends Entity
     String getName();
     String getDescription();
     String getUrl();
-    boolean isFoundIssueKey();
 
     //
     // setters
@@ -32,6 +30,5 @@ public interface RepositoryPullRequestMapping extends Entity
     void setPullRequestName(String name);
     void setPullRequestDescription(String description);
     void setPullRequestUrl(String url);
-    void setFoundIssueKey(boolean foundIssueKey);
 }
 

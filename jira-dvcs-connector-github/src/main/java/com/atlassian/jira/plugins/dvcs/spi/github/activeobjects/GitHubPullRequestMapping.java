@@ -140,4 +140,10 @@ public interface GitHubPullRequestMapping extends GitHubEntityMapping
     @OneToMany
     GitHubPullRequestActionMapping[] getActions();
 
+    /**
+     * @return {@link GitHubPullRequest#getCommits()}
+     */
+    @OneToMany
+    GitHubPullRequestCommitMapping[] getCommits();
+
 }

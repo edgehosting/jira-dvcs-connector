@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
 import java.util.List;
 
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestLineComment;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
@@ -50,5 +51,15 @@ public interface GitHubPullRequestLineCommentService
      * @return resolved {@link GitHubPullRequestLineComment}-s
      */
     List<GitHubPullRequestLineComment> getByRepository(GitHubRepository repository);
+
+    /**
+     * Synchronizes all comments and appropriate repository activities.
+     * 
+     * @param domainRepository
+     *            for repository
+     * @param domain
+     *            for repository
+     */
+    void synchronize(Repository domainRepository, GitHubRepository domain);
 
 }

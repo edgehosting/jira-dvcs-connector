@@ -29,7 +29,7 @@
         <tr class="" id="chg_1">
           <td class="author">
             <div>
-                <span><a href="/$commit.author" title="$commit.author"><img class="avatar avatar16" src="$commit.getAuthorAvatarUrl()" alt="$commit.author"></a><span>$commit.author</span></span>
+                <span><a href="/$commit.author" title="$commit.author"><img class="avatar avatar16" src="$commit.getAuthorAvatarUrl()" alt="$commit.author"></a><span>$commit.rawAuthor</span></span>
             </div>
           </td>
           <td class="hash">

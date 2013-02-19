@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
-import java.util.List;
-
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
 /**
@@ -50,13 +50,6 @@ public interface GitHubCommitService
     GitHubCommit getBySha(GitHubRepository domain, GitHubRepository repository, String sha);
 
     /**
-     * @param issueKey
-     *            linked issue key
-     * @return resolved {@link GitHubCommit}
-     */
-    List<GitHubCommit> getByIssueKey(String issueKey);
-
-    /**
      * @param domainRepository
      *            for repository
      * @param domain
@@ -67,6 +60,19 @@ public interface GitHubCommitService
      *            of the commit
      * @return newly created or existing commit
      */
-    public GitHubCommit fetch(Repository domainRepository, GitHubRepository domain, GitHubRepository repository, String sha);
+    GitHubCommit fetch(Repository domainRepository, GitHubRepository domain, GitHubRepository repository, String sha);
+
+    /**
+     * Synchronizes {@link GitHubPullRequest#getCommits()} with {@link RepositoryActivityCommitMapping} holder.
+     * 
+     * @param domainRepository
+     *            for repository
+     * @param domain
+     *            for repository
+     * @param pullRequest
+     *            owner of commits
+     * @return newly created or existing commits
+     */
+    void synchronize(Repository domainRepository, GitHubRepository domain, GitHubPullRequest pullRequest);
 
 }
