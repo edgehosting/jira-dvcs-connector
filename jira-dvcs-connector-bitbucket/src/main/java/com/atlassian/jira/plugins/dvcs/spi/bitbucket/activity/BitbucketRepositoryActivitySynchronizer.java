@@ -74,43 +74,48 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         // check whether there's some interesting issue keys in activity
         // and persist it if yes
         //
-        for (BitbucketPullRequestActivityInfo info : activities)
+        try {
+	        for (BitbucketPullRequestActivityInfo info : activities)
+	        {
+	            Date activityDate = ClientUtils.extractActivityDate(info.getActivity());
+	            if (lastActivitySyncDate == null)
+	            {
+	                lastActivitySyncDate = activityDate;
+	            } else
+	            {
+	                if (activityDate!=null && activityDate.after(lastActivitySyncDate))
+	                {
+	                    lastActivitySyncDate = activityDate;
+	                }
+	            }
+	            
+	            // filtering duplicated activities in response
+	            //TODO implement better checking whether activity is duplicated than comparing dates
+	            if (!activityDate.equals(previousActivityDate))
+	            {
+	            	processActivity(info, forRepository, pullRestpoint);
+	            }
+	            previousActivityDate = activityDate;
+	        }
+	        
+	        for ( Long pullRequestRemoteId : context.keySet() )
+	        {
+	        	PullRequestContext pullRequestContext = context.get(pullRequestRemoteId);
+	        	fillCommits(null, pullRequestContext);
+	        	// there are no more commits, this activity must be the first
+	        	if (!pullRequestContext.getCommitIterator().iterator().hasNext())
+	        	{
+	        		dao.updateActivityStatus(pullRequestContext.getLastUpdateActivityId(), RepositoryActivityPullRequestUpdateMapping.Status.OPENED);
+	        		
+	        	}
+	        	Set<String> issueKeys = extractIssueKeysFromCommits(pullRequestContext.getPullRequesCommitIds());
+	    		updateIssueKeysMapping(pullRequestContext.getLocalPullRequestId(), issueKeys);
+	        }
+        } finally
         {
-            Date activityDate = ClientUtils.extractActivityDate(info.getActivity());
-            if (lastActivitySyncDate == null)
-            {
-                lastActivitySyncDate = activityDate;
-            } else
-            {
-                if (activityDate!=null && activityDate.after(lastActivitySyncDate))
-                {
-                    lastActivitySyncDate = activityDate;
-                }
-            }
-            
-            // filtering duplicated activities in response
-            //TODO implement better checking whether activity is duplicated than comparing dates
-            if (!activityDate.equals(previousActivityDate))
-            {
-            	processActivity(info, forRepository, pullRestpoint);
-            }
-            previousActivityDate = activityDate;
+        	context.clear();
         }
         
-        for ( Long pullRequestRemoteId : context.keySet() )
-        {
-        	PullRequestContext pullRequestContext = context.get(pullRequestRemoteId);
-        	fillCommits(null, pullRequestContext);
-        	// there are no more commits, this activity must be the first
-        	if (!pullRequestContext.getCommitIterator().iterator().hasNext())
-        	{
-        		dao.updateActivityStatus(pullRequestContext.getLastUpdateActivityId(), RepositoryActivityPullRequestUpdateMapping.Status.OPENED);
-        		
-        	}
-        	Set<String> issueKeys = extractIssueKeysFromCommits(pullRequestContext.getPullRequesCommitIds());
-    		updateIssueKeysMapping(pullRequestContext.getLocalPullRequestId(), issueKeys);
-        }
-        context.clear();
 
         // { finally
         repositoryDao.setLastActivitySyncDate(forRepository.getId(), lastActivitySyncDate);
@@ -242,18 +247,15 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         	{
         		ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestLineCommentMapping.class);
         		ret.put(RepositoryActivityPullRequestLineCommentMapping.FILE, commentActivity.getInline().getPath());
-        		if (commentActivity.getContent() != null)
-                {
-                    ret.put(RepositoryActivityPullRequestLineCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
-                }
         	} else
         	{
         		ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestCommentMapping.class);
-        		if (commentActivity.getContent() != null)
-                {
-                    ret.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
-                }
+        		
         	}
+        	if (commentActivity.getContent() != null)
+            {
+                ret.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, commentActivity.getContent().getRaw());
+            }
             
         } else if (activity instanceof BitbucketPullRequestApprovalActivity)
         {
