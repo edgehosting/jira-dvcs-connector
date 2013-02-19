@@ -32,9 +32,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>5.2.1</jira.compile.version>
-        <jira.version>5.2.1</jira.version>
-        <jira.data.version>5.2.1</jira.data.version>
+        <jira.compile.version>5.2.5</jira.compile.version>
+        <jira.version>5.2.5</jira.version>
+        <jira.data.version>5.2.5</jira.data.version>
 
     <!--
         <jira.version>5.0.1</jira.version>

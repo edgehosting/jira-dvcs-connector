@@ -32,8 +32,16 @@ public interface RepositoryActivityDao
     Set<String> getExistingIssueKeysMapping(Integer pullRequestId);
 
 	List<RepositoryActivityCommitMapping> getCommits(List<Integer> pullRequesCommitIds);
+
+	RepositoryActivityPullRequestCommentMapping findCommentByRemoteId(int repositoryId, long remoteId);
+
+	RepositoryActivityPullRequestLineCommentMapping findLineCommentByRemoteId(int repositoryId, long remoteId);
+
+	RepositoryActivityPullRequestCommentMapping getComment(int id);
 	
 	List<RepositoryActivityPullRequestUpdateMapping> getByPullRequestStatus(RepositoryPullRequestMapping pullRequest, RepositoryActivityPullRequestUpdateMapping.Status status);
-	
+
+    RepositoryActivityPullRequestLineCommentMapping getLineComment(int id);
+
 }
 
