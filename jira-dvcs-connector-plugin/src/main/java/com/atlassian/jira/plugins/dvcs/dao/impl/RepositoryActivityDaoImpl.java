@@ -16,7 +16,6 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestLineCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping.Status;
@@ -48,7 +47,6 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     @SuppressWarnings("unchecked")
     private static final Class<RepositoryActivityPullRequestMapping>[] ALL_ACTIVITY_TABLES = new Class[] {
             RepositoryActivityPullRequestCommentMapping.class,
-            RepositoryActivityPullRequestLineCommentMapping.class,
             RepositoryActivityPullRequestUpdateMapping.class };
 
     public RepositoryActivityDaoImpl(ActiveObjects activeObjects)
@@ -284,43 +282,6 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 		RepositoryActivityPullRequestUpdateMapping activity = activeObjects.get(RepositoryActivityPullRequestUpdateMapping.class, activityId);
 		activity.setStatus(status);
 		activity.save();
-	}
-	
-	@Override
-    public RepositoryActivityPullRequestCommentMapping findCommentByRemoteId(int repositoryId, long remoteId)
-    {
-        Query query = Query.select()
-                           .from(RepositoryActivityPullRequestCommentMapping.class)
-                           .where(RepositoryActivityPullRequestCommentMapping.REMOTE_ID +  " = ? AND " 
-                                + RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", remoteId, repositoryId);
-        
-        RepositoryActivityPullRequestCommentMapping[] found = activeObjects.find(RepositoryActivityPullRequestCommentMapping.class, query);
-        return found.length == 1 ? found[0] : null;
-    }
-	
-	@Override
-    public RepositoryActivityPullRequestLineCommentMapping findLineCommentByRemoteId(int repositoryId, long remoteId)
-    {
-        Query query = Query.select()
-                           .from(RepositoryActivityPullRequestLineCommentMapping.class)
-                           .where(RepositoryActivityPullRequestCommentMapping.REMOTE_ID +  " = ? AND " 
-                                + RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", remoteId, repositoryId);
-        
-        RepositoryActivityPullRequestLineCommentMapping[] found = activeObjects.find(RepositoryActivityPullRequestLineCommentMapping.class, query);
-        return found.length == 1 ? found[0] : null;
-    }
-	
-
-	@Override
-	public RepositoryActivityPullRequestCommentMapping getComment(int id)
-	{
-		return activeObjects.get(RepositoryActivityPullRequestCommentMapping.class, id);
-	}
-
-	@Override
-	public RepositoryActivityPullRequestLineCommentMapping getLineComment(int id)
-	{
-		return activeObjects.get(RepositoryActivityPullRequestLineCommentMapping.class, id);
 	}
 	
     // --------------------------------------------------------------------------------------------------------------------
