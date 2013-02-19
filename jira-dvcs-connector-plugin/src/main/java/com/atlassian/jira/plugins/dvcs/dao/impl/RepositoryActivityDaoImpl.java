@@ -275,6 +275,43 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 		activity.save();
 	}
 	
+	@Override
+    public RepositoryActivityPullRequestCommentMapping findCommentByRemoteId(int repositoryId, long remoteId)
+    {
+        Query query = Query.select()
+                           .from(RepositoryActivityPullRequestCommentMapping.class)
+                           .where(RepositoryActivityPullRequestCommentMapping.REMOTE_ID +  " = ? AND " 
+                                + RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", remoteId, repositoryId);
+        
+        RepositoryActivityPullRequestCommentMapping[] found = activeObjects.find(RepositoryActivityPullRequestCommentMapping.class, query);
+        return found.length == 1 ? found[0] : null;
+    }
+	
+	@Override
+    public RepositoryActivityPullRequestLineCommentMapping findLineCommentByRemoteId(int repositoryId, long remoteId)
+    {
+        Query query = Query.select()
+                           .from(RepositoryActivityPullRequestLineCommentMapping.class)
+                           .where(RepositoryActivityPullRequestCommentMapping.REMOTE_ID +  " = ? AND " 
+                                + RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", remoteId, repositoryId);
+        
+        RepositoryActivityPullRequestLineCommentMapping[] found = activeObjects.find(RepositoryActivityPullRequestLineCommentMapping.class, query);
+        return found.length == 1 ? found[0] : null;
+    }
+	
+
+	@Override
+	public RepositoryActivityPullRequestCommentMapping getComment(int id)
+	{
+		return activeObjects.get(RepositoryActivityPullRequestCommentMapping.class, id);
+	}
+
+	@Override
+	public RepositoryActivityPullRequestLineCommentMapping getLineComment(int id)
+	{
+		return activeObjects.get(RepositoryActivityPullRequestLineCommentMapping.class, id);
+	}
+	
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
     // private helpers
