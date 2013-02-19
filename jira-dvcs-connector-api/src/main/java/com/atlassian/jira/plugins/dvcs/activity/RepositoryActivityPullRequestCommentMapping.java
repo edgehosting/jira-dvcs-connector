@@ -28,7 +28,7 @@ public interface RepositoryActivityPullRequestCommentMapping extends RepositoryA
     @StringLength(StringLength.UNLIMITED)
     void setMessage(String message);
     void setCommentUrl(String commentUrl);
-    void setParentId(int parentId);
-    void setRemoteId(int remoteId);
+    void setParentId(Integer parentId);
+    void setRemoteId(Integer remoteId);
 }
 
