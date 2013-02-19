@@ -20,6 +20,7 @@ public class BitbucketPullRequestCommentActivity extends BitbucketPullRequestBas
     private Integer id;
     private BitbucketPullRequestCommentActivityContent content;
     private BitbucketPullRequestCommentActivity parent;
+    private BitbucketPullRequestCommentActivityInline inline;
     
     public BitbucketPullRequestCommentActivity()
     {
@@ -61,6 +62,14 @@ public class BitbucketPullRequestCommentActivity extends BitbucketPullRequestBas
 
 	public void setId(Integer id) {
 		this.id = id;
+	}
+
+	public BitbucketPullRequestCommentActivityInline getInline() {
+		return inline;
+	}
+
+	public void setInline(BitbucketPullRequestCommentActivityInline inline) {
+		this.inline = inline;
 	}
 }
 
