@@ -391,7 +391,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         ret.put(RepositoryPullRequestMapping.REMOTE_ID, request.getId());
         ret.put(RepositoryPullRequestMapping.NAME, request.getTitle());
         ret.put(RepositoryPullRequestMapping.URL, request.getLinks().getHtmlHref());
-        ret.put(RepositoryPullRequestMapping.FOUND_ISSUE_KEY, !issueKeys.isEmpty());
         ret.put(RepositoryPullRequestMapping.TO_REPO_ID, forRepo.getId());
         
         return ret;

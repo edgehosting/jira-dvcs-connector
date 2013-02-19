@@ -266,6 +266,17 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
 		return Arrays.asList(activeObjects.find(RepositoryActivityCommitMapping.class, query));
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public List<RepositoryActivityPullRequestUpdateMapping> getByPullRequestStatus(RepositoryPullRequestMapping pullRequest, Status status)
+	{
+	    Query query = Query.select().from(RepositoryActivityPullRequestUpdateMapping.class);
+	    query.where(RepositoryActivityPullRequestUpdateMapping.PULL_REQUEST_ID + " = ? AND " + RepositoryActivityPullRequestUpdateMapping.STATUS + " = ? ", pullRequest.getID(), status);
+	    return Arrays.asList(activeObjects.find(RepositoryActivityPullRequestUpdateMapping.class, query));
+	}
     
 	@Override
 	public void updateActivityStatus(int activityId, Status status)

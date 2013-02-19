@@ -5,6 +5,7 @@ import java.util.List;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
 /**
@@ -53,6 +54,14 @@ public interface GitHubPullRequestService
     List<GitHubPullRequest> getByRepository(GitHubRepository repository);
 
     /**
+     * @param pullRequest
+     * @return resolves {@link GitHubPullRequestAction.Action#OPENED}
+     * @throws IllegalStateException
+     *             if pull request does not have any opened action
+     */
+    GitHubPullRequestAction getOpenAction(GitHubPullRequest pullRequest);
+
+    /**
      * @param domainRepository
      *            for which repository
      * @param domain
@@ -64,5 +73,15 @@ public interface GitHubPullRequestService
      * @return newly created or existing pull request
      */
     GitHubPullRequest fetch(Repository domainRepository, GitHubRepository domain, long gitHubId, int pullRequestNumber);
+
+    /**
+     * Synchronizes all GitHub pull requests and appropriates pull request activities.
+     * 
+     * @param domainRepository
+     *            for repository
+     * @param domain
+     *            for repository
+     */
+    void synchronize(Repository domainRepository, GitHubRepository domain);
 
 }

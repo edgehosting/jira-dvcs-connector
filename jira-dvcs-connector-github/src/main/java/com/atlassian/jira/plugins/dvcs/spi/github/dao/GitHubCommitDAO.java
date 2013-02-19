@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.dao;
 
-import java.util.List;
-
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
@@ -47,12 +45,5 @@ public interface GitHubCommitDAO
      * @return resolved {@link GitHubCommit}
      */
     GitHubCommit getBySha(GitHubRepository domain, GitHubRepository repository, String sha);
-
-    /**
-     * @param issueKey
-     *            linked issue key
-     * @return resolved {@link GitHubCommit}
-     */
-    List<GitHubCommit> getByIssueKey(String issueKey);
 
 }

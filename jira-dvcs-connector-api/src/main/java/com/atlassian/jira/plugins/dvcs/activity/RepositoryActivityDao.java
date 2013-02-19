@@ -36,9 +36,12 @@ public interface RepositoryActivityDao
 	RepositoryActivityPullRequestCommentMapping findCommentByRemoteId(int repositoryId, long remoteId);
 
 	RepositoryActivityPullRequestLineCommentMapping findLineCommentByRemoteId(int repositoryId, long remoteId);
-	
+
 	RepositoryActivityPullRequestCommentMapping getComment(int id);
 	
-	RepositoryActivityPullRequestLineCommentMapping getLineComment(int id);
+	List<RepositoryActivityPullRequestUpdateMapping> getByPullRequestStatus(RepositoryPullRequestMapping pullRequest, RepositoryActivityPullRequestUpdateMapping.Status status);
+
+    RepositoryActivityPullRequestLineCommentMapping getLineComment(int id);
+
 }
 

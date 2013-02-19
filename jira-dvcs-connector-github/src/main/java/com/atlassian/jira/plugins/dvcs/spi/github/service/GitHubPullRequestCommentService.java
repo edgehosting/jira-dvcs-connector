@@ -2,12 +2,9 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
 import java.util.List;
 
-import org.eclipse.egit.github.core.Comment;
-
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 
 /**
  * Provides {@link GitHubPullRequestComment} related services.
@@ -56,17 +53,12 @@ public interface GitHubPullRequestCommentService
     List<GitHubPullRequestComment> getByRepository(GitHubRepository repository);
 
     /**
-     * Re-maps egit model into the internal model.
+     * Synchronizes all comments and appropriate repository activities.
      * 
-     * @param target
-     *            internal model
-     * @param comment
-     *            egit model
-     * @param pullRequest
-     *            {@link GitHubPullRequestComment#getPullRequest()}
-     * @param createdBy
-     *            {@link GitHubPullRequestComment#getCreatedBy()}
+     * @param domainRepository
+     *            for repository
+     * @param domain
+     *            for repository
      */
-    void map(GitHubPullRequestComment target, Comment comment, GitHubPullRequest pullRequest, GitHubUser createdBy);
-
+    void synchronize(Repository domainRepository, GitHubRepository domain);
 }
