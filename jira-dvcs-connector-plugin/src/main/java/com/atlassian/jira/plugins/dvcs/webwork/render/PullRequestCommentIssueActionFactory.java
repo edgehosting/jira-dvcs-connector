@@ -45,13 +45,6 @@ public class PullRequestCommentIssueActionFactory implements IssueActionFactory
         templateMap.put("pullRequest", pullRequest);
         templateMap.put("user", user);
         
-        if (pullRequestComment.getFile()!=null)
-        {
-            
-            return new DefaultIssueAction(templateRenderer, "/templates/activity/pull-request-line-comment-view.vm", templateMap,
-                    pullRequestComment.getLastUpdatedOn());
-        }
-        
         return new DefaultIssueAction(templateRenderer, "/templates/activity/pull-request-comment-view.vm", templateMap,
                 pullRequestComment.getLastUpdatedOn());
     }

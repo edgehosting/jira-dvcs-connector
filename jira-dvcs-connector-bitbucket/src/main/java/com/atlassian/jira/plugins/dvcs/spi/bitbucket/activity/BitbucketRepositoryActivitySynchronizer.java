@@ -198,13 +198,8 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     private void updateIssueKeysMapping(int localPullRequestId, Set<String> issueKeys)
     {
     	Set<String> existingIssueKeysMapping = dao.getExistingIssueKeysMapping(localPullRequestId);
-    	for (String possibleNewIssueKey : issueKeys)
-    	{
-            if (existingIssueKeysMapping.contains(possibleNewIssueKey))
-            {
-                issueKeys.remove(possibleNewIssueKey);
-            }
-    	}
+
+    	issueKeys.removeAll(existingIssueKeysMapping);
     	
         if (!issueKeys.isEmpty())
         {

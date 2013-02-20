@@ -66,7 +66,7 @@ public class ChangesetIssueActionFactory implements IssueActionFactory
         templateMap.put("gravatar_url", gravatarUrl);
 
         String userUrl = changesetService.getUserUrl(repository, changeset);
-        templateMap.put("user_url", userUrl);
+        templateMap.put("userUrl", userUrl);
 
         templateMap.put("login", login);
         templateMap.put("user", user);

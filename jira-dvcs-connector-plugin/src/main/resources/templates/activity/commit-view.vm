@@ -1,4 +1,4 @@
-<div class="dvcs activity-item"  style="background-color:#f8fff8">
+<div class="dvcs activity-item"  style="background-color:#E0F8E0">
   <article>
     <header>
       <div class="summary">
@@ -21,7 +21,7 @@
       </tr>
       </thead>      
       <tbody>
-        <tr>
+        <tr style="background-color:#E0F8E0">
           <td class="text">
               <div title="$commitMessage">$commitMessageHtml</div>
           </td>

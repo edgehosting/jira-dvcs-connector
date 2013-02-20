@@ -6,6 +6,7 @@ import java.util.Map;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping.Status;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -42,14 +43,39 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
         Repository repository = repositoryService.get(repositoryId);
 
         DvcsUser user = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType()).getUser(repository, pullRequestUpdate.getAuthor());
+
         Map<String, Object> templateMap = new HashMap<String, Object>();
         templateMap.put("velocityUtils", new VelocityUtils());
         templateMap.put("pullRequestUpdate", pullRequestUpdate);
         templateMap.put("pullRequest", pullRequest);
+        templateMap.put("repository", repository);
         templateMap.put("user", user);
+        templateMap.put("lozengeStyle", getLozengeStyle(pullRequestUpdate.getStatus()));
         
         return new DefaultIssueAction(templateRenderer, "/templates/activity/pull-request-update-view.vm", templateMap,
                 pullRequestUpdate.getLastUpdatedOn());
+    }
+
+    private String getLozengeStyle(Status status)
+    {
+        String defaultStyle = "aui-lozenge-success aui-lozenge-subtle";
+        switch (status)
+        {
+        case APPROVED:
+            return "aui-lozenge-success aui-lozenge-subtle";
+        case DECLINED:
+            return "aui-lozenge-error";
+        case MERGED:
+            return "aui-lozenge-success";
+        case OPENED:
+            return "aui-lozenge-complete";
+        case REOPENED:
+            return defaultStyle;
+        case UPDATED:
+            return "aui-lozenge-current";
+        default:
+            return defaultStyle;
+        }
     }
 
     @Override

@@ -1,3 +1,4 @@
+.dvcs {font-size:14px }
 .dvcs .avatar { display: inline; }
 .dvcs .avatar16 { border-radius: 2px; height: 16px; width: 16px; }
 .dvcs .avatar32 { border-radius: 3px; width: 32px; height: 32px; }
@@ -53,9 +54,9 @@
 .dvcs.activity-item {position: relative; border-top: 1px solid #ccc; min-height: 28px; /* semi-hack to provide good styling; could use better/more consistent markup eventually */ padding-top: 10px; }
 .dvcs.activity-item:first-child {border-top:0px none;  padding-top: 0px; }
 .dvcs.activity-item header .avatar { position: absolute; left: 0; }
-.dvcs.activity-item header { margin-bottom: 10px; min-height: 32px; }
+.dvcs.activity-item header { margin-bottom: 10px; min-height: 32px; padding-left: 42px; }
 .dvcs.activity-item .content { margin-left: 42px; padding: 0; }
-.dvcs.activity-item header .summary { display: inline; padding-left: 42px; }
+.dvcs.activity-item header .summary { display: inline; }
 .dvcs.comment { position: relative; border-top: 1px solid #ccc; }
 .dvcs.comment header .avatar { position: absolute; left: 0; top: 10px; }
 .dvcs.comment header, .comment .comment-content { padding-left: 42px; }
@@ -68,7 +69,7 @@
 .dvcs.comment .comment-actions > li { float: left; }
 .dvcs.comment .comment-actions > li:before { padding: 0 3px 0 6px; content: "•"; color: #707070; }
 .dvcs.comment .comment-actions > li:first-child:before { content: none; }
-.dvcs.comment .comment-actions > li a { color: #707070; }
+.dvcs.comment .comment-actions > li { color: #707070; }
 
 
 /* Old Commit tabs styles WILL BE REMOVED 

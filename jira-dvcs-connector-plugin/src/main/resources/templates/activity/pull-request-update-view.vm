@@ -1,12 +1,12 @@
-<div class="dvcs activity-item" style="background-color:#fffff8">
+<div class="dvcs activity-item" style="background-color:#F8E6E0">
   <article>
     <header>
       <div class="summary">
         <a href="/$pullRequestUpdate.author"><img class="avatar avatar32" src="$user.avatar"></a>
         <a href="/$pullRequestUpdate.author" class="author">$user.fullName</a>
-        <span class="aui-lozenge pull-request-state aui-lozenge-success aui-lozenge-subtle" title="">$pullRequestUpdate.status</span> a pull request
-        <a href="$pullRequest.url">$pullRequest.name</a>
-        on <time datetime="2013-01-03T20:07:06.550576">$pullRequestUpdate.lastUpdatedOn</time>
+        <span class="aui-lozenge pull-request-state $lozengeStyle" title="">$pullRequestUpdate.status</span> a pull request
+        <a href="$repository.orgHostUrl$pullRequest.url">$pullRequest.name</a>
+        on <time>$velocityUtils.getRelativePastDate($pullRequestUpdate.lastUpdatedOn)</time>
       </div>
     </header>
     
@@ -26,10 +26,10 @@
       <tbody>
         #set( $commits = $pullRequestUpdate.commits)
         #foreach( $commit in $commits )
-        <tr class="" id="chg_1">
+        <tr class="" id="chg_1" style="background-color:#F8E6E0">
           <td class="author">
             <div>
-                <span><a href="/$commit.author" title="$commit.author"><img class="avatar avatar16" src="$commit.getAuthorAvatarUrl()" alt="$commit.author"></a><span>$commit.rawAuthor</span></span>
+                <span><a href="/$commit.author" title="$commit.author"><img class="avatar avatar16" src="$user.avatar" alt="$commit.author"></a><span>$commit.rawAuthor</span></span>
             </div>
           </td>
           <td class="hash">
