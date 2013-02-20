@@ -604,10 +604,6 @@
         class="com.atlassian.jira.plugins.dvcs.webwork.render.PullRequestCommentIssueActionFactory" 
         interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
         
-    <component key="pullRequestLineCommentIssueActionFactory" name="PullRequestLineCommentIssueActionFactory"
-        class="com.atlassian.jira.plugins.dvcs.webwork.render.PullRequestLineCommentIssueActionFactory" 
-        interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
-        
     <!--  -->
     <component key="columnNameResolverService" name="Column Name Resolver Service"
         class="com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverServiceImpl">
