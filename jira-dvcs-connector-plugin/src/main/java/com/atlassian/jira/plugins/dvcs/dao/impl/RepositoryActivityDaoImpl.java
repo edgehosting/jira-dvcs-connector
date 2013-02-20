@@ -227,16 +227,16 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                                 .where(RepositoryPullRequestMapping.TO_REPO_ID + " = ?", forRepository.getId()));
 
                 // drop issue keys to PR mappings
-                if (!deletedIds.isEmpty())
+                for (Integer deletedId : deletedIds)
                 {
-                    ActiveObjectsUtils.delete(
+                	ActiveObjectsUtils.delete(
                             activeObjects,
                             RepositoryPullRequestIssueKeyMapping.class,
                             Query.select()
                                     .from(RepositoryPullRequestIssueKeyMapping.class)
-                                    .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds)
-                                            + ")"));
+                                    .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " = " + deletedId));
                 }
+     
                 return null;
             }
         });

@@ -26,7 +26,7 @@ public class ActiveObjectsUtils
         return delete(activeObjects, entityType, query, true);
     }
     
-    public static <T extends Entity> Set<Integer> delete(final ActiveObjects activeObjects, final Class<T> entityType, final Query query, final boolean returnIds)
+    private static <T extends Entity> Set<Integer> delete(final ActiveObjects activeObjects, final Class<T> entityType, final Query query, final boolean returnIds)
     {
         //TODO: use activeObjects.deleteWithSQL() when AO update https://ecosystem.atlassian.net/browse/AO-348 is available.
         log.debug("Deleting type {}", entityType);
