@@ -106,13 +106,18 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
 	        for ( Long pullRequestRemoteId : context.keySet() )
 	        {
 	        	PullRequestContext pullRequestContext = context.get(pullRequestRemoteId);
-	        	fillCommits(null, pullRequestContext);
-	        	// there are no more commits, this activity must be the first
-	        	if (!pullRequestContext.getCommitIterator().iterator().hasNext())
-	        	{
-	        		dao.updateActivityStatus(pullRequestContext.getLastUpdateActivityId(), RepositoryActivityPullRequestUpdateMapping.Status.OPENED);
-	        		
-	        	}
+	            // when soft sync, it could happen that we have no update activities and therefore no last update activity and iterator
+	            if (pullRequestContext.getLastUpdateActivityId() != null)
+	            {	
+		        	fillCommits(null, pullRequestContext);
+		        	// there are no more commits, this activity must be the first
+		        	if (!pullRequestContext.getCommitIterator().iterator().hasNext())
+		        	{
+		        		dao.updateActivityStatus(pullRequestContext.getLastUpdateActivityId(), RepositoryActivityPullRequestUpdateMapping.Status.OPENED);
+		        		
+		        	}
+	            }
+	        	// Extracting gathered 
 	        	Set<String> issueKeys = extractIssueKeysFromCommits(pullRequestContext.getPullRequesCommitIds());
 	    		updateIssueKeysMapping(pullRequestContext.getLocalPullRequestId(), issueKeys);
 	        }
@@ -226,9 +231,17 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     private Set<String> extractIssueKeysFromCommits(List<Integer> pullRequesCommitIds)
     {
 		Set<String> issueKeys = new HashSet<String>();
-		for ( RepositoryActivityCommitMapping commitMapping : dao.getCommits(pullRequesCommitIds))
+		if (pullRequesCommitIds != null)
 		{
-			issueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commitMapping.getMessage()));
+			for (Integer commitId : pullRequesCommitIds)
+			{
+				RepositoryActivityCommitMapping commit = dao.getCommit(commitId);
+				if (commit != null)
+				{
+					issueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commit.getMessage()));
+				}
+				
+			}
 		}
 		return issueKeys;
 	}
@@ -409,21 +422,25 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         }
     	
         Iterable<BitbucketPullRequestCommit> commitsIterator = pullRequestContext.getCommitIterator();
-        for (BitbucketPullRequestCommit bitbucketPullRequestCommit : commitsIterator)
+        // when soft sync, it could happen that we have no update activities and therefore no commit iterator
+        if (commitsIterator != null)
         {
-        	//TODO check whether commit is already assigned to previously synchronized activity and stop in this case
-            if (activity != null && bitbucketPullRequestCommit.getSha().startsWith(activity.getSource().getCommit().getSha()))
-            {
-            	pullRequestContext.setFirstCommit(bitbucketPullRequestCommit);
-                break;
-            }
-
-            if (pullRequestContext.getLastUpdateActivityId() != null)
-            {
-            	pullRequestContext.addPullRequesCommitId(
-            			saveCommit(pullRequestContext.getLastUpdateActivityId(), bitbucketPullRequestCommit)
-            			.getID());
-            }
+	        for (BitbucketPullRequestCommit bitbucketPullRequestCommit : commitsIterator)
+	        {
+	        	//TODO check whether commit is already assigned to previously synchronized activity and stop in this case
+	            if (activity != null && bitbucketPullRequestCommit.getSha().startsWith(activity.getSource().getCommit().getSha()))
+	            {
+	            	pullRequestContext.setFirstCommit(bitbucketPullRequestCommit);
+	                break;
+	            }
+	
+	            if (pullRequestContext.getLastUpdateActivityId() != null)
+	            {
+	            	pullRequestContext.addPullRequesCommitId(
+	            			saveCommit(pullRequestContext.getLastUpdateActivityId(), bitbucketPullRequestCommit)
+	            			.getID());
+	            }
+	        }
         }
     }
     
