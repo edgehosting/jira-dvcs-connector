@@ -225,9 +225,14 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     private Set<String> extractIssueKeysFromCommits(List<Integer> pullRequesCommitIds)
     {
 		Set<String> issueKeys = new HashSet<String>();
-		for ( RepositoryActivityCommitMapping commitMapping : dao.getCommits(pullRequesCommitIds))
+		for (Integer commitId : pullRequesCommitIds)
 		{
-			issueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commitMapping.getMessage()));
+			RepositoryActivityCommitMapping commit = dao.getCommit(commitId);
+			if (commit != null)
+			{
+				issueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commit.getMessage()));
+			}
+			
 		}
 		return issueKeys;
 	}

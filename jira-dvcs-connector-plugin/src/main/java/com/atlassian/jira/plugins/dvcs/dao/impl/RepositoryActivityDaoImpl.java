@@ -257,12 +257,9 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
 
 	@Override
-	public List<RepositoryActivityCommitMapping> getCommits(List<Integer> pullRequesCommitIds) {
-		Query query = Query.select()
-                .from(RepositoryActivityCommitMapping.class)
-                .where("ID IN (" + Joiner.on(",").join(pullRequesCommitIds) + ")");
-
-		return Arrays.asList(activeObjects.find(RepositoryActivityCommitMapping.class, query));
+	public RepositoryActivityCommitMapping getCommit(int pullRequesCommitId)
+	{
+        return activeObjects.get(RepositoryActivityCommitMapping.class, pullRequesCommitId);
 	}
 	
 	/**
