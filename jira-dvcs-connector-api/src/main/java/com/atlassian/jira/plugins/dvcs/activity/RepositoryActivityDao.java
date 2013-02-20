@@ -33,6 +33,8 @@ public interface RepositoryActivityDao
 
 	RepositoryActivityCommitMapping getCommit(int pullRequesCommitId);
 	
+	RepositoryActivityCommitMapping getCommitByNode(int pullRequestId, String node);
+	
 	List<RepositoryActivityPullRequestUpdateMapping> getByPullRequestStatus(RepositoryPullRequestMapping pullRequest, RepositoryActivityPullRequestUpdateMapping.Status status);
 }
 

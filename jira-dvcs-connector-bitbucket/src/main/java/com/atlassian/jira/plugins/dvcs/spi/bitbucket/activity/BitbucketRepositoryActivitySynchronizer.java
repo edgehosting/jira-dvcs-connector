@@ -426,8 +426,13 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         {
 	        for (BitbucketPullRequestCommit bitbucketPullRequestCommit : commitsIterator)
 	        {
-	        	//TODO check whether commit is already assigned to previously synchronized activity and stop in this case
-	            if (activity != null && bitbucketPullRequestCommit.getSha().startsWith(activity.getSource().getCommit().getSha()))
+	        	// checking whether commit is already assigned to previously synchronized activity and stop in this case
+	        	RepositoryActivityCommitMapping localCommit = dao.getCommitByNode(pullRequestContext.getLocalPullRequestId(), bitbucketPullRequestCommit.getSha());
+	            if (localCommit != null)
+	            {
+	            	break;
+	            }
+	        	if (activity != null && bitbucketPullRequestCommit.getSha().startsWith(activity.getSource().getCommit().getSha()))
 	            {
 	            	pullRequestContext.setFirstCommit(bitbucketPullRequestCommit);
 	                break;

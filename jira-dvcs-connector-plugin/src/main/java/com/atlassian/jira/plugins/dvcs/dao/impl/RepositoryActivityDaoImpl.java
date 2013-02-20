@@ -280,6 +280,20 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 		activity.setStatus(status);
 		activity.save();
 	}
+
+	@Override
+	public RepositoryActivityCommitMapping getCommitByNode(int pullRequestId, String node)
+	{
+		Query query = Query.select()
+			.alias(RepositoryActivityCommitMapping.class, "COMMIT")
+			.alias(RepositoryActivityPullRequestUpdateMapping.class, "PR_UPDATE")
+			.join(RepositoryActivityPullRequestUpdateMapping.class, "COMMIT." + RepositoryActivityCommitMapping.ACTIVITY_ID + " = PR_UPDATE.ID")
+            .where("PR_UPDATE." + RepositoryActivityPullRequestMapping.PULL_REQUEST_ID + " = ? AND COMMIT." +
+            		RepositoryActivityCommitMapping.NODE + " = ?", pullRequestId, node);
+		
+		RepositoryActivityCommitMapping[] found = activeObjects.find(RepositoryActivityCommitMapping.class, query);
+        return found.length == 1 ? found[0] : null;
+	}
 	
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
