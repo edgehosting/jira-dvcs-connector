@@ -227,16 +227,16 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                                 .where(RepositoryPullRequestMapping.TO_REPO_ID + " = ?", forRepository.getId()));
 
                 // drop issue keys to PR mappings
-                if (!deletedIds.isEmpty())
+                for (Integer deletedId : deletedIds)
                 {
-                    ActiveObjectsUtils.delete(
+                	ActiveObjectsUtils.delete(
                             activeObjects,
                             RepositoryPullRequestIssueKeyMapping.class,
                             Query.select()
                                     .from(RepositoryPullRequestIssueKeyMapping.class)
-                                    .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(deletedIds)
-                                            + ")"));
+                                    .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " = " + deletedId));
                 }
+     
                 return null;
             }
         });
@@ -279,6 +279,20 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 		RepositoryActivityPullRequestUpdateMapping activity = activeObjects.get(RepositoryActivityPullRequestUpdateMapping.class, activityId);
 		activity.setStatus(status);
 		activity.save();
+	}
+
+	@Override
+	public RepositoryActivityCommitMapping getCommitByNode(int pullRequestId, String node)
+	{
+		Query query = Query.select()
+			.alias(RepositoryActivityCommitMapping.class, "COMMIT")
+			.alias(RepositoryActivityPullRequestUpdateMapping.class, "PR_UPDATE")
+			.join(RepositoryActivityPullRequestUpdateMapping.class, "COMMIT." + RepositoryActivityCommitMapping.ACTIVITY_ID + " = PR_UPDATE.ID")
+            .where("PR_UPDATE." + RepositoryActivityPullRequestMapping.PULL_REQUEST_ID + " = ? AND COMMIT." +
+            		RepositoryActivityCommitMapping.NODE + " = ?", pullRequestId, node);
+		
+		RepositoryActivityCommitMapping[] found = activeObjects.find(RepositoryActivityCommitMapping.class, query);
+        return found.length == 1 ? found[0] : null;
 	}
 	
     // --------------------------------------------------------------------------------------------------------------------
