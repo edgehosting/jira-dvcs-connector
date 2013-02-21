@@ -16,6 +16,7 @@ import org.eclipse.egit.github.core.service.PullRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
@@ -47,24 +48,29 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
     private static final Logger LOGGER = LoggerFactory.getLogger(GitHubCommitServiceImpl.class);
 
     /**
-     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao)
+     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao, ActiveObjects)
      */
     private final GitHubCommitDAO gitHubCommitDAO;
 
     /**
-     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao)
+     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao, ActiveObjects)
      */
     private final GitHubPullRequestService gitHubPullRequestService;
 
     /**
-     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao)
+     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao, ActiveObjects)
      */
     private final RepositoryActivityDao repositoryActivityDao;
 
     /**
-     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao)
+     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao, ActiveObjects)
      */
     private final GithubClientProvider githubClientProvider;
+
+    /**
+     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao, ActiveObjects)
+     */
+    private final ActiveObjects activeObjects;
 
     /**
      * Constructor.
@@ -75,16 +81,19 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
      *            injected {@link GitHubPullRequestService} dependency
      * @param githubClientProvider
      *            injected {@link GithubClientProvider} dependency
-     * @param injected
+     * @param repositoryActivityDao
      *            {@link RepositoryActivityDao} dependency
+     * @param activeObjects
+     *            injected {@link ActiveObjects} dependency
      */
     public GitHubCommitServiceImpl(GitHubCommitDAO gitHubCommitDAO, GitHubPullRequestService gitHubPullRequestService,
-            GithubClientProvider githubClientProvider, RepositoryActivityDao repositoryActivityDao)
+            GithubClientProvider githubClientProvider, RepositoryActivityDao repositoryActivityDao, ActiveObjects activeObjects)
     {
         this.gitHubCommitDAO = gitHubCommitDAO;
         this.gitHubPullRequestService = gitHubPullRequestService;
         this.githubClientProvider = githubClientProvider;
         this.repositoryActivityDao = repositoryActivityDao;
+        this.activeObjects = activeObjects;
     }
 
     /**
@@ -177,7 +186,7 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
     public void synchronize(Repository domainRepository, GitHubRepository domain, GitHubPullRequest pullRequest)
     {
         List<GitHubCommit> allCommits = pullRequest.getCommits();
-        GitHubCommit lastCommit = !allCommits.isEmpty() ? allCommits.get(allCommits.size()) : null;
+        GitHubCommit lastCommit = !allCommits.isEmpty() ? allCommits.get(allCommits.size() - 1) : null;
 
         // was head changed? is necessary to refresh commits?
         if (lastCommit == null || !lastCommit.getSha().equals(pullRequest.getHeadSha()))
@@ -230,18 +239,31 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
     {
         RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(pullRequest.getDomain().getId(),
                 pullRequest.getGitHubId());
-        List<RepositoryActivityPullRequestUpdateMapping> opened = repositoryActivityDao.getByPullRequestStatus(repositoryPullRequest,
-                RepositoryActivityPullRequestUpdateMapping.Status.OPENED);
+        List<RepositoryActivityPullRequestUpdateMapping> opened = repositoryActivityDao.getPullRequestActivityByStatus(
+                repositoryPullRequest, RepositoryActivityPullRequestUpdateMapping.Status.OPENED);
 
         RepositoryActivityPullRequestUpdateMapping openActivity;
         if (opened.size() == 1)
         {
             openActivity = opened.get(0);
 
+        } else if (opened.size() > 1)
+        {
+            LOGGER.error("There are multiple open activities for provided pull request, RepositoryPullRequestID: "
+                    + repositoryPullRequest.getID() + " Founded records: " + opened.size() + " First one will be used!");
+            openActivity = opened.get(0);
+
         } else
         {
-            throw new IllegalStateException("Unable to find open activity for provided pull request, RepositoryPullRequest ID: !"
+            throw new IllegalStateException("Unable to find open activity for provided pull request, RepositoryPullRequest ID: "
                     + repositoryPullRequest.getID());
+        }
+
+        // SHA to already stored commit
+        Map<String, RepositoryActivityCommitMapping> loadedCommits = new HashMap<String, RepositoryActivityCommitMapping>();
+        for (RepositoryActivityCommitMapping loadedCommit : openActivity.getCommits())
+        {
+            loadedCommits.put(loadedCommit.getNode(), loadedCommit);
         }
 
         Iterator<GitHubCommit> commitsIterator = pullRequest.getCommits().iterator();
@@ -252,11 +274,25 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
         {
             cursor = commitsIterator.next();
 
-            Map<String, Object> commit = new HashMap<String, Object>();
-            map(commit, openActivity, cursor);
-            repositoryActivityDao.saveCommit(commit);
+            if (!loadedCommits.containsKey(cursor.getSha()))
+            {
+                Map<String, Object> commit = new HashMap<String, Object>();
+                map(commit, openActivity, cursor);
+                repositoryActivityDao.saveCommit(commit);
+
+            } else
+            {
+                loadedCommits.remove(cursor.getSha());
+
+            }
 
         } while (!cursor.getSha().equals(openAction.getHeadSha()));
+
+        // deletes loaded commits, which are not already propagated
+        for (RepositoryActivityCommitMapping toDelete : loadedCommits.values())
+        {
+            activeObjects.delete(toDelete);
+        }
     }
 
     /**
@@ -276,8 +312,8 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
 
         RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(pullRequest.getDomain().getId(),
                 pullRequest.getGitHubId());
-        List<RepositoryActivityPullRequestUpdateMapping> updated = repositoryActivityDao.getByPullRequestStatus(repositoryPullRequest,
-                RepositoryActivityPullRequestUpdateMapping.Status.UPDATED);
+        List<RepositoryActivityPullRequestUpdateMapping> updated = repositoryActivityDao.getPullRequestActivityByStatus(
+                repositoryPullRequest, RepositoryActivityPullRequestUpdateMapping.Status.UPDATED);
 
         RepositoryActivityPullRequestUpdateMapping updateActivity;
         if (updated.isEmpty())
@@ -304,6 +340,13 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
 
         }
 
+        // SHA to already stored commit
+        Map<String, RepositoryActivityCommitMapping> loadedCommits = new HashMap<String, RepositoryActivityCommitMapping>();
+        for (RepositoryActivityCommitMapping loadedCommit : updateActivity.getCommits())
+        {
+            loadedCommits.put(loadedCommit.getNode(), loadedCommit);
+        }
+
         Iterator<GitHubCommit> commitsIterator = pullRequest.getCommits().iterator();
         GitHubPullRequestAction openAction = gitHubPullRequestService.getOpenAction(pullRequest);
 
@@ -316,10 +359,24 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
         while (commitsIterator.hasNext())
         {
             cursor = commitsIterator.next();
-            Map<String, Object> commit = new HashMap<String, Object>();
-            map(commit, updateActivity, cursor);
-            repositoryActivityDao.saveCommit(commit);
+
+            if (!loadedCommits.containsKey(cursor.getSha()))
+            {
+                Map<String, Object> commit = new HashMap<String, Object>();
+                map(commit, updateActivity, cursor);
+                repositoryActivityDao.saveCommit(commit);
+            } else
+            {
+                loadedCommits.remove(cursor.getSha());
+            }
         }
+
+        // deletes loaded commits, which are not already propagated
+        for (RepositoryActivityCommitMapping toDelete : loadedCommits.values())
+        {
+            activeObjects.delete(toDelete);
+        }
+
     }
 
     /**

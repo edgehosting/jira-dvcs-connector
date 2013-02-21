@@ -8,17 +8,30 @@ public interface RepositoryActivityPullRequestUpdateMapping extends RepositoryAc
 {
     String STATUS = "STATUS";
 
+    String REMOTE_ID = "REMOTE_ID";
+
     // Status constants
     enum Status
     {
-    	APPROVED, OPENED, MERGED, DECLINED, REOPENED, UPDATED;
+        APPROVED, OPENED, MERGED, DECLINED, REOPENED, UPDATED;
     }
-    
+
     Status getStatus();
 
     @OneToMany
     RepositoryActivityCommitMapping[] getCommits();
-    
-    void setStatus(Status status);
-}
 
+    void setStatus(Status status);
+
+    /**
+     * @return Remote ID association.
+     */
+    String getRemoteId();
+
+    /**
+     * @param remoteId
+     *            {@link #getRemoteId()}
+     */
+    void setRemoteId(String remoteId);
+
+}

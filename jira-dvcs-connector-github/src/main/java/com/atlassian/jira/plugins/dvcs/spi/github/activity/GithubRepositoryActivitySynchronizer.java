@@ -168,10 +168,10 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
         gitHubEventService.synchronize(domainRepository, domain);
         gitHubPullRequestService.synchronize(domainRepository, domain);
-        gitHubPullRequestCommentService.synchronize(domainRepository, domain);
-        gitHubPullRequestLineCommentService.synchronize(domainRepository, domain);
         for (GitHubPullRequest pullRequest : gitHubPullRequestService.getByRepository(domain))
         {
+            gitHubPullRequestCommentService.synchronize(domainRepository, pullRequest);
+            gitHubPullRequestLineCommentService.synchronize(domainRepository, pullRequest);
             gitHubCommitService.synchronize(domainRepository, domain, pullRequest);
         }
     }
