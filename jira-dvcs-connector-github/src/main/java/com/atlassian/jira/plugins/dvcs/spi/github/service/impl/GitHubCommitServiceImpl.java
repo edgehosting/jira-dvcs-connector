@@ -194,8 +194,8 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
             fetch(domainRepository, domain, pullRequest);
         }
 
-        synchronizeOpenCommits(pullRequest);
-        synchronizeUpdateCommits(pullRequest);
+        synchronizeOpenCommits(pullRequest, domainRepository);
+        synchronizeUpdateCommits(pullRequest, domainRepository);
     }
 
     /**
@@ -234,11 +234,12 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
      * 
      * @param pullRequest
      *            commits owner
+     * @param domainRepository 
      */
-    private void synchronizeOpenCommits(GitHubPullRequest pullRequest)
+    private void synchronizeOpenCommits(GitHubPullRequest pullRequest, Repository domainRepository)
     {
-        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(pullRequest.getDomain().getId(),
-                pullRequest.getGitHubId());
+        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(
+                domainRepository.getId(), pullRequest.getGitHubId());
         List<RepositoryActivityPullRequestUpdateMapping> opened = repositoryActivityDao.getPullRequestActivityByStatus(
                 repositoryPullRequest, RepositoryActivityPullRequestUpdateMapping.Status.OPENED);
 
@@ -300,8 +301,9 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
      * 
      * @param pullRequest
      *            commits owner
+     * @param domainRepository 
      */
-    private void synchronizeUpdateCommits(GitHubPullRequest pullRequest)
+    private void synchronizeUpdateCommits(GitHubPullRequest pullRequest, Repository domainRepository)
     {
         GitHubCommit lastCommit = pullRequest.getCommits().isEmpty() ? null : pullRequest.getCommits().get(
                 pullRequest.getCommits().size() - 1);
@@ -310,8 +312,8 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
             return;
         }
 
-        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(pullRequest.getDomain().getId(),
-                pullRequest.getGitHubId());
+        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(
+                domainRepository.getId(), pullRequest.getGitHubId());
         List<RepositoryActivityPullRequestUpdateMapping> updated = repositoryActivityDao.getPullRequestActivityByStatus(
                 repositoryPullRequest, RepositoryActivityPullRequestUpdateMapping.Status.UPDATED);
 

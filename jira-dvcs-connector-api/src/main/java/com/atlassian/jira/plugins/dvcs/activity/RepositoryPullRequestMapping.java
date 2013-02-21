@@ -15,7 +15,13 @@ public interface RepositoryPullRequestMapping extends Entity
     //
     // getters
     //
+    /**
+     * @return remote Id of this pull request
+     */
     Long getRemoteId();
+    /**
+     * @return local id of destination repository
+     */
     int getToRepositoryId();
     String getName();
     String getDescription();
