@@ -24,7 +24,6 @@ public interface RepositoryActivityCommitMapping extends Entity
     String NODE = "NODE";
     String MESSAGE = "MESSAGE";
     String DATE = "DATE";
-    String COMMIT_URL = "COMMIT_URL";
     String AUTHOR_AVATAR_URL = "AUTHOR_AVATAR_URL";
     
     /**
@@ -53,10 +52,7 @@ public interface RepositoryActivityCommitMapping extends Entity
      */
     @NotNull
     Date getDate();
-    /**
-     * @return Url of the commit
-     */
-    String getCommitUrl();
+
     /**
      * @return Author's avatar URL, useful if the {@link #getAuthor()} username is not available. Can be null, then internal resolver will
      *         be used, otherwise it has precedence.
@@ -70,6 +66,5 @@ public interface RepositoryActivityCommitMapping extends Entity
     void setMessage(String message);
     void setNode(String node);
     void setDate(Date date);
-    void setCommitUrl(String url);
     void setAuthorAvatarUrl(String authorAvatarUrl);
 }

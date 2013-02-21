@@ -18,13 +18,16 @@ import java.util.List;
  */
 public class BitbucketPullRequest implements Serializable, HasMessages
 {
-    private Long id;
+	private static final long serialVersionUID = 846355472211323786L;
+
+	private Long id;
     private String title;
     private String description;
     private BitbucketAccount user;
     private BitbucketPullRequestCommitInfo commits;
     private BitbucketPullRequestLinks links;
-
+    private BitbucketPullRequestHead source;
+    
     //
     private transient List<BitbucketPullRequestCommit> commitsDetails;
 
@@ -119,5 +122,15 @@ public class BitbucketPullRequest implements Serializable, HasMessages
     public void setLinks(BitbucketPullRequestLinks links)
     {
         this.links = links;
+    }
+
+    public BitbucketPullRequestHead getSource()
+    {
+        return source;
+    }
+
+    public void setSource(BitbucketPullRequestHead source)
+    {
+        this.source = source;
     }
 }
