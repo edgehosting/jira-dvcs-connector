@@ -316,6 +316,11 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         ret.put(RepositoryPullRequestMapping.NAME, request.getTitle());
         ret.put(RepositoryPullRequestMapping.URL, request.getLinks().getHtmlHref());
         ret.put(RepositoryPullRequestMapping.TO_REPO_ID, forRepo.getId());
+        // in case that fork has been deleted, the source repository is null 
+        if (request.getSource().getRepository() != null)
+        {
+        	ret.put(RepositoryPullRequestMapping.SOURCE_URL, request.getSource().getRepository().getLinks().getHtmlHref());
+        }
         
         return ret;
     }
@@ -329,7 +334,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         ret.put(RepositoryActivityCommitMapping.MESSAGE, commit.getMessage());
         ret.put(RepositoryActivityCommitMapping.NODE, commit.getSha());
         ret.put(RepositoryActivityCommitMapping.DATE, commit.getDate());
-        ret.put(RepositoryActivityCommitMapping.COMMIT_URL, commit.getHref());
         
         return ret;
     }

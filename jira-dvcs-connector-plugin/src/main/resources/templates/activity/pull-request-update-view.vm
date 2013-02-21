@@ -33,7 +33,7 @@
             </div>
           </td>
           <td class="hash">
-            <div><a class="hash" href="$commit.commitUrl">$commit.node.substring(0,7)</a></div>
+            <div><a class="hash" href="$commitUrlProvider.getCommitUrl($repository, $pullRequest, $commit)">$commit.node.substring(0,7)</a></div>
           </td>
           <td class="text">
             <div title="$commit.message">$commit.message</div>
