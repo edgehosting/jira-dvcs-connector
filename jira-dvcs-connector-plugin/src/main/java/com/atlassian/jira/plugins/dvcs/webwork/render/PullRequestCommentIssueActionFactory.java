@@ -43,6 +43,7 @@ public class PullRequestCommentIssueActionFactory implements IssueActionFactory
         templateMap.put("velocityUtils", new VelocityUtils());
         templateMap.put("pullRequestComment", pullRequestComment);
         templateMap.put("pullRequest", pullRequest);
+        templateMap.put("repository", repository);
         templateMap.put("user", user);
         
         return new DefaultIssueAction(templateRenderer, "/templates/activity/pull-request-comment-view.vm", templateMap,

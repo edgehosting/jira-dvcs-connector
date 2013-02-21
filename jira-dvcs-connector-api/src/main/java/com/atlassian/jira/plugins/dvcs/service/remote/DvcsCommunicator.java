@@ -40,7 +40,7 @@ public interface DvcsCommunicator
 
 	DvcsUser getUser(Repository repository, String username);
 
-	String getUserUrl(Repository repository, Changeset changeset);
+	String getUserUrl(Repository repository, String username);
 
 	boolean isOauthConfigured();
 

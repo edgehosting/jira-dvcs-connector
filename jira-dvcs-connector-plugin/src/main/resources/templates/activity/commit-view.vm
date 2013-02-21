@@ -1,9 +1,9 @@
-<div class="dvcs activity-item"  style="background-color:#E0F8E0">
+<div class="dvcs activity-item commit">
   <article>
     <header>
       <div class="summary">
-        <a href="$user_url"><img class="avatar avatar32" src="$gravatar_url"></a>
-        <a href="$user_url" class="author" title="$changeset.rawAuthor">$user.fullName</a>
+        <a href="$userUrl"><img class="avatar avatar32" src="$gravatar_url"></a>
+        <a href="$userUrl" class="author" title="$changeset.rawAuthor">$user.fullName</a>
         <span class="aui-lozenge pull-request-state aui-lozenge-moved">commited</span> 
         changeset <a class="hash" href="$commit_url">$commit_hash</a>
       </div>
@@ -21,7 +21,7 @@
       </tr>
       </thead>      
       <tbody>
-        <tr style="background-color:#E0F8E0">
+        <tr>
           <td class="text">
               <div title="$commitMessage">$commitMessageHtml</div>
           </td>

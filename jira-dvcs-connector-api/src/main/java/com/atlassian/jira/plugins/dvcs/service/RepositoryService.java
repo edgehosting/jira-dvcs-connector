@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import java.util.List;
 
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.SyncProgress;
@@ -110,4 +111,7 @@ public interface RepositoryService
      * @param onOffBoolean the on off boolean
      */
     void onOffLinkers(boolean onOffBoolean);
+    
+    
+    DvcsUser getUser(Repository repository, String username);
 }

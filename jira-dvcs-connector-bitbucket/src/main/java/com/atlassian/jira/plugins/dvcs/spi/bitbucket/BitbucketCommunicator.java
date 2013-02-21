@@ -18,6 +18,7 @@ import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser.UnknownUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -355,11 +356,11 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
             BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getUser(username);
-            return DvcsUserTransformer.fromBitbucketAccount(bitbucketAccount);
+            return DvcsUserTransformer.fromBitbucketAccount(repository.getOrgHostUrl(), bitbucketAccount);
         } catch (BitbucketRequestException e)
         {
             log.debug("Could not load user [" + username + "]", e);
-            return DvcsUser.UNKNOWN_USER;
+            return new UnknownUser(username, repository.getOrgHostUrl());
         }
     }
 
@@ -367,9 +368,9 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public String getUserUrl(Repository repository, Changeset changeset)
+    public String getUserUrl(Repository repository, String username)
     {
-        return MessageFormat.format("{0}/{1}", repository.getOrgHostUrl(), changeset.getAuthor());
+        return MessageFormat.format("{0}/{1}", repository.getOrgHostUrl(), username);
     }
 
     /**

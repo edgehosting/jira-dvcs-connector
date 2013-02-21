@@ -42,6 +42,7 @@ import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser.UnknownUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -300,18 +301,18 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             log.debug("Get user information for: [ {} ]", username);
             final User ghUser = userService.getUser(username);
-            return GithubUserFactory.transform(ghUser);
+            return GithubUserFactory.transform(ghUser, repository.getOrgHostUrl());
         } catch (IOException e)
         {
             log.debug("could not load user [ " + username + " ]");
-            return DvcsUser.UNKNOWN_USER;
+            return new UnknownUser(username, repository.getOrgHostUrl());
         }
     }
 
     @Override
-    public String getUserUrl(Repository repository, Changeset changeset)
+    public String getUserUrl(Repository repository, String username)
     {
-        return MessageFormat.format("{0}/{1}", repository.getOrgHostUrl(), changeset.getAuthor());
+        return MessageFormat.format("{0}/{1}", repository.getOrgHostUrl(), username);
     }
 
     private List<BranchTip> getBranches(Repository repository)

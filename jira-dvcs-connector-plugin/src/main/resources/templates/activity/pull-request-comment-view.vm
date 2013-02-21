@@ -1,10 +1,10 @@
-<div class="dvcs comment"  style="background-color:#F7F8E0">
+<div class="dvcs comment">
     <article data-comment-id="16415">
         <header>
-            <a href="/$pullRequestComment"><img class="avatar avatar32" src="$user.avatar"></a>
-            <a href="/$pullRequestComment" class="author">$user.fullName</a> 
+            <a href="$user.url"><img class="avatar avatar32" src="$user.avatar"></a>
+            <a href="$user.url" class="author">$user.fullName</a> 
             <span class="aui-lozenge pull-request-state aui-lozenge-success" title="">commented</span>
-            on a pull request <a href="$pullRequest.url">$pullRequest.name</a> 
+            on a pull request <a href="$repository.orgHostUrl$pullRequest.url">$pullRequest.name</a> 
             #if($pullRequestComment.file)
                 on a file <code>$pullRequestComment.file</code>
             #end

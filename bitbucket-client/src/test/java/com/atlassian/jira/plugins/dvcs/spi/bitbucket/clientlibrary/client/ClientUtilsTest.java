@@ -1,14 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client;
 
 
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 
 import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
+
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 
 
 /**
@@ -37,7 +39,6 @@ public class ClientUtilsTest
         
         assertThat(bitbucketAccount.getFirstName())  .isEqualTo("Mehmet S");
         assertThat(bitbucketAccount.getLastName())   .isEqualTo("Catalbas");
-        assertThat(bitbucketAccount.getResourceUri()).isEqualTo("/1.0/users/baratrion");
     }
 
     @Test

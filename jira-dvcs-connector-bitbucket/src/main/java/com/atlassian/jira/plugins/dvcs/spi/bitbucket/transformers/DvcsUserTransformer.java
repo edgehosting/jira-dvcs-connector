@@ -8,14 +8,16 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
  * 
  * @author Martin Skurla mskurla@atlassian.com
  */
-public class DvcsUserTransformer {
+public class DvcsUserTransformer
+{
     private DvcsUserTransformer() {}
 
     
-    public static DvcsUser fromBitbucketAccount(BitbucketAccount bitbucketAccount)
+    public static DvcsUser fromBitbucketAccount(String hostUrl, BitbucketAccount bitbucketAccount)
     {
         return new DvcsUser(bitbucketAccount.getUsername(),
                             bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName(),
-                            bitbucketAccount.getAvatar());
+                            bitbucketAccount.getAvatar(), 
+                            hostUrl);
     }
 }

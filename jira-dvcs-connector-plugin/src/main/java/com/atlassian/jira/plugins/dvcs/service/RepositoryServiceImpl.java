@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
@@ -539,4 +540,11 @@ public class RepositoryServiceImpl implements RepositoryService
         }
     }
 
+    @Override
+    public DvcsUser getUser(Repository repository, String username)
+    {
+        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+        return communicator.getUser(repository, username);
+    }
+    
 }

@@ -128,9 +128,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public String getUserUrl(Repository repository, Changeset changeset)
+    public String getUserUrl(Repository repository, String username)
     {
-        return delegate.getUserUrl(repository, changeset);
+        return delegate.getUserUrl(repository, username);
     }
 
     @Override

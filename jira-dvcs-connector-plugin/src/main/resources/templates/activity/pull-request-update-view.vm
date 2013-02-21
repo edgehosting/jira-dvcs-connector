@@ -1,9 +1,9 @@
-<div class="dvcs activity-item" style="background-color:#F8E6E0">
+<div class="dvcs activity-item">
   <article>
     <header>
       <div class="summary">
-        <a href="/$pullRequestUpdate.author"><img class="avatar avatar32" src="$user.avatar"></a>
-        <a href="/$pullRequestUpdate.author" class="author">$user.fullName</a>
+        <a href="$user.url"><img class="avatar avatar32" src="$user.avatar"></a>
+        <a href="$user.url" class="author">$user.fullName</a>
         <span class="aui-lozenge pull-request-state $lozengeStyle" title="">$pullRequestUpdate.status</span> a pull request
         <a href="$repository.orgHostUrl$pullRequest.url">$pullRequest.name</a>
         on <time>$velocityUtils.getRelativePastDate($pullRequestUpdate.lastUpdatedOn)</time>
@@ -26,7 +26,7 @@
       <tbody>
         #set( $commits = $pullRequestUpdate.commits)
         #foreach( $commit in $commits )
-        <tr class="" id="chg_1" style="background-color:#F8E6E0">
+        <tr class="" id="chg_1">
           <td class="author">
             <div>
                 <span><a href="/$commit.author" title="$commit.author"><img class="avatar avatar16" src="$user.avatar" alt="$commit.author"></a><span>$commit.rawAuthor</span></span>
