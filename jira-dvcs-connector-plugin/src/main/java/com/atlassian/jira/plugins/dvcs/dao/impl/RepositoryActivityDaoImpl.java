@@ -12,6 +12,9 @@ import java.util.Set;
 
 import net.java.ao.Query;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
@@ -42,12 +45,16 @@ import com.google.common.base.Joiner;
 public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 {
 
+    /**
+     * Logger of this class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryActivityDaoImpl.class);
+
     private final ActiveObjects activeObjects;
 
     @SuppressWarnings("unchecked")
     private static final Class<RepositoryActivityPullRequestMapping>[] ALL_ACTIVITY_TABLES = new Class[] {
-            RepositoryActivityPullRequestCommentMapping.class,
-            RepositoryActivityPullRequestUpdateMapping.class };
+            RepositoryActivityPullRequestCommentMapping.class, RepositoryActivityPullRequestUpdateMapping.class };
 
     public RepositoryActivityDaoImpl(ActiveObjects activeObjects)
     {
@@ -64,35 +71,33 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
             @SuppressWarnings("unchecked")
             public RepositoryActivityPullRequestMapping doInTransaction()
             {
-                return activeObjects.create((Class<? extends RepositoryActivityPullRequestMapping>) activity.remove(RepositoryActivityPullRequestMapping.ENTITY_TYPE),
-                        activity);
+                return activeObjects.create((Class<? extends RepositoryActivityPullRequestMapping>) activity
+                        .remove(RepositoryActivityPullRequestMapping.ENTITY_TYPE), activity);
             }
 
         });
     }
-    
+
     @Override
     public RepositoryPullRequestMapping savePullRequest(final Map<String, Object> request, final Set<String> issueKeys)
     {
-        return
-        activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
+        return activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
+        {
+            @Override
+            public RepositoryPullRequestMapping doInTransaction()
+            {
+                RepositoryPullRequestMapping pullRequest = activeObjects.create(RepositoryPullRequestMapping.class, request);
+                // persist mappings
+                for (String issueKey : issueKeys)
                 {
-                    @Override
-                    public RepositoryPullRequestMapping doInTransaction()
-                    {
-                        RepositoryPullRequestMapping pullRequest = activeObjects.create(RepositoryPullRequestMapping.class,
-                                request);
-                        // persist mappings
-                        for (String issueKey : issueKeys)
-                        {
-                            activeObjects.create(RepositoryPullRequestIssueKeyMapping.class, asIssueKeyMapping(issueKey, pullRequest.getID()));
-                        }
-                        return  pullRequest;
-                    }
+                    activeObjects.create(RepositoryPullRequestIssueKeyMapping.class, asIssueKeyMapping(issueKey, pullRequest.getID()));
+                }
+                return pullRequest;
+            }
 
-                });
+        });
     }
-    
+
     @Override
     public void saveIssueKeysMappings(final Collection<String> issueKeys, final int pullRequestId)
     {
@@ -109,14 +114,12 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
             }
         });
     }
-    
+
     @Override
     public Set<String> getExistingIssueKeysMapping(Integer pullRequestId)
     {
-        Query query = Query.select()
-                .from(RepositoryPullRequestIssueKeyMapping.class)
-                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID +  " = ? ", 
-                      pullRequestId);
+        Query query = Query.select().from(RepositoryPullRequestIssueKeyMapping.class)
+                .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " = ? ", pullRequestId);
         RepositoryPullRequestIssueKeyMapping[] mappings = activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, query);
         Set<String> issueKeys = new java.util.HashSet<String>();
         for (RepositoryPullRequestIssueKeyMapping repositoryPullRequestIssueKeyMapping : mappings)
@@ -126,7 +129,6 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         return issueKeys;
     }
 
-    
     protected Map<String, Object> asIssueKeyMapping(String issueKey, int pullRequestId)
     {
         Map<String, Object> map = new HashMap<String, Object>();
@@ -140,15 +142,16 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     {
         return activeObjects.get(RepositoryPullRequestMapping.class, localId);
     }
-    
+
     @Override
     public RepositoryPullRequestMapping findRequestByRemoteId(int repositoryId, long remoteId)
     {
-        Query query = Query.select()
-                           .from(RepositoryPullRequestMapping.class)
-                           .where(RepositoryPullRequestMapping.REMOTE_ID +  " = ? AND " 
-                                + RepositoryPullRequestMapping.TO_REPO_ID + " = ?", remoteId, repositoryId);
-        
+        Query query = Query
+                .select()
+                .from(RepositoryPullRequestMapping.class)
+                .where(RepositoryPullRequestMapping.REMOTE_ID + " = ? AND " + RepositoryPullRequestMapping.TO_REPO_ID + " = ?", remoteId,
+                        repositoryId);
+
         RepositoryPullRequestMapping[] found = activeObjects.find(RepositoryPullRequestMapping.class, query);
         return found.length == 1 ? found[0] : null;
     }
@@ -159,17 +162,15 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         List<RepositoryActivityPullRequestMapping> ret = new ArrayList<RepositoryActivityPullRequestMapping>();
         List<Integer> pullRequestIds = findRelatedPullRequests(issueKey);
 
-        if ( !pullRequestIds.isEmpty() )
+        if (!pullRequestIds.isEmpty())
         {
             for (final Class<RepositoryActivityPullRequestMapping> activityTable : ALL_ACTIVITY_TABLES)
             {
-                final Query query = Query
-                        .select()
-                        .from(activityTable)
+                final Query query = Query.select().from(activityTable)
                         .where(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID + " IN (" + Joiner.on(",").join(pullRequestIds) + ")");
-        
+
                 ret.addAll(Arrays.asList(activeObjects.find(activityTable, query)));
-        
+
             }
         }
         return sort(ret);
@@ -178,11 +179,9 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     private List<Integer> findRelatedPullRequests(String issueKey)
     {
         List<Integer> prIds = new ArrayList<Integer>();
-        final Query query = Query
-                .select()
-                .from(RepositoryPullRequestIssueKeyMapping.class)
+        final Query query = Query.select().from(RepositoryPullRequestIssueKeyMapping.class)
                 .where(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY + " = ?", issueKey.toUpperCase());
-        
+
         RepositoryPullRequestIssueKeyMapping[] mappings = activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, query);
         for (RepositoryPullRequestIssueKeyMapping issueKeyMapping : mappings)
         {
@@ -208,7 +207,8 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                                 .alias(RepositoryActivityCommitMapping.class, "COMMIT")
 
                                 .alias(RepositoryActivityPullRequestUpdateMapping.class, "PR_UPDATE")
-                                .join(RepositoryActivityPullRequestUpdateMapping.class, "COMMIT." + RepositoryActivityCommitMapping.ACTIVITY_ID + " = PR_UPDATE.ID")
+                                .join(RepositoryActivityPullRequestUpdateMapping.class,
+                                        "COMMIT." + RepositoryActivityCommitMapping.ACTIVITY_ID + " = PR_UPDATE.ID")
 
                                 .where("PR_UPDATE." + RepositoryActivityPullRequestMapping.REPOSITORY_ID + " = ?", forRepository.getId()));
 
@@ -229,72 +229,118 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                 // drop issue keys to PR mappings
                 for (Integer deletedId : deletedIds)
                 {
-                	ActiveObjectsUtils.delete(
+                    ActiveObjectsUtils.delete(
                             activeObjects,
                             RepositoryPullRequestIssueKeyMapping.class,
-                            Query.select()
-                                    .from(RepositoryPullRequestIssueKeyMapping.class)
+                            Query.select().from(RepositoryPullRequestIssueKeyMapping.class)
                                     .where(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " = " + deletedId));
                 }
-     
+
                 return null;
             }
         });
     }
-    
+
     @Override
     public RepositoryActivityCommitMapping saveCommit(final Map<String, Object> commit)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<RepositoryActivityCommitMapping>()
-                {
-                    @Override
-                    public RepositoryActivityCommitMapping doInTransaction()
-                    {
-                        return activeObjects.create(RepositoryActivityCommitMapping.class, commit);
-                    }
+        {
+            @Override
+            public RepositoryActivityCommitMapping doInTransaction()
+            {
+                return activeObjects.create(RepositoryActivityCommitMapping.class, commit);
+            }
 
-                });
+        });
     }
 
-	@Override
-	public RepositoryActivityCommitMapping getCommit(int pullRequesCommitId)
-	{
+    @Override
+    public RepositoryActivityCommitMapping getCommit(int pullRequesCommitId)
+    {
         return activeObjects.get(RepositoryActivityCommitMapping.class, pullRequesCommitId);
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public List<RepositoryActivityPullRequestUpdateMapping> getByPullRequestStatus(RepositoryPullRequestMapping pullRequest, Status status)
-	{
-	    Query query = Query.select().from(RepositoryActivityPullRequestUpdateMapping.class);
-	    query.where(RepositoryActivityPullRequestUpdateMapping.PULL_REQUEST_ID + " = ? AND " + RepositoryActivityPullRequestUpdateMapping.STATUS + " = ? ", pullRequest.getID(), status);
-	    return Arrays.asList(activeObjects.find(RepositoryActivityPullRequestUpdateMapping.class, query));
-	}
-    
-	@Override
-	public void updateActivityStatus(int activityId, Status status)
-	{
-		RepositoryActivityPullRequestUpdateMapping activity = activeObjects.get(RepositoryActivityPullRequestUpdateMapping.class, activityId);
-		activity.setStatus(status);
-		activity.save();
-	}
+    }
 
-	@Override
-	public RepositoryActivityCommitMapping getCommitByNode(int pullRequestId, String node)
-	{
-		Query query = Query.select()
-			.alias(RepositoryActivityCommitMapping.class, "COMMIT")
-			.alias(RepositoryActivityPullRequestUpdateMapping.class, "PR_UPDATE")
-			.join(RepositoryActivityPullRequestUpdateMapping.class, "COMMIT." + RepositoryActivityCommitMapping.ACTIVITY_ID + " = PR_UPDATE.ID")
-            .where("PR_UPDATE." + RepositoryActivityPullRequestMapping.PULL_REQUEST_ID + " = ? AND COMMIT." +
-            		RepositoryActivityCommitMapping.NODE + " = ?", pullRequestId, node);
-		
-		RepositoryActivityCommitMapping[] found = activeObjects.find(RepositoryActivityCommitMapping.class, query);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public RepositoryActivityPullRequestUpdateMapping getPullRequestActivityByRemoteId(RepositoryPullRequestMapping pullRequest,
+            String remoteId)
+    {
+        Query query = Query.select().from(RepositoryActivityPullRequestUpdateMapping.class);
+        query.where(RepositoryActivityPullRequestUpdateMapping.PULL_REQUEST_ID + " = ? AND "
+                + RepositoryActivityPullRequestUpdateMapping.REMOTE_ID + " = ? ", pullRequest.getID(), remoteId);
+
+        RepositoryActivityPullRequestUpdateMapping[] founded = activeObjects.find(RepositoryActivityPullRequestUpdateMapping.class, query);
+        if (founded.length == 1)
+        {
+            return founded[0];
+
+        } else if (founded.length == 0)
+        {
+            return null;
+
+        } else
+        {
+            LOGGER.error("There are multiple records with same pull request ID and remote ID! Pull request ID: " + pullRequest.getID()
+                    + " Remote ID: " + remoteId + "First one will be used!");
+            return founded[0];
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<RepositoryActivityPullRequestUpdateMapping> getPullRequestActivityByStatus(RepositoryPullRequestMapping pullRequest,
+            Status status)
+    {
+        Query query = Query.select().from(RepositoryActivityPullRequestUpdateMapping.class);
+        query.where(RepositoryActivityPullRequestUpdateMapping.PULL_REQUEST_ID + " = ? AND "
+                + RepositoryActivityPullRequestUpdateMapping.STATUS + " = ? ", pullRequest.getID(), status);
+        return Arrays.asList(activeObjects.find(RepositoryActivityPullRequestUpdateMapping.class, query));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<RepositoryActivityPullRequestCommentMapping> getPullRequestComments(RepositoryPullRequestMapping pullRequest)
+    {
+        Query query = Query.select().from(RepositoryActivityPullRequestCommentMapping.class);
+        query.where(RepositoryActivityPullRequestCommentMapping.PULL_REQUEST_ID + " = ? ", pullRequest.getID());
+
+        RepositoryActivityPullRequestCommentMapping[] founded = activeObjects
+                .find(RepositoryActivityPullRequestCommentMapping.class, query);
+        return Arrays.asList(founded);
+    }
+
+    @Override
+    public void updateActivityStatus(int activityId, Status status)
+    {
+        RepositoryActivityPullRequestUpdateMapping activity = activeObjects.get(RepositoryActivityPullRequestUpdateMapping.class,
+                activityId);
+        activity.setStatus(status);
+        activity.save();
+    }
+
+    @Override
+    public RepositoryActivityCommitMapping getCommitByNode(int pullRequestId, String node)
+    {
+        Query query = Query
+                .select()
+                .alias(RepositoryActivityCommitMapping.class, "COMMIT")
+                .alias(RepositoryActivityPullRequestUpdateMapping.class, "PR_UPDATE")
+                .join(RepositoryActivityPullRequestUpdateMapping.class,
+                        "COMMIT." + RepositoryActivityCommitMapping.ACTIVITY_ID + " = PR_UPDATE.ID")
+                .where("PR_UPDATE." + RepositoryActivityPullRequestMapping.PULL_REQUEST_ID + " = ? AND COMMIT."
+                        + RepositoryActivityCommitMapping.NODE + " = ?", pullRequestId, node);
+
+        RepositoryActivityCommitMapping[] found = activeObjects.find(RepositoryActivityCommitMapping.class, query);
         return found.length == 1 ? found[0] : null;
-	}
-	
+    }
+
     // --------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
     // private helpers

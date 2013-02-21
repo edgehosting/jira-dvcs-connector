@@ -168,11 +168,12 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequestLineComment> getByRepository(GitHubRepository repository)
+    public List<GitHubPullRequestLineComment> getByPullRequest(GitHubPullRequest pullRequest)
     {
         Query query = Query.select().where(
-                columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getDomain()) + " = ? ",
-                repository.getId());
+                columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getDomain()) + " = ? AND "
+                        + columnNameResolverService.column(gitHubPullRequestLineCommentMappingDescription.getPullRequest()) + " = ? ",
+                pullRequest.getDomain().getId(), pullRequest.getId());
 
         List<GitHubPullRequestLineComment> result = new LinkedList<GitHubPullRequestLineComment>();
         for (GitHubPullRequestLineCommentMapping source : activeObjects.find(GitHubPullRequestLineCommentMapping.class, query))

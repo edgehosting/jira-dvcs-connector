@@ -21,7 +21,7 @@ public interface RepositoryActivityPullRequestCommentMapping extends RepositoryA
     String getMessage();
     String getCommentUrl();
     Integer getRemoteParentId();
-    int getRemoteId();
+    long getRemoteId();
     String getFile();
     
     //
@@ -31,7 +31,7 @@ public interface RepositoryActivityPullRequestCommentMapping extends RepositoryA
     void setMessage(String message);
     void setCommentUrl(String commentUrl);
     void setRemoteParentId(Integer remoteParentId);
-    void setRemoteId(int remoteId);
+    void setRemoteId(long remoteId);
     void setFile(String file);
 }
 

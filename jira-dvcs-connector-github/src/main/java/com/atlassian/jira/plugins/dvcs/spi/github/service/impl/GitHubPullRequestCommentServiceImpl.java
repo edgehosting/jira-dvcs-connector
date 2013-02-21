@@ -4,14 +4,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestCommentDAO;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
 
@@ -35,18 +36,26 @@ public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCom
     private final RepositoryActivityDao repositoryActivityDao;
 
     /**
+     * @see #GitHubPullRequestCommentServiceImpl(GitHubPullRequestCommentDAO, RepositoryActivityDao)
+     */
+    private final ActiveObjects activeObjects;
+
+    /**
      * Constructor.
      * 
      * @param gitHubPullRequestCommentDAO
      *            injected {@link GitHubPullRequestCommentDAO} dependency
      * @param repositoryActivityDao
      *            injected {@link RepositoryActivityDao} dependency
+     * @param activeObjects
+     *            injected {@link ActiveObjects} dependency
      */
     public GitHubPullRequestCommentServiceImpl(GitHubPullRequestCommentDAO gitHubPullRequestCommentDAO,
-            RepositoryActivityDao repositoryActivityDao)
+            RepositoryActivityDao repositoryActivityDao, ActiveObjects activeObjects)
     {
         this.gitHubPullRequestCommentDAO = gitHubPullRequestCommentDAO;
         this.repositoryActivityDao = repositoryActivityDao;
+        this.activeObjects = activeObjects;
     }
 
     /**
@@ -89,27 +98,46 @@ public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCom
      * {@inheritDoc}
      */
     @Override
-    public List<GitHubPullRequestComment> getByRepository(GitHubRepository repository)
+    public List<GitHubPullRequestComment> getByPullRequest(GitHubPullRequest pullRequest)
     {
-        return gitHubPullRequestCommentDAO.getByRepository(repository);
+        return gitHubPullRequestCommentDAO.getByPullRequest(pullRequest);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void synchronize(Repository domainRepository, GitHubRepository domain)
+    public void synchronize(Repository domainRepository, GitHubPullRequest pullRequest)
     {
+        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(domainRepository.getId(),
+                pullRequest.getGitHubId());
+
+        Map<Long, RepositoryActivityPullRequestCommentMapping> idToLoaded = new HashMap<Long, RepositoryActivityPullRequestCommentMapping>();
+        for (RepositoryActivityPullRequestCommentMapping loaded : repositoryActivityDao.getPullRequestComments(repositoryPullRequest))
+        {
+            idToLoaded.put(loaded.getRemoteId(), loaded);
+        }
 
         Map<String, Object> activity = new HashMap<String, Object>();
-        for (GitHubPullRequestComment comment : getByRepository(domain))
+        for (GitHubPullRequestComment comment : getByPullRequest(pullRequest))
         {
-            RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(domainRepository.getId(),
-                    comment.getPullRequest().getGitHubId());
-            map(activity, repositoryPullRequest, comment);
-            repositoryActivityDao.saveActivity(activity);
-            activity.clear();
+            if (!idToLoaded.containsKey(comment.getGitHubId()))
+            {
+                map(activity, repositoryPullRequest, comment);
+                repositoryActivityDao.saveActivity(activity);
+                activity.clear();
+            } else
+            {
+                idToLoaded.remove(comment.getGitHubId());
+            }
         }
+
+        // removes comments which are not already propagated
+        for (RepositoryActivityPullRequestCommentMapping toDelete : idToLoaded.values())
+        {
+            activeObjects.delete(toDelete);
+        }
+
     }
 
     /**
