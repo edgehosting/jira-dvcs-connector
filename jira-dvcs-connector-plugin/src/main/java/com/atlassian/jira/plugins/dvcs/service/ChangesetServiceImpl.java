@@ -54,6 +54,13 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
+    public Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset)
+    {
+        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+        return communicator.getDetailChangeset(repository, changeset);
+    }
+    
+    @Override
     public List<Changeset> getByIssueKey(String issueKey)
     {
         List<Changeset> changesets = changesetDao.getByIssueKey(issueKey);
@@ -145,7 +152,8 @@ public class ChangesetServiceImpl implements ChangesetService
                 Repository repository = repositoryDao.get(changeset.getRepositoryId());
                 DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
-                Changeset updatedChangeset = communicator.getDetailChangeset(repository, changeset.getNode());
+                Changeset updatedChangeset = communicator.getChangeset(repository, changeset.getNode());
+                updatedChangeset = communicator.getDetailChangeset(repository, updatedChangeset);
 
                 changeset.setRawAuthor(updatedChangeset.getRawAuthor());
                 changeset.setAuthor(updatedChangeset.getAuthor());

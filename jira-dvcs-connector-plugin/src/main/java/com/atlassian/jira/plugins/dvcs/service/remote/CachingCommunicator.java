@@ -182,11 +182,17 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public Changeset getDetailChangeset(Repository repository, String node)
+    public Changeset getChangeset(Repository repository, String node)
     {
-        return delegate.getDetailChangeset(repository, node);
+        return delegate.getChangeset(repository, node);
     }
 
+    @Override
+    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    {
+        return delegate.getDetailChangeset(repository, changeset);
+    }
+    
     @Override
     public Iterable<Changeset> getChangesets(Repository repository)
     {
@@ -228,5 +234,4 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     {
         delegate.linkRepositoryIncremental(repository, withPossibleNewProjectkeys);
     }
-
 }

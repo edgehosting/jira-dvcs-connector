@@ -148,7 +148,7 @@ class ChangesetIterator implements Iterator<Changeset>
             @Override
             public Changeset call() throws Exception
             {
-                return dvcsCommunicator.getDetailChangeset(repository, node);
+                return dvcsCommunicator.getChangeset(repository, node);
             }
         });
     }

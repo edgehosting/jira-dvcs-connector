@@ -22,7 +22,9 @@ public interface DvcsCommunicator
 
     List<Repository> getRepositories(Organization organization);
 
-    Changeset getDetailChangeset(Repository repository, String node);
+    Changeset getChangeset(Repository repository, String node);
+    
+    Changeset getDetailChangeset(Repository repository, Changeset changeset);
 
     Iterable<Changeset> getChangesets(Repository repository);
 
