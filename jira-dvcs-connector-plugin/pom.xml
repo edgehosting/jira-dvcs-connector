@@ -26,6 +26,17 @@
     <packaging>atlassian-plugin</packaging>
 
     <dependencies>
+    	<dependency>
+    		<groupId>org.slf4j</groupId>
+    		<artifactId>slf4j-api</artifactId>
+    		<version>1.6.4</version>
+    		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+    		<groupId>com.google.guava</groupId>
+    		<artifactId>guava</artifactId>
+    		<version>10.0.1</version>
+    	</dependency>
         <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-dvcs-connector-api</artifactId>
@@ -44,14 +55,13 @@
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>com.atlassian.jira</groupId>
-            <artifactId>atlassian-jira</artifactId>
-            <version>${jira.compile.version}</version>
+	    <artifactId>jira-core</artifactId>
+	    <version>${jira.compile.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
+	<dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
@@ -59,9 +69,21 @@
         </dependency>
         <dependency>
             <groupId>com.atlassian.crowd</groupId>
-            <artifactId>crowd-api</artifactId>
-            <version>2.2.0</version>
+            <artifactId>crowd-events</artifactId>
+            <version>2.4.3</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.crowd</groupId>
+            <artifactId>crowd-integration-api</artifactId>
+            <version>2.4.3</version>
+            <scope>provided</scope>
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.slf4j</groupId>
+            		<artifactId>slf4j-api</artifactId>
+            	</exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

@@ -13,11 +13,11 @@
     </organization>
 
     <modules>
+        <module>bitbucket-client</module>
         <module>jira-dvcs-connector-api</module>
         <module>jira-dvcs-connector-github</module>
         <module>jira-dvcs-connector-bitbucket</module>
         <module>jira-dvcs-connector-plugin</module>
-        <module>bitbucket-client</module>
     </modules>
 
     <scm>
@@ -31,9 +31,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>5.2.1</jira.compile.version>
-        <jira.version>5.2.1</jira.version>
-        <jira.data.version>5.2.1</jira.data.version>
+        <jira.compile.version>6.0-m07.1</jira.compile.version>
+        <jira.version>6.0-m07</jira.version>
+        <jira.data.version>6.0-m07.1</jira.data.version>
 
     <!--
         <jira.version>5.0.1</jira.version>
