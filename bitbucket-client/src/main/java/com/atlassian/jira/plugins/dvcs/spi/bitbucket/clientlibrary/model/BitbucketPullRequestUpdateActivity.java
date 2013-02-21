@@ -34,7 +34,7 @@ public class BitbucketPullRequestUpdateActivity extends BitbucketPullRequestBase
 
     private String status;
 
-    private BitbucketPullRequestUpdateActivitySource source;
+    private BitbucketPullRequestHead source;
     
     public BitbucketPullRequestUpdateActivity()
     {
@@ -71,12 +71,14 @@ public class BitbucketPullRequestUpdateActivity extends BitbucketPullRequestBase
         this.status = status;
     }
 
-	public BitbucketPullRequestUpdateActivitySource getSource() {
-		return source;
-	}
+    public BitbucketPullRequestHead getSource()
+    {
+        return source;
+    }
 
-	public void setSource(BitbucketPullRequestUpdateActivitySource source) {
-		this.source = source;
-	}
+    public void setSource(BitbucketPullRequestHead source)
+    {
+        this.source = source;
+    }
 }
 

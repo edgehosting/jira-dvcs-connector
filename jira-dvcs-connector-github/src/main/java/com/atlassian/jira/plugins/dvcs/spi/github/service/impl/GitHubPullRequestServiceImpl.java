@@ -236,6 +236,8 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
         target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
         target.put(RepositoryPullRequestMapping.DESCRIPTION, source.getText());
         target.put(RepositoryPullRequestMapping.TO_REPO_ID, domainRepository.getId());
+        //TODO save url in the correct format
+        target.put(RepositoryPullRequestMapping.SOURCE_URL, source.getHeadRepository().getUrl());
     }
 
     /**

@@ -393,7 +393,6 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
         target.put(RepositoryActivityCommitMapping.DATE, source.getCreatedAt());
         target.put(RepositoryActivityCommitMapping.AUTHOR, source.getCreatedBy());
         target.put(RepositoryActivityCommitMapping.RAW_AUTHOR, source.getCreatedByName());
-        target.put(RepositoryActivityCommitMapping.COMMIT_URL, source.getCreatedByAvatarUrl());
         target.put(RepositoryActivityCommitMapping.NODE, source.getSha());
         target.put(RepositoryActivityCommitMapping.MESSAGE, source.getMessage());
     }
