@@ -7,15 +7,12 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
-import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser.UnknownUser;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
@@ -83,26 +80,6 @@ public class ChangesetServiceImpl implements ChangesetService
         }
 
         return fileCommitUrls;
-    }
-
-    @Override
-    public DvcsUser getUser(Repository repository, Changeset changeset)
-    {
-        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-        String username = changeset.getAuthor();
-        
-        if (StringUtils.isBlank(username))
-        {
-            return new UnknownUser(changeset.getRawAuthor(), repository.getOrgHostUrl());
-        }
-        return communicator.getUser(repository, username);
-    }
-
-    @Override
-    public String getUserUrl(Repository repository, Changeset changeset)
-    {
-        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-        return communicator.getUserUrl(repository, changeset.getAuthor());
     }
 
     @Override

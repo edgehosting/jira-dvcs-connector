@@ -15,6 +15,7 @@ public interface RepositoryActivityPullRequestMapping extends Entity
     String LAST_UPDATED_ON = "LAST_UPDATED_ON";
     String REPOSITORY_ID = "REPOSITORY_ID";
     String AUTHOR = "AUTHOR";
+    String RAW_AUTHOR = "RAW_AUTHOR";
     String PULL_REQUEST_ID = "PULL_REQUEST_ID";
 
     //
@@ -28,6 +29,9 @@ public interface RepositoryActivityPullRequestMapping extends Entity
 
     @NotNull
     String getAuthor();
+    
+    @NotNull
+    String getRawAuthor();
 
     @NotNull
     RepositoryPullRequestMapping getPullRequest();
@@ -40,6 +44,8 @@ public interface RepositoryActivityPullRequestMapping extends Entity
     void setRepositoryId(int repositoryId);
 
     void setAuthor(String username);
+
+    void setRawAuthor(String rawAuthor);
 
     void setPullRequest(RepositoryPullRequestMapping pullRequest);
 

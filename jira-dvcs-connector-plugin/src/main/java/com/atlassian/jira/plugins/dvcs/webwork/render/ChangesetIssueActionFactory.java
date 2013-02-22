@@ -52,27 +52,16 @@ public class ChangesetIssueActionFactory implements IssueActionFactory
         String documentJpgUrl = applicationProperties.getBaseUrl() + "/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/document.jpg";
         templateMap.put("document_jpg_url", documentJpgUrl);
 
-        String login = changeset.getAuthor();
         String commitUrl = changesetService.getCommitUrl(repository, changeset);
 
         Map<ChangesetFile, String> fileCommitUrls = changesetService.getFileCommitUrls(repository, changeset);
         templateMap.put("file_commit_urls", fileCommitUrls);
 
-        DvcsUser user = changesetService.getUser(repository, changeset);
+        DvcsUser user = repositoryService.getUser(repository, changeset.getAuthor(), changeset.getRawAuthor());
 
-        String gravatarUrl = user.getAvatar().replace("s=32", "s=60");
-        String commitMessage = changeset.getMessage();
-
-        templateMap.put("gravatar_url", gravatarUrl);
-
-        String userUrl = changesetService.getUserUrl(repository, changeset);
-        templateMap.put("userUrl", userUrl);
-
-        templateMap.put("login", login);
         templateMap.put("user", user);
         templateMap.put("changeset", changeset);
-        templateMap.put("commitMessage", commitMessage);
-        templateMap.put("commitMessageHtml", issueLinker.createLinks(commitMessage));
+        templateMap.put("commitMessageHtml", issueLinker.createLinks(changeset.getMessage()));
         templateMap.put("commit_url", commitUrl);
         templateMap.put("commit_hash", changeset.getNode());
         

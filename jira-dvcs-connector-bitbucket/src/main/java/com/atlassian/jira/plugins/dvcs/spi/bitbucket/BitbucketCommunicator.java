@@ -18,7 +18,6 @@ import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser.UnknownUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -40,7 +39,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChangesetTransformer;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DvcsUserTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
 import com.atlassian.plugin.PluginAccessor;
@@ -350,27 +348,14 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public DvcsUser getUser(Repository repository, String username)
+    public DvcsUser getUser(Repository repository, String author)
     {
-        try
-        {
-            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
-            BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getUser(username);
-            return DvcsUserTransformer.fromBitbucketAccount(repository.getOrgHostUrl(), bitbucketAccount);
-        } catch (BitbucketRequestException e)
-        {
-            log.debug("Could not load user [" + username + "]", e);
-            return new UnknownUser(username, repository.getOrgHostUrl());
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getUserUrl(Repository repository, String username)
-    {
-        return MessageFormat.format("{0}/{1}", repository.getOrgHostUrl(), username);
+        BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
+        BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getUser(author);
+        String username = bitbucketAccount.getUsername();
+        String fullName = bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName();
+        String avatar = bitbucketAccount.getAvatar();
+        return new DvcsUser(username, fullName, null, avatar, repository.getOrgHostUrl());
     }
 
     /**

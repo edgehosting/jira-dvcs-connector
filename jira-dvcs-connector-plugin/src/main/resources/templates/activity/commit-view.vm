@@ -2,8 +2,8 @@
   <article>
     <header>
       <div class="summary">
-        <a href="$userUrl"><img class="avatar avatar32" src="$gravatar_url"></a>
-        <a href="$userUrl" class="author" title="$changeset.rawAuthor">$user.fullName</a>
+        <a href="$user.url"><img class="avatar avatar32" src="$user.avatar"></a>
+        <a href="$user.url" class="author" title="$user.rawAuthor">$user.fullName</a>
         <span class="aui-lozenge pull-request-state aui-lozenge-moved">commited</span> 
         changeset <a class="hash" href="$commit_url">$commit_hash</a>
       </div>
@@ -23,7 +23,7 @@
       <tbody>
         <tr>
           <td class="text">
-              <div title="$commitMessage">$commitMessageHtml</div>
+              <div title="$changeset.message">$commitMessageHtml</div>
           </td>
           <td class="labels fade-left">
             <dl class="commit-labels clearfix">

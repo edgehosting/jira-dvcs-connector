@@ -9,7 +9,6 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.templaterenderer.TemplateRenderer;
 
@@ -17,15 +16,12 @@ public class PullRequestCommentIssueActionFactory implements IssueActionFactory
 {
     private final RepositoryService repositoryService;
     private final TemplateRenderer templateRenderer;
-    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
     public PullRequestCommentIssueActionFactory(RepositoryService repositoryService, 
-            TemplateRenderer templateRenderer, 
-            DvcsCommunicatorProvider dvcsCommunicatorProvider)
+            TemplateRenderer templateRenderer)
     {
         this.repositoryService = repositoryService;
         this.templateRenderer = templateRenderer;
-        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
     }
 
     @Override
@@ -36,8 +32,7 @@ public class PullRequestCommentIssueActionFactory implements IssueActionFactory
         RepositoryPullRequestMapping pullRequest = pullRequestComment.getPullRequest();
         
         Repository repository = repositoryService.get(repositoryId);
-
-        DvcsUser user = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType()).getUser(repository, pullRequestComment.getAuthor());
+        DvcsUser user = repositoryService.getUser(repository, pullRequestComment.getAuthor(), pullRequestComment.getRawAuthor());
 
         Map<String, Object> templateMap = new HashMap<String, Object>();
         templateMap.put("velocityUtils", new VelocityUtils());

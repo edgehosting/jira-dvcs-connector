@@ -157,6 +157,7 @@ public class GitHubPullRequestLineCommentServiceImpl implements GitHubPullReques
         target.put(RepositoryActivityPullRequestCommentMapping.REMOTE_ID, source.getGitHubId());
         target.put(RepositoryActivityPullRequestCommentMapping.LAST_UPDATED_ON, source.getCreatedAt());
         target.put(RepositoryActivityPullRequestCommentMapping.AUTHOR, source.getCreatedBy().getLogin());
+        target.put(RepositoryActivityPullRequestCommentMapping.RAW_AUTHOR, source.getCreatedBy().getName());
         target.put(RepositoryActivityPullRequestCommentMapping.COMMENT_URL, source.getHtmlUrl());
         target.put(RepositoryActivityPullRequestCommentMapping.MESSAGE, source.getText());
         target.put(RepositoryActivityPullRequestCommentMapping.FILE, source.getPath());

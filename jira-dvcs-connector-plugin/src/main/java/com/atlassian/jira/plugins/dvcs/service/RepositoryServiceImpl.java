@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser.UnknownUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
@@ -541,10 +542,21 @@ public class RepositoryServiceImpl implements RepositoryService
     }
 
     @Override
-    public DvcsUser getUser(Repository repository, String username)
+    public DvcsUser getUser(Repository repository, String author, String rawAuthor)
     {
-        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
-        return communicator.getUser(repository, username);
+        log.debug("Get user information for: [ {}, {}]", author, rawAuthor);
+
+        try
+        {
+            DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+            DvcsUser user = communicator.getUser(repository, author);
+            user.setRawAuthor(rawAuthor);
+            return user;
+        } catch (Exception e)
+        {
+            log.debug("Could not load user [" + author + ", " + rawAuthor + "]", e);
+            return new UnknownUser(author, rawAuthor, repository.getOrgHostUrl()); 
+        }
     }
     
 }

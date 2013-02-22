@@ -48,7 +48,7 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
         RepositoryPullRequestMapping pullRequest = repositoryActivityDao.findRequestById(pullRequestId);
         Repository repository = repositoryService.get(repositoryId);
         
-        DvcsUser user = repositoryService.getUser(repository, pullRequestUpdate.getAuthor());
+        DvcsUser user = repositoryService.getUser(repository, pullRequestUpdate.getAuthor(), pullRequestUpdate.getRawAuthor());
 
         Map<String, Object> templateMap = new HashMap<String, Object>();
         templateMap.put("velocityUtils", new VelocityUtils());
@@ -97,10 +97,6 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
         return null;
     }
         
-    public static void main(String[] args)
-    {
-        System.out.println(createMockRepository(null, null));
-    }
     private String getLozengeStyle(Status status)
     {
         String defaultStyle = "aui-lozenge-success aui-lozenge-subtle";

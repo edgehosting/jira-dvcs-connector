@@ -326,6 +326,7 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
             updateActivityParams.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
             updateActivityParams.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, lastCommit.getCreatedAt());
             updateActivityParams.put(RepositoryActivityPullRequestMapping.AUTHOR, lastCommit.getCreatedBy());
+            updateActivityParams.put(RepositoryActivityPullRequestMapping.RAW_AUTHOR, lastCommit.getCreatedByName());
             updateActivityParams.put(RepositoryActivityPullRequestUpdateMapping.STATUS,
                     RepositoryActivityPullRequestUpdateMapping.Status.UPDATED);
             updateActivity = (RepositoryActivityPullRequestUpdateMapping) repositoryActivityDao.saveActivity(updateActivityParams);

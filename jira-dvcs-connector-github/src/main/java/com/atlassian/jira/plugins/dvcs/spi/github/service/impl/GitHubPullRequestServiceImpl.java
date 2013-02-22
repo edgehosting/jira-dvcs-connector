@@ -258,6 +258,7 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
         target.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
         target.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, source.getCreatedAt());
         target.put(RepositoryActivityPullRequestMapping.AUTHOR, source.getCreatedBy().getLogin());
+        target.put(RepositoryActivityPullRequestMapping.RAW_AUTHOR, source.getCreatedBy().getName());
         target.put(RepositoryActivityPullRequestUpdateMapping.REMOTE_ID, source.getGitHubEventId());
         target.put(RepositoryActivityPullRequestUpdateMapping.STATUS, resolveStatus(source));
     }

@@ -28,7 +28,7 @@ public class BitbucketPullRequestBaseActivity implements Serializable, HasMessag
     private Date createdOn;
     private Date date;
     
-    private BitbucketAccount user;
+    private BitbucketActivityUser user;
     
     public BitbucketPullRequestBaseActivity()
     {
@@ -45,12 +45,12 @@ public class BitbucketPullRequestBaseActivity implements Serializable, HasMessag
         this.updatedOn = updatedOn;
     }
 
-    public BitbucketAccount getUser()
+    public BitbucketActivityUser getUser()
     {
         return user;
     }
 
-    public void setUser(BitbucketAccount user)
+    public void setUser(BitbucketActivityUser user)
     {
         this.user = user;
     }

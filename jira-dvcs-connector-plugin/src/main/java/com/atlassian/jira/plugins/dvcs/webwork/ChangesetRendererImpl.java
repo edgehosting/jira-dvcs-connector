@@ -1,5 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -9,13 +17,6 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ChangesetRendererImpl implements ChangesetRenderer {
 
@@ -36,6 +37,7 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
         this.templateRenderer = templateRenderer;
     }
 
+    @Override
     public String getHtmlForChangeset(Changeset changeset)
     {
         Repository repository = repositoryService.get(changeset.getRepositoryId());
@@ -57,7 +59,9 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
         return sw.toString();
     }
 
-    public Map<String, Object> getVelocityContextForChangeset(Changeset changeset, Repository repository) {
+    @Override
+    public Map<String, Object> getVelocityContextForChangeset(Changeset changeset, Repository repository)
+    {
         Map<String, Object> templateMap = new HashMap<String, Object>();
         templateMap.put("velocity_utils", new VelocityUtils());
         templateMap.put("issue_linker", issueLinker);
@@ -74,16 +78,12 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
         Map<ChangesetFile, String> fileCommitUrls = changesetService.getFileCommitUrls(repository, changeset);
         templateMap.put("file_commit_urls", fileCommitUrls);
 
-        DvcsUser user = changesetService.getUser(repository, changeset);
+        DvcsUser user = repositoryService.getUser(repository, changeset.getAuthor(), changeset.getRawAuthor());
 
-        String gravatarUrl = user.getAvatar().replace("s=32", "s=60");
         String commitMessage = changeset.getMessage();
 
-        templateMap.put("gravatar_url", gravatarUrl);
-
-        String userUrl = changesetService.getUserUrl(repository, changeset);
-        templateMap.put("user_url", userUrl);
-
+        templateMap.put("gravatar_url", user.getAvatar());
+        templateMap.put("user_url", user.getUrl());
         templateMap.put("login", login);
         templateMap.put("user_name", authorName);
         templateMap.put("commit_message", commitMessage);

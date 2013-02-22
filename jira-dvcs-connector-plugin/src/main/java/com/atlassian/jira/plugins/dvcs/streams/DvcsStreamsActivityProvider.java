@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,7 +54,6 @@ import com.atlassian.util.concurrent.Nullable;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import java.util.HashSet;
 
 public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 {
@@ -134,10 +134,8 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
                 .id(changeset.getNode()).alternateLinkUri(URI.create(""))
                 .activityObjectType(ActivityObjectTypes.status()));
 
-        final String author = changeset.getAuthor();
         final String commitUrl = changesetService.getCommitUrl(repository, changeset);
-        final String userUrl = changesetService.getUserUrl(repository, changeset);
-        DvcsUser user = changesetService.getUser(repository, changeset);
+        final DvcsUser user = repositoryService.getUser(repository, changeset.getAuthor(), changeset.getRawAuthor());
 
         StreamsEntry.Renderer renderer = new StreamsEntry.Renderer()
         {
@@ -147,9 +145,9 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 
                 Map<String, Object> templateMap = new HashMap<String, Object>();
                 templateMap.put("changeset", changeset);
-                templateMap.put("user_name", changeset.getRawAuthor());
-                templateMap.put("login", author);
-                templateMap.put("user_url", userUrl);
+                templateMap.put("user_name", user.getFullName());
+                templateMap.put("login", user.getUsername());
+                templateMap.put("user_url", user.getUrl());
 				templateMap.put("commit_url", commitUrl);
 
                 StringWriter sw = new StringWriter();

@@ -6,7 +6,6 @@ import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
@@ -33,10 +32,6 @@ public interface ChangesetService
     String getCommitUrl(Repository repository, Changeset changeset);
 
     Map<ChangesetFile, String> getFileCommitUrls(Repository repository, Changeset changeset);
-
-    DvcsUser getUser(Repository repository, Changeset changeset);
-
-    String getUserUrl(Repository repository, Changeset changeset);
 
     Iterable<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
         

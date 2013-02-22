@@ -1,18 +1,33 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import org.apache.commons.lang3.StringUtils;
+
+
 /**
  * Describes a user 
  */
 public class DvcsUser
 {
-//    public static final DvcsUser UNKNOWN_USER = new DvcsUser(
-//            "unknown", "Unknown User", "https://secure.gravatar.com/avatar/unknown?d=mm");
     
     public static class UnknownUser extends DvcsUser
     {
-        public UnknownUser(String username, String hostUrl)
+        public UnknownUser(String author, String raw_author, String hostUrl)
         {
-            super(username, "Unknown User", "https://secure.gravatar.com/avatar/unknown?d=mm", hostUrl);
+            super(author, extractFullNameFromRawAuthor(raw_author), raw_author, "https://secure.gravatar.com/avatar/unknown?d=mm", hostUrl);
+        }
+        
+        /**
+         * Converts "First Last <email@domain.com>" to "First Last"
+         * @param raw_author
+         * @return
+         */
+        private static String extractFullNameFromRawAuthor(String raw_author)
+        {
+            if (StringUtils.isBlank(raw_author))
+            {
+                return raw_author;
+            }
+            return raw_author.replaceAll("<.*>", "").trim();
         }
     }
 
@@ -20,11 +35,13 @@ public class DvcsUser
     private final String fullName;
     private final String avatar;
     private final String url;
+    private String rawAuthor;
 
-    public DvcsUser(String username, String fullName, String avatar, String hostUrl)
+    public DvcsUser(String username, String fullName, String rawAuthor, String avatar, String hostUrl)
     {
         this.username = username;
         this.fullName = fullName;
+        this.rawAuthor = rawAuthor;
         this.avatar = avatar;
         this.url = hostUrl +"/"+ username;
     }
@@ -48,4 +65,15 @@ public class DvcsUser
     {
         return url;
     }
+
+    public void setRawAuthor(String rawAuthor)
+    {
+        this.rawAuthor = rawAuthor;
+    }
+
+    public String getRawAuthor()
+    {
+        return rawAuthor;
+    }
+
 }

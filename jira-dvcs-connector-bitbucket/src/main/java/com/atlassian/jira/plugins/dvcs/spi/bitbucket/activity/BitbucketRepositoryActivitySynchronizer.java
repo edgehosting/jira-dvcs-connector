@@ -304,6 +304,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         HashMap<String, Object> ret = new HashMap<String, Object>();
         ret.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, ClientUtils.extractActivityDate(activity));
         ret.put(RepositoryActivityPullRequestMapping.AUTHOR, activity.getUser().getUsername());
+        ret.put(RepositoryActivityPullRequestMapping.RAW_AUTHOR, activity.getUser().getDisplayName());
         ret.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, pullRequestId);
         ret.put(RepositoryActivityPullRequestMapping.REPOSITORY_ID, forRepository.getId());
         return ret;

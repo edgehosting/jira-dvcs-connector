@@ -42,7 +42,6 @@ import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser.UnknownUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -51,7 +50,6 @@ import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
-import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
 import com.google.common.collect.Iterators;
 
 public class GithubCommunicator implements DvcsCommunicator
@@ -295,24 +293,20 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getUser(Repository repository, String username)
     {
-        final UserService userService = githubClientProvider.getUserService(repository);
-
         try
         {
-            log.debug("Get user information for: [ {} ]", username);
-            final User ghUser = userService.getUser(username);
-            return GithubUserFactory.transform(ghUser, repository.getOrgHostUrl());
+            UserService userService = githubClientProvider.getUserService(repository);
+            User ghUser = userService.getUser(username);
+            String login = ghUser.getLogin();
+            String name = ghUser.getName();
+            String displayName = StringUtils.isNotBlank(name) ? name : login;
+            String gravatarUrl = ghUser.getAvatarUrl();
+            
+            return new DvcsUser(login, displayName, null, gravatarUrl, repository.getOrgHostUrl());
         } catch (IOException e)
         {
-            log.debug("could not load user [ " + username + " ]");
-            return new UnknownUser(username, repository.getOrgHostUrl());
+            throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public String getUserUrl(Repository repository, String username)
-    {
-        return MessageFormat.format("{0}/{1}", repository.getOrgHostUrl(), username);
     }
 
     private List<BranchTip> getBranches(Repository repository)
