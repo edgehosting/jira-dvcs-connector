@@ -1,6 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -9,8 +15,15 @@ import java.util.concurrent.Executors;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
@@ -20,35 +33,30 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProces
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
-
 /**
  * @author Martin Skurla
  */
 public final class TestDefaultSynchronizer
 {
-	@Mock
-	private Repository repositoryMock;
+    @Mock
+    private Repository repositoryMock;
 
-	@Mock
-	private ChangesetService changesetServiceMock;
-	
-	@Mock
-	DvcsCommunicator communicatorMock;
-
-
-	@Mock
-	private SmartcommitsChangesetsProcessor changesetsProcessorMock;
+    @Mock
+    private ChangesetService changesetServiceMock;
     
-	@Captor
-	private ArgumentCaptor<Changeset> savedChangesetCaptor;
+    @Mock
+    DvcsCommunicator communicatorMock;
 
-	private final Changeset changesetWithJIRAIssue = new Changeset(123, "node", "message MES-123 text", new Date());
-	private final Changeset changesetWithoutJIRAIssue = new Changeset(123, "node", "message without JIRA issue",
-			new Date());
+
+    @Mock
+    private SmartcommitsChangesetsProcessor changesetsProcessorMock;
+    
+    @Captor
+    private ArgumentCaptor<Changeset> savedChangesetCaptor;
+
+    private final Changeset changesetWithJIRAIssue = new Changeset(123, "node", "message MES-123 text", new Date());
+    private final Changeset changesetWithoutJIRAIssue = new Changeset(123, "node", "message without JIRA issue",
+            new Date());
 
     @BeforeMethod
     private void initializeMocks()
@@ -56,34 +64,81 @@ public final class TestDefaultSynchronizer
         MockitoAnnotations.initMocks(this);
     }
 
-	@Test
-	public void softSynchronization_ShouldSaveOneChangesetWithIssueKey() throws InterruptedException
-	{
-		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(
-				Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
+    @Test
+    public void softSynchronization_ShouldSaveOneChangesetWithIssueKey() throws InterruptedException
+    {
+        when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(
+                Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
-		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
+        SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
                 mock(RepositoryService.class), changesetServiceMock, true); // soft sync
 
-		Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
-		synchronizer.synchronize(repositoryMock, synchronisationOperation);
+        Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
+        synchronizer.synchronize(repositoryMock, synchronisationOperation);
 
-		waitUntilProgressEnds(synchronizer);
-       	
-		verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
+        waitUntilProgressEnds(synchronizer);
+           
+        verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
         
-		// one changeset is saved with issue key, another without
-		assertThat(savedChangesetCaptor.getAllValues().get(0).getIssueKey()).isEqualTo("MES-123");
-		assertThat(savedChangesetCaptor.getAllValues().get(1).getIssueKey()).isEqualTo("NON_EXISTING-0");
-	}
+        // one changeset is saved with issue key, another without
+        assertThat(savedChangesetCaptor.getAllValues().get(0).getIssueKey()).isEqualTo("MES-123");
+        assertThat(savedChangesetCaptor.getAllValues().get(1).getIssueKey()).isEqualTo("NON_EXISTING-0");
+    }
     
-	private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException
-	{
-		Progress progress = synchronizer.getProgress(repositoryMock);
+    @Test
+    public void gettingDiffsOnlyForChangesetsWithIssueKeys() throws InterruptedException
+    {
+        when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(
+                Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
-		while (!progress.isFinished())
-		{
-			Thread.sleep(50);
-		}
-	}
+        when(changesetServiceMock.getDetailChangesetFromDvcs(eq(repositoryMock), any(Changeset.class))).then(
+                new Answer<Changeset>()
+                {
+                    @Override
+                    public Changeset answer(InvocationOnMock invocation) throws Throwable {
+                      Object[] args = invocation.getArguments();
+                      Changeset argChangeset =  (Changeset) args[1];
+                      Changeset changeset = new Changeset(
+                                                      argChangeset.getRepositoryId(),
+                                                      argChangeset.getNode(),
+                                                      argChangeset.getIssueKey(),
+                                                      argChangeset.getRawAuthor(),
+                                                      argChangeset.getAuthor(),
+                                                      argChangeset.getDate(),
+                                                      argChangeset.getRawNode(),
+                                                      argChangeset.getBranch(),
+                                                      argChangeset.getMessage(),
+                                                      argChangeset.getParents(),
+                                                      Arrays.asList(new ChangesetFile(ChangesetFileAction.ADDED,"file",1,0)),
+                                                      1,
+                                                      argChangeset.getAuthorEmail());
+                      
+                      return changeset;
+                    }
+                  });
+        
+        SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
+                mock(RepositoryService.class), changesetServiceMock, true); // soft sync
+
+        Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
+        synchronizer.synchronize(repositoryMock, synchronisationOperation);
+
+        waitUntilProgressEnds(synchronizer);
+           
+        verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
+        
+        // one changeset has file details, another not
+        assertThat(savedChangesetCaptor.getAllValues().get(0).getFiles()).isNotEmpty();
+        assertThat(savedChangesetCaptor.getAllValues().get(1).getFiles()).isEmpty();
+    }
+    
+    private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException
+    {
+        Progress progress = synchronizer.getProgress(repositoryMock);
+
+        while (!progress.isFinished())
+        {
+            Thread.sleep(50);
+        }
+    }
 }

@@ -40,39 +40,23 @@ public class DvcsScheduler implements LifecycleAware
     {
         log.debug("onStart");
         this.interval = SystemUtils.getSystemPropertyLong(PROPERTY_KEY, DEFAULT_INTERVAL);
-        log.debug("Starting DVCSConnector Scheduler Job. interval=" + interval);
         reschedule();
     }
 	
 	public void reschedule()
 	{
-		Map<String, Object> data = Maps.newHashMap();
-		data.put("organizationService",organizationService);
-		data.put("repositoryService",repositoryService);
+        Map<String, Object> data = Maps.newHashMap();
+        data.put("organizationService", organizationService);
+        data.put("repositoryService", repositoryService);
 		
-		long randomStartTimeWithinInterval = new Date().getTime()+nextLong(new Random(), interval);
-		pluginScheduler.scheduleJob(JOB_NAME, // unique name of the job
+        long randomStartTimeWithinInterval = new Date().getTime() + (long) (new Random().nextDouble() * interval);
+        Date startTime = new Date(randomStartTimeWithinInterval);
+        
+        log.debug("DvcsScheduler start planned at " + startTime + ", interval=" + interval);
+        pluginScheduler.scheduleJob(JOB_NAME, // unique name of the job
 		        DvcsSchedulerJob.class, // class of the job
 		        data, // data that needs to be passed to the job
-		        new Date(randomStartTimeWithinInterval), // the time the job is to start
+		        startTime, // the time the job is to start
 		        interval); // interval between repeats, in milliseconds
 	}
-
-	
-	/**
-	 * Random long number generator where 0 < n < max
-	 * http://stackoverflow.com/questions/2546078/java-random-long-number-in-0-x-n-range
-	 * @param rng
-	 * @param max
-	 * @return
-	 */
-	private long nextLong(Random rng, long max) {
-	    // error checking and 2^x checking removed for simplicity.
-	    long bits, val;
-	    do {
-	       bits = (rng.nextLong() << 1) >>> 1;
-	       val = bits % max;
-	    } while (bits-val+(max-1) < 0L);
-	    return val;
-	 }
 }

@@ -128,7 +128,7 @@ public class GithubCommunicatorTest
         when(repositoryCommit.getCommit()).thenReturn(commit);
         when(commit.getMessage()).thenReturn("ABC-123 fix");
 
-        Changeset detailChangeset = communicator.getDetailChangeset(repositoryMock, "abcde");
+        Changeset detailChangeset = communicator.getChangeset(repositoryMock, "abcde");
         
         verify(commitService).getCommit(Matchers.<IRepositoryIdProvider>anyObject(),anyString());
 

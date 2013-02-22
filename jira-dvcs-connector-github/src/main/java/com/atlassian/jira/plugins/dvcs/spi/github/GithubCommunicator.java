@@ -34,6 +34,7 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
@@ -66,7 +67,7 @@ public class GithubCommunicator implements DvcsCommunicator
     private final HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
     
     public GithubCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
-            GithubClientProvider githubClientProvider)
+            @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
     {
         this.changesetCache = changesetCache;
         this.githubOAuth = githubOAuth;
@@ -168,7 +169,8 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public Changeset getDetailChangeset(Repository repository, String node) {
+    public Changeset getChangeset(Repository repository, String node)
+    {
         CommitService commitService = githubClientProvider.getCommitService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
@@ -180,6 +182,12 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             throw new SourceControlException("could not get result", e);
         }
+    }
+    
+    @Override
+    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    {
+    	return changeset;
     }
 
     public PageIterator<RepositoryCommit> getPageIterator(Repository repository, String branch)

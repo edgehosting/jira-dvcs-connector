@@ -1,17 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
-import static org.eclipse.egit.github.core.client.IGitHubConstants.*;
+import static com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.client.DateFormatter;
+import org.eclipse.egit.github.core.client.EventFormatter;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.event.Event;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +31,14 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubOauthProvider;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 public class GithubOAuthUtils
 {
@@ -202,9 +220,88 @@ public class GithubOAuthUtils
                 host = HOST_API;
             }
             
-            return new GitHubClient(host, -1, urlObject.getProtocol());
+            GitHubClient result = new GitHubClient(host, -1, urlObject.getProtocol());
+            result.setUserAgent("JIRA DVCS Connector 1.3.x");
+            return result;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
     }
+    
+    public static GitHubClient createClientForGithubEnteprise(String url) {
+        try {
+            URL urlObject = new URL(url);
+            String host = urlObject.getHost();
+            
+            if (HOST_DEFAULT.equals(host) || HOST_GISTS.equals(host)) {
+                host = HOST_API;
+            }
+            
+            return new GitHubEnterpriseClient(host, -1, urlObject.getProtocol());
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+    
+    private static class GitHubEnterpriseClient extends GitHubClient
+    {
+    	public GitHubEnterpriseClient(final String hostname, final int port,
+    			final String scheme)
+    	{
+    		super(hostname,port,scheme);
+    		gson = createGson(true);
+		}
+    	
+    	public static final Gson createGson(final boolean serializeNulls)
+    	{
+    		final GsonBuilder builder = new GsonBuilder();
+    		builder.registerTypeAdapter(Date.class, new ISODateFormatter());
+    		builder.registerTypeAdapter(Event.class, new EventFormatter());
+    		builder.setFieldNamingPolicy(LOWER_CASE_WITH_UNDERSCORES);
+    		if (serializeNulls)
+    			builder.serializeNulls();
+    		return builder.create();
+    	}
+    }
+    
+	private static class ISODateFormatter implements JsonDeserializer<Date>,
+			JsonSerializer<Date> {
+
+		private final Logger log = LoggerFactory.getLogger(ISODateFormatter.class);
+		
+		private final DateFormatter dateFormatter = new DateFormatter();
+		
+		
+		/**
+		 * Create date formatter
+		 */
+		public ISODateFormatter()
+		{
+		}
+
+		public Date deserialize(JsonElement json, Type typeOfT,
+				JsonDeserializationContext context) throws JsonParseException
+		{
+			final String value = json.getAsString();
+			
+			DateTimeFormatter fmt = ISODateTimeFormat.dateTimeNoMillis();
+			try
+			{
+				return fmt.parseDateTime(value).toDate();
+			} catch (IllegalArgumentException e)
+			{
+				log.debug("Could not parse '" + value + "'.", e);
+			}
+			
+			// let's try eGit dateFormatter
+			return dateFormatter.deserialize(json, typeOfT, context);
+		}
+
+		@Override
+		public JsonElement serialize(Date src, Type typeOfSrc,
+				JsonSerializationContext context) {
+			
+			return dateFormatter.serialize(src, typeOfSrc, context);
+		}
+	}
 }

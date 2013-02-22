@@ -24,7 +24,7 @@ public class GithubClientProvider
 
     private GitHubClient createClient(Repository repository)
     {
-        GitHubClient client = GithubOAuthUtils.createClient(repository.getOrgHostUrl());
+        GitHubClient client = createClient(repository.getOrgHostUrl());
         
         OAuthAuthentication auth = (OAuthAuthentication) authenticationFactory.getAuthentication(repository);
         client.setOAuth2Token(auth.getAccessToken());
@@ -34,7 +34,7 @@ public class GithubClientProvider
 
     private GitHubClient createClient(Organization organization)
     {
-        GitHubClient client = GithubOAuthUtils.createClient(organization.getHostUrl());
+        GitHubClient client = createClient(organization.getHostUrl());
 
         Authentication authentication = authenticationFactory.getAuthentication(organization);
         if (authentication instanceof OAuthAuthentication)
@@ -46,6 +46,11 @@ public class GithubClientProvider
             throw new SourceControlException("Failed to get proper OAuth instance for github client.");
         }
         return client;
+    }
+    
+    protected GitHubClient createClient(String url)
+    {
+    	return GithubOAuthUtils.createClient(url);
     }
 
     public CommitService getCommitService(Repository repository)
