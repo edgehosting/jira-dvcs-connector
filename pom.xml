@@ -128,5 +128,12 @@
                 <jira.data.version>5.0.1</jira.data.version>
             </properties>
         </profile>
+         <profile>
+            <id>jira52</id>
+            <properties>
+                <jira.version>5.2.5</jira.version>
+                <jira.data.version>5.2.5</jira.data.version>
+            </properties>
+        </profile>
     </profiles>
 </project>
