@@ -44,10 +44,9 @@ public class GreenHopperBoardPage implements Page
 
         qa1Link.click();
 
-        PageElement openIssueTabsMenu = bodyElement.find(By.className("tabs-menu"));
+        PageElement openIssueTabsMenu = bodyElement.find(By.className("ghx-detail-nav-menu"));
         Poller.waitUntilTrue(openIssueTabsMenu.timed().isVisible());
-        PageElement commitsTabLink = PageElementUtils.findTagWithAttributeValue(openIssueTabsMenu, "li", "title", "Commits")
-                                                     .find(By.tagName("a"));
+        PageElement commitsTabLink = PageElementUtils.findTagWithAttributeValue(openIssueTabsMenu, "a", "title", "Commits");
 
         commitsTabLink.click();
 
