@@ -13,6 +13,7 @@ syntax: regexp
 ^jira-dvcs-connector-bitbucket/target$
 ^jira-dvcs-connector-github/target$
 ^jira-dvcs-connector-plugin/target$
+^jira-dvcs-connector-plugin/test-output$
 ^jira-dvcs-connector-common/target$
 ^bitbucket-client/target$
 
