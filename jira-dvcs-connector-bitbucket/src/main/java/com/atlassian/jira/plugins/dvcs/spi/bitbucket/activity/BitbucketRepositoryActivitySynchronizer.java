@@ -178,7 +178,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         // don't have this pull request, let's save it
         if (localPullRequest == null)
         {
-            localPullRequest = dao.savePullRequest(toDaoModelPullRequest(remotePullRequest, issueKeys, forRepository), issueKeys);
+            localPullRequest = dao.savePullRequest(toDaoModelPullRequest(remotePullRequest, forRepository), issueKeys);
 
           // already have it, let's find new issue keys
         } else
@@ -249,7 +249,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         {
         	BitbucketPullRequestCommentActivity commentActivity = (BitbucketPullRequestCommentActivity) activity;
     		ret.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestCommentMapping.class);
-    		ret.put(RepositoryActivityPullRequestCommentMapping.REMOTE_ID, commentActivity.getId());
+    		ret.put(RepositoryActivityPullRequestCommentMapping.REMOTE_ID,  new Long(commentActivity.getId()));
     		if (commentActivity.getParent() != null)
     		{
     			ret.put(RepositoryActivityPullRequestCommentMapping.REMOTE_PARENT_ID, commentActivity.getParent().getId());
@@ -309,7 +309,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         return ret;
     }
 
-    private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Set<String> issueKeys, Repository forRepo)
+    private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Repository forRepo)
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
         ret.put(RepositoryPullRequestMapping.REMOTE_ID, request.getId());
@@ -319,7 +319,8 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         // in case that fork has been deleted, the source repository is null 
         if (request.getSource().getRepository() != null)
         {
-        	ret.put(RepositoryPullRequestMapping.SOURCE_URL, request.getSource().getRepository().getLinks().getHtmlHref());
+        	String sourceRepositoryUrl = forRepo.getOrgHostUrl() + request.getSource().getRepository().getLinks().getHtmlHref();
+            ret.put(RepositoryPullRequestMapping.SOURCE_URL, sourceRepositoryUrl);
         }
         
         return ret;

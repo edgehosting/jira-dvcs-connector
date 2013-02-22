@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.webwork.render;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,9 +16,8 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.templaterenderer.TemplateRenderer;
 
@@ -25,16 +26,16 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
     private final RepositoryService repositoryService;
     private final TemplateRenderer templateRenderer;
     private final RepositoryActivityDao repositoryActivityDao;
-    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
+    private final ChangesetService changesetService;
 
     public PullRequestUpdateIssueActionFactory(RepositoryService repositoryService, 
             TemplateRenderer templateRenderer, RepositoryActivityDao repositoryActivityDao,
-            DvcsCommunicatorProvider dvcsCommunicatorProvider)
+            ChangesetService changesetService)
     {
         this.repositoryService = repositoryService;
         this.templateRenderer = templateRenderer;
         this.repositoryActivityDao = repositoryActivityDao;
-        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
+        this.changesetService = changesetService;
     }
 
     @Override
@@ -47,7 +48,7 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
         RepositoryPullRequestMapping pullRequest = repositoryActivityDao.findRequestById(pullRequestId);
         Repository repository = repositoryService.get(repositoryId);
         
-        DvcsUser user = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType()).getUser(repository, pullRequestUpdate.getAuthor());
+        DvcsUser user = repositoryService.getUser(repository, pullRequestUpdate.getAuthor());
 
         Map<String, Object> templateMap = new HashMap<String, Object>();
         templateMap.put("velocityUtils", new VelocityUtils());
@@ -64,37 +65,42 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
 
     public String getCommitUrl(Repository destinationRepository, RepositoryPullRequestMapping pullRequest, RepositoryActivityCommitMapping commit)
     {
-        Repository sourceRepository = getPullRequestSourceRepository(destinationRepository, pullRequest);
-        
-        DvcsCommunicator dvcsCommunicator = dvcsCommunicatorProvider.getCommunicator(sourceRepository.getDvcsType());
+        Repository sourceRepository = createMockRepository(pullRequest.getSourceUrl(), destinationRepository.getDvcsType());
+        if (sourceRepository == null)
+        {
+            return "";
+        }
         Changeset changeset = new Changeset(0, commit.getNode(), commit.getMessage(), commit.getDate());
-        return StringUtils.defaultIfEmpty(dvcsCommunicator.getCommitUrl(sourceRepository, changeset), "");
+        return changesetService.getCommitUrl(sourceRepository, changeset);
     }
     
-    private Repository getPullRequestSourceRepository(Repository destinationRepository, RepositoryPullRequestMapping pullRequestMapping)
+    
+    private static Repository createMockRepository(String repositoryUrl, String dvcsType)
     {
-        // we need to check whether we have source url, in case the fork has been deleted, we don't know the source repository
-        if (pullRequestMapping.getSourceUrl() != null)
+        if (StringUtils.isBlank(repositoryUrl)) 
+        {
+            return null;
+        }
+        Pattern pattern = Pattern.compile("(.*)/(.*)/(.*)");
+        Matcher matcher = pattern.matcher(repositoryUrl);
+        if (matcher.find()) 
         {
             Repository repository = new Repository();
-        
-            repository.setOrgHostUrl(destinationRepository.getOrgHostUrl());
-            repository.setDvcsType(destinationRepository.getDvcsType());
-                    
-            String[] split = StringUtils.split(pullRequestMapping.getSourceUrl() ,"/");
-            if (split.length > 0)
-            {
-                repository.setOrgName(split[0]);
-            }
-            if (split.length > 1)
-            {
-                repository.setSlug(split[1]);
-            }
+            repository.setDvcsType(dvcsType);
+            repository.setRepositoryUrl(repositoryUrl);
+            repository.setOrgHostUrl(matcher.group(1));
+            repository.setOrgName(matcher.group(2));
+            repository.setSlug(matcher.group(3));
+            repository.setName(matcher.group(3));
             return repository;
         }
         return null;
     }
-    
+        
+    public static void main(String[] args)
+    {
+        System.out.println(createMockRepository(null, null));
+    }
     private String getLozengeStyle(Status status)
     {
         String defaultStyle = "aui-lozenge-success aui-lozenge-subtle";
