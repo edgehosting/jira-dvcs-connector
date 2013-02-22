@@ -310,17 +310,17 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         return ret;
     }
 
-    private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Repository forRepo)
+    private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Repository repository)
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
         ret.put(RepositoryPullRequestMapping.REMOTE_ID, request.getId());
         ret.put(RepositoryPullRequestMapping.NAME, request.getTitle());
-        ret.put(RepositoryPullRequestMapping.URL, request.getLinks().getHtmlHref());
-        ret.put(RepositoryPullRequestMapping.TO_REPO_ID, forRepo.getId());
+        ret.put(RepositoryPullRequestMapping.URL, repository.getOrgHostUrl() + request.getLinks().getHtmlHref());
+        ret.put(RepositoryPullRequestMapping.TO_REPO_ID, repository.getId());
         // in case that fork has been deleted, the source repository is null 
         if (request.getSource().getRepository() != null)
         {
-        	String sourceRepositoryUrl = forRepo.getOrgHostUrl() + request.getSource().getRepository().getLinks().getHtmlHref();
+        	String sourceRepositoryUrl = repository.getOrgHostUrl() + request.getSource().getRepository().getLinks().getHtmlHref();
             ret.put(RepositoryPullRequestMapping.SOURCE_URL, sourceRepositoryUrl);
         }
         

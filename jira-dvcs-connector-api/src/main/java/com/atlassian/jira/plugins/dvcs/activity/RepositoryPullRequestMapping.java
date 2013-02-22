@@ -12,6 +12,7 @@ public interface RepositoryPullRequestMapping extends Entity
     String DESCRIPTION = "DESCRIPTION";
     String URL = "URL";
     String SOURCE_URL = "SOURCE_URL";
+
     //
     // getters
     //
@@ -27,14 +28,15 @@ public interface RepositoryPullRequestMapping extends Entity
     String getDescription();
     String getUrl();
     String getSourceUrl();
+
     //
     // setters
     //
     void setRemoteId(Long id);
     void setToRepoId(int repoId);
-    void setPullRequestName(String name);
-    void setPullRequestDescription(String description);
-    void setPullRequestUrl(String url);
+    void setName(String name);
+    void setDescription(String description);
+    void setUrl(String url);
     void setSourceUrl(String sourceUrl);
 }
 
