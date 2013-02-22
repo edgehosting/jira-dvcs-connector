@@ -191,6 +191,22 @@
 			<version>3.1</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+	 	    <groupId>com.atlassian.jira</groupId>
+    		<artifactId>jira-tests</artifactId>
+    		<version>${jira.compile.version}</version>
+    		<scope>test</scope>
+    		<exclusions>
+    			<exclusion>
+					<artifactId>hamcrest-library</artifactId>
+					<groupId>org.hamcrest</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>hamcrest-core</artifactId>
+					<groupId>org.hamcrest</groupId>
+				</exclusion>
+    		</exclusions>
+		</dependency>
 	</dependencies>
 
 	<build>
