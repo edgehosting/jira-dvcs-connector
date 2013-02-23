@@ -79,7 +79,7 @@
 .dvcs.comment .comment-actions > li { color: #707070; }
 
 
-/* Old Commit tabs styles WILL BE REMOVED 
+/* Old Commit tabs styles WILL BE REMOVED */ 
 .CommitContainer {
     position: relative;
 }
@@ -302,4 +302,4 @@
     position: absolute;
     width: 17px;
 }
-*/
+
