@@ -210,7 +210,8 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
             // saves pull request activities
             for (GitHubPullRequestAction action : pullRequest.getActions())
             {
-                if (repositoryActivityDao.getPullRequestActivityByRemoteId(repositoryPullRequest, action.getGitHubEventId()) == null) {
+                if (repositoryActivityDao.getPullRequestActivityByRemoteId(repositoryPullRequest, action.getGitHubEventId()) == null)
+                {
                     map(activity, repositoryPullRequest, action);
                     repositoryActivityDao.saveActivity(activity);
                 }

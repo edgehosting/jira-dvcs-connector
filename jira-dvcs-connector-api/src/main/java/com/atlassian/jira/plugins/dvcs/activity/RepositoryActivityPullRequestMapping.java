@@ -30,7 +30,6 @@ public interface RepositoryActivityPullRequestMapping extends Entity
     @NotNull
     String getAuthor();
     
-    @NotNull
     String getRawAuthor();
 
     @NotNull
@@ -40,13 +39,8 @@ public interface RepositoryActivityPullRequestMapping extends Entity
     // setters
     //
     void setLastUpdatedOn(Date date);
-
     void setRepositoryId(int repositoryId);
-
     void setAuthor(String username);
-
     void setRawAuthor(String rawAuthor);
-
     void setPullRequest(RepositoryPullRequestMapping pullRequest);
-
 }

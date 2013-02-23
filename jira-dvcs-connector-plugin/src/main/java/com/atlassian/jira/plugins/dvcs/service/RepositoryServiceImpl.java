@@ -550,12 +550,12 @@ public class RepositoryServiceImpl implements RepositoryService
         {
             DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
             DvcsUser user = communicator.getUser(repository, author);
-            user.setRawAuthor(rawAuthor);
+            user.setRawAuthor(rawAuthor != null ? rawAuthor : user.getFullName());
             return user;
         } catch (Exception e)
         {
             log.debug("Could not load user [" + author + ", " + rawAuthor + "]", e);
-            return new UnknownUser(author, rawAuthor, repository.getOrgHostUrl()); 
+            return new UnknownUser(author, rawAuthor != null ? rawAuthor : author, repository.getOrgHostUrl()); 
         }
     }
     

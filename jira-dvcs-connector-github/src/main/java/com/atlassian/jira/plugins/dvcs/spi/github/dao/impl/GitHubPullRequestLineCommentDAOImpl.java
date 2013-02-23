@@ -274,7 +274,7 @@ public class GitHubPullRequestLineCommentDAOImpl implements GitHubPullRequestLin
         target.setCommit(commit);
         target.setPath(source.getPath());
         target.setLine(source.getLine());
-        target.setText(source.getPath());
+        target.setText(source.getText());
     }
 
 }
