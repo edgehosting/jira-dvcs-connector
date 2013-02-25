@@ -21,7 +21,6 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestAction;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService;
-import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
 /**
  * An {@link GitHubPullRequestService} implementation.
@@ -202,8 +201,7 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
             {
                 // saves pull request
                 map(domainRepository, repositoryPullRequestParams, pullRequest);
-                repositoryPullRequest = repositoryActivityDao.savePullRequest(repositoryPullRequestParams,
-                        IssueKeyExtractor.extractIssueKeys(pullRequest.getTitle(), pullRequest.getText()));
+                repositoryPullRequest = repositoryActivityDao.savePullRequest(repositoryPullRequestParams);
                 repositoryPullRequestParams.clear();
             }
 
@@ -215,8 +213,8 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
                     map(activity, repositoryPullRequest, action);
                     repositoryActivityDao.saveActivity(activity);
                 }
+                activity.clear();
             }
-            activity.clear();
         }
     }
 
@@ -237,7 +235,7 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
         target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
         target.put(RepositoryPullRequestMapping.DESCRIPTION, source.getText());
         target.put(RepositoryPullRequestMapping.TO_REPO_ID, domainRepository.getId());
-        //TODO save url in the correct format
+        // TODO save url in the correct format
         target.put(RepositoryPullRequestMapping.SOURCE_URL, source.getHeadRepository().getUrl());
     }
 

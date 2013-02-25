@@ -2,10 +2,10 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +26,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMap
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Joiner;
 
@@ -79,7 +80,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
 
     @Override
-    public RepositoryPullRequestMapping savePullRequest(final Map<String, Object> request, final Set<String> issueKeys)
+    public RepositoryPullRequestMapping savePullRequest(final Map<String, Object> request)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
         {
@@ -87,32 +88,61 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
             public RepositoryPullRequestMapping doInTransaction()
             {
                 RepositoryPullRequestMapping pullRequest = activeObjects.create(RepositoryPullRequestMapping.class, request);
-                // persist mappings
-                for (String issueKey : issueKeys)
-                {
-                    activeObjects.create(RepositoryPullRequestIssueKeyMapping.class, asIssueKeyMapping(issueKey, pullRequest.getID()));
-                }
                 return pullRequest;
             }
 
         });
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void saveIssueKeysMappings(final Collection<String> issueKeys, final int pullRequestId)
+    public void updatePullRequestIssueKyes(int pullRequestId)
     {
-        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        RepositoryPullRequestMapping repositoryPullRequestMapping = findRequestById(pullRequestId);
+        Set<String> existingIssueKeys = getExistingIssueKeysMapping(pullRequestId);
+
+        Set<String> currentIssueKeys = new HashSet<String>();
+        currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(repositoryPullRequestMapping.getName(), repositoryPullRequestMapping.getDescription()));
+        
+        // commits
         {
-            @Override
-            public Void doInTransaction()
-            {
-                for (String issueKey : issueKeys)
-                {
-                    activeObjects.create(RepositoryPullRequestIssueKeyMapping.class, asIssueKeyMapping(issueKey, pullRequestId));
+            Query query = Query.select();
+            query.where(RepositoryActivityPullRequestUpdateMapping.PULL_REQUEST_ID + " = ? ", pullRequestId);
+            for (RepositoryActivityPullRequestUpdateMapping updateActivity : activeObjects.find(RepositoryActivityPullRequestUpdateMapping.class, query)) {
+                for (RepositoryActivityCommitMapping commit : updateActivity.getCommits()) {
+                    currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commit.getMessage()));
                 }
-                return null;
             }
-        });
+        }
+        
+        // comments
+        for (RepositoryActivityPullRequestCommentMapping comment : getPullRequestComments(repositoryPullRequestMapping)) {
+            currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(comment.getMessage()));
+        }
+        
+        // updates information to reflect current state
+        Set<String> addedIssueKeys = new HashSet<String>();
+        addedIssueKeys.addAll(currentIssueKeys);
+        addedIssueKeys.removeAll(existingIssueKeys);
+        
+        Set<String> removedIssueKeys = new HashSet<String>();
+        removedIssueKeys.addAll(existingIssueKeys);
+        removedIssueKeys.removeAll(currentIssueKeys);
+        
+        // adds news one
+        for (String issueKeyToAdd : addedIssueKeys) {
+            activeObjects.create(RepositoryPullRequestIssueKeyMapping.class, asIssueKeyMapping(issueKeyToAdd, repositoryPullRequestMapping.getID()));
+        }
+        
+        // removes canceled
+        Query query = Query.select();
+        query.setWhereClause(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID + " = ? AND " + RepositoryPullRequestIssueKeyMapping.ISSUE_KEY + " = ? ");
+        for (String issueKeyToRemove : removedIssueKeys) {
+            query.setWhereParams(new Object[] {repositoryPullRequestMapping.getID(), issueKeyToRemove});
+            activeObjects.delete(activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, query));
+        }
     }
 
     @Override
