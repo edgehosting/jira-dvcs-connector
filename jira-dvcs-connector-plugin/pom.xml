@@ -100,7 +100,7 @@
 		<dependency>
 			<groupId>com.atlassian.jira</groupId>
 			<artifactId>atlassian-jira-pageobjects</artifactId>
-			<version>${jira.compile.version}</version>
+			<version>${jira.version}</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
