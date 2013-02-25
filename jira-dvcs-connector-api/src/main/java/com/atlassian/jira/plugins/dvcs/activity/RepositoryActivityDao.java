@@ -18,7 +18,7 @@ public interface RepositoryActivityDao
      * 
      * @param pullRequestId
      */
-    void updatePullRequestIssueKyes(int pullRequestId);
+    void updatePullRequestIssueKeys(int pullRequestId);
 
     void removeAll(final Repository forRepository);
 

@@ -174,7 +174,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             gitHubPullRequestLineCommentService.synchronize(domainRepository, pullRequest);
             gitHubCommitService.synchronize(domainRepository, domain, pullRequest);
 
-            repositoryActivityDao.updatePullRequestIssueKyes(repositoryActivityDao.findRequestByRemoteId(domainRepository.getId(),
+            repositoryActivityDao.updatePullRequestIssueKeys(repositoryActivityDao.findRequestByRemoteId(domainRepository.getId(),
                     pullRequest.getGitHubId()).getID());
         }
     }

@@ -98,7 +98,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
      * {@inheritDoc}
      */
     @Override
-    public void updatePullRequestIssueKyes(int pullRequestId)
+    public void updatePullRequestIssueKeys(int pullRequestId)
     {
         RepositoryPullRequestMapping repositoryPullRequestMapping = findRequestById(pullRequestId);
         Set<String> existingIssueKeys = getExistingIssueKeysMapping(pullRequestId);
