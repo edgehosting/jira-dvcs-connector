@@ -93,11 +93,13 @@ public class BitbucketRepository implements Serializable
 		this.description = description;
 	}
 
-	public String getScm() {
+	public String getScm()
+	{
 		return scm;
 	}
 
-	public void setScm(String scm) {
+	public void setScm(String scm)
+	{
 		this.scm = scm;
 	}
 }
