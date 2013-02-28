@@ -115,12 +115,24 @@ public class DvcsAddUserListener
       
             User user = userManager.getUser(username);
 
+            String userInvitations;
+            if (organizationIdsAndGroupSlugs != null)
+            {
+            	userInvitations = Joiner.on(
+	                    UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).join(
+	                    organizationIdsAndGroupSlugs);
+            } else
+            {
+            	// setting blank String to be sure that the crowd will not return null 
+            	// https://sdog.jira.com/browse/BBC-432
+            	userInvitations = " ";
+            }
+            
             crowd.setUserAttribute(
                     user,
                     UI_USER_INVITATIONS_PARAM_NAME,
-                    Collections.singleton(Joiner.on(
-                            UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).join(
-                            organizationIdsAndGroupSlugs)));
+                    Collections.singleton(userInvitations)
+                    );
        
         } catch (UserNotFoundException e)
         {
