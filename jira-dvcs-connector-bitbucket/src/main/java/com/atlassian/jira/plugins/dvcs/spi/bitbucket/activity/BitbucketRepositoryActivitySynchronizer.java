@@ -178,7 +178,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         // don't have this pull request, let's save it
         if (localPullRequest == null)
         {
-            localPullRequest = dao.savePullRequest(toDaoModelPullRequest(remotePullRequest, forRepository), issueKeys);
+            localPullRequest = dao.savePullRequest(toDaoModelPullRequest(remotePullRequest, forRepository));
 
           // already have it, let's find new issue keys
         } else
@@ -203,7 +203,8 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     	
         if (!issueKeys.isEmpty())
         {
-            dao.saveIssueKeysMappings(issueKeys, localPullRequestId);
+            // FIXME - was removed - currently it is handled automatically
+            // dao.saveIssueKeysMappings(issueKeys, localPullRequestId);
         }
     }
     

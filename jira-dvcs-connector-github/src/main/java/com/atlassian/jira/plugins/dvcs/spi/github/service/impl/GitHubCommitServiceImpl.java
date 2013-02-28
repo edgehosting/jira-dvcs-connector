@@ -234,12 +234,12 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
      * 
      * @param pullRequest
      *            commits owner
-     * @param domainRepository 
+     * @param domainRepository
      */
     private void synchronizeOpenCommits(GitHubPullRequest pullRequest, Repository domainRepository)
     {
-        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(
-                domainRepository.getId(), pullRequest.getGitHubId());
+        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(domainRepository.getId(),
+                pullRequest.getGitHubId());
         List<RepositoryActivityPullRequestUpdateMapping> opened = repositoryActivityDao.getPullRequestActivityByStatus(
                 repositoryPullRequest, RepositoryActivityPullRequestUpdateMapping.Status.OPENED);
 
@@ -301,7 +301,7 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
      * 
      * @param pullRequest
      *            commits owner
-     * @param domainRepository 
+     * @param domainRepository
      */
     private void synchronizeUpdateCommits(GitHubPullRequest pullRequest, Repository domainRepository)
     {
@@ -312,8 +312,20 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
             return;
         }
 
-        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(
-                domainRepository.getId(), pullRequest.getGitHubId());
+        // skips open commits
+        GitHubPullRequestAction openAction = gitHubPullRequestService.getOpenAction(pullRequest);
+        Iterator<GitHubCommit> commitsIterator = pullRequest.getCommits().iterator();
+        while (!commitsIterator.next().getSha().equals(openAction.getHeadSha()))
+            ;
+
+        // is there any updated commits?
+        if (!commitsIterator.hasNext())
+        {
+            return;
+        }
+
+        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(domainRepository.getId(),
+                pullRequest.getGitHubId());
         List<RepositoryActivityPullRequestUpdateMapping> updated = repositoryActivityDao.getPullRequestActivityByStatus(
                 repositoryPullRequest, RepositoryActivityPullRequestUpdateMapping.Status.UPDATED);
 
@@ -343,6 +355,8 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
 
         }
 
+        //
+
         // SHA to already stored commit
         Map<String, RepositoryActivityCommitMapping> loadedCommits = new HashMap<String, RepositoryActivityCommitMapping>();
         for (RepositoryActivityCommitMapping loadedCommit : updateActivity.getCommits())
@@ -350,14 +364,6 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
             loadedCommits.put(loadedCommit.getNode(), loadedCommit);
         }
 
-        Iterator<GitHubCommit> commitsIterator = pullRequest.getCommits().iterator();
-        GitHubPullRequestAction openAction = gitHubPullRequestService.getOpenAction(pullRequest);
-
-        // skips open commits
-        while (!commitsIterator.next().getSha().equals(openAction.getHeadSha()))
-            ;
-
-        //
         GitHubCommit cursor;
         while (commitsIterator.hasNext())
         {

@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,9 +11,14 @@ public interface RepositoryActivityDao
     // C-U-D
     RepositoryActivityPullRequestMapping saveActivity(Map<String, Object> activity);
 
-    RepositoryPullRequestMapping savePullRequest(Map<String, Object> activity, Set<String> issueKeys);
+    RepositoryPullRequestMapping savePullRequest(Map<String, Object> activity);
 
-    void saveIssueKeysMappings(Collection<String> issueKeys, int id);
+    /**
+     * Updates issue keys related to the provided pull request to reflect current state.
+     * 
+     * @param pullRequestId
+     */
+    void updatePullRequestIssueKeys(int pullRequestId);
 
     void removeAll(final Repository forRepository);
 
