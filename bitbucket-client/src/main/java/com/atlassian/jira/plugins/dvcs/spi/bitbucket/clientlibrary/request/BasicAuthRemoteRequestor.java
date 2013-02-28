@@ -39,11 +39,13 @@ public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 	protected void onConnectionCreated(DefaultHttpClient client, HttpRequestBase method, Map<String, String> params)
 	        throws IOException
 	{
-	    UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
-		try {
-			method.addHeader(new BasicScheme().authenticate(creds, method));
-		} catch (AuthenticationException e) {
-			// This should not happen for BasicScheme
-		}
+        UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
+        try
+        {
+            method.addHeader(new BasicScheme().authenticate(creds, method));
+        } catch (AuthenticationException e)
+        {
+            // This should not happen for BasicScheme
+        }
 	}
 }

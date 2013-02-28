@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
-import static org.eclipse.egit.github.core.client.IGitHubConstants.*;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,7 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.client.GitHubClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,7 +143,6 @@ public class GithubOAuthUtils
 
     public String requestAccessToken(String code)
     {
-
         return requestAccessToken(null, code);
     }
 
@@ -154,33 +150,5 @@ public class GithubOAuthUtils
     {
         return CustomStringUtils.encode(url);
     }
-    
-    
-    /**
-     * Create a GitHubClient to connect to the api.
-     *
-     * It uses the right host in case we're calling the github.com api.
-     * It uses the right protocol in case we're calling the GitHub Enterprise api.
-     *
-     * @param url is the GitHub's oauth host.
-     * @return a GitHubClient
-     */
-    public static GitHubClient createClient(String url) {
-        try {
-            URL urlObject = new URL(url);
-            String host = urlObject.getHost();
-            
-            if (HOST_DEFAULT.equals(host) || HOST_GISTS.equals(host)) {
-                host = HOST_API;
-            }
-            
-            GitHubClient result = new GitHubClient(host, -1, urlObject.getProtocol());
-            // FIXME: should be fixed properly - via plugin name and their version
-            // this one is just hot fix
-            result.setUserAgent("JIRA DVCS Connector 1.4.x");
-            return result;
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
+
 }

@@ -13,17 +13,6 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-
-import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
-import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
-import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
-import com.atlassian.pageobjects.elements.PageElement;
-
 import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -33,6 +22,16 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
+import com.atlassian.pageobjects.elements.PageElement;
 
 /**
  * Test to verify behaviour when syncing  github repository.
@@ -44,6 +43,7 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
     private static final String TEST_NOT_EXISTING_URL = "mynotexistingaccount124";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
     private static final String REPO_ADMIN_PASSWORD = PasswordUtil.getPassword("jirabitbucketconnector");
+    private static final String USER_AGENT = "DVCS Connector Test/X.x";
 
     private static String clientID;
     private static String clientSecret;
@@ -227,11 +227,8 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
     public void addPrivateRepoWithInvalidOAuth()
     {
         goToGithubOAuthConfigPage().setCredentials("xxx", "yyy");
-
         goToConfigPage();
-
         configureOrganizations.addRepoToProjectFailingStep2();
-
         goToGithubOAuthConfigPage().setCredentials(clientID, clientSecret);
     }
 
@@ -248,7 +245,7 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
 
     private static Set<Long> extractGithubHookIdsForRepositoryToRemove(String repositoryName) throws IOException
     {
-        GitHubClient gitHubClient = GithubOAuthUtils.createClient("https://api.github.com");
+        GitHubClient gitHubClient = GithubClientProvider.createClient("https://api.github.com", USER_AGENT);
         gitHubClient.setCredentials(REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
 
         RepositoryService repositoryService = new RepositoryService(gitHubClient);
@@ -272,7 +269,7 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
 
     private static void removePostCommitHook(String repositoryName, long hookId) throws IOException
     {
-        GitHubClient gitHubClient = GithubOAuthUtils.createClient("https://api.github.com");
+        GitHubClient gitHubClient = GithubClientProvider.createClient("https://api.github.com", USER_AGENT);
         gitHubClient.setCredentials(REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
 
         RepositoryId repositoryId = RepositoryId.create(REPO_ADMIN_LOGIN, repositoryName);

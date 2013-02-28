@@ -15,7 +15,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Remot
  */
 public class ThreeLegged10aOauthProvider extends AbstractAuthProvider
 {
-
 	private final String accessTokenWithSecret;
     private final String key;
     private final String secret;
@@ -31,8 +30,7 @@ public class ThreeLegged10aOauthProvider extends AbstractAuthProvider
 	@Override
 	public RemoteRequestor provideRequestor()
 	{
-		return new ThreeLegged10aOauthRemoteRequestor(getApiProvider(), key, secret, accessTokenWithSecret);
+		return new ThreeLegged10aOauthRemoteRequestor(this, key, secret, accessTokenWithSecret);
 	}
-
 }
 

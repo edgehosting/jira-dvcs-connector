@@ -12,7 +12,6 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
  */
 public class NoAuthAuthProvider extends AbstractAuthProvider
 {
-
 	public NoAuthAuthProvider(String hostUrl)
 	{
 		super(hostUrl);
@@ -21,9 +20,7 @@ public class NoAuthAuthProvider extends AbstractAuthProvider
 	@Override
 	public RemoteRequestor provideRequestor()
 	{
-		return new BaseRemoteRequestor(getApiProvider());
+		return new BaseRemoteRequestor(this);
 	}
-
-
 }
 

@@ -77,8 +77,6 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 	@Override
 	public void run()
 	{
-
-	    
 		// continue ? ------------------------------------------------
 		if (StringUtils.isBlank(serializedGroupsUiChoice))
 		{
@@ -131,10 +129,8 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 				}
 				
 				orgIdsToInvitations.put(orgId, newInvitations);
-
 				existingInvitations = newInvitations;
 			}
-
 			//
 			existingInvitations.groupSlugs.add(slug);
 		}
@@ -152,14 +148,12 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 	{
 		if (CollectionUtils.isNotEmpty(invitations))
 		{
-
 			for (Invitations invitation : invitations)
 			{
 				Collection<String> groupSlugs = invitation.groupSlugs;
 				Organization organizaton = invitation.organizaton;
 				invite(email, organizaton, groupSlugs);
 			}
-
 		}
 	}
 
@@ -184,13 +178,10 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 	 */
 	static class Invitations
 	{
-		
 		/** The organizaton. */
 		Organization organizaton;
-		
 		/** The group slugs. */
 		Collection<String> groupSlugs = new ArrayList<String>();
-		
 		@Override
 		public String toString()
 		{

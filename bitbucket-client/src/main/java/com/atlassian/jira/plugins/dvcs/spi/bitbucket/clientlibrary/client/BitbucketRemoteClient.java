@@ -51,7 +51,7 @@ public class BitbucketRemoteClient
 	public BitbucketRemoteClient(AuthProvider provider)
 	{
         requestor = provider.provideRequestor();
-
+        
         this.accountRemoteRestpoint = new AccountRemoteRestpoint(requestor);
         this.changesetRemoteRestpoint = new ChangesetRemoteRestpoint(requestor);
         this.groupRemoteRestpoint = new GroupRemoteRestpoint(requestor);

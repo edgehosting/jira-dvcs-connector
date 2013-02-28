@@ -13,7 +13,6 @@ import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 
 public class GithubEnterpriseCommunicator extends GithubCommunicator
 {
@@ -29,13 +28,11 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        UserService userService = new UserService(GithubOAuthUtils.createClient(hostUrl));
+        UserService userService = new UserService(githubClientProvider.createClient(hostUrl));
         try
         {
             userService.getUser(accountName);
-
             return new AccountInfo(GithubCommunicator.GITHUB, !isOauthConfigured());
-
         } catch (RequestException e)
         {
             log.debug("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(),
@@ -53,7 +50,6 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
                     hostUrl, accountName);
         }
         return null;
-
     }
 
     @Override

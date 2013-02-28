@@ -12,15 +12,14 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Respo
  * 
  * @author Martin Skurla mskurla@atlassian.com
  */
-public class AccountRemoteRestpoint {
+public class AccountRemoteRestpoint
+{
     private final RemoteRequestor requestor;
-
     
     public AccountRemoteRestpoint(RemoteRequestor remoteRequestor)
     {
         this.requestor = remoteRequestor;
     }
-
 
     // https://confluence.atlassian.com/display/BITBUCKET/account+Resource#accountResource-GETtheaccountprofile
     public BitbucketAccount getUser(String ownerOrEmail)

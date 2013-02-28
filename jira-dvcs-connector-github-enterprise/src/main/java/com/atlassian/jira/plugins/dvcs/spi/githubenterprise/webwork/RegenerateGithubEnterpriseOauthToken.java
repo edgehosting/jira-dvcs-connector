@@ -12,10 +12,16 @@ public class RegenerateGithubEnterpriseOauthToken extends RegenerateGithubOauthT
 {
     public RegenerateGithubEnterpriseOauthToken(OrganizationService organizationService, OAuthStore oAuthStore,
             ApplicationProperties applicationProperties)
-	{
-        super(organizationService, new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB_ENTERPRISE), oAuthStore.getSecret(GITHUB_ENTERPRISE)));
-	}
+    {
+        super(organizationService, applicationProperties, oAuthStore);
+    }
 	
+    @Override
+    protected GithubOAuthUtils getOAuthUtils()
+    {
+        return new GithubOAuthUtils(baseUrl, oAuthStore.getClientId(GITHUB_ENTERPRISE), oAuthStore.getSecret(GITHUB_ENTERPRISE));
+    }
+
     @Override
     protected String getRedirectAction()
     {

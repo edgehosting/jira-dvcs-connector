@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -24,6 +25,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.HttpProtocolParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,15 +47,13 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 public class BaseRemoteRequestor implements RemoteRequestor
 {
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
-
     protected final ApiProvider apiProvider;
-    
     private final HttpClientProxyConfig proxyConfig;
 
     public BaseRemoteRequestor(ApiProvider apiProvider)
     {
         this.apiProvider = apiProvider;
-        proxyConfig = new HttpClientProxyConfig();
+        this.proxyConfig = new HttpClientProxyConfig();
     }
     
     @Override
@@ -271,7 +271,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
             {
             	log.warn("Failed to properly execute request [{}], status code {} : {}", new Object[] {method.getMethod(), statusCode, method.getURI()});
             }
-            
             throw toBeThrown;
         }
 
@@ -281,7 +280,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
             response.setResponse(httpResponse.getEntity().getContent());
         }
         response.setHttpClient(client);
-
         return response;
     }
 
@@ -338,18 +336,13 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private void createConnection(DefaultHttpClient client, HttpRequestBase method, String uri, Map<String, String> params)
             throws IOException, URISyntaxException
     {
-        String isApiUrl = "";
-
-        try
+        if (StringUtils.isNotBlank(apiProvider.getUserAgent()))
         {
-            // already has api prefix included ?
-            isApiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
-        } catch (Exception e)
-        {
+            HttpProtocolParams.setUserAgent(client.getParams(), apiProvider.getUserAgent());
         }
 
+        String isApiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl() ;
         proxyConfig.configureProxy(client, isApiUrl + uri);
-        
         String finalUrl = afterFinalUriConstructed(method, isApiUrl + uri, params);
         method.setURI(new URI(finalUrl)); 
         //
@@ -358,7 +351,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
         // something to extend
         //
         onConnectionCreated(client, method, params);
-
     }
 
     private void setPayloadParams(HttpEntityEnclosingRequestBase method, Map<String, String> params) throws IOException

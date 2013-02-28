@@ -54,7 +54,6 @@ public class OrganizationDiv
             // ignore, the deletion was probably very quick and the popup has been alreadu closed.
         }
         Poller.waitUntilFalse(rootElement.find(By.id("deleting-account-dialog")).timed().isVisible());
-        System.out.println("hohohoo");
     }
 
 	public List<RepositoryDiv> getRepositories()

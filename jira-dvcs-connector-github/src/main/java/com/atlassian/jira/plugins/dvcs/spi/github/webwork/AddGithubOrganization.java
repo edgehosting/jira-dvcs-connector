@@ -21,8 +21,6 @@ import com.atlassian.sal.api.ApplicationProperties;
 
 public class AddGithubOrganization extends CommonDvcsConfigurationAction
 {
-    private static final long serialVersionUID = -5043563666764556942L;
-
     private final Logger log = LoggerFactory.getLogger(AddGithubOrganization.class);
 
 	private String url;
@@ -34,8 +32,6 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
 	// sent by GH on the way back
 	private String code;
-
-	private String accessToken = "";
 
 	private final OrganizationService organizationService;
 	private final GithubOAuthUtils githubOAuthUtils;
@@ -62,7 +58,6 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 		
 		// then continue
 		return redirectUserToGithub();
-
 	}
 
 	private void configureOAuth()
@@ -106,31 +101,29 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         return StringUtils.isNotBlank(oauthRequired);
     }
 
-	public String doFinish()
-	{
-		try
-		{
-			accessToken = requestAccessToken();
+    public String doFinish()
+    {
+        try
+        {
+            return doAddOrganization(githubOAuthUtils.requestAccessToken(code));
+        } catch (SourceControlException sce)
+        {
+            addErrorMessage(sce.getMessage());
+            log.warn(sce.getMessage());
+            if (sce.getCause() != null)
+            {
+                log.warn("Caused by: " + sce.getCause().getMessage());
+            }
+            return INPUT;
 
-		} catch (SourceControlException sce)
-		{
-			addErrorMessage(sce.getMessage());
-			log.warn(sce.getMessage());
-			if ( sce.getCause() != null )
-			{
-				log.warn("Caused by: " + sce.getCause().getMessage());
-			}
-			return INPUT;
-		
-		} catch (Exception e) {
-		    addErrorMessage("Error obtain access token.");
+        } catch (Exception e)
+        {
+            addErrorMessage("Error obtain access token.");
             return INPUT;
         }
+    }
 
-		return doAddOrganization();
-	}
-
-	private String doAddOrganization()
+	private String doAddOrganization(String accessToken)
 	{
 		try
 		{
@@ -152,11 +145,6 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 		}
 
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
-	}
-
-	private String requestAccessToken()
-	{
-		return githubOAuthUtils.requestAccessToken(code);
 	}
 
 	public static String encode(String url)
@@ -223,5 +211,4 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 	{
 		this.oauthRequired = oauthRequired;
 	}
-
 }

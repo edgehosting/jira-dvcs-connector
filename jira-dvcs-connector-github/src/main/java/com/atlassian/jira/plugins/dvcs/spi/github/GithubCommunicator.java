@@ -26,7 +26,6 @@ import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
-import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.CommitService;
@@ -87,7 +86,8 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        UserService userService = new UserService(GitHubClient.createClient(hostUrl));
+        
+        UserService userService = new UserService(githubClientProvider.createClient(hostUrl));
         try
         {
             userService.getUser(accountName);
