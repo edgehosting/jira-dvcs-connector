@@ -14,10 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountInfo;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.Links;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.AddBitbucketOrganization;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginController;
@@ -25,6 +27,7 @@ import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
 import com.atlassian.sal.api.scheduling.PluginScheduler;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * TODO implement sec. checks so int. account can not be i.e. deleted
@@ -383,6 +386,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
     {
         Organization newOrganization = new Organization();
         copyValues(info, newOrganization);
+        newOrganization.setDefaultGroups(Sets.newHashSet(new Group(AddBitbucketOrganization.DEFAULT_INVITATION_GROUP)));
         return newOrganization;
     }
 
