@@ -74,7 +74,6 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         TimedCondition hasText = messageBarDiv.find(By.tagName("strong")).timed().hasText("Error!");
         
         Poller.waitUntil("Expected Error message while connecting repository", hasText, is(true), Poller.by(30000));
-
         return this;
     }
 
