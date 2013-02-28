@@ -24,7 +24,7 @@ public class GitHubPush extends GitHubEntity
     private GitHubUser createdBy;
 
     /**
-     * @see #getC
+     * @see #getRepository()
      */
     private GitHubRepository repository;
 

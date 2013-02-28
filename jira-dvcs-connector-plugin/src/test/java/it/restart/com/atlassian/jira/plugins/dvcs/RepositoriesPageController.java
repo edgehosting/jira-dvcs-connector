@@ -11,7 +11,7 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 
 public class RepositoriesPageController implements PageController<RepositoriesPage>
 {
-    
+
     private final JiraTestedProduct jira;
     private final RepositoriesPage page;
 
@@ -20,7 +20,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         this.jira = jira;
         this.page = jira.visit(RepositoriesPage.class);
     }
-    
+
     @Override
     public RepositoriesPage getPage()
     {
@@ -31,11 +31,11 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     {
         page.addOrganisation(accountType.index, accountName, autosync);
         assertThat(page.getErrorStatusMessage()).isNull();
-        if(requiresGrantAccess())
+        if (requiresGrantAccess())
         {
             accountType.grantAccessPageController.grantAccess(jira);
         }
-        
+
         OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
         if (autosync)
         {
@@ -45,6 +45,63 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
             assertThat(isSyncFinished(organization));
         }
         return organization;
+    }
+
+    /**
+     * Enables provided repository.
+     * 
+     * @param accountType
+     *            type of repository
+     * @param accountName
+     *            under which account
+     * @param repositoryName
+     *            name of repository
+     */
+    public void enable(AccountType accountType, String accountName, String repositoryName)
+    {
+        OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
+        OrganizationRepositoryRow repository = organization.getRepository(repositoryName);
+        if (!repository.isEnabled()) {
+            repository.enable();
+        }
+    }
+
+    /**
+     * Synchronizes provided repository.
+     * 
+     * @param accountType
+     *            type of repository
+     * @param accountName
+     *            under which account
+     * @param repositoryName
+     *            name of repository
+     */
+    public void synchronize(AccountType accountType, String accountName, String repositoryName)
+    {
+        OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
+        OrganizationRepositoryRow repository = organization.getRepository(repositoryName);
+        repository.synchronize();
+        waitForSyncToFinish(repository);
+    }
+
+    /**
+     * Waiting until synchronization is done.
+     * 
+     * @param repository
+     *            on which repository we are waiting
+     */
+    private void waitForSyncToFinish(OrganizationRepositoryRow repository)
+    {
+        do
+        {
+            try
+            {
+                Thread.sleep(1000l);
+            } catch (InterruptedException e)
+            {
+                // nothing to do
+            }
+        } while (repository.isSyncing());
     }
 
     public void waitForSyncToFinish(OrganizationDiv organization)
@@ -60,11 +117,11 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
             }
         } while (!isSyncFinished(organization));
     }
-    
+
     private boolean isSyncFinished(OrganizationDiv organization)
     {
-        List<RepositoryDiv> repositories = organization.getRepositories();
-        for (RepositoryDiv repositoryDiv : repositories)
+        List<OrganizationRepositoryRow> repositories = organization.getRepositories();
+        for (OrganizationRepositoryRow repositoryDiv : repositories)
         {
             if (repositoryDiv.isSyncing())
             {
@@ -76,12 +133,11 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     private boolean requiresGrantAccess()
     {
-        // if access has been granted before browser will 
+        // if access has been granted before browser will
         // redirect immediately back to jira
         String currentUrl = jira.getTester().getDriver().getCurrentUrl();
         return !currentUrl.contains("/jira");
     }
-
 
     /**
     *
@@ -104,5 +160,5 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         }
 
     }
-    
+
 }

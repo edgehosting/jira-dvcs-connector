@@ -174,6 +174,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, String> params, ResponseCallback<T> callback)
     {
         DefaultHttpClient client = new DefaultHttpClient();
+        HttpProtocolParams.setUserAgent(client.getParams(), "JIRA DVCS Connector 1.4.x");
+
         RemoteResponse response = null;
        
         try

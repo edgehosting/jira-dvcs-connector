@@ -16,7 +16,7 @@ public class OrganizationDiv
 {
     @Inject
     private PageBinder pageBinder;
-    
+
     @Inject
     private AtlassianWebDriver driver;
 
@@ -24,12 +24,12 @@ public class OrganizationDiv
     private final PageElement repositoriesTable;
     private final PageElement repositoryType;
     private final PageElement repositoryName;
-  
+
     public OrganizationDiv(PageElement row)
     {
         this.rootElement = row;
         this.repositoriesTable = rootElement.find(By.tagName("table"));
-        this.repositoryType =  rootElement.find(By.xpath("div/h4"));
+        this.repositoryType = rootElement.find(By.xpath("div/h4"));
         this.repositoryName = rootElement.find(By.xpath("div/h4/a"));
     }
 
@@ -56,26 +56,32 @@ public class OrganizationDiv
         Poller.waitUntilFalse(rootElement.find(By.id("deleting-account-dialog")).timed().isVisible());
     }
 
-	public List<RepositoryDiv> getRepositories()
-	{
-	    List<RepositoryDiv> list = new ArrayList<RepositoryDiv>();
-	    List<PageElement> trs = repositoriesTable.findAll(By.xpath("//table/tbody/tr"));
-	    for (PageElement tr : trs)
-        {
-            list.add(pageBinder.bind(RepositoryDiv.class, tr));
-        }
-		return list;
-	}
-    
-	public String getRepositoryType()
-	{
-	    // <h4 class="aui bitbucketLogo">
-	    return repositoryType.getAttribute("class").replaceAll("aui (.*)Logo", "$1");
-	}
-	
-	public String getRepositoryName()
-	{
-	    return repositoryName.getText();
-	}
-    
+    public List<OrganizationRepositoryRow> getRepositories()
+    {
+        return repositoriesTable.findAll(By.xpath("//table/tbody/tr"), OrganizationRepositoryRow.class);
+    }
+
+    /**
+     * @param repositoryName
+     *            name of searched repository
+     * @return founded {@link OrganizationRepositoryRow}
+     */
+    public OrganizationRepositoryRow getRepository(String repositoryName)
+    {
+        return repositoriesTable.find(
+                By.xpath("//table/tbody/tr/td[@class='dvcs-org-reponame']/a[text()='" + repositoryName + "']/ancestor::tr"),
+                OrganizationRepositoryRow.class);
+    }
+
+    public String getRepositoryType()
+    {
+        // <h4 class="aui bitbucketLogo">
+        return repositoryType.getAttribute("class").replaceAll("aui (.*)Logo", "$1");
+    }
+
+    public String getRepositoryName()
+    {
+        return repositoryName.getText();
+    }
+
 }
