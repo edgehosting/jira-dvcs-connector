@@ -24,27 +24,24 @@
 			<groupId>com.atlassian.jira</groupId>
 			<artifactId>atlassian-jira</artifactId>
             <version>${jira.compile.version}</version>
-			<scope>provided</scope>
-		</dependency>
+            <scope>provided</scope>
+	  	</dependency>
 		<dependency>
 			<groupId>org.eclipse.mylyn.github</groupId>
 			<artifactId>org.eclipse.egit.github.core</artifactId>
 			<version>2.1.2</version>
 		</dependency>
-
+	    <dependency>
+			<groupId>com.atlassian.activeobjects</groupId>
+			<artifactId>activeobjects-plugin</artifactId>
+			<version>${ao.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.5</version>
 			<scope>provided</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>com.atlassian.activeobjects</groupId>
-			<artifactId>activeobjects-plugin</artifactId>
-			<version>${ao.version}</version>
-			<scope>provided</scope>
-		</dependency>
-
-	</dependencies>
+    </dependencies>
 </project>
