@@ -55,22 +55,7 @@ public class SystemUtils
         
         return true;
     }
-    
-    public static long getSystemPropertyLong(String propertyName, long defaultValue)
-    {
-        String property = System.getProperty(propertyName, "" + defaultValue);
-        try
-        {
-            return Long.parseLong(property);
-        } catch (Exception e)
-        {
-            log.warn("Unable to parse system property [" + propertyName + "] with value ["
-                    + property + "]. Returning default value [" + defaultValue + "]. "
-                    + e.getMessage());
-            return defaultValue;
-        }
-    }
-    
+        
     public static String getRedirect(JiraWebActionSupport action, String url, boolean unsafe)
     {
         if ( SAFE_REDIRECT_EXISTS )

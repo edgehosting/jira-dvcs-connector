@@ -9,9 +9,9 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 
 public class ActiveObjectsUtils
-{
+{ 
     private static final Logger log = LoggerFactory.getLogger(ActiveObjectsUtils.class);
-    private static final int DELETION_WINDOW_SIZE = 1000;
+    private static final int DELETE_WINDOW_SIZE = Integer.getInteger("dvcs.connector.delete.window", 500); 
 
     public static <T extends Entity> void delete(final ActiveObjects activeObjects, Class<T> entityType, Query query)
     {
@@ -20,8 +20,8 @@ public class ActiveObjectsUtils
         int remainingEntities = activeObjects.count(entityType, query);
         while (remainingEntities > 0)
         {
-            log.debug("Deleting up to {} entities of {} remaining.", DELETION_WINDOW_SIZE, remainingEntities);
-            T[] entities = activeObjects.find(entityType, query.limit(DELETION_WINDOW_SIZE));
+            log.debug("Deleting up to {} entities of {} remaining.", DELETE_WINDOW_SIZE, remainingEntities);
+            T[] entities = activeObjects.find(entityType, query.limit(DELETE_WINDOW_SIZE));
             activeObjects.delete(entities);
             remainingEntities = activeObjects.count(entityType, query);
         }
