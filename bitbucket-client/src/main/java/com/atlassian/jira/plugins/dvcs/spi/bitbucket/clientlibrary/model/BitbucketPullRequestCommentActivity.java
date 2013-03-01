@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * BitbucketPullRequest
@@ -13,7 +12,7 @@ import java.util.List;
  * @author jhocman@atlassian.com
  *
  */
-public class BitbucketPullRequestCommentActivity extends BitbucketPullRequestBaseActivity implements Serializable, HasPossibleUpdatedMessages
+public class BitbucketPullRequestCommentActivity extends BitbucketPullRequestBaseActivity implements Serializable
 {
     private static final long serialVersionUID = 8212352604704981087L;
 
@@ -36,40 +35,29 @@ public class BitbucketPullRequestCommentActivity extends BitbucketPullRequestBas
     {
         this.content = content;
     }
-    
-    @Override
-    public List<String> getMessages()
-    {
-        List<String> messages = super.getMessages();
-        if (content != null)
-        {
-            messages.add(content.getRaw());
-        }
-        return messages;
+
+    public BitbucketPullRequestCommentActivity getParent() {
+        return parent;
     }
 
-	public BitbucketPullRequestCommentActivity getParent() {
-		return parent;
-	}
+    public void setParent(BitbucketPullRequestCommentActivity parent) {
+        this.parent = parent;
+    }
 
-	public void setParent(BitbucketPullRequestCommentActivity parent) {
-		this.parent = parent;
-	}
+    public Integer getId() {
+        return id;
+    }
 
-	public Integer getId() {
-		return id;
-	}
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    public BitbucketPullRequestCommentActivityInline getInline() {
+        return inline;
+    }
 
-	public BitbucketPullRequestCommentActivityInline getInline() {
-		return inline;
-	}
-
-	public void setInline(BitbucketPullRequestCommentActivityInline inline) {
-		this.inline = inline;
-	}
+    public void setInline(BitbucketPullRequestCommentActivityInline inline) {
+        this.inline = inline;
+    }
 }
 
