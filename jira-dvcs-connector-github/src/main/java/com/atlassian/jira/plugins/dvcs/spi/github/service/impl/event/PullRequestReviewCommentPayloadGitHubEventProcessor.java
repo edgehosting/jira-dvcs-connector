@@ -14,6 +14,7 @@ import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.PullRequestReviewCommentPayload;
 import org.eclipse.egit.github.core.service.PullRequestService;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
@@ -98,7 +99,7 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
             GitHubCommitService gitHubCommitService, //
             GitHubUserService gitHubUserService, //
             GitHubRepositoryService gitHubRepositoryService, //
-            GithubClientProvider githubClientProvider)
+            @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
     {
         this.gitHubPullRequestLineCommentService = gitHubPullRequestLineCommentService;
         this.gitHubCommitService = gitHubCommitService;

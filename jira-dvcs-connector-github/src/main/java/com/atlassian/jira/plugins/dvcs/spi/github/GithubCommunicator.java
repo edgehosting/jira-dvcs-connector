@@ -33,6 +33,7 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
@@ -63,7 +64,7 @@ public class GithubCommunicator implements DvcsCommunicator
     protected final OAuthStore oAuthStore;
     
     public GithubCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
-            GithubClientProvider githubClientProvider)
+            @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
     {
         this.changesetCache = changesetCache;
         this.oAuthStore = oAuthStore;

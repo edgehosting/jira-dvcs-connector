@@ -188,6 +188,11 @@
         <description>Github Client Provider</description>
     </component>
 
+    <component key="githubEnterpriseClientProvider" name="githubEnterpriseClientProvider"
+               class="com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseClientProvider">
+        <description>Github Enterprise Client Provider</description>
+    </component>
+
     <component key="githubCommunicator" name="githubCommunicator"
                class="com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator">
         <description>githubCommunicator</description>

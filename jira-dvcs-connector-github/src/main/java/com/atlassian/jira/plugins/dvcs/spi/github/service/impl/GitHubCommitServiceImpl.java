@@ -15,6 +15,7 @@ import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.PullRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
@@ -87,7 +88,7 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
      *            injected {@link ActiveObjects} dependency
      */
     public GitHubCommitServiceImpl(GitHubCommitDAO gitHubCommitDAO, GitHubPullRequestService gitHubPullRequestService,
-            GithubClientProvider githubClientProvider, RepositoryActivityDao repositoryActivityDao, ActiveObjects activeObjects)
+    		@Qualifier("githubClientProvider") GithubClientProvider githubClientProvider, RepositoryActivityDao repositoryActivityDao, ActiveObjects activeObjects)
     {
         this.gitHubCommitDAO = gitHubCommitDAO;
         this.gitHubPullRequestService = gitHubPullRequestService;

@@ -7,6 +7,7 @@ import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
 import org.eclipse.egit.github.core.service.EventService;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -58,7 +59,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
             GitHubEventDAO gitHubEventDAO, //
             GitHubEventProcessorAggregator<EventPayload> gitHubEventProcessorAggregator, //
             ActiveObjects activeObjects, //
-            GithubClientProvider githubClientProvider //
+            @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider //
     )
     {
         this.gitHubEventDAO = gitHubEventDAO;
