@@ -1,15 +1,18 @@
 package it.com.atlassian.jira.plugins.dvcs.greenhopper;
 
+import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+
 import java.util.List;
+
+import org.openqa.selenium.By;
+
 import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-
-import org.openqa.selenium.By;
-
-import static org.fest.assertions.api.Assertions.*;
 
 /**
  * @author Martin Skurla
@@ -44,10 +47,9 @@ public class GreenHopperBoardPage implements Page
 
         qa1Link.click();
 
-        PageElement openIssueTabsMenu = bodyElement.find(By.className("tabs-menu"));
-        Poller.waitUntilTrue(openIssueTabsMenu.timed().isVisible());
-        PageElement commitsTabLink = PageElementUtils.findTagWithAttributeValue(openIssueTabsMenu, "li", "title", "Commits")
-                                                     .find(By.tagName("a"));
+        PageElement openIssueTabsMenu = bodyElement.find(By.className("ghx-detail-nav-menu"));
+        Poller.waitUntil(openIssueTabsMenu.timed().isVisible(), is(true), by(15000));
+        PageElement commitsTabLink = PageElementUtils.findTagWithAttributeValue(openIssueTabsMenu, "a", "title", "Commits");
 
         commitsTabLink.click();
 

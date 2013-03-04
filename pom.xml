@@ -13,12 +13,12 @@
     </organization>
 
     <modules>
+        <module>bitbucket-client</module>
         <module>jira-dvcs-connector-api</module>
         <module>jira-dvcs-connector-github</module>
         <module>jira-dvcs-connector-github-enterprise</module>
         <module>jira-dvcs-connector-bitbucket</module>
         <module>jira-dvcs-connector-plugin</module>
-        <module>bitbucket-client</module>
     </modules>
 
     <scm>
@@ -32,9 +32,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>5.2.5</jira.compile.version>
-        <jira.version>5.2.5</jira.version>
-        <jira.data.version>5.2.5</jira.data.version>
+        <jira.compile.version>6.0-m07.1</jira.compile.version>
+        <jira.version>6.0-m07</jira.version>
+        <jira.data.version>6.0-m07.1</jira.data.version>
 
     <!--
         <jira.version>5.0.1</jira.version>
@@ -43,7 +43,7 @@
         
         <ao.version>0.19.7</ao.version>
         <streams.version>5.0.1</streams.version>
-        <greenhopper.version>6.0.7</greenhopper.version>
+        <greenhopper.version>6.1.3.2</greenhopper.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -176,6 +176,13 @@
             <properties>
                 <jira.version>5.0.1</jira.version>
                 <jira.data.version>5.0.1</jira.data.version>
+            </properties>
+        </profile>
+         <profile>
+            <id>jira52</id>
+            <properties>
+                <jira.version>5.2.5</jira.version>
+                <jira.data.version>5.2.5</jira.data.version>
             </properties>
         </profile>
     </profiles>

@@ -26,11 +26,11 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.atlassian.jira</groupId>
-			<artifactId>atlassian-jira</artifactId>
-            <version>${jira.compile.version}</version>
-			<scope>provided</scope>
-		</dependency>
+            <groupId>com.atlassian.jira</groupId>
+	    	<artifactId>jira-api</artifactId>
+	    	<version>${jira.compile.version}</version>
+            <scope>provided</scope>
+  		</dependency>
 		<dependency>
 			<groupId>org.eclipse.mylyn.github</groupId>
 			<artifactId>org.eclipse.egit.github.core</artifactId>
@@ -48,13 +48,11 @@
 			<version>2.5</version>
 			<scope>provided</scope>
 		</dependency>
-
 		<dependency>
-			<groupId>com.atlassian.activeobjects</groupId>
-			<artifactId>activeobjects-plugin</artifactId>
-			<version>${ao.version}</version>
-			<scope>provided</scope>
-		</dependency>
-
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>2.5.6.SEC01</version>
+            <scope>provided</scope>
+        </dependency>
 	</dependencies>
 </project>

@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,18 +98,18 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         {
             if (cancelled.get()) {
             
-            	throw new CancelledException();
+                throw new CancelledException();
 
             } else {
                 // https://sdog.jira.com/browse/BBC-308; without this check we would be adding visually same items
                 // to activity stream
-            	if (!alreadyAddedChangesetRawNodes.contains(changeset.getRawNode()))
+                if (!alreadyAddedChangesetRawNodes.contains(getNode(changeset)))
                 {
                     StreamsEntry streamsEntry = toStreamsEntry(changeset);
                     if (streamsEntry != null)
                     {
                         entries.add(streamsEntry);
-                        alreadyAddedChangesetRawNodes.add(changeset.getRawNode());
+                        alreadyAddedChangesetRawNodes.add(getNode(changeset));
                     }
                 }
             }
@@ -116,6 +117,18 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         return entries;
     }
 
+    private String getNode(Changeset changeset)
+    {
+        String node = changeset.getRawNode();
+        // if we don't have raw node e.g. for Github , we use node 
+        if (StringUtils.isEmpty(node))
+        {
+            node = changeset.getNode();
+        }
+        
+        return node;
+    }
+    
     /**
      * Transforms a single {@link com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping} to a {@link com.atlassian.streams.api.StreamsEntry}.
      *
@@ -127,7 +140,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         final Repository repository = repositoryService.get(changeset.getRepositoryId());
         
         if (repository == null) {
-        	return null;
+            return null;
         }
 
         StreamsEntry.ActivityObject activityObject = new StreamsEntry.ActivityObject(StreamsEntry.ActivityObject.params()
@@ -148,7 +161,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
                 templateMap.put("user_name", user.getFullName());
                 templateMap.put("login", user.getUsername());
                 templateMap.put("user_url", user.getUrl());
-				templateMap.put("commit_url", commitUrl);
+                templateMap.put("commit_url", commitUrl);
 
                 StringWriter sw = new StringWriter();
                 try

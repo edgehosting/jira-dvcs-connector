@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.sal.api.lifecycle.LifecycleAware;
 import com.atlassian.sal.api.scheduling.PluginScheduler;
 import com.google.common.collect.Maps;
@@ -45,7 +44,7 @@ public class DvcsActivityScheduler implements LifecycleAware
     public void onStart()
     {
         log.debug("onStart");
-        this.interval = SystemUtils.getSystemPropertyLong(PROPERTY_KEY, DEFAULT_INTERVAL);
+        this.interval = Long.getLong(PROPERTY_KEY, DEFAULT_INTERVAL);
         log.debug("Starting DVCSConnector Scheduler Job. interval=" + interval);
         reschedule();
     }

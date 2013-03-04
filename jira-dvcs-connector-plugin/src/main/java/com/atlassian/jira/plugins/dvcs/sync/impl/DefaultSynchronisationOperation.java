@@ -99,8 +99,19 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                 continue;
             }
 
+            // get detail changeset because in this response is not information about files
+            Changeset detailChangeset = null;
+            
             if (CollectionUtils.isNotEmpty(extractedIssues) ) 
             {
+            	try
+                {
+                    detailChangeset = changesetService.getDetailChangesetFromDvcs(repository, changeset);
+                } catch (Exception e)
+                {
+                    log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
+                }
+            	
                 boolean changesetAlreadyMarkedForSmartCommits = false;
                 for (String extractedIssue : extractedIssues)
                 {
@@ -108,23 +119,24 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     String issueKey = extractedIssue.toUpperCase();
                     try
                     {
-                        changeset.setIssueKey(issueKey);
+                    	Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
+                    	changesetForSave.setIssueKey(issueKey);
                         //--------------------------------------------
                         // mark smart commit can be processed
                         // + store extracted project key for incremental linking
                         if (softSync && !changesetAlreadyMarkedForSmartCommits)
                         {
-                            markChangesetForSmartCommit(changeset, true);
+                            markChangesetForSmartCommit(changesetForSave, true);
                             changesetAlreadyMarkedForSmartCommits = true;
                         } else
                         {
-                            markChangesetForSmartCommit(changeset, false);
+                            markChangesetForSmartCommit(changesetForSave, false);
                         }
                         
                         foundProjectKeys.add(ChangesetDaoImpl.parseProjectKey(issueKey));
                         //--------------------------------------------
-                        log.debug("Save changeset [{}]", changeset);
-                        changesetService.save(changeset);
+                        log.debug("Save changeset [{}]", changesetForSave);
+                        changesetService.save(changesetForSave);
                     
                     } catch (SourceControlException e)
                     {
@@ -160,10 +172,10 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 	{
         if (repository.isSmartcommitsEnabled())
         {
-            log.debug("Marking changeset node = {} to be processed by smart commits", changesetForSave.getRawNode());
+            log.debug("Marking changeset node = {} to be processed by smart commits", changesetForSave.getNode());
             changesetForSave.setSmartcommitAvaliable(mark);
         } else {
-        	log.debug("Changeset node = {}. Repository not enabled for smartcommits.", changesetForSave.getRawNode());
+        	log.debug("Changeset node = {}. Repository not enabled for smartcommits.", changesetForSave.getNode());
         }
 	}
 

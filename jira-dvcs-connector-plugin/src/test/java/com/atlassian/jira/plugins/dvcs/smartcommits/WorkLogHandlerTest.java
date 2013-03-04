@@ -13,7 +13,9 @@ import com.atlassian.jira.bc.JiraServiceContext;
 import com.atlassian.jira.bc.issue.worklog.WorklogInputParametersImpl;
 import com.atlassian.jira.bc.issue.worklog.WorklogService;
 import com.atlassian.jira.issue.MutableIssue;
+import com.atlassian.jira.mock.component.MockComponentWorker;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler;
+import com.atlassian.jira.user.MockApplicationUser;
 
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -40,7 +42,7 @@ public class WorkLogHandlerTest
     public void setUp()
     {
         MockitoAnnotations.initMocks(this);
-
+        new MockComponentWorker().init();
         handler = new WorkLogHandler(worklogService);
     }
 
@@ -64,7 +66,6 @@ public class WorkLogHandlerTest
     @Test
     public void testHandleCommandWithComment_ShouldLogWithSuccess()
     {
-
         MutableIssue sampleIssue = sampleIssue();
        
         handler.handle(sampleUser(), sampleIssue, "time", Arrays.asList("2w 3d 1h 44m   Total work logged in !!!  "), null);
@@ -86,7 +87,7 @@ public class WorkLogHandlerTest
 
     private User sampleUser()
     {
-        User user = Mockito.mock(User.class);
+        User user = new MockApplicationUser("user").getDirectoryUser();
         return user;
     }
 

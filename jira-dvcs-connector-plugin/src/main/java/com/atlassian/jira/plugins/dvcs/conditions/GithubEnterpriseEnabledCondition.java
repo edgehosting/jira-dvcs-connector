@@ -23,6 +23,6 @@ public class GithubEnterpriseEnabledCondition implements com.atlassian.plugin.we
 
     public static boolean isGitHubEnterpriseEnabled()
     {
-        return System.getProperty("disableGithubEnterprise") == null;
+        return System.getProperty("dvcs.connector.disableGithubEnterprise") == null;
     }
 }

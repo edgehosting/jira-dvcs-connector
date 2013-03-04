@@ -164,7 +164,8 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public Changeset getDetailChangeset(Repository repository, String node) {
+    public Changeset getChangeset(Repository repository, String node)
+    {
         CommitService commitService = githubClientProvider.getCommitService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
@@ -176,6 +177,12 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             throw new SourceControlException("could not get result", e);
         }
+    }
+    
+    @Override
+    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    {
+    	return changeset;
     }
 
     public PageIterator<RepositoryCommit> getPageIterator(Repository repository, String branch)
