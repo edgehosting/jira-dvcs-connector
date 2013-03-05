@@ -353,14 +353,20 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
      *            for which repository
      * @param message
      *            commit message
+     * 
+     * @param authorName
+     *            name of author
+     * @param authorEmail
+     *            email of author
      * @return SHA-1 commit id
      */
-    protected String commit(String repositoryUri, String message)
+    protected String commit(String repositoryUri, String message, String authorName, String authorEmail)
     {
         try
         {
             CommitCommand commitCommand = getLocalRepository(repositoryUri).commit();
             commitCommand.setMessage(message);
+            commitCommand.setAuthor(authorName, authorEmail);
             RevCommit commit = commitCommand.call();
             return commit.getId().getName();
         } catch (NoHeadException e)
@@ -474,8 +480,9 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
      *            from which head
      * @param base
      *            to which base
+     * @return created EGit pull request
      */
-    protected void openPullRequest(String repositoryUri, String title, String description, String head, String base)
+    protected PullRequest openPullRequest(String repositoryUri, String title, String description, String head, String base)
     {
         Repository remoteRepository = getRemoteRepository(repositoryUri);
         PullRequest request = new PullRequest();
@@ -489,7 +496,7 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
         request.setBase(baseMarker);
         try
         {
-            new PullRequestService(getGitHubClient()).createPullRequest(remoteRepository, request);
+            return new PullRequestService(getGitHubClient()).createPullRequest(remoteRepository, request);
         } catch (IOException e)
         {
             throw new RuntimeException(e);

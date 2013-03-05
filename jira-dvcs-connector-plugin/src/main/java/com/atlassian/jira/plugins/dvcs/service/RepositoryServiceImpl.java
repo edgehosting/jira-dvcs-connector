@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -42,6 +43,11 @@ public class RepositoryServiceImpl implements RepositoryService
 	/** The repository dao. */
 	private final RepositoryDao repositoryDao;
 	
+	/**
+	 * Injected {@link RepositoryActivityDao} dependency.
+	 */
+	private final RepositoryActivityDao repositoryActivityDao;
+	
 	/** The synchronizer. */
 	private final Synchronizer synchronizer;
 	
@@ -60,17 +66,19 @@ public class RepositoryServiceImpl implements RepositoryService
 	 *
 	 * @param communicatorProvider the communicator provider
 	 * @param repositoryDao the repository dao
+	 * @param repositoryActivityDao injected {@link RepositoryActivityDao} dependency
 	 * @param synchronizer the synchronizer
 	 * @param changesetService the changeset service
 	 * @param applicationProperties the application properties
 	 */
-	public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
+	public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, RepositoryActivityDao repositoryActivityDao, Synchronizer synchronizer,
         ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory,
         @Qualifier("delegatingRepositoryActivitySynchronizer")
         RepositoryActivitySynchronizer activitySynchronizer)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
+        this.repositoryActivityDao = repositoryActivityDao;
         this.synchronizer = synchronizer;
         this.changesetService = changesetService;
         this.applicationProperties = applicationProperties;
@@ -489,6 +497,7 @@ public class RepositoryServiceImpl implements RepositoryService
 		}
 		// remove all changesets from DB that references this repository
 		changesetService.removeAllInRepository(repository.getId());
+		repositoryActivityDao.removeAll(repository);
 		// delete repository record itself
 		repositoryDao.remove(repository.getId());
 	}

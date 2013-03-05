@@ -10,6 +10,7 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -29,6 +30,9 @@ public class RepositoryServiceTest
 
 	@Mock
 	private RepositoryDao repositoryDao;
+	
+	@Mock
+	private RepositoryActivityDao repositoryActivityDao;
 
 	@Mock
 	private Synchronizer synchronizer;
@@ -60,7 +64,7 @@ public class RepositoryServiceTest
 	public void setup()
 	{
 		MockitoAnnotations.initMocks(this);
-		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer,
+		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, repositoryActivityDao, synchronizer,
 				changesetService, applicationProperties, settings, activitySyncerMock);
 	}
 

@@ -31,6 +31,9 @@ public class PullRequestCommentIssueActionFactory implements IssueActionFactory
         int repositoryId = pullRequestComment.getRepositoryId();
         RepositoryPullRequestMapping pullRequest = pullRequestComment.getPullRequest();
         
+        for (Repository repository : repositoryService.getAllRepositories()) {
+            System.out.println(repository.getId() + ":" + repository.getName());
+        }
         Repository repository = repositoryService.get(repositoryId);
         DvcsUser user = repositoryService.getUser(repository, pullRequestComment.getAuthor(), pullRequestComment.getRawAuthor());
 
