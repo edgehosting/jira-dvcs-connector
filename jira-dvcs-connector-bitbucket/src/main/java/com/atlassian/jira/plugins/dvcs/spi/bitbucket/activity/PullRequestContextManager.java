@@ -23,8 +23,6 @@ public class PullRequestContextManager
     private final BitbucketPullRequestDao pullRequestDao;
     private final RepositoryActivityDao dao;
     
-    private Map<Long, PullRequestContext> context = new HashMap<Long, PullRequestContext>();
-
     public PullRequestContextManager(BitbucketPullRequestDao pullRequestDao, RepositoryActivityDao dao)
     {
         this.pullRequestDao = pullRequestDao;
@@ -37,7 +35,6 @@ public class PullRequestContextManager
         
         PullRequestContext pullRequestContext = transformContext(repositoryId, contextMapping);
 
-//        pullRequestContext = context.get(pullRequestRemoteId);
         if (pullRequestContext == null)
         {
             pullRequestContext = new PullRequestContext(repositoryId, pullRequestRemoteId, pullRequestDao);
@@ -54,7 +51,6 @@ public class PullRequestContextManager
             contexts.add(transformContext(repositoryId, contextMapping));
         }
         return contexts;
-//        return context.values();
     }
     
     private PullRequestContext transformContext(int repositoryId, BitbucketPullRequestContextMapping context)
@@ -102,8 +98,6 @@ public class PullRequestContextManager
         {
             updatePullRequestContext(contextMapping, pullRequestContext);
         }
-        
-        context.put(pullRequestContext.getRemotePullRequestId(), pullRequestContext);
     }
     
     private void updatePullRequestContext(BitbucketPullRequestContextMapping contextMapping, PullRequestContext pullRequestContext)
