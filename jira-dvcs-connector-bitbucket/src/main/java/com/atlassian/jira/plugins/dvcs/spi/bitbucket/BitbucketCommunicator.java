@@ -139,8 +139,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
             throw new SourceControlException.UnauthorisedException("Invalid credentials");
         } catch ( BitbucketRequestException.BadRequest_400 e)
         {
-        	// We received bad request status code and we assume that an invalid OAuth is the cause
-        	throw new SourceControlException.UnauthorisedException("Invalid credentials");
+            // We received bad request status code and we assume that an invalid OAuth is the cause
+            throw new SourceControlException.UnauthorisedException("Invalid credentials");
         }
         catch (BitbucketRequestException e)
         {
@@ -153,7 +153,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public Changeset getDetailChangeset(Repository repository, String node)
+    public Changeset getChangeset(Repository repository, String node)
     {
         try
         {
@@ -162,16 +162,33 @@ public class BitbucketCommunicator implements DvcsCommunicator
             BitbucketChangeset bitbucketChangeset = remoteClient.getChangesetsRest().getChangeset(repository.getOrgName(), 
                             repository.getSlug(), node);
 
-            // get the commit statistics for changeset
             Changeset fromBitbucketChangeset = ChangesetTransformer.fromBitbucketChangeset(repository.getId(), bitbucketChangeset);
-            List<BitbucketChangesetWithDiffstat> changesetDiffStat = remoteClient.getChangesetsRest().getChangesetDiffStat(repository.getOrgName(),
-                    repository.getSlug(), node, Changeset.MAX_VISIBLE_FILES);
-            // merge it all 
-            return DetailedChangesetTransformer.fromChangesetAndBitbucketDiffstats(fromBitbucketChangeset, changesetDiffStat);
+            return fromBitbucketChangeset;
         } catch (BitbucketRequestException e)
         {
             log.debug(e.getMessage(), e);
-            throw new SourceControlException("Could not get detailed changeset [" + node + "] from " + repository.getRepositoryUrl(), e);
+            throw new SourceControlException("Could not get changeset [" + node + "] from " + repository.getRepositoryUrl(), e);
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    {
+        try
+        {
+            // get the commit statistics for changeset
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
+            List<BitbucketChangesetWithDiffstat> changesetDiffStat = remoteClient.getChangesetsRest().getChangesetDiffStat(repository.getOrgName(),
+                    repository.getSlug(), changeset.getNode(), Changeset.MAX_VISIBLE_FILES);
+            // merge it all 
+            return DetailedChangesetTransformer.fromChangesetAndBitbucketDiffstats(changeset, changesetDiffStat);
+        } catch (BitbucketRequestException e)
+        {
+            log.debug(e.getMessage(), e);
+            throw new SourceControlException("Could not get detailed changeset [" + changeset.getNode() + "] from " + repository.getRepositoryUrl(), e);
         }
     }
 

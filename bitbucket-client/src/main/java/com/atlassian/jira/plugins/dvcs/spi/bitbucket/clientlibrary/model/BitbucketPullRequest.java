@@ -1,8 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * BitbucketPullRequest
@@ -16,20 +14,17 @@ import java.util.List;
  * @author jhocman@atlassian.com
  * 
  */
-public class BitbucketPullRequest implements Serializable, HasMessages
+public class BitbucketPullRequest implements Serializable
 {
-	private static final long serialVersionUID = 846355472211323786L;
+    private static final long serialVersionUID = 846355472211323786L;
 
-	private Long id;
+    private Long id;
     private String title;
     private String description;
     private BitbucketAccount user;
     private BitbucketPullRequestCommitInfo commits;
     private BitbucketPullRequestLinks links;
     private BitbucketPullRequestHead source;
-    
-    //
-    private transient List<BitbucketPullRequestCommit> commitsDetails;
 
     public BitbucketPullRequest()
     {
@@ -74,34 +69,6 @@ public class BitbucketPullRequest implements Serializable, HasMessages
     public void setCommits(BitbucketPullRequestCommitInfo commits)
     {
         this.commits = commits;
-    }
-
-    public List<BitbucketPullRequestCommit> getCommitsDetails()
-    {
-        return commitsDetails;
-    }
-
-    public void setCommitsDetails(List<BitbucketPullRequestCommit> commitsDetails)
-    {
-        this.commitsDetails = commitsDetails;
-    }
-
-    @Override
-    public List<String> getMessages()
-    {
-        ArrayList<String> allMessages = new ArrayList<String>();
-
-        allMessages.add(title);
-        allMessages.add(description);
-        
-        if (commitsDetails != null)
-        {
-            for (BitbucketPullRequestCommit commitDetail : commitsDetails)
-            {
-                allMessages.add(commitDetail.getMessage());
-            }
-        }
-        return allMessages;
     }
 
     public String getDescription()

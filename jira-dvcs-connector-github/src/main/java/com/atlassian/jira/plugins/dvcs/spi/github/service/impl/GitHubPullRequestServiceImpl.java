@@ -8,6 +8,7 @@ import java.util.Map;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.service.PullRequestService;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
@@ -64,7 +65,7 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
      *            injected {@link RepositoryActivityDao} dependency
      */
     public GitHubPullRequestServiceImpl(GitHubPullRequestDAO gitHubPullRequestDAO, GitHubRepositoryService gitHubRepositoryService,
-            GithubClientProvider githubClientProvider, RepositoryActivityDao repositoryActivityDao)
+    		@Qualifier("githubClientProvider") GithubClientProvider githubClientProvider, RepositoryActivityDao repositoryActivityDao)
     {
         this.gitHubPullRequestDAO = gitHubPullRequestDAO;
         this.gitHubRepositoryService = gitHubRepositoryService;

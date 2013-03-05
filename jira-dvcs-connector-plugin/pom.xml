@@ -27,6 +27,18 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.6.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>10.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-dvcs-connector-api</artifactId>
             <version>${project.version}</version>
@@ -49,13 +61,18 @@
             <artifactId>jira-dvcs-connector-github-enterprise</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
-        </dependency>
-
+        </dependency>        
         <dependency>
             <groupId>com.atlassian.jira</groupId>
-            <artifactId>atlassian-jira</artifactId>
+            <artifactId>jira-core</artifactId>
             <version>${jira.compile.version}</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                <groupId>com.google.collections</groupId>
+                <artifactId>google-collections</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -65,20 +82,44 @@
         </dependency>
         <dependency>
             <groupId>com.atlassian.crowd</groupId>
-            <artifactId>crowd-api</artifactId>
-            <version>2.2.0</version>
+            <artifactId>crowd-events</artifactId>
+            <version>2.4.3</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.crowd</groupId>
+            <artifactId>crowd-integration-api</artifactId>
+            <version>2.4.3</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.collections</groupId>
+                    <artifactId>google-collections</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>atlassian-jira-pageobjects</artifactId>
-            <version>${jira.compile.version}</version>
+            <version>${jira.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>junit</artifactId>
                     <groupId>junit</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-collections</artifactId>
+                    <groupId>commons-collections</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.collections</groupId>
+                    <artifactId>google-collections</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -132,22 +173,16 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>1.6</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.mylyn.github</groupId>
             <artifactId>org.eclipse.egit.github.core</artifactId>
             <version>2.1.2</version>
         </dependency>
         <dependency>
-        	<groupId>org.eclipse.jgit</groupId>
-        	<artifactId>org.eclipse.jgit</artifactId>
-        	<version>2.2.0.201212191850-r</version>
-        	<scope>test</scope>
-        </dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>2.2.0.201212191850-r</version>
+            <scope>test</scope>
+        </dependency>        
         <dependency>
             <groupId>com.atlassian.plugins</groupId>
             <artifactId>atlassian-nav-links-plugin</artifactId>
@@ -160,6 +195,22 @@
             <artifactId>commons-httpclient</artifactId>
             <version>3.1</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+             <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-tests</artifactId>
+            <version>${jira.compile.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>hamcrest-library</artifactId>
+                    <groupId>org.hamcrest</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>hamcrest-core</artifactId>
+                    <groupId>org.hamcrest</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -174,11 +225,9 @@
                     <jvmArgs>-Xmx720m -XX:MaxPermSize=250m</jvmArgs>
                     <systemPropertyVariables>
                         <jira.websudo.is.disabled>true</jira.websudo.is.disabled>
-
-						<baseurl.jira>http://localhost:2990/jira</baseurl.jira>
+                        <baseurl.jira>http://localhost:2990/jira</baseurl.jira>
                         <http.jira.port>2990</http.jira.port>
                         <context.jira.path>jira</context.jira.path>
-
                         <jirabitbucketconnector.password>${jirabitbucketconnector.password}</jirabitbucketconnector.password>
                         <dvcsconnectortest.password>${dvcsconnectortest.password}</dvcsconnectortest.password>
                     </systemPropertyVariables>
@@ -196,25 +245,27 @@
                     <functionalTestPattern>${functionalTestPattern}</functionalTestPattern>
                 </configuration>
             </plugin>
-       </plugins>
+        </plugins>
     </build>
 
     <properties>
         <functionalTestPattern>it/**/*Test.java</functionalTestPattern>
-        <!-- GithubEnterprise only 
-            <functionalTestPattern>it/githubenterprise/**/*Test.java</functionalTestPattern>
-        -->
+        <jirabitbucketconnector.password>Im here so AMPS wont fail when just
+            building stuff</jirabitbucketconnector.password>
+        <dvcsconnectortest.password>Im here so AMPS wont fail when just
+            building stuff</dvcsconnectortest.password>
+        <!-- GithubEnterprise only <functionalTestPattern>it/githubenterprise/**/*Test.java</functionalTestPattern> -->
     </properties>
 
-	<profiles>
-		<profile>
-			<id>skipGithubEnterpriseTests</id>
-			<properties>
-		        <functionalTestPattern>it/com/**/*Test.java</functionalTestPattern>
-			</properties>
-		</profile>
-	</profiles>
-    
+    <profiles>
+        <profile>
+            <id>skipGithubEnterpriseTests</id>
+            <properties>
+                <functionalTestPattern>it/com/**/*Test.java</functionalTestPattern>
+            </properties>
+        </profile>
+    </profiles>
+
     <distributionManagement>
         <repository>
             <id>atlassian-m2-repository</id>

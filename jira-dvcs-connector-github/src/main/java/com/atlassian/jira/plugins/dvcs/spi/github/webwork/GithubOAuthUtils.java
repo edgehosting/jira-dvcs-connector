@@ -150,5 +150,4 @@ public class GithubOAuthUtils
     {
         return CustomStringUtils.encode(url);
     }
-
 }

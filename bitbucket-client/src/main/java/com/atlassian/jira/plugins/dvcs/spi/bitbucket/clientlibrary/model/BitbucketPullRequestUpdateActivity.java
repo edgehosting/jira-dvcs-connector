@@ -24,7 +24,7 @@ import java.io.Serializable;
  * @author jhocman@atlassian.com
  *
  */
-public class BitbucketPullRequestUpdateActivity extends BitbucketPullRequestBaseActivity implements Serializable, HasPossibleUpdatedMessages
+public class BitbucketPullRequestUpdateActivity extends BitbucketPullRequestBaseActivity implements Serializable
 {
     private static final long serialVersionUID = -7371697488007134175L;
     

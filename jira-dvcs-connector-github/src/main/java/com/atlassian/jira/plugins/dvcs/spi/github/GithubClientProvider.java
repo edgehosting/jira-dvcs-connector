@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import static org.eclipse.egit.github.core.client.IGitHubConstants.*;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
 
 import java.io.IOException;
 import java.net.URL;
@@ -34,8 +36,7 @@ public class GithubClientProvider
 
     public GitHubClient createClient(Repository repository)
     {
-        GitHubClient client = createClient(repository.getOrgHostUrl(), userAgent);
-
+        GitHubClient client = createClientInternal(repository.getOrgHostUrl(), userAgent);
         OAuthAuthentication auth = (OAuthAuthentication) authenticationFactory.getAuthentication(repository);
         client.setOAuth2Token(auth.getAccessToken());
 
@@ -44,13 +45,17 @@ public class GithubClientProvider
 
     public GitHubClient createClient(String hostUrl)
     {
-        return createClient(hostUrl, userAgent);
+        return createClientInternal(hostUrl, userAgent);
+    }
+    
+    protected GitHubClient createClientInternal(String url, String userAgent)
+    {
+    	return createClient(url, userAgent);
     }
     
     public GitHubClient createClient(Organization organization)
     {
-        GitHubClient client = createClient(organization.getHostUrl(), userAgent);
-
+        GitHubClient client = createClientInternal(organization.getHostUrl(), userAgent);
         Authentication authentication = authenticationFactory.getAuthentication(organization);
         if (authentication instanceof OAuthAuthentication)
         {
@@ -123,6 +128,4 @@ public class GithubClientProvider
             throw new IllegalArgumentException(e);
         }
     }
-    
-    
 }

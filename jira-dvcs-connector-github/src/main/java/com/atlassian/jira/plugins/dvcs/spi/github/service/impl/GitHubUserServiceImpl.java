@@ -5,6 +5,7 @@ import java.util.Date;
 
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.service.UserService;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
@@ -40,7 +41,7 @@ public class GitHubUserServiceImpl implements GitHubUserService
      * @param githubClientProvider
      *            Injected {@link GithubClientProvider} dependency.
      */
-    public GitHubUserServiceImpl(GitHubUserDAO gitHubUserDAO, GithubClientProvider githubClientProvider)
+    public GitHubUserServiceImpl(GitHubUserDAO gitHubUserDAO, @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
     {
         this.gitHubUserDAO = gitHubUserDAO;
         this.githubClientProvider = githubClientProvider;

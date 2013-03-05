@@ -78,6 +78,9 @@
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestCommentMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestLineCommentMapping</entity>
         
+        <entity>com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestCommitMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestContextMapping</entity>
+        
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v2.To_04_ActiveObjectsV2Migrator</upgradeTask>
@@ -185,10 +188,21 @@
         <description>Github Client Provider</description>
     </component>
 
+    <component key="githubEnterpriseClientProvider" name="githubEnterpriseClientProvider"
+               class="com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseClientProvider">
+        <description>Github Enterprise Client Provider</description>
+    </component>
+
     <component key="githubCommunicator" name="githubCommunicator"
                class="com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator">
         <description>githubCommunicator</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
+    </component>
+    
+    <!-- Bitbucket -->
+    <component key="bitbucketPRDao" name="Bitbucket PR DAO"
+        class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.dao.impl.BitbucketPullRequestDaoImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.dao.BitbucketPullRequestDao</interface>
     </component>
     
     <!-- GitHub -->

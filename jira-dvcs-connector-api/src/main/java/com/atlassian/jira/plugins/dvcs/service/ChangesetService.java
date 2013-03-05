@@ -38,4 +38,6 @@ public interface ChangesetService
     void markSmartcommitAvailability(int id, boolean available);
     
     Set<String> findReferencedProjects(int repositoryId);
+
+	Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset);
 }

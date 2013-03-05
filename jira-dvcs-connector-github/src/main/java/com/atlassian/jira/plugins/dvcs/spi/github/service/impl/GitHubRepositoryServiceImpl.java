@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.service.RepositoryService;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
@@ -38,7 +39,7 @@ public class GitHubRepositoryServiceImpl implements GitHubRepositoryService
      * @param githubClientProvider
      *            injected {@link GithubClientProvider} dependency
      */
-    public GitHubRepositoryServiceImpl(GitHubRepositoryDAO gitHubRepositoryDAO, GithubClientProvider githubClientProvider)
+    public GitHubRepositoryServiceImpl(GitHubRepositoryDAO gitHubRepositoryDAO, @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
     {
         this.gitHubRepositoryDAO = gitHubRepositoryDAO;
         this.githubClientProvider = githubClientProvider;
