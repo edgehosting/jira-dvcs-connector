@@ -1,5 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
+import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static org.hamcrest.Matchers.is;
+
 import javax.inject.Inject;
 
 import org.openqa.selenium.By;
@@ -46,7 +49,7 @@ public class BitBucketOrganization
         deleteLink.click();
 
         //wait until marker is gone.
-        Poller.waitUntilFalse(elementFinder.find(By.id("Submit")).timed().hasClass("_posting"));
+        Poller.waitUntil(elementFinder.find(By.id("Submit")).timed().hasClass("_posting"), is(false), by(30000));
     }
 
 	public PageElement getRepositoriesTable()

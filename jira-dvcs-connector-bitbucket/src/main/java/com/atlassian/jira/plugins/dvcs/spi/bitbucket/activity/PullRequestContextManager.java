@@ -3,13 +3,16 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.activity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestContextMapping;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketActivityUser;
@@ -37,7 +40,7 @@ public class PullRequestContextManager
 
         if (pullRequestContext == null)
         {
-            pullRequestContext = new PullRequestContext(repositoryId, pullRequestRemoteId, pullRequestDao);
+            pullRequestContext = new PullRequestContext(repositoryId, pullRequestRemoteId);
         }
         
         return pullRequestContext;
@@ -59,7 +62,7 @@ public class PullRequestContextManager
         {
             return null;
         }
-        PullRequestContext pullRequestContext = new PullRequestContext(repositoryId, context.getRemotePullRequestId(), pullRequestDao);
+        PullRequestContext pullRequestContext = new PullRequestContext(repositoryId, context.getRemotePullRequestId());
         
         pullRequestContext.setNextNode(context.getNextCommit());
         pullRequestContext.setCommitsUrl(context.getCommitsUrl());
@@ -191,5 +194,56 @@ public class PullRequestContextManager
         ret.put(RepositoryActivityCommitMapping.DATE, commit.getDate());
         
         return ret;
+    }
+    
+    public Iterable<BitbucketPullRequestCommitMapping> getCommitIterator(PullRequestContext pullRequestContext)
+    {
+        return new PullRequestCommitIterator(pullRequestContext);
+    }
+    
+    private class PullRequestCommitIterator implements Iterator<BitbucketPullRequestCommitMapping>, Iterable<BitbucketPullRequestCommitMapping>
+    {
+    	private final PullRequestContext pullRequestContext;
+    	
+    	public PullRequestCommitIterator(PullRequestContext pullRequestContext)
+    	{
+    		this.pullRequestContext = pullRequestContext;
+    	}
+    	
+    	@Override
+        public boolean hasNext()
+        {
+            return pullRequestContext.getNextNode() != null;
+        }
+
+        @Override
+        public BitbucketPullRequestCommitMapping next()
+        {
+            if (!hasNext())
+            {
+                throw new NoSuchElementException();
+            }
+            BitbucketPullRequestCommitMapping mapping = pullRequestDao.getCommitForPullRequest(pullRequestContext.getLocalPullRequestId(), pullRequestContext.getNextNode());
+            if (mapping != null)
+            {
+                pullRequestContext.setNextNode(mapping.getNextNode());
+            } else
+            {
+                pullRequestContext.setNextNode(null);
+            }
+            return mapping;
+        }
+
+        @Override
+        public void remove()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Iterator<BitbucketPullRequestCommitMapping> iterator()
+        {
+            return this;
+        }
     }
 }
