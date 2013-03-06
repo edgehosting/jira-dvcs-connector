@@ -1,33 +1,21 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.activity;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.dao.BitbucketPullRequestDao;
 
-public class PullRequestContext implements Iterator<BitbucketPullRequestCommitMapping>, Iterable<BitbucketPullRequestCommitMapping>
+public class PullRequestContext
 {
     private final Long remotePullRequestId;
     private Integer localPullRequestId;
     private BitbucketPullRequestUpdateActivity lastUpdateActivity;
     private boolean existingUpdateActivity;
-    private final BitbucketPullRequestDao pullRequestDao;
     private String nextNode;
     private String commitsUrl;
     private final int repositoryId;
     
-    public PullRequestContext(int repositoryId, Long remotePullRequestId, BitbucketPullRequestDao pullRequestDao)
+    public PullRequestContext(int repositoryId, Long remotePullRequestId)
     {
         this.repositoryId = repositoryId;
         this.remotePullRequestId = remotePullRequestId;
-        this.pullRequestDao = pullRequestDao;
-    }
-    
-    public Iterable<BitbucketPullRequestCommitMapping> getCommitIterator()
-    {
-        return this;
     }
 
     public String getNextNode()
@@ -73,42 +61,6 @@ public class PullRequestContext implements Iterator<BitbucketPullRequestCommitMa
     public void setExistingUpdateActivity(boolean existingUpdateActivity)
     {
         this.existingUpdateActivity = existingUpdateActivity;
-    }
-
-    @Override
-    public boolean hasNext()
-    {
-        return nextNode != null;
-    }
-
-    @Override
-    public BitbucketPullRequestCommitMapping next()
-    {
-        if (!hasNext())
-        {
-            throw new NoSuchElementException();
-        }
-        BitbucketPullRequestCommitMapping mapping = pullRequestDao.getCommitForPullRequest(localPullRequestId, nextNode);
-        if (mapping != null)
-        {
-            nextNode = mapping.getNextNode();
-        } else
-        {
-            nextNode = null;
-        }
-        return mapping;
-    }
-
-    @Override
-    public void remove()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Iterator<BitbucketPullRequestCommitMapping> iterator()
-    {
-        return this;
     }
 
     public String getCommitsUrl()

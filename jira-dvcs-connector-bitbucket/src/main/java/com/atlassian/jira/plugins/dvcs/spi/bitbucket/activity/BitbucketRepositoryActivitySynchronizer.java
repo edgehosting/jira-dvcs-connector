@@ -286,7 +286,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
             }
         }
         
-        for (BitbucketPullRequestCommitMapping commit : pullRequestContext.getCommitIterator())
+        for (BitbucketPullRequestCommitMapping commit : pullRequestContextManager.getCommitIterator(pullRequestContext))
         {
             if (activity != null && commit.getNode().startsWith(activity.getSource().getCommit().getSha()))
             {
@@ -302,7 +302,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         }
         
         // there are no more commits, this activity must be the first
-        if (lastUpdateActivity != null && !pullRequestContext.getCommitIterator().iterator().hasNext() && !pullRequestContext.isExistingUpdateActivity())
+        if (lastUpdateActivity != null && pullRequestContext.getNextNode() == null && !pullRequestContext.isExistingUpdateActivity())
         {
             dao.updateActivityStatus(lastUpdateActivity.getID(), RepositoryActivityPullRequestUpdateMapping.Status.OPENED);
         }
