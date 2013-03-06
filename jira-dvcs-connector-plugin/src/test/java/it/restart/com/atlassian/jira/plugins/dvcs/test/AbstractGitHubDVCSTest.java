@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -24,6 +25,7 @@ import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand;
+import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
@@ -66,6 +68,11 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
      * Repository owner.
      */
     protected static final String USERNAME = "jirabitbucketconnector";
+
+    /**
+     * Organization - used by forking.
+     */
+    protected static final String ORGANIZATION = "jira-dvcs-connector-org";
 
     /**
      * Appropriate {@link #USERNAME} password.
@@ -116,6 +123,12 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
         // adds GitHub account into Jira
         RepositoriesPageController repositoriesPageController = new RepositoriesPageController(getJiraTestedProduct());
         repositoriesPageController.addOrganization(RepositoriesPageController.GITHUB, USERNAME, false);
+        repositoriesPageController.addOrganization(RepositoriesPageController.GITHUB, ORGANIZATION, false);
+
+        // GitHub client setup
+        gitHubClient = GitHubClient.createClient("https://github.com/");
+        gitHubClient.setCredentials(USERNAME, PASSWORD);
+        repositoryService = new RepositoryService(gitHubClient);
     }
 
     /**
@@ -143,9 +156,12 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
     {
         super.onTestCleanUp();
 
-        for (Repository repository : uriToRemoteRepository.values())
+        Iterator<Repository> valuesIterator = uriToRemoteRepository.values().iterator();
+        while (valuesIterator.hasNext())
         {
-            deleteTestRepository(repository.generateId());
+            deleteTestRepository(valuesIterator.next().generateId());
+            // iterator have to be refreshed, because delete method makes modification on it
+            valuesIterator = uriToRemoteRepository.values().iterator();
         }
     }
 
@@ -158,11 +174,6 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
      */
     protected void addTestRepository(String repositoryUri)
     {
-
-        gitHubClient = GitHubClient.createClient("https://github.com/stanislav-dvorscak");
-        gitHubClient.setCredentials(USERNAME, PASSWORD);
-        repositoryService = new RepositoryService(gitHubClient);
-
         // removes repository if it was not properly removed during clean up
         if (isRepositoryExists(repositoryUri))
         {
@@ -232,6 +243,37 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
     }
 
     /**
+     * Clones repository, which is defined by provided repository URI. Clone URL will be obtained from {@link #uriToRemoteRepository}.
+     * Useful for {@link #fork(String)} repository.
+     * 
+     * @param repositoryUri
+     *            e.g.: owner/name
+     */
+    protected void clone(String repositoryUri)
+    {
+        try
+        {
+            CloneCommand cloneCommand = Git.cloneRepository();
+            cloneCommand.setURI(getRemoteRepository(repositoryUri).getCloneUrl());
+            cloneCommand.setDirectory(getLocalRepository(repositoryUri).getRepository().getDirectory().getParentFile());
+            cloneCommand.call();
+
+        } catch (InvalidRemoteException e)
+        {
+            throw new RuntimeException(e);
+
+        } catch (TransportException e)
+        {
+            throw new RuntimeException(e);
+
+        } catch (GitAPIException e)
+        {
+            throw new RuntimeException(e);
+
+        }
+    }
+
+    /**
      * Creates branch on provided repository - git branch name
      * 
      * @param repositoryUri
@@ -262,6 +304,46 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
         {
             throw new RuntimeException(e);
 
+        }
+    }
+
+    /**
+     * Forks provided repository into the {@link #ORGANIZATION}. The forked repository will be automatically destroyed after test finished.
+     * 
+     * @param repositoryUri
+     *            e.g.: owner/name
+     * @return forked repository URI
+     */
+    protected String fork(String repositoryUri)
+    {
+        RepositoryId fromRepository = RepositoryId.createFromId(repositoryUri);
+
+        try
+        {
+            Repository remoteRepository = repositoryService.forkRepository(fromRepository, ORGANIZATION);
+
+            // wait until forked repository is prepared
+            do
+            {
+                try
+                {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e)
+                {
+                    // nothing to do
+                }
+            } while (repositoryService.getRepository(remoteRepository.getOwner().getLogin(), remoteRepository.getName()) == null);
+
+            // builds URI of forked repository
+            String result = remoteRepository.getOwner().getLogin() + "/" + remoteRepository.getName();
+            uriToRemoteRepository.put(result, remoteRepository);
+            createTestLocalRepository(result);
+
+            return result;
+
+        } catch (IOException e)
+        {
+            throw new RuntimeException(repositoryUri);
         }
     }
 
@@ -471,32 +553,36 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
      * Open pull request over provided repository, head and base information.
      * 
      * @param repositoryUri
-     *            e.g.:owner/name
+     *            on which repository e.g.:owner/name
      * @param title
      *            title of Pull request
      * @param description
      *            description of Pull request
      * @param head
-     *            from which head
+     *            from which head e.g.: master or organization:master
      * @param base
      *            to which base
      * @return created EGit pull request
      */
     protected PullRequest openPullRequest(String repositoryUri, String title, String description, String head, String base)
     {
-        Repository remoteRepository = getRemoteRepository(repositoryUri);
+        Repository repository = getRemoteRepository(repositoryUri);
+
         PullRequest request = new PullRequest();
         request.setTitle(title);
         request.setBody(description);
+
         PullRequestMarker headMarker = new PullRequestMarker();
         headMarker.setLabel(head);
         request.setHead(headMarker);
+
         PullRequestMarker baseMarker = new PullRequestMarker();
         baseMarker.setLabel(base);
         request.setBase(baseMarker);
+
         try
         {
-            return new PullRequestService(getGitHubClient()).createPullRequest(remoteRepository, request);
+            return new PullRequestService(getGitHubClient()).createPullRequest(repository, request);
         } catch (IOException e)
         {
             throw new RuntimeException(e);
@@ -539,7 +625,17 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
      */
     private void createTestRepository(String repositoryUri)
     {
-        // eGit initialization
+        createTestRemoteRepository(repositoryUri);
+        createTestLocalRepository(repositoryUri);
+    }
+
+    /**
+     * Creates provided test repository - remote side.
+     * 
+     * @param repositoryUri
+     */
+    private void createTestRemoteRepository(String repositoryUri)
+    {
         Repository remoteRepository = new Repository();
         RepositoryId repositoryId = RepositoryId.createFromId(repositoryUri);
         remoteRepository.setName(repositoryId.getName());
@@ -561,8 +657,15 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
             throw new RuntimeException(e);
         }
         uriToRemoteRepository.put(repositoryUri, remoteRepository);
+    }
 
-        // jGit initialization
+    /**
+     * Creates provided test repository - local side.
+     * 
+     * @param repositoryUri
+     */
+    private void createTestLocalRepository(String repositoryUri)
+    {
         try
         {
             org.eclipse.jgit.lib.Repository localRepository = new FileRepository(Files.createTempDir() + "/.git");

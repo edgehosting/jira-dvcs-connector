@@ -121,7 +121,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
     /**
      * Test that "Update Pull Request" is working.
      */
-    @Test(dependsOnMethods = "testOpenPullRequestBranch")
+    @Test
     private void testUpdatePullRequestBranch()
     {
         String expectedPullRequestName = issueKey + ": Open PR";
@@ -146,7 +146,8 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
 
         push(REPOSITORY_URI, USERNAME, PASSWORD, fixBranchName);
 
-        PullRequest expectedPullRequest = openPullRequest(REPOSITORY_URI, expectedPullRequestName, "Open PR description", fixBranchName, "master");
+        PullRequest expectedPullRequest = openPullRequest(REPOSITORY_URI, expectedPullRequestName, "Open PR description", fixBranchName,
+                "master");
 
         // Assert PR Updated information
         addFile(REPOSITORY_URI, issueKey + "_fix_update.txt", "Virtual fix - update {}".getBytes());
@@ -191,6 +192,69 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
         Assert.assertEquals(openedPullRequestActivity.getPullRequestCommits().size(), 2);
         assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(0).getCommitNode(), expectedCommitNodeOpen[0]);
         assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(1).getCommitNode(), expectedCommitNodeOpen[1]);
+    }
+
+    /**
+     * Test that "Open Pull Request" is working.
+     */
+    @Test
+    public void testOpenPullRequestFork()
+    {
+        String pullRequestName = issueKey + ": Open PR";
+        String[] commitNodeOpen = new String[2];
+
+        init(REPOSITORY_URI);
+        addFile(REPOSITORY_URI, "README.txt", "Hello World!".getBytes());
+        commit(REPOSITORY_URI, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        push(REPOSITORY_URI, USERNAME, PASSWORD);
+
+        String forkedRepositoryUri = fork(REPOSITORY_URI);
+        clone(forkedRepositoryUri);
+
+        addFile(forkedRepositoryUri, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = commit(forkedRepositoryUri, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        addFile(forkedRepositoryUri, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = commit(forkedRepositoryUri, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        push(forkedRepositoryUri, USERNAME, PASSWORD, "master");
+
+        // seems that information for pull request are calculated asynchronously,
+        // / it is not possible to create PR immediately after push
+        try
+        {
+            Thread.sleep(5000);
+        } catch (InterruptedException e)
+        {
+            // nothing to do
+        }
+
+        PullRequest pullRequest = openPullRequest(REPOSITORY_URI, pullRequestName, "Open PR description", ORGANIZATION + ":master",
+                "master");
+
+        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.GitHub, USERNAME);
+        account.refresh();
+
+        RepositoryId repositoryId = RepositoryId.createFromId(REPOSITORY_URI);
+        AccountsPageAccountRepository repository = account.getRepository(repositoryId.getName());
+        repository.enable();
+        repository.synchronize();
+
+        IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
+        issuePage.openPRTab();
+        List<IssuePagePullRequestTabActivity> activities = issuePage.getIssuePagePullRequestTab().getActivities();
+
+        Assert.assertEquals(activities.size(), 1);
+        IssuePagePullRequestTabActivityUpdate openedPullRequestActivity = (IssuePagePullRequestTabActivityUpdate) activities.get(0);
+
+        // Assert PR information
+        Assert.assertEquals(openedPullRequestActivity.getPullRequestState(), "OPENED");
+        Assert.assertEquals(openedPullRequestActivity.getPullRequestName(), pullRequestName);
+        Assert.assertEquals(openedPullRequestActivity.getPullRequestUrl(), pullRequest.getHtmlUrl());
+        Assert.assertEquals(openedPullRequestActivity.getPullRequestCommits().size(), 2);
+        assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(0).getCommitNode(), commitNodeOpen[0]);
+        assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(1).getCommitNode(), commitNodeOpen[1]);
     }
 
     /**

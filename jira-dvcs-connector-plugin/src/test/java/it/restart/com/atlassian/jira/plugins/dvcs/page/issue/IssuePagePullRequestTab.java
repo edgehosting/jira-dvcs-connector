@@ -47,7 +47,7 @@ public class IssuePagePullRequestTab extends WebDriverElement
     {
         List<IssuePagePullRequestTabActivity> result = new LinkedList<IssuePagePullRequestTabActivity>();
 
-        By locator = By.xpath("div");
+        By locator = By.xpath("div[not(contains(concat(' ', @class, ' '), 'message-container'))]");
         List<WebElement> webElements = waitForWebElement().findElements(locator);
 
         for (int i = 0; i < webElements.size(); i++)

@@ -61,13 +61,13 @@ public class AccountsPageAccount extends WebDriverElement
     /**
      * Reference to "Controls" button.
      */
-    @ElementBy(xpath = "//li[contains(concat(' ', @class, ' '), 'dvcs-organization-controls-tool')]//a")
+    @ElementBy(xpath = ".//li[contains(concat(' ', @class, ' '), 'dvcs-organization-controls-tool')]//a")
     private PageElement controlsButton;
 
     /**
      * Reference to "Controls" dialog, which appeared after {@link #controlsButton} fire.
      */
-    @ElementBy(xpath = "//li[contains(concat(' ', @class, ' '), 'dvcs-organization-controls-tool')]//ul")
+    @ElementBy(xpath = ".//li[contains(concat(' ', @class, ' '), 'dvcs-organization-controls-tool')]//ul")
     private AccountsPageAccountControlsDialog controlsDialog;
 
     /**
@@ -89,7 +89,7 @@ public class AccountsPageAccount extends WebDriverElement
      */
     public AccountsPageAccountRepository getRepository(String repositoryName)
     {
-        return find(By.xpath("//table/tbody/tr/td[@class='dvcs-org-reponame']/a[text()='" + repositoryName + "']/ancestor::tr"),
+        return find(By.xpath("table/tbody/tr/td[@class='dvcs-org-reponame']/a[text()='" + repositoryName + "']/ancestor::tr"),
                 AccountsPageAccountRepository.class);
     }
 
