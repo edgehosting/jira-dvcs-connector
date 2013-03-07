@@ -15,12 +15,14 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.RequestException;
+import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.jgit.api.AddCommand;
@@ -613,6 +615,31 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
 
         }
 
+    }
+
+    /**
+     * Adds comment to provided pull request.
+     * 
+     * @param repositoryUri
+     * @param pullRequest
+     *            pull request owner
+     * @param comment
+     *            message
+     * @return created remote comment
+     */
+    protected Comment commentPullRequest(String repositoryUri, PullRequest pullRequest, String comment)
+    {
+        IssueService issueService = new IssueService(getGitHubClient());
+        try
+        {
+            return issueService.createComment(getRemoteRepository(repositoryUri),
+                    pullRequest.getIssueUrl().substring(pullRequest.getIssueUrl().lastIndexOf('/') + 1), comment);
+
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+
+        }
     }
 
     /**

@@ -6,10 +6,12 @@ import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccou
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.issue.IssuePage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.issue.IssuePagePullRequestTabActivity;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.issue.IssuePagePullRequestTabActivityComment;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.issue.IssuePagePullRequestTabActivityUpdate;
 
 import java.util.List;
 
+import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.testng.Assert;
@@ -69,7 +71,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
      * Test that "Open Pull Request" is working.
      */
     @Test
-    public void testOpenPullRequestBranch()
+    public void testOpenBranch()
     {
         String pullRequestName = issueKey + ": Open PR";
         String fixBranchName = issueKey + "_fix";
@@ -117,12 +119,74 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
         assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(0).getCommitNode(), commitNodeOpen[0]);
         assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(1).getCommitNode(), commitNodeOpen[1]);
     }
+    
+    /**
+     * Test that "Open Pull Request" is working.
+     */
+    @Test
+    public void testComment()
+    {
+        String pullRequestName = issueKey + ": Open PR";
+        String fixBranchName = issueKey + "_fix";
+        String[] commitNodeOpen = new String[2];
+
+        init(REPOSITORY_URI);
+        addFile(REPOSITORY_URI, "README.txt", "Hello World!".getBytes());
+        commit(REPOSITORY_URI, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        push(REPOSITORY_URI, USERNAME, PASSWORD);
+
+        createBranch(REPOSITORY_URI, fixBranchName);
+        checkout(REPOSITORY_URI, fixBranchName);
+
+        addFile(REPOSITORY_URI, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = commit(REPOSITORY_URI, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        addFile(REPOSITORY_URI, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = commit(REPOSITORY_URI, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        push(REPOSITORY_URI, USERNAME, PASSWORD, fixBranchName);
+
+        PullRequest pullRequest = openPullRequest(REPOSITORY_URI, pullRequestName, "Open PR description", fixBranchName, "master");
+        
+        // wait until pull request will be established
+        try
+        {
+            Thread.sleep(5000);
+        } catch (InterruptedException e)
+        {
+            // nothing to do
+        }
+
+        Comment comment = commentPullRequest(REPOSITORY_URI, pullRequest, "General Pull Request Comment");
+        
+        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.GitHub, USERNAME);
+        account.refresh();
+
+        RepositoryId repositoryId = RepositoryId.createFromId(REPOSITORY_URI);
+        AccountsPageAccountRepository repository = account.getRepository(repositoryId.getName());
+        repository.enable();
+        repository.synchronize();
+
+        IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
+        issuePage.openPRTab();
+        List<IssuePagePullRequestTabActivity> activities = issuePage.getIssuePagePullRequestTab().getActivities();
+
+        Assert.assertEquals(activities.size(), 2);
+        IssuePagePullRequestTabActivityComment commentedPullRequestActivity = (IssuePagePullRequestTabActivityComment) activities.get(1);
+
+        // Assert PR information
+        Assert.assertEquals(commentedPullRequestActivity.getPullRequestState(), "COMMENTED");
+        Assert.assertEquals(commentedPullRequestActivity.getPullRequestName(), pullRequestName);
+        Assert.assertEquals(commentedPullRequestActivity.getPullRequestUrl(), pullRequest.getHtmlUrl());
+        Assert.assertEquals(commentedPullRequestActivity.getComment(), comment.getBody());
+    }
 
     /**
      * Test that "Update Pull Request" is working.
      */
     @Test
-    private void testUpdatePullRequestBranch()
+    private void testUpdateBranch()
     {
         String expectedPullRequestName = issueKey + ": Open PR";
         String[] expectedCommitNodeUpdate = new String[2];
@@ -197,7 +261,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
      * Tests that "Decline Pull Request" is working.
      */
     @Test
-    public void testDeclinePullRequest()
+    public void testDecline()
     {
         String pullRequestName = issueKey + ": Open PR";
         String fixBranchName = issueKey + "_fix";
@@ -220,6 +284,16 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
         push(REPOSITORY_URI, USERNAME, PASSWORD, fixBranchName);
 
         PullRequest pullRequest = openPullRequest(REPOSITORY_URI, pullRequestName, "Open PR description", fixBranchName, "master");
+        
+        // gives such time for pull request creation
+        try
+        {
+            Thread.sleep(5000);
+        } catch (InterruptedException e)
+        {
+            // nothing to do
+        }
+        
         closePullRequest(REPOSITORY_URI, pullRequest);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
@@ -258,7 +332,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
      * Test that "Open Pull Request" is working.
      */
     @Test
-    public void testOpenPullRequestFork()
+    public void testFork()
     {
         String pullRequestName = issueKey + ": Open PR";
         String[] commitNodeOpen = new String[2];

@@ -118,17 +118,19 @@ public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCom
             idToLoaded.put(loaded.getRemoteId(), loaded);
         }
 
-        Map<String, Object> activity = new HashMap<String, Object>();
         for (GitHubPullRequestComment comment : getByPullRequest(pullRequest))
         {
+            Map<String, Object> activity = new HashMap<String, Object>();
             if (!idToLoaded.containsKey(comment.getGitHubId()))
             {
                 map(activity, repositoryPullRequest, comment);
                 repositoryActivityDao.saveActivity(activity);
                 activity.clear();
+
             } else
             {
                 idToLoaded.remove(comment.getGitHubId());
+
             }
         }
 
@@ -156,6 +158,7 @@ public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCom
         target.put(RepositoryActivityPullRequestMapping.REPOSITORY_ID, pullRequest.getToRepositoryId());
 
         target.put(RepositoryActivityPullRequestCommentMapping.ENTITY_TYPE, RepositoryActivityPullRequestCommentMapping.class);
+        target.put(RepositoryActivityPullRequestCommentMapping.REMOTE_ID, source.getGitHubId());
         target.put(RepositoryActivityPullRequestCommentMapping.LAST_UPDATED_ON, source.getCreatedAt());
         target.put(RepositoryActivityPullRequestCommentMapping.AUTHOR, source.getCreatedBy().getLogin());
         target.put(RepositoryActivityPullRequestCommentMapping.RAW_AUTHOR, source.getCreatedBy().getName());

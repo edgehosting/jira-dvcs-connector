@@ -59,7 +59,13 @@ public class IssuePagePullRequestTab extends WebDriverElement
             {
                 result.add(pageBinder.bind(WebDriverElementMappings.findMapping(IssuePagePullRequestTabActivityUpdate.class),
                         WebDriverLocators.list(webElements.get(i), locator, i, locatable), defaultTimeout));
-            } else
+            }
+            else if (webElement.getAttribute("class").matches(".*\\bcomment\\b.*")) 
+            {
+                result.add(pageBinder.bind(WebDriverElementMappings.findMapping(IssuePagePullRequestTabActivityComment.class),
+                        WebDriverLocators.list(webElements.get(i), locator, i, locatable), defaultTimeout));
+            }
+            else
             {
                 result.add(pageBinder.bind(WebDriverElementMappings.findMapping(IssuePagePullRequestTabActivity.class),
                         WebDriverLocators.list(webElements.get(i), locator, i, locatable), defaultTimeout));

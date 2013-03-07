@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
@@ -114,7 +116,9 @@ public class GitHubPullRequestLineCommentServiceImpl implements GitHubPullReques
         Map<Long, RepositoryActivityPullRequestCommentMapping> idToLoaded = new HashMap<Long, RepositoryActivityPullRequestCommentMapping>();
         for (RepositoryActivityPullRequestCommentMapping loaded : repositoryActivityDao.getPullRequestComments(repositoryPullRequest))
         {
-            idToLoaded.put(loaded.getRemoteId(), loaded);
+            if (!StringUtils.isEmpty(loaded.getFile())) {
+                idToLoaded.put(loaded.getRemoteId(), loaded);
+            }
         }
 
         Map<String, Object> activity = new HashMap<String, Object>();
