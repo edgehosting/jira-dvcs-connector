@@ -590,6 +590,32 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
     }
 
     /**
+     * Closes provided pull request.
+     * 
+     * @param repositoryUri
+     *            pull request owner
+     * @param pullRequest
+     *            to close
+     */
+    protected void closePullRequest(String repositoryUri, PullRequest pullRequest)
+    {
+        Repository repository = getRemoteRepository(repositoryUri);
+
+        PullRequestService pullRequestService = new PullRequestService(getGitHubClient());
+        try
+        {
+            pullRequest.setState("CLOSED");
+            pullRequestService.editPullRequest(repository, pullRequest);
+
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+
+        }
+
+    }
+
+    /**
      * @param repositoryUri
      *            e.g.: owner/name
      * @return True when test repository exists.

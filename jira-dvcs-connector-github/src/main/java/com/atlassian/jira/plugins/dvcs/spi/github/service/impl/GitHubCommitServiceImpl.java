@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -333,11 +334,16 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
         RepositoryActivityPullRequestUpdateMapping updateActivity;
         if (updated.isEmpty())
         {
+            // it is hack - because this information is not still correct
+            // E.g.: Commit, Push, Commit, Open Pull Request, Push => Updated Activity will be before Opened Activity!
+            // for this case the same date as opened pull request will be used!
+            Date lastUpdatedOn = openAction.getCreatedAt().before(lastCommit.getCreatedAt()) ? lastCommit.getCreatedAt() : openAction.getCreatedAt();
+
             Map<String, Object> updateActivityParams = new HashMap<String, Object>();
             updateActivityParams.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, repositoryPullRequest.getID());
             updateActivityParams.put(RepositoryActivityPullRequestMapping.REPOSITORY_ID, repositoryPullRequest.getToRepositoryId());
             updateActivityParams.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
-            updateActivityParams.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, lastCommit.getCreatedAt());
+            updateActivityParams.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, lastUpdatedOn);
             updateActivityParams.put(RepositoryActivityPullRequestMapping.AUTHOR, lastCommit.getCreatedBy());
             updateActivityParams.put(RepositoryActivityPullRequestMapping.RAW_AUTHOR, lastCommit.getCreatedByName());
             updateActivityParams.put(RepositoryActivityPullRequestUpdateMapping.STATUS,
