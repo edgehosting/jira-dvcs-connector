@@ -92,11 +92,13 @@ public class RepositoryDaoImpl implements RepositoryDao
                     @Override
                     public List<RepositoryMapping> doInTransaction()
                     {
-                        Query query = Query.select().where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
-                        if (!includeDeleted)
+                        Query query = Query.select();
+                        if (includeDeleted)
                         {
-                            query = Query.select().where(
-                                    RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED
+                        	query.where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
+                        } else
+                        {
+                            query.where(RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED
                                             + " = ? ", organizationId, Boolean.FALSE);
                         }
                         query.order(RepositoryMapping.NAME);
@@ -181,11 +183,13 @@ public class RepositoryDaoImpl implements RepositoryDao
             @Override
             public Boolean doInTransaction()
             {
-                Query query = Query.select().where(RepositoryMapping.LINKED + " = ?", Boolean.TRUE);
-                if (!includeDeleted)
+                Query query = Query.select();
+                if (includeDeleted)
                 {
-                    query = Query.select().where(
-                            RepositoryMapping.LINKED + " = ? AND " + RepositoryMapping.DELETED
+                	query.where(RepositoryMapping.LINKED + " = ?", Boolean.TRUE);
+                } else
+                {
+                    query.where(RepositoryMapping.LINKED + " = ? AND " + RepositoryMapping.DELETED
                                     + " = ? ", Boolean.TRUE, Boolean.FALSE);
                 }
 
