@@ -384,7 +384,7 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
     public boolean existsLinkedRepositories()
     {
-        return repositoryDao.existsLinkedRepositories(false);
+        return repositoryDao.existsLinkedRepositories();
     }
 
     /**
