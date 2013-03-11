@@ -21,6 +21,8 @@ public interface RepositoryDao
      */
     List<Repository> getAll(boolean includeDeleted);
 
+    boolean existsLinkedRepositories(boolean includeDeleted);
+
     /**
      * returns repository by ID or <code>null</code> if not found
      * @param repositoryId repositoryId

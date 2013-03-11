@@ -172,7 +172,23 @@ public class RepositoryDaoImpl implements RepositoryDao
 
 	}
 
-	/**
+    @Override
+    public boolean existsLinkedRepositories(final boolean includeDeleted) {
+        return activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
+        {
+            @Override
+            public Boolean doInTransaction()
+            {
+                Query select = Query.select().where(
+                        RepositoryMapping.DELETED + " = ? AND " + RepositoryMapping.LINKED + " = ?",
+                        includeDeleted, true);
+
+                return activeObjects.count(RepositoryMapping.class, select) > 0;
+            }
+        });
+    }
+
+    /**
 	 * Transform repositories.
 	 *
 	 * @param idToOrganizationMapping the id to organization mapping
