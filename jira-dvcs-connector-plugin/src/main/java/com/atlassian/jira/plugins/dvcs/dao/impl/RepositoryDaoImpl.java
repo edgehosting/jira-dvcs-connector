@@ -179,11 +179,15 @@ public class RepositoryDaoImpl implements RepositoryDao
             @Override
             public Boolean doInTransaction()
             {
-                Query select = Query.select().where(
-                        RepositoryMapping.DELETED + " = ? AND " + RepositoryMapping.LINKED + " = ?",
-                        includeDeleted, true);
+                Query query = Query.select().where(RepositoryMapping.LINKED + " = ?", Boolean.TRUE);
+                if (!includeDeleted)
+                {
+                    query = Query.select().where(
+                            RepositoryMapping.LINKED + " = ? AND " + RepositoryMapping.DELETED
+                                    + " = ? ", Boolean.TRUE, Boolean.FALSE);
+                }
 
-                return activeObjects.count(RepositoryMapping.class, select) > 0;
+                return activeObjects.count(RepositoryMapping.class, query) > 0;
             }
         });
     }
