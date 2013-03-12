@@ -187,7 +187,13 @@ public class PullRequestContextManager
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
         ret.put(RepositoryActivityCommitMapping.ACTIVITY_ID , activityId);
-        ret.put(RepositoryActivityCommitMapping.AUTHOR, commit.getAuthor().getUser().getUsername());
+        if (commit.getAuthor().getUser() != null)
+        {
+            ret.put(RepositoryActivityCommitMapping.AUTHOR, commit.getAuthor().getUser().getUsername());
+        } else
+        {
+            ret.put(RepositoryActivityCommitMapping.AUTHOR, commit.getAuthor().getRaw().replaceAll("<[^>]*>", "").trim());
+        }
         ret.put(RepositoryActivityCommitMapping.RAW_AUTHOR, commit.getAuthor().getRaw());
         ret.put(RepositoryActivityCommitMapping.MESSAGE, commit.getMessage());
         ret.put(RepositoryActivityCommitMapping.NODE, commit.getSha());
@@ -203,14 +209,14 @@ public class PullRequestContextManager
     
     private class PullRequestCommitIterator implements Iterator<BitbucketPullRequestCommitMapping>, Iterable<BitbucketPullRequestCommitMapping>
     {
-    	private final PullRequestContext pullRequestContext;
-    	
-    	public PullRequestCommitIterator(PullRequestContext pullRequestContext)
-    	{
-    		this.pullRequestContext = pullRequestContext;
-    	}
-    	
-    	@Override
+        private final PullRequestContext pullRequestContext;
+        
+        public PullRequestCommitIterator(PullRequestContext pullRequestContext)
+        {
+            this.pullRequestContext = pullRequestContext;
+        }
+        
+        @Override
         public boolean hasNext()
         {
             return pullRequestContext.getNextNode() != null;
