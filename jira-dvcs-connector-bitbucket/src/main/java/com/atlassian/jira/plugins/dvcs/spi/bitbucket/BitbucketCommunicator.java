@@ -368,7 +368,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         String username = bitbucketAccount.getUsername();
         String fullName = bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName();
         String avatar = bitbucketAccount.getAvatar();
-        return new DvcsUser(username, fullName, null, avatar, repository.getOrgHostUrl());
+        return new DvcsUser(username, fullName, null, avatar, repository.getOrgHostUrl() + "/" + username);
     }
 
     /**

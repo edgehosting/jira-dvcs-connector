@@ -25,7 +25,6 @@ import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
-import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.CommitService;
@@ -49,7 +48,9 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubUserService;
 import com.google.common.collect.Iterators;
 
 public class GithubCommunicator implements DvcsCommunicator
@@ -63,12 +64,15 @@ public class GithubCommunicator implements DvcsCommunicator
     private final HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
     protected final OAuthStore oAuthStore;
     
+    private final GitHubUserService gitHubUserService;
+    
     public GithubCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
-            @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
+            @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider, GitHubUserService gitHubUserService)
     {
         this.changesetCache = changesetCache;
         this.oAuthStore = oAuthStore;
         this.githubClientProvider = githubClientProvider;
+        this.gitHubUserService = gitHubUserService;
     }
 
     @Override
@@ -301,19 +305,13 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getUser(Repository repository, String username)
     {
-        try
-        {
-            UserService userService = githubClientProvider.getUserService(repository);
-            User ghUser = userService.getUser(username);
-            String login = ghUser.getLogin();
-            String name = ghUser.getName();
-            String displayName = StringUtils.isNotBlank(name) ? name : login;
-            String gravatarUrl = ghUser.getAvatarUrl();
+        GitHubUser user = gitHubUserService.getByLogin(username);
+        if (user != null) {
+            return new DvcsUser(user.getLogin(), user.getName(), null, user.getAvatarUrl(), user.getUrl());
+        
+        } else {
+            return new DvcsUser.UnknownUser(username, username, null);
             
-            return new DvcsUser(login, displayName, null, gravatarUrl, repository.getOrgHostUrl());
-        } catch (IOException e)
-        {
-            throw new RuntimeException(e);
         }
     }
 

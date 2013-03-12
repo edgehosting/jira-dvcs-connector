@@ -144,7 +144,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     */
     public static final AccountType BITBUCKET = new AccountType(0, "bitbucket", new BitbucketGrantAccessPageController());
     public static final AccountType GITHUB = new AccountType(1, "github", new GithubGrantAccessPageController());
-    public static final AccountType GITHUBENTERPRISE = new AccountType(2, "github1", new BitbucketGrantAccessPageController());
+    public static final AccountType GITHUBENTERPRISE = new AccountType(2, "githube", new GithubGrantAccessPageController());
 
     static class AccountType
     {

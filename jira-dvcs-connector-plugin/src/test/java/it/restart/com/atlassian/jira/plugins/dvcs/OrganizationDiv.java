@@ -3,18 +3,20 @@ package it.restart.com.atlassian.jira.plugins.dvcs;
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static org.hamcrest.Matchers.is;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.testng.Assert;
 
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.webdriver.AtlassianWebDriver;
 
 public class OrganizationDiv
 {
@@ -22,7 +24,7 @@ public class OrganizationDiv
     private PageBinder pageBinder;
 
     @Inject
-    private AtlassianWebDriver driver;
+    private WebDriver javaScriptExecutor;
 
     @Inject
     PageElementFinder elementFinder;
@@ -46,7 +48,7 @@ public class OrganizationDiv
     public void delete()
     {
         // disable confirm popup
-        driver.executeScript("window.confirm = function(){ return true; }");
+        ((JavascriptExecutor) javaScriptExecutor).executeScript("window.confirm = function(){ return true; }");
         // add marker to wait for post complete
         PageElement ddButton = rootElement.find(By.className("aui-dd-trigger"));
         ddButton.click();
@@ -65,7 +67,12 @@ public class OrganizationDiv
 
     public List<OrganizationRepositoryRow> getRepositories()
     {
-        return repositoriesTable.findAll(By.xpath("//table/tbody/tr"), OrganizationRepositoryRow.class);
+        if (repositoriesTable.isPresent()) {
+            return repositoriesTable.findAll(By.xpath("//table/tbody/tr"), OrganizationRepositoryRow.class);
+        } else {
+            Assert.assertTrue(rootElement.find(By.xpath(".//span[contains(concat(' ', @class, ' '), ' dvcs-no-repos ')]")).isPresent());
+            return Collections.emptyList();
+        }
     }
 
     /**

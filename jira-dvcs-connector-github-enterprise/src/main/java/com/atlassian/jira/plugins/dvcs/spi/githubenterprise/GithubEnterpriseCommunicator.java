@@ -13,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubUserService;
 
 public class GithubEnterpriseCommunicator extends GithubCommunicator
 {
@@ -20,9 +21,9 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     public static final String GITHUB_ENTERPRISE = "githube";
 
     private GithubEnterpriseCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
-            @Qualifier("githubEnterpriseClientProvider") GithubEnterpriseClientProvider githubClientProvider)
+            @Qualifier("githubEnterpriseClientProvider") GithubEnterpriseClientProvider githubClientProvider, GitHubUserService gitHubUserService)
     {
-        super(changesetCache, oAuthStore, githubClientProvider);
+        super(changesetCache, oAuthStore, githubClientProvider, gitHubUserService);
     }
         
     @Override

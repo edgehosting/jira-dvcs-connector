@@ -1,6 +1,5 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import it.restart.com.atlassian.jira.plugins.dvcs.JiraGithubOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
@@ -25,13 +24,16 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubEnterpriseOAuthConfigPage;
+import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseClientProvider;
+
 /**
  * Pull request GitHub related tests.
  * 
  * @author Stanislav Dvorscak
  * 
  */
-public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
+public class PullRequestEnterpriseGitHubDVCSTest extends AbstractGitHubDVCSTest
 {
 
     /**
@@ -42,17 +44,28 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
     /**
      * Summary of test issue.
      */
-    private static final String TEST_ISSUE_SUMMARY = PullRequestGitHubDVCSTest.class.getCanonicalName();
+    private static final String TEST_ISSUE_SUMMARY = PullRequestEnterpriseGitHubDVCSTest.class.getCanonicalName();
 
     /**
      * Name of author which will be used as committer.
      */
-    private static final String COMMIT_AUTHOR = "Stanislav Dvorscak";
+    private static final String COMMIT_AUTHOR = "Janko Hrasko";
 
     /**
      * Email of author which will be used as committer.
      */
-    private static final String COMMIT_AUTHOR_EMAIL = "sdvorscak@atlassian.com";
+    private static final String COMMIT_AUTHOR_EMAIL = "bamboo.server@hotovo.org";
+
+    /**
+     * Base URL of GitHub server.
+     */
+    // FIXME: should not be wired directly inside code
+    private static final String GIT_HUB_BASE_URL = "http://192.168.2.47/";
+
+    /**
+     * {@link #GIT_HUB_BASE_URL} URI extension for new application consumer registration.
+     */
+    private static final String GIT_HUB_NEW_APPLICATION_URI = "settings/applications/new";
 
     /**
      * Name of repository used by tests of this class.
@@ -72,7 +85,8 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
     @Override
     protected void signInGitHub()
     {
-        new MagicVisitor(getJiraTestedProduct()).visit(GithubLoginPage.class).doLogin();
+        GithubLoginPage gitHubLoginPage = new MagicVisitor(getJiraTestedProduct()).visit(GithubLoginPage.class, GIT_HUB_BASE_URL);
+        gitHubLoginPage.doLogin();
     }
 
     /**
@@ -81,7 +95,8 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
     @Override
     protected void signOutGitHub()
     {
-        new MagicVisitor(getJiraTestedProduct()).visit(GithubLoginPage.class).doLogout();
+        GithubLoginPage gitHubLoginPage = new MagicVisitor(getJiraTestedProduct()).visit(GithubLoginPage.class, GIT_HUB_BASE_URL);
+        gitHubLoginPage.doLogout();
     }
 
     /**
@@ -90,9 +105,10 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
     @Override
     protected OAuth createOAuthSettings()
     {
-        GithubOAuthPage GitHubOAuthPage = new MagicVisitor(getJiraTestedProduct()).visit(GithubOAuthPage.class);
-        OAuth result = GitHubOAuthPage.addConsumer(getJiraTestedProduct().getProductInstance().getBaseUrl());
-        getJiraTestedProduct().visit(JiraGithubOAuthPage.class).setCredentials(result.key, result.secret);
+        GithubOAuthPage gitHubOAuthPage = new MagicVisitor(getJiraTestedProduct()).visit(GithubOAuthPage.class, GIT_HUB_BASE_URL
+                + GIT_HUB_NEW_APPLICATION_URI);
+        OAuth result = gitHubOAuthPage.addConsumer(getJiraTestedProduct().getProductInstance().getBaseUrl());
+        getJiraTestedProduct().visit(GithubEnterpriseOAuthConfigPage.class).setCredentials(GIT_HUB_BASE_URL, result.key, result.secret);
         return result;
     }
 
@@ -112,7 +128,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
     @Override
     protected GitHubClient createGitHubClient()
     {
-        GitHubClient result = GitHubClient.createClient("https://github.com/");
+        GitHubClient result = GithubEnterpriseClientProvider.createClient(GIT_HUB_BASE_URL, "jira-dvcs-plugin-test");
         result.setCredentials(getUsername(), getPassword());
         return result;
     }
@@ -124,8 +140,8 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
     protected void addDVCSOrganizations()
     {
         RepositoriesPageController repositoriesPageController = new RepositoriesPageController(getJiraTestedProduct());
-        repositoriesPageController.addOrganization(RepositoriesPageController.GITHUB, getUsername(), false);
-        repositoriesPageController.addOrganization(RepositoriesPageController.GITHUB, getOrganization(), false);
+        repositoriesPageController.addOrganization(RepositoriesPageController.GITHUBENTERPRISE, getUsername(), false);
+        repositoriesPageController.addOrganization(RepositoriesPageController.GITHUBENTERPRISE, getOrganization(), false);
     }
 
     // end of: implementation of abstract methods
@@ -136,7 +152,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
     @BeforeMethod
     public void onTestSetup()
     {
-        repositoryUri = getUsername() + "/" + PullRequestGitHubDVCSTest.class.getCanonicalName();
+        repositoryUri = getUsername() + "/" + PullRequestEnterpriseGitHubDVCSTest.class.getCanonicalName();
         issueKey = addTestIssue(TEST_PROJECT_KEY, TEST_ISSUE_SUMMARY);
         addTestRepository(repositoryUri);
     }
@@ -170,7 +186,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
         PullRequest pullRequest = openPullRequest(repositoryUri, pullRequestName, "Open PR description", fixBranchName, "master");
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, getUsername());
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB_ENTERPRISE, getUsername());
         account.refresh();
 
         RepositoryId repositoryId = RepositoryId.createFromId(repositoryUri);
@@ -234,7 +250,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
         Comment comment = commentPullRequest(repositoryUri, pullRequest, "General Pull Request Comment");
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, getUsername());
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB_ENTERPRISE, getUsername());
         account.refresh();
 
         RepositoryId repositoryId = RepositoryId.createFromId(repositoryUri);
@@ -260,7 +276,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
      * Test that "Update Pull Request" is working.
      */
     @Test
-    private void testUpdateBranch()
+    public void testUpdateBranch()
     {
         String expectedPullRequestName = issueKey + ": Open PR";
         String[] expectedCommitNodeUpdate = new String[2];
@@ -298,7 +314,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
 
         // test of synchronization
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, getUsername());
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB_ENTERPRISE, getUsername());
         account.refresh();
 
         RepositoryId repositoryId = RepositoryId.createFromId(repositoryUri);
@@ -371,7 +387,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
         closePullRequest(repositoryUri, pullRequest);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, getUsername());
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB_ENTERPRISE, getUsername());
         account.refresh();
 
         RepositoryId repositoryId = RepositoryId.createFromId(repositoryUri);
@@ -441,7 +457,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
                 "master");
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, getUsername());
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB_ENTERPRISE, getUsername());
         account.refresh();
 
         RepositoryId repositoryId = RepositoryId.createFromId(repositoryUri);

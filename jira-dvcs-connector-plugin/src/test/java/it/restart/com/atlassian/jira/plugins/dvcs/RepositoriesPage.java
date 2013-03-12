@@ -7,6 +7,8 @@ import javax.inject.Inject;
 
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.WebDriver;
 
 import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
@@ -28,13 +30,18 @@ public class RepositoriesPage implements Page
     @Inject
     private PageElementFinder elementFinder;
 
+    /**
+     * Injected {@link WebDriver} dependency.
+     */
+    @Inject
+    private WebDriver webDriver;
 
     @ElementBy(id = "aui-message-bar")
     private PageElement messageBarDiv;
 
     @ElementBy(id = "organization-list")
     private PageElement organizationsElement;
-    
+
     @ElementBy(id = "repoEntry")
     private PageElement repoEntry;
 
@@ -43,25 +50,25 @@ public class RepositoriesPage implements Page
 
     @ElementBy(id = "organization")
     private PageElement organization;
-    
+
     @ElementBy(id = "autoLinking")
     private PageElement autoLinkNewRepos;
-    
+
     @ElementBy(id = "linkRepositoryButton")
     private PageElement linkRepositoryButton;
-    
+
     @ElementBy(id = "Submit")
     private PageElement addOrgButton;
-    
-//    @ElementBy(className = "gh_messages")
-//    private PageElement syncStatusDiv;
+
+    // @ElementBy(className = "gh_messages")
+    // private PageElement syncStatusDiv;
 
     @Override
     public String getUrl()
     {
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
     }
-    
+
     public void addOrganisation(int accountType, String accountName, boolean autoSync)
     {
         linkRepositoryButton.click();
@@ -73,6 +80,13 @@ public class RepositoriesPage implements Page
             autoLinkNewRepos.click();
         }
         addOrgButton.click();
+    
+        // dismiss any information alert
+        try {
+            webDriver.switchTo().alert().accept();
+        } catch (NoAlertPresentException e) {
+            // nothing to do
+        }
     }
 
     public OrganizationDiv getOrganization(String repositoryType, String repositoryName)
@@ -80,8 +94,7 @@ public class RepositoriesPage implements Page
         List<OrganizationDiv> organizations = getOrganizations();
         for (OrganizationDiv organizationDiv : organizations)
         {
-            if (repositoryType.equals(organizationDiv.getRepositoryType())
-                    && repositoryName.equals(organizationDiv.getRepositoryName()))
+            if (repositoryType.equals(organizationDiv.getRepositoryType()) && repositoryName.equals(organizationDiv.getRepositoryName()))
             {
                 return organizationDiv;
             }
@@ -89,7 +102,6 @@ public class RepositoriesPage implements Page
         return null;
     }
 
-    
     public List<OrganizationDiv> getOrganizations()
     {
         List<OrganizationDiv> list = new ArrayList<OrganizationDiv>();
@@ -122,6 +134,7 @@ public class RepositoriesPage implements Page
 
     /**
      * The current error status message
+     * 
      * @return error status message
      */
 

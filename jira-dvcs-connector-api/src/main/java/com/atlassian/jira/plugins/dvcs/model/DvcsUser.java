@@ -11,9 +11,9 @@ public class DvcsUser
     
     public static class UnknownUser extends DvcsUser
     {
-        public UnknownUser(String author, String raw_author, String hostUrl)
+        public UnknownUser(String author, String raw_author, String url)
         {
-            super(author, extractFullNameFromRawAuthor(raw_author), raw_author, "https://secure.gravatar.com/avatar/unknown?d=mm", hostUrl);
+            super(author, extractFullNameFromRawAuthor(raw_author), raw_author, "https://secure.gravatar.com/avatar/unknown?d=mm", url);
         }
         
         /**
@@ -37,13 +37,13 @@ public class DvcsUser
     private final String url;
     private String rawAuthor;
 
-    public DvcsUser(String username, String fullName, String rawAuthor, String avatar, String hostUrl)
+    public DvcsUser(String username, String fullName, String rawAuthor, String avatar, String url)
     {
         this.username = username;
         this.fullName = fullName;
         this.rawAuthor = rawAuthor;
         this.avatar = avatar;
-        this.url = hostUrl +"/"+ username;
+        this.url = url;
     }
 
     public String getUsername()

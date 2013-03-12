@@ -1,11 +1,7 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import it.restart.com.atlassian.jira.plugins.dvcs.JiraGithubOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -67,27 +63,12 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
 {
 
     /**
-     * Repository owner.
-     */
-    protected static final String USERNAME = "jirabitbucketconnector";
-
-    /**
-     * Organization - used by forking.
-     */
-    protected static final String ORGANIZATION = "jira-dvcs-connector-org";
-
-    /**
-     * Appropriate {@link #USERNAME} password.
-     */
-    protected static final String PASSWORD = System.getProperty("jirabitbucketconnector.password");
-
-    /**
      * @see #getGitHubClient()
      */
     private GitHubClient gitHubClient;
 
     /**
-     * GitHub OAuth for {@link #USERNAME}.
+     * GitHub OAuth for {@link #getUsername()}.
      */
     private OAuth gitHubOAuth;
 
@@ -109,28 +90,78 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
     private Map<String, Git> uriToLocalRepository = new HashMap<String, Git>();
 
     /**
+     * SignIn into the GitHub.
+     */
+    protected abstract void signInGitHub();
+
+    /**
+     * SignOut from the GitHub.
+     */
+    protected abstract void signOutGitHub();
+
+    /**
+     * Creates {@link OAuth} settings necessary by Jira.
+     * 
+     * @return created OAuth
+     */
+    protected abstract OAuth createOAuthSettings();
+
+    /**
+     * Destroys {@link OAuth} settings.
+     * 
+     * @param oAuth
+     *            Github OAuth
+     */
+    protected abstract void destroyOAuthSettings(OAuth oAuth);
+
+    /**
+     * @return Creates {@link GitHubClient} with filled credentials.
+     */
+    protected abstract GitHubClient createGitHubClient();
+
+    /**
+     * @return Adds all organizations necessary by tests.
+     */
+    protected abstract void addDVCSOrganizations();
+
+    /**
      * Prepares common test environment.
      */
     @BeforeClass
     public void onTestsEnvironmentSetup()
     {
         super.onTestsEnvironmentSetup();
-        new MagicVisitor(getJiraTestedProduct()).visit(GithubLoginPage.class).doLogin();
 
-        // Creates & adds OAuth settings
-        gitHubOAuth = new MagicVisitor(getJiraTestedProduct()).visit(GithubOAuthPage.class).addConsumer(
-                getJiraTestedProduct().getProductInstance().getBaseUrl());
-        getJiraTestedProduct().visit(JiraGithubOAuthPage.class).setCredentials(gitHubOAuth.key, gitHubOAuth.secret);
+        signInGitHub();
+        this.gitHubOAuth = createOAuthSettings();
+        this.gitHubClient = createGitHubClient();
+        addDVCSOrganizations();
 
-        // adds GitHub account into Jira
-        RepositoriesPageController repositoriesPageController = new RepositoriesPageController(getJiraTestedProduct());
-        repositoriesPageController.addOrganization(RepositoriesPageController.GITHUB, USERNAME, false);
-        repositoriesPageController.addOrganization(RepositoriesPageController.GITHUB, ORGANIZATION, false);
-
-        // GitHub client setup
-        gitHubClient = GitHubClient.createClient("https://github.com/");
-        gitHubClient.setCredentials(USERNAME, PASSWORD);
         repositoryService = new RepositoryService(gitHubClient);
+    }
+
+    /**
+     * @return Username used for authentication.
+     */
+    protected String getUsername()
+    {
+        return "jirabitbucketconnector";
+    }
+
+    /**
+     * @return Password credential of {@link #getUsername()}.
+     */
+    protected String getPassword()
+    {
+        return System.getProperty("jirabitbucketconnector.password");
+    }
+
+    /**
+     * @return Organization used by repository forking.
+     */
+    protected String getOrganization()
+    {
+        return "jira-dvcs-connector-org";
     }
 
     /**
@@ -143,11 +174,8 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
         RepositoriesPageController rpc = new RepositoriesPageController(getJiraTestedProduct());
         rpc.getPage().deleteAllOrganizations();
 
-        // removes OAuth from GitHub
-        new MagicVisitor(getJiraTestedProduct()).visit(GithubOAuthPage.class, gitHubOAuth.applicationId).removeConsumer();
-
-        // log out from GitHub
-        new MagicVisitor(getJiraTestedProduct()).visit(GithubLoginPage.class).doLogout();
+        destroyOAuthSettings(gitHubOAuth);
+        signOutGitHub();
     }
 
     /**
@@ -250,12 +278,17 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
      * 
      * @param repositoryUri
      *            e.g.: owner/name
+     * @param username
+     *            for get access to clone
+     * @param password
+     *            for get access to clone
      */
-    protected void clone(String repositoryUri)
+    protected void clone(String repositoryUri, String username, String password)
     {
         try
         {
             CloneCommand cloneCommand = Git.cloneRepository();
+            cloneCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password));
             cloneCommand.setURI(getRemoteRepository(repositoryUri).getCloneUrl());
             cloneCommand.setDirectory(getLocalRepository(repositoryUri).getRepository().getDirectory().getParentFile());
             cloneCommand.call();
@@ -322,7 +355,7 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
 
         try
         {
-            Repository remoteRepository = repositoryService.forkRepository(fromRepository, ORGANIZATION);
+            Repository remoteRepository = repositoryService.forkRepository(fromRepository, getOrganization());
 
             // wait until forked repository is prepared
             do
@@ -584,7 +617,19 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
 
         try
         {
-            return new PullRequestService(getGitHubClient()).createPullRequest(repository, request);
+            PullRequest result = new PullRequestService(getGitHubClient()).createPullRequest(repository, request);
+
+            // pull request creation is asynchronous process - it is necessary to wait a little bit
+            // otherwise unexpected behavior can happened - like next push will be part as open pull request
+            try
+            {
+                Thread.sleep(5000);
+            } catch (InterruptedException e)
+            {
+                // nothing to do
+            }
+            
+            return result;
         } catch (IOException e)
         {
             throw new RuntimeException(e);
@@ -695,7 +740,7 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
 
         try
         {
-            if (USERNAME.equals(repositoryId.getOwner()))
+            if (getUsername().equals(repositoryId.getOwner()))
             {
                 remoteRepository = repositoryService.createRepository(remoteRepository);
 

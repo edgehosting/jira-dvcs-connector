@@ -559,7 +559,9 @@ public class RepositoryServiceImpl implements RepositoryService
         {
             DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
             DvcsUser user = communicator.getUser(repository, author);
-            user.setRawAuthor(rawAuthor != null ? rawAuthor : user.getFullName());
+            if (user instanceof DvcsUser.UnknownUser) {
+                user.setRawAuthor(rawAuthor);
+            }
             return user;
         } catch (Exception e)
         {

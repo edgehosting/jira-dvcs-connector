@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.webwork.render;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,9 +30,8 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
     private final RepositoryActivityDao repositoryActivityDao;
     private final ChangesetService changesetService;
 
-    public PullRequestUpdateIssueActionFactory(RepositoryService repositoryService, 
-            TemplateRenderer templateRenderer, RepositoryActivityDao repositoryActivityDao,
-            ChangesetService changesetService)
+    public PullRequestUpdateIssueActionFactory(RepositoryService repositoryService, TemplateRenderer templateRenderer,
+            RepositoryActivityDao repositoryActivityDao, ChangesetService changesetService)
     {
         this.repositoryService = repositoryService;
         this.templateRenderer = templateRenderer;
@@ -44,26 +45,72 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
         RepositoryActivityPullRequestUpdateMapping pullRequestUpdate = (RepositoryActivityPullRequestUpdateMapping) activityItem;
         int repositoryId = pullRequestUpdate.getRepositoryId();
         int pullRequestId = pullRequestUpdate.getPullRequest().getID();
-        
+
         RepositoryPullRequestMapping pullRequest = repositoryActivityDao.findRequestById(pullRequestId);
         Repository repository = repositoryService.get(repositoryId);
-        
-        DvcsUser user = repositoryService.getUser(repository, pullRequestUpdate.getAuthor(), pullRequestUpdate.getRawAuthor());
 
-        Map<String, Object> templateMap = new HashMap<String, Object>();
-        templateMap.put("velocityUtils", new VelocityUtils());
-        templateMap.put("pullRequestUpdate", pullRequestUpdate);
-        templateMap.put("pullRequest", pullRequest);
-        templateMap.put("repository", repository);
-        templateMap.put("user", user);
-        templateMap.put("lozengeStyle", getLozengeStyle(pullRequestUpdate.getStatus()));
-        templateMap.put("commitUrlProvider", this);
+        Map<String, Object> view = new HashMap<String, Object>();
         
-        return new DefaultIssueAction(templateRenderer, "/templates/activity/pull-request-update-view.vm", templateMap,
-                pullRequestUpdate.getLastUpdatedOn());
+        // defaults
+        view.put("velocityUtils", new VelocityUtils());
+        
+        // views
+        getView(view, pullRequest);
+        getView(view, repository, pullRequest, pullRequestUpdate);
+        
+        // action
+        return new DefaultIssueAction(templateRenderer, "/templates/activity/pull-request-update-view.vm", view, pullRequestUpdate.getLastUpdatedOn());
+    }
+    
+    private void getView(Map<String, Object> target, RepositoryPullRequestMapping pullRequest) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("name", pullRequest.getName());
+        result.put("url", pullRequest.getUrl());
+
+        target.put("pullRequest", result);
     }
 
-    public String getCommitUrl(Repository destinationRepository, RepositoryPullRequestMapping pullRequest, RepositoryActivityCommitMapping commit)
+    private void getView(Map<String, Object> target, Repository repository, RepositoryPullRequestMapping pullRequest,
+            RepositoryActivityPullRequestUpdateMapping pullRequestUpdate)
+    {
+        DvcsUser author = repositoryService.getUser(repository, pullRequestUpdate.getAuthor(), null);
+        
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("status", pullRequestUpdate.getStatus());
+        result.put("lozengeStyle", getLozengeStyle(pullRequestUpdate.getStatus()));
+        result.put("authorName", author.getFullName());
+        result.put("authorUrl", StringUtils.isEmpty(author.getUrl()) ? "#" : author.getUrl());
+        result.put("authorAvatar", author.getAvatar());
+        
+        // commits
+        List<Map<String, Object>> commits = new LinkedList<Map<String, Object>>();
+        for (RepositoryActivityCommitMapping commit : pullRequestUpdate.getCommits())
+        {
+            commits.add(getView(repository, pullRequest, pullRequestUpdate, commit));
+        }
+        result.put("commits", commits);
+    
+        target.put("pullRequestUpdate", result);
+    }
+
+    private Map<String, Object> getView(Repository repository, RepositoryPullRequestMapping pullRequest,
+            RepositoryActivityPullRequestUpdateMapping pullRequestUpdate, RepositoryActivityCommitMapping commit)
+    {
+        DvcsUser author = repositoryService.getUser(repository, commit.getAuthor(), null);
+
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("authorName", author.getFullName());
+        result.put("authorAvatarUrl", author.getAvatar());
+        result.put("authorUrl", StringUtils.isEmpty(author.getUrl()) ? "#" : author.getUrl());
+        result.put("url", getCommitUrl(repository, pullRequest, commit));
+        result.put("node", commit.getNode().substring(0, 7));
+        result.put("date", commit.getDate());
+        result.put("message", commit.getMessage());
+        return result;
+    }
+
+    public String getCommitUrl(Repository destinationRepository, RepositoryPullRequestMapping pullRequest,
+            RepositoryActivityCommitMapping commit)
     {
         Repository sourceRepository = createMockRepository(pullRequest.getSourceUrl(), destinationRepository.getDvcsType());
         if (sourceRepository == null)
@@ -73,17 +120,16 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
         Changeset changeset = new Changeset(0, commit.getNode(), commit.getMessage(), commit.getDate());
         return changesetService.getCommitUrl(sourceRepository, changeset);
     }
-    
-    
+
     private static Repository createMockRepository(String repositoryUrl, String dvcsType)
     {
-        if (StringUtils.isBlank(repositoryUrl)) 
+        if (StringUtils.isBlank(repositoryUrl))
         {
             return null;
         }
         Pattern pattern = Pattern.compile("(.*)/(.*)/(.*)");
         Matcher matcher = pattern.matcher(repositoryUrl);
-        if (matcher.find()) 
+        if (matcher.find())
         {
             Repository repository = new Repository();
             repository.setDvcsType(dvcsType);
@@ -96,7 +142,7 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
         }
         return null;
     }
-        
+
     private String getLozengeStyle(Status status)
     {
         String defaultStyle = "aui-lozenge-success aui-lozenge-subtle";

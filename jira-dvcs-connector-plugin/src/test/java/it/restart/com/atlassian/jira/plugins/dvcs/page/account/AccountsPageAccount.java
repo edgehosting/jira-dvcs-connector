@@ -31,7 +31,7 @@ public class AccountsPageAccount extends WebDriverElement
         /**
          * GitHub account type.
          */
-        GitHub("githubLogo");
+        GIT_HUB("githubLogo"), GIT_HUB_ENTERPRISE("githubeLogo");
 
         /**
          * @see #getLogoClassName()

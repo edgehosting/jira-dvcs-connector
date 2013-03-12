@@ -2,9 +2,9 @@
   <article>
     <header>
       <div class="summary">
-        <a href="$user.url"><img class="avatar avatar32" src="$user.avatar"></a>
-        <a href="$user.url" class="author" title="$user.rawAuthor">$user.fullName</a>
-        <span class="aui-lozenge pull-request-state $lozengeStyle" title="">$pullRequestUpdate.status</span> a pull request
+        <a href="$pullRequestUpdate.authorUrl"><img class="avatar avatar32" src="$pullRequestUpdate.authorAvatar"></a>
+        <a href="$pullRequestUpdate.authorUrl" class="author" title="$pullRequestUpdate.authorName">$pullRequestUpdate.authorName</a>
+        <span class="aui-lozenge pull-request-state $pullRequestUpdate.lozengeStyle" title="">$pullRequestUpdate.status</span> a pull request
         <a href="$pullRequest.url">$pullRequest.name</a>
         on <time>$velocityUtils.getRelativePastDate($pullRequestUpdate.lastUpdatedOn)</time>
       </div>
@@ -22,16 +22,15 @@
       </tr>
       </thead>
       <tbody>
-        #set( $commits = $pullRequestUpdate.commits)
-        #foreach( $commit in $commits )
+        #foreach( $commit in $pullRequestUpdate.commits )
         <tr class="" id="chg_1">
           <td class="author">
             <div>
-                <span><a href="/$commit.author" title="$commit.author"><img class="avatar avatar16" src="$user.avatar" alt="$commit.author"></a><span>$commit.rawAuthor</span></span>
+                <span><a href="$commit.authorUrl" title="$commit.authorName"><img class="avatar avatar16" src="$commit.authorAvatarUrl" alt="$commit.authorName"></a><span>$commit.authorName</span></span>
             </div>
           </td>
           <td class="hash">
-            <div><a class="hash" href="$commitUrlProvider.getCommitUrl($repository, $pullRequest, $commit)">$commit.node.substring(0,7)</a></div>
+            <div><a class="hash" href="$commit.url">$commit.node</a></div>
           </td>
           <td class="text">
             <div title="$commit.message">$commit.message</div>

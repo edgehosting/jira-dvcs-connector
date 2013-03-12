@@ -3,6 +3,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 import javax.annotation.Nullable;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -90,12 +91,33 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     public boolean isSyncing()
     {
-        if (synchronizationIcon.isPresent())
+        int attempts = 5;
+        do
         {
-            return synchronizationIcon.getAttribute("class").contains("running");
-        }
+            try
+            {
+                if (synchronizationIcon.isPresent())
+                {
+                    return synchronizationIcon.getAttribute("class").contains("running");
+                } else
+                {
+                    return false;
+                }
+            } catch (StaleElementReferenceException e)
+            {
+                // nothing to do - retry
 
-        return false;
+                // check maximal retries - prevention in front of deadlock
+                // if maximal retry attempts was exceeds - throws exception - it should never happened
+                if (attempts-- > 0)
+                {
+                    throw new RuntimeException("Unable to work with synchronization icon, it seems as detached from DOM!", e);
+                }
+            }
+
+            // if StaleElementReferenceException was happened, it is necessary to wait for next attempt,
+            // because element was already replaced via AJAX by new element
+        } while (true);
     }
 
     /**
