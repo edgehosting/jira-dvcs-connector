@@ -384,15 +384,7 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
     public boolean existsLinkedRepositories()
     {
-        List<Repository> repositories = repositoryDao.getAll(false);
-        for (Repository repository : repositories)
-        {
-            if (repository.isLinked())
-            {
-                return true;
-            }
-        }
-        return false;
+        return repositoryDao.existsLinkedRepositories();
     }
 
     /**
