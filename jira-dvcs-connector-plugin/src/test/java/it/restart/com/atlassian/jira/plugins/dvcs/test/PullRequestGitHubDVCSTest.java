@@ -260,7 +260,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
      * Test that "Update Pull Request" is working.
      */
     @Test
-    private void testUpdateBranch()
+    public void testUpdateBranch()
     {
         String expectedPullRequestName = issueKey + ": Open PR";
         String[] expectedCommitNodeUpdate = new String[2];
