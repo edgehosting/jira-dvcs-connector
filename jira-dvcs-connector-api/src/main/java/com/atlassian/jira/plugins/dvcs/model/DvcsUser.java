@@ -32,7 +32,7 @@ public class DvcsUser
     }
 
     private final String username;
-    private final String fullName;
+    private String fullName;
     private final String avatar;
     private final String url;
     private String rawAuthor;
@@ -54,6 +54,11 @@ public class DvcsUser
     public String getFullName()
     {
         return fullName;
+    }
+    
+    public void setFullName(String fullName)
+    {
+        this.fullName = fullName;
     }
 
     public String getAvatar()

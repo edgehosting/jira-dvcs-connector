@@ -306,13 +306,21 @@ public class GithubCommunicator implements DvcsCommunicator
     public DvcsUser getUser(Repository repository, String username)
     {
         GitHubUser user = gitHubUserService.getByLogin(username);
+        DvcsUser result;
         if (user != null) {
-            return new DvcsUser(user.getLogin(), user.getName(), null, user.getAvatarUrl(), user.getUrl());
+            result = new DvcsUser(user.getLogin(), user.getName(), null, user.getAvatarUrl(), user.getUrl());
         
         } else {
-            return new DvcsUser.UnknownUser(username, username, null);
+            result = new DvcsUser.UnknownUser(username, username, null);
             
         }
+        
+        // correct full name to user name, if it is empty
+        if (StringUtils.isEmpty(result.getFullName())) {
+            result.setFullName(username);
+        }
+        
+        return result;
     }
 
     private List<BranchTip> getBranches(Repository repository)
