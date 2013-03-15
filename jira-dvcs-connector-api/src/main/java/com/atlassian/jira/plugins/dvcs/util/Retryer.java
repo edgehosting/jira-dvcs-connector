@@ -5,6 +5,8 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+
 
 /**
  */
@@ -20,29 +22,32 @@ public class Retryer<V>
     
     public V retry(Callable<V> callable, int num_attempts)
     {
-		// try few times
-		for (int attempt = 1; attempt < num_attempts; attempt++)
-		{
-			try
-			{
-				return callable.call();
-			} catch (Exception e)
-			{
-				long delay = (long) (1000 * Math.pow(3, attempt)); // exponencial delay. (currently up to 12 minutes)
-				log.warn("Attempt #" + attempt + " (out of " + num_attempts
-				        + "): Retrieving operation failed: " + e.getMessage() + "\nRetrying in "
-				        + delay / 1000 + " secs");
-				try
-				{
-					Thread.sleep(delay);
-				} catch (InterruptedException ignored)
-				{
-					// ignore
-				}
-			}
-		}
+        // try few times
+        for (int attempt = 1; attempt < num_attempts; attempt++)
+        {
+            try
+            {
+                return callable.call();
+            } catch (SourceControlException e)
+            {
+                throw e;
+            } catch (Exception e)
+            {
+                long delay = (long) (1000 * Math.pow(3, attempt)); // exponential delay.
+                log.warn("Attempt #" + attempt + " (out of " + num_attempts
+                        + "): Retrieving operation failed: " + e.getMessage() + "\nRetrying in "
+                        + delay / 1000 + " secs");
+                try
+                {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ignored)
+                {
+                    // ignore
+                }
+            }
+        }
 
-		// previous tries failed, let's go for it one more final time
+        // previous tries failed, let's go for it one more final time
         try
         {
             return callable.call();
@@ -53,5 +58,5 @@ public class Retryer<V>
         {
             throw new RuntimeException(e);
         }
-	}
+    }
 }

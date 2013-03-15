@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -40,6 +41,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChange
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DvcsUserTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
+import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 
 /**
@@ -211,32 +213,24 @@ public class BitbucketCommunicator implements DvcsCommunicator
     
     private List<BranchTip> getBranches(Repository repository)
     {
-        // Using undocumented https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
         List<BranchTip> branchTips = new ArrayList<BranchTip>();
-        try
+        BitbucketBranchesAndTags branchesAndTags = retrieveBranchesAndTags(repository);
+                
+        List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
+        for (BitbucketBranch bitbucketBranch : bitbucketBranches)
         {
-            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
-            BitbucketBranchesAndTags branchesAndTags = remoteClient.getBranchesAndTagsRemoteRestpoint().getBranchesAndTags(repository.getOrgName(),repository.getSlug());
-            List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
-            for (BitbucketBranch bitbucketBranch : bitbucketBranches)
+            List<String> heads = bitbucketBranch.getHeads();
+            for (String head : heads)
             {
-                List<String> heads = bitbucketBranch.getHeads();
-                for (String head : heads)
+                // make sure "master" branch is first in the list
+                if ("master".equals(bitbucketBranch.getName()))
                 {
-                    // make sure "master" branch is first in the list
-                    if ("master".equals(bitbucketBranch.getName()))
-                    {
-                        branchTips.add(0, new BranchTip(bitbucketBranch.getName(), head));
-                    } else
-                    {
-                        branchTips.add(new BranchTip(bitbucketBranch.getName(), head));
-                    }
+                    branchTips.add(0, new BranchTip(bitbucketBranch.getName(), head));
+                } else
+                {
+                    branchTips.add(new BranchTip(bitbucketBranch.getName(), head));
                 }
             }
-        } catch (BitbucketRequestException e)
-        {
-            log.debug("Could not retrieve list of branches", e);
-            throw new SourceControlException("Could not retrieve list of branches", e);
         }
 
         // Bitbucket returns raw_nodes for each branch, but changesetiterator works 
@@ -253,6 +247,32 @@ public class BitbucketCommunicator implements DvcsCommunicator
         return branchTips;
     }
 
+    private BitbucketBranchesAndTags retrieveBranchesAndTags(final Repository repository)
+    {
+        return new Retryer<BitbucketBranchesAndTags>().retry(new Callable<BitbucketBranchesAndTags>()
+        {
+            @Override
+            public BitbucketBranchesAndTags call() throws Exception
+            {
+                return getBranchesAndTags(repository);
+            }
+        });
+    }
+    
+    private BitbucketBranchesAndTags getBranchesAndTags(Repository repository)
+    {
+        try
+        {
+            // Using undocumented https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
+            return remoteClient.getBranchesAndTagsRemoteRestpoint().getBranchesAndTags(repository.getOrgName(),repository.getSlug());
+        } catch (BitbucketRequestException e)
+        {
+            log.debug("Could not retrieve list of branches", e);
+            throw new SourceControlException("Could not retrieve list of branches", e);
+        }
+    }
+    
     /**
      * {@inheritDoc}
      */
