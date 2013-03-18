@@ -35,7 +35,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>10.0.1</version>
+            <version>11.0.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -71,6 +71,10 @@
                 <exclusion>
                 <groupId>com.google.collections</groupId>
                 <artifactId>google-collections</artifactId>
+                </exclusion>
+                <exclusion>
+                	<artifactId>guava</artifactId>
+                	<groupId>com.google.guava</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -120,6 +124,10 @@
                 <exclusion>
                     <groupId>com.google.collections</groupId>
                     <artifactId>google-collections</artifactId>
+                </exclusion>
+                <exclusion>
+                	<artifactId>guava</artifactId>
+                	<groupId>com.google.guava</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -182,7 +190,19 @@
             <artifactId>org.eclipse.jgit</artifactId>
             <version>2.2.0.201212191850-r</version>
             <scope>test</scope>
-        </dependency>        
+        </dependency>       
+        <dependency>
+            <groupId>com.aragost.javahg</groupId>
+            <artifactId>javahg</artifactId>
+            <version>0.4</version>
+            <scope>test</scope>
+            <exclusions>
+            	<exclusion>
+            		<artifactId>guava</artifactId>
+            		<groupId>com.google.guava</groupId>
+            	</exclusion>
+            </exclusions>
+        </dependency> 
         <dependency>
             <groupId>com.atlassian.plugins</groupId>
             <artifactId>atlassian-nav-links-plugin</artifactId>

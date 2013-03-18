@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
@@ -47,5 +49,111 @@ public class RepositoryRemoteRestpoint
             }
         });
 	}
+	
+	public BitbucketRepository getRepository(String owner, String repositorySlug)
+	{
+		String getRepositoryUrl = URLPathFormatter.format("/repositories/%s/%s", owner, repositorySlug);
+		
+		return requestor.get(getRepositoryUrl, null, new ResponseCallback<BitbucketRepository>()
+        {
+            @Override
+            public BitbucketRepository onResponse(RemoteResponse response)
+            {
+            	BitbucketRepository repository = ClientUtils.fromJson(response.getResponse(),
+                        new TypeToken<BitbucketRepository>(){}.getType());
+                return repository;
+            }
+        });
+	}
+	
+	public void removeRepository(String owner, String repositoryName)
+    {
+        Map<String, String> removeRepoPostData = new HashMap<String, String>();
+        removeRepoPostData.put("repo_slug",   repositoryName);
+        removeRepoPostData.put("accountname", owner);
+
+        String removeRepositoryUrl = String.format("/repositories/%s/%s", owner, repositoryName);
+
+        requestor.delete(removeRepositoryUrl, removeRepoPostData, ResponseCallback.EMPTY);
+    }
+	
+	public BitbucketRepository createHgRepository(String repositoryName)
+    {
+        return createRepository(repositoryName, "hg", false);
+    }
+
+	public BitbucketRepository createHgRepository(String owner, String repositoryName)
+	{
+		return createRepository(owner, repositoryName, "hg");
+	}
+	
+    public BitbucketRepository createGitRepository(String repositoryName)
+    {
+        return createRepository(repositoryName, "git", false);    
+    }
+    
+    public BitbucketRepository createGitRepository(String owner, String repositoryName)
+	{
+    	return createRepository(owner, repositoryName, "git");
+	}
+    
+    public BitbucketRepository forkRepository(String owner, String repositoryName, String newRepositoryName, boolean isPrivate)
+    {
+    	Map<String, String> createRepoPostData = new HashMap<String, String>();
+        createRepoPostData.put("name", newRepositoryName);
+        createRepoPostData.put("is_private", Boolean.toString(isPrivate));
+
+        String forkRepositoryUrl = String.format("/repositories/%s/%s/fork", owner, repositoryName);
+                
+        return requestor.post(forkRepositoryUrl, createRepoPostData, new ResponseCallback<BitbucketRepository>()
+        {
+            @Override
+            public BitbucketRepository onResponse(RemoteResponse response)
+            {
+            	BitbucketRepository repository = ClientUtils.fromJson(response.getResponse(),
+                        new TypeToken<BitbucketRepository>(){}.getType());
+                return repository;
+            }
+        });
+    }
+    
+    private BitbucketRepository createRepository(String repositoryName, String scm, boolean isPrivate)
+    {
+        Map<String, String> createRepoPostData = new HashMap<String, String>();
+        createRepoPostData.put("name", repositoryName);
+        createRepoPostData.put("scm",  scm);
+        createRepoPostData.put("is_private", Boolean.toString(isPrivate));
+
+        return requestor.post("/repositories", createRepoPostData, new ResponseCallback<BitbucketRepository>()
+        {
+            @Override
+            public BitbucketRepository onResponse(RemoteResponse response)
+            {
+            	BitbucketRepository repository = ClientUtils.fromJson(response.getResponse(),
+                        new TypeToken<BitbucketRepository>(){}.getType());
+                return repository;
+            }
+        });
+    }
+    
+    private BitbucketRepository createRepository(String owner, String repositoryName, String scm)
+    {
+        Map<String, String> createRepoPostData = new HashMap<String, String>();
+        createRepoPostData.put("name", repositoryName);
+        createRepoPostData.put("scm",  scm);
+        
+        String createRepositoryUrl = String.format("/repositories/%s/%s", owner, repositoryName);
+        
+        return requestor.put(createRepositoryUrl, createRepoPostData, new ResponseCallback<BitbucketRepository>()
+        {
+            @Override
+            public BitbucketRepository onResponse(RemoteResponse response)
+            {
+            	BitbucketRepository repository = ClientUtils.fromJson(response.getResponse(),
+                        new TypeToken<BitbucketRepository>(){}.getType());
+                return repository;
+            }
+        });
+    }
 }
 
