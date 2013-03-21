@@ -505,7 +505,7 @@ function confirmDeleteOrganization(organization) {
 	var result = confirm("Are you sure you want to remove account '" + organization + "' from JIRA ?");
 	
 	if ( result ) {
-		var dialog = new AJS.Dialog({width:400, height:120, id:"deleting-account-dialog", closeOnOutsideClick: false});
+		var dialog = new AJS.Dialog({width:400, height:150, id:"deleting-account-dialog", closeOnOutsideClick: false});
 		dialog.addHeader("Deleting Account");
 
 		dialog.addPanel("DeletePanel", "<span class='dvcs-wait'>Deleting '" + organization + "' account. Please wait...</span>");
