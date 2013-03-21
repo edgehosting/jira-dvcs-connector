@@ -15,6 +15,8 @@ import java.util.List;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
@@ -25,9 +27,24 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
  * @author Miroslav Stencel
  * 
  */
-public class PullRequestBitbucketDVCSTest extends AbstractBitbucketMercurialDVCSTest
+public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 {
+    @Factory(dataProvider = "dvcs")
+    public PullRequestBitbucketDVCSTest(Dvcs dvcs)
+    {
+        super(dvcs);
+    }
 
+    @DataProvider
+    public static Object[][] dvcs()
+    {
+        return new Object[][]
+        {
+            new Object[] { new MercurialDvcs() },
+            new Object[] { new GitDvcs() }
+        };
+    }
+    
     /**
      * Key of testing project.
      */
@@ -92,7 +109,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketMercurialDVCS
 
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        String pullRequestUrl = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, "default");
+        String pullRequestUrl = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
@@ -142,8 +159,17 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketMercurialDVCS
 
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        String pullRequestUrl = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, "default");
+        String pullRequestUrl = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
+        // Give a time to Bitbucket after creation of pullRequest
+        try
+        {
+            Thread.sleep(1000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
+        
         String comment = commentPullRequest(pullRequestUrl, "General Pull Request Comment");
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
@@ -195,7 +221,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketMercurialDVCS
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
         String expectedPullRequestUrl = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, expectedPullRequestName, "Open PR description", fixBranchName,
-                "default");
+                getDefaultBranchName());
 
         // Assert PR Updated information
         addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix_update.txt", "Virtual fix - update {}".getBytes());
@@ -207,7 +233,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketMercurialDVCS
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName);
 
         String updatedPullRequestUrl = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, expectedPullRequestName, "Open PR description", fixBranchName,
-                "default");
+                getDefaultBranchName());
         
         // test of synchronization
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
@@ -267,8 +293,17 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketMercurialDVCS
 
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        String pullRequestUrl = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, "default");
+        String pullRequestUrl = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
+        // Give a time to Bitbucket after creation of pullRequest
+        try
+        {
+            Thread.sleep(1000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
+        
         closePullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestUrl);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
@@ -326,8 +361,17 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketMercurialDVCS
 
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        String pullRequestUrl = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, "default");
+        String pullRequestUrl = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
+        // Give a time to Bitbucket after creation of pullRequest
+        try
+        {
+            Thread.sleep(1000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
+        
         approvePullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestUrl);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
@@ -385,8 +429,17 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketMercurialDVCS
 
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        String pullRequestUrl = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, "default");
+        String pullRequestUrl = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
+        // Give a time to Bitbucket after creation of pullRequest
+        try
+        {
+            Thread.sleep(1000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
+        
         mergePullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestUrl);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
@@ -441,13 +494,13 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketMercurialDVCS
         addFile(forkedRepository.getOwner(), forkedRepository.getSlug(), issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
         commitNodeOpen[1] = commit(forkedRepository.getOwner(), forkedRepository.getSlug(), "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        push(forkedRepository.getOwner(), forkedRepository.getSlug(), FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD, "default");
+        push(forkedRepository.getOwner(), forkedRepository.getSlug(), FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD, getDefaultBranchName());
 
         new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogout();
         new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogin(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
         
-        String pullRequestUrl = openForkPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", "default",
-                "default", FORK_ACCOUNT_NAME);
+        String pullRequestUrl = openForkPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", getDefaultBranchName(),
+                getDefaultBranchName(), FORK_ACCOUNT_NAME);
 
         new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogout();
         new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogin(ACCOUNT_NAME, PASSWORD);

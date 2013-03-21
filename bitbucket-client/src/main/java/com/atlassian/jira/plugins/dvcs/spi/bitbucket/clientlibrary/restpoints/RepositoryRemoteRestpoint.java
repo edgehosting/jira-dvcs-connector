@@ -28,6 +28,12 @@ public class RepositoryRemoteRestpoint
 {
 	private final RemoteRequestor requestor;
 
+	public static class ScmType
+	{
+		public static final String HG = "hg";
+		public static final String GIT = "git";
+	}
+	
 	public RepositoryRemoteRestpoint(RemoteRequestor requestor)
 	{
 		super();
@@ -77,26 +83,6 @@ public class RepositoryRemoteRestpoint
         requestor.delete(removeRepositoryUrl, removeRepoPostData, ResponseCallback.EMPTY);
     }
 	
-	public BitbucketRepository createHgRepository(String repositoryName)
-    {
-        return createRepository(repositoryName, "hg", false);
-    }
-
-	public BitbucketRepository createHgRepository(String owner, String repositoryName)
-	{
-		return createRepository(owner, repositoryName, "hg");
-	}
-	
-    public BitbucketRepository createGitRepository(String repositoryName)
-    {
-        return createRepository(repositoryName, "git", false);    
-    }
-    
-    public BitbucketRepository createGitRepository(String owner, String repositoryName)
-	{
-    	return createRepository(owner, repositoryName, "git");
-	}
-    
     public BitbucketRepository forkRepository(String owner, String repositoryName, String newRepositoryName, boolean isPrivate)
     {
     	Map<String, String> createRepoPostData = new HashMap<String, String>();
@@ -117,7 +103,7 @@ public class RepositoryRemoteRestpoint
         });
     }
     
-    private BitbucketRepository createRepository(String repositoryName, String scm, boolean isPrivate)
+    public BitbucketRepository createRepository(String repositoryName, String scm, boolean isPrivate)
     {
         Map<String, String> createRepoPostData = new HashMap<String, String>();
         createRepoPostData.put("name", repositoryName);
@@ -136,11 +122,12 @@ public class RepositoryRemoteRestpoint
         });
     }
     
-    private BitbucketRepository createRepository(String owner, String repositoryName, String scm)
+    public BitbucketRepository createRepository(String owner, String repositoryName, String scm, boolean isPrivate)
     {
         Map<String, String> createRepoPostData = new HashMap<String, String>();
         createRepoPostData.put("name", repositoryName);
         createRepoPostData.put("scm",  scm);
+        createRepoPostData.put("is_private", Boolean.toString(isPrivate));
         
         String createRepositoryUrl = String.format("/repositories/%s/%s", owner, repositoryName);
         

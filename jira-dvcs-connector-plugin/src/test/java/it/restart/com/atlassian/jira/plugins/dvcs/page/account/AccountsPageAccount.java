@@ -1,15 +1,14 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 
-import javax.annotation.Nullable;
+import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static org.hamcrest.Matchers.is;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.WebDriverElement;
-import com.google.common.base.Predicate;
+import com.atlassian.pageobjects.elements.query.Poller;
 
 /**
  * Container of single account of {@link AccountsPage}.
@@ -105,16 +104,14 @@ public class AccountsPageAccount extends WebDriverElement
     {
         controlsButton.click();
         controlsDialog.refresh();
-        new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
+        // wait for popup to show up
+        try
         {
-
-            @Override
-            public boolean apply(@Nullable WebDriver input)
-            {
-                return controlsButton.isVisible();
-            }
-
-        });
+            Poller.waitUntilTrue(find(By.id("refreshing-account-dialog")).timed().isVisible());
+        } catch (AssertionError e)
+        {
+            // ignore, the refresh was probably very quick and the popup has been already closed.
+        }
+        Poller.waitUntil(find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(30000));
     }
-
 }

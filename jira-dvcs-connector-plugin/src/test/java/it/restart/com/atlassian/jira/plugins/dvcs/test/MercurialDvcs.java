@@ -1,8 +1,5 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -10,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.testng.annotations.AfterClass;
 
 import com.aragost.javahg.Changeset;
 import com.aragost.javahg.Repository;
@@ -19,15 +15,16 @@ import com.aragost.javahg.commands.AddCommand;
 import com.aragost.javahg.commands.BranchCommand;
 import com.aragost.javahg.commands.CommitCommand;
 import com.aragost.javahg.commands.PushCommand;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import com.google.common.io.Files;
 
 /**
- * Abstract, common implementation for Bitbucket tests.
+ * Abstract, common implementation for all GitHub tests.
  * 
- * @author Miroslav Stencel <mstencel@atlassian.com>
+ * @author Miroslav Stencel
  * 
  */
-public abstract class AbstractMercurialDVCSTest extends AbstractDVCSTest
+public class MercurialDvcs implements Dvcs
 {
     /**
      * Map between test repository URI and local directory of this repository.
@@ -35,21 +32,11 @@ public abstract class AbstractMercurialDVCSTest extends AbstractDVCSTest
     private Map<String, Repository> uriToLocalRepository = new HashMap<String, Repository>();
 
     /**
-     * Cleans common test environment.
-     */
-    @AfterClass(alwaysRun = true)
-    public void onTestsEnvironmentCleanUp()
-    {
-        // log out from bitbucket
-        new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogout();
-    }
-
-    /**
      * @param repositoryUri
      *            e.g.: owner/name
      * @return local repository for provided repository uri
      */
-    protected Repository getLocalRepository(String owner, String repositoryName)
+    private Repository getLocalRepository(String owner, String repositoryName)
     {
         return uriToLocalRepository.get(getUriKey(owner, repositoryName));
     }
@@ -61,39 +48,29 @@ public abstract class AbstractMercurialDVCSTest extends AbstractDVCSTest
      * 
      * returns local repository
      */
-    protected Repository clone(String cloneUrl)
+    private Repository clone(String cloneUrl)
     {
         RepositoryConfiguration repositoryConfiguration = new RepositoryConfiguration();
         configureHgBin(repositoryConfiguration);
-        
+
         return Repository.clone(repositoryConfiguration, Files.createTempDir(), cloneUrl);
     }
 
     
-    /**
-     * Creates branch on provided repository - hg branch name
-     * 
-     * @param repositoryUri
-     *            e.g.: owner/name
-     * @param name
-     *            of branch
+    /* (non-Javadoc)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#createBranch(java.lang.String, java.lang.String, java.lang.String)
      */
-    protected void createBranch(String owner, String repositoryName, String branchName)
+    @Override
+    public void createBranch(String owner, String repositoryName, String branchName)
     {
         BranchCommand.on(getLocalRepository(owner, repositoryName)).set(branchName);
     }
 
-    /**
-     * Creates and adds file to repository - hg add.
-     * 
-     * @param repositoryUri
-     *            for which repository
-     * @param filePath
-     *            repository relative path of file, parents directories will be automatically created
-     * @param content
-     *            of new file
+    /* (non-Javadoc)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#addFile(java.lang.String, java.lang.String, java.lang.String, byte[])
      */
-    protected void addFile(String owner, String repositoryName, String filePath, byte[] content)
+    @Override
+    public void addFile(String owner, String repositoryName, String filePath, byte[] content)
     {
         Repository repository = getLocalRepository(owner, repositoryName);
 
@@ -113,21 +90,11 @@ public abstract class AbstractMercurialDVCSTest extends AbstractDVCSTest
         AddCommand.on(repository).execute(filePath);
     }
 
-    /**
-     * Commits current changes.
-     * 
-     * @param repositoryUri
-     *            for which repository
-     * @param message
-     *            commit message
-     * 
-     * @param authorName
-     *            name of author
-     * @param authorEmail
-     *            email of author
-     * @return SHA-1 commit id
+    /* (non-Javadoc)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#commit(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
-    protected String commit(String owner, String repositoryName, String message, String authorName, String authorEmail)
+    @Override
+    public String commit(String owner, String repositoryName, String message, String authorName, String authorEmail)
     {
         CommitCommand commitCommand = CommitCommand.on(getLocalRepository(owner, repositoryName));
         commitCommand.message(message);
@@ -137,41 +104,25 @@ public abstract class AbstractMercurialDVCSTest extends AbstractDVCSTest
         return changeset.getNode();
     }
 
-    /**
-     * Push current state to remote repository.
-     * 
-     * @param repositoryUri
-     *            e.g. owner/name
-     * @param username
-     *            committer username
-     * @param password
-     *            committer password
+    /* (non-Javadoc)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#push(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
-    protected void push(String owner, String repositoryName, String username, String password)
+    @Override
+    public void push(String owner, String repositoryName, String username, String password)
     {
         push(owner, repositoryName, username, password, null, false);
     }
     
-    protected String generateCloneUrl(String owner, String repositorySlug, String username, String password)
+    private String generateCloneUrl(String owner, String repositorySlug, String username, String password)
     {
         return String.format("https://%s:%s@bitbucket.org/%s/%s", username, password, owner, repositorySlug);
     }
 
-    /**
-     * Push current state to remote repository.
-     * 
-     * @param repositoryUri
-     *            e.g. owner/name
-     * @param username
-     *            committer username
-     * @param password
-     *            committer password
-     * @param reference
-     *            e.g.: name of branch
-     * @param newBranch
-     *               whether new branch is being pushed
+    /* (non-Javadoc)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#push(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
      */
-    protected void push(String owner, String repositoryName, String username, String password, String reference, boolean newBranch)
+    @Override
+    public void push(String owner, String repositoryName, String username, String password, String reference, boolean newBranch)
     {
         PushCommand pushCommand = PushCommand.on(getLocalRepository(owner, repositoryName));
         if (newBranch)
@@ -193,36 +144,30 @@ public abstract class AbstractMercurialDVCSTest extends AbstractDVCSTest
         }
     }
 
-    /**
-     * Push current state to remote repository.
-     * 
-     * @param repositoryUri
-     *            e.g. owner/name
-     * @param username
-     *            committer username
-     * @param password
-     *            committer password
-     * @param reference
-     *            e.g.: name of branch
+    /* (non-Javadoc)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#push(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
-    protected void push(String owner, String repositoryName, String username, String password, String reference)
+    @Override
+    public void push(String owner, String repositoryName, String username, String password, String reference)
     {
         push(owner, repositoryName, username, password, reference, false);
     }
     
-    /**
-     * Creates provided test repository - local side.
-     * 
-     * @param owner
-     * @param repositoryName
+    /* (non-Javadoc)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#createTestLocalRepository(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
-    protected void createTestLocalRepository(String owner, String repositoryName, String cloneUrl)
+    @Override
+    public void createTestLocalRepository(String owner, String repositoryName, String username, String password)
     {
-        Repository localRepository = clone(cloneUrl);
-        uriToLocalRepository.put(owner + "/" + repositoryName, localRepository);
+        Repository localRepository = clone(generateCloneUrl(owner, repositoryName, username, password));
+        uriToLocalRepository.put(getUriKey(owner, repositoryName), localRepository);
     }
     
-    protected void deleteTestRepository(String repositoryUri)
+    /* (non-Javadoc)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#deleteTestRepository(java.lang.String)
+     */
+    @Override
+    public void deleteTestRepository(String repositoryUri)
     {
         Repository localRepository = uriToLocalRepository.remove(repositoryUri);
         if (localRepository != null)
@@ -239,11 +184,6 @@ public abstract class AbstractMercurialDVCSTest extends AbstractDVCSTest
         }
     }
     
-    protected String getUriKey(String owner, String slug)
-    {
-        return owner + "/" + slug;
-    }
-    
     private void configureHgBin(RepositoryConfiguration repositoryConfiguration)
     {
         Process process;
@@ -255,5 +195,22 @@ public abstract class AbstractMercurialDVCSTest extends AbstractDVCSTest
         {
             repositoryConfiguration.setHgBin("/usr/local/bin/hg");
         }
+    }
+    
+    private String getUriKey(String owner, String slug)
+    {
+        return owner + "/" + slug;
+    }
+
+    @Override
+    public String getDvcsType()
+    {
+        return RepositoryRemoteRestpoint.ScmType.HG;
+    }
+    
+    @Override
+    public String getDefaultBranchName()
+    {
+        return "default";
     }
 }

@@ -524,7 +524,7 @@ function deleteOrganization(organizationId, organizationName) {
 }
 
 function syncRepositoryList(organizationId,organizationName) {
-	var dialog = new AJS.Dialog({width:400, height:120, id:"deleting-account-dialog", closeOnOutsideClick: false});
+	var dialog = new AJS.Dialog({width:400, height:150, id:"refreshing-account-dialog", closeOnOutsideClick: false});
 	dialog.addHeader("Refreshing Account");
 	dialog.addPanel("RefreshPanel", "<span class='dvcs-wait'>Refreshing '" + organizationName + "' account. Please wait...</span>");
 	dialog.show(); 

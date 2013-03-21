@@ -25,13 +25,54 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 
 /**
- * Abstract, common implementation for all Bitbucket tests using Mercurial.
+ * Abstract, common implementation for all Bitbucket tests
  * 
  * @author Miroslav Stencel <mstencel@atlassian.com>
  * 
  */
-public abstract class AbstractBitbucketMercurialDVCSTest extends AbstractMercurialDVCSTest
+public class AbstractBitbucketDVCSTest extends AbstractDVCSTest
 {
+    private final Dvcs dvcs;
+
+    public AbstractBitbucketDVCSTest(Dvcs dvcs)
+    {
+        this.dvcs = dvcs;
+    }
+    
+    public void createBranch(String owner, String repositoryName, String branchName)
+    {
+        dvcs.createBranch(owner, repositoryName, branchName);
+    }
+
+    public void addFile(String owner, String repositoryName, String filePath, byte[] content)
+    {
+        dvcs.addFile(owner, repositoryName, filePath, content);
+    }
+
+    public String commit(String owner, String repositoryName, String message, String authorName, String authorEmail)
+    {
+        return dvcs.commit(owner, repositoryName, message, authorName, authorEmail);
+    }
+
+    public void push(String owner, String repositoryName, String username, String password)
+    {
+        dvcs.push(owner, repositoryName, username, password);
+    }
+
+    public void push(String owner, String repositoryName, String username, String password, String reference, boolean newBranch)
+    {
+        dvcs.push(owner, repositoryName, username, password, reference,    newBranch);
+    }
+
+    public void push(String owner, String repositoryName, String username, String password, String reference)
+    {
+        dvcs.push(owner, repositoryName, username, password, reference);
+    }
+
+    public void deleteTestRepository(String repositoryUri)
+    {
+        dvcs.deleteTestRepository(repositoryUri);
+    }
 
     /**
      * Repository owner.
@@ -71,8 +112,9 @@ public abstract class AbstractBitbucketMercurialDVCSTest extends AbstractMercuri
     @BeforeClass
     public void onTestsEnvironmentSetup()
     {
-        super.onTestsEnvironmentSetup();
 
+        super.onTestsEnvironmentSetup();
+        
         new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogin(ACCOUNT_NAME, PASSWORD);
         
         // Creates & adds OAuth settings
@@ -83,7 +125,7 @@ public abstract class AbstractBitbucketMercurialDVCSTest extends AbstractMercuri
         // adds Bitbucket account into Jira
         RepositoriesPageController repositoriesPageController = new RepositoriesPageController(getJiraTestedProduct());
         repositoriesPageController.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, false);
-//        repositoriesPageController.addOrganization(RepositoriesPageController.BITBUCKET, ORGANIZATION, false);
+        repositoriesPageController.addOrganization(RepositoriesPageController.BITBUCKET, FORK_ACCOUNT_NAME, false);
     }
 
     /**
@@ -99,7 +141,8 @@ public abstract class AbstractBitbucketMercurialDVCSTest extends AbstractMercuri
         // removes OAuth from Bitbucket
         new MagicVisitor(getJiraTestedProduct()).visit(BitbucketOAuthPage.class).removeConsumer(bitbucketOAuth.applicationId);
 
-        super.onTestsEnvironmentCleanUp();
+        // log out from bitbucket
+        new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogout();
     }
 
     /**
@@ -153,7 +196,7 @@ public abstract class AbstractBitbucketMercurialDVCSTest extends AbstractMercuri
 
         String result = getUriKey(remoteRepository.getOwner(), remoteRepository.getSlug());
         uriToRemoteRepository.put(result, new RepositoryInfo(remoteRepository, forkRepositoryService));
-        createTestLocalRepository(forkAccount, repositoryName, generateCloneUrl(remoteRepository.getOwner(), remoteRepository.getSlug(), forkAccount, forkPassword));
+        dvcs.createTestLocalRepository(forkAccount, repositoryName, forkAccount, forkPassword);
 
         return remoteRepository;
     }
@@ -263,6 +306,11 @@ public abstract class AbstractBitbucketMercurialDVCSTest extends AbstractMercuri
         return pullRequestPage.commentPullRequest(comment);
     }
 
+    protected String getDefaultBranchName()
+    {
+        return dvcs.getDefaultBranchName();
+    }
+    
     /**
      * @param repositoryUri
      *            e.g.: owner/name
@@ -289,7 +337,7 @@ public abstract class AbstractBitbucketMercurialDVCSTest extends AbstractMercuri
     private void createTestRepository(String owner, String repositoryName, RepositoryRemoteRestpoint repositoryService)
     {
         BitbucketRepository remoteRepository = createTestRemoteRepository(owner, repositoryName, repositoryService);
-        createTestLocalRepository(owner, repositoryName, generateCloneUrl(remoteRepository.getOwner(), remoteRepository.getSlug(), ACCOUNT_NAME, PASSWORD));
+        dvcs.createTestLocalRepository(owner, repositoryName, ACCOUNT_NAME, PASSWORD);
     }
 
     /**
@@ -303,10 +351,10 @@ public abstract class AbstractBitbucketMercurialDVCSTest extends AbstractMercuri
         
         if (ACCOUNT_NAME.equals(owner))
         {
-            remoteRepository = repositoryService.createHgRepository(repositoryName);
+            remoteRepository = repositoryService.createRepository(repositoryName, dvcs.getDvcsType(), false);
         } else
         {
-            remoteRepository = repositoryService.createHgRepository(owner, repositoryName);
+            remoteRepository = repositoryService.createRepository(owner, repositoryName, dvcs.getDvcsType(), false);
         }
         
         uriToRemoteRepository.put(getRepositoriUri(remoteRepository), new RepositoryInfo(remoteRepository, repositoryService));
@@ -329,7 +377,7 @@ public abstract class AbstractBitbucketMercurialDVCSTest extends AbstractMercuri
         repositoryService.removeRepository(owner, slug);
         String repositoryUri = getUriKey(owner, slug);
         uriToRemoteRepository.remove(repositoryUri);
-        super.deleteTestRepository(repositoryUri);
+        dvcs.deleteTestRepository(repositoryUri);
     }
     
     private RepositoryRemoteRestpoint createRepositoryService(String username, String password)
@@ -341,6 +389,11 @@ public abstract class AbstractBitbucketMercurialDVCSTest extends AbstractMercuri
         
         BitbucketRemoteClient bitbucketClient = new BitbucketRemoteClient(authProvider);        
         return bitbucketClient.getRepositoriesRest();
+    }
+    
+    private String getUriKey(String owner, String slug)
+    {
+        return owner + "/" + slug;
     }
     
     public static class RepositoryInfo
