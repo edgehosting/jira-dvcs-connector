@@ -31,6 +31,7 @@ public class BitbucketRepository implements Serializable
 	private Integer followersCount;
 	private String website;
 	private String description;
+	private String scm;
 
 	public String getSlug()
 	{
@@ -90,5 +91,15 @@ public class BitbucketRepository implements Serializable
 	public void setDescription(String description)
 	{
 		this.description = description;
+	}
+
+	public String getScm()
+	{
+		return scm;
+	}
+
+	public void setScm(String scm)
+	{
+		this.scm = scm;
 	}
 }
