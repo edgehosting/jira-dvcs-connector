@@ -32,6 +32,7 @@ public class BitbucketRepository implements Serializable
      private String website;
      private String description;
      private String owner;
+     private String scm;
 
      public String getSlug()
      {
@@ -101,5 +102,15 @@ public class BitbucketRepository implements Serializable
      public void setOwner(String owner)
      {
           this.owner = owner;
+     }
+     
+     public String getScm()
+     {
+         return scm;
+     }
+
+     public void setScm(String scm)
+     {
+         this.scm = scm;
      }
 }
