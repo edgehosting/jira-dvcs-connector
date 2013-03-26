@@ -285,8 +285,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
         } catch (BitbucketRequestException e)
         {
-            log.debug("Could not add postcommit hook", e);
-            throw new SourceControlException("Could not add postcommit hook", e);
+            throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook", e);
         }
     }
 
@@ -353,8 +352,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             }
         } catch (BitbucketRequestException e)
         {
-            log.debug("Could not remove postcommit hook", e);
-            throw new SourceControlException("Could not remove postcommit hook", e);
+            throw new SourceControlException.PostCommitHookRegistrationException("Could not remove postcommit hook", e);
         }
     }
 

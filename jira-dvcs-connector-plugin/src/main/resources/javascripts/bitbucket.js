@@ -67,7 +67,7 @@ function switchDvcsDetailsInternal(dvcsType) {
 //--------------------------------------------------------------------------------------------------
 
 function forceSync(event, repositoryId) {
-	if (event.ctrlKey) {
+	if (event.shiftKey) {
 		var dialogTrigger = AJS.$("#jira-dvcs-connector-forceSyncDialog-" + repositoryId);
 		var dialog = dialogTrigger.data('jira-dvcs-connector-forceSyncDialog');
 		
@@ -480,7 +480,27 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 			data : '{ "payload" : "' + checkedValue+ '"}',
 			
 			success :
-			function (data) {
+			function (registration) {
+				  if (registration.callBackUrlInstalled != checkedValue) {
+
+					var popup = new AJS.Dialog({
+					 		width: 500, 
+					 		height: 300, 
+					 		id: "dvcs-postcommit-hook-registration-dialog",
+					 		closeOnOutsideClick: false
+				    });
+
+					popup.addHeader("Post Commit Hook");
+					popup.addPanel("Registration", jira.dvcs.connector.plugin.soy.postCommitHookDialog({
+												'registering': checkedValue,
+												'callbackUrl': registration.callBackUrl
+												}));
+					popup.addButton("Ok", function (dialog) {
+						popup.remove();
+				    }, "aui-button submit");
+					popup.show();
+				 }
+				  
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  if (checkedValue) {
@@ -498,8 +518,8 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 		}
 	 
 	).error(function (err) { 
-		          
-				  showError("Unable to " + (checkedValue ? "link" : "unlink") + " selected repository. Do you have administrator permissions on the {GitHub|Bitbucket} repository you are attempting to sync?");
+		          err.callbackUrl
+				  showError("Unable to " + (checkedValue ? "link" : "unlink") + " selected repository. Please contact the server administrator.");
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);
