@@ -1,12 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import net.java.ao.Entity;
 import net.java.ao.Query;
+import net.java.ao.RawEntity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.google.common.base.Joiner;
 
 public class ActiveObjectsUtils
 { 
@@ -20,10 +25,57 @@ public class ActiveObjectsUtils
         int remainingEntities = activeObjects.count(entityType, query);
         while (remainingEntities > 0)
         {
+            
             log.debug("Deleting up to {} entities of {} remaining.", DELETE_WINDOW_SIZE, remainingEntities);
-            T[] entities = activeObjects.find(entityType, query.limit(DELETE_WINDOW_SIZE));
+            // BBC-453 we need to copy Query as ActiveObjects.find will mangle query for all types annotated by @Preload 
+            T[] entities = activeObjects.find(entityType, copyQuery(query).limit(DELETE_WINDOW_SIZE));
             activeObjects.delete(entities);
             remainingEntities = activeObjects.count(entityType, query);
         }
+    }
+    
+    public static Query copyQuery(Query query)
+    {
+        Query newQuery = Query.select(Joiner.on(",").join(query.getFields()))
+                .where(query.getWhereClause(), query.getWhereParams())
+                .order(query.getOrderClause())
+                .group(query.getGroupClause())
+                .offset(query.getOffset())
+                .limit(query.getLimit());
+     
+        if (query.getTable() != null)
+        {
+            newQuery.from(query.getTable());
+        }
+        
+        Class<? extends RawEntity<?>> tableType = query.getTableType();
+        if (tableType != null)
+        {
+            newQuery.from(query.getTableType());
+            addAlias(newQuery, tableType, query.getAlias(tableType));
+        }
+        
+        if (query.isDistinct())
+        {
+            newQuery.distinct();
+        }
+     
+        Map<Class<? extends RawEntity<?>>, String> joins = query.getJoins();
+        for (Entry<Class<? extends RawEntity<?>>, String> joinEntry : joins.entrySet())
+        {
+            query.join(joinEntry.getKey(), joinEntry.getValue());
+            addAlias(newQuery, joinEntry.getKey(), query.getAlias(joinEntry.getKey()));
+        }
+
+        return newQuery;
+    }
+    
+    private static Query addAlias(Query query, Class<? extends RawEntity<?>> table, String alias)
+    {
+        if (alias != null)
+        {
+            query.alias(table, alias);
+        }
+        return query;
     }
 }
