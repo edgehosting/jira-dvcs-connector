@@ -39,8 +39,8 @@ public class SourceControlException extends RuntimeException
         
         public UnauthorisedException(Throwable cause)
         {
-			super(cause);
-		}
+            super(cause);
+        }
     }
     
     public static class InvalidResponseException extends SourceControlException
@@ -48,6 +48,14 @@ public class SourceControlException extends RuntimeException
         public InvalidResponseException(String message)
         {
             super(message);
+        }
+    }
+    
+    public static class PostCommitHookRegistrationException extends SourceControlException
+    {
+        public PostCommitHookRegistrationException(String message, Throwable cause)
+        {
+            super(message, cause);
         }
     }
 }

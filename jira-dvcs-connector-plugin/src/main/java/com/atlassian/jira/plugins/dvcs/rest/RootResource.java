@@ -27,6 +27,7 @@ import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
+import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
@@ -269,8 +270,8 @@ public class RootResource
     @AdminOnly
     public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
     {
-        repositoryService.enableRepository(id, Boolean.parseBoolean(autolink.getPayload()));
-        return Response.noContent().build();
+        RepositoryRegistration registration = repositoryService.enableRepository(id, Boolean.parseBoolean(autolink.getPayload()));
+        return Response.ok(registration).build();
     }
     
     @POST
