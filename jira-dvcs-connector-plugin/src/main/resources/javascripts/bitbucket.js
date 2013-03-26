@@ -65,8 +65,39 @@ function switchDvcsDetailsInternal(dvcsType) {
 
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
-function forceSync(repositoryId) {
+
+function forceSync(event, repositoryId) {
+	if (event.ctrlKey) {
+		var dialogTrigger = AJS.$("#jira-dvcs-connector-forceSyncDialog-" + repositoryId);
+		var dialog = dialogTrigger.data('jira-dvcs-connector-forceSyncDialog');
+		
+		if (!dialog) {
+			dialog = AJS.InlineDialog(AJS.$("#jira-dvcs-connector-forceSyncDialog-" + repositoryId), "jira-dvcs-connector-forceSyncDialog"  + repositoryId, function(content, trigger, showPopup) {
+				content.html(jira.dvcs.connector.plugin.soy.forceSyncDialog({
+					'repositoryId' : repositoryId,
+				}));
+				showPopup();
+				return false;
+			}, { width: 500, hideDelay: null, noBind: true } );
+			dialogTrigger.data('jira-dvcs-connector-forceSyncDialog', dialog);
+		}
+
+		dialog.show();
+	
+	} else {
+		softSync(repositoryId);
+		
+	}
+}
+
+function fullSync(repositoryId) {
 	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/fullsync", function (data) {
+		updateSyncStatus(data);
+	});
+}
+
+function softSync(repositoryId) {
+	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/softsync", function (data) {
 		updateSyncStatus(data);
 	});
 }

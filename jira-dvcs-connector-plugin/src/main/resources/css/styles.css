@@ -480,3 +480,20 @@ html[xmlns] .dvcs-dclear {
 	color: #777;
 	font-size: 1.2em;
 }
+
+/* Force synchronization inline dialog style */
+div.jira-dvcs-connector-plugin.forceSyncDialog {
+	margin: 2.5ex;
+}
+div.jira-dvcs-connector-plugin.forceSyncDialog ul {
+	padding: 0;
+	margin: 0;
+}
+div.jira-dvcs-connector-plugin.forceSyncDialog li {
+	list-style: none;
+	text-align: justify;
+	margin-bottom: 2.5ex;
+}
+div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
+	margin: 1ex 2.5ex;
+}
