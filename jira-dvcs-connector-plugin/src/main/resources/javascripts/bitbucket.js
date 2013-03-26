@@ -67,7 +67,7 @@ function switchDvcsDetailsInternal(dvcsType) {
 //--------------------------------------------------------------------------------------------------
 
 function forceSync(event, repositoryId) {
-	if (event.ctrlKey) {
+	if (event.shiftKey) {
 		var dialogTrigger = AJS.$("#jira-dvcs-connector-forceSyncDialog-" + repositoryId);
 		var dialog = dialogTrigger.data('jira-dvcs-connector-forceSyncDialog');
 		
