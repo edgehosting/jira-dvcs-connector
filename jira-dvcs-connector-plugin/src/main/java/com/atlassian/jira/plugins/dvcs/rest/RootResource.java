@@ -138,6 +138,32 @@ public class RootResource
     }
 
     /**
+     * Start repository softsync.
+     * 
+     * @param id
+     *            the id
+     * @return the response
+     */
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repository/{id}/softsync")
+    @AdminOnly
+    public Response startRepositorySoftSync(@PathParam("id") int id)
+    {
+        log.debug("Rest request to softsync repository [{}] ", id);
+
+        repositoryService.sync(id, true);
+         
+        // ...
+        // redirect to Repository resource - that will contain sync
+        // message/status
+        UriBuilder ub = uriInfo.getBaseUriBuilder();
+        URI uri = ub.path("/repository/{id}").build(id);
+
+        return Response.seeOther(uri).build();
+    }
+    
+    /**
      * Start repository fullsync.
      * 
      * @param id
@@ -148,7 +174,7 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repository/{id}/fullsync")
     @AdminOnly
-    public Response startRepositorySync(@PathParam("id") int id)
+    public Response startRepositoryFullSync(@PathParam("id") int id)
     {
         log.debug("Rest request to fullsync repository [{}] ", id);
 
@@ -162,7 +188,7 @@ public class RootResource
 
         return Response.seeOther(uri).build();
     }
-    
+
     /**
      * Account info.
      * 

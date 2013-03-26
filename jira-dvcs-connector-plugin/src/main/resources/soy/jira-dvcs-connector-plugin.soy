@@ -1,0 +1,28 @@
+{namespace jira.dvcs.connector.plugin.soy}
+
+/**
+ * @param repositoryId
+ */
+{template .forceSyncDialog}
+	<div class="jira-dvcs-connector-plugin forceSyncDialog">
+		<ul>
+			<li>
+				<strong>Soft synchronization</strong> synchronizes changes introduced since last synchronization. 
+				It is recommended option, with minimal influence on data provider.
+			</li>
+			<li>
+				<strong>Full synchronization</strong> first cleans all existing data, then does complete synchronization. 
+				Necessary if data or synchronization was broken. It increases traffic, can possibly result in reaching of the traffic limit 
+				followed by temporary connection restrictions imposed by provider.
+			</li>
+		</ul>
+		<div class="buttons">
+			<a href="#" onclick="softSync({$repositoryId}); AJS.$('.gh_messages.repository{$repositoryId}').slideDown(); return false;" class="aui-button aui-button-primary">
+				Soft synchronization
+			</a>
+			<a href="#" onclick="fullSync({$repositoryId}); AJS.$('.gh_messages.repository{$repositoryId}').slideDown(); return false;" class="aui-button">
+				<span class="aui-icon aui-icon-warning"></span> Full synchronization
+			</a>
+		</div>
+	</div>
+{/template}
