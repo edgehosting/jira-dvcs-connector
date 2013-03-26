@@ -92,7 +92,7 @@ public class ActiveObjectsUtils
         Map<Class<? extends RawEntity<?>>, String> joins = query.getJoins();
         for (Entry<Class<? extends RawEntity<?>>, String> joinEntry : joins.entrySet())
         {
-            query.join(joinEntry.getKey(), joinEntry.getValue());
+            newQuery.join(joinEntry.getKey(), joinEntry.getValue());
             addAlias(newQuery, joinEntry.getKey(), query.getAlias(joinEntry.getKey()));
         }
 
