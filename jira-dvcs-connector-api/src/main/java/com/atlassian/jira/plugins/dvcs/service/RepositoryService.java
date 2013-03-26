@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.model.SyncProgress;
 
 /**
@@ -82,8 +83,10 @@ public interface RepositoryService
 	 *            the repo id
 	 * @param linked
 	 *            the parse boolean
+	 *            
+	 * @returns {@link RepositoryRegistration}
 	 */
-	void enableRepository(int repoId, boolean linked);
+	RepositoryRegistration enableRepository(int repoId, boolean linked);
 	
 	/**
 	 * Enable repository smartcommits.

@@ -253,7 +253,7 @@ public class GithubCommunicator implements DvcsCommunicator
             repositoryService.createHook(repositoryId, repositoryHook);
         } catch (IOException e)
         {
-            throw new SourceControlException("Could not add postcommit hook. " + e.getMessage(), e);
+            throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. " + e.getMessage(), e);
         }
     }
 
@@ -286,7 +286,7 @@ public class GithubCommunicator implements DvcsCommunicator
             }
         } catch (IOException e)
         {
-            log.warn("Error removing postcommit service [{}]", e.getMessage());
+            throw new SourceControlException.PostCommitHookRegistrationException("Could not remove postcommit hook", e);
         }
     }
 
