@@ -55,6 +55,11 @@ public class ChangesetTransformer
 
     private List<String> parseParentsData(String parentsData)
     {
+        if (ChangesetMapping.TOO_MANY_PARENTS.equals(parentsData))
+        {
+            return null;
+        }
+        
         List<String> parents = new ArrayList<String>();
 
         if (StringUtils.isBlank(parentsData))
