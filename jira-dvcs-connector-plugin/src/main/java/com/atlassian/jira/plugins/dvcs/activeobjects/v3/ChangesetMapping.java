@@ -28,6 +28,11 @@ public interface ChangesetMapping extends Entity
     public static final String SMARTCOMMIT_AVAILABLE = "SMARTCOMMIT_AVAILABLE";
     
     /**
+     * Constant used to indicate that parents data could not be saved because they are too many
+     */
+    public static final String TOO_MANY_PARENTS ="<TOO_MANY_PARENTS>";
+    
+    /**
      * Rows at the table can contain data loaded by previous versions of this plugin. Some column data maybe missing 
      * because previous versions of plugin was not loading them. To get the updated version of changeset we need 
      * to reload the data from the BB/GH servers. This flag marks the row data as latest.

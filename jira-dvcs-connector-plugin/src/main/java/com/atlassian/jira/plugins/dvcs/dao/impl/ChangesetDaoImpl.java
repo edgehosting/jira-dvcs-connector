@@ -125,8 +125,14 @@ public class ChangesetDaoImpl implements ChangesetDao
                 {
                     parentsJson.put(parent);
                 }
-                map.put(ChangesetMapping.PARENTS_DATA, parentsJson.toString());
-
+                
+                String parentsData = parentsJson.toString();
+                if (parentsData.length() > 255)
+                {
+                    parentsData = ChangesetMapping.TOO_MANY_PARENTS;
+                }
+                map.put(ChangesetMapping.PARENTS_DATA, parentsData);
+                
                 JSONObject filesDataJson = new JSONObject();
                 JSONArray filesJson = new JSONArray();
                 try
