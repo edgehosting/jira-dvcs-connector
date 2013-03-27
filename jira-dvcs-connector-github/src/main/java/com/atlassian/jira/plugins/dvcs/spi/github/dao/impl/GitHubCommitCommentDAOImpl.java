@@ -224,7 +224,7 @@ public class GitHubCommitCommentDAOImpl implements GitHubCommitCommentDAO
                 .alias(GitHubCommitCommentMapping.class, "COMMENT")
                 .join(GitHubCommitCommentMapping.class,
                         "COMMIT.ID = COMMENT." + columnNameResolverService.column(gitHubCommitCommentDescription.getCommit()))
-                .where(columnNameResolverService.column(gitHubCommitMappingDescription.getDomain()) + " = ? ", domain.getId());
+                .where("COMMIT." + columnNameResolverService.column(gitHubCommitMappingDescription.getDomain()) + " = ? ", domain.getId());
         query.setOffset(first);
         query.setLimit(count);
 

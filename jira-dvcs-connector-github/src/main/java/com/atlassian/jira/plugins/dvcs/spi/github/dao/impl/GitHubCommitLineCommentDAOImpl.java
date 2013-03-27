@@ -219,7 +219,7 @@ public class GitHubCommitLineCommentDAOImpl implements GitHubCommitLineCommentDA
                 .alias(GitHubCommitLineCommentMapping.class, "COMMENT")
                 .join(GitHubCommitLineCommentMapping.class,
                         "COMMIT.ID = COMMENT." + columnNameResolverService.column(gitHubCommitLineCommentMappingDescription.getCommit()))
-                .where(columnNameResolverService.column(gitHubCommitLineCommentMappingDescription.getDomain()) + " = ? ", domain.getId());
+                .where("COMMIT." + columnNameResolverService.column(gitHubCommitLineCommentMappingDescription.getDomain()) + " = ? ", domain.getId());
         query.setOffset(first);
         query.setLimit(count);
 
