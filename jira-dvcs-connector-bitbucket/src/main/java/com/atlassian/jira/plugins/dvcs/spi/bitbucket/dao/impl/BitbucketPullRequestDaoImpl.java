@@ -39,7 +39,7 @@ public class BitbucketPullRequestDaoImpl implements BitbucketPullRequestDao
     @Override
     public BitbucketPullRequestCommitMapping getCommitForPullRequest(int pullRequestId, String node)
     {
-        Query query = Query.select().where(BitbucketPullRequestCommitMapping.PULL_REQUEST_ID + "=? AND " + BitbucketPullRequestCommitMapping.NODE + "=?", pullRequestId, node);
+        Query query = Query.select().where(BitbucketPullRequestCommitMapping.PULL_REQUEST_ID + " = ? AND " + BitbucketPullRequestCommitMapping.NODE + " = ?", pullRequestId, node);
         BitbucketPullRequestCommitMapping[] found = activeObjects.find(BitbucketPullRequestCommitMapping.class, query);
         return found.length > 0 ? found[0] : null;
     }
