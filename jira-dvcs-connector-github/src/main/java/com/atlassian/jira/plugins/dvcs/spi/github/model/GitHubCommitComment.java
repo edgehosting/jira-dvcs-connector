@@ -22,9 +22,24 @@ public class GitHubCommitComment extends GitHubEntity
     private Date createdAt;
 
     /**
+     * @see #getCreatedBy()
+     */
+    private GitHubUser createdBy;
+
+    /**
      * @see #getCommit()
      */
     private GitHubCommit commit;
+
+    /**
+     * @see #getUrl()
+     */
+    private String url;
+
+    /**
+     * @see #getHtmlUrl()
+     */
+    private String htmlUrl;
 
     /**
      * @see #getText()
@@ -73,6 +88,23 @@ public class GitHubCommitComment extends GitHubEntity
     }
 
     /**
+     * @return User, whose creates this comment.
+     */
+    public GitHubUser getCreatedBy()
+    {
+        return createdBy;
+    }
+
+    /**
+     * @param createdBy
+     *            {@link #getCreatedBy()}
+     */
+    public void setCreatedBy(GitHubUser createdBy)
+    {
+        this.createdBy = createdBy;
+    }
+
+    /**
      * @return For which commit is this comment.
      */
     public GitHubCommit getCommit()
@@ -87,6 +119,40 @@ public class GitHubCommitComment extends GitHubEntity
     public void setCommit(GitHubCommit commit)
     {
         this.commit = commit;
+    }
+
+    /**
+     * @return URL of the comment.
+     */
+    public String getUrl()
+    {
+        return url;
+    }
+
+    /**
+     * @param url
+     *            {@link #getUrl()}
+     */
+    public void setUrl(String url)
+    {
+        this.url = url;
+    }
+
+    /**
+     * @return HTML version of the {@link #getUrl()}
+     */
+    public String getHtmlUrl()
+    {
+        return htmlUrl;
+    }
+
+    /**
+     * @param htmlUrl
+     *            {@link #getHtmlUrl()}
+     */
+    public void setHtmlUrl(String htmlUrl)
+    {
+        this.htmlUrl = htmlUrl;
     }
 
     /**

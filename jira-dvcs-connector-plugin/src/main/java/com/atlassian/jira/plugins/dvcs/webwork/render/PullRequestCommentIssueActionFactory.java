@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestCommentMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestCommentActivityMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -27,7 +27,7 @@ public class PullRequestCommentIssueActionFactory implements IssueActionFactory
     @Override
     public IssueAction create(Object activityItem)
     {
-        RepositoryActivityPullRequestCommentMapping pullRequestComment = (RepositoryActivityPullRequestCommentMapping) activityItem;
+        RepositoryPullRequestCommentActivityMapping pullRequestComment = (RepositoryPullRequestCommentActivityMapping) activityItem;
         int repositoryId = pullRequestComment.getRepositoryId();
         RepositoryPullRequestMapping pullRequest = pullRequestComment.getPullRequest();
         
@@ -51,7 +51,7 @@ public class PullRequestCommentIssueActionFactory implements IssueActionFactory
     @Override
     public Class<? extends Object> getSupportedClass()
     {
-        return RepositoryActivityPullRequestCommentMapping.class;
+        return RepositoryPullRequestCommentActivityMapping.class;
     }
 
 }

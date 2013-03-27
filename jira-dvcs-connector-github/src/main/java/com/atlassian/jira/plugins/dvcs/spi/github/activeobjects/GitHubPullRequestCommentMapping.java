@@ -15,7 +15,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment
  * @author Stanislav Dvorscak
  * 
  */
-@Table("GitHubPR_Comment")
+@Table("GIT_HUB_PR_COMMENT")
 public interface GitHubPullRequestCommentMapping extends GitHubEntityMapping
 {
 

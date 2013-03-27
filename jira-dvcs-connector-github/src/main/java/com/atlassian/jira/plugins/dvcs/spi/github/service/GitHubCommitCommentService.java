@@ -1,9 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
-import org.eclipse.egit.github.core.CommitComment;
+import java.util.List;
 
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommitComment;
+import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
 /**
  * Provides services related to the {@link GitHubCommitComment}.
@@ -45,15 +46,33 @@ public interface GitHubCommitCommentService
     GitHubCommitComment getByGitHubId(long gitHubId);
 
     /**
-     * Re-maps egit model into the internal model.
+     * Returns all comments.
      * 
-     * @param target
-     *            internal model
-     * @param source
-     *            egit model
-     * @param gitHubCommit
-     *            already re-mapped {@link CommitComment#getCommitId()}
+     * @param domain
+     *            over which repository
+     * @param first
+     *            result offset
+     * @param count
+     *            size of offset
+     * @return subset of all comments
      */
-    public void map(GitHubCommitComment target, CommitComment source, GitHubCommit gitHubCommit);
+    List<GitHubCommitComment> getAll(GitHubRepository domain, int first, int count);
+
+    /**
+     * @param domain
+     *            over which repository
+     * @return Rows count projection of {@link #getAll(int, int)}.
+     */
+    int getAllCount(GitHubRepository domain);
+
+    /**
+     * Synchronizes comment activities for provided domain repository.
+     * 
+     * @param domainRepository
+     *            over which repository
+     * @param domain
+     *            over which repository
+     */
+    void synchronize(Repository domainRepository, GitHubRepository domain);
 
 }

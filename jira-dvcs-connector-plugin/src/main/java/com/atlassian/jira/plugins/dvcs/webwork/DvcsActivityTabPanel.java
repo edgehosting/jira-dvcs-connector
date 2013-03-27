@@ -15,7 +15,7 @@ import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityMapping;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
@@ -65,31 +65,31 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
     {
         String issueKey = issue.getKey();
         List<IssueAction> issueActions = new ArrayList<IssueAction>();
-        
+
         try
         {
-            List<RepositoryActivityPullRequestMapping> activities = activityDao.getRepositoryActivityForIssue(issueKey);
-            
-            for (RepositoryActivityPullRequestMapping activity : activities)
+            List<RepositoryActivityMapping> activities = activityDao.getRepositoryActivityForIssue(issueKey);
+
+            for (RepositoryActivityMapping activity : activities)
             {
-            	logger.debug("found changeset [ {} ] on issue [ {} ]", activity.getID(), issueKey);
+                logger.debug("found changeset [ {} ] on issue [ {} ]", activity.getID(), issueKey);
                 IssueAction issueAction = issueActionFactory.create(activity);
-                if (issueAction!=null)
+                if (issueAction != null)
                 {
                     issueActions.add(issueAction);
                 }
             }
-            
+
             for (Changeset changeset : changesetService.getByIssueKey(issueKey))
             {
                 logger.debug("found changeset [ {} ] on issue [ {} ]", changeset.getNode(), issueKey);
                 IssueAction issueAction = issueActionFactory.create(changeset);
-                if (issueAction!=null)
+                if (issueAction != null)
                 {
                     issueActions.add(issueAction);
                 }
             }
-            
+
         } catch (SourceControlException e)
         {
             logger.debug("Could not retrieve changeset for [ " + issueKey + " ]: " + e, e);
@@ -99,7 +99,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
         {
             issueActions.add(DEFAULT_MESSAGE);
         }
-        
+
         Collections.sort(issueActions, ISSUE_ACTION_COMPARATOR);
         return issueActions;
     }
@@ -107,9 +107,8 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
     @Override
     public boolean showPanel(Issue issue, User user)
     {
-        return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user) &&
-                repositoryService.existsLinkedRepositories();
+        return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)
+                && repositoryService.existsLinkedRepositories();
     }
 
 }
-

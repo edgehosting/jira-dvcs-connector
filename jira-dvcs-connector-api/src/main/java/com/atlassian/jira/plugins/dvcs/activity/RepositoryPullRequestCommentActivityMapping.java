@@ -5,8 +5,8 @@ import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
 @Preload
-@Table("PR_COMMENT")
-public interface RepositoryActivityPullRequestCommentMapping extends RepositoryActivityPullRequestMapping
+@Table("ACTIVITY_PR_COMMENT")
+public interface RepositoryPullRequestCommentActivityMapping extends RepositoryPullRequestActivityMapping
 {
     String MESSAGE = "MESSAGE";
     String COMMENT_URL = "COMMENT_URL";

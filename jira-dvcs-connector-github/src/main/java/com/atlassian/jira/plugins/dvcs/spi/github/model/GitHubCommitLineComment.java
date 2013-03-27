@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.model;
 
+import java.util.Date;
+
 /**
  * Line commit comment.
  * 
@@ -20,6 +22,26 @@ public class GitHubCommitLineComment extends GitHubEntity
     private GitHubCommit commit;
 
     /**
+     * @see #getUrl()
+     */
+    private String url;
+
+    /**
+     * @see #getHtmlUrl()
+     */
+    private String htmlUrl;
+
+    /**
+     * @see #getCreatedAt()
+     */
+    private Date createdAt;
+
+    /**
+     * @see #getCreatedBy()
+     */
+    private GitHubUser createdBy;
+
+    /**
      * @see #getPath()
      */
     private String path;
@@ -29,6 +51,9 @@ public class GitHubCommitLineComment extends GitHubEntity
      */
     private int line;
 
+    /**
+     * @see #getText()
+     */
     private String text;
 
     /**
@@ -70,6 +95,74 @@ public class GitHubCommitLineComment extends GitHubEntity
     public void setCommit(GitHubCommit commit)
     {
         this.commit = commit;
+    }
+
+    /**
+     * @return URL of the comment.
+     */
+    public String getUrl()
+    {
+        return url;
+    }
+
+    /**
+     * @param url
+     *            {@link #getUrl()}
+     */
+    public void setUrl(String url)
+    {
+        this.url = url;
+    }
+
+    /**
+     * @return HTML version of the {@link #getUrl()}
+     */
+    public String getHtmlUrl()
+    {
+        return htmlUrl;
+    }
+
+    /**
+     * @param htmlUrl
+     *            {@link #getHtmlUrl()}
+     */
+    public void setHtmlUrl(String htmlUrl)
+    {
+        this.htmlUrl = htmlUrl;
+    }
+
+    /**
+     * @return Date of creation.
+     */
+    public Date getCreatedAt()
+    {
+        return createdAt;
+    }
+
+    /**
+     * @param createdAt
+     *            {@link #getCreatedAt()}
+     */
+    public void setCreatedAt(Date createdAt)
+    {
+        this.createdAt = createdAt;
+    }
+
+    /**
+     * @return Creator of comment.
+     */
+    public GitHubUser getCreatedBy()
+    {
+        return createdBy;
+    }
+
+    /**
+     * @param createdBy
+     *            {@link #getCreatedBy()}
+     */
+    public void setCreatedBy(GitHubUser createdBy)
+    {
+        this.createdBy = createdBy;
     }
 
     /**

@@ -11,9 +11,9 @@ import org.eclipse.egit.github.core.service.PullRequestService;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestActivityMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestDAO;
@@ -65,7 +65,7 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
      *            injected {@link RepositoryActivityDao} dependency
      */
     public GitHubPullRequestServiceImpl(GitHubPullRequestDAO gitHubPullRequestDAO, GitHubRepositoryService gitHubRepositoryService,
-    		@Qualifier("githubClientProvider") GithubClientProvider githubClientProvider, RepositoryActivityDao repositoryActivityDao)
+            @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider, RepositoryActivityDao repositoryActivityDao)
     {
         this.gitHubPullRequestDAO = gitHubPullRequestDAO;
         this.gitHubRepositoryService = gitHubRepositoryService;
@@ -197,22 +197,23 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
         RepositoryPullRequestMapping repositoryPullRequest;
         for (GitHubPullRequest pullRequest : getByRepository(domain))
         {
-            repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(domainRepository.getId(), pullRequest.getGitHubId());
+            repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(domainRepository, pullRequest.getGitHubId());
             if (repositoryPullRequest == null)
             {
                 // saves pull request
                 map(domainRepository, repositoryPullRequestParams, pullRequest);
-                repositoryPullRequest = repositoryActivityDao.savePullRequest(repositoryPullRequestParams);
+                repositoryPullRequest = repositoryActivityDao.savePullRequest(domainRepository, repositoryPullRequestParams);
                 repositoryPullRequestParams.clear();
             }
 
             // saves pull request activities
             for (GitHubPullRequestAction action : pullRequest.getActions())
             {
-                if (repositoryActivityDao.getPullRequestActivityByRemoteId(repositoryPullRequest, action.getGitHubEventId()) == null)
+                if (repositoryActivityDao.getPullRequestActivityByRemoteId(domainRepository, repositoryPullRequest,
+                        action.getGitHubEventId()) == null)
                 {
                     map(activity, repositoryPullRequest, action);
-                    repositoryActivityDao.saveActivity(activity);
+                    repositoryActivityDao.saveActivity(domainRepository, activity);
                 }
                 activity.clear();
             }
@@ -236,7 +237,6 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
         target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
         target.put(RepositoryPullRequestMapping.DESCRIPTION, source.getText());
         target.put(RepositoryPullRequestMapping.TO_REPO_ID, domainRepository.getId());
-        // TODO save url in the correct format
         target.put(RepositoryPullRequestMapping.SOURCE_URL, source.getHeadRepository().getUrl());
     }
 
@@ -252,40 +252,40 @@ public class GitHubPullRequestServiceImpl implements GitHubPullRequestService
      */
     private void map(Map<String, Object> target, RepositoryPullRequestMapping pullRequest, GitHubPullRequestAction source)
     {
-        target.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, pullRequest.getID());
-        target.put(RepositoryActivityPullRequestMapping.REPOSITORY_ID, pullRequest.getToRepositoryId());
+        target.put(RepositoryPullRequestActivityMapping.PULL_REQUEST_ID, pullRequest.getID());
+        target.put(RepositoryPullRequestActivityMapping.REPOSITORY_ID, pullRequest.getToRepositoryId());
 
-        target.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
-        target.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, source.getCreatedAt());
-        target.put(RepositoryActivityPullRequestMapping.AUTHOR, source.getCreatedBy().getLogin());
-        target.put(RepositoryActivityPullRequestMapping.RAW_AUTHOR, source.getCreatedBy().getName());
-        target.put(RepositoryActivityPullRequestUpdateMapping.REMOTE_ID, source.getGitHubEventId());
-        target.put(RepositoryActivityPullRequestUpdateMapping.STATUS, resolveStatus(source));
+        target.put(RepositoryPullRequestActivityMapping.ENTITY_TYPE, RepositoryPullRequestUpdateActivityMapping.class);
+        target.put(RepositoryPullRequestActivityMapping.LAST_UPDATED_ON, source.getCreatedAt());
+        target.put(RepositoryPullRequestActivityMapping.AUTHOR, source.getCreatedBy().getLogin());
+        target.put(RepositoryPullRequestActivityMapping.RAW_AUTHOR, source.getCreatedBy().getName());
+        target.put(RepositoryPullRequestUpdateActivityMapping.REMOTE_ID, source.getGitHubEventId());
+        target.put(RepositoryPullRequestUpdateActivityMapping.STATUS, resolveStatus(source));
     }
 
     /**
      * @param action
      * @return resolved status
      */
-    private RepositoryActivityPullRequestUpdateMapping.Status resolveStatus(GitHubPullRequestAction action)
+    private RepositoryPullRequestUpdateActivityMapping.Status resolveStatus(GitHubPullRequestAction action)
     {
-        RepositoryActivityPullRequestUpdateMapping.Status result = null;
+        RepositoryPullRequestUpdateActivityMapping.Status result = null;
 
         if (GitHubPullRequestAction.Action.OPENED.equals(action.getAction()))
         {
-            result = RepositoryActivityPullRequestUpdateMapping.Status.OPENED;
+            result = RepositoryPullRequestUpdateActivityMapping.Status.OPENED;
 
         } else if (GitHubPullRequestAction.Action.MERGED.equals(action.getAction()))
         {
-            result = RepositoryActivityPullRequestUpdateMapping.Status.MERGED;
+            result = RepositoryPullRequestUpdateActivityMapping.Status.MERGED;
 
         } else if (GitHubPullRequestAction.Action.CLOSED.equals(action.getAction()))
         {
-            result = RepositoryActivityPullRequestUpdateMapping.Status.DECLINED;
+            result = RepositoryPullRequestUpdateActivityMapping.Status.DECLINED;
 
         } else if (GitHubPullRequestAction.Action.REOPENED.equals(action.getAction()))
         {
-            result = RepositoryActivityPullRequestUpdateMapping.Status.REOPENED;
+            result = RepositoryPullRequestUpdateActivityMapping.Status.REOPENED;
 
         }
 

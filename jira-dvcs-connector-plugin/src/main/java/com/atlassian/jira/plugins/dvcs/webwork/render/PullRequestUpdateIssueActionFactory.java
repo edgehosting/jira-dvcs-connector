@@ -10,11 +10,11 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping.Status;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping.Status;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -42,7 +42,7 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
     @Override
     public IssueAction create(Object activityItem)
     {
-        RepositoryActivityPullRequestUpdateMapping pullRequestUpdate = (RepositoryActivityPullRequestUpdateMapping) activityItem;
+        RepositoryPullRequestUpdateActivityMapping pullRequestUpdate = (RepositoryPullRequestUpdateActivityMapping) activityItem;
         int repositoryId = pullRequestUpdate.getRepositoryId();
         int pullRequestId = pullRequestUpdate.getPullRequest().getID();
 
@@ -71,7 +71,7 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
     }
 
     private void getView(Map<String, Object> target, Repository repository, RepositoryPullRequestMapping pullRequest,
-            RepositoryActivityPullRequestUpdateMapping pullRequestUpdate)
+            RepositoryPullRequestUpdateActivityMapping pullRequestUpdate)
     {
         DvcsUser author = repositoryService.getUser(repository, pullRequestUpdate.getAuthor(), null);
         
@@ -84,7 +84,7 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
         
         // commits
         List<Map<String, Object>> commits = new LinkedList<Map<String, Object>>();
-        for (RepositoryActivityCommitMapping commit : pullRequestUpdate.getCommits())
+        for (RepositoryCommitMapping commit : pullRequestUpdate.getCommits())
         {
             commits.add(getView(repository, pullRequest, pullRequestUpdate, commit));
         }
@@ -94,7 +94,7 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
     }
 
     private Map<String, Object> getView(Repository repository, RepositoryPullRequestMapping pullRequest,
-            RepositoryActivityPullRequestUpdateMapping pullRequestUpdate, RepositoryActivityCommitMapping commit)
+            RepositoryPullRequestUpdateActivityMapping pullRequestUpdate, RepositoryCommitMapping commit)
     {
         DvcsUser author = repositoryService.getUser(repository, commit.getAuthor(), null);
 
@@ -110,7 +110,7 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
     }
 
     public String getCommitUrl(Repository destinationRepository, RepositoryPullRequestMapping pullRequest,
-            RepositoryActivityCommitMapping commit)
+            RepositoryCommitMapping commit)
     {
         Repository sourceRepository = createMockRepository(pullRequest.getSourceUrl(), destinationRepository.getDvcsType());
         if (sourceRepository == null)
@@ -168,7 +168,7 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
     @Override
     public Class<? extends Object> getSupportedClass()
     {
-        return RepositoryActivityPullRequestUpdateMapping.class;
+        return RepositoryPullRequestUpdateActivityMapping.class;
     }
 
 }

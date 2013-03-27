@@ -29,7 +29,7 @@ public class AccountsPage implements Page
      *            type of account
      * @param accountName
      *            name of account
-     * @return
+     * @return founded account element
      */
     public AccountsPageAccount getAccount(AccountsPageAccount.AccountType accountType, String accountName)
     {

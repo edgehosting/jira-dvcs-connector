@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.dao;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
@@ -45,5 +47,24 @@ public interface GitHubCommitDAO
      * @return resolved {@link GitHubCommit}
      */
     GitHubCommit getBySha(GitHubRepository domain, GitHubRepository repository, String sha);
+
+
+    /**
+     * @param domain
+     *            over which repository
+     * @param first
+     *            offset of result
+     * @param count
+     *            size of result
+     * @return all {@link GitHubCommit}s of provided repository
+     */
+    List<GitHubCommit> getAll(GitHubRepository domain, int first, int count);
+
+    /**
+     * @param domain
+     *            over which repository
+     * @return Rows count projection of {@link #getAll(GitHubRepository, int, int)}.
+     */
+    int getAllCount(GitHubRepository domain);
 
 }

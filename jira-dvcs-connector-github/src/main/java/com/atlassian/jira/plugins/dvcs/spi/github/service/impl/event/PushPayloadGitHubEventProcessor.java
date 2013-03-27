@@ -73,7 +73,7 @@ public class PushPayloadGitHubEventProcessor extends AbstractGitHubEventProcesso
     public void process(Repository domainRepository, GitHubRepository domain, Event event)
     {
         PushPayload pushPayload = getPayload(event);
-        GitHubUser createdBy = gitHubUserService.getByLogin(event.getActor().getLogin());
+        GitHubUser createdBy = gitHubUserService.fetch(domainRepository, domain, event.getActor().getLogin());
 
         String repositoryOwner = RepositoryId.createFromUrl(event.getRepo().getUrl()).getOwner();
         String repositoryName = event.getRepo().getName();

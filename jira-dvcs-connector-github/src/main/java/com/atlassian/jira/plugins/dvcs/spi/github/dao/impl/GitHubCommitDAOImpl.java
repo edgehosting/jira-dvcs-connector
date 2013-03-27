@@ -149,7 +149,7 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
         params.add(sha);
 
         Query query = Query.select().where(whereClause.toString(), params.toArray());
-        
+
         //
         GitHubCommitMapping[] founded = activeObjects.find(GitHubCommitMapping.class, query);
         if (founded.length == 1)
@@ -167,6 +167,52 @@ public class GitHubCommitDAOImpl implements GitHubCommitDAO
             throw new IllegalStateException("SHA conflict of commits! SHA: " + sha + " Founded: " + founded.length + " records.");
 
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<GitHubCommit> getAll(GitHubRepository domain, int first, int count)
+    {
+        Query query = createAllQuery(domain);
+        query.setOffset(first);
+        query.setLimit(count);
+        GitHubCommitMapping[] founded = activeObjects.find(GitHubCommitMapping.class, query);
+
+        List<GitHubCommit> result = new LinkedList<GitHubCommit>();
+        GitHubCommit resultItem;
+        for (GitHubCommitMapping foundedItem : founded)
+        {
+            resultItem = new GitHubCommit();
+            map(resultItem, foundedItem);
+            result.add(resultItem);
+        }
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getAllCount(GitHubRepository domain)
+    {
+        Query query = createAllQuery(domain);
+        return activeObjects.count(GitHubCommitMapping.class, query);
+    }
+
+    /**
+     * Builds ALL query.
+     * 
+     * @param domain
+     *            for repository
+     * @return query
+     */
+    private Query createAllQuery(GitHubRepository domain)
+    {
+        Query result = Query.select();
+        result.where(columnNameResolverService.column(gitHubCommitMappingDescription.getDomain()) + " = ? ", domain.getId());
+        return result;
     }
 
     // //

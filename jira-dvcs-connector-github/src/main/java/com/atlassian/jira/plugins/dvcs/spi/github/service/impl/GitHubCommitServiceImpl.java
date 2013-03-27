@@ -18,12 +18,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityPullRequestUpdateMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitActivityMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitCommitActivityMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestActivityMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityToCommitMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GitHubUtils;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
@@ -50,29 +52,24 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
     private static final Logger LOGGER = LoggerFactory.getLogger(GitHubCommitServiceImpl.class);
 
     /**
-     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao, ActiveObjects)
+     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao)
      */
     private final GitHubCommitDAO gitHubCommitDAO;
 
     /**
-     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao, ActiveObjects)
+     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao)
      */
     private final GitHubPullRequestService gitHubPullRequestService;
 
     /**
-     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao, ActiveObjects)
+     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao)
      */
     private final RepositoryActivityDao repositoryActivityDao;
 
     /**
-     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao, ActiveObjects)
+     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao)
      */
     private final GithubClientProvider githubClientProvider;
-
-    /**
-     * @see #GitHubCommitServiceImpl(GitHubCommitDAO, GitHubPullRequestService, GithubClientProvider, RepositoryActivityDao, ActiveObjects)
-     */
-    private final ActiveObjects activeObjects;
 
     /**
      * Constructor.
@@ -85,17 +82,14 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
      *            injected {@link GithubClientProvider} dependency
      * @param repositoryActivityDao
      *            {@link RepositoryActivityDao} dependency
-     * @param activeObjects
-     *            injected {@link ActiveObjects} dependency
      */
     public GitHubCommitServiceImpl(GitHubCommitDAO gitHubCommitDAO, GitHubPullRequestService gitHubPullRequestService,
-    		@Qualifier("githubClientProvider") GithubClientProvider githubClientProvider, RepositoryActivityDao repositoryActivityDao, ActiveObjects activeObjects)
+            @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider, RepositoryActivityDao repositoryActivityDao)
     {
         this.gitHubCommitDAO = gitHubCommitDAO;
         this.gitHubPullRequestService = gitHubPullRequestService;
         this.githubClientProvider = githubClientProvider;
         this.repositoryActivityDao = repositoryActivityDao;
-        this.activeObjects = activeObjects;
     }
 
     /**
@@ -132,6 +126,24 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
     public GitHubCommit getBySha(GitHubRepository domain, GitHubRepository repository, String sha)
     {
         return gitHubCommitDAO.getBySha(domain, repository, sha);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<GitHubCommit> getAll(GitHubRepository domain, int first, int count)
+    {
+        return gitHubCommitDAO.getAll(domain, first, count);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getAllCount(GitHubRepository domain)
+    {
+        return gitHubCommitDAO.getAllCount(domain);
     }
 
     /**
@@ -179,6 +191,35 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
         save(result);
 
         return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void synchronize(Repository domainRepository, GitHubRepository domain)
+    {
+        int pageSize = 1024;
+
+        final Map<String, Object> commitMap = new HashMap<String, Object>();
+        RepositoryCommitMapping commit;
+        final Map<String, Object> commitActivityMap = new HashMap<String, Object>();
+
+        for (int i = 0; i < getAllCount(domain); i += pageSize)
+        {
+            for (GitHubCommit gitHubCommit : getAll(domain, i, pageSize))
+            {
+                if (repositoryActivityDao.getCommitByNode(domainRepository, gitHubCommit.getSha()) == null)
+                {
+                    mapToCommit(commitMap, gitHubCommit);
+                    commit = repositoryActivityDao.saveCommit(domainRepository, commitMap);
+                    commitMap.clear();
+
+                    mapToActivity(domainRepository, commitActivityMap, gitHubCommit, commit.getID());
+                    repositoryActivityDao.saveActivity(domainRepository, commitActivityMap);
+                }
+            }
+        }
     }
 
     /**
@@ -240,12 +281,12 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
      */
     private void synchronizeOpenCommits(GitHubPullRequest pullRequest, Repository domainRepository)
     {
-        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(domainRepository.getId(),
+        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(domainRepository,
                 pullRequest.getGitHubId());
-        List<RepositoryActivityPullRequestUpdateMapping> opened = repositoryActivityDao.getPullRequestActivityByStatus(
-                repositoryPullRequest, RepositoryActivityPullRequestUpdateMapping.Status.OPENED);
+        List<RepositoryPullRequestUpdateActivityMapping> opened = repositoryActivityDao.getPullRequestActivityByStatus(domainRepository,
+                repositoryPullRequest, RepositoryPullRequestUpdateActivityMapping.Status.OPENED);
 
-        RepositoryActivityPullRequestUpdateMapping openActivity;
+        RepositoryPullRequestUpdateActivityMapping openActivity;
         if (opened.size() == 1)
         {
             openActivity = opened.get(0);
@@ -263,8 +304,8 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
         }
 
         // SHA to already stored commit
-        Map<String, RepositoryActivityCommitMapping> loadedCommits = new HashMap<String, RepositoryActivityCommitMapping>();
-        for (RepositoryActivityCommitMapping loadedCommit : openActivity.getCommits())
+        Map<String, RepositoryCommitMapping> loadedCommits = new HashMap<String, RepositoryCommitMapping>();
+        for (RepositoryCommitMapping loadedCommit : openActivity.getCommits())
         {
             loadedCommits.put(loadedCommit.getNode(), loadedCommit);
         }
@@ -272,16 +313,31 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
         Iterator<GitHubCommit> commitsIterator = pullRequest.getCommits().iterator();
         GitHubPullRequestAction openAction = gitHubPullRequestService.getOpenAction(pullRequest);
 
+        //
         GitHubCommit cursor;
+        final Map<String, Object> commitMap = new HashMap<String, Object>();
+        RepositoryCommitMapping commit;
+        final Map<String, Object> commitActivityMap = new HashMap<String, Object>();
+
         do
         {
             cursor = commitsIterator.next();
 
             if (!loadedCommits.containsKey(cursor.getSha()))
             {
-                Map<String, Object> commit = new HashMap<String, Object>();
-                map(commit, openActivity, cursor);
-                repositoryActivityDao.saveCommit(commit);
+                commit = repositoryActivityDao.getCommitByNode(domainRepository, cursor.getSha());
+                if (commit == null)
+                {
+                    mapToCommit(commitMap, cursor);
+                    commit = repositoryActivityDao.saveCommit(domainRepository, commitMap);
+                    commitMap.clear();
+
+                    mapToActivity(domainRepository, commitActivityMap, cursor, commit.getID());
+                    repositoryActivityDao.saveActivity(domainRepository, commitActivityMap);
+                    commitActivityMap.clear();
+                }
+
+                repositoryActivityDao.linkCommit(domainRepository, openActivity, commit);
 
             } else
             {
@@ -291,10 +347,10 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
 
         } while (!cursor.getSha().equals(openAction.getHeadSha()));
 
-        // deletes loaded commits, which are not already propagated
-        for (RepositoryActivityCommitMapping toDelete : loadedCommits.values())
+        // unlinks loaded commits, which are not already propagated
+        for (RepositoryCommitMapping toUnlink : loadedCommits.values())
         {
-            activeObjects.delete(toDelete);
+            repositoryActivityDao.unlinkCommit(domainRepository, openActivity, toUnlink);
         }
     }
 
@@ -326,29 +382,31 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
             return;
         }
 
-        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(domainRepository.getId(),
+        RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(domainRepository,
                 pullRequest.getGitHubId());
-        List<RepositoryActivityPullRequestUpdateMapping> updated = repositoryActivityDao.getPullRequestActivityByStatus(
-                repositoryPullRequest, RepositoryActivityPullRequestUpdateMapping.Status.UPDATED);
+        List<RepositoryPullRequestUpdateActivityMapping> updated = repositoryActivityDao.getPullRequestActivityByStatus(domainRepository,
+                repositoryPullRequest, RepositoryPullRequestUpdateActivityMapping.Status.UPDATED);
 
-        RepositoryActivityPullRequestUpdateMapping updateActivity;
+        RepositoryPullRequestUpdateActivityMapping updateActivity;
         if (updated.isEmpty())
         {
             // it is hack - because this information is not still correct
             // E.g.: Commit, Push, Commit, Open Pull Request, Push => Updated Activity will be before Opened Activity!
             // for this case the same date as opened pull request will be used!
-            Date lastUpdatedOn = openAction.getCreatedAt().before(lastCommit.getCreatedAt()) ? lastCommit.getCreatedAt() : openAction.getCreatedAt();
+            Date lastUpdatedOn = openAction.getCreatedAt().before(lastCommit.getCreatedAt()) ? lastCommit.getCreatedAt() : openAction
+                    .getCreatedAt();
 
             Map<String, Object> updateActivityParams = new HashMap<String, Object>();
-            updateActivityParams.put(RepositoryActivityPullRequestMapping.PULL_REQUEST_ID, repositoryPullRequest.getID());
-            updateActivityParams.put(RepositoryActivityPullRequestMapping.REPOSITORY_ID, repositoryPullRequest.getToRepositoryId());
-            updateActivityParams.put(RepositoryActivityPullRequestMapping.ENTITY_TYPE, RepositoryActivityPullRequestUpdateMapping.class);
-            updateActivityParams.put(RepositoryActivityPullRequestMapping.LAST_UPDATED_ON, lastUpdatedOn);
-            updateActivityParams.put(RepositoryActivityPullRequestMapping.AUTHOR, lastCommit.getCreatedBy());
-            updateActivityParams.put(RepositoryActivityPullRequestMapping.RAW_AUTHOR, lastCommit.getCreatedByName());
-            updateActivityParams.put(RepositoryActivityPullRequestUpdateMapping.STATUS,
-                    RepositoryActivityPullRequestUpdateMapping.Status.UPDATED);
-            updateActivity = (RepositoryActivityPullRequestUpdateMapping) repositoryActivityDao.saveActivity(updateActivityParams);
+            updateActivityParams.put(RepositoryPullRequestActivityMapping.PULL_REQUEST_ID, repositoryPullRequest.getID());
+            updateActivityParams.put(RepositoryPullRequestActivityMapping.REPOSITORY_ID, repositoryPullRequest.getToRepositoryId());
+            updateActivityParams.put(RepositoryPullRequestActivityMapping.ENTITY_TYPE, RepositoryPullRequestUpdateActivityMapping.class);
+            updateActivityParams.put(RepositoryPullRequestActivityMapping.LAST_UPDATED_ON, lastUpdatedOn);
+            updateActivityParams.put(RepositoryPullRequestActivityMapping.AUTHOR, lastCommit.getCreatedBy());
+            updateActivityParams.put(RepositoryPullRequestActivityMapping.RAW_AUTHOR, lastCommit.getCreatedByName());
+            updateActivityParams.put(RepositoryPullRequestUpdateActivityMapping.STATUS,
+                    RepositoryPullRequestUpdateActivityMapping.Status.UPDATED);
+            updateActivity = (RepositoryPullRequestUpdateActivityMapping) repositoryActivityDao.saveActivity(domainRepository,
+                    updateActivityParams);
 
         } else if (updated.size() == 1)
         {
@@ -365,52 +423,87 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
         //
 
         // SHA to already stored commit
-        Map<String, RepositoryActivityCommitMapping> loadedCommits = new HashMap<String, RepositoryActivityCommitMapping>();
-        for (RepositoryActivityCommitMapping loadedCommit : updateActivity.getCommits())
+        Map<String, RepositoryCommitMapping> loadedCommits = new HashMap<String, RepositoryCommitMapping>();
+        for (RepositoryCommitMapping loadedCommit : updateActivity.getCommits())
         {
             loadedCommits.put(loadedCommit.getNode(), loadedCommit);
         }
 
+        //
         GitHubCommit cursor;
+        final Map<String, Object> commitMap = new HashMap<String, Object>();
+        RepositoryCommitMapping commit;
+        final Map<String, Object> commitActivityMap = new HashMap<String, Object>();
+
         while (commitsIterator.hasNext())
         {
             cursor = commitsIterator.next();
 
             if (!loadedCommits.containsKey(cursor.getSha()))
             {
-                Map<String, Object> commit = new HashMap<String, Object>();
-                map(commit, updateActivity, cursor);
-                repositoryActivityDao.saveCommit(commit);
+                commit = repositoryActivityDao.getCommitByNode(domainRepository, cursor.getSha());
+                if (commit == null)
+                {
+                    mapToCommit(commitMap, cursor);
+                    commit = repositoryActivityDao.saveCommit(domainRepository, commitMap);
+                    commitMap.clear();
+
+                    mapToActivity(domainRepository, commitActivityMap, cursor, commit.getID());
+                    repositoryActivityDao.saveActivity(domainRepository, commitActivityMap);
+                    commitActivityMap.clear();
+                }
+
+                repositoryActivityDao.linkCommit(domainRepository, updateActivity, commit);
+
             } else
             {
                 loadedCommits.remove(cursor.getSha());
             }
         }
 
-        // deletes loaded commits, which are not already propagated
-        for (RepositoryActivityCommitMapping toDelete : loadedCommits.values())
+        // unlinks loaded commits, which are not already propagated
+        for (RepositoryCommitMapping toUnlink : loadedCommits.values())
         {
-            activeObjects.delete(toDelete);
+            repositoryActivityDao.unlinkCommit(domainRepository, updateActivity, toUnlink);
         }
 
     }
 
     /**
-     * Re-maps provided model value into the {@link RepositoryActivityCommitMapping} AO creation map.
+     * Re-maps provided model value into the {@link RepositoryPullRequestUpdateActivityToCommitMapping} AO creation map.
+     * 
+     * @param domainRepository
+     *            over which repository
+     * @param target
+     *            AO creation map
+     * @param source
+     *            repository
+     */
+    private void mapToActivity(Repository domainRepository, Map<String, Object> target, GitHubCommit source, int sourceRepositoryId)
+    {
+        target.put(RepositoryCommitActivityMapping.ENTITY_TYPE, RepositoryCommitCommitActivityMapping.class);
+        target.put(RepositoryCommitActivityMapping.COMMIT, sourceRepositoryId);
+        target.put(RepositoryCommitActivityMapping.LAST_UPDATED_ON, source.getCreatedAt());
+        target.put(RepositoryCommitActivityMapping.AUTHOR, source.getCreatedBy());
+        target.put(RepositoryCommitActivityMapping.RAW_AUTHOR, source.getCreatedByName());
+        target.put(RepositoryCommitActivityMapping.REPOSITORY_ID, domainRepository.getId());
+    }
+
+    /**
+     * Re-maps provided model value into the {@link RepositoryCommitMapping} AO creation map.
      * 
      * @param target
-     * @param activity
-     *            to which is linked this commit
+     *            AO creation map
      * @param source
+     *            commit
      */
-    private void map(Map<String, Object> target, RepositoryActivityPullRequestUpdateMapping activity, GitHubCommit source)
+    private void mapToCommit(Map<String, Object> target, GitHubCommit source)
     {
-        target.put(RepositoryActivityCommitMapping.ACTIVITY_ID, activity.getID());
-        target.put(RepositoryActivityCommitMapping.DATE, source.getCreatedAt());
-        target.put(RepositoryActivityCommitMapping.AUTHOR, source.getCreatedBy());
-        target.put(RepositoryActivityCommitMapping.RAW_AUTHOR, source.getCreatedByName());
-        target.put(RepositoryActivityCommitMapping.NODE, source.getSha());
-        target.put(RepositoryActivityCommitMapping.MESSAGE, source.getMessage());
+        target.put(RepositoryCommitMapping.DATE, source.getCreatedAt());
+        target.put(RepositoryCommitMapping.AUTHOR, source.getCreatedBy());
+        target.put(RepositoryCommitMapping.RAW_AUTHOR, source.getCreatedByName());
+        target.put(RepositoryCommitMapping.NODE, source.getSha());
+        target.put(RepositoryCommitMapping.MESSAGE, source.getMessage());
     }
 
 }

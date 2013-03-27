@@ -41,7 +41,7 @@
         <jira.data.version>5.0.1</jira.data.version>
     -->
         
-        <ao.version>0.19.7</ao.version>
+        <ao.version>0.19.6</ao.version>
         <streams.version>5.0.1</streams.version>
         <greenhopper.version>6.1.3.2</greenhopper.version>
 

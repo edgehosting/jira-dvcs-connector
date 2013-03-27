@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
-import net.java.ao.OneToMany;
+import net.java.ao.ManyToMany;
 import net.java.ao.schema.Table;
 
-@Table("PR_UPDATE")
-public interface RepositoryActivityPullRequestUpdateMapping extends RepositoryActivityPullRequestMapping
+@Table("ACTIVITY_PR_UPDATE")
+public interface RepositoryPullRequestUpdateActivityMapping extends RepositoryPullRequestActivityMapping
 {
     String STATUS = "STATUS";
 
@@ -18,8 +18,8 @@ public interface RepositoryActivityPullRequestUpdateMapping extends RepositoryAc
 
     Status getStatus();
 
-    @OneToMany
-    RepositoryActivityCommitMapping[] getCommits();
+    @ManyToMany(RepositoryPullRequestUpdateActivityToCommitMapping.class)
+    RepositoryCommitMapping[] getCommits();
 
     void setStatus(Status status);
 

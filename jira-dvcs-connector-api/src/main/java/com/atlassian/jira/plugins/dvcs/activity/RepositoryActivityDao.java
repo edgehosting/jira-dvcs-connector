@@ -9,41 +9,57 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 public interface RepositoryActivityDao
 {
     // C-U-D
-    RepositoryActivityPullRequestMapping saveActivity(Map<String, Object> activity);
+    RepositoryActivityMapping saveActivity(Repository domain, Map<String, Object> activity);
 
-    RepositoryPullRequestMapping savePullRequest(Map<String, Object> activity);
+    RepositoryPullRequestMapping savePullRequest(Repository domain, Map<String, Object> activity);
+
+    /**
+     * Updates issue keys related to commits of provided repository.
+     * 
+     * @param domain
+     */
+    void updateCommitIssueKeys(Repository domain);
 
     /**
      * Updates issue keys related to the provided pull request to reflect current state.
      * 
      * @param pullRequestId
      */
-    void updatePullRequestIssueKeys(int pullRequestId);
+    void updatePullRequestIssueKeys(Repository domain, int pullRequestId);
 
-    void removeAll(final Repository forRepository);
+    void removeAll(Repository domain);
 
-    RepositoryActivityCommitMapping saveCommit(Map<String, Object> commit);
+    RepositoryCommitMapping saveCommit(Repository domain, Map<String, Object> commit);
 
-    void updateActivityStatus(int activityId, RepositoryActivityPullRequestUpdateMapping.Status status);
+    void updateActivityStatus(Repository domain, int activityId, RepositoryPullRequestUpdateActivityMapping.Status status);
+
+    void linkCommit(Repository domain, RepositoryPullRequestUpdateActivityMapping activity, RepositoryCommitMapping commit);
+
+    void unlinkCommit(Repository domain, RepositoryPullRequestUpdateActivityMapping activity, RepositoryCommitMapping commit);
 
     // R
-    List<RepositoryActivityPullRequestMapping> getRepositoryActivityForIssue(String issueKey);
+    List<RepositoryActivityMapping> getRepositoryActivityForIssue(String issueKey);
 
     RepositoryPullRequestMapping findRequestById(int localId);
 
-    RepositoryPullRequestMapping findRequestByRemoteId(int repositoryId, long remoteId);
+    RepositoryPullRequestMapping findRequestByRemoteId(Repository domain, long remoteId);
 
-    Set<String> getExistingIssueKeysMapping(Integer pullRequestId);
+    Set<String> getExistingIssueKeysMapping(Repository domain, Integer pullRequestId);
 
-    RepositoryActivityCommitMapping getCommit(int pullRequesCommitId);
+    RepositoryCommitMapping getCommit(Repository domain, int pullRequesCommitId);
 
-    RepositoryActivityCommitMapping getCommitByNode(int pullRequestId, String node);
+    RepositoryCommitMapping getCommitByNode(Repository domain, int pullRequestId, String node);
 
-    RepositoryActivityPullRequestUpdateMapping getPullRequestActivityByRemoteId(RepositoryPullRequestMapping pullRequest, String remoteId);
+    RepositoryCommitMapping getCommitByNode(Repository domain, String node);
+    
+    List<RepositoryCommitCommentActivityMapping> getCommitComments(Repository domain, RepositoryCommitMapping commit);
 
-    List<RepositoryActivityPullRequestUpdateMapping> getPullRequestActivityByStatus(RepositoryPullRequestMapping pullRequest,
-            RepositoryActivityPullRequestUpdateMapping.Status status);
+    RepositoryPullRequestUpdateActivityMapping getPullRequestActivityByRemoteId(Repository domain,
+            RepositoryPullRequestMapping pullRequest, String remoteId);
 
-    List<RepositoryActivityPullRequestCommentMapping> getPullRequestComments(RepositoryPullRequestMapping pullRequest);
+    List<RepositoryPullRequestUpdateActivityMapping> getPullRequestActivityByStatus(Repository domain,
+            RepositoryPullRequestMapping pullRequest, RepositoryPullRequestUpdateActivityMapping.Status status);
+
+    List<RepositoryPullRequestCommentActivityMapping> getPullRequestComments(Repository domain, RepositoryPullRequestMapping pullRequest);
 
 }

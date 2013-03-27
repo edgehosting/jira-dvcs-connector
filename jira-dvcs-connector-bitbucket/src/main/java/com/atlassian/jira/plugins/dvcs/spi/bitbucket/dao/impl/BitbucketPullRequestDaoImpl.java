@@ -6,7 +6,7 @@ import java.util.Map;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityToCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestContextMapping;
@@ -101,9 +101,9 @@ public class BitbucketPullRequestDaoImpl implements BitbucketPullRequestDao
                 
                 ActiveObjectsUtils.delete(
                         activeObjects,
-                        RepositoryActivityCommitMapping.class,
+                        RepositoryPullRequestUpdateActivityToCommitMapping.class,
                         Query.select()
-                        		.alias(RepositoryActivityCommitMapping.class, "UPDATE_COMMIT")
+                        		.alias(RepositoryPullRequestUpdateActivityToCommitMapping.class, "UPDATE_COMMIT")
                                 .alias(BitbucketPullRequestCommitMapping.class, "COMMIT")
                                 .alias(RepositoryPullRequestMapping.class, "PR")
                                 .join(BitbucketPullRequestCommitMapping.class,
@@ -111,7 +111,7 @@ public class BitbucketPullRequestDaoImpl implements BitbucketPullRequestDao
                                 .join(RepositoryPullRequestMapping.class,
                                         "COMMIT." + BitbucketPullRequestCommitMapping.PULL_REQUEST_ID + " = PR.ID")
                                 .where("PR." + RepositoryPullRequestMapping.TO_REPO_ID + " = ? AND UPDATE_COMMIT." +
-                                			RepositoryActivityCommitMapping.ACTIVITY_ID + " is null", repositoryId));
+                                			RepositoryPullRequestUpdateActivityToCommitMapping.ACTIVITY + " is null", repositoryId));
                 
                 ActiveObjectsUtils.delete(
                         activeObjects,

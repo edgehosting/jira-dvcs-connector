@@ -7,6 +7,8 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitCommentMapping;
+import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitLineCommentMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubEntityMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubEventMapping;
@@ -20,6 +22,8 @@ import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPushMappin
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitCommentService;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitLineCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestCommentService;
@@ -39,64 +43,78 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, RepositoryActivityDao,
-     *      ColumnNameResolverService)
+     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
+     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
      */
     private final ActiveObjects activeObjects;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, RepositoryActivityDao,
-     *      ColumnNameResolverService)
+     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
+     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
      */
     private final GitHubRepositoryService gitHubRepositoryService;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, RepositoryActivityDao,
-     *      ColumnNameResolverService)
+     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
+     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
      */
     private final GitHubEventService gitHubEventService;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, RepositoryActivityDao,
-     *      ColumnNameResolverService)
+     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
+     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
      */
     private final GitHubPullRequestService gitHubPullRequestService;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, RepositoryActivityDao,
-     *      ColumnNameResolverService)
+     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
+     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
      */
     private final GitHubPullRequestCommentService gitHubPullRequestCommentService;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, RepositoryActivityDao,
-     *      ColumnNameResolverService)
+     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
+     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
      */
     private final GitHubPullRequestLineCommentService gitHubPullRequestLineCommentService;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, RepositoryActivityDao,
-     *      ColumnNameResolverService)
+     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
+     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
      */
     private final GitHubCommitService gitHubCommitService;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, RepositoryActivityDao,
-     *      ColumnNameResolverService)
+     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
+     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
+     */
+    private final GitHubCommitCommentService gitHubCommitCommentService;
+
+    /**
+     * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
+     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
+     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
+     */
+    private final GitHubCommitLineCommentService gitHubCommitLineCommentService;
+
+    /**
+     * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
+     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
+     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
      */
     private final RepositoryActivityDao repositoryActivityDao;
 
     /**
      * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, RepositoryActivityDao,
-     *      ColumnNameResolverService)
+     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
+     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
      */
     private final ColumnNameResolverService columnNameResolverService;
 
@@ -122,6 +140,10 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
      *            injected {@link GitHubPullRequestLineCommentService} dependency
      * @param gitHubCommitService
      *            injected {@link GitHubCommitService} dependency
+     * @param gitHubCommitCommentService
+     *            injected {@link GitHubCommitCommentService} dependency
+     * @param gitHubCommitLineCommentService
+     *            injected {@link GitHubCommitLineCommentService} dependency
      * @param repositoryActivityDao
      *            injected {@link RepositoryActivityDao} dependency
      * @param columnNameResolverService
@@ -135,6 +157,8 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             GitHubPullRequestCommentService gitHubPullRequestCommentService, //
             GitHubPullRequestLineCommentService gitHubPullRequestLineCommentService, //
             GitHubCommitService gitHubCommitService, //
+            GitHubCommitCommentService gitHubCommitCommentService, //
+            GitHubCommitLineCommentService gitHubCommitLineCommentService, //
             RepositoryActivityDao repositoryActivityDao, //
             ColumnNameResolverService columnNameResolverService //
     )
@@ -146,6 +170,8 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         this.gitHubPullRequestCommentService = gitHubPullRequestCommentService;
         this.gitHubPullRequestLineCommentService = gitHubPullRequestLineCommentService;
         this.gitHubCommitService = gitHubCommitService;
+        this.gitHubCommitCommentService = gitHubCommitCommentService;
+        this.gitHubCommitLineCommentService = gitHubCommitLineCommentService;
         this.repositoryActivityDao = repositoryActivityDao;
 
         this.columnNameResolverService = columnNameResolverService;
@@ -168,14 +194,20 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
         gitHubEventService.synchronize(domainRepository, domain);
         gitHubPullRequestService.synchronize(domainRepository, domain);
+
+        gitHubCommitService.synchronize(domainRepository, domain);
+        gitHubCommitCommentService.synchronize(domainRepository, domain);
+        gitHubCommitLineCommentService.synchronize(domainRepository, domain);
+        repositoryActivityDao.updateCommitIssueKeys(domainRepository);
+
         for (GitHubPullRequest pullRequest : gitHubPullRequestService.getByRepository(domain))
         {
             gitHubPullRequestCommentService.synchronize(domainRepository, pullRequest);
             gitHubPullRequestLineCommentService.synchronize(domainRepository, pullRequest);
             gitHubCommitService.synchronize(domainRepository, domain, pullRequest);
 
-            repositoryActivityDao.updatePullRequestIssueKeys(repositoryActivityDao.findRequestByRemoteId(domainRepository.getId(),
-                    pullRequest.getGitHubId()).getID());
+            repositoryActivityDao.updatePullRequestIssueKeys(domainRepository,
+                    repositoryActivityDao.findRequestByRemoteId(domainRepository, pullRequest.getGitHubId()).getID());
         }
     }
 
@@ -192,8 +224,9 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         @SuppressWarnings("unchecked")
         Class<? extends GitHubEntityMapping>[] entitiesForClean = (Class<? extends GitHubEntityMapping>[]) new Class[] {
                 GitHubPullRequestLineCommentMapping.class, GitHubPullRequestCommentMapping.class, GitHubPullRequestActionMapping.class,
-                GitHubPullRequestCommitMapping.class, GitHubPullRequestMapping.class, GitHubPushCommitMapping.class,
-                GitHubCommitMapping.class, GitHubPushMapping.class, GitHubUserMapping.class, GitHubEventMapping.class };
+                GitHubPullRequestCommitMapping.class, GitHubPullRequestMapping.class, GitHubCommitCommentMapping.class,
+                GitHubCommitLineCommentMapping.class, GitHubPushCommitMapping.class, GitHubCommitMapping.class, GitHubPushMapping.class,
+                GitHubUserMapping.class, GitHubEventMapping.class };
 
         for (Class<? extends GitHubEntityMapping> entityToClean : entitiesForClean)
         {

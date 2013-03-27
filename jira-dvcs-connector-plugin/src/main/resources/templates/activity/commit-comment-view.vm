@@ -1,0 +1,25 @@
+<div class="dvcs comment">
+    <article data-comment-id="16415">
+        <header>
+            <a href="$user.url"><img class="avatar avatar32" src="$user.avatar"></a>
+            <a href="$user.url" class="author" title="$user.rawAuthor">$user.fullName</a> 
+            <span class="aui-lozenge pull-request-state aui-lozenge-success" title="">commented</span>
+            on a commit <a href="$commitComment.commentUrl">$commitComment.commit.message</a> 
+            #if($commitComment.file)
+                on a file <code>$commitComment.file</code>
+            #end
+        </header>
+            <div class="comment-content">$commitComment.message</div>
+            <ul class="comment-actions">
+                <li>
+                    <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
+                </li>
+                <li>
+                    <time title="$commitComment.lastUpdatedOn">$velocityUtils.getRelativePastDate($commitComment.lastUpdatedOn)</time>
+                </li>
+            </ul>
+        </article>
+        <ol class="child-comments iterable">
+        </ol>
+
+</div>

@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityCommitMapping;
+import java.util.List;
+
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityToCommitMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
@@ -50,6 +52,24 @@ public interface GitHubCommitService
     GitHubCommit getBySha(GitHubRepository domain, GitHubRepository repository, String sha);
 
     /**
+     * @param domain
+     *            over which repository
+     * @param first
+     *            offset of result
+     * @param count
+     *            size of result
+     * @return all {@link GitHubCommit}s of provided repository
+     */
+    List<GitHubCommit> getAll(GitHubRepository domain, int first, int count);
+
+    /**
+     * @param domain
+     *            over which repository
+     * @return Rows count projection of {@link #getAll(GitHubRepository, int, int)}.
+     */
+    int getAllCount(GitHubRepository domain);
+
+    /**
      * @param domainRepository
      *            for repository
      * @param domain
@@ -63,7 +83,17 @@ public interface GitHubCommitService
     GitHubCommit fetch(Repository domainRepository, GitHubRepository domain, GitHubRepository repository, String sha);
 
     /**
-     * Synchronizes {@link GitHubPullRequest#getCommits()} with {@link RepositoryActivityCommitMapping} holder.
+     * Synchronizes all commits of provided repository with {@link RepositoryPullRequestUpdateActivityToCommitMapping}.
+     * 
+     * @param domainRepository
+     *            for repository
+     * @param domain
+     *            for repository
+     */
+    void synchronize(Repository domainRepository, GitHubRepository domain);
+
+    /**
+     * Synchronizes {@link GitHubPullRequest#getCommits()} with {@link RepositoryPullRequestUpdateActivityToCommitMapping} holder.
      * 
      * @param domainRepository
      *            for repository
