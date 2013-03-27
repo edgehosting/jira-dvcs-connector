@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitCommentActivityMapping;
@@ -137,7 +139,9 @@ public class GitHubCommitCommentServiceImpl implements GitHubCommitCommentServic
                 for (RepositoryCommitCommentActivityMapping comment : repositoryActivityDao.getCommitComments(domainRepository,
                         repositoryCommit))
                 {
-                    idToLoaded.put(comment.getRemoteId(), comment);
+                    if (StringUtils.isEmpty(comment.getFile())) {
+                        idToLoaded.put(comment.getRemoteId(), comment);
+                    }
                 }
 
                 for (GitHubCommitComment gitHubCommitComment : gitHubCommitCommentDAO.getByCommit(domain, commentedCommit))
