@@ -115,10 +115,8 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         } finally
         {
             pullRequestContextManager.clear(forRepository);
+            repositoryDao.setLastActivitySyncDate(forRepository.getId(), lastActivitySyncDate);
         }
-
-        // { finally
-        repositoryDao.setLastActivitySyncDate(forRepository.getId(), lastActivitySyncDate);
     }
 
     // -------------------------------------------------------------------------------------------------------
