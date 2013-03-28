@@ -212,77 +212,75 @@
         </h4>  
 		#if($action.isInvalidOrganization($org)) <span class="dvcs-invalid-organization error">Invalid credentials, please regenerate access token</span> #end
         <div class="dvcs-org-container aui-toolbar">
-                
             <ul class="toolbar-group">
-            
                 <li class="toolbar-item toolbar-dropdown dvcs-organization-controls-tool">
-                
                     <div class="aui-dd-parent">
-                        <a title="Show Settings" class="toolbar-trigger aui-dd-trigger" href="#" style="heiht: 24px;">
-                                    <span class="icon-tools-small" style="float: left;"></span>
-                                    <span class="icon icon-dropdown" ></span>
-                        </a>
-                            <ul id="dvcs-organization-controls-$org.id" class=" aui-dropdown dvcs-organization-controls"  >
-                                       
-                               <li class="dropdown-item">
-                                 <div class="dvcs-gearmenu-nohide">
-                                     <input id="org_autolink_check$org.id" 
-                                             class="aui" $!orgAutolink 
-                                             type="checkbox" name="org_autolink_check$org.id"
-                                             onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" />
-                                     <label for="org_autolink_check$org.id"> Autolink new repositories</label>
-                                 </div>
+
+                        <button title="Show Settings" class="toolbar-trigger aui-dd-trigger">
+                            <span class="icon-tools-small"></span>
+                        </button>
+                    
+                        <ul id="dvcs-organization-controls-$org.id" class=" aui-dropdown dvcs-organization-controls"  >
+                                   
+                           <li class="dropdown-item">
+                             <div class="dvcs-gearmenu-nohide">
+                                 <input id="org_autolink_check$org.id" 
+                                         class="aui" $!orgAutolink 
+                                         type="checkbox" name="org_autolink_check$org.id"
+                                         onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" />
+                                 <label for="org_autolink_check$org.id"> Autolink new repositories</label>
+                             </div>
+                            </li>
+
+                           <li class="dropdown-item">
+                             <div class="dvcs-gearmenu-nohide" id="org_global_smarts_wrap$org.id">
+                                 <input id="org_global_smarts$org.id" 
+                                         class="aui" $!orgSmartcommitsOnNewRepos $!orgSmartcommitsOnNewReposDisabled
+                                         type="checkbox" name="org_autolink_check$org.id"
+                                         onclick="javascript: enableSmartcommitsOnNewRepos($org.id, 'org_global_smarts$org.id');" />
+                                 <label for="org_global_smarts$org.id"> Enable smart commits on new repositories</label>
+                             </div>
+                            </li>
+                            
+                            <li class="dropdown-item">
+                                  <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh list</a>
+                            </li>
+                            
+                            #if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
+                                <li class="dropdown-item">
+                                  <div class="dvcs-gearmenu-nohide">
+                                    <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id); return false;"> Configure default groups</a>
+                                  </div>
                                 </li>
-    
-                               <li class="dropdown-item">
-                                 <div class="dvcs-gearmenu-nohide" id="org_global_smarts_wrap$org.id">
-                                     <input id="org_global_smarts$org.id" 
-                                             class="aui" $!orgSmartcommitsOnNewRepos $!orgSmartcommitsOnNewReposDisabled
-                                             type="checkbox" name="org_autolink_check$org.id"
-                                             onclick="javascript: enableSmartcommitsOnNewRepos($org.id, 'org_global_smarts$org.id');" />
-                                     <label for="org_global_smarts$org.id"> Enable smart commits on new repositories</label>
-                                 </div>
-                                </li>
+                             #end
+                            
+                            #if( !$org.isIntegratedAccount() )
                                 
                                 <li class="dropdown-item">
-                                      <a  href="#" onclick="javascript:syncRepositoryList($org.id,'$org.name'); return false;">Refresh list</a>
+                                
+                                     #if($org.dvcsType == "bitbucket")
+                                
+                                       #if ($action.isBitbucketOauthRequired())
+                                         <a href="$baseurl/secure/admin/ConfigureBitbucketOAuth!default.jspa?atl_token=$atl_token">Configure OAuth</a>
+                                       #else
+                                         <a href="$baseurl/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+                                       #end
+
+                                     #elseif ($org.dvcsType == "github")
+                                       <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+                                     #else
+                                       <a href="$baseurl/secure/admin/RegenerateGithubEnterpriseOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+                                     #end
+                                     </li>
+    
+                                <li class="dropdown-item">
+                                      <a  class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Delete</a>
                                 </li>
                                 
-                                #if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
-                                    <li class="dropdown-item">
-                                      <div class="dvcs-gearmenu-nohide">
-                                        <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id); return false;"> Configure default groups</a>
-                                      </div>
-                                    </li>
-                                 #end
-                                
-                                #if( !$org.isIntegratedAccount() )
-                                    
-                                    <li class="dropdown-item">
-                                    
-                                         #if($org.dvcsType == "bitbucket")
-                                    
-                                           #if ($action.isBitbucketOauthRequired())
-                                             <a href="$baseurl/secure/admin/ConfigureBitbucketOAuth!default.jspa?atl_token=$atl_token">Configure OAuth</a>
-                                           #else
-                                             <a href="$baseurl/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
-                                           #end
-    
-                                         #elseif ($org.dvcsType == "github")
-                                           <a href="$baseurl/secure/admin/RegenerateGithubOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
-                                         #else
-                                           <a href="$baseurl/secure/admin/RegenerateGithubEnterpriseOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
-                                         #end
-                                         </li>
-        
-                                    <li class="dropdown-item">
-                                          <a  class="dvcs-control-delete-org" href="#" onclick="javascript: deleteOrganization('$org.id','$org.name'); return false;" >Delete</a>
-                                    </li>
-                                    
-                                #end
-                             </ul>
-                        </div>
-                    </li>
+                            #end
+                         </ul>
+                    </div>
+                </li>
             </ul>
         </div>
         <div class="dvcs-dclear"></div>

@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -271,7 +274,17 @@ public class BaseRemoteRequestor implements RemoteRequestor
             
             if ( toBeThrown instanceof RetryableRequestException )
             {
-            	log.warn("Failed to properly execute request [{}], status code {} : {}", new Object[] {method.getMethod(), statusCode, method.getURI()});
+                String responseAsString = null;
+                if (httpResponse.getEntity() != null)
+                {
+                    InputStream is = httpResponse.getEntity().getContent();
+                    StringWriter writer = new StringWriter();
+                    IOUtils.copy(is, writer, "UTF-8");
+                    responseAsString = writer.toString();
+                }
+
+                log.warn("Failed to properly execute request [{} {}], Response code {}, response: {}", 
+                        new Object[] {method.getMethod(), method.getURI(), statusCode, responseAsString });
             }
             throw toBeThrown;
         }
