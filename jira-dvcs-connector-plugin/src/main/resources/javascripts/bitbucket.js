@@ -152,11 +152,11 @@ function updateSyncStatus(repo) {
 }
 
 function getLastCommitRelativeDateHtml(daysAgo) {
-	    var html = "";
-	    if (daysAgo) {
-	        html = new Date(daysAgo).toDateString();
-	    }
-	    return html;
+    var html = "";
+    if (daysAgo) {
+        html = new Date(daysAgo).toDateString();
+    }
+    return html;
 }
 
 function showAddRepoDetails(show) {
