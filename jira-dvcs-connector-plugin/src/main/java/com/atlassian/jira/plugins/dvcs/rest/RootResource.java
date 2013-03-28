@@ -244,7 +244,7 @@ public class RootResource
     		repositoryService.syncRepositoryList(organization);
     	} catch (SourceControlException e)
     	{
-    		log.error(e.getMessage(), e);
+    		log.error("Could not refresh repository list", e);
     	}
    		return Response.noContent().build();
     }

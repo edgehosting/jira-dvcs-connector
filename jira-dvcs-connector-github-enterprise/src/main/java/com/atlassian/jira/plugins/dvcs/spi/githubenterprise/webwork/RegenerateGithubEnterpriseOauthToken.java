@@ -4,18 +4,21 @@ import static com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpr
 
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 import com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken;
 import com.atlassian.sal.api.ApplicationProperties;
 
 public class RegenerateGithubEnterpriseOauthToken extends RegenerateGithubOauthToken
 {
-    public RegenerateGithubEnterpriseOauthToken(OrganizationService organizationService, OAuthStore oAuthStore,
+    private static final long serialVersionUID = 1917845030750389584L;
+
+    public RegenerateGithubEnterpriseOauthToken(OrganizationService organizationService, RepositoryService repositoryService, OAuthStore oAuthStore,
             ApplicationProperties applicationProperties)
     {
-        super(organizationService, applicationProperties, oAuthStore);
+        super(organizationService, repositoryService, applicationProperties, oAuthStore);
     }
-	
+    
     @Override
     protected GithubOAuthUtils getOAuthUtils()
     {
