@@ -156,18 +156,18 @@ public class GithubCommunicator implements DvcsCommunicator
             return new ArrayList<Repository>(repositories);
         } catch ( RequestException e)
         {
-        	if ( e.getStatus() == 401 )
-        	{
-        		throw new SourceControlException.UnauthorisedException("Invalid credentials", e);
-        	}
-        	throw new SourceControlException("Error retrieving list of repositories", e);
+            if ( e.getStatus() == 401 )
+            {
+                throw new SourceControlException.UnauthorisedException("Invalid credentials", e);
+            }
+            throw new SourceControlException("Error retrieving list of repositories", e);
         }
         catch (IOException e)
         {
             throw new SourceControlException("Error retrieving list of repositories", e);
         }
     }
-
+ 
     @Override
     public Changeset getChangeset(Repository repository, String node)
     {
@@ -177,6 +177,10 @@ public class GithubCommunicator implements DvcsCommunicator
         try
         {
             RepositoryCommit commit = commitService.getCommit(repositoryId, node);
+            
+            //TODO Workaround for BBC-455, we need more sophisticated solution that prevents connector to hit GitHub too often when downloading changesets
+            checkRequestRateLimit(commitService.getClient());
+            
             return GithubChangesetFactory.transform(commit, repository.getId(), null);
         } catch (IOException e)
         {
@@ -184,10 +188,41 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
     
+    private void checkRequestRateLimit(GitHubClient gitHubClient)
+    {
+        if (gitHubClient == null)
+        {
+            return;
+        }
+        
+        int requestLimit = gitHubClient.getRequestLimit();
+        int remainingRequests = gitHubClient.getRemainingRequests();
+        
+        if (requestLimit == -1 || remainingRequests == -1)
+        {
+            return;
+        }
+        
+        double threshold = Math.ceil(0.01f * requestLimit);
+        if (remainingRequests<threshold)
+        {
+            long sleepTime = (long) (Math.pow( (remainingRequests / threshold) - 1, 2) * 60 * 60);
+            log.info("Sleeping for " + sleepTime + " s to avoid request rate limit overrun");
+            try
+            {
+                //TODO when sleeping the synchronization cannot be cancelled
+                Thread.sleep(sleepTime * 1000);
+            } catch (InterruptedException e)
+            {
+                //nop
+            }
+        }
+    }
+    
     @Override
     public Changeset getDetailChangeset(Repository repository, Changeset changeset)
     {
-    	return changeset;
+        return changeset;
     }
 
     public PageIterator<RepositoryCommit> getPageIterator(Repository repository, String branch)
