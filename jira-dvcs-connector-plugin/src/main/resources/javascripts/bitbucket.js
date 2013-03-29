@@ -484,13 +484,13 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 				  if (registration.callBackUrlInstalled != checkedValue) {
 
 					var popup = new AJS.Dialog({
-					 		width: 500, 
-					 		height: 300, 
+					 		width: 600, 
+					 		height: 400, 
 					 		id: "dvcs-postcommit-hook-registration-dialog",
 					 		closeOnOutsideClick: false
 				    });
 
-					popup.addHeader("Post Commit Hook");
+					popup.addHeader((checkedValue ? "Linking" : "Unlinking") + " the repository");
 					popup.addPanel("Registration", jira.dvcs.connector.plugin.soy.postCommitHookDialog({
 												'registering': checkedValue,
 												'callbackUrl': registration.callBackUrl
