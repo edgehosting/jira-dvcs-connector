@@ -25,6 +25,7 @@ import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.CommitService;
