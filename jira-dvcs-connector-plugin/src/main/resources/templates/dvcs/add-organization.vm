@@ -243,7 +243,7 @@
                             </li>
                             
                             <li class="dropdown-item">
-                                  <a  href="$baseurl/secure/admin/SyncRepositoryListAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token">Refresh list</a>
+                              <a  href="#" onclick="javascript:syncRepositoryList($org.id,'$org.name'); return false;">Refresh list</a>
                             </li>
                             
                             #if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
@@ -274,7 +274,7 @@
                                      </li>
     
                                 <li class="dropdown-item">
-                                      <a  class="dvcs-control-delete-org" href="$baseurl/secure/admin/DeleteOrganizationAction.jspa?organizationId=${org.id}&amp;atl_token=$atl_token" onclick="javascript: return confirmDeleteOrganization('$org.name');" >Delete</a>
+                                  <a  class="dvcs-control-delete-org" href="#" onclick="javascript: deleteOrganization('$org.id','$org.name'); return false;" >Delete</a>
                                 </li>
                                 
                             #end
