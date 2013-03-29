@@ -408,23 +408,8 @@ html[xmlns] .dvcs-dclear {
 * html .dvcs-dclear {
 	height: 1%;
 }
-.dvcs-organization-controls-tool a.aui-dd-trigger {
-	padding: 3px !important;
-}
-.dvcs-organization-controls-tool .icon-tools-small {
-	height: 14px;
-	width: 16px;
-	position: relative;
-	top: 4px;
-	padding: 0px !important;
-	margin: 0px !important;
 
-}
-.dvcs-organization-controls-tool .icon-dropdown {
-	padding: 0px !important;
-	margin: 0px 4px 0px 3px !important;
-	
-}
+
 #bitbucket-form-section {
 	margin-top: 10px;
 }
@@ -497,3 +482,28 @@ div.jira-dvcs-connector-plugin.forceSyncDialog li {
 div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	margin: 1ex 2.5ex;
 }
+
+.dvcs-organization-controls-tool button.toolbar-trigger.aui-dd-trigger {
+  height: 30px;
+  padding: 0px 12px 0px 2px !important;
+  margin: 0px !important;
+}
+
+.dvcs-organization-controls-tool .icon-tools-small {
+    height: 14px;
+    width: 16px;
+    padding: 0px !important;
+    margin: 0px 6px 0px 0px !important;
+    float: left;
+}
+.dvcs-organization-controls-tool button:after {
+  border: 4px solid transparent;
+  border-top-color: #111;
+  content: "";
+  position: absolute;
+  margin-top: 3px;
+}
+
+
+
+
