@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
@@ -59,9 +61,9 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
         } else
         {
         	String url = currentPage == null ? createUrl() : currentPage.getNext();
-        	if (url == null || url.trim().isEmpty())
+        	if (StringUtils.isBlank(url))
         	{
-        		return;
+        	    return;
         	}
             requestor.get(url, null, createResponseCallback());
         }

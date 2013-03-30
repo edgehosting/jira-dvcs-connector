@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scri
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.scribe.extractors.HeaderExtractorImpl;
@@ -76,7 +77,7 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
 
     public static Token generateAccessTokenObject(String accessToken)
     {
-        if (accessToken != null && !accessToken.trim().isEmpty())
+        if (StringUtils.isBlank(accessToken))
         {
             String[] parts = accessToken.split("&");
             if (parts.length == 2)
