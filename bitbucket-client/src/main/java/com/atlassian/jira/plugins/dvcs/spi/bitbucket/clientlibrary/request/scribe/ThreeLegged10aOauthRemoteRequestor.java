@@ -77,7 +77,7 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
 
     public static Token generateAccessTokenObject(String accessToken)
     {
-        if (StringUtils.isBlank(accessToken))
+        if (StringUtils.isNotBlank(accessToken))
         {
             String[] parts = accessToken.split("&");
             if (parts.length == 2)
