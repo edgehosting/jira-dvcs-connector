@@ -40,7 +40,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     public BitbucketRepositoryActivitySynchronizer(BitbucketClientRemoteFactory clientFactory, RepositoryActivityDao dao,
             RepositoryDao repositoryDao, BitbucketPullRequestDao pullRequestDao)
     {
-        super();
         this.clientFactory = clientFactory;
         this.dao = dao;
         this.repositoryDao = repositoryDao;
