@@ -9,7 +9,7 @@ import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
  */
 public interface SynchronisationOperation
 {
-	void synchronise();
+    void synchronise();
 
     public boolean isSoftSync();
 

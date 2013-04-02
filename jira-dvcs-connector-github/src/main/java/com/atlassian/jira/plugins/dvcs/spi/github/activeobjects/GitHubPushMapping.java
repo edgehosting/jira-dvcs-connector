@@ -55,7 +55,6 @@ public interface GitHubPushMapping extends GitHubEntityMapping
     void setRepository(GitHubRepositoryMapping repository);
 
     /**
-     * 
      * @return {@link GitHubPush#getRef()}
      */
     @NotNull
@@ -68,10 +67,8 @@ public interface GitHubPushMapping extends GitHubEntityMapping
     void setRef(String ref);
 
     /**
-     * 
      * @return {@link GitHubPush#getBefore()}
      */
-    @NotNull
     String getBefore();
 
     /**
@@ -81,7 +78,6 @@ public interface GitHubPushMapping extends GitHubEntityMapping
     void setBefore(String before);
 
     /**
-     * 
      * @return {@link GitHubPush#getHead()}
      */
     @NotNull

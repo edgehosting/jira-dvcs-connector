@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -7,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.model.SyncProgress;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
 /**
  * Returning type {@link Repository} is enriched with synchronization status by default.
@@ -71,9 +73,9 @@ public interface RepositoryService
     /**
      * synchronization of changesets in given repository
      * @param repositoryId repositoryId
-     * @param softSync
+     * @param flags
      */
-    void sync(int repositoryId, boolean softSync);
+    void sync(int repositoryId, EnumSet<SynchronizationFlag> flags);
 
 	/**
 	 * Enables/links the repository to the jira projects. This will also

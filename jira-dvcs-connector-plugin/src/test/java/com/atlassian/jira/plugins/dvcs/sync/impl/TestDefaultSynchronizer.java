@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.concurrent.Executors;
 
 import org.mockito.ArgumentCaptor;
@@ -32,6 +33,7 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 
 /**
@@ -76,7 +78,7 @@ public final class TestDefaultSynchronizer
                 Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
         SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
-                mock(RepositoryService.class), changesetServiceMock, true, activitySyncerMock); // soft sync
+                mock(RepositoryService.class), changesetServiceMock, activitySyncerMock, EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS)); // soft sync
 
         Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
         synchronizer.synchronize(repositoryMock, synchronisationOperation);
@@ -124,7 +126,7 @@ public final class TestDefaultSynchronizer
                     }
                   });
         SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
-                mock(RepositoryService.class), changesetServiceMock, true, activitySyncerMock); // soft sync
+                mock(RepositoryService.class), changesetServiceMock, activitySyncerMock, EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS)); // soft sync
 
         Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
         synchronizer.synchronize(repositoryMock, synchronisationOperation);

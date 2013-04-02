@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,6 +18,7 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
@@ -27,31 +29,32 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     private final RepositoryService repositoryService;
     private final DefaultProgress progress;
     private final ChangesetService changesetService;
-    private final boolean softSync;
 
     private final DvcsCommunicator communicator;
 
     private final RepositoryActivitySynchronizer activitySynchronizer;
 
+    private final EnumSet<SynchronizationFlag> synchronizationFlags;
+
     public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository,
-            RepositoryService repositoryService, ChangesetService changesetService, boolean softSync,
-            RepositoryActivitySynchronizer activitySynchronizer)
+            RepositoryService repositoryService, ChangesetService changesetService,
+            RepositoryActivitySynchronizer activitySynchronizer, EnumSet<SynchronizationFlag> synchronizationFlags)
     {
         this.communicator = communicator;
         this.repository = repository;
         this.repositoryService = repositoryService;
         this.changesetService = changesetService;
         this.progress = new DefaultProgress();
-        this.softSync = softSync;
         this.activitySynchronizer = activitySynchronizer;
+        this.synchronizationFlags = synchronizationFlags;
     }
 
     @Override
     public void synchronise()
     {
-    	log.debug("Operation going to sync repo " + repository.getSlug() + " softs sync = " + softSync );
+    	log.debug("Operation going to sync repo " + repository.getSlug() + " softs sync = " + isSoftSync() );
     	
-    	if (!softSync) 
+    	if (!isSoftSync()) 
         {
             // we are doing full sync, lets delete all existing changesets
             // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
@@ -60,6 +63,17 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             repositoryService.save(repository);
         }
 
+    	if (synchronizationFlags.contains(SynchronizationFlag.SYNC_CHANGESETS)) {
+    	    syncChangesets();
+    	}
+    	
+    	if (synchronizationFlags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS)) {
+    	    syncActivity();
+    	}
+    }
+
+    private void syncChangesets()
+    {
         int changesetCount = 0;
         int jiraCount = 0;
 
@@ -124,7 +138,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                         //--------------------------------------------
                         // mark smart commit can be processed
                         // + store extracted project key for incremental linking
-                        if (softSync && !changesetAlreadyMarkedForSmartCommits)
+                        if (isSoftSync() && !changesetAlreadyMarkedForSmartCommits)
                         {
                             markChangesetForSmartCommit(changesetForSave, true);
                             changesetAlreadyMarkedForSmartCommits = true;
@@ -149,16 +163,13 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         
         // linkers
         setupNewLinkers(foundProjectKeys);
-        
-        // activity
-        syncActivity();
     }
     
     private void setupNewLinkers(Set<String> extractedProjectKeys)
     {
         if (!extractedProjectKeys.isEmpty())
         {
-            if (softSync)
+            if (synchronizationFlags.contains(isSoftSync()))
             {
                 communicator.linkRepositoryIncremental(repository, extractedProjectKeys);
             } else
@@ -194,13 +205,13 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     @Override
     public boolean isSoftSync()
     {
-        return softSync;
+        return synchronizationFlags.contains(SynchronizationFlag.SOFT_SYNC);
     }
     
     private void syncActivity()
     {
 
-        activitySynchronizer.synchronize(repository, softSync);
+        activitySynchronizer.synchronize(repository, isSoftSync());
 
     }
 }

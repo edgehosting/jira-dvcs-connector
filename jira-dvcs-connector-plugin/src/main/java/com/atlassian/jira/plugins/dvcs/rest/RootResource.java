@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.rest;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -35,6 +36,7 @@ import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
@@ -58,7 +60,7 @@ public class RootResource
 
     /** The repository service. */
     private final RepositoryService repositoryService;
-    
+
     /** The webfragment renderer. */
     private final WebfragmentRenderer webfragmentRenderer;
 
@@ -72,8 +74,8 @@ public class RootResource
      * @param repositoryService
      *            the repository service
      */
-    public RootResource(OrganizationService organizationService, RepositoryService repositoryService, WebfragmentRenderer webfragmentRenderer,
-            AccountsConfigService ondemandAccountConfig)
+    public RootResource(OrganizationService organizationService, RepositoryService repositoryService,
+            WebfragmentRenderer webfragmentRenderer, AccountsConfigService ondemandAccountConfig)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
@@ -136,7 +138,8 @@ public class RootResource
     {
         log.debug("Rest request to soft sync repository [{}] with payload [{}]", id, payload);
 
-        repositoryService.sync(id, true);
+        repositoryService.sync(id,
+                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
 
         return Response.ok().build();
     }
@@ -156,8 +159,9 @@ public class RootResource
     {
         log.debug("Rest request to softsync repository [{}] ", id);
 
-        repositoryService.sync(id, true);
-         
+        repositoryService.sync(id,
+                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
+
         // ...
         // redirect to Repository resource - that will contain sync
         // message/status
@@ -166,7 +170,7 @@ public class RootResource
 
         return Response.seeOther(uri).build();
     }
-    
+
     /**
      * Start repository fullsync.
      * 
@@ -182,8 +186,46 @@ public class RootResource
     {
         log.debug("Rest request to fullsync repository [{}] ", id);
 
-        repositoryService.sync(id, false);
-         
+        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
+
+        // ...
+        // redirect to Repository resource - that will contain sync
+        // message/status
+        UriBuilder ub = uriInfo.getBaseUriBuilder();
+        URI uri = ub.path("/repository/{id}").build(id);
+
+        return Response.seeOther(uri).build();
+    }
+
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repository/{id}/fullSyncChangesets")
+    @AdminOnly
+    public Response startRepositoryChangesetsSynchronization(@PathParam("id") int id)
+    {
+        log.debug("Rest request to changesets fullsync repository [{}] ", id);
+
+        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS));
+
+        // ...
+        // redirect to Repository resource - that will contain sync
+        // message/status
+        UriBuilder ub = uriInfo.getBaseUriBuilder();
+        URI uri = ub.path("/repository/{id}").build(id);
+
+        return Response.seeOther(uri).build();
+    }
+
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repository/{id}/fullSyncPullRequests")
+    @AdminOnly
+    public Response startRepositoryPullRequestsSynchronization(@PathParam("id") int id)
+    {
+        log.debug("Rest request to pull request fullsync repository [{}] ", id);
+
+        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_PULL_REQUESTS));
+
         // ...
         // redirect to Repository resource - that will contain sync
         // message/status
@@ -210,9 +252,8 @@ public class RootResource
     {
         if (StringUtils.isEmpty(server) || StringUtils.isEmpty(account))
         {
-            log.debug("REST call /accountInfo contained empty server '{}' or account '{}' param",
-                    new Object[] {server, account});
-            
+            log.debug("REST call /accountInfo contained empty server '{}' or account '{}' param", new Object[] { server, account });
+
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
@@ -237,22 +278,22 @@ public class RootResource
         {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        
+
         Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
         try
-    	{
-    		repositoryService.syncRepositoryList(organization);
-    	} catch (SourceControlException e)
-    	{
-    		log.error("Could not refresh repository list", e);
-    	}
-   		return Response.noContent().build();
+        {
+            repositoryService.syncRepositoryList(organization);
+        } catch (SourceControlException e)
+        {
+            log.error("Could not refresh repository list", e);
+        }
+        return Response.noContent().build();
     }
 
     @POST
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/org/{id}/autolink")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({ MediaType.APPLICATION_JSON })
     @AdminOnly
     public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, SentData autolink)
     {
@@ -263,10 +304,9 @@ public class RootResource
     @POST
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/org/{id}/globalsmarts")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({ MediaType.APPLICATION_JSON })
     @AdminOnly
-    public Response enableSmartcommitsOnNewRepos(@PathParam("id") int id,
-            SentData autoinvite)
+    public Response enableSmartcommitsOnNewRepos(@PathParam("id") int id, SentData autoinvite)
     {
         organizationService.enableSmartcommitsOnNewRepos(id, Boolean.parseBoolean(autoinvite.getPayload()));
         return Response.noContent().build();
@@ -275,18 +315,18 @@ public class RootResource
     @POST
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repo/{id}/autolink")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({ MediaType.APPLICATION_JSON })
     @AdminOnly
     public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
     {
         RepositoryRegistration registration = repositoryService.enableRepository(id, Boolean.parseBoolean(autolink.getPayload()));
         return Response.ok(registration).build();
     }
-    
+
     @POST
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repo/{id}/smart")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({ MediaType.APPLICATION_JSON })
     @AdminOnly
     public Response enableSmartcommits(@PathParam("id") int id, SentData enabled)
     {
@@ -294,7 +334,7 @@ public class RootResource
         repositoryService.enableRepositorySmartcommits(id, Boolean.parseBoolean(enabled.getPayload()));
         return Response.noContent().build();
     }
-    
+
     @GET
     @Produces({ MediaType.TEXT_HTML })
     @Path("/fragment/{id}/defaultgroups")
@@ -305,7 +345,7 @@ public class RootResource
         {
             String html = webfragmentRenderer.renderDefaultGroupsFragment(orgId);
             return Response.ok(html).build();
-            
+
         } catch (IOException e)
         {
             log.error("Failed to get default groups for organization with id " + orgId, e);
@@ -313,7 +353,7 @@ public class RootResource
 
         }
     }
-    
+
     @GET
     @Produces({ MediaType.TEXT_HTML })
     @Path("/fragment/groups")
@@ -324,7 +364,7 @@ public class RootResource
         {
             String html = webfragmentRenderer.renderGroupsFragmentForAddUser();
             return Response.ok(html).build();
-            
+
         } catch (IOException e)
         {
             log.error("Failed to get groups", e);
@@ -334,7 +374,7 @@ public class RootResource
 
     @POST
     @Path("/linkers/{onoff}")
-    @Consumes({ MediaType.TEXT_PLAIN})
+    @Consumes({ MediaType.TEXT_PLAIN })
     @Produces({ MediaType.TEXT_PLAIN })
     @AdminOnly
     public Response onOffLinkers(@PathParam("onoff") String onOff)
@@ -354,8 +394,8 @@ public class RootResource
     @GET
     @AnonymousAllowed
     @Path("/integrated-accounts/reload")
-    @Consumes({MediaType.TEXT_PLAIN, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.TEXT_PLAIN})
+    @Consumes({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_FORM_URLENCODED })
+    @Produces({ MediaType.TEXT_PLAIN })
     public Response reloadIntegratedAccountConfig()
     {
         try
@@ -368,28 +408,27 @@ public class RootResource
             return Response.serverError().build();
         }
     }
-    
+
     @DELETE
     @Path("/organization/{id}")
     @AdminOnly
     public Response deleteOrganization(@PathParam("id") int id)
     {
-    	Organization integratedAccount = organizationService.findIntegratedAccount();
-        if (    integratedAccount != null 
-        		&&  id==integratedAccount.getId())
+        Organization integratedAccount = organizationService.findIntegratedAccount();
+        if (integratedAccount != null && id == integratedAccount.getId())
         {
-        	return Status.error().message("Failed to delete integrated account.").response();
+            return Status.error().message("Failed to delete integrated account.").response();
         }
-    	
-    	try
+
+        try
         {
-    	    organizationService.remove(id);
+            organizationService.remove(id);
 
         } catch (Exception e)
         {
             log.error("Failed to remove account " + id, e);
         }
-		
+
         return Response.noContent().build();
     }
 }

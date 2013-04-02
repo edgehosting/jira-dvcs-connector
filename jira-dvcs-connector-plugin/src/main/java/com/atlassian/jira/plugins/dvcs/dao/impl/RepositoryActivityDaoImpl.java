@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,9 +32,12 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping.Status;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityToCommitMapping;
+import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
+import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
+import com.atlassian.jira.plugins.dvcs.util.ao.query.criteria.QueryCriterion;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
@@ -326,36 +330,130 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         List<RepositoryActivityMapping> ret = new ArrayList<RepositoryActivityMapping>();
 
         // processes commits
+        for (final Class<RepositoryCommitActivityMapping> activityTable : ALL_COMMIT_ACTIVITY_TABLES)
         {
             List<Integer> commitIds = findRelatedCommits(issueKey);
-            for (final Class<RepositoryCommitActivityMapping> activityTable : ALL_COMMIT_ACTIVITY_TABLES)
+            for (Integer commitId : commitIds)
             {
-                for (Integer commitId : commitIds)
+                Query query = new QueryTemplate()
                 {
-                    final Query query = Query.select().from(activityTable).alias(activityTable, "ACTIVITY")
-                            .alias(RepositoryCommitMapping.class, "COMMIT")
-                            .join(RepositoryCommitMapping.class, "ACTIVITY." + RepositoryCommitActivityMapping.COMMIT + " = COMMIT.ID")
-                            .where("COMMIT.ID = ? ", commitId);
-                    ret.addAll(Arrays.asList(activeObjects.find(activityTable, query)));
-                }
+
+                    @Override
+                    protected void build()
+                    {
+                        // from activity
+                        alias(activityTable, "ACTIVITY");
+
+                        // join commit
+                        alias(RepositoryCommitMapping.class, "COMMIT");
+                        join(RepositoryCommitMapping.class, column(activityTable, RepositoryCommitActivityMapping.COMMIT), "ID");
+
+                        // activity.id = :commitId
+                        where(eq(column(RepositoryCommitMapping.class, "ID"), parameter("commitId")));
+                    }
+
+                }.toQuery(Collections.<String, Object> singletonMap("commitId", commitId));
+
+                ret.addAll(Arrays.asList(activeObjects.find(activityTable, query)));
             }
         }
 
         // processes pull requests
+        for (final Class<RepositoryPullRequestActivityMapping> activityTable : ALL_PULL_REQUEST_ACTIVITY_TABLES)
         {
             List<Integer> pullRequestIds = findRelatedPullRequests(issueKey);
-            for (final Class<RepositoryPullRequestActivityMapping> activityTable : ALL_PULL_REQUEST_ACTIVITY_TABLES)
+            for (Integer pullRequestId : pullRequestIds)
             {
-                for (Integer pullRequestId : pullRequestIds)
+                final Query query = new QueryTemplate()
                 {
-                    final Query query = Query.select().from(activityTable)
-                            .where(RepositoryPullRequestActivityMapping.PULL_REQUEST_ID + " = ? ", pullRequestId);
-                    ret.addAll(Arrays.asList(activeObjects.find(activityTable, query)));
-                }
+
+                    @Override
+                    protected void build()
+                    {
+                        // from activity
+                        alias(activityTable, "ACTIVITY");
+
+                        // where activity.pullRequestId = :pullRequestId
+                        where(eq(column(activityTable, RepositoryPullRequestActivityMapping.PULL_REQUEST_ID), parameter("pullRequestId")));
+                    }
+
+                }.toQuery(Collections.<String, Object> singletonMap("pullRequestId", pullRequestId));
+
+                ret.addAll(Arrays.asList(activeObjects.find(activityTable, query)));
             }
         }
 
         return sort(ret);
+    }
+
+    // FIXME: in progress it is not finished yet
+    public void getRepositoryActivityByFilter(final GlobalFilter filter)
+    {
+        List<RepositoryActivityMapping> result = new LinkedList<RepositoryActivityMapping>();
+
+        for (final Class<RepositoryCommitActivityMapping> activityTable : ALL_COMMIT_ACTIVITY_TABLES)
+        {
+            result.addAll(Arrays.asList(activeObjects.find(activityTable, new QueryTemplate()
+            {
+
+                @Override
+                protected void build()
+                {
+                    // from activity
+                    alias(activityTable, "ACTIVITY");
+
+                    // join commit table
+                    alias(RepositoryCommitMapping.class, "COMMIT");
+                    join(RepositoryCommitMapping.class, column(activityTable, RepositoryCommitActivityMapping.COMMIT), "ID");
+
+                    // join issue key mapping
+                    alias(RepositoryCommitIssueKeyMapping.class, "ISSUE_KEY");
+                    join(RepositoryCommitIssueKeyMapping.class, column(RepositoryCommitMapping.class, "ID"), RepositoryCommitIssueKeyMapping.COMMIT);
+
+                    // where conditions
+                    List<QueryCriterion> and = new LinkedList<QueryCriterion>();
+
+                    if (filter.getInProjects() != null)
+                    {
+                        List<QueryCriterion> or = new LinkedList<QueryCriterion>();
+                        for (String inProject : filter.getInProjects()) {
+                            or.add(like(column(RepositoryCommitIssueKeyMapping.class, RepositoryCommitIssueKeyMapping.ISSUE_KEY), parameter("inProject", inProject + "-%")));
+                        }
+
+                        if (!or.isEmpty())
+                        {
+                            and.add(or(or.toArray(new QueryCriterion[or.size()])));
+                        }
+                    }
+
+                    if (filter.getInIssues() != null)
+                    {
+                        List<QueryCriterion> or = new LinkedList<QueryCriterion>();
+                        for (String inIssue : filter.getInIssues()) {
+                            or.add(eq(column(RepositoryCommitIssueKeyMapping.class, RepositoryCommitIssueKeyMapping.ISSUE_KEY), parameter("inIssueKey", inIssue)));
+                        }
+
+                        if (!or.isEmpty())
+                        {
+                            and.add(or(or.toArray(new QueryCriterion[or.size()])));
+                        }
+                    }
+
+                    if (filter.getInUsers() != null)
+                    {
+                        List<QueryCriterion> or = new LinkedList<QueryCriterion>();
+                        
+                        if (!or.isEmpty())
+                        {
+                            and.add(or(or.toArray(new QueryCriterion[or.size()])));
+                        }
+                    }
+
+                    and(and.toArray(new QueryCriterion[and.size()]));
+                }
+
+            }.toQuery(Collections.<String, Object> emptyMap()))));
+        }
     }
 
     private List<Integer> findRelatedCommits(String issueKey)
@@ -512,7 +610,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
 
     /**
-     * @inherit
+     * {@inheritDoc}
      */
     @Override
     public RepositoryCommitMapping getCommitByNode(Repository repository, String node)
