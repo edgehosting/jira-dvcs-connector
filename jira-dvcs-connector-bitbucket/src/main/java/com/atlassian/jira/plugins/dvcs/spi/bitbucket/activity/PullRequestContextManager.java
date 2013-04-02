@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
@@ -18,11 +21,14 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Client
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketActivityUser;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.dao.BitbucketPullRequestDao;
 
 public class PullRequestContextManager
 {
+    private static final Logger log = LoggerFactory.getLogger(PullRequestContextManager.class);
+    
     private final BitbucketPullRequestDao pullRequestDao;
     private final RepositoryActivityDao dao;
 
@@ -154,26 +160,31 @@ public class PullRequestContextManager
         Iterable<BitbucketPullRequestCommit> commitsIterator = pullRestpoint.getPullRequestCommits(pullRequestContext.getCommitsUrl());
         BitbucketPullRequestCommit lastCommit = null;
         pullRequestContext.setExistingUpdateActivity(false);
-        for (BitbucketPullRequestCommit commit : commitsIterator)
+        try
         {
-            // checking whether commit is already assigned to previously synchronized activity and stop in this case
-            RepositoryCommitMapping localCommit = dao.getCommitByNode(domainRepository, localPullRequest.getID(), commit.getSha());
-            if (localCommit != null)
+            for (BitbucketPullRequestCommit commit : commitsIterator)
             {
-                pullRequestContext.setExistingUpdateActivity(true);
-                break;
+                // checking whether commit is already assigned to previously synchronized activity and stop in this case
+                RepositoryCommitMapping localCommit = dao.getCommitByNode(domainRepository, localPullRequest.getID(), commit.getSha());
+                if (localCommit != null)
+                {
+                    pullRequestContext.setExistingUpdateActivity(true);
+                    break;
+                }
+    
+                if (lastCommit == null)
+                {
+                    pullRequestContext.setNextNode(commit.getSha());
+                } else
+                {
+                    saveCommit(domainRepository, lastCommit, commit.getSha(), localPullRequest.getID());
+                }
+                lastCommit = commit;
             }
-
-            if (lastCommit == null)
-            {
-                pullRequestContext.setNextNode(commit.getSha());
-            } else
-            {
-                saveCommit(domainRepository, lastCommit, commit.getSha(), localPullRequest.getID());
-            }
-            lastCommit = commit;
+        } catch(BitbucketRequestException e)
+        {
+            log.error("Could not get commits for pull request", e);
         }
-
         saveCommit(domainRepository, lastCommit, null, localPullRequest.getID());
     }
 

@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jfree.util.Log;
+
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
@@ -67,7 +69,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
 
         Date lastActivitySyncDate = forRepository.getActivityLastSync();
 
-        Date previousActivityDate = null;
         //
         // check whether there's some interesting issue keys in activity
         // and persist it if yes
@@ -77,29 +78,21 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
             for (BitbucketPullRequestActivityInfo info : activities)
             {
                 Date activityDate = ClientUtils.extractActivityDate(info.getActivity());
-                if (lastActivitySyncDate == null)
+                
+                if (activityDate == null)
+                {
+                    Log.info("Date for the activity could not be found.");
+                    continue;
+                }
+                if ((lastActivitySyncDate == null) || (activityDate.after(lastActivitySyncDate)))
                 {
                     lastActivitySyncDate = activityDate;
-                } else
-                {
-                    if (activityDate != null && activityDate.after(lastActivitySyncDate))
-                    {
-                        lastActivitySyncDate = activityDate;
-                    }
                 }
 
-                // filtering duplicated activities in response
-                // TODO implement better checking whether activity is duplicated than comparing dates
-                if (!activityDate.equals(previousActivityDate))
-                {
-                    PullRequestContext pullRequestContext = pullRequestContextManager.getPullRequestContext(forRepository.getId(), info
-                            .getPullRequest().getId());
-
-                    processActivity(info, forRepository, pullRestpoint, pullRequestContext);
-
-                    pullRequestContextManager.save(pullRequestContext);
-                }
-                previousActivityDate = activityDate;
+                PullRequestContext pullRequestContext = pullRequestContextManager.getPullRequestContext(forRepository.getId(), info
+                        .getPullRequest().getId());
+                processActivity(info, forRepository, pullRestpoint, pullRequestContext);
+                pullRequestContextManager.save(pullRequestContext);
             }
 
             for (PullRequestContext pullRequestContext : pullRequestContextManager.getPullRequestRequestContexts(forRepository.getId()))
@@ -154,9 +147,17 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         if (pullRequestContext.getLocalPullRequestId() == null)
         {
             // go for pull request details [***]
-            remotePullRequest = pullRestpoint.getPullRequestDetail(forRepository.getOrgName(), forRepository.getSlug(), info
+            try
+            {
+                remotePullRequest = pullRestpoint.getPullRequestDetail(forRepository.getOrgName(), forRepository.getSlug(), info
                     .getPullRequest().getId() + "");
-            pullRequestContext.setCommitsUrl(remotePullRequest.getLinks().getCommitsHref());
+                pullRequestContext.setCommitsUrl(remotePullRequest.getLinks().getCommitsHref());
+            } catch (Exception e)
+            {
+                Log.error("Could not retrieve pull request details", e);
+                remotePullRequest = new BitbucketPullRequest();
+                remotePullRequest.setId(info.getPullRequest().getId());
+            }
         }
 
         RepositoryPullRequestMapping localPullRequest = dao.findRequestByRemoteId(forRepository, info.getPullRequest().getId());
