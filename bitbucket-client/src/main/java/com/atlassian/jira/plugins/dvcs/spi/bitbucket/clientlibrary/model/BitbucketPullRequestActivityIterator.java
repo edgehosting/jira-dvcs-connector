@@ -1,9 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
@@ -16,7 +17,7 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
         Iterable<BitbucketPullRequestActivityInfo>
 {
     // configs
-    private int requestLimit = 30;
+    private final int requestLimit = 30;
     private final Date upToDate;
     private boolean wasDateOver = false;
     private final String forUser;
@@ -60,11 +61,11 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
         } else
         {
         	String url = currentPage == null ? createUrl() : currentPage.getNext();
-        	if (url == null || url.trim().isEmpty())
+        	if (StringUtils.isBlank(url))
         	{
-        		return;
+        	    return;
         	}
-            requestor.get(url, createRequestParams(), createResponseCallback());
+            requestor.get(url, null, createResponseCallback());
         }
     }
 
@@ -122,13 +123,6 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     	}
     }
     
-    private HashMap<String, String> createRequestParams()
-    {
-        HashMap<String, String> params = new HashMap<String, String>();
-        params.put("pagelen", requestLimit + "");
-        return params;
-    }
-
     private ResponseCallback<BitbucketPullRequestBaseActivityEnvelope> createResponseCallback()
     {
         return new ResponseCallback<BitbucketPullRequestBaseActivityEnvelope>()
@@ -156,6 +150,6 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
 
     private String createUrl()
     {
-        return String.format("/repositories/%s/%s/pullrequests/activity", forUser, forRepoSlug);
+        return String.format("/repositories/%s/%s/pullrequests/activity?pagelen=%s", forUser, forRepoSlug, requestLimit);
     }
 }

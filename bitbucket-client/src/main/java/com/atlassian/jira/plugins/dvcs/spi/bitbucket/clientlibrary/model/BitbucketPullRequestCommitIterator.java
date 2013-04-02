@@ -1,8 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
@@ -16,7 +17,7 @@ public class BitbucketPullRequestCommitIterator implements Iterator<BitbucketPul
 {
 
     // configs
-	private int requestLimit = 30;
+	private final int requestLimit = 30;
     private BitbucketPullRequestCommitEnvelope currentPage = null;
 
     // services
@@ -31,7 +32,7 @@ public class BitbucketPullRequestCommitIterator implements Iterator<BitbucketPul
     public BitbucketPullRequestCommitIterator(RemoteRequestor requestor, String urlIncludingApi)
     {
         this.requestor = requestor;
-        this.urlIncludingApi = urlIncludingApi;
+        this.urlIncludingApi = urlIncludingApi + "?pagelen=" + requestLimit;
     }
 
     @Override
@@ -50,12 +51,12 @@ public class BitbucketPullRequestCommitIterator implements Iterator<BitbucketPul
     {
         String url = currentPage == null ? urlIncludingApi : currentPage.getNext();
         // maybe we're just at the end
-        if (url == null || url.trim().equals(""))
+        if (StringUtils.isBlank(url))
         {
             return;
         }
 
-        requestor.get(url, createRequestParams(), createResponseCallback());
+        requestor.get(url, null, createResponseCallback());
     }
 
     @Override
@@ -101,13 +102,6 @@ public class BitbucketPullRequestCommitIterator implements Iterator<BitbucketPul
     // helpers
     // ------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------
-
-    private HashMap<String, String> createRequestParams()
-    {
-        HashMap<String, String> params = new HashMap<String, String>();
-        params.put("pagelen", requestLimit + "");
-        return params;
-    }
 
     private ResponseCallback<BitbucketPullRequestCommitEnvelope> createResponseCallback()
     {
