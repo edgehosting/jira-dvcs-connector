@@ -44,7 +44,7 @@ public class BitbucketPullRequestCommitIterator implements Iterator<BitbucketPul
             readPage();
         }
 
-        return !currentPage.getValues().isEmpty();
+        return !currentPage.getValues().isEmpty() || currentPage.getNext() != null;
     }
 
     private void readPage()
