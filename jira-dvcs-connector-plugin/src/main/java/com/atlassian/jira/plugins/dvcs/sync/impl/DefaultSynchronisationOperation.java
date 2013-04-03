@@ -36,9 +36,9 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
     private final EnumSet<SynchronizationFlag> synchronizationFlags;
 
-    public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository,
-            RepositoryService repositoryService, ChangesetService changesetService,
-            RepositoryActivitySynchronizer activitySynchronizer, EnumSet<SynchronizationFlag> synchronizationFlags)
+    public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository, RepositoryService repositoryService,
+            ChangesetService changesetService, RepositoryActivitySynchronizer activitySynchronizer,
+            EnumSet<SynchronizationFlag> synchronizationFlags)
     {
         this.communicator = communicator;
         this.repository = repository;
@@ -52,9 +52,22 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     @Override
     public void synchronise()
     {
-    	log.debug("Operation going to sync repo " + repository.getSlug() + " softs sync = " + isSoftSync() );
-    	
-    	if (!isSoftSync()) 
+        log.debug("Operation going to sync repo " + repository.getSlug() + " softs sync = " + isSoftSync());
+
+        if (synchronizationFlags.contains(SynchronizationFlag.SYNC_CHANGESETS))
+        {
+            syncChangesets();
+        }
+
+        if (synchronizationFlags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS))
+        {
+            syncActivity();
+        }
+    }
+
+    private void syncChangesets()
+    {
+        if (!isSoftSync())
         {
             // we are doing full sync, lets delete all existing changesets
             // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
@@ -63,17 +76,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             repositoryService.save(repository);
         }
 
-    	if (synchronizationFlags.contains(SynchronizationFlag.SYNC_CHANGESETS)) {
-    	    syncChangesets();
-    	}
-    	
-    	if (synchronizationFlags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS)) {
-    	    syncActivity();
-    	}
-    }
-
-    private void syncChangesets()
-    {
         int changesetCount = 0;
         int jiraCount = 0;
 
@@ -83,16 +85,16 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
         for (Changeset changeset : allOrLatestChangesets)
         {
-        	if (progress.isShouldStop())
-        	{
-        		return;
-        	}
-        	
-        	if (changeset == null)
-        	{
-        	    continue;
-        	}
-        	
+            if (progress.isShouldStop())
+            {
+                return;
+            }
+
+            if (changeset == null)
+            {
+                continue;
+            }
+
             if (repository.getLastCommitDate() == null || repository.getLastCommitDate().before(changeset.getDate()))
             {
                 repository.setLastCommitDate(changeset.getDate());
@@ -105,7 +107,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
             Set<String> extractedIssues = extractIssueKeys(message);
 
-            if (CollectionUtils.isEmpty(extractedIssues) ) // storing only issues without issueKeys as
+            if (CollectionUtils.isEmpty(extractedIssues)) // storing only issues without issueKeys as
             {
                 changeset.setIssueKey("NON_EXISTING-0");
                 changesetService.save(changeset);
@@ -115,17 +117,17 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
             // get detail changeset because in this response is not information about files
             Changeset detailChangeset = null;
-            
-            if (CollectionUtils.isNotEmpty(extractedIssues) ) 
+
+            if (CollectionUtils.isNotEmpty(extractedIssues))
             {
-            	try
+                try
                 {
                     detailChangeset = changesetService.getDetailChangesetFromDvcs(repository, changeset);
                 } catch (Exception e)
                 {
                     log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
                 }
-            	
+
                 boolean changesetAlreadyMarkedForSmartCommits = false;
                 for (String extractedIssue : extractedIssues)
                 {
@@ -133,9 +135,9 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                     String issueKey = extractedIssue.toUpperCase();
                     try
                     {
-                    	Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
-                    	changesetForSave.setIssueKey(issueKey);
-                        //--------------------------------------------
+                        Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
+                        changesetForSave.setIssueKey(issueKey);
+                        // --------------------------------------------
                         // mark smart commit can be processed
                         // + store extracted project key for incremental linking
                         if (isSoftSync() && !changesetAlreadyMarkedForSmartCommits)
@@ -146,12 +148,12 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                         {
                             markChangesetForSmartCommit(changesetForSave, false);
                         }
-                        
+
                         foundProjectKeys.add(ChangesetDaoImpl.parseProjectKey(issueKey));
-                        //--------------------------------------------
+                        // --------------------------------------------
                         log.debug("Save changeset [{}]", changesetForSave);
                         changesetService.save(changesetForSave);
-                    
+
                     } catch (SourceControlException e)
                     {
                         log.error("Error adding changeset " + changeset, e);
@@ -160,11 +162,11 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             }
             progress.inProgress(changesetCount, jiraCount, 0);
         }
-        
+
         // linkers
         setupNewLinkers(foundProjectKeys);
     }
-    
+
     private void setupNewLinkers(Set<String> extractedProjectKeys)
     {
         if (!extractedProjectKeys.isEmpty())
@@ -180,19 +182,20 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     }
 
     private void markChangesetForSmartCommit(Changeset changesetForSave, boolean mark)
-	{
+    {
         if (repository.isSmartcommitsEnabled())
         {
             log.debug("Marking changeset node = {} to be processed by smart commits", changesetForSave.getNode());
             changesetForSave.setSmartcommitAvaliable(mark);
-        } else {
-        	log.debug("Changeset node = {}. Repository not enabled for smartcommits.", changesetForSave.getNode());
+        } else
+        {
+            log.debug("Changeset node = {}. Repository not enabled for smartcommits.", changesetForSave.getNode());
         }
-	}
+    }
 
-	private Set<String> extractIssueKeys(String message)
+    private Set<String> extractIssueKeys(String message)
     {
-	    // TODO check if these issues actually exists...
+        // TODO check if these issues actually exists...
         return IssueKeyExtractor.extractIssueKeys(message);
     }
 
@@ -207,7 +210,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     {
         return synchronizationFlags.contains(SynchronizationFlag.SOFT_SYNC);
     }
-    
+
     private void syncActivity()
     {
 

@@ -3,18 +3,19 @@ package com.atlassian.jira.plugins.dvcs.sync;
 /**
  * Defines type of synchronization.
  */
-public enum SynchronizationFlag {
+public enum SynchronizationFlag
+{
 
     /**
      * Performs soft synchronization instead of full synchronization.
      */
-    SOFT_SYNC, // 
-    
+    SOFT_SYNC, //
+
     /**
      * Performs change-sets, synchronization.
      */
-    SYNC_CHANGESETS, // 
-    
+    SYNC_CHANGESETS, //
+
     /**
      * Performs pull request synchronization.
      */
