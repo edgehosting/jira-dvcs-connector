@@ -106,7 +106,15 @@ public abstract class QueryTemplate
      */
     protected QueryCriterion and(QueryCriterion... criteria)
     {
-        return new AndCriterion(criteria);
+        if (criteria.length == 1)
+        {
+            return criteria[0];
+
+        } else
+        {
+            return new AndCriterion(criteria);
+
+        }
     }
 
     /**
@@ -115,7 +123,15 @@ public abstract class QueryTemplate
      */
     protected QueryCriterion or(QueryCriterion... criteria)
     {
-        return new OrCriterion(criteria);
+        if (criteria.length == 1)
+        {
+            return criteria[0];
+
+        } else
+        {
+            return new OrCriterion(criteria);
+
+        }
     }
 
     /**
@@ -129,6 +145,22 @@ public abstract class QueryTemplate
     }
 
     /**
+     * @param leftSide
+     * @param rightSide
+     * @return {@link EqCriterion}-s
+     */
+    protected QueryCriterion[] eq(QueryTerm leftSide, QueryTerm... rightSide)
+    {
+        QueryCriterion[] result = new QueryCriterion[rightSide.length];
+        for (int i = 0; i < rightSide.length; i++)
+        {
+            result[i] = eq(leftSide, rightSide[i]);
+        }
+
+        return result;
+    }
+
+    /**
      * @param column
      * @param parameter
      * @return {@link LikeCriterion}
@@ -136,6 +168,23 @@ public abstract class QueryTemplate
     protected QueryCriterion like(QueryColumn column, QueryParameter parameter)
     {
         return new LikeCriterion(column, parameter);
+    }
+
+    /**
+     * @param column
+     * @param parameters
+     * @return {@link LikeCriterion}
+     */
+    protected QueryCriterion[] like(QueryColumn column, QueryParameter... parameters)
+    {
+        QueryCriterion[] result = new QueryCriterion[parameters.length];
+
+        for (int i = 0; i < parameters.length; i++)
+        {
+            result[i] = new LikeCriterion(column, parameters[i]);
+        }
+
+        return result;
     }
 
     /**
@@ -165,6 +214,22 @@ public abstract class QueryTemplate
     protected QueryParameter parameter(String parameterName, Object parameterValue)
     {
         return new QueryParameter(parameterName, parameterValue);
+    }
+
+    /**
+     * @param parameterName
+     * @param parameterValue
+     * @return {@link QueryParameter}-s
+     */
+    protected QueryParameter[] parameter(String parameterName, Object... parameterValue)
+    {
+        QueryParameter[] result = new QueryParameter[parameterValue.length];
+        for (int i = 0; i < parameterValue.length; i++)
+        {
+            result[i] = new QueryParameter(parameterName + "-" + i, parameterValue[i]);
+        }
+
+        return result;
     }
 
     /**

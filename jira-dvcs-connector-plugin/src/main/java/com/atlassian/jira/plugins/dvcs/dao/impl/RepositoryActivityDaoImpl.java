@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import net.java.ao.Query;
 
 import org.slf4j.Logger;
@@ -39,6 +41,8 @@ import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.criteria.QueryCriterion;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 
 /**
  * 
@@ -408,45 +412,46 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
                     // join issue key mapping
                     alias(RepositoryCommitIssueKeyMapping.class, "ISSUE_KEY");
-                    join(RepositoryCommitIssueKeyMapping.class, column(RepositoryCommitMapping.class, "ID"), RepositoryCommitIssueKeyMapping.COMMIT);
+                    join(RepositoryCommitIssueKeyMapping.class, column(RepositoryCommitMapping.class, "ID"),
+                            RepositoryCommitIssueKeyMapping.COMMIT);
 
                     // where conditions
                     List<QueryCriterion> and = new LinkedList<QueryCriterion>();
 
                     if (filter.getInProjects() != null)
                     {
-                        List<QueryCriterion> or = new LinkedList<QueryCriterion>();
-                        for (String inProject : filter.getInProjects()) {
-                            or.add(like(column(RepositoryCommitIssueKeyMapping.class, RepositoryCommitIssueKeyMapping.ISSUE_KEY), parameter("inProject", inProject + "-%")));
-                        }
+                        Object[] inProjectsAsIssueKeyLike = Iterables.toArray(
+                                Iterables.transform(filter.getInProjects(), new Function<String, String>()
+                                {
 
-                        if (!or.isEmpty())
-                        {
-                            and.add(or(or.toArray(new QueryCriterion[or.size()])));
-                        }
+                                    @Override
+                                    public String apply(@Nullable String input)
+                                    {
+                                        return input + "-*";
+                                    }
+
+                                }), Object.class);
+                        and.add(or(like(column(RepositoryCommitIssueKeyMapping.class, RepositoryCommitIssueKeyMapping.ISSUE_KEY),
+                                parameter("inProject", inProjectsAsIssueKeyLike))));
                     }
 
                     if (filter.getInIssues() != null)
                     {
-                        List<QueryCriterion> or = new LinkedList<QueryCriterion>();
-                        for (String inIssue : filter.getInIssues()) {
-                            or.add(eq(column(RepositoryCommitIssueKeyMapping.class, RepositoryCommitIssueKeyMapping.ISSUE_KEY), parameter("inIssueKey", inIssue)));
-                        }
+                        and.add(or(eq(column(RepositoryCommitIssueKeyMapping.class, RepositoryCommitIssueKeyMapping.ISSUE_KEY),
+                                parameter("inIssueKey", Iterables.toArray(filter.getInIssues(), Object.class)))));
+                    }
 
-                        if (!or.isEmpty())
-                        {
-                            and.add(or(or.toArray(new QueryCriterion[or.size()])));
-                        }
+                    if (filter.getNotInIssues() != null)
+                    {
+                        // FIXME: add 'not' criteria
+                        and.add(or(eq(column(RepositoryCommitIssueKeyMapping.class, RepositoryCommitIssueKeyMapping.ISSUE_KEY),
+                                parameter("notInIssueKey", Iterables.toArray(filter.getNotInIssues(), Object.class)))));
                     }
 
                     if (filter.getInUsers() != null)
                     {
-                        List<QueryCriterion> or = new LinkedList<QueryCriterion>();
-                        
-                        if (!or.isEmpty())
-                        {
-                            and.add(or(or.toArray(new QueryCriterion[or.size()])));
-                        }
+                        and.add(or(eq(column(RepositoryCommitMapping.class, RepositoryCommitMapping.AUTHOR),
+                                parameter("inUser", Iterables.toArray(filter.getInUsers(), Object.class)))));
                     }
 
                     and(and.toArray(new QueryCriterion[and.size()]));
