@@ -162,8 +162,10 @@ public class RepositoryServiceImpl implements RepositoryService
         Set<String> newRepoSlugs = addNewReposReturnNewSlugs(storedRepositories, remoteRepositories, organization);
 
         // start asynchronous changesets synchronization for all linked repositories in organization
-        EnumSet<SynchronizationFlag> synchronizationFlags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS);
-        if (!soft) {
+        EnumSet<SynchronizationFlag> synchronizationFlags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS,
+                SynchronizationFlag.SYNC_PULL_REQUESTS);
+        if (soft)
+        {
             synchronizationFlags.add(SynchronizationFlag.SOFT_SYNC);
         }
         syncAllInOrganization(organization.getId(), synchronizationFlags, newRepoSlugs);
