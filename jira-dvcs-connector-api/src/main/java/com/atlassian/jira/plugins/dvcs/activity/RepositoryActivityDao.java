@@ -24,8 +24,10 @@ public interface RepositoryActivityDao
      * Updates issue keys related to the provided pull request to reflect current state.
      * 
      * @param pullRequestId
+     * 
+     * @return Number of found issues keys
      */
-    void updatePullRequestIssueKeys(Repository domain, int pullRequestId);
+    int updatePullRequestIssueKeys(Repository domain, int pullRequestId);
 
     void removeAll(Repository domain);
 

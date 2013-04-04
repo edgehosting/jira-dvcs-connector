@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestCommentActi
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestCommitMapping;
@@ -40,6 +41,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     public BitbucketRepositoryActivitySynchronizer(BitbucketClientRemoteFactory clientFactory, RepositoryActivityDao dao,
             RepositoryDao repositoryDao, BitbucketPullRequestDao pullRequestDao)
     {
+        super();
         this.clientFactory = clientFactory;
         this.dao = dao;
         this.repositoryDao = repositoryDao;
@@ -47,7 +49,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
     }
 
     @Override
-    public void synchronize(Repository forRepository, boolean softSync)
+    public void synchronize(Repository forRepository, Progress progress, boolean softSync)
     {
         if (!softSync)
         {
@@ -55,6 +57,9 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
             forRepository.setActivityLastSync(null);
         }
 
+        int jiraCount = progress.getJiraCount();
+        int pullRequestActivityCount = 0;
+        
         BitbucketRemoteClient remoteClient = clientFactory.getForRepository(forRepository, 2);
         PullRequestRemoteRestpoint pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
 
@@ -76,6 +81,11 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         {
             for (BitbucketPullRequestActivityInfo info : activities)
             {
+                if (progress.isShouldStop())
+                {
+                    break;
+                }
+                
                 Date activityDate = ClientUtils.extractActivityDate(info.getActivity());
                 
                 if (activityDate == null)
@@ -92,6 +102,9 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
                         .getPullRequest().getId());
                 processActivity(info, forRepository, pullRestpoint, pullRequestContext);
                 pullRequestContextManager.save(pullRequestContext);
+                
+                pullRequestActivityCount++;
+                progress.inPullRequestProgress(pullRequestActivityCount, jiraCount);
             }
 
             for (PullRequestContext pullRequestContext : pullRequestContextManager.getPullRequestRequestContexts(forRepository.getId()))
@@ -102,7 +115,8 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
                     fillActivityCommits(forRepository, null, pullRequestContext);
                 }
 
-                dao.updatePullRequestIssueKeys(forRepository, pullRequestContext.getLocalPullRequestId());
+                jiraCount += dao.updatePullRequestIssueKeys(forRepository, pullRequestContext.getLocalPullRequestId());
+                progress.inPullRequestProgress(pullRequestActivityCount, jiraCount);
             }
         } finally
         {

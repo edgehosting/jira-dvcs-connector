@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestActivityMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestCommentActivityMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestCommentDAO;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
@@ -107,8 +108,13 @@ public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCom
      * {@inheritDoc}
      */
     @Override
-    public void synchronize(Repository domainRepository, GitHubPullRequest pullRequest)
+    public void synchronize(Repository domainRepository, GitHubPullRequest pullRequest, Progress progress)
     {
+        if (progress.isShouldStop())
+        {
+            return;
+        }
+        
         RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(domainRepository,
                 pullRequest.getGitHubId());
 
@@ -121,6 +127,11 @@ public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCom
 
         for (GitHubPullRequestComment comment : getByPullRequest(pullRequest))
         {
+            if (progress.isShouldStop())
+            {
+                return;
+            }
+            
             Map<String, Object> activity = new HashMap<String, Object>();
             if (!idToLoaded.containsKey(comment.getGitHubId()))
             {

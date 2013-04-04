@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
 import java.util.List;
 
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequestComment;
@@ -59,6 +60,8 @@ public interface GitHubPullRequestCommentService
      *            for repository
      * @param pullRequest
      *            for which pull request
+     * @param progress
+     *            indicating that synchronization should be stopped
      */
-    void synchronize(Repository domainRepository, GitHubPullRequest pullRequest);
+    void synchronize(Repository domainRepository, GitHubPullRequest pullRequest, Progress progress);
 }

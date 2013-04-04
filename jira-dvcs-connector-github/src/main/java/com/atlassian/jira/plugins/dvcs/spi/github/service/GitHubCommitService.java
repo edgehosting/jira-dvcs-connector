@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityToCommitMapping;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubPullRequest;
@@ -101,8 +102,10 @@ public interface GitHubCommitService
      *            for repository
      * @param pullRequest
      *            owner of commits
+     * @param progress
+     *            indicating that synchronization should be stopped
      * @return newly created or existing commits
      */
-    void synchronize(Repository domainRepository, GitHubRepository domain, GitHubPullRequest pullRequest);
+    void synchronize(Repository domainRepository, GitHubRepository domain, GitHubPullRequest pullRequest, Progress progress);
 
 }

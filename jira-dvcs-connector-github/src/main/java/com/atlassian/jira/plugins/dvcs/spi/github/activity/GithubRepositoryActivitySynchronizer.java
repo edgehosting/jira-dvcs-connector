@@ -5,6 +5,7 @@ import net.java.ao.Query;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService;
 import com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitCommentMapping;
@@ -182,7 +183,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
      * {@inheritDoc}
      */
     @Override
-    public void synchronize(final Repository domainRepository, boolean softSync)
+    public void synchronize(final Repository domainRepository, Progress progress, boolean softSync)
     {
         final GitHubRepository domain = gitHubRepositoryService.fetch(domainRepository, domainRepository.getOrgName(),
                 domainRepository.getName(), 0);
@@ -192,6 +193,9 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             cleanAll(domainRepository, domain);
         }
 
+        int jiraCount = progress.getJiraCount();
+        int pullRequestActivityCount = 0;
+        
         gitHubEventService.synchronize(domainRepository, domain);
         gitHubPullRequestService.synchronize(domainRepository, domain);
 
@@ -202,12 +206,20 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
 
         for (GitHubPullRequest pullRequest : gitHubPullRequestService.getByRepository(domain))
         {
-            gitHubPullRequestCommentService.synchronize(domainRepository, pullRequest);
-            gitHubPullRequestLineCommentService.synchronize(domainRepository, pullRequest);
-            gitHubCommitService.synchronize(domainRepository, domain, pullRequest);
+            if (progress.isShouldStop())
+            {
+                return;
+            }
+            
+            gitHubPullRequestCommentService.synchronize(domainRepository, pullRequest, progress);
+            gitHubPullRequestLineCommentService.synchronize(domainRepository, pullRequest, progress);
+            gitHubCommitService.synchronize(domainRepository, domain, pullRequest, progress);
 
-            repositoryActivityDao.updatePullRequestIssueKeys(domainRepository,
+            pullRequestActivityCount++;
+            jiraCount += repositoryActivityDao.updatePullRequestIssueKeys(domainRepository,
                     repositoryActivityDao.findRequestByRemoteId(domainRepository, pullRequest.getGitHubId()).getID());
+            
+            progress.inPullRequestProgress(pullRequestActivityCount, jiraCount);
         }
     }
 

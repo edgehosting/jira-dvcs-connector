@@ -36,6 +36,8 @@ public interface Progress
      */
     int getSynchroErrorCount();
 
+    int getPullRequestActivityCount();
+    
 	/**
 	 * @return error messages
 	 */
@@ -58,6 +60,8 @@ public interface Progress
 	boolean isShouldStop();
 
 	void setFinished(boolean finished);
+
+    public abstract void inPullRequestProgress(int pullRequestActivityCount, int jiraCount);
 
 
 }

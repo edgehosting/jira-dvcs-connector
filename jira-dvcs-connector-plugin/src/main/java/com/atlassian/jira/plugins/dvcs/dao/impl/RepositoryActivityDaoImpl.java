@@ -208,7 +208,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
      * {@inheritDoc}
      */
     @Override
-    public void updatePullRequestIssueKeys(Repository domain, int pullRequestId)
+    public int updatePullRequestIssueKeys(Repository domain, int pullRequestId)
     {
         RepositoryPullRequestMapping repositoryPullRequestMapping = findRequestById(pullRequestId);
         Set<String> existingIssueKeys = getExistingIssueKeysMapping(domain, pullRequestId);
@@ -266,6 +266,8 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                                     + " = ? AND " + RepositoryPullRequestIssueKeyMapping.ISSUE_KEY + " = ? ", domain.getId(),
                             repositoryPullRequestMapping.getID(), issueKeyToRemove)));
         }
+        
+        return currentIssueKeys.size();
     }
 
     private Set<String> getExistingIssueKeysMapping(Repository domain, RepositoryCommitMapping commitMapping)

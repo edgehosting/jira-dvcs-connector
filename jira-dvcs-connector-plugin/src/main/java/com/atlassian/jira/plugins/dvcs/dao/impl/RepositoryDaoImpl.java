@@ -65,6 +65,14 @@ public class RepositoryDaoImpl implements RepositoryDao
 		repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
 		repository.setActivityLastSync(repositoryMapping.getActivityLastSync());
 		
+        Date lastDate = repositoryMapping.getLastCommitDate();
+        
+        if (lastDate == null || (repositoryMapping.getActivityLastSync() != null && repositoryMapping.getActivityLastSync().after(lastDate)))
+        {
+            lastDate = repositoryMapping.getActivityLastSync();
+        }
+		repository.setLastActivityDate(lastDate);
+		
 		// set sync progress
 		repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
 

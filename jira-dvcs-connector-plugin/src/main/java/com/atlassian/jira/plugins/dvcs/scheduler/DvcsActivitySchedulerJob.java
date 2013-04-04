@@ -7,10 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.sal.api.scheduling.PluginJob;
 
+//TODO Do we need separate scheduler for PR activities?
 public class DvcsActivitySchedulerJob implements PluginJob
 {
     private static final Logger log = LoggerFactory.getLogger(DvcsActivitySchedulerJob.class);
@@ -27,7 +29,7 @@ public class DvcsActivitySchedulerJob implements PluginJob
 
 		for (Repository repository : repositories)
         {
-		    activitySynchronizer.synchronize(repository, true);
+		    activitySynchronizer.synchronize(repository, new DefaultProgress(), true);
         }
     }
 	

@@ -213,8 +213,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
     private void syncActivity()
     {
-
-        activitySynchronizer.synchronize(repository, isSoftSync());
-
+        activitySynchronizer.synchronize(repository, progress, isSoftSync());
     }
 }

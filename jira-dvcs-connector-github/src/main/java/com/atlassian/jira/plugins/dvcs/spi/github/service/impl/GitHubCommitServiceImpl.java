@@ -26,6 +26,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestActivityMap
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityToCommitMapping;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GitHubUtils;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
@@ -226,8 +227,13 @@ public class GitHubCommitServiceImpl implements GitHubCommitService
      * {@inheritDoc}
      */
     @Override
-    public void synchronize(Repository domainRepository, GitHubRepository domain, GitHubPullRequest pullRequest)
+    public void synchronize(Repository domainRepository, GitHubRepository domain, GitHubPullRequest pullRequest, Progress progress)
     {
+        if (progress.isShouldStop())
+        {
+            return;
+        }
+        
         List<GitHubCommit> allCommits = pullRequest.getCommits();
         GitHubCommit lastCommit = !allCommits.isEmpty() ? allCommits.get(allCommits.size() - 1) : null;
 

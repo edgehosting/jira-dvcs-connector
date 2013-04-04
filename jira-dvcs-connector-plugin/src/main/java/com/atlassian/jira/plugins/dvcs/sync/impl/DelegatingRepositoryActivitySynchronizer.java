@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.sync.impl;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 public final class DelegatingRepositoryActivitySynchronizer implements RepositoryActivitySynchronizer
@@ -22,14 +23,14 @@ public final class DelegatingRepositoryActivitySynchronizer implements Repositor
     }
 
     @Override
-    public void synchronize(Repository forRepository, boolean softSync)
+    public void synchronize(Repository forRepository, Progress progress, boolean softSync)
     {
         if (isBitbucketRepo(forRepository))
         {
-            bitbucketSynchronizer.synchronize(forRepository, softSync);
+            bitbucketSynchronizer.synchronize(forRepository, progress, softSync);
         } else
         {
-            githubSynchronizer.synchronize(forRepository, softSync);
+            githubSynchronizer.synchronize(forRepository, progress, softSync);
         }
     }
 
