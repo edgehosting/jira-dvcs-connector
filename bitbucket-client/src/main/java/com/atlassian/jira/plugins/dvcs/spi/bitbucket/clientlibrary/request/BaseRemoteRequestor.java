@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException.RetryableRequestException;
 
 /**
  * BaseRemoteRequestor
@@ -75,7 +74,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
     {
         return postWithRetry(uri, parameters, callback);
     }
-
 
     @Override
     public <T> T put(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
@@ -169,8 +167,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     protected void logRequest(HttpRequestBase method, String finalUrl, Map<String, String> params)
     {
-        log.debug("[Headers {}]", method.getParams());
-        log.debug("[REST call {} : {} :: {}]", new Object[] { method.getMethod(), finalUrl, params });
+        log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, params, method.getAllHeaders() });
     }
 
     private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, String> params, ResponseCallback<T> callback)
@@ -249,6 +246,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         int statusCode = httpResponse.getStatusLine().getStatusCode();
         if (statusCode >= 300)
         {
+            logRequestAndResponse(method, httpResponse, statusCode);
+            
             RuntimeException toBeThrown = new BitbucketRequestException.Other("Error response code during the request : "
                     + statusCode);            
              
@@ -268,21 +267,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
                 break;
             }
             
-            if (toBeThrown instanceof RetryableRequestException)
-            {
-                String responseAsString = null;
-                if (httpResponse.getEntity() != null)
-                {
-                    InputStream is = httpResponse.getEntity().getContent();
-                    StringWriter writer = new StringWriter();
-                    IOUtils.copy(is, writer, "UTF-8");
-                    responseAsString = writer.toString();
-                }
-
-                log.warn("Failed to properly execute request [{} {}], Response code {}, response: {}", 
-                        new Object[] {method.getMethod(), method.getURI(), statusCode, responseAsString });
-            }
-            
             throw toBeThrown;
         }
 
@@ -292,8 +276,21 @@ public class BaseRemoteRequestor implements RemoteRequestor
             response.setResponse(httpResponse.getEntity().getContent());
         }
         response.setHttpClient(client);
-
         return response;
+    }
+
+    private void logRequestAndResponse(HttpRequestBase method, HttpResponse httpResponse, int statusCode) throws IOException
+    {
+        String responseAsString = null;
+        if (httpResponse.getEntity() != null)
+        {
+            InputStream is = httpResponse.getEntity().getContent();
+            StringWriter writer = new StringWriter();
+            IOUtils.copy(is, writer, "UTF-8");
+            responseAsString = writer.toString();
+        }
+        log.warn("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}", 
+                new Object[] {method.getMethod(), method.getURI(), method.getAllHeaders(), method.getParams(), statusCode, responseAsString });
     }
 
     protected String paramsToString(Map<String, String> parameters, boolean urlAlreadyHasParams)

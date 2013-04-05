@@ -212,12 +212,14 @@ public class RepositoryServiceImpl implements RepositoryService
                 try
                 {
                     addOrRemovePostcommitHook(savedRepository, getPostCommitUrl(savedRepository));
+                    savedRepository.setAdminPermission(true);
                 } catch(SourceControlException.PostCommitHookRegistrationException e)
                 {
                     log.warn("Adding postcommit hook for repository "
                             + savedRepository.getRepositoryUrl() + " failed: ", e);
                     // if the user didn't have rights to add post commit hook, just unlink the repository
                     savedRepository.setLinked(false);
+                    savedRepository.setAdminPermission(false);
                     repositoryDao.save(savedRepository);
                 }
             }
