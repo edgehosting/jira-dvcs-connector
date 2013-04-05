@@ -41,7 +41,7 @@
      	</p>
      	<p>	
      		{if $registering}
-     		If you need to trigger the synchronization on a commit basis, you can install the post commit hook manualy using the following callback url
+     		If you need to trigger the synchronization on a commit basis, you can install the post commit hook manually using the following callback url
      		{else}
      		If the post commit hook is installed, you can uninstall it manually. Use the following callback url as the reference
      		{/if}:
@@ -54,3 +54,21 @@
     </div>
 {/template}
 
+/**
+ *	@param dvcsHost
+ */
+{template .confirmLoggedIn}
+	<div class="confirmLoggedIn">
+		<div>
+			Please be sure that you are logged in to {$dvcsHost} before clicking "Continue" button.
+		</div>
+		<div class="buttons">
+			<a href="#" onclick="dvcsSubmitFormHandler(event, true); return false;" class="aui-button aui-button-primary">
+				Continue
+			</a>
+			<a href="#" onclick="return false;" class="aui-button">
+				Cancel
+			</a>
+		</div>
+	</div>
+{/template}
