@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.spi.github;
+package com.atlassian.jira.plugins.dvcs.spi.githubenterprise;
 
 import java.io.IOException;
 
@@ -9,32 +9,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 
 public class GithubEnterpriseCommunicator extends GithubCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(GithubEnterpriseCommunicator.class);
-    
     public static final String GITHUB_ENTERPRISE = "githube";
 
-    private GithubEnterpriseCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
-            @Qualifier("githubEnterpriseClientProvider") GithubEnterpriseClientProvider githubClientProvider)
+    private GithubEnterpriseCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
+            @Qualifier("githubEnterpriseClientProvider") GithubClientProvider githubClientProvider)
     {
-        super(changesetCache, githubOAuth, githubClientProvider);
+        super(changesetCache, oAuthStore, githubClientProvider);
     }
         
+    @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        UserService userService = new UserService(GithubOAuthUtils.createClientForGithubEnteprise(hostUrl));
-        boolean requiresOauth = StringUtils.isBlank(githubOAuth.getEnterpriseClientId()) || StringUtils.isBlank(githubOAuth.getEnterpriseClientSecret());
-
+        UserService userService = new UserService(GithubOAuthUtils.createClient(hostUrl));
         try
         {
             userService.getUser(accountName);
 
-            return new AccountInfo(GithubCommunicator.GITHUB, requiresOauth);
+            return new AccountInfo(GithubCommunicator.GITHUB, !isOauthConfigured());
 
         } catch (RequestException e)
         {
@@ -44,7 +45,7 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
             // GitHub Enterprise returns a 403 status for unauthorized requests.
             if (e.getStatus() == 403)
             {
-                return new AccountInfo(GithubCommunicator.GITHUB, requiresOauth);
+                return new AccountInfo(GithubCommunicator.GITHUB, !isOauthConfigured());
             }
 
         } catch (IOException e)
@@ -59,9 +60,9 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     @Override
     public boolean isOauthConfigured()
     {
-        return StringUtils.isNotBlank(githubOAuth.getEnterpriseHostUrl())
-                && StringUtils.isNotBlank(githubOAuth.getEnterpriseClientId())
-                && StringUtils.isNotBlank(githubOAuth.getEnterpriseClientSecret());
+        return StringUtils.isNotBlank(oAuthStore.getUrl(GITHUB_ENTERPRISE))
+                && StringUtils.isNotBlank(oAuthStore.getClientId(GITHUB_ENTERPRISE))
+                && StringUtils.isNotBlank(oAuthStore.getSecret(GITHUB_ENTERPRISE));
     }
     
     @Override

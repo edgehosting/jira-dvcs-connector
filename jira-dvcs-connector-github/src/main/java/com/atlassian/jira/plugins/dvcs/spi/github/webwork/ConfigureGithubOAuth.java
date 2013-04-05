@@ -4,33 +4,31 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
 
 public class ConfigureGithubOAuth extends JiraWebActionSupport
 {
-	private static final long serialVersionUID = 1L;
-
-	final Logger logger = LoggerFactory.getLogger(ConfigureGithubOAuth.class);
+    private static final Logger log = LoggerFactory.getLogger(ConfigureGithubOAuth.class);
    
-	final GithubOAuth githubOAuth;
-    final ApplicationProperties applicationProperties;
+    private final ApplicationProperties applicationProperties;
+    protected final OAuthStore oAuthStore;
     
     // Client ID (from GitHub OAuth Application)
-    String clientID = "";
+    protected String clientID = "";
     // Client Secret (from GitHub OAuth Application)
-    String clientSecret = "";
+    protected String clientSecret = "";
     // Confirmation Messages
-    String messages = "";
-    
-    String forceClear = "";
+    protected String messages = "";
+    protected String forceClear = "";
 
 
-    public ConfigureGithubOAuth(GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
+    public ConfigureGithubOAuth(OAuthStore oAuthStore, ApplicationProperties applicationProperties)
     {
-        this.githubOAuth = githubOAuth;
+        this.oAuthStore = oAuthStore;
         this.applicationProperties = applicationProperties;
     }
 
@@ -64,18 +62,18 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
 
     protected void addClientIdentifiers()
     {
-        githubOAuth.setClient(StringUtils.trim(clientID), StringUtils.trim(clientSecret));
+        oAuthStore.store(Host.GITHUB, StringUtils.trim(clientID), StringUtils.trim(clientSecret));
         messages = "GitHub Client Identifiers Set Correctly";
+    }
+    
+    public String getSavedClientID()
+    {
+        return oAuthStore.getClientId("github");
     }
 
     public String getSavedClientSecret()
     {
-        return githubOAuth.getClientSecret();
-    }
-
-    public String getSavedClientID()
-    {
-        return githubOAuth.getClientId();
+        return oAuthStore.getSecret("github");
     }
 
     public void setClientID(String value)
@@ -110,14 +108,14 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
         return applicationProperties.getBaseUrl();
     }
 
-	public String getForceClear()
-	{
-		return forceClear;
-	}
+    public String getForceClear()
+    {
+        return forceClear;
+    }
 
-	public void setForceClear(String forceClear)
-	{
-		this.forceClear = forceClear;
-	}
+    public void setForceClear(String forceClear)
+    {
+        this.forceClear = forceClear;
+    }
 
 }

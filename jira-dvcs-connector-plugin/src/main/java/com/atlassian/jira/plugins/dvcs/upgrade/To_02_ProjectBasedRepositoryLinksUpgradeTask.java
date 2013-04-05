@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.sal.api.message.Message;
 import com.atlassian.sal.api.upgrade.PluginUpgradeTask;
 
@@ -21,14 +21,14 @@ import com.atlassian.sal.api.upgrade.PluginUpgradeTask;
 public class To_02_ProjectBasedRepositoryLinksUpgradeTask implements PluginUpgradeTask
 {
     private static final Logger log = LoggerFactory.getLogger(To_02_ProjectBasedRepositoryLinksUpgradeTask.class);
-    private final BitbucketLinker linker;//TODO should not depend on Bitbucket module => BBC-331
     private final RepositoryService repositoryService;
     private final ChangesetService changesetService;
+    private final DvcsCommunicator communicator;
 
-    public To_02_ProjectBasedRepositoryLinksUpgradeTask(@Qualifier("defferedBitbucketLinker") BitbucketLinker linker,
+    public To_02_ProjectBasedRepositoryLinksUpgradeTask(@Qualifier("bitbucketCommunicator") DvcsCommunicator communicator,
             RepositoryService repositoryService, ChangesetService changesetService)
     {
-        this.linker = linker;
+        this.communicator = communicator;
         this.repositoryService = repositoryService;
         this.changesetService = changesetService;
     }
@@ -56,7 +56,7 @@ public class To_02_ProjectBasedRepositoryLinksUpgradeTask implements PluginUpgra
                 if (repository.isLinked())
                 {
                     log.debug("LINKING {} repository.", repository.getName());
-                    linker.linkRepository(repository,
+                    communicator.linkRepository(repository,
                             changesetService.findReferencedProjects(repository.getId()));
                 }
             } catch (Exception e)

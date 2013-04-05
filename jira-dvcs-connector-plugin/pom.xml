@@ -57,6 +57,12 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-dvcs-connector-github-enterprise</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>        
+        <dependency>
 			<groupId>com.atlassian.jira</groupId>
 			<artifactId>jira-core</artifactId>
 			<version>${jira.compile.version}</version>
@@ -238,39 +244,6 @@
 					</pluginArtifacts>
 					<functionalTestPattern>${functionalTestPattern}</functionalTestPattern>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.4</version>
-				<executions>
-					<execution>
-						<id>unpack</id>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>com.atlassian.jira.plugins</groupId>
-									<artifactId>jira-dvcs-connector-api</artifactId>
-									<version>${project.version}</version>
-								</artifactItem>
-								<artifactItem>
-									<groupId>com.atlassian.jira.plugins</groupId>
-									<artifactId>jira-dvcs-connector-bitbucket</artifactId>
-									<version>${project.version}</version>
-								</artifactItem>
-								<artifactItem>
-									<groupId>com.atlassian.jira.plugins</groupId>
-									<artifactId>jira-dvcs-connector-github</artifactId>
-									<version>${project.version}</version>
-								</artifactItem>
-							</artifactItems>
-							<outputDirectory>${project.build.directory}/classes</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
