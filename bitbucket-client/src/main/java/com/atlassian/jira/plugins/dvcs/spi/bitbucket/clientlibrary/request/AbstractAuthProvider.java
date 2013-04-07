@@ -11,11 +11,11 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
  * @author jhocman@atlassian.com
  *
  */
-public abstract class AbstractOauthProvider implements AuthProvider
+public abstract class AbstractAuthProvider implements AuthProvider
 {
 	private final String hostUrl;
 	
-	public AbstractOauthProvider(String hostUrl)
+	public AbstractAuthProvider(String hostUrl)
 	{
 		this.hostUrl = hostUrl;
 	}

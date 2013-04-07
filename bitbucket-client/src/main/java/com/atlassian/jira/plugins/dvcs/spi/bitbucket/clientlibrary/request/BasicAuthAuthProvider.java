@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
-public class BasicAuthAuthProvider extends AbstractOauthProvider
+public class BasicAuthAuthProvider extends AbstractAuthProvider
 {
 
 	private final String username;

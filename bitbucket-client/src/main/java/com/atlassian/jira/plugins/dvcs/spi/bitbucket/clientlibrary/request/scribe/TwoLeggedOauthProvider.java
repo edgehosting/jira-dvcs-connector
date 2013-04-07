@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AbstractOauthProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AbstractAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 
 /**
@@ -13,7 +13,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Remot
  * @author jhocman@atlassian.com
  *
  */
-public class TwoLeggedOauthProvider extends AbstractOauthProvider
+public class TwoLeggedOauthProvider extends AbstractAuthProvider
 {
 	private final String key;
 
