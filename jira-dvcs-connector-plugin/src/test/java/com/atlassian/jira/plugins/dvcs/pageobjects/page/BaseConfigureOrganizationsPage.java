@@ -159,14 +159,8 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
             if (repositoryName.equals(queriedRepositoryName))
             {
-                PageElement syncRepoLink = PageElementUtils.findTagWithAttribute(repositoryRow, "a", "onclick");
-                
-                String onclickAttributeValue = syncRepoLink.getAttribute("onclick");
-                // parsing: onclick="forceSync(90); AJS.$('.gh_messages.repository90').slideDown(); return false;"
-                int openBraceIndex  = onclickAttributeValue.indexOf('(');
-                int closeBraceIndex = onclickAttributeValue.indexOf(')');
-
-                return onclickAttributeValue.substring(openBraceIndex + 1, closeBraceIndex);
+            	String id = repositoryRow.getAttribute("id");
+            	return id.replaceAll("dvcs-repo-row-", "");
             }
         }
 
