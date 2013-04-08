@@ -263,7 +263,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     		// impose real URL to hidden input
     		AJS.$("#url").val(AJS.$("#urlGhe").val()); 
 
-    		if (!skipLoggingAllert) {
+    		if (!skipLoggingAlert) {
     			var repoEntryData = AJS.$("#repoEntry").data("ghe-confirm-logged-in");
     			repoEntryData.dvcsHost = dvcsHost;
     			repoEntryData.dialog.show();

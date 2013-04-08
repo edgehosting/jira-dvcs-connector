@@ -167,7 +167,7 @@
     </component>
 
     <component key="githubEnterpriseClientProvider" name="githubEnterpriseClientProvider"
-               class="com.atlassian.jira.plugins.dvcs.spi.github.GithubEnterpriseClientProvider">
+               class="com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseClientProvider">
         <description>Github Enterprise Client Provider</description>
     </component>
 
@@ -317,11 +317,6 @@
             <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.UpdateBitbucketCredentials"
                     alias="UpdateBitbucketCredentials" roles-required="admin">
                 <view name="input">/templates/dvcs/update-bitbucket-password.vm</view>
-            </action>
-
-			<action name="com.atlassian.jira.plugins.dvcs.webwork.SyncRepositoryListAction"
-                    alias="SyncRepositoryListAction" roles-required="admin">
-                <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
 
 			<action name="com.atlassian.jira.plugins.dvcs.webwork.DeleteOrganizationAction"
