@@ -34,10 +34,6 @@ public interface ChangesetService
 
     Map<ChangesetFile, String> getFileCommitUrls(Repository repository, Changeset changeset);
 
-    DvcsUser getUser(Repository repository, Changeset changeset);
-
-    String getUserUrl(Repository repository, Changeset changeset);
-
     Iterable<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
         
     void markSmartcommitAvailability(int id, boolean available);

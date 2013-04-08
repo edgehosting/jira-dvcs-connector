@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
@@ -50,7 +51,6 @@ import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
-import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubUserFactory;
 import com.google.common.collect.Iterators;
 
 public class GithubCommunicator implements DvcsCommunicator
@@ -60,25 +60,24 @@ public class GithubCommunicator implements DvcsCommunicator
     public static final String GITHUB = "github";
 
     private final ChangesetCache changesetCache;
-    protected final GithubOAuth githubOAuth;
-
     protected final GithubClientProvider githubClientProvider;
 
     private final HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
-    
-    public GithubCommunicator(ChangesetCache changesetCache, GithubOAuth githubOAuth,
+    protected final OAuthStore oAuthStore;
+
+    public GithubCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
             @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
     {
         this.changesetCache = changesetCache;
-        this.githubOAuth = githubOAuth;
+        this.oAuthStore = oAuthStore;
         this.githubClientProvider = githubClientProvider;
     }
 
     @Override
     public boolean isOauthConfigured()
     {
-        return StringUtils.isNotBlank(githubOAuth.getClientId())
-                && StringUtils.isNotBlank(githubOAuth.getClientSecret());
+        return StringUtils.isNotBlank(oAuthStore.getClientId(GITHUB))
+                && StringUtils.isNotBlank(oAuthStore.getClientId(GITHUB));
     }
 
     @Override
@@ -90,14 +89,12 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        UserService userService = new UserService(GitHubClient.createClient(hostUrl));
+
+        UserService userService = new UserService(githubClientProvider.createClient(hostUrl));
         try
         {
             userService.getUser(accountName);
-            boolean requiresOauth = StringUtils.isBlank(githubOAuth.getClientId())
-                    || StringUtils.isBlank(githubOAuth.getClientSecret());
-
-            return new AccountInfo(GithubCommunicator.GITHUB, requiresOauth);
+            return new AccountInfo(GithubCommunicator.GITHUB, !isOauthConfigured());
 
         } catch (IOException e)
         {
@@ -167,7 +164,7 @@ public class GithubCommunicator implements DvcsCommunicator
             throw new SourceControlException("Error retrieving list of repositories", e);
         }
     }
- 
+
     @Override
     public Changeset getChangeset(Repository repository, String node)
     {
@@ -177,32 +174,32 @@ public class GithubCommunicator implements DvcsCommunicator
         try
         {
             RepositoryCommit commit = commitService.getCommit(repositoryId, node);
-            
+
             //TODO Workaround for BBC-455, we need more sophisticated solution that prevents connector to hit GitHub too often when downloading changesets
             checkRequestRateLimit(commitService.getClient());
-            
+
             return GithubChangesetFactory.transform(commit, repository.getId(), null);
         } catch (IOException e)
         {
             throw new SourceControlException("could not get result", e);
         }
     }
-    
+
     private void checkRequestRateLimit(GitHubClient gitHubClient)
     {
         if (gitHubClient == null)
         {
             return;
         }
-        
+
         int requestLimit = gitHubClient.getRequestLimit();
         int remainingRequests = gitHubClient.getRemainingRequests();
-        
+
         if (requestLimit == -1 || remainingRequests == -1)
         {
             return;
         }
-        
+
         double threshold = Math.ceil(0.01f * requestLimit);
         if (remainingRequests<threshold)
         {
@@ -218,7 +215,7 @@ public class GithubCommunicator implements DvcsCommunicator
             }
         }
     }
-    
+
     @Override
     public Changeset getDetailChangeset(Repository repository, Changeset changeset)
     {
@@ -237,7 +234,7 @@ public class GithubCommunicator implements DvcsCommunicator
     /**
      * The git library is encoding parameters using ISO-8859-1. Lets trick it
      * and encode UTF-8 instead
-     * 
+     *
      * @param branch
      * @return
      */
@@ -305,16 +302,16 @@ public class GithubCommunicator implements DvcsCommunicator
             {
                 if (postCommitUrl.equals(hook.getConfig().get("url")))
                 {
-                    try 
+                    try
                     {
                         repositoryService.deleteHook(repositoryId, (int) hook.getId());
                     } catch (ProtocolException pe)
                     {
                         //BBC-364 if delete rest call doesn't work on Java client, we try Apache HttpClient
                         log.debug("Error removing postcommit hook [{}] for repository [{}], trying Apache HttpClient.", hook.getId(), repository.getRepositoryUrl());
- 
+
                         deleteHookByHttpClient(repository, hook);
-                        
+
                         log.debug("Deletion was successfull.");
                     }
                 }
@@ -341,24 +338,20 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getUser(Repository repository, String username)
     {
-        final UserService userService = githubClientProvider.getUserService(repository);
-
         try
         {
-            log.debug("Get user information for: [ {} ]", username);
-            final User ghUser = userService.getUser(username);
-            return GithubUserFactory.transform(ghUser);
+            UserService userService = githubClientProvider.getUserService(repository);
+            User ghUser = userService.getUser(username);
+            String login = ghUser.getLogin();
+            String name = ghUser.getName();
+            String displayName = StringUtils.isNotBlank(name) ? name : login;
+            String gravatarUrl = ghUser.getAvatarUrl();
+
+            return new DvcsUser(login, displayName, null, gravatarUrl, repository.getOrgHostUrl() + "/" + login);
         } catch (IOException e)
         {
-            log.debug("could not load user [ " + username + " ]");
-            return DvcsUser.UNKNOWN_USER;
+            throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public String getUserUrl(Repository repository, Changeset changeset)
-    {
-        return MessageFormat.format("{0}/{1}", repository.getOrgHostUrl(), changeset.getAuthor());
     }
 
     private List<BranchTip> getBranches(Repository repository)
@@ -388,7 +381,7 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             log.info("Can not obtain branches list from repository [ {} ]", repository.getSlug());
             // we need tip changeset of the branch
-            
+
             return Collections.emptyList();
         }
         return branches;
@@ -406,18 +399,18 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             baseUrl = baseUrl + "/api/v3";
         }
-        
+
         String url = baseUrl + "/repos/" + repositoryId.generateId() + "/hooks/" + hook.getId();
         HttpMethod method = new DeleteMethod(url);
 
         proxyConfig.configureProxy(httpClient, url);
-        
+
         Authentication auth = new OAuthAuthentication(repository.getCredential().getAccessToken());
         auth.addAuthentication(method, httpClient);
-        
+
         httpClient.executeMethod(method);
     }
-    
+
     @Override
     public boolean supportsInvitation(Organization organization)
     {

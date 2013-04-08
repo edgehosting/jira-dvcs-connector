@@ -11,70 +11,57 @@ import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ApiProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BaseRemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 
 /**
  * ScribeOauthRemoteRequestor
  * 
- * 
- * <br />
- * <br />
  * Created on 13.7.2012, 10:25:16 <br />
- * <br />
  * 
  * @author jhocman@atlassian.com
- * 
  */
 public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
 {
-
     protected static Logger log = LoggerFactory.getLogger(ScribeOauthRemoteRequestor.class);
-
     protected final String key;
-
     protected final String secret;
 
-    public ScribeOauthRemoteRequestor(String apiUrl, String key, String secret)
+    public ScribeOauthRemoteRequestor(ApiProvider apiProvider, String key, String secret)
     {
-        super(apiUrl);
+        super(apiProvider);
         this.key = key;
         this.secret = secret;
     }
 
     protected OAuthService createOauthService()
     {
-        return new ServiceBuilder().provider(new OAuthBitbucket10aApi(apiUrl, isTwoLegged())).apiKey(key)
+        return new ServiceBuilder().provider(new OAuthBitbucket10aApi(apiProvider.getApiUrl(), isTwoLegged())).apiKey(key)
                 .signatureType(SignatureType.Header).apiSecret(secret).debugStream(new DebugOutputStream(log)).build();
     }
     
     protected void addParametersForSigning(OAuthRequest request, Map<String, String> parameters)
     {
-        
-        if (parameters == null) {
+        if (parameters == null)
+        {
             return;
         }
-        
         Verb method = request.getVerb();
-        
-        if (method == Verb.POST || method == Verb.PUT) {
-            
+        if (method == Verb.POST || method == Verb.PUT)
+        {
             for (String paramName : parameters.keySet())
             {
                 request.addBodyParameter(paramName, parameters.get(paramName));
             }
-            
         }
-        
     }
 
     protected abstract boolean isTwoLegged();
-    
 
     static class EmptyToken extends Token
     {
         private static final long serialVersionUID = -3452471071058444368L;
-
         public EmptyToken()
         {
             super("", "");

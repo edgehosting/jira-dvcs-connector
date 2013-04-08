@@ -197,6 +197,18 @@ function showAddRepoDetails(show) {
 			dialog.updateHeight();
 		});
         
+		var repoEntryData = {};
+		AJS.$("#repoEntry").data("ghe-confirm-logged-in", repoEntryData);
+		repoEntryData.dialog = AJS.InlineDialog(AJS.$("#repoEntry input.submit"), "ghe-confirm-logged-in", 
+			function(content, trigger, showPopup) {
+    			content.html(jira.dvcs.connector.plugin.soy.confirmLoggedIn({
+					dvcsHost: repoEntryData.dvcsHost,
+				}));
+				showPopup();
+				return false;
+		}, {onTop: true, width: 500, noBind: true, hideDelay: null});
+		//
+        
         dialog.enabled = function(enabled) {
         	if (enabled) {
         		AJS.$("#add-organization-wait").removeClass("aui-icon-wait");
@@ -232,9 +244,7 @@ function showAddRepoDetails(show) {
 	dialog.updateHeight();
 }
 
-function dvcsSubmitFormHandler() {
-    AJS.$('#Submit').attr("disabled", "disabled");
-    dialog.enabled(false);
+function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     // submit form
     var organizationElement = AJS.$("#organization");
     // if not custom URL
@@ -252,8 +262,18 @@ function dvcsSubmitFormHandler() {
     	if ( selectedDvcs.val() == "githube") { // Github Enterprise
     		// impose real URL to hidden input
     		AJS.$("#url").val(AJS.$("#urlGhe").val()); 
-    		alert("Please be sure that you are logged in to " + dvcsHost);
+
+    		if (!skipLoggingAllert) {
+    			var repoEntryData = AJS.$("#repoEntry").data("ghe-confirm-logged-in");
+    			repoEntryData.dvcsHost = dvcsHost;
+    			repoEntryData.dialog.show();
+    			return false;
+    		}
     	}
+
+    	// disable add form
+    	dialog.enabled(false);
+
     	//
         AJS.messages.info({ title: "Connecting to " + dvcsHost + " to configure your account...", closeable : false});
         dialog.updateHeight();

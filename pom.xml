@@ -16,6 +16,7 @@
         <module>bitbucket-client</module>
         <module>jira-dvcs-connector-api</module>
         <module>jira-dvcs-connector-github</module>
+        <module>jira-dvcs-connector-github-enterprise</module>
         <module>jira-dvcs-connector-bitbucket</module>
         <module>jira-dvcs-connector-plugin</module>
     </modules>

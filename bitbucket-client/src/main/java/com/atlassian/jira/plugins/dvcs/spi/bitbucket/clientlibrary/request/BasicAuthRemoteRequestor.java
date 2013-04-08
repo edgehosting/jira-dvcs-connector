@@ -28,22 +28,24 @@ public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 
 	private final String password;
 
-	public BasicAuthRemoteRequestor(String apiUrl, String username, String password)
+	public BasicAuthRemoteRequestor(ApiProvider apiProvider, String username, String password)
 	{
-		super(apiUrl);
+		super(apiProvider);
 		this.username = username;
 		this.password = password;
 	}
 
-	@Override
-	protected void onConnectionCreated(DefaultHttpClient client, HttpRequestBase method, Map<String, String> params)
-	        throws IOException
-	{
-	    UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
-		try {
-			method.addHeader(new BasicScheme().authenticate(creds, method));
-		} catch (AuthenticationException e) {
-			// This should not happen for BasicScheme
-		}
-	}
+    @Override
+    protected void onConnectionCreated(DefaultHttpClient client, HttpRequestBase method, Map<String, String> params)
+            throws IOException
+    {
+        UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
+        try
+        {
+            method.addHeader(new BasicScheme().authenticate(creds, method));
+        } catch (AuthenticationException e)
+        {
+            // This should not happen for BasicScheme
+        }
+    }
 }

@@ -30,7 +30,7 @@ public class Repository
 	private transient Credential credential;
 	private transient String orgHostUrl;
 	private transient String orgName;
-	private transient boolean adminPermission;
+	private transient boolean adminPermission = true;
 	
 	@XmlElement
     private DefaultProgress sync;

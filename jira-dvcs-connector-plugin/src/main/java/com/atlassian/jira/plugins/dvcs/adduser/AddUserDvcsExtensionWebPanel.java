@@ -1,27 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.adduser;
 
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
-import com.atlassian.jira.plugins.dvcs.model.Group;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.web.model.AbstractWebPanel;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
-import com.opensymphony.util.TextUtils;
 
 /**
  * This panel extends user-add form in JIRA. It appends configured bitbucket
@@ -47,12 +36,6 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
     /** The template renderer. */
     private final TemplateRenderer templateRenderer;
 
-    /** The organization service. */
-    private final OrganizationService organizationService;
-
-    /** The communicator provider. */
-    private final DvcsCommunicatorProvider communicatorProvider;
-
     private final ApplicationProperties appProperties;
 
     private final PluginFeatureDetector featuresDetector;
@@ -67,13 +50,10 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
      * @param communicatorProvider
      *            the communicator provider
      */
-    public AddUserDvcsExtensionWebPanel(PluginAccessor pluginAccessor, OrganizationService organizationService,
-            DvcsCommunicatorProvider communicatorProvider, TemplateRenderer templateRenderer,
+    public AddUserDvcsExtensionWebPanel(PluginAccessor pluginAccessor, TemplateRenderer templateRenderer,
             ApplicationProperties appProperties, PluginFeatureDetector featuresDetector)
     {
         super(pluginAccessor);
-        this.organizationService = organizationService;
-        this.communicatorProvider = communicatorProvider;
         this.templateRenderer = templateRenderer;
         this.appProperties = appProperties;
         this.featuresDetector = featuresDetector;

@@ -112,16 +112,12 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         Map<ChangesetFile, String> fileCommitUrls = changesetService.getFileCommitUrls(repository, changeset);
         templateMap.put("file_commit_urls", fileCommitUrls);
 
-        DvcsUser user = changesetService.getUser(repository, changeset);
+        DvcsUser user = repositoryService.getUser(repository, changeset.getAuthor(), changeset.getRawAuthor());
 
-        String gravatarUrl = user.getAvatar().replace("s=32", "s=60");
         String commitMessage = changeset.getMessage();
 
-        templateMap.put("gravatar_url", gravatarUrl);
-
-        String userUrl = changesetService.getUserUrl(repository, changeset);
-        templateMap.put("user_url", userUrl);
-
+        templateMap.put("gravatar_url", user.getAvatar());
+        templateMap.put("user_url", user.getUrl());
         templateMap.put("login", login);
         templateMap.put("user_name", authorName);
         templateMap.put("commit_message", commitMessage);

@@ -1,68 +1,34 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
-import static com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES;
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.client.DateFormatter;
-import org.eclipse.egit.github.core.client.EventFormatter;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.event.Event;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException.InvalidResponseException;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOauthProvider;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
-import com.atlassian.sal.api.ApplicationProperties;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 
 public class GithubOAuthUtils
 {
-
     private final Logger log = LoggerFactory.getLogger(GithubOAuthUtils.class);
+    private final String baseUrl;
+    private final String clientId;
+    private final String secret;
 
-    private final GithubOAuth githubOAuth;
-    private final ApplicationProperties applicationProperties;
-    
-    private final GithubOauthProvider oauthProvider;
-    
-
-    public GithubOAuthUtils(GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
+    public GithubOAuthUtils(String baseUrl, String clientId, String secret)
     {
-        this(null, githubOAuth, applicationProperties);
+        this.baseUrl = baseUrl;
+        this.clientId = clientId;
+        this.secret = secret;
     }
-
-    public GithubOAuthUtils(GithubOauthProvider oauthProvider, GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
-    {
-        this.oauthProvider = oauthProvider;
-        this.githubOAuth = githubOAuth;
-        this.applicationProperties = applicationProperties;
-    }
-
 
     public String createGithubRedirectUrl(String nextAction, String url, String xsrfToken,
             String organization, String autoLinking, String autoSmartCommits)
@@ -70,7 +36,7 @@ public class GithubOAuthUtils
         String encodedRepositoryUrl = encode(url);
 
         // Redirect back URL
-        String redirectBackUrl = applicationProperties.getBaseUrl() + "/secure/admin/" + nextAction
+        String redirectBackUrl = baseUrl + "/secure/admin/" + nextAction
                 + "!finish.jspa?url=" + encodedRepositoryUrl + "&atl_token=" + xsrfToken + "&organization="
                 + organization + "&autoLinking=" + autoLinking + "&autoSmartCommits=" + autoSmartCommits;
         String encodedRedirectBackUrl = encode(redirectBackUrl);
@@ -78,7 +44,7 @@ public class GithubOAuthUtils
         // build URL to github
         //
         String githubAuthorizeUrl = url + "/login/oauth/authorize?scope=repo&client_id="
-                + clentId() + "&redirect_uri=" + encodedRedirectBackUrl;
+                + clientId + "&redirect_uri=" + encodedRedirectBackUrl;
 
         return githubAuthorizeUrl;
     }
@@ -86,7 +52,7 @@ public class GithubOAuthUtils
     public String requestAccessToken(String githubHostUrl, String code)
     {
         log.debug("Requesting access token at " + githubHostUrl + " with code " + code);
-        
+
         URL url;
         HttpURLConnection conn;
 
@@ -104,8 +70,8 @@ public class GithubOAuthUtils
         {
             String requestUrl = githubUrl + "/login/oauth/access_token";
 
-            String urlParameters = "client_id=" + clentId() + "&client_secret=" + clientSecret() + "&code=" + code;
-            
+            String urlParameters = "client_id=" + clientId + "&client_secret=" + secret + "&code=" + code;
+
             log.debug("requestAccessToken() - " + requestUrl + " with parameters " + urlParameters);
 
             url = new URL(requestUrl);
@@ -114,7 +80,7 @@ public class GithubOAuthUtils
             conn.setDoInput(true);
             conn.setInstanceFollowRedirects(true);
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); 
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             conn.setRequestProperty("charset", "utf-8");
             conn.setRequestProperty("Content-Length", "" + Integer.toString(urlParameters.getBytes().length));
             conn.setUseCaches (false);
@@ -123,7 +89,7 @@ public class GithubOAuthUtils
             wr.writeBytes(urlParameters);
             wr.flush();
             wr.close();
-            
+
             rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             while ((line = rd.readLine()) != null)
             {
@@ -183,125 +149,4 @@ public class GithubOAuthUtils
     {
         return CustomStringUtils.encode(url);
     }
-    
-    private String clientSecret()
-    {
-        if (oauthProvider != null)
-        {
-            return oauthProvider.provideClientSecret();
-        }
-        return githubOAuth.getClientSecret();
-    }
-    
-    private String clentId()
-    {
-        if (oauthProvider != null)
-        {
-            return oauthProvider.provideClientId();
-        }
-        return githubOAuth.getClientId();
-    }
-    
-    /**
-     * Create a GitHubClient to connect to the api.
-     *
-     * It uses the right host in case we're calling the github.com api.
-     * It uses the right protocol in case we're calling the GitHub Enterprise api.
-     *
-     * @param url is the GitHub's oauth host.
-     * @return a GitHubClient
-     */
-    public static GitHubClient createClient(String url) {
-        try {
-            URL urlObject = new URL(url);
-            String host = urlObject.getHost();
-            
-            if (HOST_DEFAULT.equals(host) || HOST_GISTS.equals(host)) {
-                host = HOST_API;
-            }
-            
-            GitHubClient result = new GitHubClient(host, -1, urlObject.getProtocol());
-            result.setUserAgent("JIRA DVCS Connector 1.3.x");
-            return result;
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-    
-    public static GitHubClient createClientForGithubEnteprise(String url) {
-        try {
-            URL urlObject = new URL(url);
-            String host = urlObject.getHost();
-            
-            if (HOST_DEFAULT.equals(host) || HOST_GISTS.equals(host)) {
-                host = HOST_API;
-            }
-            
-            return new GitHubEnterpriseClient(host, -1, urlObject.getProtocol());
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-    
-    private static class GitHubEnterpriseClient extends GitHubClient
-    {
-    	public GitHubEnterpriseClient(final String hostname, final int port,
-    			final String scheme)
-    	{
-    		super(hostname,port,scheme);
-    		gson = createGson(true);
-		}
-    	
-    	public static final Gson createGson(final boolean serializeNulls)
-    	{
-    		final GsonBuilder builder = new GsonBuilder();
-    		builder.registerTypeAdapter(Date.class, new ISODateFormatter());
-    		builder.registerTypeAdapter(Event.class, new EventFormatter());
-    		builder.setFieldNamingPolicy(LOWER_CASE_WITH_UNDERSCORES);
-    		if (serializeNulls)
-    			builder.serializeNulls();
-    		return builder.create();
-    	}
-    }
-    
-	private static class ISODateFormatter implements JsonDeserializer<Date>,
-			JsonSerializer<Date> {
-
-		private final Logger log = LoggerFactory.getLogger(ISODateFormatter.class);
-		
-		private final DateFormatter dateFormatter = new DateFormatter();
-		
-		
-		/**
-		 * Create date formatter
-		 */
-		public ISODateFormatter()
-		{
-		}
-
-		public Date deserialize(JsonElement json, Type typeOfT,
-				JsonDeserializationContext context) throws JsonParseException
-		{
-			final String value = json.getAsString();
-			
-			DateTimeFormatter fmt = ISODateTimeFormat.dateTimeNoMillis();
-			try
-			{
-				return fmt.parseDateTime(value).toDate();
-			} catch (IllegalArgumentException e)
-			{
-				log.debug("Could not parse '" + value + "'.", e);
-			}
-			
-			// let's try eGit dateFormatter
-			return dateFormatter.deserialize(json, typeOfT, context);
-		}
-
-		@Override
-		public JsonElement serialize(Date src, Type typeOfSrc,
-				JsonSerializationContext context) {
-			
-			return dateFormatter.serialize(src, typeOfSrc, context);
-		}
-	}
 }

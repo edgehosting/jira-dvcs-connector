@@ -1,223 +1,215 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
+import static com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator.GITHUB;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.sal.api.ApplicationProperties;
 
 public class AddGithubOrganization extends CommonDvcsConfigurationAction
 {
-    private static final long serialVersionUID = -5043563666764556942L;
-
     private final Logger log = LoggerFactory.getLogger(AddGithubOrganization.class);
 
-	private String url;
-	private String organization;
+    private String url;
+    private String organization;
 
-	private String oauthClientId;
-	private String oauthSecret;
-	private String oauthRequired;
+    private String oauthClientId;
+    private String oauthSecret;
+    private String oauthRequired;
 
-	// sent by GH on the way back
-	private String code;
+    // sent by GH on the way back
+    private String code;
 
-	private String accessToken = "";
+    private final OrganizationService organizationService;
+    private final GithubOAuthUtils githubOAuthUtils;
 
-	private final GithubOAuth githubOAuth;
-	private final OrganizationService organizationService;
-	private final GithubOAuthUtils githubOAuthUtils;
-	
+    private final OAuthStore oAuthStore;
+    
 
-	public AddGithubOrganization(OrganizationService organizationService,
-								GithubOAuth githubOAuth,
-								GithubOAuthUtils githubOAuthUtils)
-	{
-		this.organizationService = organizationService;
-		this.githubOAuth = githubOAuth;
-		this.githubOAuthUtils = githubOAuthUtils;
-	}
+    public AddGithubOrganization(OrganizationService organizationService,
+            OAuthStore oAuthStore, ApplicationProperties applicationProperties)
+    {
+        this.organizationService = organizationService;
+        this.oAuthStore = oAuthStore;
+        this.githubOAuthUtils = new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB), oAuthStore.getSecret(GITHUB));
+    }
 
-	@Override
-	@RequiresXsrfCheck
-	protected String doExecute() throws Exception
-	{
+    @Override
+    @RequiresXsrfCheck
+    protected String doExecute() throws Exception
+    {
         if (isOAuthConfigurationRequired())
         {
             configureOAuth();
         }
-		
-		// then continue
-		return redirectUserToGithub();
+        
+        // then continue
+        return redirectUserToGithub();
 
-	}
+    }
 
-	private void configureOAuth()
-	{
-		githubOAuth.setClient(oauthClientId, oauthSecret);
-	}
+    private void configureOAuth()
+    {
+        oAuthStore.store(Host.GITHUB, oauthClientId, oauthSecret);
+    }
 
-	private String redirectUserToGithub()
-	{
-		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubOrganization",
-				url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
+    private String redirectUserToGithub()
+    {
+        String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubOrganization",
+                url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
-		return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
-	}
+        return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
+    }
 
-	@Override
-	protected void doValidation()
-	{
-		if (StringUtils.isNotBlank(oauthRequired))
-		{
-			if (StringUtils.isBlank(oauthClientId) || StringUtils.isBlank(oauthSecret))
-			{
-				addErrorMessage("Missing credentials.");
-			}
-		}
-		
-		if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
-		{
-			addErrorMessage("Please provide both url and organization parameters.");
-		}
+    @Override
+    protected void doValidation()
+    {
+        if (StringUtils.isNotBlank(oauthRequired))
+        {
+            if (StringUtils.isBlank(oauthClientId) || StringUtils.isBlank(oauthSecret))
+            {
+                addErrorMessage("Missing credentials.");
+            }
+        }
+        
+        if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
+        {
+            addErrorMessage("Please provide both url and organization parameters.");
+        }
 
         AccountInfo accountInfo = organizationService.getAccountInfo("https://github.com", organization);
         if (accountInfo == null)
         {
             addErrorMessage("Invalid user/team account.");
         }
-	}
-	
+    }
+    
     protected boolean isOAuthConfigurationRequired()
     {
         return StringUtils.isNotBlank(oauthRequired);
     }
 
-	public String doFinish()
-	{
-		try
-		{
-			accessToken = requestAccessToken();
+    public String doFinish()
+    {
+        try
+        {
+            return doAddOrganization(githubOAuthUtils.requestAccessToken(code));
+        } catch (SourceControlException sce)
+        {
+            addErrorMessage(sce.getMessage());
+            log.warn(sce.getMessage());
+            if ( sce.getCause() != null )
+            {
+                log.warn("Caused by: " + sce.getCause().getMessage());
+            }
+            return INPUT;
+        
+        } catch (Exception e) {
+            addErrorMessage("Error obtain access token.");
+            return INPUT;
+        }
+    }
 
-		} catch (SourceControlException sce)
-		{
-			addErrorMessage(sce.getMessage());
-			log.warn(sce.getMessage());
-			if ( sce.getCause() != null )
-			{
-				log.warn("Caused by: " + sce.getCause().getMessage());
-			}
-			return INPUT;
-		
-		} catch (Exception e) {
-		    addErrorMessage("Error obtain access token.");
+    private String doAddOrganization(String accessToken)
+    {
+        try
+        {
+            Organization newOrganization = new Organization();
+            newOrganization.setName(organization);
+            newOrganization.setHostUrl(url);
+            newOrganization.setDvcsType("github");
+            newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
+            newOrganization.setCredential(new Credential(null, null, accessToken));
+            newOrganization.setSmartcommitsOnNewRepos(hadAutolinkingChecked());
+            
+            organizationService.save(newOrganization);
+            
+        } catch (SourceControlException e)
+        {
+            addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
+            log.debug("Failed adding the account: [" + e.getMessage() + "]");
             return INPUT;
         }
 
-		return doAddOrganization();
-	}
-
-	private String doAddOrganization()
-	{
-		try
-		{
-			Organization newOrganization = new Organization();
-			newOrganization.setName(organization);
-			newOrganization.setHostUrl(url);
-			newOrganization.setDvcsType("github");
-			newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
-			newOrganization.setCredential(new Credential(null, null, accessToken));
-			newOrganization.setSmartcommitsOnNewRepos(hadAutolinkingChecked());
-			
-			organizationService.save(newOrganization);
-			
-		} catch (SourceControlException e)
-		{
-			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
-			log.debug("Failed adding the account: [" + e.getMessage() + "]");
-			return INPUT;
-		}
-
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
-	}
+    }
 
-	private String requestAccessToken()
-	{
-		return githubOAuthUtils.requestAccessToken(code);
-	}
+    public static String encode(String url)
+    {
+        return CustomStringUtils.encode(url);
+    }
 
-	public static String encode(String url)
-	{
-		return CustomStringUtils.encode(url);
-	}
+    public String getCode()
+    {
+        return code;
+    }
 
-	public String getCode()
-	{
-		return code;
-	}
+    public void setCode(String code)
+    {
+        this.code = code;
+    }
 
-	public void setCode(String code)
-	{
-		this.code = code;
-	}
+    public String getUrl()
+    {
+        return url;
+    }
 
-	public String getUrl()
-	{
-		return url;
-	}
+    public void setUrl(String url)
+    {
+        this.url = url;
+    }
 
-	public void setUrl(String url)
-	{
-		this.url = url;
-	}
+    public String getOrganization()
+    {
+        return organization;
+    }
 
-	public String getOrganization()
-	{
-		return organization;
-	}
+    public void setOrganization(String organization)
+    {
+        this.organization = organization;
+    }
 
-	public void setOrganization(String organization)
-	{
-		this.organization = organization;
-	}
+    public String getOauthClientId()
+    {
+        return oauthClientId;
+    }
 
-	public String getOauthClientId()
-	{
-		return oauthClientId;
-	}
+    public void setOauthClientId(String oauthClientId)
+    {
+        this.oauthClientId = oauthClientId;
+    }
 
-	public void setOauthClientId(String oauthClientId)
-	{
-		this.oauthClientId = oauthClientId;
-	}
+    public String getOauthSecret()
+    {
+        return oauthSecret;
+    }
 
-	public String getOauthSecret()
-	{
-		return oauthSecret;
-	}
+    public void setOauthSecret(String oauthSecret)
+    {
+        this.oauthSecret = oauthSecret;
+    }
 
-	public void setOauthSecret(String oauthSecret)
-	{
-		this.oauthSecret = oauthSecret;
-	}
+    public String getOauthRequired()
+    {
+        return oauthRequired;
+    }
 
-	public String getOauthRequired()
-	{
-		return oauthRequired;
-	}
-
-	public void setOauthRequired(String oauthRequired)
-	{
-		this.oauthRequired = oauthRequired;
-	}
+    public void setOauthRequired(String oauthRequired)
+    {
+        this.oauthRequired = oauthRequired;
+    }
 
 }

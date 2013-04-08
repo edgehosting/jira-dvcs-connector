@@ -17,7 +17,7 @@
         function init_repositories()
         {
             // run timer for repos sync statuses
-               retrieveSyncStatus();
+			retrieveSyncStatus();
         }
      </script>
 

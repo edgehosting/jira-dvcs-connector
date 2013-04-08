@@ -19,7 +19,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountInfo;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.Links;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.AddBitbucketOrganization;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginController;
@@ -48,6 +47,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
     
     private static final String BITBUCKET_URL = "https://bitbucket.org";
     private static final String APP_SWITCHER_LINK_MODULE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:app-switcher-nav-link";
+    private static final String DEFAULT_INVITATION_GROUP = "developers";
     
     private final AccountsConfigProvider configProvider;
     private final OrganizationService organizationService;
@@ -386,7 +386,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
     {
         Organization newOrganization = new Organization();
         copyValues(info, newOrganization);
-        newOrganization.setDefaultGroups(Sets.newHashSet(new Group(AddBitbucketOrganization.DEFAULT_INVITATION_GROUP)));
+        newOrganization.setDefaultGroups(Sets.newHashSet(new Group(DEFAULT_INVITATION_GROUP)));
         return newOrganization;
     }
 
