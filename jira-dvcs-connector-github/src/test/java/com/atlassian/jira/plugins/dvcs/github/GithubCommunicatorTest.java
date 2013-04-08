@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.github;
 
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -23,7 +24,11 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -31,13 +36,7 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
 import com.atlassian.sal.api.net.ResponseException;
-
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
 
 /**
  * @author Martin Skurla
@@ -45,62 +44,62 @@ import static org.fest.assertions.api.Assertions.*;
  */
 public class GithubCommunicatorTest
 {
-	@Mock
-	private Repository repositoryMock;
-	@Mock
-	private GithubClientProvider githubClientProvider;
-	@Mock
-	private CommitService commitService;
-	@Mock
-	private RepositoryService repositoryService;
-	@Mock
-	private UserService userService;
-	@Mock
-	private User githubUser;
-	
-	// tested object
-	private DvcsCommunicator communicator;
+    @Mock
+    private Repository repositoryMock;
+    @Mock
+    private GithubClientProvider githubClientProvider;
+    @Mock
+    private CommitService commitService;
+    @Mock
+    private RepositoryService repositoryService;
+    @Mock
+    private UserService userService;
+    @Mock
+    private User githubUser;
+    
+    // tested object
+    private DvcsCommunicator communicator;
 
-	private ChangesetCacheImpl changesetCache;
-	
-	private class ChangesetCacheImpl implements ChangesetCache
-	{
-	    
-	    private final List<String> cache = new ArrayList<String>();
-	    
+    private ChangesetCacheImpl changesetCache;
+    
+    private class ChangesetCacheImpl implements ChangesetCache
+    {
+        
+        private final List<String> cache = new ArrayList<String>();
+        
         @Override
         public boolean isCached(int repositoryId, String changesetNode)
         {
             return cache.contains(changesetNode);
         }
-	    
+        
         public void add(String node)
         {
             cache.add(node);
         }
-	}
+    }
 
-	@BeforeMethod
-	public void initializeMocksAndGithubCommunicator()
+    @BeforeMethod
+    public void initializeMocksAndGithubCommunicator()
     {
         MockitoAnnotations.initMocks(this);
 
-        communicator = new GithubCommunicator(changesetCache = new ChangesetCacheImpl(), mock(GithubOAuth.class), githubClientProvider);
+        communicator = new GithubCommunicator(changesetCache = new ChangesetCacheImpl(), mock(OAuthStore.class), githubClientProvider);
         when(githubClientProvider.getRepositoryService(repositoryMock)).thenReturn(repositoryService);
         when(githubClientProvider.getUserService(repositoryMock)).thenReturn(userService);
         when(githubClientProvider.getCommitService(repositoryMock)).thenReturn(commitService);
-	}
+    }
 
-	@Test
-	public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub() throws IOException
+    @Test
+    public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub() throws IOException
     {
         when(repositoryMock.getOrgName()).thenReturn("ORG");
-		when(repositoryMock.getSlug())   .thenReturn("SLUG");
-		
-		communicator.setupPostcommitHook(repositoryMock, "POST-COMMIT-URL");
-		
-		verify(repositoryService).createHook(Matchers.<IRepositoryIdProvider>anyObject(),Matchers.<RepositoryHook>anyObject());
-	}
+        when(repositoryMock.getSlug())   .thenReturn("SLUG");
+        
+        communicator.setupPostcommitHook(repositoryMock, "POST-COMMIT-URL");
+        
+        verify(repositoryService).createHook(Matchers.<IRepositoryIdProvider>anyObject(),Matchers.<RepositoryHook>anyObject());
+    }
 
     @Test
     public void gettingUser_ShouldSendGETRequestToGithub_AndParseJsonResult() throws Exception

@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException.InvalidResponseException;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOAuth;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubOauthProvider;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.google.gson.Gson;
@@ -44,25 +42,17 @@ public class GithubOAuthUtils
 {
 
     private final Logger log = LoggerFactory.getLogger(GithubOAuthUtils.class);
+    private final String baseUrl;
+    private final String clientId;
+    private final String secret;
 
-    private final GithubOAuth githubOAuth;
-    private final ApplicationProperties applicationProperties;
-    
-    private final GithubOauthProvider oauthProvider;
-    
 
-    public GithubOAuthUtils(GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
+    public GithubOAuthUtils(String baseUrl, String clientId, String secret)
     {
-        this(null, githubOAuth, applicationProperties);
+        this.baseUrl = baseUrl;
+        this.clientId = clientId;
+        this.secret = secret;
     }
-
-    public GithubOAuthUtils(GithubOauthProvider oauthProvider, GithubOAuth githubOAuth, ApplicationProperties applicationProperties)
-    {
-        this.oauthProvider = oauthProvider;
-        this.githubOAuth = githubOAuth;
-        this.applicationProperties = applicationProperties;
-    }
-
 
     public String createGithubRedirectUrl(String nextAction, String url, String xsrfToken,
             String organization, String autoLinking, String autoSmartCommits)
@@ -70,7 +60,7 @@ public class GithubOAuthUtils
         String encodedRepositoryUrl = encode(url);
 
         // Redirect back URL
-        String redirectBackUrl = applicationProperties.getBaseUrl() + "/secure/admin/" + nextAction
+        String redirectBackUrl = baseUrl + "/secure/admin/" + nextAction
                 + "!finish.jspa?url=" + encodedRepositoryUrl + "&atl_token=" + xsrfToken + "&organization="
                 + organization + "&autoLinking=" + autoLinking + "&autoSmartCommits=" + autoSmartCommits;
         String encodedRedirectBackUrl = encode(redirectBackUrl);
@@ -78,7 +68,7 @@ public class GithubOAuthUtils
         // build URL to github
         //
         String githubAuthorizeUrl = url + "/login/oauth/authorize?scope=repo&client_id="
-                + clentId() + "&redirect_uri=" + encodedRedirectBackUrl;
+                + clientId + "&redirect_uri=" + encodedRedirectBackUrl;
 
         return githubAuthorizeUrl;
     }
@@ -104,7 +94,7 @@ public class GithubOAuthUtils
         {
             String requestUrl = githubUrl + "/login/oauth/access_token";
 
-            String urlParameters = "client_id=" + clentId() + "&client_secret=" + clientSecret() + "&code=" + code;
+            String urlParameters = "client_id=" + clientId + "&client_secret=" + secret + "&code=" + code;
             
             log.debug("requestAccessToken() - " + requestUrl + " with parameters " + urlParameters);
 
@@ -184,23 +174,6 @@ public class GithubOAuthUtils
         return CustomStringUtils.encode(url);
     }
     
-    private String clientSecret()
-    {
-        if (oauthProvider != null)
-        {
-            return oauthProvider.provideClientSecret();
-        }
-        return githubOAuth.getClientSecret();
-    }
-    
-    private String clentId()
-    {
-        if (oauthProvider != null)
-        {
-            return oauthProvider.provideClientId();
-        }
-        return githubOAuth.getClientId();
-    }
     
     /**
      * Create a GitHubClient to connect to the api.
@@ -221,7 +194,9 @@ public class GithubOAuthUtils
             }
             
             GitHubClient result = new GitHubClient(host, -1, urlObject.getProtocol());
-            result.setUserAgent("JIRA DVCS Connector 1.3.x");
+            // FIXME: should be fixed properly - via plugin name and their version
+            // this one is just hot fix
+            result.setUserAgent("JIRA DVCS Connector/1.3.2");
             return result;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);

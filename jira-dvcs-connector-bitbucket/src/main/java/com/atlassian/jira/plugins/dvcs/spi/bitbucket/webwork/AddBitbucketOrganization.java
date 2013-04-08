@@ -9,13 +9,14 @@ import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuth;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
@@ -29,159 +30,160 @@ import com.google.common.collect.Sets;
  */
 public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 {
-	private static final long serialVersionUID = 4366205447417138381L;
+    private static final long serialVersionUID = 4366205447417138381L;
 
-	private final static Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
-	
-	public static final String DEFAULT_INVITATION_GROUP = "developers";
+    private final static Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
+    
+    public static final String DEFAULT_INVITATION_GROUP = "developers";
 
-	private String url;
-	private String organization;
-	private String adminUsername;
-	private String adminPassword;
+    private String url;
+    private String organization;
+    private String adminUsername;
+    private String adminPassword;
 
-	private String oauthBbClientId;
-	private String oauthBbSecret;
-	private String oauthBbRequired;
+    private String oauthBbClientId;
+    private String oauthBbSecret;
+    private String oauthBbRequired;
 
-	private final OrganizationService organizationService;
+    private final OrganizationService organizationService;
 
-	private final BitbucketOAuth oauth;
 
-	private final com.atlassian.sal.api.ApplicationProperties ap;
-	
-	private String accessToken = "";
+    private final com.atlassian.sal.api.ApplicationProperties ap;
+    
+    private String accessToken = "";
 
-	public AddBitbucketOrganization(com.atlassian.sal.api.ApplicationProperties ap,
-			OrganizationService organizationService, BitbucketOAuth oauth)
-	{
-		this.ap = ap;
-		this.organizationService = organizationService;
-		this.oauth = oauth;
-	}
+    private final OAuthStore oAuthStore;
 
-	@Override
-	@RequiresXsrfCheck
-	protected String doExecute() throws Exception
-	{
+    public AddBitbucketOrganization(com.atlassian.sal.api.ApplicationProperties ap,
+            OrganizationService organizationService, OAuthStore oAuthStore)
+    {
+        this.ap = ap;
+        this.organizationService = organizationService;
+        this.oAuthStore = oAuthStore;
+    }
 
-		if (isOAuthConfigurationRequired())
-		{
-			configureOAuth();
-		}
+    @Override
+    @RequiresXsrfCheck
+    protected String doExecute() throws Exception
+    {
 
-		// then continue
-		return redirectUserToBitbucket();
+        if (isOAuthConfigurationRequired())
+        {
+            configureOAuth();
+        }
 
-	}
+        // then continue
+        return redirectUserToBitbucket();
 
-	private String redirectUserToBitbucket()
-	{
-		try
-		{
-			OAuthService service = createOAuthScribeService();
-			Token requestToken = service.getRequestToken();
-			String authUrl = service.getAuthorizationUrl(requestToken);
+    }
 
-			request.getSession().setAttribute("requestToken", requestToken);
+    private String redirectUserToBitbucket()
+    {
+        try
+        {
+            OAuthService service = createOAuthScribeService();
+            Token requestToken = service.getRequestToken();
+            String authUrl = service.getAuthorizationUrl(requestToken);
 
-			return SystemUtils.getRedirect(this, authUrl, true);
-		} catch (Exception e)
-		{
-		    log.warn("Error redirect user to bitbucket server.", e);
-			addErrorMessage("The authentication with Bitbucket has failed. Please check your OAuth settings.");
-			return INPUT;
-		}
-	}
+            request.getSession().setAttribute("requestToken", requestToken);
 
-	private OAuthService createOAuthScribeService()
-	{
-		String redirectBackUrl = ap.getBaseUrl() + "/secure/admin/AddBitbucketOrganization!finish.jspa?organization="
-				+ organization + "&autoLinking=" + getAutoLinking() + "&url=" + url + "&autoSmartCommits=" + getAutoSmartCommits() + "&atl_token=" + getXsrfToken();
+            return SystemUtils.getRedirect(this, authUrl, true);
+        } catch (Exception e)
+        {
+            log.warn("Error redirect user to bitbucket server.", e);
+            addErrorMessage("The authentication with Bitbucket has failed. Please check your OAuth settings.");
+            return INPUT;
+        }
+    }
 
-		return createBitbucketOAuthScribeService(redirectBackUrl);
-	}
+    private OAuthService createOAuthScribeService()
+    {
+        String redirectBackUrl = ap.getBaseUrl() + "/secure/admin/AddBitbucketOrganization!finish.jspa?organization="
+                + organization + "&autoLinking=" + getAutoLinking() + "&url=" + url + "&autoSmartCommits=" + getAutoSmartCommits() + "&atl_token=" + getXsrfToken();
 
-	private OAuthService createBitbucketOAuthScribeService(String callbackUrl)
-	{
-		ServiceBuilder sb = new ServiceBuilder().apiKey(oauth.getClientId())
-		                                        .signatureType(SignatureType.Header)
-		                                        .apiSecret(oauth.getClientSecret())
-		                                        .provider(new Bitbucket10aScribeApi(url))
-		                                        .debugStream(new DebugOutputStream(log));
-		
-		if (!StringUtils.isBlank(callbackUrl))
-		{
-			sb.callback(callbackUrl);
-		}
+        return createBitbucketOAuthScribeService(redirectBackUrl);
+    }
 
-		return sb.build();
-	}
+    private OAuthService createBitbucketOAuthScribeService(String callbackUrl)
+    {
+        ServiceBuilder sb = new ServiceBuilder().apiKey(oAuthStore.getClientId(Host.BITBUCKET.id))
+                                                .signatureType(SignatureType.Header)
+                                                .apiSecret(oAuthStore.getSecret(Host.BITBUCKET.id))
+                                                .provider(new Bitbucket10aScribeApi(url))
+                                                .debugStream(new DebugOutputStream(log));
+        
+        if (!StringUtils.isBlank(callbackUrl))
+        {
+            sb.callback(callbackUrl);
+        }
 
-	private void configureOAuth()
-	{
-		oauth.setClient(oauthBbClientId, oauthBbSecret);
-	}
+        return sb.build();
+    }
 
-	private boolean isOAuthConfigurationRequired()
-	{
-		return StringUtils.isNotBlank(oauthBbRequired);
-	}
+    private void configureOAuth()
+    {
+        oAuthStore.store(Host.BITBUCKET, oauthBbClientId, oauthBbSecret);
+    }
 
-	public String doFinish()
-	{
+    private boolean isOAuthConfigurationRequired()
+    {
+        return StringUtils.isNotBlank(oauthBbRequired);
+    }
 
-		// now get the access token
+    public String doFinish()
+    {
 
-		Verifier verifier = new Verifier(request.getParameter("oauth_verifier"));
-		Token requestToken = (Token) request.getSession().getAttribute("requestToken");
-		request.getSession().removeAttribute("requestToken");
+        // now get the access token
 
-		OAuthService service = createOAuthScribeService();
-		Token accessTokenObj = service.getAccessToken(requestToken, verifier);
-		accessToken = BitbucketOAuthAuthentication.generateAccessTokenString(accessTokenObj);
-	
-		return doAddOrganization();
-	}
+        Verifier verifier = new Verifier(request.getParameter("oauth_verifier"));
+        Token requestToken = (Token) request.getSession().getAttribute("requestToken");
+        request.getSession().removeAttribute("requestToken");
 
-	private String doAddOrganization()
-	{
-		try
-		{
-			Organization newOrganization = new Organization();
-			newOrganization.setName(organization);
-			newOrganization.setHostUrl(url);
-			newOrganization.setDvcsType("bitbucket");
-			newOrganization.setCredential(new Credential(null, null, accessToken));
-			newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
-			newOrganization.setSmartcommitsOnNewRepos(hadAutoSmartCommitsChecked());
-			newOrganization.setDefaultGroups(Sets.newHashSet(new Group(DEFAULT_INVITATION_GROUP)));
-			organizationService.save(newOrganization);
+        OAuthService service = createOAuthScribeService();
+        Token accessTokenObj = service.getAccessToken(requestToken, verifier);
+        accessToken = BitbucketOAuthAuthentication.generateAccessTokenString(accessTokenObj);
+    
+        return doAddOrganization();
+    }
 
-		} catch (SourceControlException.UnauthorisedException e)
-		{
-			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
-			log.debug("Failed adding the account: [" + e.getMessage() + "]");
-			return INPUT;
-		} catch (SourceControlException e)
-		{
-			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
-			log.debug("Failed adding the account: [" + e.getMessage() + "]");
-			return INPUT;
-		}
+    private String doAddOrganization()
+    {
+        try
+        {
+            Organization newOrganization = new Organization();
+            newOrganization.setName(organization);
+            newOrganization.setHostUrl(url);
+            newOrganization.setDvcsType("bitbucket");
+            newOrganization.setCredential(new Credential(null, null, accessToken));
+            newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
+            newOrganization.setSmartcommitsOnNewRepos(hadAutoSmartCommitsChecked());
+            newOrganization.setDefaultGroups(Sets.newHashSet(new Group(DEFAULT_INVITATION_GROUP)));
+            organizationService.save(newOrganization);
 
-		// go back to main DVCS configuration page
+        } catch (SourceControlException.UnauthorisedException e)
+        {
+            addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
+            log.debug("Failed adding the account: [" + e.getMessage() + "]");
+            return INPUT;
+        } catch (SourceControlException e)
+        {
+            addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
+            log.debug("Failed adding the account: [" + e.getMessage() + "]");
+            return INPUT;
+        }
+
+        // go back to main DVCS configuration page
                 return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
-	}
+    }
 
-	@Override
-	protected void doValidation()
-	{
-		if (StringUtils.isBlank(organization) || StringUtils.isBlank(url))
-		{
-			addErrorMessage("Invalid request, missing url or organization/account information.");
-		}
-		
+    @Override
+    protected void doValidation()
+    {
+        if (StringUtils.isBlank(organization) || StringUtils.isBlank(url))
+        {
+            addErrorMessage("Invalid request, missing url or organization/account information.");
+        }
+        
         if (StringUtils.isNotBlank(organization))
         {
             Organization integratedAccount = organizationService.findIntegratedAccount();
@@ -201,74 +203,74 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         }
     }
 
-	public String getAdminPassword()
-	{
-		return adminPassword;
-	}
+    public String getAdminPassword()
+    {
+        return adminPassword;
+    }
 
-	public void setAdminPassword(String adminPassword)
-	{
-		this.adminPassword = adminPassword;
-	}
+    public void setAdminPassword(String adminPassword)
+    {
+        this.adminPassword = adminPassword;
+    }
 
-	public String getUrl()
-	{
-		return url;
-	}
+    public String getUrl()
+    {
+        return url;
+    }
 
-	public void setUrl(String url)
-	{
-		this.url = url;
-	}
+    public void setUrl(String url)
+    {
+        this.url = url;
+    }
 
-	public String getOrganization()
-	{
-		return organization;
-	}
+    public String getOrganization()
+    {
+        return organization;
+    }
 
-	public void setOrganization(String organization)
-	{
-		this.organization = organization;
-	}
+    public void setOrganization(String organization)
+    {
+        this.organization = organization;
+    }
 
-	public String getAdminUsername()
-	{
-		return adminUsername;
-	}
+    public String getAdminUsername()
+    {
+        return adminUsername;
+    }
 
-	public void setAdminUsername(String adminUsername)
-	{
-		this.adminUsername = adminUsername;
-	}
+    public void setAdminUsername(String adminUsername)
+    {
+        this.adminUsername = adminUsername;
+    }
 
-	public String getOauthBbRequired()
-	{
-		return oauthBbRequired;
-	}
+    public String getOauthBbRequired()
+    {
+        return oauthBbRequired;
+    }
 
-	public void setOauthBbRequired(String oauthBbRequired)
-	{
-		this.oauthBbRequired = oauthBbRequired;
-	}
+    public void setOauthBbRequired(String oauthBbRequired)
+    {
+        this.oauthBbRequired = oauthBbRequired;
+    }
 
-	public String getOauthBbClientId()
-	{
-		return oauthBbClientId;
-	}
+    public String getOauthBbClientId()
+    {
+        return oauthBbClientId;
+    }
 
-	public void setOauthBbClientId(String oauthBbClientId)
-	{
-		this.oauthBbClientId = oauthBbClientId;
-	}
+    public void setOauthBbClientId(String oauthBbClientId)
+    {
+        this.oauthBbClientId = oauthBbClientId;
+    }
 
-	public String getOauthBbSecret()
-	{
-		return oauthBbSecret;
-	}
+    public String getOauthBbSecret()
+    {
+        return oauthBbSecret;
+    }
 
-	public void setOauthBbSecret(String oauthBbSecret)
-	{
-		this.oauthBbSecret = oauthBbSecret;
-	}
+    public void setOauthBbSecret(String oauthBbSecret)
+    {
+        this.oauthBbSecret = oauthBbSecret;
+    }
 
 }
