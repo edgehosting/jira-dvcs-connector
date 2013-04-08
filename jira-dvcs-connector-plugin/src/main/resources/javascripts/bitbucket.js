@@ -196,7 +196,7 @@ function showAddRepoDetails(show) {
 	}
 }
 
-function dvcsSubmitFormHandler(event, skipLoggingAllert) {
+function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     // submit form
     var organizationElement = AJS.$("#organization");
     // if not custom URL
