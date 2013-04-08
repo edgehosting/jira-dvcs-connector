@@ -196,8 +196,7 @@ function showAddRepoDetails(show) {
 	}
 }
 
-function dvcsSubmitFormHandler() {
-    AJS.$('#Submit').attr("disabled", "disabled");
+function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     // submit form
     var organizationElement = AJS.$("#organization");
     // if not custom URL
@@ -213,8 +212,18 @@ function dvcsSubmitFormHandler() {
     	if ( selectedDvcs.val() == "githube") { // Github Enterprise
     		// impose real URL to hidden input
     		AJS.$("#url").val(AJS.$("#urlGhe").val()); 
-    		alert("Please be sure that you are logged in to " + dvcsHost);
+
+    		if (!skipLoggingAllert) {
+    			var repoEntryData = AJS.$("#repoEntry").data("ghe-confirm-logged-in");
+    			repoEntryData.dvcsHost = dvcsHost;
+    			repoEntryData.dialog.show();
+    			return false;
+    		}
     	}
+
+    	// disable add form
+        AJS.$('#Submit').attr("disabled", "disabled");
+
     	//
         AJS.messages.info({ title: "Connecting to " + dvcsHost + " to configure your account...", closeable : false});
         // set url by selected type
