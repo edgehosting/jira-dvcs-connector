@@ -21,7 +21,7 @@ public class NoAuthAuthProvider extends AbstractAuthProvider
 	@Override
 	public RemoteRequestor provideRequestor()
 	{
-		return new BaseRemoteRequestor(getApiUrl());
+		return new BaseRemoteRequestor(this);
 	}
 
 

@@ -43,6 +43,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChange
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DvcsUserTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
+import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 
@@ -57,7 +58,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     /** The Constant BITBUCKET. */
     private static final String BITBUCKET = "bitbucket";
-    private static final String PLUGIN_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin";
 
     private final BitbucketLinker bitbucketLinker;
     private final String pluginVersion;
@@ -83,12 +83,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         this.oAuthStore = oAuthStore;
         this.bitbucketClientRemoteFactory = bitbucketClientRemoteFactory;
         this.changesetCache = changesetCache;
-        this.pluginVersion = getPluginVersion(pluginAccessor);
-    }
-
-    private static String getPluginVersion(PluginAccessor pluginAccessor)
-    {
-        return pluginAccessor.getPlugin(PLUGIN_KEY).getPluginInformation().getVersion();
+        this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
     }
 
     /**

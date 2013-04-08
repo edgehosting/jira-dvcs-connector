@@ -90,7 +90,8 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        UserService userService = new UserService(GitHubClient.createClient(hostUrl));
+        
+        UserService userService = new UserService(githubClientProvider.createClient(hostUrl));
         try
         {
             userService.getUser(accountName);

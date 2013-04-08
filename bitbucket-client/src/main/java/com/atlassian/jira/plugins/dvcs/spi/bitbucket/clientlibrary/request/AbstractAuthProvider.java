@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 /**
  * 
- * BaseOauthProvider
+ * AbstractAuthProvider
  *
  * 
  * <br /><br />
@@ -13,18 +13,43 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
  */
 public abstract class AbstractAuthProvider implements AuthProvider
 {
-	private final String hostUrl;
-	
-	public AbstractAuthProvider(String hostUrl)
-	{
-		this.hostUrl = hostUrl;
-	}
+    private final String hostUrl;
+    private int apiVersion = 1;
+    private String userAgent;
+
+    public AbstractAuthProvider(String hostUrl)
+    {
+        this.hostUrl = hostUrl;
+    }
 
     @Override
-	public String getApiUrl()
-	{
-		return hostUrl.replaceAll("/$", "") + "/api/1.0";
-	}
+    public String getApiUrl()
+    {
+        return hostUrl.replaceAll("/$", "") + "/api/"  + apiVersion + ".0";
+    }
 
+    @Override
+    public void setApiVersion(int apiVersion)
+    {
+        this.apiVersion = apiVersion;
+    }
+
+    @Override
+    public String getHostUrl()
+    {
+        return hostUrl;
+    }
+
+    @Override
+    public void setUserAgent(String userAgent)
+    {
+        this.userAgent = userAgent;
+    }
+
+    @Override
+    public String getUserAgent()
+    {
+        return userAgent;
+    }
 }
 

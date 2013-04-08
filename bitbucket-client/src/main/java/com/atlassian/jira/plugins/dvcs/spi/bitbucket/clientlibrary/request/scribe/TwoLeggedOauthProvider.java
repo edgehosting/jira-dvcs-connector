@@ -29,7 +29,7 @@ public class TwoLeggedOauthProvider extends AbstractAuthProvider
 	@Override
 	public RemoteRequestor provideRequestor()
 	{
-		return new TwoLegged10aOauthRemoteRequestor(getApiUrl(), key, secret);
+		return new TwoLegged10aOauthRemoteRequestor(this, key, secret);
 	}
 
 

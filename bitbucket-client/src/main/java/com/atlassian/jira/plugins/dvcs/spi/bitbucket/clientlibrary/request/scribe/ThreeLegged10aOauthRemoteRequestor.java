@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scri
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.scribe.extractors.HeaderExtractorImpl;
@@ -11,6 +12,8 @@ import org.scribe.model.OAuthRequest;
 import org.scribe.model.Token;
 import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
+
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ApiProvider;
 
 /**
  * ThreeLegged10aOauthRemoteRequestor
@@ -42,9 +45,9 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
      * @param accessTokenWithSecret
      *            the access token = TOKEN + '&' + TOKEN_SECRET
      */
-    public ThreeLegged10aOauthRemoteRequestor(String apiUrl, String key, String secret, String accessTokenWithSecret)
+    public ThreeLegged10aOauthRemoteRequestor(ApiProvider apiProvider, String key, String secret, String accessTokenWithSecret)
     {
-        super(apiUrl, key, secret);
+        super(apiProvider, key, secret);
         this.accessTokenWithSecret = accessTokenWithSecret;
         this.authHeaderCreator = new HeaderExtractorImpl();
     }
@@ -74,7 +77,7 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
 
     public static Token generateAccessTokenObject(String accessToken)
     {
-        if (accessToken != null && !accessToken.trim().isEmpty())
+        if (StringUtils.isNotBlank(accessToken))
         {
             String[] parts = accessToken.split("&");
             if (parts.length == 2)

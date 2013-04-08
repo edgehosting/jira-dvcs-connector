@@ -31,7 +31,7 @@ public class ThreeLegged10aOauthProvider extends AbstractAuthProvider
 	@Override
 	public RemoteRequestor provideRequestor()
 	{
-		return new ThreeLegged10aOauthRemoteRequestor(getApiUrl(), key, secret, accessTokenWithSecret);
+		return new ThreeLegged10aOauthRemoteRequestor(this, key, secret, accessTokenWithSecret);
 	}
 
 }
