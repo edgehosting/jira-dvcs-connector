@@ -6,17 +6,13 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Remot
 /**
  * TwoLeggedOauthProvider
  *
- * 
- * <br /><br />
  * Created on 13.7.2012, 15:06:37
- * <br /><br />
- * @author jhocman@atlassian.com
  *
+ * @author jhocman@atlassian.com
  */
 public class TwoLeggedOauthProvider extends AbstractAuthProvider
 {
 	private final String key;
-
 	private final String secret;
 
 	public TwoLeggedOauthProvider(String hostUrl, String key, String secret)
@@ -31,7 +27,5 @@ public class TwoLeggedOauthProvider extends AbstractAuthProvider
 	{
 		return new TwoLegged10aOauthRemoteRequestor(this, key, secret);
 	}
-
-
 }
 

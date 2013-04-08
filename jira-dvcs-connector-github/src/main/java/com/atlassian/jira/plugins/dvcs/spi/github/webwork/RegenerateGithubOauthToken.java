@@ -17,12 +17,9 @@ public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
     private static final long serialVersionUID = 5153475610903119473L;
 
     private final Logger log = LoggerFactory.getLogger(RegenerateGithubOauthToken.class);
-
     // sent by GH on the way back
     private String code;
-
     protected final String baseUrl;
-
 
     public RegenerateGithubOauthToken(OrganizationService organizationService, RepositoryService repositoryService,ApplicationProperties applicationProperties, OAuthStore oAuthStore)
     {
@@ -38,10 +35,10 @@ public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
                 organizationUrl, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
         return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
     }
-    
+
     protected String getRedirectAction()
     {
-        return "RegenerateGithubOauthToken"; 
+        return "RegenerateGithubOauthToken";
     }
 
     protected GithubOAuthUtils getOAuthUtils()
@@ -54,7 +51,7 @@ public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
     {
         return getOAuthUtils().requestAccessToken(organizationService.get(Integer.parseInt(organization), false).getHostUrl(), code);
     }
-    
+
     public String getCode()
     {
         return code;

@@ -52,4 +52,3 @@ public abstract class AbstractAuthProvider implements AuthProvider
         return userAgent;
     }
 }
-

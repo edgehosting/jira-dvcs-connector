@@ -4,5 +4,3 @@ public interface AuthProvider extends ApiProvider
 {
     RemoteRequestor provideRequestor();
 }
-
-

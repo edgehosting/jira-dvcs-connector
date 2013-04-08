@@ -17,25 +17,19 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ApiPr
 
 /**
  * ThreeLegged10aOauthRemoteRequestor
- * 
- * 
- * <br />
- * <br />
+ *
  * Created on 13.7.2012, 10:26:08 <br />
- * <br />
- * 
+ *
  * @author jhocman@atlassian.com
- * 
  */
 public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequestor
 {
-
     private final String accessTokenWithSecret;
     private final HeaderExtractorImpl authHeaderCreator;
 
     /**
      * The Constructor.
-     * 
+     *
      * @param apiUrl
      *            the api url
      * @param key
@@ -52,7 +46,7 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
         this.authHeaderCreator = new HeaderExtractorImpl();
     }
 
-    
+
     @Override
     protected void onConnectionCreated(DefaultHttpClient client, HttpRequestBase method, Map<String, String> parameters)
             throws IOException
@@ -63,16 +57,15 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
         //
         OAuthService service = createOauthService();
         OAuthRequest request = new OAuthRequest(Verb.valueOf(method.getMethod()), method.getURI().toString());
-        
+
         addParametersForSigning(request, parameters);
-        
+
         service.signRequest(generateAccessTokenObject(accessTokenWithSecret), request);
 
         String header = authHeaderCreator.extract(request);
         method.addHeader(OAuthConstants.HEADER, header);
-        
-        log.debug("3LO signing took [{}] ms ", System.currentTimeMillis() - start);
 
+        log.debug("3LO signing took [{}] ms ", System.currentTimeMillis() - start);
     }
 
     public static Token generateAccessTokenObject(String accessToken)
@@ -93,5 +86,4 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
     {
         return false;
     }
-
 }

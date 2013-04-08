@@ -31,7 +31,6 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-
 public class GithubEnterpriseClientProvider extends GithubClientProvider
 {
 	public GithubEnterpriseClientProvider(AuthenticationFactory authenticationFactory, PluginAccessor pluginAccessor)
@@ -44,19 +43,19 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
     {
     	return createClientForGithubEnteprise(url, userAgent);
     }
-    
+
     public static GitHubClient createClientForGithubEnteprise(String url, String userAgent)
     {
         try
         {
             URL urlObject = new URL(url);
             String host = urlObject.getHost();
-            
+
             if (HOST_DEFAULT.equals(host) || HOST_GISTS.equals(host))
             {
                 host = HOST_API;
             }
-            
+
             GitHubClient result = new GitHubEnterpriseClient(host, -1, urlObject.getProtocol());
             result.setUserAgent(userAgent);
             return result;
@@ -66,7 +65,7 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
         }
     }
 
-    
+
     private static class GitHubEnterpriseClient extends GitHubClient
     {
     	public GitHubEnterpriseClient(final String hostname, final int port,
@@ -75,7 +74,7 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
     		super(hostname,port,scheme);
     		gson = createGson(true);
 		}
-    	
+
     	public static final Gson createGson(final boolean serializeNulls)
     	{
     		final GsonBuilder builder = new GsonBuilder();
@@ -87,15 +86,15 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
     		return builder.create();
     	}
     }
-    
+
 	private static class ISODateFormatter implements JsonDeserializer<Date>, JsonSerializer<Date>
 	{
 
 		private final Logger log = LoggerFactory.getLogger(ISODateFormatter.class);
-		
+
 		private final DateFormatter dateFormatter = new DateFormatter();
-		
-		
+
+
 		/**
 		 * Create date formatter
 		 */
@@ -103,11 +102,12 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
 		{
 		}
 
-		public Date deserialize(JsonElement json, Type typeOfT,
+		@Override
+        public Date deserialize(JsonElement json, Type typeOfT,
 				JsonDeserializationContext context) throws JsonParseException
 		{
 			final String value = json.getAsString();
-			
+
 			DateTimeFormatter fmt = ISODateTimeFormat.dateTimeNoMillis();
 			try
 			{
@@ -116,7 +116,7 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
 			{
 				log.debug("Could not parse '" + value + "'.", e);
 			}
-			
+
 			// let's try eGit dateFormatter
 			return dateFormatter.deserialize(json, typeOfT, context);
 		}
@@ -124,7 +124,7 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
 		@Override
 		public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context)
 		{
-			
+
 			return dateFormatter.serialize(src, typeOfSrc, context);
 		}
 	}

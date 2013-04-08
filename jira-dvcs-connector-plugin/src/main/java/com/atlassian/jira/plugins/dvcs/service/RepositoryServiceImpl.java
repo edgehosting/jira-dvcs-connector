@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser.UnknownUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
@@ -29,27 +31,27 @@ import com.google.common.collect.Maps;
  */
 public class RepositoryServiceImpl implements RepositoryService
 {
-    
+
     /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(RepositoryServiceImpl.class);
 
     /** The communicator provider. */
     private final DvcsCommunicatorProvider communicatorProvider;
-    
+
     /** The repository dao. */
     private final RepositoryDao repositoryDao;
-    
+
     /** The synchronizer. */
     private final Synchronizer synchronizer;
-    
+
     /** The changeset service. */
     private final ChangesetService changesetService;
-    
+
     /** The application properties. */
     private final ApplicationProperties applicationProperties;
 
     private final PluginSettingsFactory pluginSettingsFactory;
-    
+
     /**
      * The Constructor.
      *
@@ -104,16 +106,16 @@ public class RepositoryServiceImpl implements RepositoryService
     public synchronized void syncRepositoryList(Organization organization, boolean soft)
     {
         log.debug("Synchronising list of repositories");
-        
+
         InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
         invalidOrganizationsManager.setOrganizationValid(organization.getId(), true);
-        
+
         // get repositories from the dvcs hosting server
         DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-        
+
         List<Repository> remoteRepositories;
-        
-        try 
+
+        try
         {
             remoteRepositories = communicator.getRepositories(organization);
         } catch (SourceControlException.UnauthorisedException e)
@@ -139,18 +141,18 @@ public class RepositoryServiceImpl implements RepositoryService
         // start asynchronous changesets synchronization for all linked repositories in organization
         syncAllInOrganization(organization.getId(), soft, newRepoSlugs);
     }
-    
+
     @Override
     public void syncRepositoryList(Organization organization)
     {
         syncRepositoryList(organization, true);
-        
+
     }
-    
+
 
     /**
      * Removes duplicated repositories.
-     * 
+     *
      * @param organization
      * @param storedRepositories
      */
@@ -182,7 +184,7 @@ public class RepositoryServiceImpl implements RepositoryService
     {
         Set<String> newRepoSlugs = new HashSet<String>();
         Map<String, Repository> remoteRepos = makeRepositoryMap(remoteRepositories);
-        
+
         // remove existing
         for (Repository localRepo : storedRepositories)
         {
@@ -224,7 +226,7 @@ public class RepositoryServiceImpl implements RepositoryService
                 }
             }
         }
-        
+
         return newRepoSlugs;
     }
 
@@ -300,7 +302,7 @@ public class RepositoryServiceImpl implements RepositoryService
     public void sync(int repositoryId, boolean softSync)
     {
         Repository repository = get(repositoryId);
-        
+
         // looks like repository was deleted before we started to synchronise it
         if (repository != null)
         {
@@ -314,8 +316,8 @@ public class RepositoryServiceImpl implements RepositoryService
     /**
      * synchronization of changesets in all repositories which are in given organization
      * @param organizationId organizationId
-     * @param soft 
-     * @param newRepoSlugs 
+     * @param soft
+     * @param newRepoSlugs
      */
     private void syncAllInOrganization(int organizationId, boolean soft, Set<String> newRepoSlugs)
     {
@@ -379,20 +381,20 @@ public class RepositoryServiceImpl implements RepositoryService
     public RepositoryRegistration enableRepository(int repoId, boolean linked)
     {
         RepositoryRegistration registration = new RepositoryRegistration();
-        
+
         Repository repository = repositoryDao.get(repoId);
-                
+
         if (repository != null)
         {
             registration.setRepository(repository);
-            
+
             if (!linked)
             {
                 synchronizer.stopSynchronization(repository);
             }
 
             repository.setLinked(linked);
-            
+
             String postCommitUrl = getPostCommitUrl(repository);
             registration.setCallBackUrl(postCommitUrl);
             try
@@ -404,11 +406,11 @@ public class RepositoryServiceImpl implements RepositoryService
                 log.debug("Could not add or remove postcommit hook", e);
                 registration.setCallBackUrlInstalled(!linked);
             }
-            
+
             log.debug("Enable repository [{}]", repository);
             repositoryDao.save(repository);
         }
-        
+
         return registration;
     }
 
@@ -442,7 +444,7 @@ public class RepositoryServiceImpl implements RepositoryService
     private void addOrRemovePostcommitHook(Repository repository, String postCommitCallbackUrl)
     {
         DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
-        
+
         if (repository.isLinked())
         {
                communicator.setupPostcommitHook(repository, postCommitCallbackUrl);
@@ -514,7 +516,7 @@ public class RepositoryServiceImpl implements RepositoryService
                             + ", slug = " + repository.getRepositoryUrl(), e);
         }
     }
-    
+
     @Override
     public void onOffLinkers(boolean enableLinkers)
     {
@@ -523,11 +525,11 @@ public class RepositoryServiceImpl implements RepositoryService
         // remove the variable first so adding and removing linkers works
         pluginSettingsFactory.createGlobalSettings().remove(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM);
 
-        // add or remove linkers 
+        // add or remove linkers
         for (Repository repository : getAllRepositories())
         {
             log.debug((enableLinkers ? "Adding" : "Removing") + " linkers for" + repository.getSlug());
-            
+
             DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
             if (enableLinkers && repository.isLinked())
             {
@@ -537,10 +539,31 @@ public class RepositoryServiceImpl implements RepositoryService
                 communicator.linkRepository(repository, new HashSet<String>());
             }
         }
-        
+
         if (!enableLinkers)
         {
             pluginSettingsFactory.createGlobalSettings().put(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM, Boolean.FALSE.toString());
+        }
+    }
+
+    @Override
+    public DvcsUser getUser(Repository repository, String author, String rawAuthor)
+    {
+        log.debug("Get user information for: [ {}, {}]", author, rawAuthor);
+
+        try
+        {
+            DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+            DvcsUser user = communicator.getUser(repository, author);
+            if (user instanceof DvcsUser.UnknownUser)
+            {
+                user.setRawAuthor(rawAuthor);
+            }
+            return user;
+        } catch (Exception e)
+        {
+            log.debug("Could not load user [" + author + ", " + rawAuthor + "]", e);
+            return new UnknownUser(author, rawAuthor != null ? rawAuthor : author, repository.getOrgHostUrl());
         }
     }
 
