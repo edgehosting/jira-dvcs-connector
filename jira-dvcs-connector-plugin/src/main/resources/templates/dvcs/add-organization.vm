@@ -18,8 +18,6 @@
         {
             // run timer for repos sync statuses
                retrieveSyncStatus();
-            // bind submit handler
-            AJS.$("#repoEntry").submit(dvcsSubmitFormHandler);
         }
      </script>
 
@@ -49,7 +47,7 @@
         #end
         
 
-        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account &gt;&gt;" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account &gt;&gt;" />
+        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account" />
 
         <div id="addRepositoryContent">
         <div id="addRepositoryDetails" class="aui-message form-body">
@@ -66,7 +64,7 @@
                 
                 <div class="field-group" >
                   <label for="urlSelect">Host:</label>
-                  <select id="urlSelect" name="urlSelect" class="select" onchange="switchDvcsDetails(this)">
+                  <select id="urlSelect" name="urlSelect" class="select">
                     <option value="bitbucket">Bitbucket</option>
                     <option value="github">GitHub</option>
                     #if ( $action.isGithubEnterpriseEnabled() )
@@ -78,7 +76,7 @@
                 </div>
             
                 <div class="field-group" >
-                  <label for="organization">Team or User Account:</label>
+                  <label for="organization">Team or User Account:<span class="aui-icon icon-required">Required</span></label>
                   <input type="text" id="organization" name="organization" value=""/>
                   <div class="fieldValue" id="organizationReadOnly"></div>
                   <div id="org-error" class="dvcs-error">This field is required.</div>
@@ -160,12 +158,6 @@
 
                 <div id="aui-message-bar"></div>
 
-                <div class="buttons-container">
-                    <div class="buttons">
-                        <input class="button submit" type="submit" name="Submit" id="Submit" value="Add" />
-                        <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>
-                    </div>
-                </div>
             </form>
         </div>
         </div>
@@ -333,7 +325,7 @@
                 
                 <td class="dvcs-org-reponame"><a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
 					#if(!$repo.hasAdminPermission())
-						<a id="admin-permission" title="No admin permission. The post commit hook could not be installed.">
+						<a id="admin-permission" title="No admin permissions. The post commit hook could not be installed.">
 							<span class="aui-icon aui-icon-warning">Warning</span>
 						</a>
 					#end	

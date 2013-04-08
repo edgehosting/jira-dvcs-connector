@@ -61,6 +61,7 @@ function switchDvcsDetailsInternal(dvcsType) {
 			AJS.$("#oauthRequiredGhe").val("");
 		}
 	}  
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -159,45 +160,81 @@ function getLastCommitRelativeDateHtml(daysAgo) {
     return html;
 }
 
+var dialog = null;
+
 function showAddRepoDetails(show) {
 
-	if (show) {
-		// Reset to default view:
-		AJS.$('#repoEntry').attr("action", "");
-		// - hide username/password
-		AJS.$("#github-form-section").hide();
-		// - show url, organization field
-		AJS.$('#urlSelect').show();
-		AJS.$('#urlSelect').val(0); // select BB by default
-		AJS.$('#urlReadOnly').hide();
-
-		AJS.$('#organization').show();
-		AJS.$('#organizationReadOnly').hide();
-		//
-		AJS.$('#Submit').removeAttr("disabled");
-		// clear all form errors
-		DvcsValidator.clearAllErrors();
+	if (!dialog) {
+		dialog = new AJS.Dialog({
+			width: 800, 
+			height: 400, 
+			id: "add-organization-dialog", 
+			closeOnOutsideClick: false
+		});
+		dialog.addHeader("Add New Account");
+	
+		dialog.addPanel("", AJS.$("#repoEntry"), "panel-body");
 		
-		// enable bitbucket form
-		switchDvcsDetailsInternal(0);
-
-		AJS.$('#linkRepositoryButton').fadeOut(function() {
-			AJS.$('#addRepositoryDetails').slideDown();
-			AJS.$("#organization").focus().select();
+		dialog.addButtonPanel();
+	
+		dialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon'>Wait</span>");
+		
+		var submitButton = dialog.addSubmit("Add", function (dialog) {
+		    AJS.$("#repoEntry").submit();
 		});
-
-	} else {
-
-		AJS.$('#addRepositoryDetails').slideUp(function() {
-			AJS.$('#linkRepositoryButton').fadeIn();
-			AJS.$("#organization").focus().select();
+	
+		dialog.addCancel("Cancel", function (dialog) {
+			console.log(dialog);
+			AJS.$("#repoEntry").trigger('reset');
+			AJS.$("#aui-message-bar").empty();
+		    dialog.hide();
+		}, "#");
+		
+        // bind submit handler
+        AJS.$("#repoEntry").submit(dvcsSubmitFormHandler);
+        AJS.$('#urlSelect').change(function(event) {
+			switchDvcsDetails(event.target);
+			dialog.updateHeight();
 		});
-
+        
+        dialog.enabled = function(enabled) {
+        	if (enabled) {
+        		AJS.$("#add-organization-wait").removeClass("aui-icon-wait");
+        		AJS.$('#add-organization-dialog .button-panel-submit-button').removeAttr("disabled");
+        	} else {
+        		AJS.$("#add-organization-wait").addClass("aui-icon-wait");
+        		AJS.$('#add-organization-dialog .button-panel-submit-button').attr("disabled", "disabled");
+        	}
+        }
 	}
+	// Reset to default view:
+	AJS.$('#repoEntry').attr("action", "");
+	// - hide username/password
+	AJS.$("#github-form-section").hide();
+	// - show url, organization field
+	AJS.$('#urlSelect').show();
+	AJS.$('#urlSelect').val(0); // select BB by default
+	AJS.$('#urlReadOnly').hide();
+
+	AJS.$('#organization').show();
+	AJS.$('#organizationReadOnly').hide();
+	
+	dialog.enabled(true);
+	
+	// clear all form errors
+	DvcsValidator.clearAllErrors();
+	
+	// enable bitbucket form
+	switchDvcsDetailsInternal(0);
+
+	AJS.$("#organization").focus().select();
+	dialog.show();
+	dialog.updateHeight();
 }
 
 function dvcsSubmitFormHandler() {
     AJS.$('#Submit').attr("disabled", "disabled");
+    dialog.enabled(false);
     // submit form
     var organizationElement = AJS.$("#organization");
     // if not custom URL
@@ -205,6 +242,8 @@ function dvcsSubmitFormHandler() {
     	// some really simple validation
     	if (!validateAddOrganizationForm()) {
     		AJS.$('#Submit').removeAttr("disabled");
+    		dialog.enabled(true);
+    		dialog.updateHeight();
     		return false;
     	}
     	var selectedDvcs = AJS.$("#urlSelect option:selected");
@@ -217,6 +256,7 @@ function dvcsSubmitFormHandler() {
     	}
     	//
         AJS.messages.info({ title: "Connecting to " + dvcsHost + " to configure your account...", closeable : false});
+        dialog.updateHeight();
         // set url by selected type
         return true; // submit form
 	}
