@@ -1,143 +1,64 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
+import static com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator.GITHUB;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
-import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
-import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.jira.plugins.dvcs.webwork.RegenerateOauthTokenAction;
+import com.atlassian.sal.api.ApplicationProperties;
 
-public class RegenerateGithubOauthToken extends CommonDvcsConfigurationAction
+public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
 {
-	private static final long serialVersionUID = -2316358416248237835L;
+    private static final long serialVersionUID = 5153475610903119473L;
 
-	private final Logger log = LoggerFactory.getLogger(RegenerateGithubOauthToken.class);
+    private final Logger log = LoggerFactory.getLogger(RegenerateGithubOauthToken.class);
+    // sent by GH on the way back
+    private String code;
+    protected final String baseUrl;
 
-	private String organization; // in the meaning of id
+    public RegenerateGithubOauthToken(OrganizationService organizationService, RepositoryService repositoryService,ApplicationProperties applicationProperties, OAuthStore oAuthStore)
+    {
+        super(organizationService, repositoryService, oAuthStore);
+        this.baseUrl = applicationProperties.getBaseUrl();
+    }
 
-	// sent by GH on the way back
-	private String code;
-
-	private String accessToken = "";
-
-
-	private final OrganizationService organizationService;
-	private final GithubOAuthUtils githubOAuthUtils;
-	
-
-	public RegenerateGithubOauthToken(OrganizationService organizationService,
-								GithubOAuthUtils githubOAuthUtils)
-	{
-		this.organizationService = organizationService;
-		this.githubOAuthUtils = githubOAuthUtils;
-	}
-
-	@Override
-	@RequiresXsrfCheck
-	protected String doExecute() throws Exception
-	{
-		// go GH
-		return redirectUserToGithub();
-
-	}
-
-	protected String redirectUserToGithub()
-	{
-		String organizationUrl = getHostUrl();
-
-        String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl(getRedirectAction(),
-				organizationUrl, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
-
+    @Override
+    protected String redirectUserToGrantAccess()
+    {
+        String organizationUrl = organizationService.get(Integer.parseInt(organization), false).getHostUrl();
+        String githubAuthorizeUrl = getOAuthUtils().createGithubRedirectUrl(getRedirectAction(),
+                organizationUrl, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
         return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
-	}
+    }
 
-	protected String getHostUrl()
-	{
-	    return organizationService.get(Integer.parseInt(organization), false).getHostUrl();
-	}
-	
-	protected String getRedirectAction()
-	{
-	    return "RegenerateGithubOauthToken"; 
-	}
+    protected String getRedirectAction()
+    {
+        return "RegenerateGithubOauthToken";
+    }
 
-	@Override
-	protected void doValidation()
-	{
+    protected GithubOAuthUtils getOAuthUtils()
+    {
+        return new GithubOAuthUtils(baseUrl, oAuthStore.getClientId(GITHUB), oAuthStore.getSecret(GITHUB));
+    }
 
+    @Override
+    protected String getAccessToken()
+    {
+        return getOAuthUtils().requestAccessToken(organizationService.get(Integer.parseInt(organization), false).getHostUrl(), code);
+    }
 
-	}
-	
-	public String doFinish()
-	{
+    public String getCode()
+    {
+        return code;
+    }
 
-		try
-		{
-
-			accessToken = requestAccessToken();
-
-		} catch (SourceControlException sce)
-		{
-			addErrorMessage(sce.getMessage());
-			log.warn(sce.getMessage());
-			if ( sce.getCause() != null )
-			{
-				log.warn("Caused by: " + sce.getCause().getMessage());
-			}
-			return INPUT;
-		}
-
-		return doChangeAccessToken();
-	}
-
-	private String doChangeAccessToken()
-	{
-		try
-		{
-			organizationService.updateCredentialsAccessToken(Integer.parseInt(organization), accessToken);
-			
-		} catch (SourceControlException e)
-		{
-			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
-			log.debug("Failed adding the account: [" + e.getMessage() + "]");
-			return INPUT;
-		}
-
-		return getRedirect("SyncRepositoryListAction.jspa?organizationId=" + organization + "&atl_token=" + CustomStringUtils.encode(getXsrfToken()));
-	}
-
-	private String requestAccessToken()
-	{
-
-		return githubOAuthUtils.requestAccessToken(getHostUrl(), code);
-	}
-
-	public static String encode(String url)
-	{
-		return CustomStringUtils.encode(url);
-	}
-
-	public String getCode()
-	{
-		return code;
-	}
-
-	public void setCode(String code)
-	{
-		this.code = code;
-	}
-
-	public String getOrganization()
-	{
-		return organization;
-	}
-
-	public void setOrganization(String organization)
-	{
-		this.organization = organization;
-	}
-
+    public void setCode(String code)
+    {
+        this.code = code;
+    }
 }

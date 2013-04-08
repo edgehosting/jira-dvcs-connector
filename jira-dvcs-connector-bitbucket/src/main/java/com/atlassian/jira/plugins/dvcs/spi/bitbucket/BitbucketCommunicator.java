@@ -40,9 +40,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChangesetTransformer;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DvcsUserTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
+import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 
@@ -57,7 +57,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     /** The Constant BITBUCKET. */
     private static final String BITBUCKET = "bitbucket";
-    private static final String PLUGIN_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin";
 
     private final BitbucketLinker bitbucketLinker;
     private final String pluginVersion;
@@ -69,7 +68,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     /**
      * The Constructor.
-     * 
+     *
      * @param bitbucketLinker
      * @param pluginAccessor
      * @param oauth
@@ -83,12 +82,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         this.oAuthStore = oAuthStore;
         this.bitbucketClientRemoteFactory = bitbucketClientRemoteFactory;
         this.changesetCache = changesetCache;
-        this.pluginVersion = getPluginVersion(pluginAccessor);
-    }
-
-    private static String getPluginVersion(PluginAccessor pluginAccessor)
-    {
-        return pluginAccessor.getPlugin(PLUGIN_KEY).getPluginInformation().getVersion();
+        this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
     }
 
     /**
@@ -166,7 +160,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             // get the changeset
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
-            BitbucketChangeset bitbucketChangeset = remoteClient.getChangesetsRest().getChangeset(repository.getOrgName(), 
+            BitbucketChangeset bitbucketChangeset = remoteClient.getChangesetsRest().getChangeset(repository.getOrgName(),
                             repository.getSlug(), node);
 
             Changeset fromBitbucketChangeset = ChangesetTransformer.fromBitbucketChangeset(repository.getId(), bitbucketChangeset);
@@ -177,7 +171,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             throw new SourceControlException("Could not get changeset [" + node + "] from " + repository.getRepositoryUrl(), e);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -190,7 +184,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
             List<BitbucketChangesetWithDiffstat> changesetDiffStat = remoteClient.getChangesetsRest().getChangesetDiffStat(repository.getOrgName(),
                     repository.getSlug(), changeset.getNode(), Changeset.MAX_VISIBLE_FILES);
-            // merge it all 
+            // merge it all
             return DetailedChangesetTransformer.fromChangesetAndBitbucketDiffstats(changeset, changesetDiffStat);
         } catch (BitbucketRequestException e)
         {
@@ -213,12 +207,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
         };
     }
-    
+
     private List<BranchTip> getBranches(Repository repository)
     {
         List<BranchTip> branchTips = new ArrayList<BranchTip>();
         BitbucketBranchesAndTags branchesAndTags = retrieveBranchesAndTags(repository);
-                
+
             List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
             for (BitbucketBranch bitbucketBranch : bitbucketBranches)
             {
@@ -236,7 +230,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 }
             }
 
-        // Bitbucket returns raw_nodes for each branch, but changesetiterator works 
+        // Bitbucket returns raw_nodes for each branch, but changesetiterator works
         // with nodes. We need to use only first 12 characters from the node
         for (BranchTip branchTip : branchTips)
         {
@@ -261,7 +255,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             }
         });
     }
-    
+
     private BitbucketBranchesAndTags getBranchesAndTags(Repository repository)
     {
         try
@@ -275,7 +269,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             throw new SourceControlException("Could not retrieve list of branches", e);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -384,28 +378,16 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public DvcsUser getUser(Repository repository, String username)
+    public DvcsUser getUser(Repository repository, String author)
     {
-        try
-        {
-            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
-            BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getUser(username);
-            return DvcsUserTransformer.fromBitbucketAccount(bitbucketAccount);
-        } catch (BitbucketRequestException e)
-        {
-            log.debug("Could not load user [" + username + "]", e);
-            return DvcsUser.UNKNOWN_USER;
-        }
+        BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
+        BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getUser(author);
+        String username = bitbucketAccount.getUsername();
+        String fullName = bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName();
+        String avatar = bitbucketAccount.getAvatar();
+        return new DvcsUser(username, fullName, null, avatar, repository.getOrgHostUrl() + "/" + username);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getUserUrl(Repository repository, Changeset changeset)
-    {
-        return MessageFormat.format("{0}/{1}", repository.getOrgHostUrl(), changeset.getAuthor());
-    }
 
     /**
      * {@inheritDoc}

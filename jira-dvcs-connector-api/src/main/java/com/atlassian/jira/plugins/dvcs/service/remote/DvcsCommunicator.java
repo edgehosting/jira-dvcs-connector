@@ -40,9 +40,7 @@ public interface DvcsCommunicator
 
     String getFileCommitUrl(Repository repository, Changeset changeset, String file,  int index);
 
-    DvcsUser getUser(Repository repository, String username);
-
-    String getUserUrl(Repository repository, Changeset changeset);
+	DvcsUser getUser(Repository repository, String author);
     
     boolean isOauthConfigured();
 

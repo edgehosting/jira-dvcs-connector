@@ -128,12 +128,6 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public String getUserUrl(Repository repository, Changeset changeset)
-    {
-        return delegate.getUserUrl(repository, changeset);
-    }
-
-    @Override
     public boolean isOauthConfigured()
     {
         return delegate.isOauthConfigured();

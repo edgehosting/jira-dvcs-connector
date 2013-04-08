@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -27,6 +28,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.HttpProtocolParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,14 +49,13 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadReq
 public class BaseRemoteRequestor implements RemoteRequestor
 {
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
-
-    protected final String apiUrl;
+    protected final ApiProvider apiProvider;
     private final HttpClientProxyConfig proxyConfig;
 
-    public BaseRemoteRequestor(String apiUrl)
+    public BaseRemoteRequestor(ApiProvider apiProvider)
     {
-        this.apiUrl = apiUrl;
-        proxyConfig = new HttpClientProxyConfig();
+        this.apiProvider = apiProvider;
+        this.proxyConfig = new HttpClientProxyConfig();
     }
 
     @Override
@@ -346,6 +347,12 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private void createConnection(DefaultHttpClient client, HttpRequestBase method, String uri, Map<String, String> params)
             throws IOException, URISyntaxException
     {
+        if (StringUtils.isNotBlank(apiProvider.getUserAgent()))
+        {
+            HttpProtocolParams.setUserAgent(client.getParams(), apiProvider.getUserAgent());
+        }
+
+        String apiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
         proxyConfig.configureProxy(client, apiUrl + uri);
         
         String finalUrl = afterFinalUriConstructed(method, apiUrl + uri, params);

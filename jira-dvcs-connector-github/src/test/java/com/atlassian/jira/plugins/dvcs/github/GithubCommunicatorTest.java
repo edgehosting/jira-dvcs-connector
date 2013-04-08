@@ -107,7 +107,7 @@ public class GithubCommunicatorTest
         when(userService.getUser("USER-NAME")).thenReturn(githubUser);
         when(githubUser.getLogin()).thenReturn("Test GitHub user login");
         when(githubUser.getName()).thenReturn("Test GitHub user name");
-        when(githubUser.getGravatarId()).thenReturn("gravatarId");
+        when(githubUser.getAvatarUrl()).thenReturn("https://secure.gravatar.com/avatar/gravatarId?s=60");
         
         DvcsUser githubUser = communicator.getUser(repositoryMock, "USER-NAME");
         

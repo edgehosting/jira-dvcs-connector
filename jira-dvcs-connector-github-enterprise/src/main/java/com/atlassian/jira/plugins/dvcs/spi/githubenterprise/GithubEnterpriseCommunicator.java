@@ -12,9 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
 
 public class GithubEnterpriseCommunicator extends GithubCommunicator
 {
@@ -22,7 +20,7 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     public static final String GITHUB_ENTERPRISE = "githube";
 
     private GithubEnterpriseCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
-            @Qualifier("githubEnterpriseClientProvider") GithubClientProvider githubClientProvider)
+            @Qualifier("githubEnterpriseClientProvider") GithubEnterpriseClientProvider githubClientProvider)
     {
         super(changesetCache, oAuthStore, githubClientProvider);
     }
@@ -30,7 +28,7 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        UserService userService = new UserService(GithubOAuthUtils.createClient(hostUrl));
+        UserService userService = new UserService(githubClientProvider.createClient(hostUrl));
         try
         {
             userService.getUser(accountName);

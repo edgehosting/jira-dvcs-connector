@@ -92,26 +92,6 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
-    public DvcsUser getUser(Repository repository, Changeset changeset)
-    {
-        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-        String username = changeset.getAuthor();
-        
-        if (StringUtils.isBlank(username))
-        {
-            return new DvcsUser(DvcsUser.UNKNOWN_USER.getUsername(), changeset.getRawAuthor(), DvcsUser.UNKNOWN_USER.getAvatar());
-        }
-        return communicator.getUser(repository, username);
-    }
-
-    @Override
-    public String getUserUrl(Repository repository, Changeset changeset)
-    {
-        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-        return communicator.getUserUrl(repository, changeset);
-    }
-
-    @Override
     public Iterable<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf)
     {
         List<Changeset> changesets = changesetDao.getLatestChangesets(maxResults, gf);

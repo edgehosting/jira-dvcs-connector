@@ -1,11 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
-public interface AuthProvider
+public interface AuthProvider extends ApiProvider
 {
-
-	RemoteRequestor provideRequestor();
-	
-	String getApiUrl();
-	
+    RemoteRequestor provideRequestor();
 }
-

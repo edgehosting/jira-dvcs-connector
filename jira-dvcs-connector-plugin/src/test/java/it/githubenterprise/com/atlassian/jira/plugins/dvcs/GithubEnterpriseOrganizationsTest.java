@@ -31,7 +31,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubEnterpriseOAuthCon
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
-import com.atlassian.jira.plugins.dvcs.spi.github.webwork.GithubOAuthUtils;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.elements.PageElement;
@@ -46,6 +46,7 @@ public class GithubEnterpriseOrganizationsTest extends BaseOrganizationTest<Gith
 //    private static final String TEST_NOT_EXISTING_URL = "mynotexistingaccount124";
     private static final String REPO_ADMIN_LOGIN = "jirabitbucketconnector";
     private static final String REPO_ADMIN_PASSWORD = PasswordUtil.getPassword("jirabitbucketconnector");
+    private static final String USER_AGENT = "DVCS Connector Test/X.x";
     
     private static String clientID;
     private static String clientSecret;
@@ -265,7 +266,7 @@ public class GithubEnterpriseOrganizationsTest extends BaseOrganizationTest<Gith
     
     private static Set<Long> extractGithubHookIdsForRepositoryToRemove(String repositoryName) throws IOException
     {
-        GitHubClient gitHubClient = GithubOAuthUtils.createClient(GITHUB_ENTERPRISE_URL);
+        GitHubClient gitHubClient = GithubClientProvider.createClient(GITHUB_ENTERPRISE_URL, USER_AGENT);
         gitHubClient.setCredentials(REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
 
         RepositoryService repositoryService = new RepositoryService(gitHubClient);
