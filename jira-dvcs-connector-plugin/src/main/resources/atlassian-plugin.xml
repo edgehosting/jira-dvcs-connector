@@ -575,8 +575,6 @@
 	        <include>/**/*.soy</include>
 	    </directory>
 
-	    <dependency>com.atlassian.stash.stash-web-plugin:server-soy-templates</dependency>
-		
 		<resource type="download" name="jira-dvcs-connector-plugin.soy.js" location="soy/jira-dvcs-connector-plugin.soy" />
 	</web-resource>
 

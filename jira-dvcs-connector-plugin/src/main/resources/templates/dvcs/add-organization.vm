@@ -17,7 +17,20 @@
         function init_repositories()
         {
             // run timer for repos sync statuses
-               retrieveSyncStatus();
+			retrieveSyncStatus();
+			// TODO: mst confirm dialog - confirm that you are logged inside Git Hub Enterprise.
+			var repoEntryData = {};
+			AJS.$("#repoEntry").data("ghe-confirm-logged-in", repoEntryData);
+			repoEntryData.dialog = AJS.InlineDialog(AJS.$("#repoEntry input.submit"), "ghe-confirm-logged-in", 
+				function(content, trigger, showPopup) {
+	    			content.html(jira.dvcs.connector.plugin.soy.confirmLoggedIn({
+    					dvcsHost: repoEntryData.dvcsHost,
+    				}));
+    				showPopup();
+    				return false;
+			}, {onTop: true, width: 500, noBind: true, hideDelay: null});
+			//
+
             // bind submit handler
             AJS.$("#repoEntry").submit(dvcsSubmitFormHandler);
         }
@@ -331,7 +344,13 @@
                     <span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
                 </td>
                 
-                <td class="dvcs-org-reponame"><a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a></td>
+                <td class="dvcs-org-reponame"><a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
+					#if(!$repo.hasAdminPermission())
+						<a id="admin-permission" title="No admin permission. The post commit hook could not be installed.">
+							<span class="aui-icon aui-icon-warning">Warning</span>
+						</a>
+					#end	
+				</td>
 
                 
                 <td class="action" headers="action" style="text-align: right; white-space: nowrap;">

@@ -175,8 +175,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, String> params, ResponseCallback<T> callback)
     {
         DefaultHttpClient client = new DefaultHttpClient();
-        HttpProtocolParams.setUserAgent(client.getParams(), "JIRA DVCS Connector 1.4.x");
-
         RemoteResponse response = null;
        
         try
@@ -359,6 +357,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
         String isApiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl() ;
         proxyConfig.configureProxy(client, isApiUrl + uri);
+        
         String finalUrl = afterFinalUriConstructed(method, isApiUrl + uri, params);
         method.setURI(new URI(finalUrl)); 
         //

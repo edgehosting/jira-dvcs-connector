@@ -35,15 +35,15 @@
 	<div class="project-key-help">
     	<p>
      		<strong>
-     			The repository has been {if $registering}linked{else}unlinked{/if} successfully, but post commit hook could not be {if $registering}installed{else}uninstalled{/if}.
-     			{if $registering}The repository will be still synchronized in schedulled period.{/if}
+     			The repository has been {if $registering}linked{else}unlinked{/if} successfully, but the post commit hook could not be {if $registering}installed{else}uninstalled{/if}.
+     			{if $registering}The repository will be still synchronized in the scheduled period.{/if}
      		</strong>
      	</p>
      	<p>	
      		{if $registering}
-     		If you need to trigger synchronization on commit basis, you can install post commit hook  manualy using the following callback url
+     		If you need to trigger the synchronization on a commit basis, you can install the post commit hook manually using the following callback url
      		{else}
-     		If post commit hook is installed, you can uninstall it manually. Use the following callback url as the reference
+     		If the post commit hook is installed, you can uninstall it manually. Use the following callback url as the reference
      		{/if}:
     	</p>
     	<div class="aui-message info">
@@ -54,3 +54,21 @@
     </div>
 {/template}
 
+/**
+ *	@param dvcsHost
+ */
+{template .confirmLoggedIn}
+	<div class="confirmLoggedIn">
+		<div>
+			Please be sure that you are logged in to {$dvcsHost} before clicking "Continue" button.
+		</div>
+		<div class="buttons">
+			<a href="#" onclick="dvcsSubmitFormHandler(event, true); return false;" class="aui-button aui-button-primary">
+				Continue
+			</a>
+			<a href="#" onclick="return false;" class="aui-button">
+				Cancel
+			</a>
+		</div>
+	</div>
+{/template}

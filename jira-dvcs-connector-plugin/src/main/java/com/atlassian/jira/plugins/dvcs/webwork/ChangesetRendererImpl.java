@@ -29,7 +29,9 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
 
     private final TemplateRenderer templateRenderer;
 
-    public ChangesetRendererImpl(ChangesetService changesetService, RepositoryService repositoryService, IssueLinker issueLinker, ApplicationProperties applicationProperties, TemplateRenderer templateRenderer) {
+    public ChangesetRendererImpl(ChangesetService changesetService, RepositoryService repositoryService,
+            IssueLinker issueLinker, ApplicationProperties applicationProperties, TemplateRenderer templateRenderer)
+    {
         this.changesetService = changesetService;
         this.repositoryService = repositoryService;
         this.issueLinker = issueLinker;

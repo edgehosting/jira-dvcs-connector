@@ -14,14 +14,13 @@ import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 public abstract class RegenerateOauthTokenAction extends CommonDvcsConfigurationAction
 {
     private static final long serialVersionUID = -5518449007071758982L;
-
     private final Logger log = LoggerFactory.getLogger(RegenerateOauthTokenAction.class);
 
-    protected String organization; // in the meaning of id
+    protected String organization; // in the meaning of id TODO rename to organizationId
 
     protected final OrganizationService organizationService;
     protected final RepositoryService repositoryService;
-    
+
     protected final OAuthStore oAuthStore;
 
     public RegenerateOauthTokenAction(OrganizationService organizationService, RepositoryService repositoryService, OAuthStore oAuthStore)
@@ -46,7 +45,7 @@ public abstract class RegenerateOauthTokenAction extends CommonDvcsConfiguration
     }
 
     protected abstract String getAccessToken();
-    
+
     private String doChangeAccessToken()
     {
         String accessToken = getAccessToken();
@@ -70,7 +69,7 @@ public abstract class RegenerateOauthTokenAction extends CommonDvcsConfiguration
         {
             log.error("Could not refresh repository list", e);
         }
-        
+
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
     }
 
