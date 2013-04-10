@@ -233,15 +233,15 @@ public class RepositoryServiceImpl implements RepositoryService
 
     private void updateAdminPermission(Repository repository, boolean hasAdminPermission)
     {
-    	Progress progress = repository.getSync();
-    	if (progress == null)
-    	{
-    		progress = new DefaultProgress();
-    		progress.setFinished(true);
-    		synchronizer.putProgress(repository, progress);
-    	}
-    	
-    	progress.setAdminPermission(hasAdminPermission);
+        Progress progress = repository.getSync();
+        if (progress == null)
+        {
+            progress = new DefaultProgress();
+            progress.setFinished(true);
+            synchronizer.putProgress(repository, progress);
+        }
+        
+        progress.setAdminPermission(hasAdminPermission);
     }
     
     /**
@@ -510,6 +510,8 @@ public class RepositoryServiceImpl implements RepositoryService
         }
         // remove all changesets from DB that references this repository
         changesetService.removeAllInRepository(repository.getId());
+        // remove progress
+        synchronizer.removeProgress(repository);
         // delete repository record itself
         repositoryDao.remove(repository.getId());
     }

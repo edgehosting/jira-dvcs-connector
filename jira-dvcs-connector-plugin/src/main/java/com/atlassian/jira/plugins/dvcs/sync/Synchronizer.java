@@ -15,7 +15,7 @@ public interface Synchronizer
      * @param repository
      * @param synchronisationOperation
      */
-	public void synchronize(Repository repository, SynchronisationOperation synchronisationOperation);
+    public void synchronize(Repository repository, SynchronisationOperation synchronisationOperation);
 
     /**
      * This tells that any runnnig or queued synchronisation for this repository should be canceled.
@@ -23,7 +23,7 @@ public interface Synchronizer
      * 
      * @param repository
      */
-	public void stopSynchronization(Repository repository);
+    public void stopSynchronization(Repository repository);
     
     /**
      * Get the progress of a sync being executed for given repository
@@ -34,5 +34,18 @@ public interface Synchronizer
      */
     public Progress getProgress(Repository repository);
 
+    /**
+     * Puts the progress for given repository
+     * 
+     * @param repository
+     * @param progress
+     */
     public void putProgress(Repository repository, Progress progress);
+    
+    /**
+     * Removes the progress for given repository
+     * 
+     * @param repository
+     */
+    public void removeProgress(Repository repository);
 }
