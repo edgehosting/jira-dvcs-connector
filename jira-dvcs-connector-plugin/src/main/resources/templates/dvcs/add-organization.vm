@@ -34,7 +34,7 @@
             // bind submit handler
             AJS.$("#repoEntry").submit(dvcsSubmitFormHandler);
 
-			AJS.$(".admin-permission").tooltip({aria:true});
+			registerAdminPermissionInlineDialogTooltip();
         }
      </script>
 
@@ -347,7 +347,7 @@
                 
                 <td class="dvcs-org-reponame">
 					#if(!$repo.sync.hasAdminPermission())
-            				<a class="admin-permission" title="No admin permission. The post commit hook could not be installed.">
+            				<a class="admin-permission">
             					<span class="aui-icon aui-icon-warning">Warning</span>
             				</a>
 					#end
