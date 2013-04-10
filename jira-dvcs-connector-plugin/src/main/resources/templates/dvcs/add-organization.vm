@@ -33,6 +33,8 @@
 
             // bind submit handler
             AJS.$("#repoEntry").submit(dvcsSubmitFormHandler);
+
+			registerAdminPermissionInlineDialogTooltip();
         }
      </script>
 
@@ -338,20 +340,19 @@
 
                 <td class="dvcs-autolink-repo">
                     <span style="padding-left: 1px;">&nbsp;</span>
-                    <input class="repo_autolink_check" id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
+					<input class="repo_autolink_check" id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
                      onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
-
-                    <span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
+					<span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
                 </td>
                 
-                <td class="dvcs-org-reponame"><a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
-					#if(!$repo.hasAdminPermission())
-						<a id="admin-permission" title="No admin permission. The post commit hook could not be installed.">
-							<span class="aui-icon aui-icon-warning">Warning</span>
-						</a>
-					#end	
+                <td class="dvcs-org-reponame">
+					#if(!$repo.sync.hasAdminPermission())
+            				<a class="admin-permission">
+            					<span class="aui-icon aui-icon-warning">Warning</span>
+            				</a>
+					#end
+					<a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
 				</td>
-
                 
                 <td class="action" headers="action" style="text-align: right; white-space: nowrap;">
                 
