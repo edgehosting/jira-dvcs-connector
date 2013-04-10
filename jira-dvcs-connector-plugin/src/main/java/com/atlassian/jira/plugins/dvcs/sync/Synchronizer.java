@@ -34,4 +34,5 @@ public interface Synchronizer
      */
     public Progress getProgress(Repository repository);
 
+    public void putProgress(Repository repository, Progress progress);
 }

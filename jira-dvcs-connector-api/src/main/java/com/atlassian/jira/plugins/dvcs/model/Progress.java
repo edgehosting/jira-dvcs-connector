@@ -59,5 +59,7 @@ public interface Progress
 
 	void setFinished(boolean finished);
 
-
+	boolean hasAdminPermission();
+	
+	void setAdminPermission(boolean hasAdminPermission);
 }

@@ -12,9 +12,11 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser.UnknownUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
@@ -214,22 +216,34 @@ public class RepositoryServiceImpl implements RepositoryService
                 try
                 {
                     addOrRemovePostcommitHook(savedRepository, getPostCommitUrl(savedRepository));
-                    savedRepository.setAdminPermission(true);
+                    updateAdminPermission(savedRepository, true);
                 } catch(SourceControlException.PostCommitHookRegistrationException e)
                 {
                     log.warn("Adding postcommit hook for repository "
                             + savedRepository.getRepositoryUrl() + " failed: ", e);
                     // if the user didn't have rights to add post commit hook, just unlink the repository
                     savedRepository.setLinked(false);
-                    savedRepository.setAdminPermission(false);
+                    updateAdminPermission(savedRepository, false);
                     repositoryDao.save(savedRepository);
                 }
             }
         }
-
         return newRepoSlugs;
     }
 
+    private void updateAdminPermission(Repository repository, boolean hasAdminPermission)
+    {
+    	Progress progress = repository.getSync();
+    	if (progress == null)
+    	{
+    		progress = new DefaultProgress();
+    		progress.setFinished(true);
+    		synchronizer.putProgress(repository, progress);
+    	}
+    	
+    	progress.setAdminPermission(hasAdminPermission);
+    }
+    
     /**
      * Removes the deleted repositories.
      *
@@ -401,10 +415,12 @@ public class RepositoryServiceImpl implements RepositoryService
             {
                 addOrRemovePostcommitHook(repository, postCommitUrl);
                 registration.setCallBackUrlInstalled(linked);
+                updateAdminPermission(repository, true);
             } catch(SourceControlException.PostCommitHookRegistrationException e)
             {
                 log.debug("Could not add or remove postcommit hook", e);
                 registration.setCallBackUrlInstalled(!linked);
+                updateAdminPermission(repository, false);
             }
 
             log.debug("Enable repository [{}]", repository);

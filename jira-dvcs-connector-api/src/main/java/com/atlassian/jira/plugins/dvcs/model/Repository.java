@@ -30,7 +30,6 @@ public class Repository
 	private transient Credential credential;
 	private transient String orgHostUrl;
 	private transient String orgName;
-	private transient boolean adminPermission = true;
 	
 	@XmlElement
     private DefaultProgress sync;
@@ -173,16 +172,6 @@ public class Repository
 	{
 		this.sync = sync;
 	}
-
-    public boolean hasAdminPermission()
-    {
-        return adminPermission;
-    }
-
-    public void setAdminPermission(boolean adminPermission)
-    {
-        this.adminPermission = adminPermission;
-    }
 
     @Override
 	public boolean equals(Object obj)

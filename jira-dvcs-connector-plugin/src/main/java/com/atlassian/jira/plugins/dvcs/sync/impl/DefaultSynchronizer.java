@@ -108,4 +108,9 @@ public class DefaultSynchronizer implements Synchronizer
 		return progressMap.get(repository);
     }
 
+    public void putProgress(Repository repository, Progress progress)
+    {
+    	progressMap.put(repository, progress);
+    }
+    
 }
