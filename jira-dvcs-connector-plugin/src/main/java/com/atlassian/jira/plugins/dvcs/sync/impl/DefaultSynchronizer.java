@@ -20,17 +20,17 @@ import com.google.common.collect.MapMaker;
 public class DefaultSynchronizer implements Synchronizer
 {
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
-	
+    
     private final ExecutorService executorService;
-	private final SmartcommitsChangesetsProcessor smartcommitsChangesetsProcessor;
+    private final SmartcommitsChangesetsProcessor smartcommitsChangesetsProcessor;
 
 
-	public DefaultSynchronizer(ExecutorService executorService,
-			SmartcommitsChangesetsProcessor smartcommitsChangesetsProcessor)
-	{
-		this.executorService = executorService;
-		this.smartcommitsChangesetsProcessor = smartcommitsChangesetsProcessor;
-	}
+    public DefaultSynchronizer(ExecutorService executorService,
+            SmartcommitsChangesetsProcessor smartcommitsChangesetsProcessor)
+    {
+        this.executorService = executorService;
+        this.smartcommitsChangesetsProcessor = smartcommitsChangesetsProcessor;
+    }
 
     // map of ALL Synchronisation Progresses - running and finished ones
     private final ConcurrentMap<Repository, Progress> progressMap = new MapMaker().makeMap();
@@ -43,18 +43,18 @@ public class DefaultSynchronizer implements Synchronizer
         //TODO isShouldStop really necessary? should we create a queue even if those conditions are not met?
         if (progress==null || progress.isFinished() || progress.isShouldStop())
         {
-        	addSynchronisationOperation(repository, operation);
+            addSynchronisationOperation(repository, operation);
         }
     }
 
     @Override
     public void stopSynchronization(Repository repository)
     {
-    	Progress progress = progressMap.get(repository);
-    	if (progress!=null)
-    	{
-    		progress.setShouldStop(true);
-    	}
+        Progress progress = progressMap.get(repository);
+        if (progress!=null)
+        {
+            progress.setShouldStop(true);
+        }
     }
 
     private void addSynchronisationOperation(final Repository repository, final SynchronisationOperation operation)
@@ -73,7 +73,7 @@ public class DefaultSynchronizer implements Synchronizer
                 
                     if (progress.isShouldStop())
                     {
-                    	return;
+                        return;
                     }
                     
                     operation.synchronise();
@@ -81,7 +81,7 @@ public class DefaultSynchronizer implements Synchronizer
                     // at the end of execution
                     if (operation.isSoftSync()) 
                     {
-                    	smartcommitsChangesetsProcessor.startProcess();
+                        smartcommitsChangesetsProcessor.startProcess();
                     }
                     //
         
@@ -105,7 +105,17 @@ public class DefaultSynchronizer implements Synchronizer
     @Override
     public Progress getProgress(Repository repository)
     {
-		return progressMap.get(repository);
+        return progressMap.get(repository);
     }
 
+    public void putProgress(Repository repository, Progress progress)
+    {
+        progressMap.put(repository, progress);
+    }
+
+    @Override
+    public void removeProgress(Repository repository)
+    {
+        progressMap.remove(repository);
+    }
 }

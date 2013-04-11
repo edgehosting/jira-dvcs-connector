@@ -4,6 +4,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 @XmlRootElement(name = "sync")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -29,6 +30,9 @@ public class DefaultProgress implements Progress
     @XmlAttribute
     private String error;
 
+    @XmlTransient
+    private boolean hasAdminPermission = true;
+    
     public DefaultProgress()
     {
     }
@@ -135,4 +139,15 @@ public class DefaultProgress implements Progress
         this.shouldStop = shouldStop;
     }
 
+	@Override
+	public boolean hasAdminPermission()
+	{
+		return hasAdminPermission;
+	}
+
+	@Override
+	public void setAdminPermission(boolean hasAdminPermission)
+	{
+		this.hasAdminPermission = hasAdminPermission;
+	}
 }

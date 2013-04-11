@@ -57,7 +57,24 @@ public interface Progress
 	 */
 	boolean isShouldStop();
 
+	/**
+	 * Indication whether the synchronisation has been finished
+	 * 
+	 * @param finished
+	 */
 	void setFinished(boolean finished);
 
-
+	/**
+	 * Indication that the repository has administration permission
+	 * 
+	 * @return true if the repository has administration permission, false otherwise
+	 */
+	boolean hasAdminPermission();
+	
+	/**
+	 * Sets the administration permission state
+	 * 
+	 * @param hasAdminPermission
+	 */
+	void setAdminPermission(boolean hasAdminPermission);
 }

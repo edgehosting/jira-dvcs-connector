@@ -605,6 +605,19 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 			  });
 }
 
+function registerAdminPermissionInlineDialogTooltip() {
+	AJS.$(".admin-permission").each(function(index) {
+		AJS.InlineDialog(AJS.$(this), "admin-tooltip"+index,
+		    function(content, trigger, showPopup) {
+				content.css({"padding":"10px"}).html('<p>No admin permission. The post commit hook could not be installed.</p>');
+				showPopup();
+		        return false;
+		    },
+		    {onHover:true, hideDelay:200, showDelay:1000, arrowOffsetX:-10, offsetX:-80}
+		);
+	});
+}
+
 function enableRepoSmartcommits(repoId, checkboxId) {
 	var checkedValue = AJS.$("#" + checkboxId).is(":checked");
 	AJS.$("#" + checkboxId).attr("disabled", "disabled");
