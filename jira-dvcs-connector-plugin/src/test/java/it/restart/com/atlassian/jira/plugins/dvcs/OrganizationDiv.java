@@ -45,6 +45,7 @@ public class OrganizationDiv
         ddButton.click();
         PageElement deleteLink = rootElement.find(By.className("dvcs-control-delete-org"));
         deleteLink.click();
+        
         // wait for popup to show up
         try
         {
@@ -56,26 +57,26 @@ public class OrganizationDiv
         Poller.waitUntilFalse(rootElement.find(By.id("deleting-account-dialog")).timed().isVisible());
     }
 
-	public List<RepositoryDiv> getRepositories()
-	{
-	    List<RepositoryDiv> list = new ArrayList<RepositoryDiv>();
-	    List<PageElement> trs = repositoriesTable.findAll(By.xpath("//table/tbody/tr"));
-	    for (PageElement tr : trs)
+    public List<RepositoryDiv> getRepositories()
+    {
+        List<RepositoryDiv> list = new ArrayList<RepositoryDiv>();
+        List<PageElement> trs = repositoriesTable.findAll(By.xpath("//table/tbody/tr"));
+        for (PageElement tr : trs)
         {
             list.add(pageBinder.bind(RepositoryDiv.class, tr));
         }
-		return list;
-	}
+        return list;
+    }
     
-	public String getRepositoryType()
-	{
-	    // <h4 class="aui bitbucketLogo">
-	    return repositoryType.getAttribute("class").replaceAll("aui (.*)Logo", "$1");
-	}
-	
-	public String getRepositoryName()
-	{
-	    return repositoryName.getText();
-	}
+    public String getRepositoryType()
+    {
+        // <h4 class="aui bitbucketLogo">
+        return repositoryType.getAttribute("class").replaceAll("aui (.*)Logo", "$1");
+    }
+    
+    public String getRepositoryName()
+    {
+        return repositoryName.getText();
+    }
     
 }

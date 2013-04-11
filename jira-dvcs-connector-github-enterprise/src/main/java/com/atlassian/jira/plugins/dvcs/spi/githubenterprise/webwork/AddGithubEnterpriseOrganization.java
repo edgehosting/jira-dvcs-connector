@@ -23,6 +23,8 @@ import com.atlassian.sal.api.ApplicationProperties;
 
 public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationAction
 {
+    private static final long serialVersionUID = 7672281234704330946L;
+
     private final Logger log = LoggerFactory.getLogger(AddGithubEnterpriseOrganization.class);
 
 	private String organization;
@@ -67,6 +69,8 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	private void configureOAuth()
 	{
         oAuthStore.store(new Host(GITHUB_ENTERPRISE, url), oauthClientIdGhe, oauthSecretGhe);
+        githubOAuthUtils.setClientId(oauthClientIdGhe);
+        githubOAuthUtils.setSecret(oauthSecretGhe);
 	}
 
 	private String redirectUserToGithub()

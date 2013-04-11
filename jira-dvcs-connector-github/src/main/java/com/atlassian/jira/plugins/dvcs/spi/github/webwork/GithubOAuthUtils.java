@@ -20,8 +20,8 @@ public class GithubOAuthUtils
 {
     private final Logger log = LoggerFactory.getLogger(GithubOAuthUtils.class);
     private final String baseUrl;
-    private final String clientId;
-    private final String secret;
+    private String clientId;
+    private String secret;
 
     public GithubOAuthUtils(String baseUrl, String clientId, String secret)
     {
@@ -148,5 +148,15 @@ public class GithubOAuthUtils
     public static String encode(String url)
     {
         return CustomStringUtils.encode(url);
+    }
+
+    public void setClientId(String clientId)
+    {
+        this.clientId = clientId;
+    }
+
+    public void setSecret(String secret)
+    {
+        this.secret = secret;
     }
 }

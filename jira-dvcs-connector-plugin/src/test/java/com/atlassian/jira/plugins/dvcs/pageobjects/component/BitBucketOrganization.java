@@ -36,23 +36,25 @@ public class BitBucketOrganization
         // disable confirm popup
         driver.executeScript("window.confirm = function(){ return true; }");
 
-        // add marker to wait for post complete
-        driver.executeScript("document.getElementById('Submit').className = '_posting'");
-        
         PageElement ddButton = row.find(By.className("aui-dd-trigger"));
         ddButton.click();
         
         PageElement deleteLink = row.find(By.className("dvcs-control-delete-org"));
         deleteLink.click();
 
-        //wait until marker is gone.
-        Poller.waitUntilFalse(elementFinder.find(By.id("Submit")).timed().hasClass("_posting"));
+        // wait for popup to show up
+        try
+        {
+            Poller.waitUntilTrue(row.find(By.id("deleting-account-dialog")).timed().isVisible());
+        } catch (AssertionError e)
+        {
+            // ignore, the deletion was probably very quick and the popup has been alreadu closed.
+        }
+        Poller.waitUntilFalse(row.find(By.id("deleting-account-dialog")).timed().isVisible());
     }
 
-	public PageElement getRepositoriesTable()
-	{
-		return repositoriesTable;
-	}
-    
-    
+    public PageElement getRepositoriesTable()
+    {
+        return repositoriesTable;
+    }
 }
