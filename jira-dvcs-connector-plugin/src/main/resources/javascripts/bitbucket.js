@@ -268,7 +268,6 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     if ( !dvcsContainsSlash( organizationElement.val()) ) {
     	// some really simple validation
     	if (!validateAddOrganizationForm()) {
-    		AJS.$('#Submit').removeAttr("disabled");
     		dialog.enabled(true);
     		dialog.updateHeight();
     		return false;
@@ -303,7 +302,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     // else - lets try to identify account
     // account info
     if (!validateAccountInfoForm()) {
-    	AJS.$('#Submit').removeAttr("disabled");
+    	dialog.enabled(true);
     	return false;
     }
     
@@ -325,7 +324,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
         function(data) {
             
     		AJS.$("#aui-message-bar").empty();
-            AJS.$('#Submit').removeAttr("disabled");
+            dialog.enabled(true);
            
             if (data.validationErrors && data.validationErrors.length > 0) {
             	AJS.$.each(data.validationErrors, function(i, msg){
@@ -339,7 +338,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
             AJS.messages.error({ title: "Error!", 
             	body: "The url [<b>" + AJS.escapeHtml(AJS.$("#url").val()) + "</b>] is incorrect or the server is not responding." 
             });
-            AJS.$('#Submit').removeAttr("disabled");
+            dialog.enabled(true);
         });
     return false;
 }
