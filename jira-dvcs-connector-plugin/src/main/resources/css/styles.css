@@ -483,14 +483,6 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	margin: 1ex 2.5ex;
 }
 
-/* Confirm logged in dialog style */
-div.confirmLoggedIn {
-	margin: 2.5ex;
-}
-div.confirmLoggedIn .buttons {
-	margin: 1ex 2.5ex;
-}
-
 .dvcs-organization-controls-tool button.toolbar-trigger.aui-dd-trigger {
   height: 30px;
   padding: 0px 12px 0px 2px !important;

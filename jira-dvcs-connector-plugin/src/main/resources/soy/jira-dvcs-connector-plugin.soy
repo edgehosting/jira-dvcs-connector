@@ -58,17 +58,7 @@
  *	@param dvcsHost
  */
 {template .confirmLoggedIn}
-	<div class="confirmLoggedIn">
-		<div>
-			Please be sure that you are logged in to {$dvcsHost} before clicking "Continue" button.
-		</div>
-		<div class="buttons">
-			<a href="#" onclick="dvcsSubmitFormHandler(event, true); return false;" class="aui-button aui-button-primary">
-				Continue
-			</a>
-			<a href="#" onclick="return false;" class="aui-button">
-				Cancel
-			</a>
-		</div>
+	<div>
+		Please be sure that you are logged in to {$dvcsHost} before clicking "Continue" button.
 	</div>
 {/template}

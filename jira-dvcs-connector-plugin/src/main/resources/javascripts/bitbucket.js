@@ -165,59 +165,7 @@ var dialog = null;
 function showAddRepoDetails(show) {
 
 	if (!dialog) {
-		dialog = new AJS.Dialog({
-			width: 800, 
-			height: 400, 
-			id: "add-organization-dialog", 
-			closeOnOutsideClick: false
-		});
-		dialog.addHeader("Add New Account");
-	
-		dialog.addPanel("", AJS.$("#repoEntry"), "panel-body");
-		
-		dialog.addButtonPanel();
-	
-		dialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon'>Wait</span>");
-		
-		var submitButton = dialog.addSubmit("Add", function (dialog) {
-		    AJS.$("#repoEntry").submit();
-		});
-	
-		dialog.addCancel("Cancel", function (dialog) {
-			console.log(dialog);
-			AJS.$("#repoEntry").trigger('reset');
-			AJS.$("#aui-message-bar").empty();
-		    dialog.hide();
-		}, "#");
-		
-        // bind submit handler
-        AJS.$("#repoEntry").submit(dvcsSubmitFormHandler);
-        AJS.$('#urlSelect').change(function(event) {
-			switchDvcsDetails(event.target);
-			dialog.updateHeight();
-		});
-        
-		var repoEntryData = {};
-		AJS.$("#repoEntry").data("ghe-confirm-logged-in", repoEntryData);
-		repoEntryData.dialog = AJS.InlineDialog(AJS.$("#repoEntry input.submit"), "ghe-confirm-logged-in", 
-			function(content, trigger, showPopup) {
-    			content.html(jira.dvcs.connector.plugin.soy.confirmLoggedIn({
-					dvcsHost: repoEntryData.dvcsHost,
-				}));
-				showPopup();
-				return false;
-		}, {onTop: true, width: 500, noBind: true, hideDelay: null});
-		//
-        
-        dialog.enabled = function(enabled) {
-        	if (enabled) {
-        		AJS.$("#add-organization-wait").removeClass("aui-icon-wait");
-        		AJS.$('#add-organization-dialog .button-panel-submit-button').removeAttr("disabled");
-        	} else {
-        		AJS.$("#add-organization-wait").addClass("aui-icon-wait");
-        		AJS.$('#add-organization-dialog .button-panel-submit-button').attr("disabled", "disabled");
-        	}
-        }
+		createGithubEnterpriseConfirmation();
 	}
 	// Reset to default view:
 	AJS.$('#repoEntry').attr("action", "");
@@ -240,8 +188,77 @@ function showAddRepoDetails(show) {
 	switchDvcsDetailsInternal(0);
 
 	AJS.$("#organization").focus().select();
+	dialog.gotoPage(0);
+    dialog.gotoPanel(0);
 	dialog.show();
 	dialog.updateHeight();
+}
+
+function createGithubEnterpriseConfirmation() {
+	dialog = new AJS.Dialog({
+		width: 800, 
+		height: 400, 
+		id: "add-organization-dialog", 
+		closeOnOutsideClick: false
+	});
+	
+	// First page
+	dialog.addHeader("Add New Account");
+
+	dialog.addPanel("", AJS.$("#repoEntry"), "panel-body");
+	
+	dialog.addButtonPanel();
+
+	dialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon'>Wait</span>");
+	
+	dialog.addSubmit("Add", function (dialog, event) {
+		if (dvcsSubmitFormHandler(event,false)) {
+			AJS.$("#repoEntry").submit();
+		}
+	});
+
+	dialog.addCancel("Cancel", function (dialog) {
+		AJS.$("#repoEntry").trigger('reset');
+		AJS.$("#aui-message-bar").empty();
+	    dialog.hide();
+	}, "#");
+	
+	AJS.$('#urlSelect').change(function(event) {
+		switchDvcsDetails(event.target);
+		dialog.updateHeight();
+	});
+    
+	// Second page, GitHub Enterprise confirmation page
+    dialog.addPage();
+    dialog.addHeader("Add New Account");
+    dialog.addPanel("Confirmation", "<div id='githubeConfirmation'>Test</div>", "panel-body");
+    dialog.addSubmit("Continue", function (dialog, event) {
+    	dialog.gotoPage(0);
+    	if (dvcsSubmitFormHandler(event, true)) {
+    		AJS.$("#repoEntry").submit();
+    	}
+	});
+
+    dialog.addButton("Previous", function(dialog) {
+    	   dialog.prevPage();
+    	   dialog.updateHeight();
+    	});
+    
+	dialog.addCancel("Cancel", function (dialog) {
+		AJS.$("#repoEntry").trigger('reset');
+		AJS.$("#aui-message-bar").empty();
+	    dialog.hide();
+	}, "#");
+    
+    dialog.enabled = function(enabled) {
+    	if (enabled) {
+    		AJS.$("#add-organization-wait").removeClass("aui-icon-wait");
+    		AJS.$('#add-organization-dialog .button-panel-submit-button').removeAttr("disabled");
+    	} else {
+    		AJS.$("#add-organization-wait").addClass("aui-icon-wait");
+    		AJS.$('#add-organization-dialog .button-panel-submit-button').attr("disabled", "disabled");
+    	}
+    }
 }
 
 function dvcsSubmitFormHandler(event, skipLoggingAlert) {
@@ -264,9 +281,11 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     		AJS.$("#url").val(AJS.$("#urlGhe").val()); 
 
     		if (!skipLoggingAlert) {
-    			var repoEntryData = AJS.$("#repoEntry").data("ghe-confirm-logged-in");
-    			repoEntryData.dvcsHost = dvcsHost;
-    			repoEntryData.dialog.show();
+    			AJS.$("#githubeConfirmation").html(jira.dvcs.connector.plugin.soy.confirmLoggedIn({
+					dvcsHost: dvcsHost
+				}));
+    			dialog.nextPage();
+    			dialog.updateHeight();
     			return false;
     		}
     	}
