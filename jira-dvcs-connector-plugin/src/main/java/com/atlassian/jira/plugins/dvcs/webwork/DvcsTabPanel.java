@@ -76,7 +76,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
                         Collections.<String, Object> emptyMap());
             } catch (SoyException e)
             {
-                logger.error("Unable to do approrpiate rendering!", e);
+                logger.error("Unable to do appropriate rendering!", e);
                 return "";
             }
         }
