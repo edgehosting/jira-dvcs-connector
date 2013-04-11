@@ -314,7 +314,8 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     AJS.$("#aui-message-bar").empty();
     
     AJS.messages.info({ title: "Trying to identify repository type...", closeable : false});
-
+    dialog.updateHeight();
+    
     var repositoryUrl = AJS.$("#url").val().trim();
     var organizationName = AJS.$("#organization").val().trim();
     
@@ -329,6 +330,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
             if (data.validationErrors && data.validationErrors.length > 0) {
             	AJS.$.each(data.validationErrors, function(i, msg){
             		AJS.messages.error({title : "Error!", body : msg});
+            		dialog.updateHeight();
             	})
             } else{
             	dvcsSubmitFormAjaxHandler[data.dvcsType].apply(this, arguments);
@@ -339,6 +341,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
             	body: "The url [<b>" + AJS.escapeHtml(AJS.$("#url").val()) + "</b>] is incorrect or the server is not responding." 
             });
             dialog.enabled(true);
+            dialog.updateHeight();
         });
     return false;
 }
