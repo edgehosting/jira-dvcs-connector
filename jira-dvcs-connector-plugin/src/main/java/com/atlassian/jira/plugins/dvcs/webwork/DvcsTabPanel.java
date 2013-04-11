@@ -3,6 +3,8 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,14 +25,63 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.template.soy.SoyTemplateRendererProvider;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.soy.renderer.SoyException;
+import com.atlassian.soy.renderer.SoyTemplateRenderer;
 import com.atlassian.templaterenderer.TemplateRenderer;
 
 public class DvcsTabPanel extends AbstractIssueTabPanel
 {
+    /**
+     * Represents advertisement content of commit tab panel shown when no repository is linked.
+     * 
+     * @author Stanislav Dvorscak
+     * 
+     */
+    private final class AdvertisementAction implements IssueAction
+    {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isDisplayActionAllTab()
+        {
+            return false;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Date getTimePerformed()
+        {
+            return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getHtml()
+        {
+            try
+            {
+                return soyTemplateRenderer.render(DvcsConstants.SOY_TEMPLATE_KEY, "jira.dvcs.connector.plugin.soy.advertisement",
+                        Collections.<String, Object> emptyMap());
+            } catch (SoyException e)
+            {
+                logger.error("Unable to do approrpiate rendering!", e);
+                return "";
+            }
+        }
+    }
+
     private final Logger logger = LoggerFactory.getLogger(DvcsTabPanel.class);
 
     private static final GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction("No commits found.");
@@ -41,21 +92,30 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
 
     private final IssueLinker issueLinker;
     private final TemplateRenderer templateRenderer;
+    private final SoyTemplateRenderer soyTemplateRenderer;
 
     public DvcsTabPanel(PermissionManager permissionManager, ChangesetService changesetService,
-                        ApplicationProperties applicationProperties, IssueLinker issueLinker, TemplateRenderer templateRenderer, RepositoryService repositoryService)
+            ApplicationProperties applicationProperties, IssueLinker issueLinker, TemplateRenderer templateRenderer,
+            SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService)
     {
         this.permissionManager = permissionManager;
         this.changesetService = changesetService;
         this.applicationProperties = applicationProperties;
         this.issueLinker = issueLinker;
         this.templateRenderer = templateRenderer;
+        this.soyTemplateRenderer = soyTemplateRendererProvider.getRenderer();
         this.repositoryService = repositoryService;
     }
 
     @Override
     public List<IssueAction> getActions(Issue issue, User user)
     {
+        // make advertisement, if plug-in is not using
+        if (!repositoryService.existsLinkedRepositories())
+        {
+            return Collections.<IssueAction> singletonList(new AdvertisementAction());
+        }
+
         String issueKey = issue.getKey();
         List<IssueAction> bitbucketActions = new ArrayList<IssueAction>();
         try
@@ -63,7 +123,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
             for (Changeset changeset : changesetService.getByIssueKey(issueKey))
             {
                 logger.debug("found changeset [ {} ] on issue [ {} ]", changeset.getNode(), issueKey);
-//                SourceControlRepository repository = globalRepositoryManager.getRepository(changeset.getRepositoryId());
+                // SourceControlRepository repository = globalRepositoryManager.getRepository(changeset.getRepositoryId());
                 String changesetAsHtml = getHtmlForChangeset(changeset);
                 if (StringUtils.isNotBlank(changesetAsHtml))
                 {
@@ -84,8 +144,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     @Override
     public boolean showPanel(Issue issue, User user)
     {
-        return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user) &&
-                repositoryService.existsLinkedRepositories();
+        return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user);
     }
 
     public String getHtmlForChangeset(Changeset changeset)
@@ -101,7 +160,8 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         templateMap.put("issue_linker", issueLinker);
         templateMap.put("changeset", changeset);
 
-        String documentJpgUrl = applicationProperties.getBaseUrl() + "/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/document.jpg";
+        String documentJpgUrl = applicationProperties.getBaseUrl()
+                + "/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/document.jpg";
         templateMap.put("document_jpg_url", documentJpgUrl);
 
         String authorName = changeset.getRawAuthor();
@@ -125,7 +185,6 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         templateMap.put("commit_hash", changeset.getNode());
         templateMap.put("max_visible_files", Changeset.MAX_VISIBLE_FILES);
 
-
         StringWriter sw = new StringWriter();
         try
         {
@@ -137,7 +196,4 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         return sw.toString();
     }
 
-
-
 }
-
