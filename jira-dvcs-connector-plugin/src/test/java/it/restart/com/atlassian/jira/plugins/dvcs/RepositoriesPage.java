@@ -50,7 +50,7 @@ public class RepositoriesPage implements Page
     @ElementBy(id = "linkRepositoryButton")
     private PageElement linkRepositoryButton;
     
-    @ElementBy(id = "Submit")
+    @ElementBy(className = "button-panel-submit-button")
     private PageElement addOrgButton;
     
 //    @ElementBy(className = "gh_messages")
