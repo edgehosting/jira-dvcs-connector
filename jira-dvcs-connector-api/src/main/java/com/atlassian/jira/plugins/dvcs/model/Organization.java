@@ -15,33 +15,33 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Organization
 {
-	
+
 	public static final String GROUP_SLUGS_SEPARATOR = ";";
-	  
+
     private int id;
     private String hostUrl;
     private String name;
     private String dvcsType;
     private boolean autolinkNewRepos;
     private boolean smartcommitsOnNewRepos;
-    
+
     private String organizationUrl;
-    
+
     private List<Repository> repositories;
-    
+
     private transient Credential credential;
-    
+
     // 2/ invitation groups - when adding new user as information holder for rendering form extension
     private transient Set<Group> groups;
-    
+
     // 1/ default groups - when configuring default groups
     private transient Set<Group> defaultGroups;
- 
+
     public Organization()
 	{
     	super();
 	}
-    
+
     public Organization(int id, String hostUrl, String name, String dvcsType,
             boolean autolinkNewRepos, Credential credential, String organizationUrl,
             boolean smartcommitsOnNewRepos, Set<Group> defaultGroups)
@@ -162,12 +162,12 @@ public class Organization
     {
         this.defaultGroups = defaultGroups;
     }
-    
+
     public void setSmartcommitsOnNewRepos(boolean smartcommitsOnNewRepos)
     {
         this.smartcommitsOnNewRepos = smartcommitsOnNewRepos;
     }
-    
+
     @Override
     public boolean equals(Object o)
     {
@@ -197,11 +197,11 @@ public class Organization
                 .hashCode();
     }
 
-	
+
     public boolean isIntegratedAccount()
     {
         return credential != null && StringUtils.isNotBlank(credential.getOauthKey())
-                && StringUtils.isNotBlank(credential.getOauthSecret());
+                && StringUtils.isNotBlank(credential.getOauthSecret()) && StringUtils.isBlank(credential.getAccessToken());
     }
 
 }

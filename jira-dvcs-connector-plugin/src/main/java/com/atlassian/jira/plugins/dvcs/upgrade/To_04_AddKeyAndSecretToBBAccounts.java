@@ -40,10 +40,10 @@ public class To_04_AddKeyAndSecretToBBAccounts implements PluginUpgradeTask
     @Override
     public Collection<Message> doUpgrade() throws Exception
     {
+        final String key = (String) settings.get("dvcs.connector.bitbucket.clientId");
+        final String secret = (String) settings.get("dvcs.connector.bitbucket.secret");
 
-        final String key = String.valueOf(settings.get("dvcs.connector.bitbucket.clientId"));
-        final String secret = String.valueOf(settings.get("dvcs.connector.bitbucket.secret"));
-        log.info("Bitbucket key/secret = " + key + " / " + secret);
+        log.info("Bitbucket key / secret = " + key + " / " + secret);
 
         if (StringUtils.isBlank(key) || StringUtils.isBlank(secret))
         {
@@ -77,7 +77,6 @@ public class To_04_AddKeyAndSecretToBBAccounts implements PluginUpgradeTask
             }
         });
         return null;
-
     }
 
     // -------------------------------------------------------------------------------

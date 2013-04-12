@@ -22,20 +22,20 @@ public class Credential
     	super();
 	}
 
-    public Credential(String adminUsername, String adminPassword, String accessToken)
+    public Credential(String oauthKey, String oauthSecret, String accessToken)
     {
-        this.adminUsername = adminUsername;
-        this.adminPassword = adminPassword;
+        this.oauthKey = oauthKey;
+        this.oauthSecret = oauthSecret;
         this.accessToken = accessToken;
     }
 
-
-    public Credential(String adminUsername, String adminPassword, String accessToken, String oauthKey,
-            String oauthSecret)
+    @Deprecated
+    public Credential(String oauthKey, String oauthSecret, String accessToken, String adminUsername,
+            String adminPassword)
     {
-        this(adminUsername, adminPassword, accessToken);
-        this.oauthKey = oauthKey;
-        this.oauthSecret = oauthSecret;
+        this(oauthKey, oauthSecret, accessToken);
+        this.adminUsername = adminUsername;
+        this.adminPassword = adminPassword;
     }
 
     @Deprecated

@@ -14,7 +14,7 @@ public class DeleteOrganizationAction extends JiraWebActionSupport
 	private static final long serialVersionUID = 6246027331604675862L;
 
 	final Logger logger = LoggerFactory.getLogger(DeleteOrganizationAction.class);
-	
+
 	private String organizationId;
 
 	private final OrganizationService organizationService;
@@ -27,45 +27,33 @@ public class DeleteOrganizationAction extends JiraWebActionSupport
     @Override
     protected void doValidation()
     {
-        
-        if (StringUtils.isBlank(organizationId)) {
-            
+        if (StringUtils.isBlank(organizationId))
+        {
             addErrorMessage("No id has been provided, invalid request");
-            
-        } else {
-            
+        } else
+        {
             Organization integratedAccount = organizationService.findIntegratedAccount();
-            if (    integratedAccount != null 
-                &&  Integer.valueOf(organizationId).equals(integratedAccount.getId())) {
-                
+            if (integratedAccount != null && Integer.valueOf(organizationId).equals(integratedAccount.getId()))
+            {
                 addErrorMessage("Failed to delete integrated account.");
-                
             }
-
-            
         }
-        
-    	
     }
 
     @Override
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-    	
-    	try
+        try
         {
-        
-    	    organizationService.remove(Integer.parseInt(organizationId));
-
+            organizationService.remove(Integer.parseInt(organizationId));
         } catch (Exception e)
         {
             logger.error("Failed to remove account " + organizationId, e);
         }
-		
+
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
     }
-
 
 	public String getOrganizationId()
 	{

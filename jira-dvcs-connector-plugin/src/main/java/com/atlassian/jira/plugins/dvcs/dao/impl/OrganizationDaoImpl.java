@@ -45,7 +45,7 @@ public class OrganizationDaoImpl implements OrganizationDao
     private final Encryptor encryptor;
 
     private final PluginSettingsFactory pluginSettingsFactory;
-    
+
     /**
      * The Constructor.
      *
@@ -79,11 +79,10 @@ public class OrganizationDaoImpl implements OrganizationDao
         log.debug("Organization transformation: [{}]", organizationMapping);
 
         // make credentials
-        Credential credential = new Credential(organizationMapping.getAdminUsername(),
-                organizationMapping.getAdminPassword(), organizationMapping.getAccessToken());
-
-        credential.setOauthKey(organizationMapping.getOauthKey());
-        credential.setOauthSecret(organizationMapping.getOauthSecret());
+        Credential credential = new Credential(
+                organizationMapping.getOauthKey(), organizationMapping.getOauthSecret(),
+                organizationMapping.getAccessToken(),
+                organizationMapping.getAdminUsername(), organizationMapping.getAdminPassword());
         //
         Organization organization = new Organization(organizationMapping.getID(), organizationMapping.getHostUrl(),
                 organizationMapping.getName(), organizationMapping.getDvcsType(),
@@ -265,7 +264,7 @@ public class OrganizationDaoImpl implements OrganizationDao
                             map.put(OrganizationMapping.ACCESS_TOKEN, organization.getCredential().getAccessToken());
                             map.put(OrganizationMapping.SMARTCOMMITS_FOR_NEW_REPOS, organization.isSmartcommitsOnNewRepos());
                             map.put(OrganizationMapping.DEFAULT_GROUPS_SLUGS, serializeDefaultGroups(organization.getDefaultGroups()));
-                            
+
                             map.put(OrganizationMapping.OAUTH_KEY, organization.getCredential().getOauthKey());
                             map.put(OrganizationMapping.OAUTH_SECRET, organization.getCredential().getOauthSecret());
 
@@ -284,7 +283,7 @@ public class OrganizationDaoImpl implements OrganizationDao
                             om.setAccessToken(organization.getCredential().getAccessToken());
                             om.setSmartcommitsForNewRepos(organization.isSmartcommitsOnNewRepos());
                             om.setDefaultGroupsSlugs(serializeDefaultGroups(organization.getDefaultGroups()));
-                            
+
                             om.setOauthKey(organization.getCredential().getOauthKey());
                             om.setOauthSecret(organization.getCredential().getOauthSecret());
 
@@ -305,7 +304,7 @@ public class OrganizationDaoImpl implements OrganizationDao
     public void remove(int organizationId)
     {
         activeObjects.delete(activeObjects.get(OrganizationMapping.class, organizationId));
-    
+
         // removing organization from invalid organizations list
         InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
         invalidOrganizationsManager.setOrganizationValid(organizationId, true);
@@ -358,7 +357,7 @@ public class OrganizationDaoImpl implements OrganizationDao
         });
 
     }
-    
+
     @Override
     public void updateCredentialsKeySecret(int organizationId, String oauthKey, String oauthSecret)
     {
@@ -378,7 +377,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 
         });
     }
-    
+
 
     /**
      * {@inheritDoc}
@@ -431,20 +430,20 @@ public class OrganizationDaoImpl implements OrganizationDao
     public Organization findIntegratedAccount()
     {
 
-        Query query = Query.select().where(OrganizationMapping.OAUTH_KEY + " IS NOT NULL AND " + OrganizationMapping.OAUTH_SECRET + " IS NOT NULL");
+        Query query = Query.select().where(OrganizationMapping.OAUTH_KEY + " IS NOT NULL AND " + OrganizationMapping.OAUTH_SECRET + " IS NOT NULL AND " + OrganizationMapping.ACCESS_TOKEN + " IS NULL");
         OrganizationMapping[] organizations = activeObjects.find(OrganizationMapping.class, query);
-        
+
         if (organizations != null && organizations.length > 0) {
-        
+
             return transform(organizations [0]);
 
         } else {
-            
+
             return null;
 
         }
     }
 
-    
+
 
 }

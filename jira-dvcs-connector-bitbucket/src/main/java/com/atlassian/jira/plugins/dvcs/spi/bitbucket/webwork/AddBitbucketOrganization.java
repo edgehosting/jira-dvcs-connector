@@ -33,7 +33,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     private static final long serialVersionUID = 4366205447417138381L;
 
     private final static Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
-    
+
     public static final String DEFAULT_INVITATION_GROUP = "developers";
 
     private String url;
@@ -49,7 +49,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
 
     private final com.atlassian.sal.api.ApplicationProperties ap;
-    
+
     private String accessToken = "";
 
     private final OAuthStore oAuthStore;
@@ -111,7 +111,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
                                                 .apiSecret(oAuthStore.getSecret(Host.BITBUCKET.id))
                                                 .provider(new Bitbucket10aScribeApi(url))
                                                 .debugStream(new DebugOutputStream(log));
-        
+
         if (!StringUtils.isBlank(callbackUrl))
         {
             sb.callback(callbackUrl);
@@ -142,7 +142,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         OAuthService service = createOAuthScribeService();
         Token accessTokenObj = service.getAccessToken(requestToken, verifier);
         accessToken = BitbucketOAuthAuthentication.generateAccessTokenString(accessTokenObj);
-    
+
         return doAddOrganization();
     }
 
@@ -154,7 +154,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
             newOrganization.setName(organization);
             newOrganization.setHostUrl(url);
             newOrganization.setDvcsType("bitbucket");
-            newOrganization.setCredential(new Credential(null, null, accessToken));
+            newOrganization.setCredential(new Credential(oAuthStore.getClientId(Host.BITBUCKET.id), oAuthStore.getSecret(Host.BITBUCKET.id), accessToken));
             newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
             newOrganization.setSmartcommitsOnNewRepos(hadAutoSmartCommitsChecked());
             newOrganization.setDefaultGroups(Sets.newHashSet(new Group(DEFAULT_INVITATION_GROUP)));
@@ -183,7 +183,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         {
             addErrorMessage("Invalid request, missing url or organization/account information.");
         }
-        
+
         if (StringUtils.isNotBlank(organization))
         {
             Organization integratedAccount = organizationService.findIntegratedAccount();
