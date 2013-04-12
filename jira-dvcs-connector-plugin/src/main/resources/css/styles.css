@@ -538,3 +538,7 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 .dvcs-advertisement .product .buttons a {
 	margin-right: 1ex;
 }
+
+.admin-permission {
+	display: inline-block;
+}
