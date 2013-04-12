@@ -160,13 +160,12 @@ function getLastCommitRelativeDateHtml(daysAgo) {
     return html;
 }
 
-var dialog = null;
-
 function showAddRepoDetails(show) {
 
-	if (!dialog) {
-		createGithubEnterpriseConfirmation();
+	if (!jira.dvcs.connector.plugin.addOrganizationDialog) {
+		createAddOrganizationDialog();
 	}
+	var dialog = jira.dvcs.connector.plugin.addOrganizationDialog;
 	// Reset to default view:
 	AJS.$('#repoEntry').attr("action", "");
 	// - hide username/password
@@ -194,8 +193,8 @@ function showAddRepoDetails(show) {
 	dialog.updateHeight();
 }
 
-function createGithubEnterpriseConfirmation() {
-	dialog = new AJS.Dialog({
+function createAddOrganizationDialog(action) {
+	var dialog = new AJS.Dialog({
 		width: 800, 
 		height: 400, 
 		id: "add-organization-dialog", 
@@ -205,11 +204,15 @@ function createGithubEnterpriseConfirmation() {
 	// First page
 	dialog.addHeader("Add New Account");
 
-	dialog.addPanel("", AJS.$("#repoEntry"), "panel-body");
+	dialog.addPanel("", jira.dvcs.connector.plugin.soy.addOrganizationDialog({
+		isGithubEnterpriseEnabled: jira.dvcs.connector.plugin.githubEnterpriseEnabled,
+		isOnDemandLicense: jira.dvcs.connector.plugin.onDemandLicense,
+		atlToken : jira.dvcs.connector.plugin.atlToken
+	}), "panel-body");
 	
 	dialog.addButtonPanel();
 
-	dialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon'>Wait</span>");
+	dialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon'>&nbsp;</span>");
 	
 	dialog.addSubmit("Add", function (dialog, event) {
 		if (dvcsSubmitFormHandler(event,false)) {
@@ -259,10 +262,12 @@ function createGithubEnterpriseConfirmation() {
     		AJS.$('#add-organization-dialog .button-panel-submit-button').attr("disabled", "disabled");
     	}
     }
+    jira.dvcs.connector.plugin.addOrganizationDialog = dialog;
 }
 
 function dvcsSubmitFormHandler(event, skipLoggingAlert) {
-    // submit form
+    var dialog = jira.dvcs.connector.plugin.addOrganizationDialog;
+	// submit form
     var organizationElement = AJS.$("#organization");
     // if not custom URL
     if ( !dvcsContainsSlash( organizationElement.val()) ) {
@@ -494,6 +499,36 @@ function configureDefaultGroups(orgName, id) {
 		});
 }
 
+function configureOAuth(organizationId, oAuthKey, oAuthSecret) {
+	
+	var popup = new AJS.Dialog({
+		width: 600, 
+		height: 400, 
+		id: "repositoryOAuthDialog"
+	});
+	
+	popup.addHeader("Configure OAuth for Repository");
+	popup.addPanel("", jira.dvcs.connector.plugin.soy.repositoryOAuthDialog({
+		'organizationId': organizationId,
+		'oAuthKey': oAuthKey,
+		'oAuthSecret': oAuthSecret
+		}));
+	
+	popup.addButton("Save OAuth key and secret", function (dialog) {
+		
+	}, "aui-button submit");
+	
+	popup.addButton("Regenerate Access Token", function (dialog) {
+		
+	}, "aui-button submit");
+	
+	popup.addCancel("Cancel", function (dialog) {
+		dialog.hide();
+	});
+
+	popup.show();
+}
+
 function autoLinkIssuesOrg(organizationId, checkboxId) {
 	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
 	AJS.$("#" + checkboxId).attr("disabled", "disabled");
@@ -615,7 +650,7 @@ function registerAdminPermissionInlineDialogTooltip() {
 				showPopup();
 		        return false;
 		    },
-		    {onHover:true, hideDelay:200, showDelay:1000, arrowOffsetX:-10, offsetX:-80}
+		    {onHover:true, hideDelay:200, showDelay:1000, arrowOffsetX:-8, offsetX:-80}
 		);
 	});
 }
@@ -646,19 +681,43 @@ function enableRepoSmartcommits(repoId, checkboxId) {
 			  });
 }
 
-function confirmDeleteOrganization(organization) {
-	var result = confirm("Are you sure you want to remove account '" + organization + "' from JIRA ?");
+function deleteOrganization(organizationId, organizationName) {
+	var answer = confirm("Are you sure you want to remove account '" +organizationName + "' from JIRA ?");
 	
-	if ( result ) {
+	if (answer) {
 		var dialog = new AJS.Dialog({width:400, height:150, id:"deleting-account-dialog", closeOnOutsideClick: false});
 		dialog.addHeader("Deleting Account");
-
-		dialog.addPanel("DeletePanel", "<span class='dvcs-wait'>Deleting '" + organization + "' account. Please wait...</span>");
-		
+		dialog.addPanel("DeletePanel", "<span class='dvcs-wait'>Deleting '" + organizationName + "' account. Please wait...</span>");
 		dialog.show(); 
+		
+		AJS.$.ajax({
+            url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId,
+            type: 'DELETE',
+            success: function(result) {
+                window.location.reload();
+            }
+        }).error(function (err) { 
+        	dialog.remove();
+        	showError("Error when deleting account '" + organizationName + "'.");
+		});
 	}
+}
 
-	return result;
+function syncRepositoryList(organizationId,organizationName) {
+	var dialog = new AJS.Dialog({width:400, height:150, id:"refreshing-account-dialog", closeOnOutsideClick: false});
+	dialog.addHeader("Refreshing Account");
+	dialog.addPanel("RefreshPanel", "<span class='dvcs-wait'>Refreshing '" + organizationName + "' account. Please wait...</span>");
+	dialog.show(); 
+	
+	AJS.$.ajax({
+        url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId + "/syncRepoList",
+        type: 'GET',
+        success: function(result) {
+            window.location.reload();
+        }
+    }).error(function (err) { 
+    	window.location.reload();
+	});
 }
 
 function showError(message) {

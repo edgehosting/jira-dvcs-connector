@@ -87,7 +87,6 @@
 	<component key="accountsConfigLifecycler" name="Accounts Config Lifecycler" class="com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigLifecycler" public="true">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
-	
 
     <!-- Plugin upgrade Tasks -->
 	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task" public="true"
@@ -97,6 +96,11 @@
 
     <component key="oAuthStorageUpgradeTask" name="Migrate OAuth details to new location" public="true"
         class="com.atlassian.jira.plugins.dvcs.upgrade.To_03_UpgradeOAuthDetails">
+        <interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
+    </component>
+
+    <component key="oAuthKeySecretUpgrade" name="Adding OAuth key/secret to each bitbucket organization" public="true"
+        class="com.atlassian.jira.plugins.dvcs.upgrade.To_04_AddKeyAndSecretToBBAccounts">
         <interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
     </component>
 

@@ -7,12 +7,11 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Remot
  * ThreeLegged10aOauthProvider
  *
  * Created on 13.7.2012, 10:25:48
- * 
+ *
  * @author jhocman@atlassian.com
  */
 public class ThreeLegged10aOauthProvider extends AbstractAuthProvider
 {
-
 	private final String accessTokenWithSecret;
     private final String key;
     private final String secret;
