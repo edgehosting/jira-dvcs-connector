@@ -379,7 +379,8 @@ public class RootResource
 
         } catch (Exception e)
         {
-            log.error("Failed to remove account " + id, e);
+            log.error("Failed to remove account with id " + id, e);
+            return Status.error().message("Failed to delete account.").response();
         }
 
         return Response.noContent().build();
