@@ -32,7 +32,7 @@ public class ChangesetTransformer
         FileData fileData = parseFilesData(changesetMapping.getFilesData());
         List<String> parents = parseParentsData(changesetMapping.getParentsData());
 
-        final Changeset changeset = new Changeset(changesetMapping.getRepositoryId(),
+        final Changeset changeset = new Changeset(changesetMapping.getRepositories()[0].getID(),
                 changesetMapping.getNode(),
                 changesetMapping.getIssueKey(),
                 changesetMapping.getRawAuthor(),

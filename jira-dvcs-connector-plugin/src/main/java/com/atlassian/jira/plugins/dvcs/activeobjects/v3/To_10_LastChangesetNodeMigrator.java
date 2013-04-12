@@ -43,9 +43,11 @@ public class To_10_LastChangesetNodeMigrator implements ActiveObjectsUpgradeTask
             if (repositoryLastCommitDate != null) // when the repo is empty
             {
                 ChangesetMapping[] lastChangesetOrEmptyArray = activeObjects.find(ChangesetMapping.class,
-                        Query.select().where(ChangesetMapping.REPOSITORY_ID + " = ?", repository.getID())
-                                      .order(ChangesetMapping.DATE + " DESC")
-                                      .limit(1));
+                        // todo: mfa
+                        Query.select());
+//                        Query.select().where(ChangesetMapping.REPOSITORY_ID + " = ?", repository.getID())
+//                                      .order(ChangesetMapping.DATE + " DESC")
+//                                      .limit(1));
 
                 // should never happen as empty repo should not have set LAST_COMMIT_DATE
                 if (lastChangesetOrEmptyArray.length != 0)

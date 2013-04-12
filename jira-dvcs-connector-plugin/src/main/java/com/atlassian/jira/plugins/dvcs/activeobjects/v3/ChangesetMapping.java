@@ -1,17 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import net.java.ao.Entity;
+import net.java.ao.ManyToMany;
 import net.java.ao.Preload;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
 import java.util.Date;
+import java.util.List;
 
 @Preload
 @Table("ChangesetMapping")
 public interface ChangesetMapping extends Entity
 {
-    public static final String REPOSITORY_ID = "REPOSITORY_ID";
+//    public static final String REPOSITORY_ID = "REPOSITORY_ID";
     public static final String ISSUE_KEY = "ISSUE_KEY";
     public static final String PROJECT_KEY = "PROJECT_KEY";
     public static final String NODE = "NODE";
@@ -39,7 +41,8 @@ public interface ChangesetMapping extends Entity
      */
     public static final int LATEST_VERSION = 3;
 
-    int getRepositoryId();
+    @ManyToMany(value = RepositoryToChangesetMapping.class)
+    RepositoryMapping[] getRepositories();
     String getNode();
     String getIssueKey();
     String getProjectKey();
@@ -57,7 +60,7 @@ public interface ChangesetMapping extends Entity
     String getAuthorEmail();
     Boolean isSmartcommitAvailable();
 
-    void setRepositoryId(int repositoryId);
+//    void setRepositories(RepositoryMapping[] repositories);
     void setNode(String node);
     void setIssueKey(String issueKey);
     void setProjectKey(String projectKey);
