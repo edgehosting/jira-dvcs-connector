@@ -33,7 +33,7 @@ public class DefaultSynchronizer implements Synchronizer
     }
 
     // map of ALL Synchronisation Progresses - running and finished ones
-    private final ConcurrentMap<Repository, Progress> progressMap = new MapMaker().makeMap();
+    private final ConcurrentMap<Integer, Progress> progressMap = new MapMaker().makeMap();
 
 
     @Override
@@ -60,7 +60,7 @@ public class DefaultSynchronizer implements Synchronizer
     private void addSynchronisationOperation(final Repository repository, final SynchronisationOperation operation)
     {
         final DefaultProgress progress = operation.getProgress();
-        progressMap.put(repository, progress);
+        progressMap.put(repository.getId(), progress);
         
         Runnable runnable = new Runnable()
         {
@@ -105,17 +105,17 @@ public class DefaultSynchronizer implements Synchronizer
     @Override
     public Progress getProgress(Repository repository)
     {
-        return progressMap.get(repository);
+        return progressMap.get(repository.getId());
     }
 
     public void putProgress(Repository repository, Progress progress)
     {
-        progressMap.put(repository, progress);
+        progressMap.put(repository.getId(), progress);
     }
 
     @Override
     public void removeProgress(Repository repository)
     {
-        progressMap.remove(repository);
+        progressMap.remove(repository.getId());
     }
 }
