@@ -209,7 +209,7 @@ function createGithubEnterpriseConfirmation() {
 	
 	dialog.addButtonPanel();
 
-	dialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon'>Wait</span>");
+	dialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon'>&nbsp;</span>");
 	
 	dialog.addSubmit("Add", function (dialog, event) {
 		if (dvcsSubmitFormHandler(event,false)) {

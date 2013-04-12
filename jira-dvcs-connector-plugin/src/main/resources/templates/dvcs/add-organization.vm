@@ -76,7 +76,7 @@
                 </div>
             
                 <div class="field-group" >
-                  <label for="organization">Team or User Account<span class="aui-icon icon-required">Required</span></label>
+                  <label for="organization">Team or User Account<span class="aui-icon icon-required">&nbsp;</span></label>
                   <input class="text" type="text" id="organization" name="organization" value=""/>
                   <div class="fieldValue" id="organizationReadOnly"></div>
                   <div id="org-error" class="dvcs-error error">This field is required.</div>
@@ -86,13 +86,13 @@
                 <div id="bitbucket-form-section" style="display:none">
                     <input type="hidden" id="oauthBbRequired" name="oauthBbRequired" value="true" />
                     <div class="field-group">
-                       <label for="oauthBbClientId">OAuth Key<span class="aui-icon icon-required">Required</span></label>
+                       <label for="oauthBbClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
                        <input class="text" type="text" id="oauthBbClientId" name="oauthBbClientId" value=""/>
                        <div id="oauth-bb-client-error" class="dvcs-error error">This field is required.</div>
                        <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureBitbucketOAuth!default.jspa">find OAuth key and secret</a>?</div>
                     </div>
                     <div class="field-group">
-                       <label for="oauthBbSecret">OAuth Secret<span class="aui-icon icon-required">Required</span></label>
+                       <label for="oauthBbSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
                        <input class="text" type="text" id="oauthBbSecret" name="oauthBbSecret" value=""/>
                        <div id="oauth-bb-secret-error" class="dvcs-error error">This field is required.</div>
                     </div>
@@ -102,13 +102,13 @@
                 <div id="github-form-section" style="display:none">
                     <input type="hidden" id="oauthRequired" name="oauthRequired" value="true" />
                     <div class="field-group">
-                       <label for="oauthClientId">OAuth Key<span class="aui-icon icon-required">Required</span></label>
+                       <label for="oauthClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
                        <input class="text" type="text" id="oauthClientId" name="oauthClientId" value=""/>
                        <div id="oauth-gh-client-error" class="dvcs-error error">This field is required.</div>
                        <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureGithubOAuth!default.jspa">find OAuth key and secret</a>?</div>
                     </div>
                     <div class="field-group">
-                       <label for="oauthSecret">OAuth Secret<span class="aui-icon icon-required">Required</span></label>
+                       <label for="oauthSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
                        <input class="text" type="text" id="oauthSecret" name="oauthSecret" value=""/>
                        <div id="oauth-gh-secret-error" class="dvcs-error error">This field is required.</div>
                     </div>
@@ -118,19 +118,19 @@
                 <div id="githube-form-section" style="display:none">
                     <input type="hidden" id="oauthRequiredGhe" name="oauthRequiredGhe" value="true" />
                     <div class="field-group">
-                       <label for="urlGhe">Host URL<span class="aui-icon icon-required">Required</span></label>
+                       <label for="urlGhe">Host URL<span class="aui-icon icon-required">&nbsp;</span></label>
                        <input class="text" type="text" id="urlGhe" name="urlGhe" value=""/>
                        <div id="ghe-url-error" class="dvcs-error error">This field is required.</div>
                        <div id="ghe-invalid-url-error" class="dvcs-error error">Valid url is required.</div>
                     </div>
                     <div class="field-group">
-                        <label for="oauthClientIdGhe">OAuth Key<span class="aui-icon icon-required">Required</span></label>
+                        <label for="oauthClientIdGhe">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
                        <input class="text" type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value=""/>
                        <div id="oauth-ghe-client-error" class="dvcs-error error">This field is required.</div>
                        <div class="description"></div>
                     </div>
                     <div class="field-group">
-                       <label for="oauthSecretGhe">OAuth Secret<span class="aui-icon icon-required">Required</span></label>
+                       <label for="oauthSecretGhe">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
                        <input class="text" type="text" id="oauthSecretGhe" name="oauthSecretGhe" value=""/>
                        <div id="oauth-ghe-secret-error" class="dvcs-error error">This field is required.</div>
                     </div>
