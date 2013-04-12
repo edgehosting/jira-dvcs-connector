@@ -5,10 +5,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class Credential
 {
+    @Deprecated
     private String adminUsername;
+    @Deprecated
     private String adminPassword;
+
+
     private String accessToken;
-    
+
     // case of 2LO oauth
     private String oauthKey;
     private String oauthSecret;
@@ -17,31 +21,39 @@ public class Credential
 	{
     	super();
 	}
-    
-    public Credential(String adminUsername, String adminPassword, String accessToken)
-    {
-        this.adminUsername = adminUsername;
-        this.adminPassword = adminPassword;
-        this.accessToken = accessToken;
-    }
-    
 
-    public Credential(String adminUsername, String adminPassword, String accessToken, String oauthKey,
-            String oauthSecret)
+    public Credential(String oauthKey, String oauthSecret, String accessToken)
     {
-        this(adminUsername, adminPassword, accessToken);
         this.oauthKey = oauthKey;
         this.oauthSecret = oauthSecret;
+        this.accessToken = accessToken;
     }
 
+    @Deprecated
+    public Credential(String oauthKey, String oauthSecret, String accessToken, String adminUsername,
+            String adminPassword)
+    {
+        this(oauthKey, oauthSecret, accessToken);
+        this.adminUsername = adminUsername;
+        this.adminPassword = adminPassword;
+    }
+
+    @Deprecated
     public String getAdminUsername()
     {
         return adminUsername;
     }
 
+    @Deprecated
     public String getAdminPassword()
     {
         return adminPassword;
+    }
+
+    @Deprecated
+    public void setAdminPassword(String adminPassword)
+    {
+        this.adminPassword = adminPassword;
     }
 
     public String getAccessToken()
@@ -49,6 +61,7 @@ public class Credential
         return accessToken;
     }
 
+    @Deprecated
 	public void setAdminUsername(String adminUsername)
 	{
 		this.adminUsername = adminUsername;

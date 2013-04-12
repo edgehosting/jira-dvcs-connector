@@ -151,7 +151,6 @@ public class RepositoryServiceImpl implements RepositoryService
 
     }
 
-
     /**
      * Removes duplicated repositories.
      *
