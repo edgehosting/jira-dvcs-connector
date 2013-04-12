@@ -216,14 +216,13 @@ public class RepositoryServiceImpl implements RepositoryService
                 try
                 {
                     addOrRemovePostcommitHook(savedRepository, getPostCommitUrl(savedRepository));
-                    updateAdminPermission(savedRepository, true);
                 } catch(SourceControlException.PostCommitHookRegistrationException e)
                 {
                     log.warn("Adding postcommit hook for repository "
                             + savedRepository.getRepositoryUrl() + " failed: ", e);
+                    updateAdminPermission(savedRepository, false);
                     // if the user didn't have rights to add post commit hook, just unlink the repository
                     savedRepository.setLinked(false);
-                    updateAdminPermission(savedRepository, false);
                     repositoryDao.save(savedRepository);
                 }
             }
@@ -233,15 +232,18 @@ public class RepositoryServiceImpl implements RepositoryService
 
     private void updateAdminPermission(Repository repository, boolean hasAdminPermission)
     {
-        Progress progress = repository.getSync();
-        if (progress == null)
+        if (repository.isLinked())
         {
-            progress = new DefaultProgress();
-            progress.setFinished(true);
-            synchronizer.putProgress(repository, progress);
+            Progress progress = repository.getSync();
+            if (progress == null)
+            {
+                progress = new DefaultProgress();
+                progress.setFinished(true);
+                synchronizer.putProgress(repository, progress);
+            }
+            
+            progress.setAdminPermission(hasAdminPermission);
         }
-        
-        progress.setAdminPermission(hasAdminPermission);
     }
     
     /**
@@ -405,6 +407,7 @@ public class RepositoryServiceImpl implements RepositoryService
             if (!linked)
             {
                 synchronizer.stopSynchronization(repository);
+                synchronizer.removeProgress(repository);
             }
 
             repository.setLinked(linked);

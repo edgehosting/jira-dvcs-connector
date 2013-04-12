@@ -221,7 +221,7 @@
                 </td>
                 
                 <td class="dvcs-org-reponame">
-                    #if(!$repo.sync.hasAdminPermission())
+                    #if($repo.sync && !$repo.sync.hasAdminPermission())
 						<span class="admin-permission aui-icon aui-icon-warning">&nbsp;</span>
                     #end
                     <a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
