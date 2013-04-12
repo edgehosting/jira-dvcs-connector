@@ -264,6 +264,51 @@
 				<functionalTestPattern>it/com/**/*Test.java</functionalTestPattern>
 			</properties>
 		</profile>
+		<profile>
+			<id>dev-mysql</id>
+			<properties>
+			    <!-- Default: MySQL properties values feel free to customize it via -Dmysql.xxx=xxx -->
+			    <mysql.host>localhost</mysql.host>
+			    <mysql.port>3306</mysql.port>
+			    <mysql.database>jira</mysql.database>
+			    <mysql.username>jira</mysql.username>
+			    <mysql.password>jira</mysql.password>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.atlassian.maven.plugins</groupId>
+						<artifactId>maven-jira-plugin</artifactId>
+						<extensions>true</extensions>
+						<configuration>
+							<products>
+								<product>
+									<id>jira</id>
+									<version>${jira.version}</version>
+									<dataPath>${basedir}/src/test/resources/jira-home-mysql</dataPath>
+									<dataSources>
+										<dataSource>
+											<jndi>jdbc/JiraDS</jndi>
+											<url>jdbc:mysql://${mysql.host}:${mysql.port}/${mysql.database}?useUnicode=true&amp;amp;characterEncoding=utf8&amp;amp;sessionVariables=storage_engine=InnoDB</url>
+											<driver>com.mysql.jdbc.Driver</driver>
+											<username>${mysql.username}</username>
+											<password>${mysql.password}</password>
+											<libArtifacts>
+												<libArtifact>
+													<groupId>mysql</groupId>
+													<artifactId>mysql-connector-java</artifactId>
+													<version>5.1.24</version>
+												</libArtifact>
+											</libArtifacts>
+										</dataSource>
+									</dataSources>
+								</product>
+							</products>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 
 	<distributionManagement>
