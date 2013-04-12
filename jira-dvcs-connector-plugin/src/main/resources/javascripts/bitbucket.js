@@ -160,13 +160,12 @@ function getLastCommitRelativeDateHtml(daysAgo) {
     return html;
 }
 
-var dialog = null;
-
 function showAddRepoDetails(show) {
 
-	if (!dialog) {
-		createGithubEnterpriseConfirmation();
+	if (!jira.dvcs.connector.plugin.addOrganizationDialog) {
+		createAddOrganizationDialog();
 	}
+	var dialog = jira.dvcs.connector.plugin.addOrganizationDialog;
 	// Reset to default view:
 	AJS.$('#repoEntry').attr("action", "");
 	// - hide username/password
@@ -194,8 +193,8 @@ function showAddRepoDetails(show) {
 	dialog.updateHeight();
 }
 
-function createGithubEnterpriseConfirmation() {
-	dialog = new AJS.Dialog({
+function createAddOrganizationDialog(action) {
+	var dialog = new AJS.Dialog({
 		width: 800, 
 		height: 400, 
 		id: "add-organization-dialog", 
@@ -205,7 +204,11 @@ function createGithubEnterpriseConfirmation() {
 	// First page
 	dialog.addHeader("Add New Account");
 
-	dialog.addPanel("", AJS.$("#repoEntry"), "panel-body");
+	dialog.addPanel("", jira.dvcs.connector.plugin.soy.addOrganizationDialog({
+		isGithubEnterpriseEnabled: jira.dvcs.connector.plugin.githubEnterpriseEnabled,
+		isOnDemandLicense: jira.dvcs.connector.plugin.onDemandLicense,
+		atlToken : jira.dvcs.connector.plugin.atlToken
+	}), "panel-body");
 	
 	dialog.addButtonPanel();
 
@@ -259,10 +262,12 @@ function createGithubEnterpriseConfirmation() {
     		AJS.$('#add-organization-dialog .button-panel-submit-button').attr("disabled", "disabled");
     	}
     }
+    jira.dvcs.connector.plugin.addOrganizationDialog = dialog;
 }
 
 function dvcsSubmitFormHandler(event, skipLoggingAlert) {
-    // submit form
+    var dialog = jira.dvcs.connector.plugin.addOrganizationDialog;
+	// submit form
     var organizationElement = AJS.$("#organization");
     // if not custom URL
     if ( !dvcsContainsSlash( organizationElement.val()) ) {
