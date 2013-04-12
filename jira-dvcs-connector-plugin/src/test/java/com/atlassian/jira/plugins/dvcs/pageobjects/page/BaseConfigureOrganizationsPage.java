@@ -33,7 +33,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     @ElementBy(id = "linkRepositoryButton")
     PageElement linkRepositoryButton;
 
-    @ElementBy(id = "Submit")
+    @ElementBy(className = "button-panel-submit-button")
     PageElement addOrgButton;
 
     @ElementBy(className = "gh_messages")
@@ -68,13 +68,12 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     {
         List<BitBucketOrganization> list = new ArrayList<BitBucketOrganization>();
 
-        for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-orgdata-container"))) {
-
-        	 Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-org-container")).timed().isVisible());
+        for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-orgdata-container")))
+        {
+             Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-org-container")).timed().isVisible());
 
              list.add(pageBinder.bind(BitBucketOrganization.class, orgContainer));
-
-    	}
+        }
 
         return list;
     }
@@ -88,7 +87,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
             orgs.get(0).delete();
         }
 
-    	return this;
+        return this;
     }
 
     public void assertThatErrorMessage(Matcher<String> matcher)
@@ -159,8 +158,8 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
             if (repositoryName.equals(queriedRepositoryName))
             {
-            	String id = repositoryRow.getAttribute("id");
-            	return id.replaceAll("dvcs-repo-row-", "");
+                String id = repositoryRow.getAttribute("id");
+                return id.replaceAll("dvcs-repo-row-", "");
             }
         }
 

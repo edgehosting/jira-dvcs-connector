@@ -74,9 +74,6 @@
     font-size: 1em;
     padding:0 20px;
 }
-.error{
-    color:#f66;
-}
 
 .gh_table td{
     font-size: 1em;
@@ -279,7 +276,6 @@ a:hover.repositoryNameLink {
 }
 
 .dvcs-error {
-	color: red !important;
 	display: none;
 }
 .dvcs-org-reponame {
@@ -483,14 +479,6 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	margin: 1ex 2.5ex;
 }
 
-/* Confirm logged in dialog style */
-div.confirmLoggedIn {
-	margin: 2.5ex;
-}
-div.confirmLoggedIn .buttons {
-	margin: 1ex 2.5ex;
-}
-
 .dvcs-organization-controls-tool button.toolbar-trigger.aui-dd-trigger {
   height: 30px;
   padding: 0px 12px 0px 2px !important;
@@ -512,6 +500,41 @@ div.confirmLoggedIn .buttons {
   margin-top: 3px;
 }
 
+.dvcs-advertisement {
+	background-image: url("../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bg-broadcast.png");
+	background-position: right bottom;
+	background-repeat: no-repeat;
+	background-size: 10ex;
+}
 
+.dvcs-advertisement .product {
+	display: inline-block;
+	width: 33ex;
+	margin: 2.5ex 2.5ex;
+	vertical-align: top;
+	border-right: solid 1px #dddddd;
+}
 
+.dvcs-advertisement .product:last-child {
+	border: none;
+}
 
+.dvcs-advertisement .product .logo img {
+	height: 3ex;
+}
+
+.dvcs-advertisement .product h4 {
+	margin: 0ex;
+}
+
+.dvcs-advertisement .product .content {
+	margin: 1ex 0;
+}
+
+.dvcs-advertisement .product .buttons {
+	margin: 1ex 0ex;
+}
+
+.dvcs-advertisement .product .buttons a {
+	margin-right: 1ex;
+}

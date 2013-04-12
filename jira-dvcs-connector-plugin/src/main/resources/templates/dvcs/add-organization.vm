@@ -18,21 +18,7 @@
         {
             // run timer for repos sync statuses
 			retrieveSyncStatus();
-			// TODO: mst confirm dialog - confirm that you are logged inside Git Hub Enterprise.
-			var repoEntryData = {};
-			AJS.$("#repoEntry").data("ghe-confirm-logged-in", repoEntryData);
-			repoEntryData.dialog = AJS.InlineDialog(AJS.$("#repoEntry input.submit"), "ghe-confirm-logged-in", 
-				function(content, trigger, showPopup) {
-	    			content.html(jira.dvcs.connector.plugin.soy.confirmLoggedIn({
-    					dvcsHost: repoEntryData.dvcsHost,
-    				}));
-    				showPopup();
-    				return false;
-			}, {onTop: true, width: 500, noBind: true, hideDelay: null});
-			//
-
-            // bind submit handler
-            AJS.$("#repoEntry").submit(dvcsSubmitFormHandler);
+			registerAdminPermissionInlineDialogTooltip();
         }
      </script>
 
@@ -62,7 +48,7 @@
         #end
         
 
-        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account &gt;&gt;" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account &gt;&gt;" />
+        <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account" />
 
         <div id="addRepositoryContent">
         <div id="addRepositoryDetails" class="aui-message form-body">
@@ -76,10 +62,9 @@
                 <input type="hidden" name="isPrivate" id="isPrivate">
                 <input type="hidden" name="url" id="url" >
               
-                
                 <div class="field-group" >
-                  <label for="urlSelect">Host:</label>
-                  <select id="urlSelect" name="urlSelect" class="select" onchange="switchDvcsDetails(this)">
+                  <label for="urlSelect">Host</label>
+                  <select id="urlSelect" name="urlSelect" class="select">
                     <option value="bitbucket">Bitbucket</option>
                     <option value="github">GitHub</option>
                     #if ( $action.isGithubEnterpriseEnabled() )
@@ -87,29 +72,29 @@
                     #end
                   </select>
                   <div class="fieldValue" id="urlReadOnly"></div>
-                  <div id="url-error" class="dvcs-error">Choose URL.</div>
+                  <div id="url-error" class="dvcs-error error">Choose URL.</div>
                 </div>
             
                 <div class="field-group" >
-                  <label for="organization">Team or User Account:</label>
-                  <input type="text" id="organization" name="organization" value=""/>
+                  <label for="organization">Team or User Account<span class="aui-icon icon-required">Required</span></label>
+                  <input class="text" type="text" id="organization" name="organization" value=""/>
                   <div class="fieldValue" id="organizationReadOnly"></div>
-                  <div id="org-error" class="dvcs-error">This field is required.</div>
+                  <div id="org-error" class="dvcs-error error">This field is required.</div>
                 </div>
                 
                 ## BB form section
                 <div id="bitbucket-form-section" style="display:none">
                     <input type="hidden" id="oauthBbRequired" name="oauthBbRequired" value="true" />
                     <div class="field-group">
-                       <label for="oauthBbClientId">OAuth Key:</label>
-                       <input type="text" id="oauthBbClientId" name="oauthBbClientId" value=""/>
-                       <div id="oauth-bb-client-error" class="dvcs-error">This field is required.</div>
+                       <label for="oauthBbClientId">OAuth Key<span class="aui-icon icon-required">Required</span></label>
+                       <input class="text" type="text" id="oauthBbClientId" name="oauthBbClientId" value=""/>
+                       <div id="oauth-bb-client-error" class="dvcs-error error">This field is required.</div>
                        <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureBitbucketOAuth!default.jspa">find OAuth key and secret</a>?</div>
                     </div>
                     <div class="field-group">
-                       <label for="oauthBbSecret">OAuth Secret:</label>
-                       <input type="text" id="oauthBbSecret" name="oauthBbSecret" value=""/>
-                       <div id="oauth-bb-secret-error" class="dvcs-error">This field is required.</div>
+                       <label for="oauthBbSecret">OAuth Secret<span class="aui-icon icon-required">Required</span></label>
+                       <input class="text" type="text" id="oauthBbSecret" name="oauthBbSecret" value=""/>
+                       <div id="oauth-bb-secret-error" class="dvcs-error error">This field is required.</div>
                     </div>
                 </div>
 
@@ -117,15 +102,15 @@
                 <div id="github-form-section" style="display:none">
                     <input type="hidden" id="oauthRequired" name="oauthRequired" value="true" />
                     <div class="field-group">
-                       <label for="oauthClientId">OAuth Key:</label>
-                       <input type="text" id="oauthClientId" name="oauthClientId" value=""/>
-                       <div id="oauth-gh-client-error" class="dvcs-error">This field is required.</div>
+                       <label for="oauthClientId">OAuth Key<span class="aui-icon icon-required">Required</span></label>
+                       <input class="text" type="text" id="oauthClientId" name="oauthClientId" value=""/>
+                       <div id="oauth-gh-client-error" class="dvcs-error error">This field is required.</div>
                        <div class="description">How do I <a href="${baseurl}/secure/admin/ConfigureGithubOAuth!default.jspa">find OAuth key and secret</a>?</div>
                     </div>
                     <div class="field-group">
-                       <label for="oauthSecret">OAuth Secret:</label>
-                       <input type="text" id="oauthSecret" name="oauthSecret" value=""/>
-                       <div id="oauth-gh-secret-error" class="dvcs-error">This field is required.</div>
+                       <label for="oauthSecret">OAuth Secret<span class="aui-icon icon-required">Required</span></label>
+                       <input class="text" type="text" id="oauthSecret" name="oauthSecret" value=""/>
+                       <div id="oauth-gh-secret-error" class="dvcs-error error">This field is required.</div>
                     </div>
                 </div>
                 
@@ -133,31 +118,31 @@
                 <div id="githube-form-section" style="display:none">
                     <input type="hidden" id="oauthRequiredGhe" name="oauthRequiredGhe" value="true" />
                     <div class="field-group">
-                       <label for="urlGhe">Host URL:</label>
-                       <input type="text" id="urlGhe" name="urlGhe" value=""/>
-                       <div id="ghe-url-error" class="dvcs-error">This field is required.</div>
-                       <div id="ghe-invalid-url-error" class="dvcs-error">Valid url is required.</div>
+                       <label for="urlGhe">Host URL<span class="aui-icon icon-required">Required</span></label>
+                       <input class="text" type="text" id="urlGhe" name="urlGhe" value=""/>
+                       <div id="ghe-url-error" class="dvcs-error error">This field is required.</div>
+                       <div id="ghe-invalid-url-error" class="dvcs-error error">Valid url is required.</div>
                     </div>
                     <div class="field-group">
-                        <label for="oauthClientIdGhe">OAuth Key:</label>
-                       <input type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value=""/>
-                       <div id="oauth-ghe-client-error" class="dvcs-error">This field is required.</div>
+                        <label for="oauthClientIdGhe">OAuth Key<span class="aui-icon icon-required">Required</span></label>
+                       <input class="text" type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value=""/>
+                       <div id="oauth-ghe-client-error" class="dvcs-error error">This field is required.</div>
                        <div class="description"></div>
                     </div>
                     <div class="field-group">
-                       <label for="oauthSecretGhe">OAuth Secret:</label>
-                       <input type="text" id="oauthSecretGhe" name="oauthSecretGhe" value=""/>
-                       <div id="oauth-ghe-secret-error" class="dvcs-error">This field is required.</div>
+                       <label for="oauthSecretGhe">OAuth Secret<span class="aui-icon icon-required">Required</span></label>
+                       <input class="text" type="text" id="oauthSecretGhe" name="oauthSecretGhe" value=""/>
+                       <div id="oauth-ghe-secret-error" class="dvcs-error error">This field is required.</div>
                     </div>
                 </div>
                 
                 <div style="margin-top: 10px;"  class="field-group">
-                    <label for="autoLinking">Auto Link New Repositories:</label>
+                    <label for="autoLinking">Auto Link New Repositories</label>
                     <input class="checkbox" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true" checked="checked" />
                 </div>
                
                 <div style="margin-top: 10px;"  class="field-group">
-                    <label for="autoSmartCommits">Enable Smart Commits:</label>
+                    <label for="autoSmartCommits">Enable Smart Commits</label>
                     <input class="checkbox" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true" checked="checked" />
                     <div class="description">
                         #if ($action.isOnDemandLicense())
@@ -173,12 +158,6 @@
 
                 <div id="aui-message-bar"></div>
 
-                <div class="buttons-container">
-                    <div class="buttons">
-                        <input class="button submit" type="submit" name="Submit" id="Submit" value="Add" />
-                        <a class="cancel" href="#" onclick="showAddRepoDetails(false)">Cancel</a>
-                    </div>
-                </div>
             </form>
         </div>
         </div>
@@ -337,19 +316,16 @@
                 <td class="dvcs-autolink-repo">
                     <span style="padding-left: 1px;">&nbsp;</span>
                     <input class="repo_autolink_check" id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
-                     onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
-
+						onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
                     <span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
                 </td>
                 
-                <td class="dvcs-org-reponame"><a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
-					#if(!$repo.hasAdminPermission())
-						<a id="admin-permission" title="No admin permission. The post commit hook could not be installed.">
-							<span class="aui-icon aui-icon-warning">Warning</span>
-						</a>
-					#end	
+                <td class="dvcs-org-reponame">
+                    #if(!$repo.sync.hasAdminPermission())
+						<span class="admin-permission aui-icon aui-icon-warning">Warning</span>
+                    #end
+                    <a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
 				</td>
-
                 
                 <td class="action" headers="action" style="text-align: right; white-space: nowrap;">
                 

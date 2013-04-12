@@ -4,7 +4,10 @@ import com.atlassian.plugin.PluginAccessor;
 
 public class DvcsConstants
 {
+
     public static final String LINKERS_ENABLED_SETTINGS_PARAM = "dvcs.BITBUCKET_LINKERS_ENABLED";
+    public static final String SOY_TEMPLATE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:soy-templates";
+
     private static final String PLUGIN_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin";
 
     public static String getPluginVersion(PluginAccessor pluginAccessor)

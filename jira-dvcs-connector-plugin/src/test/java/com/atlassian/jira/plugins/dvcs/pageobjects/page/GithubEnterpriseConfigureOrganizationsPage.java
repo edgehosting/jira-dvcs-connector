@@ -5,6 +5,8 @@ import it.githubenterprise.com.atlassian.jira.plugins.dvcs.GithubEnterpriseOrgan
 import org.openqa.selenium.By;
 import org.testng.Assert;
 
+import com.atlassian.pageobjects.elements.ElementBy;
+import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 
 /**
@@ -12,6 +14,9 @@ import com.atlassian.pageobjects.elements.query.Poller;
  */
 public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureOrganizationsPage
 {
+    @ElementBy(xpath="//button[contains(concat(' ', @class , ' '),' button-panel-submit-button ') and text()='Continue']")
+    PageElement continueAddOrgButton;
+
     @Override
     public GithubEnterpriseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
     {
@@ -25,13 +30,13 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
         setPageAsOld();
 
         if (!autoSync) {
-        	autoLinkNewRepos.click();
+            autoLinkNewRepos.click();
         }
 
         addOrgButton.click();
 
-        // accept alert for GitHub Enterprise
-        jiraTestedProduct.getTester().getDriver().getDriver().switchTo().alert().accept();
+        // Confirm submit for GitHub Enterprise
+        continueAddOrgButton.click();
         
         checkAndDoGithubLogin();
 
@@ -43,7 +48,7 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
         }
 
         if (autoSync) {
-        	JiraPageUtils.checkSyncProcessSuccess(jiraTestedProduct);
+            JiraPageUtils.checkSyncProcessSuccess(jiraTestedProduct);
         }
 
         return this;
@@ -63,8 +68,8 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
         addOrgButton.click();
 
-        // accept alert for GitHub Enterprise
-        jiraTestedProduct.getTester().getDriver().getDriver().switchTo().alert().accept();
+        // Confirm submit for GitHub Enterprise
+        continueAddOrgButton.click();
         
         Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed()
                 .hasText("Error!"));
@@ -85,8 +90,8 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
         addOrgButton.click();
 
-        // accept alert for GitHub Enterprise
-        jiraTestedProduct.getTester().getDriver().getDriver().switchTo().alert().accept();
+        // Confirm submit for GitHub Enterprise
+        continueAddOrgButton.click();
         
         String currentUrl = checkAndDoGithubLogin();
         String expectedUrl = GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL + "/login/oauth/authorize?";
@@ -101,7 +106,7 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
     private String checkAndDoGithubLogin()
     {
 
-    	waitWhileNewPageLaoded();
+        waitWhileNewPageLaoded();
 
 // We don't need to login
 //        String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
@@ -139,8 +144,8 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
         setPageAsOld();
         addOrgButton.click();
      
-        // accept alert for GitHub Enterprise
-        jiraTestedProduct.getTester().getDriver().getDriver().switchTo().alert().accept();
+        // Confirm submit for GitHub Enterprise
+        continueAddOrgButton.click();
         
         checkAndDoGithubLogin();
         String currentUrl = authorizeGithubAppIfRequired();
@@ -164,8 +169,8 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
         setPageAsOld();
         addOrgButton.click();
 
-        // accept alert for GitHub Enterprise
-        jiraTestedProduct.getTester().getDriver().getDriver().switchTo().alert().accept();
+        // Confirm submit for GitHub Enterprise
+        continueAddOrgButton.click();
         
         checkAndDoGithubLogin();
         String currentUrl = authorizeGithubAppIfRequired();

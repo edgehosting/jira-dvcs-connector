@@ -61,6 +61,7 @@ function switchDvcsDetailsInternal(dvcsType) {
 			AJS.$("#oauthRequiredGhe").val("");
 		}
 	}  
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -159,41 +160,105 @@ function getLastCommitRelativeDateHtml(daysAgo) {
     return html;
 }
 
+var dialog = null;
+
 function showAddRepoDetails(show) {
 
-	if (show) {
-		// Reset to default view:
-		AJS.$('#repoEntry').attr("action", "");
-		// - hide username/password
-		AJS.$("#github-form-section").hide();
-		// - show url, organization field
-		AJS.$('#urlSelect').show();
-		AJS.$('#urlSelect').val(0); // select BB by default
-		AJS.$('#urlReadOnly').hide();
-
-		AJS.$('#organization').show();
-		AJS.$('#organizationReadOnly').hide();
-		//
-		AJS.$('#Submit').removeAttr("disabled");
-		// clear all form errors
-		DvcsValidator.clearAllErrors();
-		
-		// enable bitbucket form
-		switchDvcsDetailsInternal(0);
-
-		AJS.$('#linkRepositoryButton').fadeOut(function() {
-			AJS.$('#addRepositoryDetails').slideDown();
-			AJS.$("#organization").focus().select();
-		});
-
-	} else {
-
-		AJS.$('#addRepositoryDetails').slideUp(function() {
-			AJS.$('#linkRepositoryButton').fadeIn();
-			AJS.$("#organization").focus().select();
-		});
-
+	if (!dialog) {
+		createGithubEnterpriseConfirmation();
 	}
+	// Reset to default view:
+	AJS.$('#repoEntry').attr("action", "");
+	// - hide username/password
+	AJS.$("#github-form-section").hide();
+	// - show url, organization field
+	AJS.$('#urlSelect').show();
+	AJS.$('#urlSelect').val(0); // select BB by default
+	AJS.$('#urlReadOnly').hide();
+
+	AJS.$('#organization').show();
+	AJS.$('#organizationReadOnly').hide();
+	
+	dialog.enabled(true);
+	
+	// clear all form errors
+	DvcsValidator.clearAllErrors();
+	
+	// enable bitbucket form
+	switchDvcsDetailsInternal(0);
+
+	AJS.$("#organization").focus().select();
+	dialog.gotoPage(0);
+    dialog.gotoPanel(0);
+	dialog.show();
+	dialog.updateHeight();
+}
+
+function createGithubEnterpriseConfirmation() {
+	dialog = new AJS.Dialog({
+		width: 800, 
+		height: 400, 
+		id: "add-organization-dialog", 
+		closeOnOutsideClick: false
+	});
+	
+	// First page
+	dialog.addHeader("Add New Account");
+
+	dialog.addPanel("", AJS.$("#repoEntry"), "panel-body");
+	
+	dialog.addButtonPanel();
+
+	dialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon'>Wait</span>");
+	
+	dialog.addSubmit("Add", function (dialog, event) {
+		if (dvcsSubmitFormHandler(event,false)) {
+			AJS.$("#repoEntry").submit();
+		}
+	});
+
+	dialog.addCancel("Cancel", function (dialog) {
+		AJS.$("#repoEntry").trigger('reset');
+		AJS.$("#aui-message-bar").empty();
+	    dialog.hide();
+	}, "#");
+	
+	AJS.$('#urlSelect').change(function(event) {
+		switchDvcsDetails(event.target);
+		dialog.updateHeight();
+	});
+    
+	// Second page, GitHub Enterprise confirmation page
+    dialog.addPage();
+    dialog.addHeader("Add New Account");
+    dialog.addPanel("Confirmation", "<div id='githubeConfirmation'>Test</div>", "panel-body");
+    dialog.addSubmit("Continue", function (dialog, event) {
+    	dialog.gotoPage(0);
+    	if (dvcsSubmitFormHandler(event, true)) {
+    		AJS.$("#repoEntry").submit();
+    	}
+	});
+
+    dialog.addButton("Previous", function(dialog) {
+    	   dialog.prevPage();
+    	   dialog.updateHeight();
+    	});
+    
+	dialog.addCancel("Cancel", function (dialog) {
+		AJS.$("#repoEntry").trigger('reset');
+		AJS.$("#aui-message-bar").empty();
+	    dialog.hide();
+	}, "#");
+    
+    dialog.enabled = function(enabled) {
+    	if (enabled) {
+    		AJS.$("#add-organization-wait").removeClass("aui-icon-wait");
+    		AJS.$('#add-organization-dialog .button-panel-submit-button').removeAttr("disabled");
+    	} else {
+    		AJS.$("#add-organization-wait").addClass("aui-icon-wait");
+    		AJS.$('#add-organization-dialog .button-panel-submit-button').attr("disabled", "disabled");
+    	}
+    }
 }
 
 function dvcsSubmitFormHandler(event, skipLoggingAlert) {
@@ -203,7 +268,8 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     if ( !dvcsContainsSlash( organizationElement.val()) ) {
     	// some really simple validation
     	if (!validateAddOrganizationForm()) {
-    		AJS.$('#Submit').removeAttr("disabled");
+    		dialog.enabled(true);
+    		dialog.updateHeight();
     		return false;
     	}
     	var selectedDvcs = AJS.$("#urlSelect option:selected");
@@ -214,18 +280,21 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     		AJS.$("#url").val(AJS.$("#urlGhe").val()); 
 
     		if (!skipLoggingAlert) {
-    			var repoEntryData = AJS.$("#repoEntry").data("ghe-confirm-logged-in");
-    			repoEntryData.dvcsHost = dvcsHost;
-    			repoEntryData.dialog.show();
+    			AJS.$("#githubeConfirmation").html(jira.dvcs.connector.plugin.soy.confirmLoggedIn({
+					dvcsHost: dvcsHost
+				}));
+    			dialog.nextPage();
+    			dialog.updateHeight();
     			return false;
     		}
     	}
 
     	// disable add form
-        AJS.$('#Submit').attr("disabled", "disabled");
+    	dialog.enabled(false);
 
     	//
         AJS.messages.info({ title: "Connecting to " + dvcsHost + " to configure your account...", closeable : false});
+        dialog.updateHeight();
         // set url by selected type
         return true; // submit form
 	}
@@ -233,7 +302,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     // else - lets try to identify account
     // account info
     if (!validateAccountInfoForm()) {
-    	AJS.$('#Submit').removeAttr("disabled");
+    	dialog.enabled(true);
     	return false;
     }
     
@@ -245,7 +314,8 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     AJS.$("#aui-message-bar").empty();
     
     AJS.messages.info({ title: "Trying to identify repository type...", closeable : false});
-
+    dialog.updateHeight();
+    
     var repositoryUrl = AJS.$("#url").val().trim();
     var organizationName = AJS.$("#organization").val().trim();
     
@@ -255,11 +325,12 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
         function(data) {
             
     		AJS.$("#aui-message-bar").empty();
-            AJS.$('#Submit').removeAttr("disabled");
+            dialog.enabled(true);
            
             if (data.validationErrors && data.validationErrors.length > 0) {
             	AJS.$.each(data.validationErrors, function(i, msg){
             		AJS.messages.error({title : "Error!", body : msg});
+            		dialog.updateHeight();
             	})
             } else{
             	dvcsSubmitFormAjaxHandler[data.dvcsType].apply(this, arguments);
@@ -269,7 +340,8 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
             AJS.messages.error({ title: "Error!", 
             	body: "The url [<b>" + AJS.escapeHtml(AJS.$("#url").val()) + "</b>] is incorrect or the server is not responding." 
             });
-            AJS.$('#Submit').removeAttr("disabled");
+            dialog.enabled(true);
+            dialog.updateHeight();
         });
     return false;
 }
@@ -563,6 +635,19 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);
 			  });
+}
+
+function registerAdminPermissionInlineDialogTooltip() {
+	AJS.$(".admin-permission").each(function(index) {
+		AJS.InlineDialog(AJS.$(this), "admin-tooltip"+index,
+		    function(content, trigger, showPopup) {
+				content.css({"padding":"10px"}).html('<p>No admin permission. The post commit hook could not be installed.</p>');
+				showPopup();
+		        return false;
+		    },
+		    {onHover:true, hideDelay:200, showDelay:1000, arrowOffsetX:-10, offsetX:-80}
+		);
+	});
 }
 
 function enableRepoSmartcommits(repoId, checkboxId) {
