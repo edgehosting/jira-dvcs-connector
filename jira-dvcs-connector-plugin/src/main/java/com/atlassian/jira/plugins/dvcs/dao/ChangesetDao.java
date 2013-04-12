@@ -1,10 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import java.util.List;
-import java.util.Set;
-
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -80,6 +81,6 @@ public interface ChangesetDao
         /**
          * @param changeset
          */
-        void execute(Changeset changeset);
+        void execute(ChangesetMapping changesetMapping);
     }
 }

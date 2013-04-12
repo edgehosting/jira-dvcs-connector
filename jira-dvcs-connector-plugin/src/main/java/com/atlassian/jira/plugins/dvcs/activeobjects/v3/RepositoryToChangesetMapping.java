@@ -7,6 +7,8 @@ import net.java.ao.schema.Table;
 public interface RepositoryToChangesetMapping extends Entity
 {
 
+
+    public static final String TABLE_NAME = "AO_E8B6CC_REPO_TO_CHANGESET";
     public static final String REPOSITORY_ID = "REPOSITORY_ID";
     public static final String CHANGESET_ID = "CHANGESET_ID";
 
