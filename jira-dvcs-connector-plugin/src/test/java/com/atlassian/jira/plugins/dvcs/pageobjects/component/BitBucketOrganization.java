@@ -1,5 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
+import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static org.hamcrest.Matchers.is;
+
 import javax.inject.Inject;
 
 import org.openqa.selenium.By;
@@ -45,12 +48,12 @@ public class BitBucketOrganization
         // wait for popup to show up
         try
         {
-            Poller.waitUntilTrue(row.find(By.id("deleting-account-dialog")).timed().isVisible());
+            Poller.waitUntilTrue(elementFinder.find(By.id("deleting-account-dialog")).timed().isVisible());
         } catch (AssertionError e)
         {
-            // ignore, the deletion was probably very quick and the popup has been alreadu closed.
+            // ignore, the deletion was probably very quick and the popup has been already closed.
         }
-        Poller.waitUntilFalse(row.find(By.id("deleting-account-dialog")).timed().isVisible());
+        Poller.waitUntil(elementFinder.find(By.id("deleting-account-dialog")).timed().isVisible(), is(false), by(30000));
     }
 
     public PageElement getRepositoriesTable()
