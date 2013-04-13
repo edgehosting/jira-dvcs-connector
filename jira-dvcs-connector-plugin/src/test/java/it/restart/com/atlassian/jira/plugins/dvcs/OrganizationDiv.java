@@ -1,5 +1,8 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
+import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static org.hamcrest.Matchers.is;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +12,7 @@ import org.openqa.selenium.By;
 
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.webdriver.AtlassianWebDriver;
 
@@ -20,6 +24,9 @@ public class OrganizationDiv
     @Inject
     private AtlassianWebDriver driver;
 
+    @Inject
+    private PageElementFinder elementFinder;
+    
     private final PageElement rootElement;
     private final PageElement repositoriesTable;
     private final PageElement repositoryType;
@@ -49,12 +56,12 @@ public class OrganizationDiv
         // wait for popup to show up
         try
         {
-            Poller.waitUntilTrue(rootElement.find(By.id("deleting-account-dialog")).timed().isVisible());
+            Poller.waitUntilTrue(elementFinder.find(By.id("deleting-account-dialog")).timed().isVisible());
         } catch (AssertionError e)
         {
-            // ignore, the deletion was probably very quick and the popup has been alreadu closed.
+            // ignore, the deletion was probably very quick and the popup has been already closed.
         }
-        Poller.waitUntilFalse(rootElement.find(By.id("deleting-account-dialog")).timed().isVisible());
+        Poller.waitUntil(elementFinder.find(By.id("deleting-account-dialog")).timed().isVisible(), is(false), by(30000));
     }
 
     public List<RepositoryDiv> getRepositories()

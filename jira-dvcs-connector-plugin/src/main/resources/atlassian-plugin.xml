@@ -323,11 +323,6 @@
                 <view name="input">/templates/dvcs/update-bitbucket-password.vm</view>
             </action>
 
-			<action name="com.atlassian.jira.plugins.dvcs.webwork.DeleteOrganizationAction"
-                    alias="DeleteOrganizationAction" roles-required="admin">
-                <view name="input">/templates/dvcs/add-organization.vm</view>
-            </action>
-
 			<action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken"
                     alias="RegenerateGithubOauthToken" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
