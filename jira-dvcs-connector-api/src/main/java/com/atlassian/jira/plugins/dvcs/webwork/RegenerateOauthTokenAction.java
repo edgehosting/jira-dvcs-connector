@@ -73,6 +73,11 @@ public abstract class RegenerateOauthTokenAction extends CommonDvcsConfiguration
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
     }
 
+    public String getOrganizationName()
+    {
+        return organizationService.get(Integer.parseInt(organization),false).getName();
+    }
+
     public String getOrganization()
     {
         return organization;

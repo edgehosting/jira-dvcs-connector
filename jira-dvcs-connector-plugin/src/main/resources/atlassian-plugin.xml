@@ -340,7 +340,7 @@
 
             <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.RegenerateBitbucketOauthToken"
                     alias="RegenerateBitbucketOauthToken" roles-required="admin">
-                <view name="input">/templates/dvcs/add-organization.vm</view>
+                <view name="input">/templates/dvcs/regenerate-oauth.vm</view>
             </action>
 
 			<action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.ConfigureDefaultBitbucketGroups"

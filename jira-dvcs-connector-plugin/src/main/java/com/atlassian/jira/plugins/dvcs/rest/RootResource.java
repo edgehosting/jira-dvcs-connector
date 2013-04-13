@@ -55,7 +55,7 @@ public class RootResource
 
     /** The repository service. */
     private final RepositoryService repositoryService;
-    
+
     /** The webfragment renderer. */
     private final WebfragmentRenderer webfragmentRenderer;
 
@@ -63,7 +63,7 @@ public class RootResource
 
     /**
      * The Constructor.
-     * 
+     *
      * @param organizationService
      *            the organization service
      * @param repositoryService
@@ -80,7 +80,7 @@ public class RootResource
 
     /**
      * Gets the repository.
-     * 
+     *
      * @param id
      *            the id
      * @return the repository
@@ -103,7 +103,7 @@ public class RootResource
 
     /**
      * Gets the all repositories.
-     * 
+     *
      * @return the all repositories
      */
     @GET
@@ -118,7 +118,7 @@ public class RootResource
 
     /**
      * Start repository sync.
-     * 
+     *
      * @param id
      *            the id
      * @param payload
@@ -140,7 +140,7 @@ public class RootResource
 
     /**
      * Start repository softsync.
-     * 
+     *
      * @param id
      *            the id
      * @return the response
@@ -154,7 +154,7 @@ public class RootResource
         log.debug("Rest request to softsync repository [{}] ", id);
 
         repositoryService.sync(id, true);
-         
+
         // ...
         // redirect to Repository resource - that will contain sync
         // message/status
@@ -163,10 +163,10 @@ public class RootResource
 
         return Response.seeOther(uri).build();
     }
-    
+
     /**
      * Start repository fullsync.
-     * 
+     *
      * @param id
      *            the id
      * @return the response
@@ -180,7 +180,7 @@ public class RootResource
         log.debug("Rest request to fullsync repository [{}] ", id);
 
         repositoryService.sync(id, false);
-         
+
         // ...
         // redirect to Repository resource - that will contain sync
         // message/status
@@ -192,7 +192,7 @@ public class RootResource
 
     /**
      * Account info.
-     * 
+     *
      * @param server
      *            the server
      * @param account
@@ -209,7 +209,7 @@ public class RootResource
         {
             log.debug("REST call /accountInfo contained empty server '{}' or account '{}' param",
                     new Object[] {server, account});
-            
+
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
@@ -234,7 +234,7 @@ public class RootResource
         {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        
+
         Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
         repositoryService.syncRepositoryList(organization);
         return Response.noContent().build();
@@ -264,6 +264,18 @@ public class RootResource
     }
 
     @POST
+    @Produces({ MediaType.APPLICATION_XML})
+    @Path("/org/{id}/oauth")
+    @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
+    @AdminOnly
+    public Response setOrganizationOAuth(@PathParam("id") int id, @FormParam("key") String key,  @FormParam("secret") String secret)
+    {
+        Organization organization = organizationService.get(id, false);
+        organizationService.updateCredentialsKeySecret(id, key, secret, organization.getCredential().getAccessToken());
+        return Response.ok(organization).build();
+    }
+
+    @POST
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repo/{id}/autolink")
     @Consumes({MediaType.APPLICATION_JSON})
@@ -273,7 +285,7 @@ public class RootResource
         RepositoryRegistration registration = repositoryService.enableRepository(id, Boolean.parseBoolean(autolink.getPayload()));
         return Response.ok(registration).build();
     }
-    
+
     @POST
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repo/{id}/smart")
@@ -285,7 +297,7 @@ public class RootResource
         repositoryService.enableRepositorySmartcommits(id, Boolean.parseBoolean(enabled.getPayload()));
         return Response.noContent().build();
     }
-    
+
     @GET
     @Produces({ MediaType.TEXT_HTML })
     @Path("/fragment/{id}/defaultgroups")
@@ -296,7 +308,7 @@ public class RootResource
         {
             String html = webfragmentRenderer.renderDefaultGroupsFragment(orgId);
             return Response.ok(html).build();
-            
+
         } catch (IOException e)
         {
             log.error("Failed to get default groups for organization with id " + orgId, e);
@@ -304,7 +316,7 @@ public class RootResource
 
         }
     }
-    
+
     @GET
     @Produces({ MediaType.TEXT_HTML })
     @Path("/fragment/groups")
@@ -315,7 +327,7 @@ public class RootResource
         {
             String html = webfragmentRenderer.renderGroupsFragmentForAddUser();
             return Response.ok(html).build();
-            
+
         } catch (IOException e)
         {
             log.error("Failed to get groups", e);

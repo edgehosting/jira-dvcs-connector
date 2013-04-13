@@ -7,20 +7,24 @@
  */
 {template .repositoryOAuthDialog}
 	<div class="jira-dvcs-connector-plugin repositoryOAuthDialog">
-		<ul>
-			<li>
-				<strong>Blah blah</strong> {$organizationId}, {$oAuthKey}, {$oAuthSecret}.
-			</li>
-			<li>
-				<strong>Soft synchronization</strong> synchronizes changes introduced since last synchronization. 
-				It is recommended option, with minimal influence on data provider.
-			</li>
-			<li>
-				<strong>Full synchronization</strong> first cleans all existing data, then does complete synchronization. 
-				Necessary if data or synchronization was broken. It increases traffic, can possibly result in reaching of the traffic limit 
-				followed by temporary connection restrictions imposed by the provider.
-			</li>
-		</ul>
+		<form action="%" method="post" id="updateOAuthForm" class="aui">
+		<input type="hidden" name="organizationId" value="{$organizationId}"> 
+	    <fieldset>
+	        <div class="field-group">
+	            <label for="d-fname">Key<span class="aui-icon icon-required"> required</span></label>
+	            <input class="text long-field" type="text" id="key" name="key" title="first name" value="{$oAuthKey}">
+	            <div class="error">&nbsp;</div>
+	        </div>
+	        <div class="field-group">
+	            <label for="d-fname">Secret<span class="aui-icon icon-required"> required</span></label>
+	            <input class="text long-field" type="text" id="secret" name="secret" title="first name" value="{$oAuthSecret}">
+	            <div class="error">&nbsp;</div>
+	        </div>
+	        <div class="field-group">
+	        	New Key and Secret can be created at your <a target="_blank" href="https://bitbucket.org/account/">Bitbucket account settings</a> in <b>Integrated Applications</b> section.
+	        </div>
+	    </fieldset>
+	    </form>
 	</div>
 {/template}
 
@@ -59,7 +63,7 @@
 	<div class="project-key-help">
     	<p>
      		<strong>
-     			The repository has been {if $registering}linked{else}unlinked{/if} successfully, but the post commit hook could not be {if $registering}installed{else}uninstalled{/if}.
+     			The repository has been {if $registering}linked{else}unlinked{/if}, but the post commit hook could not be {if $registering}installed{else}uninstalled{/if}.
      			{if $registering}The repository will be still synchronized in the scheduled period.{/if}
      		</strong>
      	</p>

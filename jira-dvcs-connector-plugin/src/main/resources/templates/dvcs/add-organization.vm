@@ -252,8 +252,7 @@
                                        #if ($action.isBitbucketOauthRequired())
                                          <a href="$baseurl/secure/admin/ConfigureBitbucketOAuth!default.jspa?atl_token=$atl_token">Configure OAuth</a>
                                        #else
-##                                         <a href="#" onclick="configureOAuth(${org.id},'someKey','someSecret')">Re-generate OAuth Access Token</a>
-                                         <a href="$baseurl/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=${org.id}&amp;atl_token=$atl_token">Re-generate OAuth Access Token</a>
+                                         <a href="#" onclick="configureOAuth('$org.name', $org.id, '$!org.credential.oauthKey', '$!org.credential.oauthSecret','$atl_token')">Re-generate OAuth Access Token</a> 
                                        #end
 
                                      #elseif ($org.dvcsType == "github")

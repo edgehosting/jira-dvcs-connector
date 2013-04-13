@@ -197,7 +197,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
 
     private void markAsIntegratedAccount(Organization userAddedAccount, AccountInfo info)
     {
-        organizationService.updateCredentialsKeySecret(userAddedAccount.getId(), info.oauthKey, info.oauthSecret);
+        organizationService.updateCredentialsKeySecret(userAddedAccount.getId(), info.oauthKey, info.oauthSecret, null);
     }
 
     private Organization getUserAddedAccount(AccountInfo info)
@@ -231,7 +231,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
                 if (configHasChanged(existingNotNullAccount, providedConfig))
                 {
                     log.info("Detected credentials change.");
-                    organizationService.updateCredentialsKeySecret(existingNotNullAccount.getId(), providedConfig.oauthKey, providedConfig.oauthSecret);
+                    organizationService.updateCredentialsKeySecret(existingNotNullAccount.getId(), providedConfig.oauthKey, providedConfig.oauthSecret, null);
                 } else if (accountNameHasChanged(existingNotNullAccount, providedConfig))
                 {
                     log.info("Detected integrated account name change.");
