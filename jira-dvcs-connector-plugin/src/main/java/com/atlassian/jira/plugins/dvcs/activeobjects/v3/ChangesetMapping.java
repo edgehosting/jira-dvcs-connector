@@ -2,20 +2,18 @@ package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import net.java.ao.Entity;
 import net.java.ao.ManyToMany;
+import net.java.ao.OneToMany;
 import net.java.ao.Preload;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
 import java.util.Date;
-import java.util.List;
 
 @Preload
 @Table("ChangesetMapping")
 public interface ChangesetMapping extends Entity
 {
 //    public static final String REPOSITORY_ID = "REPOSITORY_ID";
-    public static final String ISSUE_KEY = "ISSUE_KEY";
-    public static final String PROJECT_KEY = "PROJECT_KEY";
     public static final String NODE = "NODE";
     public static final String RAW_AUTHOR = "RAW_AUTHOR";
     public static final String AUTHOR = "AUTHOR";
@@ -43,9 +41,11 @@ public interface ChangesetMapping extends Entity
 
     @ManyToMany(value = RepositoryToChangesetMapping.class)
     RepositoryMapping[] getRepositories();
+
+    @OneToMany
+    IssueToChangesetMapping[] getIssues();
+
     String getNode();
-    String getIssueKey();
-    String getProjectKey();
     String getRawAuthor();
     String getAuthor();
     Date getDate();
@@ -60,10 +60,8 @@ public interface ChangesetMapping extends Entity
     String getAuthorEmail();
     Boolean isSmartcommitAvailable();
 
-//    void setRepositories(RepositoryMapping[] repositories);
+
     void setNode(String node);
-    void setIssueKey(String issueKey);
-    void setProjectKey(String projectKey);
     void setRawAuthor(String rawAuthor);
     void setAuthor(String author);
     void setDate(Date date);

@@ -22,10 +22,12 @@ public interface ChangesetDao
     /**
      * save Changeset to storage. If it's new object (without ID) after this operation it will have it assigned.
      * 
+     *
      * @param changeset
+     * @param extractedIssues
      * @return
      */
-    Changeset save(Changeset changeset);
+    Changeset save(Changeset changeset, Set<String> extractedIssues);
 
     /**
      * @param repositoryId

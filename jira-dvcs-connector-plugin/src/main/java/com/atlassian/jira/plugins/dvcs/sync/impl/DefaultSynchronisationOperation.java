@@ -1,12 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -16,6 +9,12 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
@@ -85,13 +84,13 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
             Set<String> extractedIssues = extractIssueKeys(message);
 
-            if (CollectionUtils.isEmpty(extractedIssues) ) // storing only issues without issueKeys as
-            {
-                changeset.setIssueKey("NON_EXISTING-0");
-                changesetService.save(changeset);
-                progress.inProgress(changesetCount, jiraCount, 0);
-                continue;
-            }
+//            if (CollectionUtils.isEmpty(extractedIssues) ) // storing only issues without issueKeys as
+//            {
+//                changeset.setIssueKey("NON_EXISTING-0");
+//                changesetService.save(changeset, extractedIssues);
+//                progress.inProgress(changesetCount, jiraCount, 0);
+//                continue;
+//            }
 
             // get detail changeset because in this response is not information about files
             Changeset detailChangeset = null;
@@ -105,38 +104,40 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                 {
                     log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
                 }
-            	
-                boolean changesetAlreadyMarkedForSmartCommits = false;
-                for (String extractedIssue : extractedIssues)
+
+
+                //boolean changesetAlreadyMarkedForSmartCommits = false;
+                try
+                {
+                    Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
+                    //--------------------------------------------
+                    // mark smart commit can be processed
+                    // + store extracted project key for incremental linking
+                    // todo: mfa - smartcommit - true - gut?
+                    markChangesetForSmartCommit(changesetForSave, true);
+//                        if (softSync && !changesetAlreadyMarkedForSmartCommits)
+//                        {
+//                            markChangesetForSmartCommit(changesetForSave, true);
+//                            changesetAlreadyMarkedForSmartCommits = true;
+//                        } else
+//                        {
+//                            markChangesetForSmartCommit(changesetForSave, false);
+//                        }
+                    //--------------------------------------------
+                    log.debug("Save changeset [{}]", changesetForSave);
+                    changesetService.save(changesetForSave, extractedIssues);
+
+                } catch (SourceControlException e)
+                {
+                    log.error("Error adding changeset " + changeset, e);
+                }
+
+                for (String issueKey : extractedIssues)
                 {
                     jiraCount++;
-                    String issueKey = extractedIssue.toUpperCase();
-                    try
-                    {
-                    	Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
-                    	changesetForSave.setIssueKey(issueKey);
-                        //--------------------------------------------
-                        // mark smart commit can be processed
-                        // + store extracted project key for incremental linking
-                        if (softSync && !changesetAlreadyMarkedForSmartCommits)
-                        {
-                            markChangesetForSmartCommit(changesetForSave, true);
-                            changesetAlreadyMarkedForSmartCommits = true;
-                        } else
-                        {
-                            markChangesetForSmartCommit(changesetForSave, false);
-                        }
-                        
-                        foundProjectKeys.add(ChangesetDaoImpl.parseProjectKey(issueKey));
-                        //--------------------------------------------
-                        log.debug("Save changeset [{}]", changesetForSave);
-                        changesetService.save(changesetForSave);
-                    
-                    } catch (SourceControlException e)
-                    {
-                        log.error("Error adding changeset " + changeset, e);
-                    }
+                    foundProjectKeys.add(ChangesetDaoImpl.parseProjectKey(issueKey));
                 }
+
             }
             progress.inProgress(changesetCount, jiraCount, 0);
         }

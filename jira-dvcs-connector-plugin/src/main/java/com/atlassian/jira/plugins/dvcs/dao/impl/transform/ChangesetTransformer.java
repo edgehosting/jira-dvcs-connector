@@ -37,7 +37,6 @@ public class ChangesetTransformer
         for (RepositoryMapping repositoryMapping : changesetMapping.getRepositories()) {
             final Changeset changeset = new Changeset(repositoryMapping.getID(),
                     changesetMapping.getNode(),
-                    changesetMapping.getIssueKey(),
                     changesetMapping.getRawAuthor(),
                     changesetMapping.getAuthor(),
                     changesetMapping.getDate(),
