@@ -46,13 +46,11 @@ public class RepositoryDaoImpl implements RepositoryDao
         }
 
         log.debug("Repository transformation: [{}] ", repositoryMapping);
+        Credential credential = new Credential(
+                organizationMapping.getOauthKey(), organizationMapping.getOauthSecret(),
+                organizationMapping.getAccessToken(),
+                organizationMapping.getAdminUsername(), organizationMapping.getAdminPassword());
 
-		Credential credential = new Credential(organizationMapping.getAdminUsername(),
-				organizationMapping.getAdminPassword(), organizationMapping.getAccessToken());
-		
-		credential.setOauthKey(organizationMapping.getOauthKey());
-		credential.setOauthSecret(organizationMapping.getOauthSecret());
-		
 		Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(),
 				organizationMapping.getDvcsType(), repositoryMapping.getSlug(), repositoryMapping.getName(),
                 repositoryMapping.getLastCommitDate(),
@@ -62,7 +60,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 		repository.setOrgName(organizationMapping.getName());
 		repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
 		repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
-		
+
 		// set sync progress
 		repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
 
@@ -114,7 +112,7 @@ public class RepositoryDaoImpl implements RepositoryDao
             public Object transform(Object input)
             {
                 RepositoryMapping repositoryMapping = (RepositoryMapping) input;
-                
+
                 return RepositoryDaoImpl.this.transform(repositoryMapping, organizationMapping);
             }
         });
@@ -162,9 +160,9 @@ public class RepositoryDaoImpl implements RepositoryDao
 				// organizationMapping.getID() ==
 				// repositoryMapping.getOrganizationId()
 				idToOrganizationMapping.put(organizationMapping.getID(), organizationMapping);
-				
-			} 
-			
+
+			}
+
 			repositoriesToReturn.add(repositoryMapping);
 		}
 
@@ -214,7 +212,7 @@ public class RepositoryDaoImpl implements RepositoryDao
             public Object transform(Object input)
             {
                 RepositoryMapping repositoryMapping = (RepositoryMapping) input;
-                
+
                 return RepositoryDaoImpl.this.transform(repositoryMapping,
                         idToOrganizationMapping.get(repositoryMapping.getOrganizationId()));
             }
@@ -235,12 +233,12 @@ public class RepositoryDaoImpl implements RepositoryDao
 				});
 
 		if (repositoryMapping == null) {
-		
+
 			log.warn("Repository with id {} was not found.", repositoryId);
 			return null;
 
 		} else {
-			
+
 			OrganizationMapping organizationMapping = getOrganizationMapping(repositoryMapping.getOrganizationId());
 			return transform(repositoryMapping, organizationMapping);
 

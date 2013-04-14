@@ -7,13 +7,12 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
-//import com.atlassian.jira.plugins.dvcs.exception.InvalidCredentialsException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-//import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+
 
 public class OrganizationServiceImpl implements OrganizationService
 {
@@ -21,7 +20,7 @@ public class OrganizationServiceImpl implements OrganizationService
 	private final OrganizationDao organizationDao;
 	private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
 	private final RepositoryService repositoryService;
-    
+
 	public OrganizationServiceImpl(OrganizationDao organizationDao, DvcsCommunicatorProvider dvcsCommunicatorProvider,
         RepositoryService repositoryService)
     {
@@ -112,6 +111,7 @@ public class OrganizationServiceImpl implements OrganizationService
 		organizationDao.remove(organizationId);
 	}
 
+	@Deprecated
 	@Override
 	public void updateCredentials(int organizationId, String username, String plaintextPassword)
 	{
@@ -119,11 +119,12 @@ public class OrganizationServiceImpl implements OrganizationService
 		// create organization with plain credentials as we need all data like url, etc
 		//
 		Organization organization = organizationDao.get(organizationId);
-		organization.setCredential(new Credential(username, plaintextPassword, null));
+		organization.setCredential(new Credential(null, null, null, username, plaintextPassword));
 
 		organizationDao.updateCredentials(organizationId, username, plaintextPassword, null, null, null);
 	}
 
+	@Deprecated
 	@Override
 	public void updateCredentialsAccessToken(int organizationId, String accessToken)
 	{
@@ -131,12 +132,12 @@ public class OrganizationServiceImpl implements OrganizationService
 		// create organization with plain credentials as we need all data like url, etc
 		//
 		Organization organization = organizationDao.get(organizationId);
-		organization.setCredential(new Credential(null, null, accessToken));
+		organization.setCredential(new Credential(null, null, accessToken, null, null));
 
 		organizationDao.updateCredentials(organizationId, null, null, accessToken, null, null);
 
 	}
-	
+
 	@Override
     public void updateCredentialsKeySecret(int organizationId, String key, String secret)
     {
@@ -144,14 +145,14 @@ public class OrganizationServiceImpl implements OrganizationService
         // create organization with plain credentials as we need all data like url, etc
         //
         Organization organization = organizationDao.get(organizationId);
-        organization.setCredential(new Credential(null, null, null, key, secret));
+        organization.setCredential(new Credential(key, secret, null, null, null));
         //checkCredentials(organization);
         //
-        
+
         organizationDao.updateCredentialsKeySecret(organizationId, key, secret);
 
     }
-	
+
 	@Override
 	public void enableAutolinkNewRepos(int orgId, boolean autolink)
 	{

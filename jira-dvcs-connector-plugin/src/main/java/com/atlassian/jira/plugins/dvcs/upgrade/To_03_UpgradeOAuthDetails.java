@@ -11,7 +11,6 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.upgrade.PluginUpgradeTask;
 
 /**
- * FIXME: Test it!!!
  *
  */
 public class To_03_UpgradeOAuthDetails implements PluginUpgradeTask
@@ -37,14 +36,14 @@ public class To_03_UpgradeOAuthDetails implements PluginUpgradeTask
 
         removeProperty("bitbucketRepositoryClientID");
         removeProperty("bitbucketRepositoryClientSecret");
-        
+
         // Github
         clientId = getProperty("githubRepositoryClientID");
         secret = getProperty("githubRepositoryClientSecret");
         url = "https://github.com";
-        
+
         store("github", clientId, secret, url);
-        
+
         removeProperty("githubRepositoryClientID");
         removeProperty("githubRepositoryClientSecret");
 
@@ -52,13 +51,13 @@ public class To_03_UpgradeOAuthDetails implements PluginUpgradeTask
         clientId = getProperty("ghEnterpriseRepositoryClientID");
         secret = getProperty("ghEnterpriseRepositoryClientSecret");
         url = getProperty("ghEnterpriseRepositoryHostUrl");
- 
+
         store("githube", clientId, secret, url);
-        
+
         removeProperty("ghEnterpriseRepositoryClientID");
         removeProperty("ghEnterpriseRepositoryClientSecret");
         removeProperty("ghEnterpriseRepositoryHostUrl");
-        
+
         return null;
     }
 
@@ -74,14 +73,14 @@ public class To_03_UpgradeOAuthDetails implements PluginUpgradeTask
         settings.put(name, value);
         log.info("Storing property " + name + " = " + value);
     }
-    
+
     private String getProperty(String name)
     {
         String value = (String) settings.get(name);
         log.info("Reading property " + name + " = " + value);
         return value;
     }
-    
+
     private void removeProperty(String name)
     {
         settings.remove(name);

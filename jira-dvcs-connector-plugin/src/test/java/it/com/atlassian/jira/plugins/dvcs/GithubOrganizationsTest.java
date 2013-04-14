@@ -8,11 +8,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -166,27 +161,16 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
         // check that it created postcommit hook
         String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/";
         String hooksURL = "https://github.com/jirabitbucketconnector/test-project/settings/hooks";
-        String hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
+        jira.getTester().gotoUrl(hooksURL);
+        String hooksPage = jira.getTester().getDriver().getPageSource();
         assertThat(hooksPage).contains(githubServiceConfigUrlPath);
         goToConfigPage();
         // delete repository
         configureOrganizations.deleteAllOrganizations();
         // check that postcommit hook is removed
-        hooksPage = getGithubServices(hooksURL, REPO_ADMIN_LOGIN, REPO_ADMIN_PASSWORD);
+        jira.getTester().gotoUrl(hooksURL);
+        hooksPage = jira.getTester().getDriver().getPageSource();
         assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
-    }
-
-    private String getGithubServices(String url, String username, String password) throws Exception
-    {
-        HttpClient httpClient = new HttpClient();
-        HttpMethod method = new GetMethod(url);
-
-        AuthScope authScope = new AuthScope(method.getURI().getHost(), AuthScope.ANY_PORT, null, AuthScope.ANY_SCHEME);
-        httpClient.getParams().setAuthenticationPreemptive(true);
-        httpClient.getState().setCredentials(authScope, new UsernamePasswordCredentials(username, password));
-
-        httpClient.executeMethod(method);
-        return method.getResponseBodyAsString();
     }
 
     @Test

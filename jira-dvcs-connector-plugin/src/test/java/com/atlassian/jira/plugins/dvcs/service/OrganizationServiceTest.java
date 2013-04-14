@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +9,8 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
@@ -14,10 +18,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
 
 /**
  * The Class OrganizationServiceTest.
@@ -36,7 +36,7 @@ public class OrganizationServiceTest
 
 	@Mock
 	private DvcsCommunicator bitbucketCommunicator;
-	
+
 	// tested object
 	private OrganizationService organizationService;
 
@@ -185,7 +185,7 @@ public class OrganizationServiceTest
 		organization.setDvcsType("bitbucket");
 		organization.setHostUrl("https://bitbucket.org");
 		organization.setName("doesnotmatter");
-		organization.setCredential(new Credential("doesnotmatter_u", "doesnotmatter_p", null));
+		organization.setCredential(new Credential(null, null, null, "doesnotmatter_u", "doesnotmatter_p"));
 		return organization;
 	}
 

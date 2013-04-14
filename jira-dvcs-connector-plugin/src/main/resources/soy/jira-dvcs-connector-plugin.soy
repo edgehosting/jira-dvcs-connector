@@ -1,6 +1,30 @@
 {namespace jira.dvcs.connector.plugin.soy}
 
 /**
+ * @param organizationId
+ * @param oAuthKey
+ * @param oAuthSecret
+ */
+{template .repositoryOAuthDialog}
+	<div class="jira-dvcs-connector-plugin repositoryOAuthDialog">
+		<ul>
+			<li>
+				<strong>Blah blah</strong> {$organizationId}, {$oAuthKey}, {$oAuthSecret}.
+			</li>
+			<li>
+				<strong>Soft synchronization</strong> synchronizes changes introduced since last synchronization. 
+				It is recommended option, with minimal influence on data provider.
+			</li>
+			<li>
+				<strong>Full synchronization</strong> first cleans all existing data, then does complete synchronization. 
+				Necessary if data or synchronization was broken. It increases traffic, can possibly result in reaching of the traffic limit 
+				followed by temporary connection restrictions imposed by the provider.
+			</li>
+		</ul>
+	</div>
+{/template}
+
+/**
  * @param repositoryId
  */
 {template .forceSyncDialog}
@@ -127,4 +151,115 @@
 			<a href="{$linkMore}">Find out more</a>
 		</div>
 	</div>
+{/template}
+
+/**
+ * @param isGithubEnterpriseEnabled
+ * @param isOnDemandLicense
+ * @param atlToken
+ */
+{template .addOrganizationDialog}
+	<form class="aui long-label" id="repoEntry" method="post"  >
+	
+	    <input type="hidden" name="atl_token" id="atl_token" value="{$atlToken}">
+	    <input type="hidden" name="isPrivate" id="isPrivate">
+	    <input type="hidden" name="url" id="url" >
+	  
+	    <div class="field-group" >
+	      <label for="urlSelect">Host</label>
+	      <select id="urlSelect" name="urlSelect" class="select">
+	        <option value="bitbucket">Bitbucket</option>
+	        <option value="github">GitHub</option>
+	        {if $isGithubEnterpriseEnabled}
+	        <option value="githube">GitHub Enterprise</option>
+	        {/if}
+	      </select>
+	      <div class="fieldValue" id="urlReadOnly"></div>
+	      <div id="url-error" class="dvcs-error error">Choose URL.</div>
+	    </div>
+	
+	    <div class="field-group" >
+	      <label for="organization">Team or User Account<span class="aui-icon icon-required">&nbsp;</span></label>
+	      <input class="text" type="text" id="organization" name="organization" value=""/>
+	      <div class="fieldValue" id="organizationReadOnly"></div>
+	      <div id="org-error" class="dvcs-error error">This field is required.</div>
+	    </div>
+	    
+	    // BB form section
+	    <div id="bitbucket-form-section" style="display:none">
+	        <input type="hidden" id="oauthBbRequired" name="oauthBbRequired" value="true" />
+	        <div class="field-group">
+	           <label for="oauthBbClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
+	           <input class="text" type="text" id="oauthBbClientId" name="oauthBbClientId" value=""/>
+	           <div id="oauth-bb-client-error" class="dvcs-error error">This field is required.</div>
+	           <div class="description">How do I <a href="{contextPath() +'/secure/admin/ConfigureBitbucketOAuth!default.jspa'}">find OAuth key and secret</a>?</div>
+	        </div>
+	        <div class="field-group">
+	           <label for="oauthBbSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
+	           <input class="text" type="text" id="oauthBbSecret" name="oauthBbSecret" value=""/>
+	           <div id="oauth-bb-secret-error" class="dvcs-error error">This field is required.</div>
+	        </div>
+	    </div>
+	
+	    // GH form section
+	    <div id="github-form-section" style="display:none">
+	        <input type="hidden" id="oauthRequired" name="oauthRequired" value="true" />
+	        <div class="field-group">
+	           <label for="oauthClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
+	           <input class="text" type="text" id="oauthClientId" name="oauthClientId" value=""/>
+	           <div id="oauth-gh-client-error" class="dvcs-error error">This field is required.</div>
+	           <div class="description">How do I <a href="{contextPath() +'/secure/admin/ConfigureGithubOAuth!default.jspa'}">find OAuth key and secret</a>?</div>
+	        </div>
+	        <div class="field-group">
+	           <label for="oauthSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
+	           <input class="text" type="text" id="oauthSecret" name="oauthSecret" value=""/>
+	           <div id="oauth-gh-secret-error" class="dvcs-error error">This field is required.</div>
+	        </div>
+	    </div>
+	    
+	    // GHE form section
+        <div id="githube-form-section" style="display:none">
+            <input type="hidden" id="oauthRequiredGhe" name="oauthRequiredGhe" value="true" />
+            <div class="field-group">
+               <label for="urlGhe">Host URL<span class="aui-icon icon-required">&nbsp;</span></label>
+               <input class="text" type="text" id="urlGhe" name="urlGhe" value=""/>
+               <div id="ghe-url-error" class="dvcs-error error">This field is required.</div>
+               <div id="ghe-invalid-url-error" class="dvcs-error error">Valid url is required.</div>
+            </div>
+            <div class="field-group">
+                <label for="oauthClientIdGhe">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
+               <input class="text" type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value=""/>
+               <div id="oauth-ghe-client-error" class="dvcs-error error">This field is required.</div>
+               <div class="description"></div>
+            </div>
+            <div class="field-group">
+               <label for="oauthSecretGhe">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
+               <input class="text" type="text" id="oauthSecretGhe" name="oauthSecretGhe" value=""/>
+               <div id="oauth-ghe-secret-error" class="dvcs-error error">This field is required.</div>
+            </div>
+        </div>
+            
+        <div style="margin-top: 10px;"  class="field-group">
+            <label for="autoLinking">Auto Link New Repositories</label>
+            <input class="checkbox" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true" checked="checked" />
+        </div>
+           
+        <div style="margin-top: 10px;"  class="field-group">
+            <label for="autoSmartCommits">Enable Smart Commits</label>
+            <input class="checkbox" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true" checked="checked" />
+            <div class="description">
+                {if $isOnDemandLicense}
+                    <a href="https://confluence.atlassian.com/display/AOD/Processing+JIRA+issues+with+commit+messages" target="_blank">
+                {else}
+                    <a href="https://confluence.atlassian.com/display/BITBUCKET/Processing+JIRA+issues+with+commit+messages" target="_blank">
+                {/if}
+                Smart Commits</a> allow repository committers to perform actions like transitioning JIRA issues
+            </div>
+        </div>
+ 
+        <div id="bbCredentials"></div>
+
+        <div id="aui-message-bar"></div>
+
+    </form>
 {/template}

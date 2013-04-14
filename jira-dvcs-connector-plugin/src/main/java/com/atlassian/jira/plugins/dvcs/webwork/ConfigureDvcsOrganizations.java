@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     private final PluginFeatureDetector featuresDetector;
 
     private final InvalidOrganizationManager invalidOrganizationsManager;
-    
+
 	public ConfigureDvcsOrganizations(OrganizationService organizationService,
 			FeatureManager featureManager, DvcsCommunicatorProvider communicatorProvider, PluginFeatureDetector featuresDetector, PluginSettingsFactory pluginSettingsFactory)
 	{
@@ -73,7 +72,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	{
 	    return !invalidOrganizationsManager.isOrganizationValid(organization.getId());
 	}
-	
+
     private void sort(List<Organization> allOrganizations)
     {
         // TODO add javadoc, this is to keep integrated account on the top of the list
@@ -82,14 +81,16 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
             @Override
             public int compare(Organization org1, Organization org2)
             {
-                if (StringUtils.isNotBlank((org1.getCredential().getOauthKey())))
+                if (org1.isIntegratedAccount() ^ org2.isIntegratedAccount())
+                {
+                    return 0;
+                } else if (org1.isIntegratedAccount())
                 {
                     return -1;
-                } else if (StringUtils.isNotBlank((org2.getCredential().getOauthKey())))
+                } else
                 {
                     return 1;
                 }
-                return 0;
             }
         });
     }
@@ -108,12 +109,12 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	{
 		return featureManager.isEnabled(CoreFeatures.ON_DEMAND);
 	}
-	
+
     public boolean isUserInvitationsEnabled()
     {
         return featuresDetector.isUserInvitationsEnabled();
     }
-	
+
     public boolean isGithubOauthRequired()
     {
         return !communicatorProvider.getCommunicator("github").isOauthConfigured();
