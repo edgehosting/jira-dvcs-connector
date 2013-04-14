@@ -132,7 +132,7 @@ public class BitbucketAccountsConfigServiceTest
 
         testedService.reload(false);
 
-        verify(organizationService).updateCredentialsKeySecret(eq(5), eq("K"), eq("S"), null);
+        verify(organizationService).updateCredentialsKeySecret(eq(5), eq("K"), eq("S"), (String) eq(null));
 
     }
 
