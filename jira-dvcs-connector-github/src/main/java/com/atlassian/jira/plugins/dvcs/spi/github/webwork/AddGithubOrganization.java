@@ -34,9 +34,8 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private String code;
 
     private final OrganizationService organizationService;
-    private final GithubOAuthUtils githubOAuthUtils;
-
     private final OAuthStore oAuthStore;
+    private final ApplicationProperties applicationProperties;
 
 
     public AddGithubOrganization(OrganizationService organizationService,
@@ -44,7 +43,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     {
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
-        this.githubOAuthUtils = new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB), oAuthStore.getSecret(GITHUB));
+        this.applicationProperties = applicationProperties;
     }
 
     @Override
@@ -53,24 +52,24 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     {
         if (isOAuthConfigurationRequired())
         {
-            configureOAuth();
+            oAuthStore.store(Host.GITHUB, oauthClientId, oauthSecret);
         }
 
         // then continue
         return redirectUserToGithub();
     }
 
-    private void configureOAuth()
-    {
-        oAuthStore.store(Host.GITHUB, oauthClientId, oauthSecret);
-    }
-
     private String redirectUserToGithub()
     {
-        String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubOrganization",
+        String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddGithubOrganization",
                 url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
         return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
+    }
+
+    private GithubOAuthUtils getGithubOAuthUtils()
+    {
+        return new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB), oAuthStore.getSecret(GITHUB));
     }
 
     @Override
@@ -105,7 +104,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     {
         try
         {
-            return doAddOrganization(githubOAuthUtils.requestAccessToken(code));
+            return doAddOrganization(getGithubOAuthUtils().requestAccessToken(code));
         } catch (SourceControlException sce)
         {
             addErrorMessage(sce.getMessage());

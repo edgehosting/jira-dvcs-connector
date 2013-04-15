@@ -35,19 +35,16 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	private String code;
 	private String url;
 
-	private String accessToken = "";
-
 	private final OrganizationService organizationService;
-	private final GithubOAuthUtils githubOAuthUtils;
-
     private final OAuthStore oAuthStore;
+    private final ApplicationProperties applicationProperties;
 
     public AddGithubEnterpriseOrganization(OrganizationService organizationService,
             OAuthStore oAuthStore, ApplicationProperties applicationProperties)
 	{
 		this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
-        this.githubOAuthUtils = new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB_ENTERPRISE), oAuthStore.getSecret(GITHUB_ENTERPRISE));
+        this.applicationProperties = applicationProperties;
 	}
 
 	@Override
@@ -56,23 +53,21 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	{
         if (isOAuthConfigurationRequired())
         {
-            configureOAuth();
+            oAuthStore.store(new Host(GITHUB_ENTERPRISE, url), oauthClientIdGhe, oauthSecretGhe);
         }
 
 		// then continue
 		return redirectUserToGithub();
 	}
 
-	private void configureOAuth()
-	{
-        oAuthStore.store(new Host(GITHUB_ENTERPRISE, url), oauthClientIdGhe, oauthSecretGhe);
-        githubOAuthUtils.setClientId(oauthClientIdGhe);
-        githubOAuthUtils.setSecret(oauthSecretGhe);
-	}
+	private GithubOAuthUtils getGithubOAuthUtils()
+    {
+        return new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB_ENTERPRISE), oAuthStore.getSecret(GITHUB_ENTERPRISE));
+    }
 
 	private String redirectUserToGithub()
 	{
-		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubEnterpriseOrganization",
+		String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddGithubEnterpriseOrganization",
 		        url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
 		return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
@@ -128,8 +123,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	{
 		try
 		{
-			accessToken = requestAccessToken();
-
+			return doAddOrganization(getGithubOAuthUtils().requestAccessToken(url, code));
 		} catch (InvalidResponseException ire)
 		{
 		    addErrorMessage(ire.getMessage() + " Possibly bug in releases of GitHub Enterprise prior to 11.10.290.");
@@ -151,10 +145,9 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
             return INPUT;
         }
 
-		return doAddOrganization();
 	}
 
-    private String doAddOrganization()
+    private String doAddOrganization(String accessToken)
 	{
 		try
 		{
@@ -177,11 +170,6 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 		}
 
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
-	}
-
-	private String requestAccessToken()
-	{
-		return githubOAuthUtils.requestAccessToken(url, code);
 	}
 
 	public static String encode(String url)
