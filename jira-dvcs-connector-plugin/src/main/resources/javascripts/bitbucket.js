@@ -499,31 +499,58 @@ function configureDefaultGroups(orgName, id) {
 		});
 }
 
-function configureOAuth(organizationId, oAuthKey, oAuthSecret) {
+function configureOAuth(organizationName, organizationId, oAuthKey, oAuthSecret, atlToken) {
+
+	function validateField(field, errorMsg) {
+		if (!AJS.$.trim(field.val())) {
+			field.next().html(errorMsg);
+			return false;
+		}
+		field.next().html("&nbsp;");
+		return true;
+	}
 	
 	var popup = new AJS.Dialog({
 		width: 600, 
-		height: 400, 
+		height: 350, 
 		id: "repositoryOAuthDialog"
 	});
 	
-	popup.addHeader("Configure OAuth for Repository");
+	popup.addHeader("Configure OAuth for account " + organizationName);
 	popup.addPanel("", jira.dvcs.connector.plugin.soy.repositoryOAuthDialog({
 		'organizationId': organizationId,
 		'oAuthKey': oAuthKey,
 		'oAuthSecret': oAuthSecret
 		}));
 	
-	popup.addButton("Save OAuth key and secret", function (dialog) {
-		
-	}, "aui-button submit");
-	
 	popup.addButton("Regenerate Access Token", function (dialog) {
+		// validate
+		var v1 = validateField(AJS.$("#updateOAuthForm #key"), "OAuth key must not be blank");
+		var v2 = validateField(AJS.$("#updateOAuthForm #secret"), "OAuth secret must not be blank");
+		if (!v1 || !v2) return;
+			
+		AJS.$("#repositoryOAuthDialog .dialog-button-panel button").attr("disabled", "disabled");
+		AJS.$("#repositoryOAuthDialog .dialog-button-panel").prepend("<span class='aui-icon aui-icon-wait' style='padding-right:10px'>Wait</span>");
 		
+		// submit form
+		AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/oauth", AJS.$("#updateOAuthForm").serialize())
+			.done(function(data) {
+				window.location.replace(BASE_URL+"/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=" + organizationId + "&atl_token="+atlToken);
+			})
+			.error(function (err) {
+				AJS.$("#aui-message-bar").empty();
+		        AJS.messages.error({ title: "Error!", 
+		          	body: "Could not configure OAuth.",
+		          	closeable : false
+		        });
+		        AJS.$("#repositoryOAuthDialog .dialog-button-panel button").removeAttr("disabled", "disabled");
+		        AJS.$("#repositoryOAuthDialog .dialog-button-panel .aui-icon-wait").remove();
+		        popup.updateHeight();
+			});
 	}, "aui-button submit");
 	
 	popup.addCancel("Cancel", function (dialog) {
-		dialog.hide();
+		dialog.remove();
 	});
 
 	popup.show();

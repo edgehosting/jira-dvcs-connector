@@ -14,6 +14,7 @@ public class DefaultOAuthStore implements OAuthStore
     @Override
     public void store(Host host, String clientId, String secret)
     {
+        // TODO trim values
         pluginSettingsFactory.createGlobalSettings().put("dvcs.connector." + host.id + ".clientId", clientId);
         pluginSettingsFactory.createGlobalSettings().put("dvcs.connector." + host.id + ".secret", secret);
         pluginSettingsFactory.createGlobalSettings().put("dvcs.connector." + host.id + ".url", host.url);

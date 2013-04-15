@@ -139,13 +139,13 @@ public class OrganizationServiceImpl implements OrganizationService
 	}
 
 	@Override
-    public void updateCredentialsKeySecret(int organizationId, String key, String secret)
+    public void updateCredentialsKeySecret(int organizationId, String key, String secret, String accessToken)
     {
         // Check credentials
         // create organization with plain credentials as we need all data like url, etc
         //
         Organization organization = organizationDao.get(organizationId);
-        organization.setCredential(new Credential(key, secret, null, null, null));
+        organization.setCredential(new Credential(key, secret, accessToken, null, null));
         //checkCredentials(organization);
         //
 
