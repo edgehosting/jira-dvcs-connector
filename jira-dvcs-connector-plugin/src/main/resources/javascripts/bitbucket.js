@@ -212,7 +212,7 @@ function createAddOrganizationDialog(action) {
 	
 	dialog.addButtonPanel();
 
-	dialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon'>&nbsp;</span>");
+	dialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon' style='padding-right:10px'>&nbsp;</span>");
 	
 	dialog.addSubmit("Add", function (dialog, event) {
 		if (dvcsSubmitFormHandler(event,false)) {
@@ -525,15 +525,16 @@ function configureOAuth(organizationDvcsType, organizationName, organizationId, 
 	
 	popup.addButton("Regenerate Access Token", function (dialog) {
 		// validate
-		var v1 = validateField(AJS.$("#updateOAuthForm #key"), "OAuth key must not be blenk");
-		var v2 = validateField(AJS.$("#updateOAuthForm #secret"), "OAuth secret must not be blenk");
+		var v1 = validateField(AJS.$("#updateOAuthForm #key"), "OAuth key must not be blank");
+		var v2 = validateField(AJS.$("#updateOAuthForm #secret"), "OAuth secret must not be blank");
 		if (!v1 || !v2) return;
 			
+		AJS.$("#repositoryOAuthDialog .dialog-button-panel button").attr("disabled", "disabled");
+		AJS.$("#repositoryOAuthDialog .dialog-button-panel").prepend("<span class='aui-icon aui-icon-wait' style='padding-right:10px'>Wait</span>");
+		
 		// submit form
-		AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/oauth", $("#updateOAuthForm").serialize())
+		AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/oauth", AJS.$("#updateOAuthForm").serialize())
 			.done(function(data) {
-				AJS.$("#repositoryOAuthDialog .dialog-button-panel button").attr("disabled", "disabled");
-				AJS.$("#repositoryOAuthDialog .dialog-button-panel").prepend("<span class='aui-icon aui-icon-wait' style='padding-right:10px'>Wait</span>");
 
 				var actionName;
                 if (organizationDvcsType == "bitbucket")
@@ -544,11 +545,21 @@ function configureOAuth(organizationDvcsType, organizationName, organizationId, 
                 	actionName="RegenerateGithubEnterpriseOauthToken.jspa";
 				
 				window.location.replace(BASE_URL+"/secure/admin/"+actionName+"?organization=" + organizationId + "&atl_token="+atlToken);
+			})
+			.error(function (err) {
+				AJS.$("#aui-message-bar").empty();
+		        AJS.messages.error({ title: "Error!", 
+		          	body: "Could not configure OAuth.",
+		          	closeable : false
+		        });
+		        AJS.$("#repositoryOAuthDialog .dialog-button-panel button").removeAttr("disabled", "disabled");
+		        AJS.$("#repositoryOAuthDialog .dialog-button-panel .aui-icon-wait").remove();
+		        popup.updateHeight();
 			});
 	}, "aui-button submit");
 	
 	popup.addCancel("Cancel", function (dialog) {
-		dialog.hide();
+		dialog.remove();
 	});
 
 	popup.show();
