@@ -36,7 +36,7 @@ public interface OrganizationService
      * @return organization
      */
     Organization get(int organizationId, boolean loadRepositories);
-    
+
 
     /**
      * save Organization to storage. If it's new object (without ID) after this operation it will have it assigned.
@@ -51,7 +51,7 @@ public interface OrganizationService
      * @param organizationId id
      */
     void remove(int organizationId);
-    
+
     /**
      * Update credentials.
      *
@@ -83,7 +83,7 @@ public interface OrganizationService
 	 * @return the auto invitation organizations
 	 */
 	List<Organization> getAutoInvitionOrganizations();
-	
+
 	/**
 	 * Gets the all by ids.
 	 *
@@ -100,7 +100,7 @@ public interface OrganizationService
 	 * @return the all
 	 */
 	List<Organization> getAll(boolean loadRepositories, String type);
-	
+
 	/**
 	 * Enable smartcommits on new repos.
 	 *
@@ -108,14 +108,14 @@ public interface OrganizationService
 	 * @param parseBoolean the parse boolean
 	 */
 	void enableSmartcommitsOnNewRepos(int id, boolean parseBoolean);
-	
+
 	void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs);
-	
+
 	Organization findIntegratedAccount();
-	
+
 	Organization getByHostAndName(final String hostUrl, final String name);
 
-    void updateCredentialsKeySecret(int organizationId, String key, String secret);
+    void updateCredentialsKeySecret(int organizationId, String key, String secret, String accessToken);
 
 }
 

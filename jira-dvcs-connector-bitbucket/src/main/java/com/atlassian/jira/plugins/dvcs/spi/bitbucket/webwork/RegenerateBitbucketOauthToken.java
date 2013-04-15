@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
-import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
@@ -22,14 +21,11 @@ import com.atlassian.sal.api.ApplicationProperties;
 
 public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
 {
-    private static final long serialVersionUID = -2316358416248237835L;
-
     private final Logger log = LoggerFactory.getLogger(RegenerateBitbucketOauthToken.class);
-    
     private final ApplicationProperties ap;
 
-    public RegenerateBitbucketOauthToken(OrganizationService organizationService, RepositoryService repositoryService, ApplicationProperties ap,
-            OAuthStore oAuthStore)
+    public RegenerateBitbucketOauthToken(OrganizationService organizationService, RepositoryService repositoryService,
+            ApplicationProperties ap, OAuthStore oAuthStore)
     {
         super(organizationService, repositoryService, oAuthStore);
         this.ap = ap;
@@ -50,7 +46,7 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
 
         } catch (Exception e)
         {
-            addErrorMessage("Cannot proceed authentication, check your OAuth credentials!");
+            addErrorMessage("Cannot proceed authentication, check OAuth credentials for account " + getOrganizationName());
             return INPUT;
         }
     }
@@ -68,8 +64,8 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
     {
         Organization organizationInstance = organizationService.get(Integer.parseInt(organization), false);
 
-        ServiceBuilder sb = new ServiceBuilder().apiKey(oAuthStore.getClientId(Host.BITBUCKET.id))
-                .signatureType(SignatureType.Header).apiSecret(oAuthStore.getSecret(Host.BITBUCKET.id))
+        ServiceBuilder sb = new ServiceBuilder().apiKey(organizationInstance.getCredential().getOauthKey())
+                .signatureType(SignatureType.Header).apiSecret(organizationInstance.getCredential().getOauthSecret())
                 .provider(new Bitbucket10aScribeApi(organizationInstance.getHostUrl()))
                 .debugStream(new DebugOutputStream(log));
 
@@ -91,7 +87,7 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
         {
             //TODO what if we have more integrated accounts?
             Organization integratedAccount = organizationService.findIntegratedAccount();
-            if (    integratedAccount != null 
+            if (    integratedAccount != null
                 &&  Integer.valueOf(organization).equals(integratedAccount.getId()))
             {
                 addErrorMessage("Failed to regenerate token for an integrated account.");

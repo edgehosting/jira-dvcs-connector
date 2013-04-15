@@ -1,0 +1,33 @@
+<html>
+  <head>
+    <title>
+           Regenarate OAuth access token
+    </title>
+
+    $webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
+    <meta name="admin.active.section" content="admin_plugins_menu/source_control"/>
+    <meta name="admin.active.tab" content="bitbucket_bulk_repo"/>
+  </head>
+
+  <body>
+
+        <h3>Regenerate OAuth Access Token</h3>
+        <br/>
+        <p>Regenerating OAuth Access Token for $action.organizationName</p>
+        <br/>
+    
+        #foreach ($errorMessage in $action.getErrorMessages())
+	        <div class="aui-message error shadowed">
+	            <p class="title">
+	                <span class="aui-icon icon-error"></span>
+	                <strong>Error!</strong>
+	            </p>
+	            <p>$errorMessage</p>
+	        </div>
+        #end
+        
+        <br/>
+		<div>Continue to <a href="ConfigureDvcsOrganizations!default.jspa">Manage DVCS Accounts</a></div> 
+    
+  </body>
+</html>
