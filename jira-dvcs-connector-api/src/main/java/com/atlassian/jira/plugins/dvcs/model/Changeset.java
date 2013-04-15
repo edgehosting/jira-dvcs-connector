@@ -14,7 +14,6 @@ public class Changeset
     private int id;
     private int repositoryId;
     private String node;
-//    private String issueKey;
     private String rawAuthor;
     private String author;
     private Date date;

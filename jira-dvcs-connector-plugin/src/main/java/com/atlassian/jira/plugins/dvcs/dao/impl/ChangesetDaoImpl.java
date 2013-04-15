@@ -81,7 +81,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 query = Query.select().where(
                         RepositoryToChangesetMapping.CHANGESET_ID + " not in  " +
                                 "(select \"" + RepositoryToChangesetMapping.CHANGESET_ID + "\" from \"" + RepositoryToChangesetMapping.TABLE_NAME + "\")");
-                log.debug("deleting orphaned changesets");
+                log.debug("deleting orphaned issue-changeset associations");
                 ActiveObjectsUtils.delete(activeObjects, IssueToChangesetMapping.class, query);
 
 
@@ -100,7 +100,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public Changeset save(final Changeset changeset, final Set<String> extractedIssues)
     {
-        final ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
+        ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
         {
 
             @Override
@@ -116,13 +116,14 @@ public class ChangesetDaoImpl implements ChangesetDao
                 if (ArrayUtils.isEmpty(mappings))
                 {
                     chm = activeObjects.create(ChangesetMapping.class);
+                    // todo: mfa - naco find?
                     chm = activeObjects.find(ChangesetMapping.class, "ID = ?", chm.getID())[0];
                 } else
                 {
                     if (mappings.length > 1)
                     {
-                        log.debug("We have more than one changest with same nodeID in DB.");
-                        // todo: do something useful
+                        log.warn("We have more than one changest with same nodeID in DB !");
+                        // todo: do something useful  - lepsi LOG
                     }
                     chm = mappings[0];
                 }
