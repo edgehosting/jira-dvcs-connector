@@ -11,6 +11,7 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 
+// TODO refactor subclasses and use onely one RegenerateOauthTokenAction url
 public abstract class RegenerateOauthTokenAction extends CommonDvcsConfigurationAction
 {
     private static final long serialVersionUID = -5518449007071758982L;

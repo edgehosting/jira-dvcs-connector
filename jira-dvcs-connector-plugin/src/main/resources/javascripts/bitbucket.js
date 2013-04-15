@@ -499,8 +499,8 @@ function configureDefaultGroups(orgName, id) {
 		});
 }
 
-function configureOAuth(organizationName, organizationId, oAuthKey, oAuthSecret, atlToken) {
-
+function configureOAuth(organizationDvcsType, organizationName, organizationId, oAuthKey, oAuthSecret, atlToken) {
+	
 	function validateField(field, errorMsg) {
 		if (!AJS.$.trim(field.val())) {
 			field.next().html(errorMsg);
@@ -534,7 +534,16 @@ function configureOAuth(organizationName, organizationId, oAuthKey, oAuthSecret,
 			.done(function(data) {
 				AJS.$("#repositoryOAuthDialog .dialog-button-panel button").attr("disabled", "disabled");
 				AJS.$("#repositoryOAuthDialog .dialog-button-panel").prepend("<span class='aui-icon aui-icon-wait' style='padding-right:10px'>Wait</span>");
-				window.location.replace(BASE_URL+"/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=" + organizationId + "&atl_token="+atlToken);
+
+				var actionName;
+                if (organizationDvcsType == "bitbucket")
+                	actionName="RegenerateBitbucketOauthToken.jspa";
+                else if (organizationDvcsType == "github")
+                	actionName="RegenerateGithubOauthToken.jspa";
+                else
+                	actionName="RegenerateGithubEnterpriseOauthToken.jspa";
+				
+				window.location.replace(BASE_URL+"/secure/admin/"+actionName+"?organization=" + organizationId + "&atl_token="+atlToken);
 			});
 	}, "aui-button submit");
 	
