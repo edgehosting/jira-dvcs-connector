@@ -23,8 +23,6 @@ import com.atlassian.sal.api.ApplicationProperties;
 
 public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationAction
 {
-    private static final long serialVersionUID = 7672281234704330946L;
-
     private final Logger log = LoggerFactory.getLogger(AddGithubEnterpriseOrganization.class);
 
 	private String organization;
@@ -60,10 +58,9 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         {
             configureOAuth();
         }
-		
+
 		// then continue
 		return redirectUserToGithub();
-
 	}
 
 	private void configureOAuth()
@@ -84,7 +81,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	@Override
 	protected void doValidation()
 	{
-	    
+
         if (StringUtils.isNotBlank(oauthRequiredGhe))
         {
             if (StringUtils.isBlank(oauthClientIdGhe) || StringUtils.isBlank(oauthSecretGhe))
@@ -96,32 +93,32 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
             // load saved GitHub Enterprise url
             url = oAuthStore.getUrl(GITHUB_ENTERPRISE);
         }
-        
+
         if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
         {
             addErrorMessage("Please provide both url and organization parameters.");
         }
-        
+
         if (!SystemUtils.isValid(url))
         {
             addErrorMessage("Please provide valid GitHub host URL.");
         }
-        
+
         if (url.endsWith("/"))
         {
             url = StringUtils.chop(url);
-            
+
         }
-	    
-//TODO validation of account is disabled because of private mode 
+
+//TODO validation of account is disabled because of private mode
 //        AccountInfo accountInfo = organizationService.getAccountInfo(url, organization);
 //        if (accountInfo == null)
 //        {
 //            addErrorMessage("Invalid user/team account.");
 //        }
-		
+
 	}
-	
+
     protected boolean isOAuthConfigurationRequired()
     {
         return StringUtils.isNotBlank(oauthRequiredGhe);
@@ -137,7 +134,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 		{
 		    addErrorMessage(ire.getMessage() + " Possibly bug in releases of GitHub Enterprise prior to 11.10.290.");
 		    return INPUT;
-		
+
 		} catch (SourceControlException sce)
 		{
 			addErrorMessage(sce.getMessage());
@@ -148,7 +145,8 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 			}
 			return INPUT;
 
-		} catch (Exception e) {
+        } catch (Exception e)
+        {
 		    addErrorMessage("Error obtaining access token.");
             return INPUT;
         }
@@ -165,13 +163,13 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 			newOrganization.setHostUrl(url);
 			newOrganization.setDvcsType(GithubEnterpriseCommunicator.GITHUB_ENTERPRISE);
 			newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
-			newOrganization.setCredential(new Credential(null, null, accessToken));
+			newOrganization.setCredential(new Credential(oAuthStore.getClientId(GITHUB_ENTERPRISE), oAuthStore.getSecret(GITHUB_ENTERPRISE), accessToken));
 			newOrganization.setSmartcommitsOnNewRepos(hadAutolinkingChecked());
-			
+
 			organizationService.save(newOrganization);
-			
+
 		} catch (SourceControlException e)
-		{		
+		{
 			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
 			log.debug("Failed adding the account: [" + e.getMessage() + "]");
 			e.printStackTrace();

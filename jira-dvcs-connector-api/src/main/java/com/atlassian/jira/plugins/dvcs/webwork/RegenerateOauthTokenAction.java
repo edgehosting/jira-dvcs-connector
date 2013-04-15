@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -11,10 +10,8 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 
-// TODO refactor subclasses and use onely one RegenerateOauthTokenAction url
 public abstract class RegenerateOauthTokenAction extends CommonDvcsConfigurationAction
 {
-    private static final long serialVersionUID = -5518449007071758982L;
     private final Logger log = LoggerFactory.getLogger(RegenerateOauthTokenAction.class);
 
     protected String organization; // in the meaning of id TODO rename to organizationId
@@ -22,13 +19,10 @@ public abstract class RegenerateOauthTokenAction extends CommonDvcsConfiguration
     protected final OrganizationService organizationService;
     protected final RepositoryService repositoryService;
 
-    protected final OAuthStore oAuthStore;
-
-    public RegenerateOauthTokenAction(OrganizationService organizationService, RepositoryService repositoryService, OAuthStore oAuthStore)
+    public RegenerateOauthTokenAction(OrganizationService organizationService, RepositoryService repositoryService)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
-        this.oAuthStore = oAuthStore;
     }
 
     @Override
