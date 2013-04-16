@@ -538,8 +538,8 @@ function configureOAuth(organizationName, organizationId, oAuthKey, oAuthSecret,
 				window.location.replace(BASE_URL+"/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=" + organizationId + "&atl_token="+atlToken);
 			})
 			.error(function (err) {
-				AJS.$("#aui-message-bar").empty();
-		        AJS.messages.error({ title: "Error!", 
+				AJS.$("#aui-message-bar-oauth-dialog").empty();
+		        AJS.messages.error("#aui-message-bar-oauth-dialog", { title: "Error!", 
 		          	body: "Could not configure OAuth.",
 		          	closeable : false
 		        });
