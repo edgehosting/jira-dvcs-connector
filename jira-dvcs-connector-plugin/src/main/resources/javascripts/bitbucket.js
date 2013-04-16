@@ -459,7 +459,7 @@ function configureDefaultGroups(orgName, id) {
 	AJS.$("#organizationIdDefaultGroups").val("");
 	AJS.$("#configureDefaultGroupsContent").html("");
 	AJS.$("#configureDefaultGroupsContentWorking").show();
-	
+ 	AJS.$("#aui-message-bar-default-groups").empty();
 	var popup = new AJS.Dialog({
 		width: 600, 
 		height: 400, 
@@ -494,8 +494,8 @@ function configureDefaultGroups(orgName, id) {
 			}
 		
 	).error(function (err) { 
-			AJS.$("#configureDefaultGroupsContentWorking").show()
 			showError("Unexpected error occurred. Please contact the server administrator.");
+			popup.hide();
 		});
 }
 
@@ -747,8 +747,15 @@ function syncRepositoryList(organizationId,organizationName) {
 	});
 }
 
-function showError(message) {
-	alert(message);
+function showError(message, auiMessageElement) {
+	if (!auiMessageElement) {
+		auiMessageElement = "#aui-message-bar";
+	}
+		
+	AJS.$(auiMessageElement).empty();
+	AJS.messages.error(auiMessageElement, {
+		title: message
+	});
 }
 
 function setChecked(checkboxId, checked) {

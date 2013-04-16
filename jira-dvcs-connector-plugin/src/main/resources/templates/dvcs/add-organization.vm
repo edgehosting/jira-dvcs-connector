@@ -45,8 +45,10 @@
         #else
             <p>Connect your <a href="http://confluence.atlassian.com/display/BITBUCKET/Using+the+JIRA+DVCS+Connector+Plugin" target="_blank">Bitbucket and GitHub accounts to JIRA</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
         #end
-        <br/>
-    
+        	
+		<div id="aui-message-bar"></div>
+	    <br/>
+		
         #foreach ($errorMessage in $action.getErrorMessages())
                 <div class="aui-message error shadowed">
                     <p class="title">
