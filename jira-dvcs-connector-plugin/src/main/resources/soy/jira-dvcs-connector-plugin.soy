@@ -4,6 +4,7 @@
  * @param organizationId
  * @param oAuthKey
  * @param oAuthSecret
+ * @param helpText
  */
 {template .repositoryOAuthDialog}
 	<div class="jira-dvcs-connector-plugin repositoryOAuthDialog">
@@ -21,7 +22,7 @@
 	            <div class="error">&nbsp;</div>
 	        </div>
 	        <div class="field-group">
-	        	New Key and Secret can be created at your <a target="_blank" href="https://bitbucket.org/account/">Bitbucket account settings</a> in <b>Integrated Applications</b> section.
+	            {$helpText}
 	        </div>
 	    </fieldset>
 	    </form>

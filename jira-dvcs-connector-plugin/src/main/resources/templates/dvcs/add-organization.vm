@@ -146,7 +146,7 @@
                             
                             #if( !$org.isIntegratedAccount() )
                                 <li class="dropdown-item">
-                                     <a href="#" onclick="configureOAuth('$org.dvcsType','$org.name', $org.id, '$!org.credential.oauthKey', '$!org.credential.oauthSecret','$atl_token')">Re-generate OAuth Access Token</a> 
+                                     <a href="#" onclick="return configureOAuth({'id':$org.id,'dvcsType':'$org.dvcsType','name':'$org.name','hostUrl':'$org.hostUrl','credential':{'key':'$!org.credential.oauthKey','secret':'$!org.credential.oauthSecret'}},'$atl_token')">Re-generate OAuth Access Token</a> 
                                  </li>
     
                                 <li class="dropdown-item">

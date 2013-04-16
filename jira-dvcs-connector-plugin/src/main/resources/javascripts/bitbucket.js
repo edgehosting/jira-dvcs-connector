@@ -499,8 +499,17 @@ function configureDefaultGroups(orgName, id) {
 		});
 }
 
-function configureOAuth(organizationDvcsType, organizationName, organizationId, oAuthKey, oAuthSecret, atlToken) {
-	
+function getOAuthHelpText(org){
+	if (org.dvcsType=="bitbucket") {
+		return "Obtain Key and Secret from your <a target='_blank' href='"+org.hostUrl+"/account/'>Bitbucket account settings</a> in <b>Integrated Applications</b> section."; 
+	} else if (org.dvcsType=="github") {
+		return "Obtain Key and Secret from your <a target='_blank' href='https://github.com/settings/applications'>GitHub account settings</a>.";
+	} else {
+		return "Obtain Key and Secret from your <a target='_blank' href='"+org.hostUrl+"/settings/applications'>GitHub Enterprise account settings</a>.";
+	}
+}
+
+function configureOAuth(org, atlToken) {
 	function validateField(field, errorMsg) {
 		if (!AJS.$.trim(field.val())) {
 			field.next().html(errorMsg);
@@ -516,11 +525,12 @@ function configureOAuth(organizationDvcsType, organizationName, organizationId, 
 		id: "repositoryOAuthDialog"
 	});
 	
-	popup.addHeader("Configure OAuth for account " + organizationName);
+	popup.addHeader("Configure OAuth for account " + org.name);
 	popup.addPanel("", jira.dvcs.connector.plugin.soy.repositoryOAuthDialog({
-		'organizationId': organizationId,
-		'oAuthKey': oAuthKey,
-		'oAuthSecret': oAuthSecret
+		'organizationId': org.id,
+		'oAuthKey': org.credential.key,
+		'oAuthSecret': org.credential.secret,
+		'helpText': new soydata.SanitizedHtml(getOAuthHelpText(org))
 		}));
 	
 	popup.addButton("Regenerate Access Token", function (dialog) {
@@ -533,18 +543,18 @@ function configureOAuth(organizationDvcsType, organizationName, organizationId, 
 		AJS.$("#repositoryOAuthDialog .dialog-button-panel").prepend("<span class='aui-icon aui-icon-wait' style='padding-right:10px'>Wait</span>");
 		
 		// submit form
-		AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/oauth", AJS.$("#updateOAuthForm").serialize())
+		AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + org.id + "/oauth", AJS.$("#updateOAuthForm").serialize())
 			.done(function(data) {
 
 				var actionName;
-                if (organizationDvcsType == "bitbucket")
+                if (org.dvcsType == "bitbucket")
                 	actionName="RegenerateBitbucketOauthToken.jspa";
-                else if (organizationDvcsType == "github")
+                else if (org.dvcsType == "github")
                 	actionName="RegenerateGithubOauthToken.jspa";
                 else
                 	actionName="RegenerateGithubEnterpriseOauthToken.jspa";
 				
-				window.location.replace(BASE_URL+"/secure/admin/"+actionName+"?organization=" + organizationId + "&atl_token="+atlToken);
+				window.location.replace(BASE_URL+"/secure/admin/"+actionName+"?organization=" + org.id + "&atl_token="+atlToken);
 			})
 			.error(function (err) {
 				AJS.$("#aui-message-bar").empty();
@@ -563,6 +573,7 @@ function configureOAuth(organizationDvcsType, organizationName, organizationId, 
 	});
 
 	popup.show();
+	return false;
 }
 
 function autoLinkIssuesOrg(organizationId, checkboxId) {
