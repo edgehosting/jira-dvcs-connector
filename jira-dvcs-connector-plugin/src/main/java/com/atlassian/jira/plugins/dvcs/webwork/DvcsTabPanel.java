@@ -73,7 +73,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         {
             try
             {
-                webResourceManager.requireResource("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin");
+                webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin");
                 return soyTemplateRenderer.render(DvcsConstants.SOY_TEMPLATE_KEY, "jira.dvcs.connector.plugin.soy.advertisement",
                         Collections.<String, Object> emptyMap());
             } catch (SoyException e)
