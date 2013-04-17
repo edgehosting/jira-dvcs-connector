@@ -163,6 +163,7 @@
  * @param isGithubEnterpriseEnabled
  * @param isOnDemandLicense
  * @param atlToken
+ * @param oAuthStore
  */
 {template .addOrganizationDialog}
 	<form class="aui long-label" id="repoEntry" method="post"  >
@@ -192,17 +193,16 @@
 	    </div>
 	    
 	    // BB form section
-	    <div id="bitbucket-form-section" style="display:none">
-	        <input type="hidden" id="oauthBbRequired" name="oauthBbRequired" value="true" />
+	    <div id="bitbucket-form-section">
 	        <div class="field-group">
 	           <label for="oauthBbClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
-	           <input class="text" type="text" id="oauthBbClientId" name="oauthBbClientId" value=""/>
+	           <input class="text" type="text" id="oauthBbClientId" name="oauthBbClientId" value="{$oAuthStore.bitbucket.key}"/>
 	           <div id="oauth-bb-client-error" class="dvcs-error error">This field is required.</div>
 	           <div class="description">How do I <a href="{contextPath() +'/secure/admin/ConfigureBitbucketOAuth!default.jspa'}">find OAuth key and secret</a>?</div>
 	        </div>
 	        <div class="field-group">
 	           <label for="oauthBbSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
-	           <input class="text" type="text" id="oauthBbSecret" name="oauthBbSecret" value=""/>
+	           <input class="text" type="text" id="oauthBbSecret" name="oauthBbSecret" value="{$oAuthStore.bitbucket.secret}"/>
 	           <div id="oauth-bb-secret-error" class="dvcs-error error">This field is required.</div>
 	        </div>
 	    </div>

@@ -30,11 +30,7 @@ function switchDvcsDetailsInternal(dvcsType) {
 		AJS.$('#githube-form-section').hide();
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
 
-		if (BB_REQUIRES_AUTH == "true") {
-			AJS.$("#bitbucket-form-section").fadeIn();
-		} else {
-			AJS.$("#oauthBbRequired").val("");
-		}
+		AJS.$("#bitbucket-form-section").fadeIn();
 
 	} else if (dvcsType == 1) {
 
@@ -207,7 +203,8 @@ function createAddOrganizationDialog(action) {
 	dialog.addPanel("", jira.dvcs.connector.plugin.soy.addOrganizationDialog({
 		isGithubEnterpriseEnabled: jira.dvcs.connector.plugin.githubEnterpriseEnabled,
 		isOnDemandLicense: jira.dvcs.connector.plugin.onDemandLicense,
-		atlToken : jira.dvcs.connector.plugin.atlToken
+		atlToken : jira.dvcs.connector.plugin.atlToken,
+		oAuthStore : jira.dvcs.connector.plugin.oAuthStore
 	}), "panel-body");
 	
 	dialog.addButtonPanel();
@@ -396,7 +393,6 @@ var dvcsSubmitFormAjaxHandler = {
 				
 			} else {
 
-				AJS.$("#oauthBbRequired").val("");
 				AJS.$('#repoEntry').submit();
 
 			}
