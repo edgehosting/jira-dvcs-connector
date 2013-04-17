@@ -605,7 +605,7 @@ function enableSmartcommitsOnNewRepos(organizationId, checkboxId) {
 			}
 		}
 	  ).error(function (err) {
-				  showError("Unexpected error occurred. Please contact the server administrator.");
+				  showError("Unexpected error occurred when enabling smart commits on new repositories. Please contact the server administrator.", "#aui-message-bar-"+organizationId);
 				  setChecked(checkboxId, !checkedValue);
 	  });
 }
@@ -661,7 +661,6 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 		}
 	 
 	).error(function (err) { 
-		          err.callbackUrl
 				  showError("Unable to " + (checkedValue ? "link" : "unlink") + " selected repository. Please contact the server administrator.");
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
@@ -708,26 +707,66 @@ function enableRepoSmartcommits(repoId, checkboxId) {
 			  });
 }
 
-function deleteOrganization(organizationId, organizationName) {
-	var answer = confirm("Are you sure you want to remove account '" +organizationName + "' from JIRA ?");
+function confirmationDialog(options) {
+	var dialog = new AJS.Dialog({width:500, height:150, id: "confirm-dialog", closeOnOutsideClick: false});
+	dialog.addHeader(options.header);
+	dialog.addPanel("ConfirmPanel", options.body);
 	
-	if (answer) {
-		var dialog = new AJS.Dialog({width:400, height:150, id:"deleting-account-dialog", closeOnOutsideClick: false});
-		dialog.addHeader("Deleting Account");
-		dialog.addPanel("DeletePanel", "<span class='dvcs-wait'>Deleting '" + organizationName + "' account. Please wait...</span>");
-		dialog.show(); 
-		
-		AJS.$.ajax({
-            url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId,
-            type: 'DELETE',
-            success: function(result) {
-                window.location.reload();
-            }
-        }).error(function (err) { 
-        	dialog.remove();
-        	showError("Error when deleting account '" + organizationName + "'.");
-		});
+	dialog.addButtonPanel();
+	dialog.page[0].buttonpanel.append("<span id='confirm-action-wait' class='aui-icon' style='padding-right:10px'>&nbsp;</span>");
+	
+	dialog.addSubmit(options.submitButtonLabel, function (dialog, event) {
+		dialog.working(true);
+		if (typeof options.okAction == 'function') {
+			options.okAction(dialog);
+		}
+	});
+    
+	dialog.addCancel("Cancel", function (dialog) {
+	    if (typeof options.cancelAction == 'function') {
+	    	options.cancelAction(dialog);
+	    }
+		dialog.remove();
+	}, "#");
+	
+	dialog.working = function(working) {
+		if (working) {
+			AJS.$("#confirm-action-wait").addClass("aui-icon-wait");
+			AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", true);
+		} else {
+			AJS.$("#confirm-action-wait").removeClass("aui-icon-wait");
+			AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", false);
+		}
 	}
+	
+	dialog.showError = function(message) {
+		dialog.working(false);
+		showError(message, "#aui-message-bar-delete-org");
+    	dialog.updateHeight();
+	}
+    dialog.show(); 
+	dialog.updateHeight();
+}
+
+function deleteOrganization(organizationId, organizationName) {
+	confirmationDialog({
+		header: "Deleting Account '" + organizationName + "'",
+		body: jira.dvcs.connector.plugin.soy.confirmDelete({'organizationName': organizationName}),
+		submitButtonLabel: "Delete",
+		okAction: function (dialog) { deleteOrganizationInternal(dialog, organizationId, organizationName); }
+		});
+}
+
+function deleteOrganizationInternal(dialog, organizationId, organizationName) {
+	AJS.$.ajax({
+        url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId,
+        type: 'DELETE',
+        success: function(result) {
+            window.location.reload();
+        }
+    }).error(function (err) {
+    	dialog.showError("Error when deleting account '" + organizationName + "'.", "#aui-message-bar-delete-org");
+	});
 }
 
 function syncRepositoryList(organizationId,organizationName) {
@@ -742,19 +781,21 @@ function syncRepositoryList(organizationId,organizationName) {
         success: function(result) {
             window.location.reload();
         }
-    }).error(function (err) { 
-    	window.location.reload();
+    }).error(function (err) {
+    	showError("Error when refreshing account '" + organizationName + "'.", "#aui-message-bar-"+organizationId);
+    	dialog.remove();
 	});
 }
 
-function showError(message, auiMessageElement) {
-	if (!auiMessageElement) {
+function showError(message, auiMessageElement, closeable) {
+	if (typeof auiMessageElement == 'undefined') {
 		auiMessageElement = "#aui-message-bar";
 	}
 		
 	AJS.$(auiMessageElement).empty();
 	AJS.messages.error(auiMessageElement, {
-		title: message
+		title: message,
+		closeable: closeable
 	});
 }
 

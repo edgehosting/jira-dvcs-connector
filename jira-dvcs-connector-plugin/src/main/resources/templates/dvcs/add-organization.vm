@@ -83,7 +83,7 @@
 
 #foreach( $org in $action.loadOrganizations() )
   <div class="dvcs-orgdata-container">
-            
+    <div id="aui-message-bar-$org.id"></div>        
     #if($org.isAutolinkNewRepos())
         #set( $orgAutolink = "checked='checked'")
         #set( $orgSmartcommitsOnNewReposDisabled = "")
