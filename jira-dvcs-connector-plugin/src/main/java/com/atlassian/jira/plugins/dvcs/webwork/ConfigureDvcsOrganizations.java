@@ -115,21 +115,6 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         return featuresDetector.isUserInvitationsEnabled();
     }
 
-    public boolean isGithubOauthRequired()
-    {
-        return !communicatorProvider.getCommunicator("github").isOauthConfigured();
-    }
-
-    public boolean isGithubEnterpriseOauthRequired()
-    {
-        return !communicatorProvider.getCommunicator("githube").isOauthConfigured();
-    }
-
-    public boolean isBitbucketOauthRequired()
-    {
-        return !communicatorProvider.getCommunicator("bitbucket").isOauthConfigured();
-    }
-
     public boolean isGithubEnterpriseEnabled()
     {
         return GithubEnterpriseEnabledCondition.isGitHubEnterpriseEnabled();

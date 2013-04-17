@@ -29,7 +29,6 @@ function switchDvcsDetailsInternal(dvcsType) {
 		AJS.$('#github-form-section').hide();
 		AJS.$('#githube-form-section').hide();
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
-
 		AJS.$("#bitbucket-form-section").fadeIn();
 
 	} else if (dvcsType == 1) {
@@ -37,25 +36,14 @@ function switchDvcsDetailsInternal(dvcsType) {
 		AJS.$('#bitbucket-form-section').hide();
 		AJS.$('#githube-form-section').hide();
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
-		
-		if (GH_REQUIRES_AUTH == "true") {
-			AJS.$("#github-form-section").fadeIn();
-		} else {
-			AJS.$("#oauthRequired").val("");
-		}
+		AJS.$("#github-form-section").fadeIn();
 		
 	}  else if (dvcsType == 2) {
 
 		AJS.$('#bitbucket-form-section').hide();
 		AJS.$('#github-form-section').hide();
-
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubEnterpriseOrganization.jspa");
-		
-		if (GHE_REQUIRES_AUTH == "true") {
-			AJS.$("#githube-form-section").fadeIn();
-		} else {
-			AJS.$("#oauthRequiredGhe").val("");
-		}
+		AJS.$("#githube-form-section").fadeIn();
 	}  
 
 }
@@ -83,7 +71,6 @@ function forceSync(event, repositoryId) {
 	
 	} else {
 		softSync(repositoryId);
-		
 	}
 }
 
@@ -379,43 +366,12 @@ function validateAddOrganizationForm() {
 var dvcsSubmitFormAjaxHandler = {
 		"bitbucket": function(data){
 			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
-			if (data.requiresOauth) {
-					
-				// hide url input box
-				AJS.$('#urlReadOnly').html(AJS.$('#url').val());
-				AJS.$('#urlSelect').hide(); 
-				AJS.$('#urlReadOnly').show();
-				
-				//show username / password
-				AJS.$("#github-form-section").hide();
-				AJS.$("#bitbucket-form-section").fadeIn();
-				AJS.$("#adminUsername").focus().select();
-				
-			} else {
-
-				AJS.$('#repoEntry').submit();
-
-			}
+			AJS.$('#repoEntry').submit();
 		}, 
 
 		"github": function(data) {
 			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
-			if (data.requiresOauth) {
-
-				AJS.$('#urlReadOnly').html(AJS.$('#url').val());
-				AJS.$('#urlSelect').hide(); 
-				AJS.$('#urlReadOnly').show();
-				
-				AJS.$("#bitbucket-form-section").hide();
-				AJS.$("#github-form-section").fadeIn();
-				AJS.$("#oauthClientId").focus().select();
-
-			} else {
-				
-				AJS.$("#oauthRequired").val("");
-				AJS.$('#repoEntry').submit();
-
-			}
+			AJS.$('#repoEntry').submit();
 		}
 }
 

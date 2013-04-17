@@ -9,9 +9,6 @@
     <script type="text/javascript">
         
         var BASE_URL = "${baseurl}";
-        var GH_REQUIRES_AUTH = "$!action.isGithubOauthRequired()";
-        var GHE_REQUIRES_AUTH = "$!action.isGithubEnterpriseOauthRequired()";
-        
 
         function init_repositories()
         {

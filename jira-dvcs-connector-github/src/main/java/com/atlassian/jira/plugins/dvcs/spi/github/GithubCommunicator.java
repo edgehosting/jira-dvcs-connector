@@ -74,13 +74,6 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public boolean isOauthConfigured()
-    {
-        return StringUtils.isNotBlank(oAuthStore.getClientId(GITHUB))
-                && StringUtils.isNotBlank(oAuthStore.getClientId(GITHUB));
-    }
-
-    @Override
     public String getDvcsType()
     {
         return GITHUB;
@@ -94,7 +87,7 @@ public class GithubCommunicator implements DvcsCommunicator
         try
         {
             userService.getUser(accountName);
-            return new AccountInfo(GithubCommunicator.GITHUB, !isOauthConfigured());
+            return new AccountInfo(GithubCommunicator.GITHUB);
 
         } catch (IOException e)
         {

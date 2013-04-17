@@ -29,7 +29,6 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
 	private String oauthClientIdGhe;
 	private String oauthSecretGhe;
-	private String oauthRequiredGhe;
 
 	// sent by GH on the way back
 	private String code;
@@ -51,10 +50,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	@RequiresXsrfCheck
 	protected String doExecute() throws Exception
 	{
-        if (isOAuthConfigurationRequired())
-        {
-            oAuthStore.store(new Host(GITHUB_ENTERPRISE, url), oauthClientIdGhe, oauthSecretGhe);
-        }
+	    oAuthStore.store(new Host(GITHUB_ENTERPRISE, url), oauthClientIdGhe, oauthSecretGhe);
 
 		// then continue
 		return redirectUserToGithub();
@@ -76,19 +72,6 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 	@Override
 	protected void doValidation()
 	{
-
-        if (StringUtils.isNotBlank(oauthRequiredGhe))
-        {
-            if (StringUtils.isBlank(oauthClientIdGhe) || StringUtils.isBlank(oauthSecretGhe))
-            {
-                addErrorMessage("Missing credentials.");
-            }
-        } else
-        {
-            // load saved GitHub Enterprise url
-            url = oAuthStore.getUrl(GITHUB_ENTERPRISE);
-        }
-
         if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
         {
             addErrorMessage("Please provide both url and organization parameters.");
@@ -113,11 +96,6 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 //        }
 
 	}
-
-    protected boolean isOAuthConfigurationRequired()
-    {
-        return StringUtils.isNotBlank(oauthRequiredGhe);
-    }
 
 	public String doFinish()
 	{
@@ -215,16 +193,6 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
     public void setOauthSecretGhe(String oauthSecretGhe)
     {
         this.oauthSecretGhe = oauthSecretGhe;
-    }
-
-    public String getOauthRequiredGhe()
-    {
-        return oauthRequiredGhe;
-    }
-
-    public void setOauthRequiredGhe(String oauthRequiredGhe)
-    {
-        this.oauthRequiredGhe = oauthRequiredGhe;
     }
 
     public String getUrl()

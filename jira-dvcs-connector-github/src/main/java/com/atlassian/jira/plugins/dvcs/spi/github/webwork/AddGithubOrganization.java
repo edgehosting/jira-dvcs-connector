@@ -28,7 +28,6 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
     private String oauthClientId;
     private String oauthSecret;
-    private String oauthRequired;
 
     // sent by GH on the way back
     private String code;
@@ -50,10 +49,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        if (isOAuthConfigurationRequired())
-        {
-            oAuthStore.store(Host.GITHUB, oauthClientId, oauthSecret);
-        }
+        oAuthStore.store(Host.GITHUB, oauthClientId, oauthSecret);
 
         // then continue
         return redirectUserToGithub();
@@ -75,13 +71,6 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     @Override
     protected void doValidation()
     {
-        if (StringUtils.isNotBlank(oauthRequired))
-        {
-            if (StringUtils.isBlank(oauthClientId) || StringUtils.isBlank(oauthSecret))
-            {
-                addErrorMessage("Missing credentials.");
-            }
-        }
 
         if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
         {
@@ -93,11 +82,6 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         {
             addErrorMessage("Invalid user/team account.");
         }
-    }
-
-    protected boolean isOAuthConfigurationRequired()
-    {
-        return StringUtils.isNotBlank(oauthRequired);
     }
 
     public String doFinish()
@@ -200,15 +184,4 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     {
         this.oauthSecret = oauthSecret;
     }
-
-    public String getOauthRequired()
-    {
-        return oauthRequired;
-    }
-
-    public void setOauthRequired(String oauthRequired)
-    {
-        this.oauthRequired = oauthRequired;
-    }
-
 }
