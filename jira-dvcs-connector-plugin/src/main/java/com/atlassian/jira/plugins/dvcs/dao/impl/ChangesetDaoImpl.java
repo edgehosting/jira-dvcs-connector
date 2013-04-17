@@ -70,7 +70,8 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public Object doInTransaction()
             {
-                // todo: mfa - transaction: deleted from RepoToChangeset but not from others.. bug?
+                // todo: transaction: plugin use SalTransactionManager and there is empty implementation of TransactionSynchronisationManager.
+                // todo: Therefore there are only entityCache transactions. No DB transactions.
 
                 // delete association repo - changesets
                 Query query = Query.select().where(RepositoryToChangesetMapping.REPOSITORY_ID + " = ?", repositoryId);
@@ -116,14 +117,12 @@ public class ChangesetDaoImpl implements ChangesetDao
                 if (ArrayUtils.isEmpty(mappings))
                 {
                     chm = activeObjects.create(ChangesetMapping.class);
-                    // todo: mfa - naco find?
-                    chm = activeObjects.find(ChangesetMapping.class, "ID = ?", chm.getID())[0];
                 } else
                 {
                     if (mappings.length > 1)
                     {
-                        log.warn("We have more than one changest with same nodeID in DB !");
-                        // todo: do something useful  - lepsi LOG
+                        log.warn("More changesets with same Node. Same changesets count: {}, Node: {}, Repository: {}",
+                                new Object[]{mappings.length, changeset.getNode(), changeset.getRepositoryId()});
                     }
                     chm = mappings[0];
                 }
