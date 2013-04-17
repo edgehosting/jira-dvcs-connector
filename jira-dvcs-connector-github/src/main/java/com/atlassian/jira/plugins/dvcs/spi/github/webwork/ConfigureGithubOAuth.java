@@ -62,7 +62,7 @@ public class ConfigureGithubOAuth extends JiraWebActionSupport
 
     protected void addClientIdentifiers()
     {
-        oAuthStore.store(Host.GITHUB, StringUtils.trim(clientID), StringUtils.trim(clientSecret));
+        oAuthStore.store(Host.GITHUB, clientID, clientSecret);
         messages = "GitHub Client Identifiers Set Correctly";
     }
     

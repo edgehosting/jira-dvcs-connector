@@ -60,7 +60,7 @@ public class ConfigureGithubEnterpriseOAuth extends ConfigureGithubOAuth
     @Override
     protected void addClientIdentifiers()
     {
-        oAuthStore.store(new Host(GITHUB_ENTERPRISE, StringUtils.trim(hostUrl)), StringUtils.trim(clientID), StringUtils.trim(clientSecret));
+        oAuthStore.store(new Host(GITHUB_ENTERPRISE, hostUrl), clientID, clientSecret);
         messages = "GitHub Host URL And Client Identifiers Set Correctly";
     }
 
