@@ -30,6 +30,7 @@ import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.template.soy.SoyTemplateRendererProvider;
+import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.soy.renderer.SoyException;
 import com.atlassian.soy.renderer.SoyTemplateRenderer;
@@ -72,6 +73,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         {
             try
             {
+                webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin");
                 return soyTemplateRenderer.render(DvcsConstants.SOY_TEMPLATE_KEY, "jira.dvcs.connector.plugin.soy.advertisement",
                         Collections.<String, Object> emptyMap());
             } catch (SoyException e)
@@ -93,10 +95,12 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     private final IssueLinker issueLinker;
     private final TemplateRenderer templateRenderer;
     private final SoyTemplateRenderer soyTemplateRenderer;
+    private final WebResourceManager webResourceManager;
 
     public DvcsTabPanel(PermissionManager permissionManager, ChangesetService changesetService,
             ApplicationProperties applicationProperties, IssueLinker issueLinker, TemplateRenderer templateRenderer,
-            SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService)
+            SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
+            WebResourceManager webResourceManager)
     {
         this.permissionManager = permissionManager;
         this.changesetService = changesetService;
@@ -105,6 +109,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         this.templateRenderer = templateRenderer;
         this.soyTemplateRenderer = soyTemplateRendererProvider.getRenderer();
         this.repositoryService = repositoryService;
+        this.webResourceManager = webResourceManager;
     }
 
     @Override
