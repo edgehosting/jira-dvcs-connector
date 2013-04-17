@@ -765,7 +765,7 @@ function deleteOrganizationInternal(dialog, organizationId, organizationName) {
             window.location.reload();
         }
     }).error(function (err) {
-    	dialog.showError("Error when deleting account '" + organizationName + "'.", "#aui-message-bar-delete-org");
+    	dialog.showError("Error when deleting account '" + organizationName + "'.");
 	});
 }
 
