@@ -18,7 +18,15 @@ public interface ChangesetService
      * @param extractedIssues
      * @return changeset
      */
-    Changeset save(Changeset changeset, Set<String> extractedIssues);
+    Changeset create(Changeset changeset, Set<String> extractedIssues);
+
+    /**
+     * update properties of changeset which is already saved in DB
+     *
+     * @param changeset
+     * @return
+     */
+    Changeset update(Changeset changeset);
 
     void removeAllInRepository(int repositoryId);
 

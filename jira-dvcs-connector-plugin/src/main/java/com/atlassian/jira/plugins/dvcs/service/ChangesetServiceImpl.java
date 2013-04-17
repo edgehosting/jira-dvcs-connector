@@ -32,9 +32,15 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
-    public Changeset save(Changeset changeset, Set<String> extractedIssues)
+    public Changeset create(Changeset changeset, Set<String> extractedIssues)
     {
-        return changesetDao.save(changeset, extractedIssues);
+        return changesetDao.create(changeset, extractedIssues);
+    }
+
+    @Override
+    public Changeset update(Changeset changeset)
+    {
+        return changesetDao.update(changeset);
     }
 
     @Override
@@ -141,7 +147,7 @@ public class ChangesetServiceImpl implements ChangesetService
                 changeset.setAllFileCount(updatedChangeset.getAllFileCount());
                 changeset.setAuthorEmail(updatedChangeset.getAuthorEmail());
 
-                changeset = changesetDao.save(changeset, null);
+                changeset = changesetDao.update(changeset);
             }
         }
         return changeset;

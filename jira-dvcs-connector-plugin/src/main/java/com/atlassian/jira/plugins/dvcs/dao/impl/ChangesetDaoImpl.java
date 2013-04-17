@@ -98,90 +98,17 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
     }
 
-    @Override
-    public Changeset save(final Changeset changeset, final Set<String> extractedIssues)
-    {
+    public Changeset create(final Changeset changeset, final Set<String> extractedIssues) {
         ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
         {
-
             @Override
             public ChangesetMapping doInTransaction()
             {
-                // delete existing
-                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, 
-                        ChangesetMapping.NODE + " = ? ", changeset.getNode());
-
-                // add new
-                ChangesetMapping chm = null;
-
-                if (ArrayUtils.isEmpty(mappings))
-                {
+                ChangesetMapping chm = getChangesetMapping(changeset);
+                if (chm == null) {
                     chm = activeObjects.create(ChangesetMapping.class);
-                } else
-                {
-                    if (mappings.length > 1)
-                    {
-                        log.warn("More changesets with same Node. Same changesets count: {}, Node: {}, Repository: {}",
-                                new Object[]{mappings.length, changeset.getNode(), changeset.getRepositoryId()});
-                    }
-                    chm = mappings[0];
                 }
-
-
-                // we need to remove null characters '\u0000' because PostgreSQL cannot store String values with such
-                // characters
-                // todo: remove NULL Chars before call setters
-                chm.setNode(changeset.getNode());
-                chm.setRawAuthor(changeset.getRawAuthor());
-                chm.setAuthor(changeset.getAuthor());
-                chm.setDate(changeset.getDate());
-                chm.setRawNode(changeset.getRawNode());
-                chm.setBranch(changeset.getBranch());
-                chm.setMessage(changeset.getMessage());
-                chm.setAuthorEmail(changeset.getAuthorEmail());
-                chm.setSmartcommitAvailable(changeset.isSmartcommitAvaliable());
-
-                JSONArray parentsJson = new JSONArray();
-                for (String parent : changeset.getParents())
-                {
-                    parentsJson.put(parent);
-                }
-                
-                String parentsData = parentsJson.toString();
-                if (parentsData.length() > 255)
-                {
-                    parentsData = ChangesetMapping.TOO_MANY_PARENTS;
-                }
-                chm.setParentsData(parentsData);
-
-                JSONObject filesDataJson = new JSONObject();
-                JSONArray filesJson = new JSONArray();
-                try
-                {
-                    List<ChangesetFile> files = changeset.getFiles();
-                    int count = changeset.getAllFileCount();
-                    filesDataJson.put("count", count);
-                    for (int i = 0; i < Math.min(count, Changeset.MAX_VISIBLE_FILES); i++)
-                    {
-                        ChangesetFile changesetFile = files.get(i);
-                        JSONObject fileJson = new JSONObject();
-                        fileJson.put("filename", changesetFile.getFile());
-                        fileJson.put("status", changesetFile.getFileAction().getAction());
-                        fileJson.put("additions", changesetFile.getAdditions());
-                        fileJson.put("deletions", changesetFile.getDeletions());
-
-                        filesJson.put(fileJson);
-                    }
-                
-                    filesDataJson.put("files", filesJson);
-                    chm.setFilesData(filesDataJson.toString());
-
-                } catch (JSONException e)
-                {
-                    log.error("Creating files JSON failed!", e);
-                }
-
-                chm.setVersion(ChangesetMapping.LATEST_VERSION);
+                fillProperties(changeset, chm);
                 chm.save();
 
                 associateRepositoryToChangeset(chm, changeset.getRepositoryId());
@@ -197,6 +124,101 @@ public class ChangesetDaoImpl implements ChangesetDao
         changeset.setId(changesetMapping.getID());
 
         return changeset;
+    }
+
+    public Changeset update(final Changeset changeset) {
+        ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
+        {
+            @Override
+            public ChangesetMapping doInTransaction()
+            {
+                ChangesetMapping chm = getChangesetMapping(changeset);
+                if (chm != null) {
+                    fillProperties(changeset, chm);
+                    chm.save();
+                } else
+                {
+                    log.warn("Changest with node {} is not exists.", changeset.getNode());
+                }
+                return chm;
+            }
+        });
+
+        return changeset;
+    }
+
+    private ChangesetMapping getChangesetMapping(Changeset changeset)
+    {
+        ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
+                ChangesetMapping.NODE + " = ? ", changeset.getNode());
+
+        ChangesetMapping chm = null;
+
+        if (mappings.length > 1)
+        {
+            log.warn("More changesets with same Node. Same changesets count: {}, Node: {}, Repository: {}",
+                    new Object[]{mappings.length, changeset.getNode(), changeset.getRepositoryId()});
+        }
+        return (ArrayUtils.isNotEmpty(mappings)) ? mappings[0] : null;
+    }
+
+    public void fillProperties(Changeset changeset, ChangesetMapping chm)
+    {
+        // we need to remove null characters '\u0000' because PostgreSQL cannot store String values with such
+        // characters
+        // todo: remove NULL Chars before call setters
+        chm.setNode(changeset.getNode());
+        chm.setRawAuthor(changeset.getRawAuthor());
+        chm.setAuthor(changeset.getAuthor());
+        chm.setDate(changeset.getDate());
+        chm.setRawNode(changeset.getRawNode());
+        chm.setBranch(changeset.getBranch());
+        chm.setMessage(changeset.getMessage());
+        chm.setAuthorEmail(changeset.getAuthorEmail());
+        chm.setSmartcommitAvailable(changeset.isSmartcommitAvaliable());
+
+        JSONArray parentsJson = new JSONArray();
+        for (String parent : changeset.getParents())
+        {
+            parentsJson.put(parent);
+        }
+
+        String parentsData = parentsJson.toString();
+        if (parentsData.length() > 255)
+        {
+            parentsData = ChangesetMapping.TOO_MANY_PARENTS;
+        }
+        chm.setParentsData(parentsData);
+
+        JSONObject filesDataJson = new JSONObject();
+        JSONArray filesJson = new JSONArray();
+        try
+        {
+            List<ChangesetFile> files = changeset.getFiles();
+            int count = changeset.getAllFileCount();
+            filesDataJson.put("count", count);
+            for (int i = 0; i < Math.min(count, Changeset.MAX_VISIBLE_FILES); i++)
+            {
+                ChangesetFile changesetFile = files.get(i);
+                JSONObject fileJson = new JSONObject();
+                fileJson.put("filename", changesetFile.getFile());
+                fileJson.put("status", changesetFile.getFileAction().getAction());
+                fileJson.put("additions", changesetFile.getAdditions());
+                fileJson.put("deletions", changesetFile.getDeletions());
+
+                filesJson.put(fileJson);
+            }
+
+            filesDataJson.put("files", filesJson);
+            chm.setFilesData(filesDataJson.toString());
+
+        } catch (JSONException e)
+        {
+            log.error("Creating files JSON failed!", e);
+        }
+
+        chm.setVersion(ChangesetMapping.LATEST_VERSION);
+        chm.save();
     }
 
     private Changeset filterByRepository(List<Changeset> changesets, int repositoryId)

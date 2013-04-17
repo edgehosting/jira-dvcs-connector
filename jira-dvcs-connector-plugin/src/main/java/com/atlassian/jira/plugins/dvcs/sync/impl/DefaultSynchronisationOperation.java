@@ -125,7 +125,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 //                        }
                     //--------------------------------------------
                     log.debug("Save changeset [{}]", changesetForSave);
-                    changesetService.save(changesetForSave, extractedIssues);
+                    changesetService.create(changesetForSave, extractedIssues);
 
                 } catch (SourceControlException e)
                 {

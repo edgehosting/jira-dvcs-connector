@@ -20,14 +20,22 @@ public interface ChangesetDao
     void removeAllInRepository(int repositoryId);
 
     /**
-     * save Changeset to storage. If it's new object (without ID) after this operation it will have it assigned.
-     * 
+     * create Changeset and save to storage. If it's new object (without ID) after this operation it will have it assigned.
+     * it's create alse all associations (repository- changeset, issues-changest)
      *
      * @param changeset
      * @param extractedIssues
      * @return
      */
-    Changeset save(Changeset changeset, Set<String> extractedIssues);
+    Changeset create(Changeset changeset, Set<String> extractedIssues);
+
+    /**
+     * update properties of changeset which is already saved in DB
+     *
+     * @param changeset
+     * @return
+     */
+    Changeset update(Changeset changeset);
 
     /**
      * @param repositoryId
