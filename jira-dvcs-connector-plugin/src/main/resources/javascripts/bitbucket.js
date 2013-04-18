@@ -222,7 +222,7 @@ function createAddOrganizationDialog(action) {
 
 	dialog.addCancel("Cancel", function (dialog) {
 		AJS.$("#repoEntry").trigger('reset');
-		AJS.$("#aui-message-bar-add-org").empty();
+		AJS.$("#aui-message-bar").empty();
 	    dialog.hide();
 	}, "#");
 	
@@ -249,7 +249,7 @@ function createAddOrganizationDialog(action) {
     
 	dialog.addCancel("Cancel", function (dialog) {
 		AJS.$("#repoEntry").trigger('reset');
-		AJS.$("#aui-message-bar-add-org").empty();
+		AJS.$("#aui-message-bar").empty();
 	    dialog.hide();
 	}, "#");
     
@@ -298,7 +298,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     	dialog.enabled(false);
 
     	//
-        AJS.messages.info("#aui-message-bar-add-org", { title: "Connecting to " + dvcsHost + " to configure your account...", closeable : false});
+        AJS.messages.info("#aui-message-bar", { title: "Connecting to " + dvcsHost + " to configure your account...", closeable : false});
         dialog.updateHeight();
         // set url by selected type
         return true; // submit form
@@ -316,9 +316,9 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     AJS.$("#url").val(dvcsUrl);
     AJS.$("#organization").val(account);
 
-    AJS.$("#aui-message-bar-add-org").empty();
+    AJS.$("#aui-message-bar").empty();
     
-    AJS.messages.info("#aui-message-bar-add-org", { title: "Trying to identify repository type...", closeable : false});
+    AJS.messages.info("#aui-message-bar", { title: "Trying to identify repository type...", closeable : false});
     dialog.updateHeight();
     
     var repositoryUrl = AJS.$("#url").val().trim();
@@ -329,20 +329,20 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     AJS.$.getJSON(requestUrl,
         function(data) {
             
-    		AJS.$("#aui-message-bar-add-org").empty();
+    		AJS.$("#aui-message-bar").empty();
             dialog.enabled(true);
            
             if (data.validationErrors && data.validationErrors.length > 0) {
             	AJS.$.each(data.validationErrors, function(i, msg){
-            		AJS.messages.error("#aui-message-bar-add-org", {title : "Error!", body : msg});
+            		AJS.messages.error("#aui-message-bar", {title : "Error!", body : msg});
             		dialog.updateHeight();
             	})
             } else{
             	dvcsSubmitFormAjaxHandler[data.dvcsType].apply(this, arguments);
         	}
     	}).error(function(a) {
-            AJS.$("#aui-message-bar-add-org").empty();
-            AJS.messages.error("#aui-message-bar-add-org", { title: "Error!", 
+            AJS.$("#aui-message-bar").empty();
+            AJS.messages.error("#aui-message-bar", { title: "Error!", 
             	body: "The url [<b>" + AJS.escapeHtml(AJS.$("#url").val()) + "</b>] is incorrect or the server is not responding." 
             });
             dialog.enabled(true);
@@ -494,7 +494,7 @@ function configureDefaultGroups(orgName, id) {
 			}
 		
 	).error(function (err) { 
-			showError("Unexpected error occurred. Please contact the server administrator.");
+			showError("Unexpected error occurred. Please contact the server administrator.", "#aui-message-bar-"+id);
 			popup.hide();
 		});
 }
@@ -581,7 +581,7 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 			}
 		}
 	).error(function (err) { 
-				  showError("Unexpected error occurred. Please contact the server administrator.");
+				  showError("Unexpected error occurred. Please contact the server administrator.", "#aui-message-bar-"+organizationId);
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);
@@ -661,7 +661,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 		}
 	 
 	).error(function (err) { 
-				  showError("Unable to " + (checkedValue ? "link" : "unlink") + " selected repository. Please contact the server administrator.");
+				  showError("Unable to " + (checkedValue ? "link" : "unlink") + " selected repository. Please contact the server administrator.", "#aui-message-bar-global");
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);
@@ -789,7 +789,7 @@ function syncRepositoryList(organizationId,organizationName) {
 
 function showError(message, auiMessageElement, closeable) {
 	if (typeof auiMessageElement == 'undefined') {
-		auiMessageElement = "#aui-message-bar";
+		auiMessageElement = "#aui-message-bar-global";
 	}
 		
 	AJS.$(auiMessageElement).empty();
