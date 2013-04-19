@@ -26,7 +26,8 @@ import java.util.regex.Pattern;
  *  Data migration from jira-github-connector plugin to jira-bitbucket-connector plugin
  *  
  */
-@SuppressWarnings("unchecked")
+// suppressed deprecation - we want to have migrators stable as much as possible
+@SuppressWarnings("deprecation")
 public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
 {
     private static final Logger log = LoggerFactory.getLogger(To_08_ActiveObjectsV3Migrator.class);
@@ -38,7 +39,8 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         this.passwordReEncryptor = passwordReEncryptor;
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
         log.debug("upgrade [ " + getModelVersion() + " ]");
@@ -176,7 +178,8 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
 
         activeObjects.stream(IssueMapping.class, new EntityStreamCallback<IssueMapping, Integer>()
         {
-            @Override
+
+        	@Override
             public void onRowRead(IssueMapping issueMapping)
             {
                 String projectKey = extractProjectKey(issueMapping.getIssueId());
@@ -191,10 +194,9 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
                 }
                 
                 Map<String, Object> changesetMap = Maps.newHashMap();
-                // todo: mfa
-//                changesetMap.put(ChangesetMapping.REPOSITORY_ID, old2New.get(issueMapping.getRepositoryId()));
-//                changesetMap.put(ChangesetMapping.ISSUE_KEY, issueMapping.getIssueId());
-//                changesetMap.put(ChangesetMapping.PROJECT_KEY, projectKey);
+                changesetMap.put(ChangesetMapping.REPOSITORY_ID, old2New.get(issueMapping.getRepositoryId()));
+                changesetMap.put(ChangesetMapping.ISSUE_KEY, issueMapping.getIssueId());
+                changesetMap.put(ChangesetMapping.PROJECT_KEY, projectKey);
                 changesetMap.put(ChangesetMapping.NODE, issueMapping.getNode());
                 changesetMap.put(ChangesetMapping.RAW_AUTHOR, issueMapping.getRawAuthor());
                 changesetMap.put(ChangesetMapping.AUTHOR, issueMapping.getAuthor());

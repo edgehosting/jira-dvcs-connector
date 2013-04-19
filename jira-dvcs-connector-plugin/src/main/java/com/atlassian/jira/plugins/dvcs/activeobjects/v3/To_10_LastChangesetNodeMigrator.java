@@ -13,12 +13,15 @@ import net.java.ao.Query;
 /**
  * @author Martin Skurla
  */
+// suppressed deprecation - we want to have migrators stable as much as possible
+@SuppressWarnings("deprecation")
 public class To_10_LastChangesetNodeMigrator implements ActiveObjectsUpgradeTask
 {
     private static final Logger log = LoggerFactory.getLogger(To_10_LastChangesetNodeMigrator.class);
 
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
         log.debug("upgrade [ " + getModelVersion() + " ]");
@@ -42,12 +45,10 @@ public class To_10_LastChangesetNodeMigrator implements ActiveObjectsUpgradeTask
 
             if (repositoryLastCommitDate != null) // when the repo is empty
             {
-                ChangesetMapping[] lastChangesetOrEmptyArray = activeObjects.find(ChangesetMapping.class,
-                        // todo: mfa
-                        Query.select());
-//                        Query.select().where(ChangesetMapping.REPOSITORY_ID + " = ?", repository.getID())
-//                                      .order(ChangesetMapping.DATE + " DESC")
-//                                      .limit(1));
+				ChangesetMapping[] lastChangesetOrEmptyArray = activeObjects.find(ChangesetMapping.class,
+                        Query.select().where(ChangesetMapping.REPOSITORY_ID + " = ?", repository.getID())
+                                      .order(ChangesetMapping.DATE + " DESC")
+                                      .limit(1));
 
                 // should never happen as empty repo should not have set LAST_COMMIT_DATE
                 if (lastChangesetOrEmptyArray.length != 0)

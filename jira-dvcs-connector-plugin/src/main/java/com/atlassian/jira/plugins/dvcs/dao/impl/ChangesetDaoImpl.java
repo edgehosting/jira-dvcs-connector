@@ -48,7 +48,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         return transformer.transform(changesetMapping);
     }
 
-    @SuppressWarnings("unchecked")
     protected List<Changeset> transform(List<ChangesetMapping> changesetMappings)
     {
         List<Changeset> changesets = new ArrayList<Changeset>();
@@ -127,7 +126,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     }
 
     public Changeset update(final Changeset changeset) {
-        ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
+        activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
         {
             @Override
             public ChangesetMapping doInTransaction()
@@ -151,8 +150,6 @@ public class ChangesetDaoImpl implements ChangesetDao
     {
         ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
                 ChangesetMapping.NODE + " = ? ", changeset.getNode());
-
-        ChangesetMapping chm = null;
 
         if (mappings.length > 1)
         {
@@ -380,8 +377,8 @@ public class ChangesetDaoImpl implements ChangesetDao
                 .alias(RepositoryToChangesetMapping.class, "rtchm")
                 .join(ChangesetMapping.class, "chm.ID = pk." + IssueToChangesetMapping.CHANGESET_ID)
                 .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
-                .where(RepositoryToChangesetMapping.REPOSITORY_ID + " = ?", repositoryId)
-                .order(IssueToChangesetMapping.PROJECT_KEY);
+                .where("rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ?", repositoryId)
+                .order("pk." + IssueToChangesetMapping.PROJECT_KEY);
 
 
 
