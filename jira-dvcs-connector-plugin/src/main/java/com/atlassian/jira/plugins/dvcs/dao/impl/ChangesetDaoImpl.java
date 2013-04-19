@@ -339,7 +339,11 @@ public class ChangesetDaoImpl implements ChangesetDao
             public List<ChangesetMapping> doInTransaction()
             {
                 String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
-                Query query = Query.select().where(baseWhereClause).limit(maxResults).order(ChangesetMapping.DATE + " DESC");
+                Query query = Query.select()
+                		.alias(ChangesetMapping.class, "CHANGESET")
+                		.alias(IssueToChangesetMapping.class, "ISSUE")
+                		.join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
+                		.where(baseWhereClause).limit(maxResults).order("CHANGESET." + ChangesetMapping.DATE + " DESC");
                 ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
                 return Arrays.asList(mappings);
             }

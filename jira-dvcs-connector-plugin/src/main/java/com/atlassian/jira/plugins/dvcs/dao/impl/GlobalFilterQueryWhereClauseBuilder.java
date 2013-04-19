@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 
 /**
@@ -26,7 +28,7 @@ public class GlobalFilterQueryWhereClauseBuilder
 
             if (gf.getInProjects() != null && gf.getInProjects().iterator().hasNext())
             {
-                whereClauseProjectsSb.append("PROJECT_KEY in ").append(joinStringsToSet(gf.getInProjects())).append(" ");
+                whereClauseProjectsSb.append("ISSUE." + IssueToChangesetMapping.PROJECT_KEY + " in ").append(joinStringsToSet(gf.getInProjects())).append(" ");
             }
             if (gf.getNotInProjects() != null && gf.getNotInProjects().iterator().hasNext())
             {
@@ -36,12 +38,12 @@ public class GlobalFilterQueryWhereClauseBuilder
                 }
 
 
-                whereClauseProjectsSb.append("PROJECT_KEY not in ").append(joinStringsToSet(gf.getNotInProjects())).append(" ");
+                whereClauseProjectsSb.append("ISSUE." + IssueToChangesetMapping.PROJECT_KEY + " not in ").append(joinStringsToSet(gf.getNotInProjects())).append(" ");
             }
 
             if (gf.getInIssues() != null && gf.getInIssues().iterator().hasNext())
             {
-                whereClauseIssueKyesSb.append("ISSUE_KEY in ").append(joinStringsToSet(gf.getInIssues())).append(" ");
+                whereClauseIssueKyesSb.append("ISSUE." + IssueToChangesetMapping.ISSUE_KEY + " in ").append(joinStringsToSet(gf.getInIssues())).append(" ");
             }
             if (gf.getNotInIssues() != null && gf.getNotInIssues().iterator().hasNext())
             {
@@ -51,16 +53,16 @@ public class GlobalFilterQueryWhereClauseBuilder
                 }
 
 
-                whereClauseIssueKyesSb.append("ISSUE_KEY not in ").append(joinStringsToSet(gf.getNotInIssues())).append(" ");
+                whereClauseIssueKyesSb.append("ISSUE." + IssueToChangesetMapping.ISSUE_KEY + " not in ").append(joinStringsToSet(gf.getNotInIssues())).append(" ");
             }
 
             if (gf.getInUsers() != null && gf.getInUsers().iterator().hasNext())
             {
-                whereClauseUsersSb.append("AUTHOR in ").append(joinStringsToSet(gf.getInUsers())).append(" ");
+                whereClauseUsersSb.append("CHANGESET." + ChangesetMapping.AUTHOR + " in ").append(joinStringsToSet(gf.getInUsers())).append(" ");
             }
             if (gf.getNotInUsers() != null && gf.getNotInUsers().iterator().hasNext())
             {
-                whereClauseUsersSb.append("AUTHOR not in ").append(joinStringsToSet(gf.getNotInUsers())).append(" ");
+                whereClauseUsersSb.append("CHANGESET." + ChangesetMapping.AUTHOR + " not in ").append(joinStringsToSet(gf.getNotInUsers())).append(" ");
             }
         }
         StringBuilder whereClauseSb = new StringBuilder();
