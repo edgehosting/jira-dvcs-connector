@@ -17,37 +17,49 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
     @ElementBy(xpath="//button[contains(concat(' ', @class , ' '),' button-panel-submit-button ') and text()='Continue']")
     PageElement continueAddOrgButton;
 
+    @ElementBy(id = "urlGhe")
+    private PageElement urlGhe;
+    
+    @ElementBy(id = "oauthClientIdGhe")
+    private PageElement oauthClientIdGhe;
+    
+    @ElementBy(id = "oauthSecretGhe")
+    private PageElement oauthSecretGhe;
+
+    
     @Override
-    public GithubEnterpriseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
+    public GithubEnterpriseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount,
+            OAuthCredentials oAuthCredentials, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
-
         organization.clear().type(organizationAccount);
 
+        urlGhe.clear().type(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL);
+        oauthClientIdGhe.clear().type(oAuthCredentials.key);
+        oauthSecretGhe.clear().type(oAuthCredentials.secret);
+        
         setPageAsOld();
-
-        if (!autoSync) {
+        if (!autoSync)
+        {
             autoLinkNewRepos.click();
         }
 
         addOrgButton.click();
-
         // Confirm submit for GitHub Enterprise
         continueAddOrgButton.click();
-        
+
         checkAndDoGithubLogin();
-
-        String githubWebLoginRedirectUrl = authorizeGithubAppIfRequired();
-
-        if (!githubWebLoginRedirectUrl.contains("jira"))
+        String currentUrl = authorizeGithubAppIfRequired();
+        if (!currentUrl.contains("jira"))
         {
             Assert.fail("Expected was Valid OAuth login and redirect to JIRA!");
         }
 
-        if (autoSync) {
+        if (autoSync)
+        {
             JiraPageUtils.checkSyncProcessSuccess(jiraTestedProduct);
         }
 
@@ -61,11 +73,9 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
         waitFormBecomeVisible();
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
-
         organization.clear().type(url);
 
         setPageAsOld();
-
         addOrgButton.click();
 
         // Confirm submit for GitHub Enterprise
@@ -78,7 +88,7 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
     }
 
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2()
+    public BaseConfigureOrganizationsPage addOrganizationFailingOAuth()
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -86,6 +96,10 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
         organization.clear().type("jirabitbucketconnector");
         
+        urlGhe.clear().type(GithubEnterpriseOrganizationsTest.GITHUB_ENTERPRISE_URL);
+        oauthClientIdGhe.clear().type("xxx");
+        oauthSecretGhe.clear().type("yyy");
+
         setPageAsOld();
 
         addOrgButton.click();
@@ -105,7 +119,6 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
 
     private String checkAndDoGithubLogin()
     {
-
         waitWhileNewPageLaoded();
 
 // We don't need to login
@@ -130,55 +143,5 @@ public class GithubEnterpriseConfigureOrganizationsPage extends GithubConfigureO
             githubWebAuthorizeButton.click();
         }
         return jiraTestedProduct.getTester().getDriver().getCurrentUrl();
-    }
-
-    @Override
-    public GithubEnterpriseConfigureOrganizationsPage addRepoToProject(String url, boolean autoSync)
-    {
-        linkRepositoryButton.click();
-        waitFormBecomeVisible();
-
-        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
-        organization.clear().type("jirabitbucketconnector");
-        
-        setPageAsOld();
-        addOrgButton.click();
-     
-        // Confirm submit for GitHub Enterprise
-        continueAddOrgButton.click();
-        
-        checkAndDoGithubLogin();
-        String currentUrl = authorizeGithubAppIfRequired();
-        if (!currentUrl.contains("jira"))
-        {
-            Assert.fail("Expected was automatic continue to jira!");
-        }
-
-        return this;
-    }
-
-    @Override
-    public GithubEnterpriseConfigureOrganizationsPage addRepoToProjectForOrganization(String organizationString)
-    {
-        linkRepositoryButton.click();
-        waitFormBecomeVisible();
-
-        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(2));
-        organization.clear().type(organizationString);
-
-        setPageAsOld();
-        addOrgButton.click();
-
-        // Confirm submit for GitHub Enterprise
-        continueAddOrgButton.click();
-        
-        checkAndDoGithubLogin();
-        String currentUrl = authorizeGithubAppIfRequired();
-        if (!currentUrl.contains("/jira/"))
-        {
-            Assert.fail("Expected was automatic continue to jira!");
-        }
-
-        return this;
     }
 }

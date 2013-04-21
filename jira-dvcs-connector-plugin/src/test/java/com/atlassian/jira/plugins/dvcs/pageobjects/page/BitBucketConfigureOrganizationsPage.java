@@ -24,9 +24,15 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
     @ElementBy(id = "atlassian-token")
     PageElement atlassianTokenMeta;
 
+    @ElementBy(id = "oauthBbClientId")
+    private PageElement oauthBbClientId;
+    
+    @ElementBy(id = "oauthBbSecret")
+    private PageElement oauthBbSecret;
+
 
     @Override
-    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
+    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -35,6 +41,10 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         organization.clear().type(organizationAccount);
 
+        oauthBbClientId.clear().type(oAuthCredentials.key);
+        oauthBbSecret.clear().type(oAuthCredentials.secret);
+        
+        
         if (!autoSync)
         {
             autoLinkNewRepos.click();
@@ -68,7 +78,6 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         waitFormBecomeVisible();
 
         organization.clear().type(url);
-
         addOrgButton.click();
 
         TimedCondition hasText = messageBarDiv.find(By.tagName("strong")).timed().hasText("Error!");
@@ -81,7 +90,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
      * {@inheritDoc}
      */
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2()
+    public BaseConfigureOrganizationsPage addOrganizationFailingOAuth()
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();

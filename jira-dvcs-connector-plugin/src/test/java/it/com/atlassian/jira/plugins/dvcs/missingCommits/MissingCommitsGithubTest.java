@@ -7,16 +7,15 @@ import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.testng.annotations.BeforeClass;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
 import com.atlassian.plugin.util.zip.FileUnzipper;
-
-import org.testng.annotations.BeforeClass;
 
 /**
  * @author Miroslav Stencel
@@ -54,7 +53,7 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     }
 
     @Override
-    void loginToDvcsAndSetJiraOAuthCredentials()
+    OAuthCredentials loginToDvcsAndGetJiraOAuthCredentials()
     {
         jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
         jira.getPageBinder().bind(GithubLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
@@ -65,17 +64,14 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
         String oauthAppName = "testApp" + System.currentTimeMillis();
         String baseUrl = jira.getProductInstance().getBaseUrl();
         githubRegisterOAuthAppPage.registerApp(oauthAppName, baseUrl, baseUrl);
-        String clientID = githubRegisterOAuthAppPage.getClientId().getText();
-        String clientSecret = githubRegisterOAuthAppPage.getClientSecret().getText();
+        OAuthCredentials oAuthCredentials = new OAuthCredentials(githubRegisterOAuthAppPage.getClientId().getText(), githubRegisterOAuthAppPage.getClientSecret().getText());
         
      // find out app URL
         jira.getTester().gotoUrl(GithubRegisteredOAuthAppsPage.PAGE_URL);
         GithubRegisteredOAuthAppsPage registeredOAuthAppsPage = jira.getPageBinder().bind(GithubRegisteredOAuthAppsPage.class);
         registeredOAuthAppsPage.parseClientIdAndSecret(oauthAppName);
         oauthAppLink = registeredOAuthAppsPage.getOauthAppUrl();
-        
-        GithubOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(GithubOAuthConfigPage.class);
-        oauthConfigPage.setCredentials(clientID, clientSecret);
+        return oAuthCredentials;
     }
 
     @Override
