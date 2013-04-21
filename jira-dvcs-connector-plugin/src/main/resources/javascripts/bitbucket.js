@@ -809,6 +809,8 @@ function dvcsCopyOrganizationToUsername() {
 		}
 	}
 }
+
+
 //------------------------------------------------------------
 
 AJS.$(document).ready(function() {

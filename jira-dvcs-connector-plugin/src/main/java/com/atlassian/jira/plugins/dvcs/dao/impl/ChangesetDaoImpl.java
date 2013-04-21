@@ -313,7 +313,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                                 .alias(ChangesetMapping.class, "chm")
                                 .alias(IssueToChangesetMapping.class, "itchm")
                                 .join(IssueToChangesetMapping.class, "chm.ID = itchm." + IssueToChangesetMapping.CHANGESET_ID)
-                                .where(IssueToChangesetMapping.ISSUE_KEY + " = ?", issueKey)
+                                .where("itchm." + IssueToChangesetMapping.ISSUE_KEY + " = ?", issueKey)
                                 .order(ChangesetMapping.DATE));
 
                 return Arrays.asList(mappings);
