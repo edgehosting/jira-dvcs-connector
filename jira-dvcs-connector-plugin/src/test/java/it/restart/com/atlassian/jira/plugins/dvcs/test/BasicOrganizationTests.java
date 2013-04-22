@@ -8,7 +8,13 @@ public interface BasicOrganizationTests
 
     void addOrganizationWaitForSync();
 
+    void addOrganizationInvalidAccount();
+    
     void addOrganizationInvalidUrl();
 
     void addOrganizationInvalidOAuth();
+
+    void testCommitStatistics();
+
+    void testPostCommitHookAdded();
 }

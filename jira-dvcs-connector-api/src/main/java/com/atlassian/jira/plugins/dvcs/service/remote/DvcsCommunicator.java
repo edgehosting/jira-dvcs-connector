@@ -42,8 +42,6 @@ public interface DvcsCommunicator
 
 	DvcsUser getUser(Repository repository, String author);
     
-    boolean isOauthConfigured();
-
     //-----------------------------------------------------------------------
     // methods for invitation management on bitbucket
     //-----------------------------------------------------------------------

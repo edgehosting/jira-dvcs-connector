@@ -21,9 +21,9 @@ import org.testng.annotations.Test;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.elements.PageElement;
@@ -40,12 +40,11 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
     private static final String REPO_ADMIN_PASSWORD = PasswordUtil.getPassword("jirabitbucketconnector");
     private static final String USER_AGENT = "DVCS Connector Test/X.x";
 
-    private static String clientID;
-    private static String clientSecret;
-    private static String oauthAppLink;
+    private String oauthAppLink;
+    private OAuthCredentials oAuthCredentials;
 
     @BeforeClass
-    public static void registerAppToGithub()
+    public void registerAppToGithub()
     {
         jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
         GithubLoginPage ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
@@ -57,8 +56,7 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
         String oauthAppName = "testApp" + System.currentTimeMillis();
         String baseUrl = jira.getProductInstance().getBaseUrl();
         registerAppPage.registerApp(oauthAppName, baseUrl, baseUrl);
-        clientID = registerAppPage.getClientId().getText();
-        clientSecret = registerAppPage.getClientSecret().getText();
+        oAuthCredentials = new OAuthCredentials(registerAppPage.getClientId().getText(), registerAppPage.getClientSecret().getText());
 
         // find out app URL
         jira.getTester().gotoUrl(GithubRegisteredOAuthAppsPage.PAGE_URL);
@@ -69,16 +67,12 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
         ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
         ghLoginPage.doLogout();
 
-        jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(GithubOAuthConfigPage.class);
-        GithubOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(GithubOAuthConfigPage.class);
-        oauthConfigPage.setCredentials(clientID, clientSecret);
-
         // logout jira
         jira.getTester().getDriver().manage().deleteAllCookies();
     }
 
     @AfterClass
-    public static void deregisterAppToGithub()
+    public void deregisterAppToGithub()
     {
        /* jira.getTester().gotoUrl(GithubLoginPage.LOGOUT_ACTION_URL);
 
@@ -125,17 +119,10 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
     }
 
     @Test
-    public void addOrganization()
-    {
-        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, false);
-        assertThat(configureOrganizations.getOrganizations()).hasSize(1);
-    }
-
-    @Test
     public void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount()
     {
         // we should see 'private-dvcs-connector-test' repo
-        configureOrganizations.addOrganizationSuccessfully("atlassian", false);
+        configureOrganizations.addOrganizationSuccessfully("atlassian", oAuthCredentials, false);
 
         assertThat(configureOrganizations.containsRepositoryWithName("private-dvcs-connector-test")).isTrue();
     }
@@ -151,12 +138,12 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
     }
 
     @Test
-    public void testPostCommitHookAdded() throws Exception
+    public void testPostCommitHookAdded()
     {
         String baseUrl = jira.getProductInstance().getBaseUrl();
 
         // add repository
-        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, oAuthCredentials, true);
 
         // check that it created postcommit hook
         String githubServiceConfigUrlPath = baseUrl + "/rest/bitbucket/1.0/repository/";
@@ -176,7 +163,7 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
     @Test
     public void addRepoCommitsAppearOnIssues()
     {
-        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, oAuthCredentials, true);
 
         assertThat(getCommitsForIssue("QA-2", 6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -186,7 +173,7 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
     public void testCommitStatistics()
     {
         configureOrganizations.deleteAllOrganizations();
-        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, oAuthCredentials, true);
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3", 1); // throws AssertionError with other than 1 message
@@ -210,20 +197,15 @@ public class GithubOrganizationsTest extends BaseOrganizationTest<GithubConfigur
     @Test
     public void addPrivateRepoWithInvalidOAuth()
     {
-        goToGithubOAuthConfigPage().setCredentials("xxx", "yyy");
         goToConfigPage();
-        configureOrganizations.addRepoToProjectFailingStep2();
-        goToGithubOAuthConfigPage().setCredentials(clientID, clientSecret);
+        configureOrganizations.addOrganizationFailingOAuth();
     }
 
     @Test
     public void addPrivateRepositoryWithValidOAuth()
     {
         GithubConfigureOrganizationsPage githubConfigPage = (GithubConfigureOrganizationsPage) goToConfigPage();
-
-        GithubConfigureOrganizationsPage githubConfigureOrganizationsPage = githubConfigPage
-                .addRepoToProjectForOrganization("dusanhornik");
-
+        GithubConfigureOrganizationsPage githubConfigureOrganizationsPage = githubConfigPage.addOrganizationSuccessfully("dusanhornik", oAuthCredentials, true);
         assertThat(githubConfigureOrganizationsPage.getNumberOfVisibleRepositories()).isEqualTo(4);
     }
 

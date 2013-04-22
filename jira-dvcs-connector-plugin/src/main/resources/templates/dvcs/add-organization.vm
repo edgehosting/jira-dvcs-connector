@@ -9,10 +9,6 @@
     <script type="text/javascript">
         
         var BASE_URL = "${baseurl}";
-        var GH_REQUIRES_AUTH = "$!action.isGithubOauthRequired()";
-        var BB_REQUIRES_AUTH = "$!action.isBitbucketOauthRequired()";
-        var GHE_REQUIRES_AUTH = "$!action.isGithubEnterpriseOauthRequired()";
-        
 
         function init_repositories()
         {
@@ -30,6 +26,24 @@
 		jira.dvcs.connector.plugin.onDemandLicense = $action.isOnDemandLicense();
 		jira.dvcs.connector.plugin.atlToken = "$atl_token";
 				
+        #set($oAuthStore = $action.getOAuthStore())
+        
+        jira.dvcs.connector.plugin.oAuthStore = {
+            bitbucket : {
+                key: '$!oAuthStore.getClientId("bitbucket")',
+                secret: '$!oAuthStore.getSecret("bitbucket")'
+            },
+            github : {
+                key: '$!oAuthStore.getClientId("github")',
+                secret: '$!oAuthStore.getSecret("github")'
+            },
+            githube : {
+                key: '$!oAuthStore.getClientId("githube")',
+                secret: '$!oAuthStore.getSecret("githube")',
+                url: '$!oAuthStore.getUrl("githube")'
+            }
+         }       
+                
      </script>
 
     <meta name="admin.active.section" content="admin_plugins_menu/source_control"/>
