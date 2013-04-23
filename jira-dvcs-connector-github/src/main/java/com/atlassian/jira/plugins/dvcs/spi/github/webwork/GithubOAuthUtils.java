@@ -20,8 +20,8 @@ public class GithubOAuthUtils
 {
     private final Logger log = LoggerFactory.getLogger(GithubOAuthUtils.class);
     private final String baseUrl;
-    private String clientId;
-    private String secret;
+    private final String clientId;
+    private final String secret;
 
     public GithubOAuthUtils(String baseUrl, String clientId, String secret)
     {
@@ -133,7 +133,6 @@ public class GithubOAuthUtils
         return result.replaceAll("access_token=(.*)&token_type.*", "$1");
     }
 
-
     private String githubUrl(String githubHostUrl)
     {
         return StringUtils.isNotBlank(githubHostUrl) ? githubHostUrl : "https://github.com";
@@ -141,22 +140,11 @@ public class GithubOAuthUtils
 
     public String requestAccessToken(String code)
     {
-
         return requestAccessToken(null, code);
     }
 
     public static String encode(String url)
     {
         return CustomStringUtils.encode(url);
-    }
-
-    public void setClientId(String clientId)
-    {
-        this.clientId = clientId;
-    }
-
-    public void setSecret(String secret)
-    {
-        this.secret = secret;
     }
 }

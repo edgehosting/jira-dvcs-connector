@@ -10,7 +10,6 @@ import org.openqa.selenium.By;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketOrganization;
-import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
@@ -78,7 +77,6 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         return list;
     }
 
-
     public BaseConfigureOrganizationsPage deleteAllOrganizations()
     {
         List<BitBucketOrganization> orgs;
@@ -113,9 +111,9 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     public abstract BaseConfigureOrganizationsPage addOrganizationFailingStep1(String url);
 
-    public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingStep2();
+    public abstract BaseConfigureOrganizationsPage addOrganizationFailingOAuth();
 
-    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autosync);
+    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autosync);
 
 
     public void setJiraTestedProduct(JiraTestedProduct jiraTestedProduct)

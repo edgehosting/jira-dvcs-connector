@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
-import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
@@ -65,8 +63,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
     private final BitbucketClientRemoteFactory bitbucketClientRemoteFactory;
 
     private final BranchService branchService;
-    
-    private final OAuthStore oAuthStore;
 
     /**
      * The Constructor.
@@ -77,11 +73,10 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * @param bitbucketClientRemoteFactory
      */
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
-            PluginAccessor pluginAccessor, OAuthStore oAuthStore,
-            BitbucketClientRemoteFactory bitbucketClientRemoteFactory, BranchService branchManager)
-    {
+            PluginAccessor pluginAccessor, BitbucketClientRemoteFactory bitbucketClientRemoteFactory,
+            BranchService branchManager)
+   {
         this.bitbucketLinker = bitbucketLinker;
-        this.oAuthStore = oAuthStore;
         this.bitbucketClientRemoteFactory = bitbucketClientRemoteFactory;
         this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
         this.branchService = branchManager;
@@ -96,12 +91,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
         return BITBUCKET;
     }
 
-    @Override
-    public boolean isOauthConfigured()
-    {
-        return StringUtils.isNotBlank(oAuthStore.getClientId(Host.BITBUCKET.id)) && StringUtils.isNotBlank(oAuthStore.getSecret(Host.BITBUCKET.id));
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -114,10 +103,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
             // just to call the rest
             remoteClient.getAccountRest().getUser(accountName);
-            boolean requiresOauth = StringUtils.isBlank(oAuthStore.getClientId(Host.BITBUCKET.id))
-                    || StringUtils.isBlank(oAuthStore.getSecret(Host.BITBUCKET.id));
-
-            return new AccountInfo(BitbucketCommunicator.BITBUCKET, requiresOauth);
+            return new AccountInfo(BitbucketCommunicator.BITBUCKET);
         } catch (BitbucketRequestException e)
         {
             return null;

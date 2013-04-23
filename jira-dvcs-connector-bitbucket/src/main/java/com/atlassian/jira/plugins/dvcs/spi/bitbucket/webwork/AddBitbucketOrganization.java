@@ -30,8 +30,6 @@ import com.google.common.collect.Sets;
  */
 public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 {
-    private static final long serialVersionUID = 4366205447417138381L;
-
     private final static Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
 
     public static final String DEFAULT_INVITATION_GROUP = "developers";
@@ -43,7 +41,6 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     private String oauthBbClientId;
     private String oauthBbSecret;
-    private String oauthBbRequired;
 
     private final OrganizationService organizationService;
 
@@ -66,15 +63,10 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-
-        if (isOAuthConfigurationRequired())
-        {
-            configureOAuth();
-        }
+        storeLatestOAuth();
 
         // then continue
         return redirectUserToBitbucket();
-
     }
 
     private String redirectUserToBitbucket()
@@ -120,21 +112,14 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         return sb.build();
     }
 
-    private void configureOAuth()
+    private void storeLatestOAuth()
     {
         oAuthStore.store(Host.BITBUCKET, oauthBbClientId, oauthBbSecret);
     }
 
-    private boolean isOAuthConfigurationRequired()
-    {
-        return StringUtils.isNotBlank(oauthBbRequired);
-    }
-
     public String doFinish()
     {
-
         // now get the access token
-
         Verifier verifier = new Verifier(request.getParameter("oauth_verifier"));
         Token requestToken = (Token) request.getSession().getAttribute("requestToken");
         request.getSession().removeAttribute("requestToken");
@@ -243,15 +228,6 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         this.adminUsername = adminUsername;
     }
 
-    public String getOauthBbRequired()
-    {
-        return oauthBbRequired;
-    }
-
-    public void setOauthBbRequired(String oauthBbRequired)
-    {
-        this.oauthBbRequired = oauthBbRequired;
-    }
 
     public String getOauthBbClientId()
     {

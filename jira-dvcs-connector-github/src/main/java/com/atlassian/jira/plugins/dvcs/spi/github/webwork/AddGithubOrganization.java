@@ -28,63 +28,50 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
     private String oauthClientId;
     private String oauthSecret;
-    private String oauthRequired;
 
     // sent by GH on the way back
     private String code;
 
     private final OrganizationService organizationService;
-    private final GithubOAuthUtils githubOAuthUtils;
-
     private final OAuthStore oAuthStore;
-    
+    private final ApplicationProperties applicationProperties;
+
 
     public AddGithubOrganization(OrganizationService organizationService,
             OAuthStore oAuthStore, ApplicationProperties applicationProperties)
     {
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
-        this.githubOAuthUtils = new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB), oAuthStore.getSecret(GITHUB));
+        this.applicationProperties = applicationProperties;
     }
 
     @Override
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        if (isOAuthConfigurationRequired())
-        {
-            configureOAuth();
-        }
-        
+        oAuthStore.store(Host.GITHUB, oauthClientId, oauthSecret);
+
         // then continue
         return redirectUserToGithub();
-
-    }
-
-    private void configureOAuth()
-    {
-        oAuthStore.store(Host.GITHUB, oauthClientId, oauthSecret);
     }
 
     private String redirectUserToGithub()
     {
-        String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubOrganization",
+        String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddGithubOrganization",
                 url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
         return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
     }
 
+    private GithubOAuthUtils getGithubOAuthUtils()
+    {
+        return new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB), oAuthStore.getSecret(GITHUB));
+    }
+
     @Override
     protected void doValidation()
     {
-        if (StringUtils.isNotBlank(oauthRequired))
-        {
-            if (StringUtils.isBlank(oauthClientId) || StringUtils.isBlank(oauthSecret))
-            {
-                addErrorMessage("Missing credentials.");
-            }
-        }
-        
+
         if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
         {
             addErrorMessage("Please provide both url and organization parameters.");
@@ -96,17 +83,12 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             addErrorMessage("Invalid user/team account.");
         }
     }
-    
-    protected boolean isOAuthConfigurationRequired()
-    {
-        return StringUtils.isNotBlank(oauthRequired);
-    }
 
     public String doFinish()
     {
         try
         {
-            return doAddOrganization(githubOAuthUtils.requestAccessToken(code));
+            return doAddOrganization(getGithubOAuthUtils().requestAccessToken(code));
         } catch (SourceControlException sce)
         {
             addErrorMessage(sce.getMessage());
@@ -116,7 +98,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
                 log.warn("Caused by: " + sce.getCause().getMessage());
             }
             return INPUT;
-        
+
         } catch (Exception e) {
             addErrorMessage("Error obtain access token.");
             return INPUT;
@@ -132,11 +114,12 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             newOrganization.setHostUrl(url);
             newOrganization.setDvcsType("github");
             newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
-            newOrganization.setCredential(new Credential(null, null, accessToken));
+            newOrganization.setCredential(new Credential(oAuthStore.getClientId(Host.GITHUB.id),
+                    oAuthStore.getSecret(Host.GITHUB.id), accessToken));
             newOrganization.setSmartcommitsOnNewRepos(hadAutolinkingChecked());
-            
+
             organizationService.save(newOrganization);
-            
+
         } catch (SourceControlException e)
         {
             addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
@@ -201,15 +184,4 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     {
         this.oauthSecret = oauthSecret;
     }
-
-    public String getOauthRequired()
-    {
-        return oauthRequired;
-    }
-
-    public void setOauthRequired(String oauthRequired)
-    {
-        this.oauthRequired = oauthRequired;
-    }
-
 }

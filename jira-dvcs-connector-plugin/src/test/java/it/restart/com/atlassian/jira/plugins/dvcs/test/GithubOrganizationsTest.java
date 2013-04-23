@@ -1,7 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import it.restart.com.atlassian.jira.plugins.dvcs.JiraGithubOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
@@ -10,19 +9,30 @@ import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 
+import java.util.List;
+
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.pageobjects.TestedProductFactory;
+import com.atlassian.pageobjects.elements.PageElement;
 
 public class GithubOrganizationsTest implements BasicOrganizationTests, MissingCommitsTests
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
     private OAuth oAuth;
+
+    private OAuthCredentials getOAuthCredentials()
+    {
+        return new OAuthCredentials(oAuth.key, oAuth.secret);
+    }
     
     @BeforeClass
     public void beforeClass()
@@ -33,7 +43,6 @@ public class GithubOrganizationsTest implements BasicOrganizationTests, MissingC
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogin();
         // setup up OAuth from github
         oAuth = new MagicVisitor(jira).visit(GithubOAuthPage.class).addConsumer(jira.getProductInstance().getBaseUrl());
-        jira.visit(JiraGithubOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
     }
 
     @AfterClass
@@ -60,51 +69,97 @@ public class GithubOrganizationsTest implements BasicOrganizationTests, MissingC
     public void addOrganization()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.GITHUB, ACCOUNT_NAME, false);
+        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), false);
         
         assertThat(organization).isNotNull(); 
         assertThat(organization.getRepositories().size()).isEqualTo(4);  
     }
 
-    
     @Override
     @Test
     public void addOrganizationWaitForSync()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.GITHUB, ACCOUNT_NAME, true);
+        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.GITHUB, ACCOUNT_NAME, getOAuthCredentials(),true);
         
         assertThat(organization).isNotNull(); 
         assertThat(organization.getRepositories().size()).isEqualTo(4);
         assertThat(organization.getRepositories().get(3).getMessage()).isEqualTo("Mon Feb 06 2012");
-
     }
     
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://privatebitbucket.org\\] is incorrect or the server is not responding.*")
+    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
     public void addOrganizationInvalidUrl()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(RepositoriesPageController.GITHUB, "https://privatebitbucket.org/someaccount", false);
+        rpc.addOrganization(RepositoriesPageController.GITHUB, "https://nonexisting.org/someaccount", getOAuthCredentials(), false);
     }
+    
+    @Override
+    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
+    public void addOrganizationInvalidAccount()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(RepositoriesPageController.GITHUB, "I_AM_SURE_THIS_ACCOUNT_IS_INVALID", getOAuthCredentials(), false);
+    }
+
 
     @Override
     @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
     public void addOrganizationInvalidOAuth()
     {
-        try
-        {
-            jira.visit(JiraGithubOAuthPage.class).setCredentials("xxx","yyy");
-            RepositoriesPageController rpc = new RepositoriesPageController(jira);
-            OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.GITHUB, ACCOUNT_NAME, true);
-
-            assertThat(organization).isNotNull(); 
-            assertThat(organization.getRepositories().size()).isEqualTo(4);  
-        } finally
-        {
-            jira.visit(JiraGithubOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
-        }
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.GITHUB, ACCOUNT_NAME,
+                new OAuthCredentials("xxx", "yyy"), true);
+        
+        assertThat(organization).isNotNull(); 
+        assertThat(organization.getRepositories().size()).isEqualTo(4);  
     }
     
+    @Test
+    @Override
+    public void testPostCommitHookAdded()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(RepositoriesPageController.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), true);
+
+        // check that it created postcommit hook
+        String githubServiceConfigUrlPath = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repository/";
+        String hooksURL = "https://github.com/jirabitbucketconnector/test-project/settings/hooks";
+        jira.getTester().gotoUrl(hooksURL);
+        String hooksPage = jira.getTester().getDriver().getPageSource();
+        assertThat(hooksPage).contains(githubServiceConfigUrlPath);
+        // delete repository
+        new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
+        // check that postcommit hook is removed
+        jira.getTester().gotoUrl(hooksURL);
+        hooksPage = jira.getTester().getDriver().getPageSource();
+        assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
+    
+    }
+
+    @Override
+    public void testCommitStatistics()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(RepositoriesPageController.GITHUB, "https://privatebitbucket.org/someaccount", getOAuthCredentials(), false);
+
+        // QA-2
+        List<BitBucketCommitEntry> commitMessages = new JiraViewIssuePageController(jira, "QA-3").getCommits(1); // throws AssertionError with other than 1 message
+
+        BitBucketCommitEntry commitMessage = commitMessages.get(0);
+        List<PageElement> statistics = commitMessage.getStatistics();
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+1");
+        assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
+
+        // QA-4
+        commitMessages = new JiraViewIssuePageController(jira, "QA-4").getCommits(1); // throws AssertionError with other than 1 message
+
+        commitMessage = commitMessages.get(0);
+        statistics = commitMessage.getStatistics();
+        assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
+    }
 
 }

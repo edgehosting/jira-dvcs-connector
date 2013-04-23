@@ -1,23 +1,21 @@
 package it.com.atlassian.jira.plugins.dvcs.streams;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest.AnotherLoginPage;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.testng.annotations.Test;
 
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.pageobjects.pages.DashboardPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.DashboardActivityStreamsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.page.LoginPage;
-import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.jira.pageobjects.pages.DashboardPage;
-
-import org.testng.annotations.Test;
-
-import static org.fest.assertions.api.Assertions.*;
 
 /**
  *
@@ -38,11 +36,11 @@ public class ActivityStreamsTest
         jira.getPageBinder().navigateToAndBind(AnotherLoginPage.class).loginAsSysAdmin(DashboardPage.class);
     }
 
-    private void addOrganization()
+    private void addOrganization(OAuthCredentials oAuthCredentials)
     {
         BitBucketConfigureOrganizationsPage configureRepos = goToConfigPage();
         configureRepos.deleteAllOrganizations();
-        configureRepos.addOrganizationSuccessfully(BB_TEST_ORGANIZATION, true);
+        configureRepos.addOrganizationSuccessfully(BB_TEST_ORGANIZATION, oAuthCredentials, true);
     }
 
 
@@ -91,7 +89,7 @@ public class ActivityStreamsTest
         page.setJira(jira);
     }
 
-    private void loginToBitbucketAndSetJiraOAuthCredentials()
+    private OAuthCredentials loginToBitbucketAndSetJiraOAuthCredentials()
     {
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
@@ -99,11 +97,7 @@ public class ActivityStreamsTest
         jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
         bitbucketIntegratedApplicationsPage = jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
 
-        BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
-                bitbucketIntegratedApplicationsPage.addConsumer();
-
-        BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
-        oauthConfigPage.setCredentials(oauthCredentials.oauthKey, oauthCredentials.oauthSecret);
+        return bitbucketIntegratedApplicationsPage.addConsumer();
     }
     
     private void removeOAuthConsumer()
@@ -116,8 +110,8 @@ public class ActivityStreamsTest
     public void testActivityPresentedForQA5()
     {
         loginToJira();
-        loginToBitbucketAndSetJiraOAuthCredentials();
-        addOrganization();
+        OAuthCredentials oAuthCredentials = loginToBitbucketAndSetJiraOAuthCredentials();
+        addOrganization(oAuthCredentials);
         goToDashboardPage();
 
         // Activity streams gadget expected at dashboard page!
@@ -159,9 +153,9 @@ public class ActivityStreamsTest
     public void testAnonymousAccess()
     {
         loginToJira();
-        loginToBitbucketAndSetJiraOAuthCredentials();
+        OAuthCredentials oAuthCredentials = loginToBitbucketAndSetJiraOAuthCredentials();
         setupAnonymousAccessAllowed();
-        addOrganization();
+        addOrganization(oAuthCredentials);
         goToDashboardPage();
 
         // Activity streams gadget expected at dashboard page!
