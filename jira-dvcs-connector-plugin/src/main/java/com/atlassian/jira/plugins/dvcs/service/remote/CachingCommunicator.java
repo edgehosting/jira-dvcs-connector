@@ -188,9 +188,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
     
     @Override
-    public Iterable<Changeset> getChangesets(Repository repository)
+    public Iterable<Changeset> getChangesets(Repository repository, boolean softSync)
     {
-        return delegate.getChangesets(repository);
+        return delegate.getChangesets(repository, softSync);
     }
 
     @Override

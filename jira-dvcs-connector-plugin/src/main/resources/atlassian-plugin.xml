@@ -59,6 +59,7 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v2.To_04_ActiveObjectsV2Migrator</upgradeTask>
@@ -236,6 +237,12 @@
                class="com.atlassian.jira.plugins.dvcs.service.ChangesetCacheImpl">
         <description>changesetCache</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetCache</interface>
+    </component>
+    
+    <component key="branchService" name="branchService"
+               class="com.atlassian.jira.plugins.dvcs.service.BranchServiceImpl">
+        <description>branchService</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.BranchService</interface>
     </component>
 
     <component key="webFragmentRenderer" name="webFragmentRenderer"

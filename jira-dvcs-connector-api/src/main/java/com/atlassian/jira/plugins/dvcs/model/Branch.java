@@ -1,11 +1,11 @@
-package com.atlassian.jira.plugins.dvcs.service.remote;
+package com.atlassian.jira.plugins.dvcs.model;
 
-public class BranchTip
+public class Branch
 {
     private String branchName;
     private String node;
 
-    public BranchTip(String branchName, String node)
+    public Branch(String branchName, String node)
     {
         this.branchName = branchName;
         this.node = node;

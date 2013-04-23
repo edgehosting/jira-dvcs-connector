@@ -21,7 +21,7 @@ public interface ChangesetService
 
     void removeAllInRepository(int repositoryId);
 
-    Iterable<Changeset> getChangesetsFromDvcs(Repository repository);
+    Iterable<Changeset> getChangesetsFromDvcs(Repository repository, boolean softSync);
 
     /**
      * returns all changesets for given issue

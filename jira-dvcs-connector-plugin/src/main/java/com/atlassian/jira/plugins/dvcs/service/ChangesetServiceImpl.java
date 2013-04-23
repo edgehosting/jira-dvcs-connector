@@ -47,10 +47,10 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
-    public Iterable<Changeset> getChangesetsFromDvcs(Repository repository)
+    public Iterable<Changeset> getChangesetsFromDvcs(Repository repository, boolean softSync)
     {
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-        return communicator.getChangesets(repository);
+        return communicator.getChangesets(repository, softSync);
     }
 
     @Override

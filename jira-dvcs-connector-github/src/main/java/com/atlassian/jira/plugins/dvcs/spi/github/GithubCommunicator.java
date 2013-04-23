@@ -41,13 +41,13 @@ import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
@@ -253,14 +253,14 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(final Repository repository)
+    public Iterable<Changeset> getChangesets(final Repository repository, boolean softSync)
     {
         return new Iterable<Changeset>()
         {
             @Override
             public Iterator<Changeset> iterator()
             {
-                List<BranchTip> branches = getBranches(repository);
+                List<Branch> branches = getBranches(repository);
                 return new BranchedChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
             }
         };
@@ -354,11 +354,11 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
-    private List<BranchTip> getBranches(Repository repository)
+    private List<Branch> getBranches(Repository repository)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
 
-        List<BranchTip> branches = new ArrayList<BranchTip>();
+        List<Branch> branches = new ArrayList<Branch>();
         try
         {
             final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(
@@ -367,7 +367,7 @@ public class GithubCommunicator implements DvcsCommunicator
 
             for (RepositoryBranch ghBranch : ghBranches)
             {
-                BranchTip branchTip = new BranchTip(ghBranch.getName(), ghBranch.getCommit().getSha());
+                Branch branchTip = new Branch(ghBranch.getName(), ghBranch.getCommit().getSha());
                 if ("master".equalsIgnoreCase(ghBranch.getName()))
                 {
                     branches.add(0, branchTip);

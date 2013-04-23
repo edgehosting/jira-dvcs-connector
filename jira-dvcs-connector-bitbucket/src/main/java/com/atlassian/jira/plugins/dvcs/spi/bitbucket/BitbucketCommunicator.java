@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -17,14 +16,13 @@ import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
-import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
@@ -33,6 +31,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceEnvelope;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceField;
@@ -41,10 +40,13 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.NewChangesetIterableAdapter;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 
 /**
  * The Class BitbucketCommunicator.
@@ -62,8 +64,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
     private final String pluginVersion;
     private final BitbucketClientRemoteFactory bitbucketClientRemoteFactory;
 
-    private final ChangesetCache changesetCache;
-
+    private final BranchService branchService;
+    
     private final OAuthStore oAuthStore;
 
     /**
@@ -76,13 +78,13 @@ public class BitbucketCommunicator implements DvcsCommunicator
      */
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
             PluginAccessor pluginAccessor, OAuthStore oAuthStore,
-            BitbucketClientRemoteFactory bitbucketClientRemoteFactory, ChangesetCache changesetCache)
+            BitbucketClientRemoteFactory bitbucketClientRemoteFactory, BranchService branchManager)
     {
         this.bitbucketLinker = bitbucketLinker;
         this.oAuthStore = oAuthStore;
         this.bitbucketClientRemoteFactory = bitbucketClientRemoteFactory;
-        this.changesetCache = changesetCache;
         this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
+        this.branchService = branchManager;
     }
 
     /**
@@ -193,24 +195,51 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Iterable<Changeset> getChangesets(final Repository repository)
+    public Iterable<Changeset> getChangesets(final Repository repository, boolean softSync)
     {
-        return new Iterable<Changeset>()
+        try
         {
-            @Override
-            public Iterator<Changeset> iterator()
+            List<Branch> branches = getBranches(repository);
+            List<String> excludeNodes = null;
+            if (softSync)
             {
-                List<BranchTip> branches = getBranches(repository);
-                return new BranchedChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, branches);
+                excludeNodes = loadBranchTips(repository);
             }
-
-        };
+            BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
+            Iterable<BitbucketNewChangeset> bitbucketChangesets =
+                    remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
+                                                                   repository.getSlug(),
+                                                                   excludeNodes, 15);
+            
+            branchService.saveBranches(branches);
+            return new NewChangesetIterableAdapter(repository, bitbucketChangesets);
+        }
+        catch (BitbucketRequestException e)
+        {
+            log.debug(e.getMessage(), e);
+            throw new SourceControlException("Could not get result", e);
+        }
     }
 
-    private List<BranchTip> getBranches(Repository repository)
+    private List<String> loadBranchTips(Repository repository)
     {
-        List<BranchTip> branchTips = new ArrayList<BranchTip>();
+        return Lists.transform(branchService.getListOfBranches(repository.getId()), new Function<Branch, String>()
+        {
+            @Override
+            public String apply(Branch input)
+            {
+                return input.getNode();
+            }
+        });
+    }
+
+    private List<Branch> getBranches(Repository repository)
+    {
+        List<Branch> branchTips = new ArrayList<Branch>();
         BitbucketBranchesAndTags branchesAndTags = retrieveBranchesAndTags(repository);
 
             List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
@@ -222,17 +251,17 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     // make sure "master" branch is first in the list
                     if ("master".equals(bitbucketBranch.getName()))
                     {
-                        branchTips.add(0, new BranchTip(bitbucketBranch.getName(), head));
+                        branchTips.add(0, new Branch(bitbucketBranch.getName(), head));
                     } else
                     {
-                        branchTips.add(new BranchTip(bitbucketBranch.getName(), head));
+                        branchTips.add(new Branch(bitbucketBranch.getName(), head));
                     }
                 }
             }
 
         // Bitbucket returns raw_nodes for each branch, but changesetiterator works
         // with nodes. We need to use only first 12 characters from the node
-        for (BranchTip branchTip : branchTips)
+        for (Branch branchTip : branchTips)
         {
             String rawNode = branchTip.getNode();
             if (StringUtils.length(rawNode)>12)

@@ -84,31 +84,45 @@ public class ClientUtils
 
     private static final class GsonDateTypeAdapter implements JsonDeserializer<Date>
     {
-
-        private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-        {
-            {
-                setTimeZone(TimeZone.getTimeZone("Zulu"));
-            }
+        private final DateFormat[] dateFormats = new DateFormat[] { 
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                {
+                    {
+                        setTimeZone(TimeZone.getTimeZone("Zulu"));
+                    }
+                },
+                new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+                {
+                    {
+                        setTimeZone(TimeZone.getTimeZone("Zulu"));
+                    }
+                }
         };
 
         @Override
-        public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException
+        public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
         {
             String dateString = json.getAsString();
-            
+
             // we need to synchronize SimpleDateFormat as it is not thread-safe
             // we could also use ThreadLocal to improve performance here
-            try
+            RuntimeException exception = null;
+            for (DateFormat dateFormat : dateFormats)
             {
-                synchronized (dateFormat)
+                try
                 {
-                    return dateFormat.parse(dateString);
+                    synchronized (dateFormat)
+                    {
+                        return dateFormat.parse(dateString);
+                    }
+
+                } catch (ParseException e)
+                {
+                    exception = new JsonParseException("Not parseable datetime string: '" + dateString + "'");
                 }
-            } catch (ParseException e) {
-                throw new JsonParseException("Not parseable datetime string: '" + dateString + "'");
             }
+
+            throw exception;
         }
     }
 }

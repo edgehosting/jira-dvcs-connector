@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
@@ -23,14 +24,14 @@ import com.atlassian.jira.plugins.dvcs.util.Retryer;
 public class BranchedChangesetIterator implements Iterator<Changeset>
 {
     private ChangesetIterator changesetIterator;
-    private final ListIterator<BranchTip> branchesIterator;
+    private final ListIterator<Branch> branchesIterator;
     private final ChangesetCache changesetCache;
     private final Repository repository;
     private final DvcsCommunicator dvcsCommunicator;
 
 
     public BranchedChangesetIterator(ChangesetCache changesetCache, DvcsCommunicator dvcsCommunicator,
-            					   Repository repository, List<BranchTip> branches)
+            					   Repository repository, List<Branch> branches)
     {
         this.changesetCache = changesetCache;
         this.dvcsCommunicator = dvcsCommunicator;
@@ -48,7 +49,7 @@ public class BranchedChangesetIterator implements Iterator<Changeset>
         
         if (branchesIterator.hasNext())
         {
-            BranchTip nextBranch = branchesIterator.next();
+            Branch nextBranch = branchesIterator.next();
             changesetIterator = new ChangesetIterator(dvcsCommunicator, repository, nextBranch, changesetCache);
             return hasNext();
         }
@@ -85,7 +86,7 @@ class ChangesetIterator implements Iterator<Changeset>
     private final ChangesetCache changesetCache;
     private static final Logger log = LoggerFactory.getLogger(ChangesetIterator.class);
 
-    public ChangesetIterator(DvcsCommunicator dvcsCommunicator, Repository repository, BranchTip branchTip,
+    public ChangesetIterator(DvcsCommunicator dvcsCommunicator, Repository repository, Branch branchTip,
             ChangesetCache changesetCache)
     {
         this.dvcsCommunicator = dvcsCommunicator;

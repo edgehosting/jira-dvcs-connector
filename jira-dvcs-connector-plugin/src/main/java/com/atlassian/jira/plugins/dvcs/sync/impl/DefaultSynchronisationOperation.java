@@ -57,7 +57,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         int changesetCount = 0;
         int jiraCount = 0;
 
-        Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository);
+        Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository, softSync);
 
         Set<String> foundProjectKeys = new HashSet<String>();
 

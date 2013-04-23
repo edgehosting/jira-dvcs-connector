@@ -26,7 +26,7 @@ public interface DvcsCommunicator
     
     Changeset getDetailChangeset(Repository repository, Changeset changeset);
 
-    Iterable<Changeset> getChangesets(Repository repository);
+    Iterable<Changeset> getChangesets(Repository repository, boolean softSync);
 
     void setupPostcommitHook(Repository repository, String postCommitUrl);
 

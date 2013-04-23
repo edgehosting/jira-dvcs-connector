@@ -67,7 +67,7 @@ public final class TestDefaultSynchronizer
     @Test
     public void softSynchronization_ShouldSaveOneChangesetWithIssueKey() throws InterruptedException
     {
-        when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(
+        when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(true))).thenReturn(
                 Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
         SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
@@ -88,7 +88,7 @@ public final class TestDefaultSynchronizer
     @Test
     public void gettingDiffsOnlyForChangesetsWithIssueKeys() throws InterruptedException
     {
-        when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(
+        when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(true))).thenReturn(
                 Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
         when(changesetServiceMock.getDetailChangesetFromDvcs(eq(repositoryMock), any(Changeset.class))).then(
