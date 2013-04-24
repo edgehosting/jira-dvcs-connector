@@ -54,10 +54,10 @@ public class To_11_SplitUpChangesetsRepositoryIssueKeyAndProjectKeyInformationsM
     public void upgrade(ModelVersion currentVersion, final ActiveObjects ao)
     {
         logger.debug("upgrade [ " + getModelVersion() + " ]");
-        
+
         ao.migrate(ChangesetMapping.class, IssueToChangesetMapping.class, RepositoryToChangesetMapping.class);
 
-        Query query = Query.select().order(ChangesetMapping.RAW_NODE + ", \"ID\" ASC ");
+        Query query = Query.select().order(ChangesetMapping.RAW_NODE + ", \"" + ChangesetMapping.NODE + "\", \"ID\" ASC ");
         ao.stream(ChangesetMapping.class, query, new EntityStreamCallback<ChangesetMapping, Integer>()
         {
 
@@ -75,9 +75,18 @@ public class To_11_SplitUpChangesetsRepositoryIssueKeyAndProjectKeyInformationsM
                         ChangesetMapping current = ao.get(ChangesetMapping.class, currentEmpty.getID());
                         ChangesetMapping uniqueChangeset = uniqueChangesetId != null ? ao.get(ChangesetMapping.class, uniqueChangesetId)
                                 : null;
+                        
+
+                        // skip it - it was already proceed
+                        if (StringUtils.isBlank(current.getProjectKey()) || StringUtils.isBlank(current.getIssueKey()))
+                        {
+                            return null;
+                        }
 
                         // false if current changeset is consider to be unique, otherwise it is duplicate
-                        boolean isDuplicate = uniqueChangeset != null && uniqueChangeset.getRawNode().equals(current.getRawNode());
+                        boolean isDuplicate = uniqueChangeset != null
+                                && (uniqueChangeset.getRawNode() != null ? uniqueChangeset.getRawNode().equals(current.getRawNode())
+                                        : uniqueChangeset.getNode().equals(current.getNode()));
 
                         // if it is unique changeset - it updates cursor for current valid unique changeset
                         if (!isDuplicate)
@@ -86,24 +95,22 @@ public class To_11_SplitUpChangesetsRepositoryIssueKeyAndProjectKeyInformationsM
                             uniqueChangeset = ao.get(ChangesetMapping.class, uniqueChangesetId);
                         }
 
-                        // skip it - it was already proceed
-                        if (StringUtils.isBlank(current.getProjectKey()) || StringUtils.isBlank(current.getIssueKey()))
+                        // skip non-existing issues
+                        if (!"NON_EXISTING-0".equals(current.getProjectKey()))
                         {
-                            return null;
+                            // project key and issue key relations are added on unique changeset
+                            ao.create(IssueToChangesetMapping.class, //
+                                    new DBParam(IssueToChangesetMapping.CHANGESET_ID, uniqueChangeset), // foreign key to unique
+                                    // changeset - current will be
+                                    // maybe deleted
+                                    new DBParam(IssueToChangesetMapping.PROJECT_KEY, current.getProjectKey()), //
+                                    new DBParam(IssueToChangesetMapping.ISSUE_KEY, current.getIssueKey()) //
+                            );
+
+                            // removes old information - mark that it was already proceed
+                            uniqueChangeset.setProjectKey(null);
+                            uniqueChangeset.setIssueKey(null);
                         }
-
-                        // project key and issue key relations are added on unique changeset
-                        ao.create(IssueToChangesetMapping.class, //
-                                new DBParam(IssueToChangesetMapping.CHANGESET_ID, uniqueChangeset), // foreign key to unique
-                                                                                                            // changeset - current will be
-                                                                                                            // maybe deleted
-                                new DBParam(IssueToChangesetMapping.PROJECT_KEY, current.getProjectKey()), //
-                                new DBParam(IssueToChangesetMapping.ISSUE_KEY, current.getIssueKey()) //
-                        );
-
-                        // removes old information - mark that it was already proceed
-                        uniqueChangeset.setProjectKey(null);
-                        uniqueChangeset.setIssueKey(null);
 
                         // repository relation is added on unique changeset
                         ao.create(RepositoryToChangesetMapping.class, //
@@ -120,6 +127,8 @@ public class To_11_SplitUpChangesetsRepositoryIssueKeyAndProjectKeyInformationsM
 
                         // updates migrated entity
                         uniqueChangeset.save();
+
+                        ao.flushAll();
 
                         return null;
                     }
