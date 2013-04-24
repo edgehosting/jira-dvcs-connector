@@ -1,8 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-
-
-public interface BasicOrganizationTests
+public interface BasicTests
 {
     void addOrganization();
 
@@ -17,4 +15,5 @@ public interface BasicOrganizationTests
     void testCommitStatistics();
 
     void testPostCommitHookAdded();
+
 }

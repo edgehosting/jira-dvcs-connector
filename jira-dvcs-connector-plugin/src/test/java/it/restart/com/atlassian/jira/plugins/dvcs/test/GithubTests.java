@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
@@ -18,21 +19,17 @@ import org.testng.annotations.Test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
 
-public class GithubOrganizationsTest implements BasicOrganizationTests, MissingCommitsTests
+public class GithubTests implements BasicTests, MissingCommitsTests
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
     private OAuth oAuth;
-
-    private OAuthCredentials getOAuthCredentials()
-    {
-        return new OAuthCredentials(oAuth.key, oAuth.secret);
-    }
     
     @BeforeClass
     public void beforeClass()
@@ -85,6 +82,9 @@ public class GithubOrganizationsTest implements BasicOrganizationTests, MissingC
         assertThat(organization).isNotNull(); 
         assertThat(organization.getRepositories().size()).isEqualTo(4);
         assertThat(organization.getRepositories().get(3).getMessage()).isEqualTo("Mon Feb 06 2012");
+        
+        assertThat(getCommitsForIssue("QA-2", 6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
     
     @Override
@@ -162,4 +162,31 @@ public class GithubOrganizationsTest implements BasicOrganizationTests, MissingC
         assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
     }
 
+    //-------------------------------------------------------------------
+    //--------- these methods should go to some common utility/class ---- 
+    //-------------------------------------------------------------------
+ 
+    private OAuthCredentials getOAuthCredentials()
+    {
+        return new OAuthCredentials(oAuth.key, oAuth.secret);
+    }
+
+    private List<BitBucketCommitEntry> getCommitsForIssue(String issueKey, int exectedNumberOfCommits)
+    {
+        return jira.visit(JiraViewIssuePage.class, issueKey)
+                .openBitBucketPanel()
+                .waitForNumberOfMessages(exectedNumberOfCommits, 1000L, 5);
+    }
+
+    @Test
+    public void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount()
+    {
+        // we should see 'private-dvcs-connector-test' repo
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.GITHUB, "atlassian",
+                getOAuthCredentials(), false);
+
+        assertThat(organization.containsRepository("private-dvcs-connector-test"));
+    }    
+    
 }
