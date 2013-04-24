@@ -10,6 +10,7 @@ import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -48,7 +49,10 @@ public class RepositoryServiceImpl implements RepositoryService
 
     /** The changeset service. */
     private final ChangesetService changesetService;
-
+    
+    /** Branch dao */
+    private final BranchDao branchDao;
+    
     /** The application properties. */
     private final ApplicationProperties applicationProperties;
 
@@ -63,11 +67,12 @@ public class RepositoryServiceImpl implements RepositoryService
      * @param changesetService the changeset service
      * @param applicationProperties the application properties
      */
-    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
+    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, BranchDao branchDao, Synchronizer synchronizer,
         ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
+        this.branchDao = branchDao;
         this.synchronizer = synchronizer;
         this.changesetService = changesetService;
         this.applicationProperties = applicationProperties;
@@ -514,6 +519,8 @@ public class RepositoryServiceImpl implements RepositoryService
         changesetService.removeAllInRepository(repository.getId());
         // remove progress
         synchronizer.removeProgress(repository);
+        // delete branch heads saved for repository
+        branchDao.removeAllBranchHeadsInRepository(repository.getId());
         // delete repository record itself
         repositoryDao.remove(repository.getId());
     }

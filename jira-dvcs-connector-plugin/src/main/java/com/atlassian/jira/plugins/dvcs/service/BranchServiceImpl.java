@@ -3,8 +3,8 @@ package com.atlassian.jira.plugins.dvcs.service;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
-import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
-import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 public class BranchServiceImpl implements BranchService
 {
@@ -17,22 +17,37 @@ public class BranchServiceImpl implements BranchService
     }
 
     @Override
-    public List<Branch> getListOfBranches(int repositoryId)
+    public List<BranchHead> getListOfBranchHeads(Repository repository, boolean softSync)
     {
-        return branchDao.getForRepository(repositoryId);
+        List<BranchHead> branchHeads = null;
+        
+        if (softSync)
+        {
+            branchHeads = branchDao.getBranchHeads(repository.getId());
+        } else
+        {
+            branchDao.removeAllBranchHeadsInRepository(repository.getId());
+        }
+        return branchHeads;
     }
 
     @Override
-    public void addBranch(int repositoryId, String name, String sha)
+    public void updateBranchHeads(Repository repository, List<BranchHead> newBranchHeads, List<BranchHead> oldBranchHeads)
     {
+        for (BranchHead branchHead : newBranchHeads)
+        {
+            branchDao.saveOrUpdateBranchHead(repository.getId(), branchHead);
+        }
         
+        if (oldBranchHeads != null)
+        {
+            for (BranchHead oldBranchHead : oldBranchHeads)
+            {
+                if (!newBranchHeads.contains(oldBranchHead))
+                {
+                    branchDao.removeBranchHead(repository.getId(), oldBranchHead);
+                }
+            }
+        }
     }
-
-    @Override
-    public void saveBranches(List<Branch> branches)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
 }

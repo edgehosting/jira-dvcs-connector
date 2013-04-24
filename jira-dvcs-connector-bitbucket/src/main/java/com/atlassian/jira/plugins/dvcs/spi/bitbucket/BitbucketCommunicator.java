@@ -7,14 +7,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
@@ -189,19 +188,17 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         try
         {
-            List<Branch> branches = getBranches(repository);
-            List<String> excludeNodes = null;
-            if (softSync)
-            {
-                excludeNodes = loadBranchTips(repository);
-            }
+            List<BranchHead> branchHeads = getBranchHeads(repository);
+            List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repository, softSync);
+
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForRepository(repository);
             Iterable<BitbucketNewChangeset> bitbucketChangesets =
                     remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
                                                                    repository.getSlug(),
-                                                                   excludeNodes, 15);
+                                                                   extractBranchHeads(oldBranchHeads), 15);
             
-            branchService.saveBranches(branches);
+            branchService.updateBranchHeads(repository, branchHeads, oldBranchHeads);
+
             return new NewChangesetIterableAdapter(repository, bitbucketChangesets);
         }
         catch (BitbucketRequestException e)
@@ -211,21 +208,26 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
-    private List<String> loadBranchTips(Repository repository)
+    private List<String> extractBranchHeads(List<BranchHead> branches)
     {
-        return Lists.transform(branchService.getListOfBranches(repository.getId()), new Function<Branch, String>()
+        if (branches == null)
+        {
+            return null;
+        }
+        
+        return Lists.transform(branches, new Function<BranchHead, String>()
         {
             @Override
-            public String apply(Branch input)
+            public String apply(BranchHead input)
             {
-                return input.getNode();
+                return input.getHead();
             }
         });
     }
-
-    private List<Branch> getBranches(Repository repository)
+    
+    private List<BranchHead> getBranchHeads(Repository repository)
     {
-        List<Branch> branchTips = new ArrayList<Branch>();
+        List<BranchHead> branches = new ArrayList<BranchHead>();
         BitbucketBranchesAndTags branchesAndTags = retrieveBranchesAndTags(repository);
 
             List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
@@ -237,26 +239,15 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     // make sure "master" branch is first in the list
                     if ("master".equals(bitbucketBranch.getName()))
                     {
-                        branchTips.add(0, new Branch(bitbucketBranch.getName(), head));
+                        branches.add(0, new BranchHead(bitbucketBranch.getName(), head));
                     } else
                     {
-                        branchTips.add(new Branch(bitbucketBranch.getName(), head));
+                        branches.add(new BranchHead(bitbucketBranch.getName(), head));
                     }
                 }
             }
 
-        // Bitbucket returns raw_nodes for each branch, but changesetiterator works
-        // with nodes. We need to use only first 12 characters from the node
-        for (Branch branchTip : branchTips)
-        {
-            String rawNode = branchTip.getNode();
-            if (StringUtils.length(rawNode)>12)
-            {
-                String node = rawNode.substring(0, 12);
-                branchTip.setNode(node);
-            }
-        }
-        return branchTips;
+        return branches;
     }
 
     private BitbucketBranchesAndTags retrieveBranchesAndTags(final Repository repository)

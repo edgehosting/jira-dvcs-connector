@@ -1,31 +1,110 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import net.java.ao.Query;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
-import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 
 public class BranchDaoImpl implements BranchDao
 {
-
-    @Override
-    public List<Branch> getForRepository(int repositoryId)
+    private static final Logger log = LoggerFactory.getLogger(BranchDaoImpl.class);
+    
+    private final ActiveObjects activeObjects;
+    
+    public BranchDaoImpl(ActiveObjects activeObjects)
     {
-        // TODO Auto-generated method stub
-        return null;
+        this.activeObjects = activeObjects;
     }
-
+    
     @Override
-    public void removeBranches(int repositoryId)
+    public List<BranchHead> getBranchHeads(int repositoryId)
     {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void saveBranch(int repositoryId, Branch branch)
-    {
-        // TODO Auto-generated method stub
+        BranchHeadMapping[] result = activeObjects.find(BranchHeadMapping.class, Query.select().where(BranchHeadMapping.REPOSITORY_ID + " = ?", repositoryId));
         
+        return Lists.transform(Arrays.asList(result), new Function<BranchHeadMapping, BranchHead>()
+        {
+            @Override
+            public BranchHead apply(BranchHeadMapping input)
+            {
+                return new BranchHead(input.getBranchName(), input.getHead());
+            }
+        });
+    }
+
+    @Override
+    public void saveOrUpdateBranchHead(final int repositoryId, final BranchHead branch)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction()
+            {
+                BranchHeadMapping[] result = activeObjects.find(BranchHeadMapping.class,
+                        Query.select().where(BranchHeadMapping.REPOSITORY_ID + " = ? AND "
+                                + BranchHeadMapping.BRANCH_NAME + " = ? AND "
+                                + BranchHeadMapping.HEAD + " = ?", repositoryId, branch.getName(), branch.getHead()));
+                if (result.length > 0)
+                {
+                    BranchHeadMapping mapping = result[0];
+                    mapping.setHead(branch.getHead());
+                    mapping.save();
+                } else
+                {
+                    final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
+                    map.put(BranchHeadMapping.REPOSITORY_ID, repositoryId);
+                    map.put(BranchHeadMapping.BRANCH_NAME, branch.getName());
+                    map.put(BranchHeadMapping.HEAD, branch.getHead());
+                    
+                    activeObjects.create(BranchHeadMapping.class, map);
+                }
+                
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void removeBranchHead(final int repositoryId, final BranchHead branch)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction()
+            {
+                Query query = Query.select().where(BranchHeadMapping.REPOSITORY_ID + " = ? AND " + BranchHeadMapping.BRANCH_NAME + " = ?", repositoryId, branch.getName());
+                log.debug("deleting branch {} for repository with id = [ {} ]", new Object[]{branch, repositoryId});
+                ActiveObjectsUtils.delete(activeObjects, BranchHeadMapping.class, query);
+                return null;
+            }
+        });
+    }
+    
+    @Override
+    public void removeAllBranchHeadsInRepository(final int repositoryId)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction()
+            {
+                Query query = Query.select().where(BranchHeadMapping.REPOSITORY_ID + " = ?", repositoryId);
+                log.debug("deleting branches for repository with id = [ {} ]", repositoryId);
+                ActiveObjectsUtils.delete(activeObjects, BranchHeadMapping.class, query);
+                return null;
+            }
+        });
     }
 }

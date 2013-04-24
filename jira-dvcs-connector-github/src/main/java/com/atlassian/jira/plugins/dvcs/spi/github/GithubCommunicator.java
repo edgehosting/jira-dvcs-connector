@@ -41,7 +41,7 @@ import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
@@ -253,7 +253,7 @@ public class GithubCommunicator implements DvcsCommunicator
             @Override
             public Iterator<Changeset> iterator()
             {
-                List<Branch> branches = getBranches(repository);
+                List<BranchHead> branches = getBranches(repository);
                 return new BranchedChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
             }
         };
@@ -347,11 +347,11 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
-    private List<Branch> getBranches(Repository repository)
+    private List<BranchHead> getBranches(Repository repository)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
 
-        List<Branch> branches = new ArrayList<Branch>();
+        List<BranchHead> branches = new ArrayList<BranchHead>();
         try
         {
             final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(
@@ -360,7 +360,7 @@ public class GithubCommunicator implements DvcsCommunicator
 
             for (RepositoryBranch ghBranch : ghBranches)
             {
-                Branch branchTip = new Branch(ghBranch.getName(), ghBranch.getCommit().getSha());
+                BranchHead branchTip = new BranchHead(ghBranch.getName(), ghBranch.getCommit().getSha());
                 if ("master".equalsIgnoreCase(ghBranch.getName()))
                 {
                     branches.add(0, branchTip);
