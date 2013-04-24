@@ -17,4 +17,5 @@ public interface BasicOrganizationTests
     void testCommitStatistics();
 
     void testPostCommitHookAdded();
+
 }

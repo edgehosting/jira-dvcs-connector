@@ -125,8 +125,8 @@ public class RepositoriesPage implements Page
         List<OrganizationDiv> organizations = getOrganizations();
         for (OrganizationDiv organizationDiv : organizations)
         {
-            if (repositoryType.equals(organizationDiv.getRepositoryType())
-                    && repositoryName.equals(organizationDiv.getRepositoryName()))
+            if (repositoryType.equals(organizationDiv.getOrganizationType())
+                    && repositoryName.equals(organizationDiv.getOrganizationName()))
             {
                 return organizationDiv;
             }

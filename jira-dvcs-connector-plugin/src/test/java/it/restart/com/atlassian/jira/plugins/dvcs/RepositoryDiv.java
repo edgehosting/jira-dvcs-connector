@@ -28,4 +28,9 @@ public class RepositoryDiv
         return rootElement.find(By.xpath("td[3]/div")).getText();
     }
 
+    public String getRepositoryName()
+    {
+        return rootElement.find(By.xpath("td[2]/a")).getText();
+    }
+
 }
