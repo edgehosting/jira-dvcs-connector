@@ -25,7 +25,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
 
-public class GithubOrganizationsTest implements BasicOrganizationTests, MissingCommitsTests
+public class GithubTests implements BasicTests, MissingCommitsTests
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";

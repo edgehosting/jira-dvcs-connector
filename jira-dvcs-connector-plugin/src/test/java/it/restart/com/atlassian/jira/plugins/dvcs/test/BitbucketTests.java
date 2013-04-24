@@ -39,7 +39,7 @@ import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
 
-public class BitbucketOrganizationsTest implements BasicOrganizationTests, MissingCommitsTests, ActivityStreamsTest
+public class BitbucketTests implements BasicTests, MissingCommitsTests, ActivityStreamsTest
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
