@@ -88,7 +88,7 @@ public final class TestSmartcommits
 		verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
 
 		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isTrue();
-		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isNull();
+		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isFalse();
 	}
     
 
