@@ -1,5 +1,24 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.anySetOf;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.concurrent.Executors;
+
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -10,22 +29,6 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import java.util.Arrays;
-import java.util.Date;
-import java.util.concurrent.Executors;
-
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Martin Skurla
@@ -81,10 +84,8 @@ public final class TestSmartcommits
 
 		waitUntilProgressEnds(synchronizer);
        
-		
 		verify(changesetsProcessorMock).startProcess();
-        // todo: mfa
-		//verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture(), extractedIssues);
+		verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
 
 		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isTrue();
 		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isNull();
@@ -108,10 +109,8 @@ public final class TestSmartcommits
 
 		waitUntilProgressEnds(synchronizer);
        
-		
 		verify(changesetsProcessorMock).startProcess();
-        // todo: mfa
-		//verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture(), extractedIssues);
+		verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
 
 		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isNull();
 		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isNull();
