@@ -178,7 +178,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
             }
         }
 
-        AccountInfo accountInfo = organizationService.getAccountInfo("https://bitbucket.org", organization);
+        AccountInfo accountInfo = organizationService.getAccountInfo(url, organization);
         // Bitbucket REST API to determine existence of accountInfo accepts valid email associated with BB account, but
         // it is not possible to create an account containing the '@' character.
         // [https://confluence.atlassian.com/display/BITBUCKET/account+Resource#accountResource-GETtheaccountprofile]
