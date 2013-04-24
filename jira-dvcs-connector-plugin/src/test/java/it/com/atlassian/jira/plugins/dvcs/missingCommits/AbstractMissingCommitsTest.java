@@ -8,6 +8,7 @@ import java.io.IOException;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 
@@ -40,7 +41,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     abstract void createRemoteDvcsRepository();
 
 
-    abstract void loginToDvcsAndSetJiraOAuthCredentials();
+    abstract OAuthCredentials loginToDvcsAndGetJiraOAuthCredentials();
     abstract void pushToRemoteDvcsRepository(String pathToRepoZip) throws Exception;
 
     abstract String getFirstDvcsZipRepoPathToPush();
@@ -53,9 +54,9 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     {
         pushToRemoteDvcsRepository(getFirstDvcsZipRepoPathToPush());
 
-        loginToDvcsAndSetJiraOAuthCredentials();
+        OAuthCredentials oAuthCredentials = loginToDvcsAndGetJiraOAuthCredentials();
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
-        configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, true);
+        configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, oAuthCredentials, true);
 
         assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
 

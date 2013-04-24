@@ -28,42 +28,48 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     @ElementBy(name = "commit")
     PageElement githubWebSubmitButton;
 
+    @ElementBy(id = "oauthClientId")
+    private PageElement oauthClientId;
+    
+    @ElementBy(id = "oauthSecret")
+    private PageElement oauthSecret;
+    
+    
     @Override
-    public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
+    public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
-
         organization.clear().type(organizationAccount);
 
+        oauthClientId.clear().type(oAuthCredentials.key);
+        oauthSecret.clear().type(oAuthCredentials.secret);
+        
         setPageAsOld();
-
-        if (!autoSync) {
-        	autoLinkNewRepos.click();
+        if (!autoSync)
+        {
+            autoLinkNewRepos.click();
         }
 
         addOrgButton.click();
-
         checkAndDoGithubLogin();
 
-        String githubWebLoginRedirectUrl = authorizeGithubAppIfRequired();
-
-        if (!githubWebLoginRedirectUrl.contains("jira"))
+        String currentUrl = authorizeGithubAppIfRequired();
+        if (!currentUrl.contains("jira"))
         {
             throw new AssertionError("Expected was Valid OAuth login and redirect to JIRA!");
         }
-
-        if (autoSync) {
-        	JiraPageUtils.checkSyncProcessSuccess(jiraTestedProduct);
+        
+        if (autoSync)
+        {
+            JiraPageUtils.checkSyncProcessSuccess(jiraTestedProduct);
         }
 
         return this;
     }
-
-
-
+    
     @Override
     public GithubConfigureOrganizationsPage addOrganizationFailingStep1(String url)
     {
@@ -71,11 +77,9 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         waitFormBecomeVisible();
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
-
         organization.clear().type(url);
 
         setPageAsOld();
-
         addOrgButton.click();
 
         Poller.waitUntilTrue("Expected Error message while connecting repository", messageBarDiv.find(By.tagName("strong")).timed()
@@ -85,13 +89,17 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     }
 
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2()
+    public BaseConfigureOrganizationsPage addOrganizationFailingOAuth()
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
         organization.clear().type("jirabitbucketconnector");
+
+        oauthClientId.clear().type("xx");
+        oauthSecret.clear().type("yy");
+        
 
         setPageAsOld();
 
@@ -151,54 +159,13 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         return jiraTestedProduct.getTester().getDriver().getCurrentUrl();
     }
 
-    public GithubConfigureOrganizationsPage addRepoToProject(String url, boolean autoSync)
-    {
-        linkRepositoryButton.click();
-        waitFormBecomeVisible();
 
-        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
-        organization.clear().type("jirabitbucketconnector");
-
-        setPageAsOld();
-        addOrgButton.click();
-
-        checkAndDoGithubLogin();
-        String currentUrl = authorizeGithubAppIfRequired();
-        if (!currentUrl.contains("/jira/"))
-        {
-            throw new AssertionError("Expected was automatic continue to jira!");
-        }
-
-        return this;
-    }
-
-    public GithubConfigureOrganizationsPage addRepoToProjectForOrganization(String organizationString)
-    {
-        linkRepositoryButton.click();
-        waitFormBecomeVisible();
-
-        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(1));
-        organization.clear().type(organizationString);
-
-        setPageAsOld();
-        addOrgButton.click();
-
-        checkAndDoGithubLogin();
-        String currentUrl = authorizeGithubAppIfRequired();
-        if (!currentUrl.contains("jira"))
-        {
-            throw new AssertionError("Expected was automatic continue to jira!");
-        }
-
-        return this;
-    }
 
     public int getNumberOfVisibleRepositories()
     {
         List<WebElement> visibleRepositoryRows = jiraTestedProduct.getTester()
                                                                   .getDriver()
                                                                   .findElements(By.className("dvcs-repo-row"));
-
         return visibleRepositoryRows.size();
     }
 }

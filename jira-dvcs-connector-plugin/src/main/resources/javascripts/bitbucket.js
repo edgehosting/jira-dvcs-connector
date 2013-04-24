@@ -29,37 +29,21 @@ function switchDvcsDetailsInternal(dvcsType) {
 		AJS.$('#github-form-section').hide();
 		AJS.$('#githube-form-section').hide();
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
-
-		if (BB_REQUIRES_AUTH == "true") {
-			AJS.$("#bitbucket-form-section").fadeIn();
-		} else {
-			AJS.$("#oauthBbRequired").val("");
-		}
+		AJS.$("#bitbucket-form-section").fadeIn();
 
 	} else if (dvcsType == 1) {
 
 		AJS.$('#bitbucket-form-section').hide();
 		AJS.$('#githube-form-section').hide();
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
-		
-		if (GH_REQUIRES_AUTH == "true") {
-			AJS.$("#github-form-section").fadeIn();
-		} else {
-			AJS.$("#oauthRequired").val("");
-		}
+		AJS.$("#github-form-section").fadeIn();
 		
 	}  else if (dvcsType == 2) {
 
 		AJS.$('#bitbucket-form-section').hide();
 		AJS.$('#github-form-section').hide();
-
 		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubEnterpriseOrganization.jspa");
-		
-		if (GHE_REQUIRES_AUTH == "true") {
-			AJS.$("#githube-form-section").fadeIn();
-		} else {
-			AJS.$("#oauthRequiredGhe").val("");
-		}
+		AJS.$("#githube-form-section").fadeIn();
 	}  
 
 }
@@ -87,7 +71,6 @@ function forceSync(event, repositoryId) {
 	
 	} else {
 		softSync(repositoryId);
-		
 	}
 }
 
@@ -207,7 +190,8 @@ function createAddOrganizationDialog(action) {
 	dialog.addPanel("", jira.dvcs.connector.plugin.soy.addOrganizationDialog({
 		isGithubEnterpriseEnabled: jira.dvcs.connector.plugin.githubEnterpriseEnabled,
 		isOnDemandLicense: jira.dvcs.connector.plugin.onDemandLicense,
-		atlToken : jira.dvcs.connector.plugin.atlToken
+		atlToken : jira.dvcs.connector.plugin.atlToken,
+		oAuthStore : jira.dvcs.connector.plugin.oAuthStore
 	}), "panel-body");
 	
 	dialog.addButtonPanel();
@@ -382,44 +366,12 @@ function validateAddOrganizationForm() {
 var dvcsSubmitFormAjaxHandler = {
 		"bitbucket": function(data){
 			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
-			if (data.requiresOauth) {
-					
-				// hide url input box
-				AJS.$('#urlReadOnly').html(AJS.$('#url').val());
-				AJS.$('#urlSelect').hide(); 
-				AJS.$('#urlReadOnly').show();
-				
-				//show username / password
-				AJS.$("#github-form-section").hide();
-				AJS.$("#bitbucket-form-section").fadeIn();
-				AJS.$("#adminUsername").focus().select();
-				
-			} else {
-
-				AJS.$("#oauthBbRequired").val("");
-				AJS.$('#repoEntry').submit();
-
-			}
+			AJS.$('#repoEntry').submit();
 		}, 
 
 		"github": function(data) {
 			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
-			if (data.requiresOauth) {
-
-				AJS.$('#urlReadOnly').html(AJS.$('#url').val());
-				AJS.$('#urlSelect').hide(); 
-				AJS.$('#urlReadOnly').show();
-				
-				AJS.$("#bitbucket-form-section").hide();
-				AJS.$("#github-form-section").fadeIn();
-				AJS.$("#oauthClientId").focus().select();
-
-			} else {
-				
-				AJS.$("#oauthRequired").val("");
-				AJS.$('#repoEntry').submit();
-
-			}
+			AJS.$('#repoEntry').submit();
 		}
 }
 
@@ -499,8 +451,17 @@ function configureDefaultGroups(orgName, id) {
 		});
 }
 
-function configureOAuth(organizationName, organizationId, oAuthKey, oAuthSecret, atlToken) {
+function getOAuthHelpText(org){
+	if (org.dvcsType=="bitbucket") {
+		return "Obtain Key and Secret from your <a target='_blank' href='"+org.hostUrl+"/account/'>Bitbucket account settings</a> in <b>Integrated Applications</b> section."; 
+	} else if (org.dvcsType=="github") {
+		return "Obtain Key and Secret from your <a target='_blank' href='https://github.com/settings/applications'>GitHub account settings</a>.";
+	} else {
+		return "Obtain Key and Secret from your <a target='_blank' href='"+org.hostUrl+"/settings/applications'>GitHub Enterprise account settings</a>.";
+	}
+}
 
+function configureOAuth(org, atlToken) {
 	function validateField(field, errorMsg) {
 		if (!AJS.$.trim(field.val())) {
 			field.next().html(errorMsg);
@@ -516,11 +477,12 @@ function configureOAuth(organizationName, organizationId, oAuthKey, oAuthSecret,
 		id: "repositoryOAuthDialog"
 	});
 	
-	popup.addHeader("Configure OAuth for account " + organizationName);
+	popup.addHeader("Configure OAuth for account " + org.name);
 	popup.addPanel("", jira.dvcs.connector.plugin.soy.repositoryOAuthDialog({
-		'organizationId': organizationId,
-		'oAuthKey': oAuthKey,
-		'oAuthSecret': oAuthSecret
+		'organizationId': org.id,
+		'oAuthKey': org.credential.key,
+		'oAuthSecret': org.credential.secret,
+		'helpText': new soydata.SanitizedHtml(getOAuthHelpText(org))
 		}));
 	
 	popup.addButton("Regenerate Access Token", function (dialog) {
@@ -533,9 +495,18 @@ function configureOAuth(organizationName, organizationId, oAuthKey, oAuthSecret,
 		AJS.$("#repositoryOAuthDialog .dialog-button-panel").prepend("<span class='aui-icon aui-icon-wait' style='padding-right:10px'>Wait</span>");
 		
 		// submit form
-		AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/oauth", AJS.$("#updateOAuthForm").serialize())
+		AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + org.id + "/oauth", AJS.$("#updateOAuthForm").serialize())
 			.done(function(data) {
-				window.location.replace(BASE_URL+"/secure/admin/RegenerateBitbucketOauthToken.jspa?organization=" + organizationId + "&atl_token="+atlToken);
+
+				var actionName;
+                if (org.dvcsType == "bitbucket")
+                	actionName="RegenerateBitbucketOauthToken.jspa";
+                else if (org.dvcsType == "github")
+                	actionName="RegenerateGithubOauthToken.jspa";
+                else
+                	actionName="RegenerateGithubEnterpriseOauthToken.jspa";
+				
+				window.location.replace(BASE_URL+"/secure/admin/"+actionName+"?organization=" + org.id + "&atl_token="+atlToken);
 			})
 			.error(function (err) {
 				AJS.$("#aui-message-bar").empty();
@@ -554,6 +525,7 @@ function configureOAuth(organizationName, organizationId, oAuthKey, oAuthSecret,
 	});
 
 	popup.show();
+	return false;
 }
 
 function autoLinkIssuesOrg(organizationId, checkboxId) {
