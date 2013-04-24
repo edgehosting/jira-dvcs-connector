@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +97,10 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             
             try
             {
-                detailChangeset = changesetService.getDetailChangesetFromDvcs(repository, changeset);
+                if (CollectionUtils.isNotEmpty(extractedIssues))
+                {
+                    detailChangeset = changesetService.getDetailChangesetFromDvcs(repository, changeset);
+                }
             } catch (Exception e)
             {
                 log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
@@ -110,8 +114,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                 //--------------------------------------------
                 // mark smart commit can be processed
                 // + store extracted project key for incremental linking
-                // todo: mfa - smartcommit - true - gut?
-                markChangesetForSmartCommit(changesetForSave, true);
+                markChangesetForSmartCommit(changesetForSave, CollectionUtils.isNotEmpty(extractedIssues));
 //                        if (softSync && !changesetAlreadyMarkedForSmartCommits)
 //                        {
 //                            markChangesetForSmartCommit(changesetForSave, true);
