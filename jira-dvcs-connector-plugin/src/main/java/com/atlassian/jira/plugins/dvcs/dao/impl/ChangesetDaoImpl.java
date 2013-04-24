@@ -79,7 +79,7 @@ public class ChangesetDaoImpl implements ChangesetDao
 
                 // delete association issues - changeset
                 query = Query.select().where(
-                        RepositoryToChangesetMapping.CHANGESET_ID + " not in  " +
+                        IssueToChangesetMapping.CHANGESET_ID + " not in  " +
                                 "(select \"" + RepositoryToChangesetMapping.CHANGESET_ID + "\" from \"" + RepositoryToChangesetMapping.TABLE_NAME + "\")");
                 log.debug("deleting orphaned issue-changeset associations");
                 ActiveObjectsUtils.delete(activeObjects, IssueToChangesetMapping.class, query);
