@@ -95,26 +95,26 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             // get detail changeset because in this response is not information about files
             Changeset detailChangeset = null;
             
-            if (CollectionUtils.isNotEmpty(extractedIssues) ) 
+            try
             {
-            	try
+                if (CollectionUtils.isNotEmpty(extractedIssues))
                 {
                     detailChangeset = changesetService.getDetailChangesetFromDvcs(repository, changeset);
-                } catch (Exception e)
-                {
-                    log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
                 }
+            } catch (Exception e)
+            {
+                log.warn("Unable to retrieve details for changeset " + changeset.getNode(), e);
+            }
 
 
-                //boolean changesetAlreadyMarkedForSmartCommits = false;
-                try
-                {
-                    Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
-                    //--------------------------------------------
-                    // mark smart commit can be processed
-                    // + store extracted project key for incremental linking
-                    // todo: mfa - smartcommit - true - gut?
-                    markChangesetForSmartCommit(changesetForSave, true);
+            //boolean changesetAlreadyMarkedForSmartCommits = false;
+            try
+            {
+                Changeset changesetForSave = detailChangeset == null ? changeset : detailChangeset;
+                //--------------------------------------------
+                // mark smart commit can be processed
+                // + store extracted project key for incremental linking
+                markChangesetForSmartCommit(changesetForSave, CollectionUtils.isNotEmpty(extractedIssues));
 //                        if (softSync && !changesetAlreadyMarkedForSmartCommits)
 //                        {
 //                            markChangesetForSmartCommit(changesetForSave, true);
@@ -123,25 +123,24 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 //                        {
 //                            markChangesetForSmartCommit(changesetForSave, false);
 //                        }
-                    //--------------------------------------------
-                    log.debug("Save changeset [{}]", changesetForSave);
-                    changesetService.create(changesetForSave, extractedIssues);
+                //--------------------------------------------
+                log.debug("Save changeset [{}]", changesetForSave);
+                changesetService.create(changesetForSave, extractedIssues);
 
-                } catch (SourceControlException e)
-                {
-                    log.error("Error adding changeset " + changeset, e);
-                }
-
-                for (String issueKey : extractedIssues)
-                {
-                    jiraCount++;
-                    foundProjectKeys.add(ChangesetDaoImpl.parseProjectKey(issueKey));
-                }
-
+            } catch (SourceControlException e)
+            {
+                log.error("Error adding changeset " + changeset, e);
             }
-            progress.inProgress(changesetCount, jiraCount, 0);
+
+            for (String issueKey : extractedIssues)
+            {
+                jiraCount++;
+                foundProjectKeys.add(ChangesetDaoImpl.parseProjectKey(issueKey));
+            }
+
         }
-        
+        progress.inProgress(changesetCount, jiraCount, 0);
+
         setupNewLinkers(foundProjectKeys);
     }
     

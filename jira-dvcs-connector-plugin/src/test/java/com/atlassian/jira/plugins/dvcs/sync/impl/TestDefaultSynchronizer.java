@@ -1,5 +1,28 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anySetOf;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Set;
+import java.util.concurrent.Executors;
+
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
@@ -11,24 +34,6 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import java.util.Arrays;
-import java.util.Date;
-import java.util.concurrent.Executors;
-
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Martin Skurla
@@ -51,6 +56,9 @@ public final class TestDefaultSynchronizer
     @Captor
     private ArgumentCaptor<Changeset> savedChangesetCaptor;
 
+    @Captor
+    private ArgumentCaptor<Set<String>> extractedIssuesCaptor;
+    
     private final Changeset changesetWithJIRAIssue = new Changeset(123, "node", "message MES-123 text", new Date());
     private final Changeset changesetWithoutJIRAIssue = new Changeset(123, "node", "message without JIRA issue",
             new Date());
@@ -75,14 +83,13 @@ public final class TestDefaultSynchronizer
 
         waitUntilProgressEnds(synchronizer);
 
-        // todo: mfa
-        //verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture(), extractedIssues);
+        verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), extractedIssuesCaptor.capture());
         
         // one changeset is saved with issue key, another without
-        // todo: mfa
-        //assertThat(savedChangesetCaptor.getAllValues().get(0).getIssueKey()).isEqualTo("MES-123");
-        // todo: mfa
-        //assertThat(savedChangesetCaptor.getAllValues().get(1).getIssueKey()).isEqualTo("NON_EXISTING-0");
+        assertThat(extractedIssuesCaptor.getAllValues().get(0).contains("MES-123")).isTrue();
+        assertThat(extractedIssuesCaptor.getAllValues().get(1).isEmpty()).isTrue();
+//        assertThat(savedChangesetCaptor.getAllValues().get(0).getIssueKey()).isEqualTo("MES-123");
+//        assertThat(savedChangesetCaptor.getAllValues().get(1).getIssueKey()).isEqualTo("NON_EXISTING-0");
     }
     
     @Test
@@ -124,8 +131,7 @@ public final class TestDefaultSynchronizer
 
         waitUntilProgressEnds(synchronizer);
 
-        // todo: mfa
-        //verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture(), extractedIssues);
+        verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
         
         // one changeset has file details, another not
         assertThat(savedChangesetCaptor.getAllValues().get(0).getFiles()).isNotEmpty();
