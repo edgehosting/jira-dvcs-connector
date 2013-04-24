@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -32,6 +33,9 @@ public class RepositoryServiceTest
 
 	@Mock
 	private RepositoryDao repositoryDao;
+	
+	@Mock
+    private BranchDao branchDao;
 
 	@Mock
 	private Synchronizer synchronizer;
@@ -60,7 +64,7 @@ public class RepositoryServiceTest
 	public void setup()
 	{
 		MockitoAnnotations.initMocks(this);
-		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer,
+		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, branchDao, synchronizer,
 				changesetService, applicationProperties, settings);
 	}
 
