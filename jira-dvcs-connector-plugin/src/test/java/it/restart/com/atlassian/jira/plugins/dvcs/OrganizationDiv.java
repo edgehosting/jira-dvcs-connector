@@ -1,8 +1,5 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
-import static com.atlassian.pageobjects.elements.query.Poller.by;
-import static org.hamcrest.Matchers.is;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,20 +7,17 @@ import javax.inject.Inject;
 
 import org.openqa.selenium.By;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.ConfirmationDialog;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
-import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.webdriver.AtlassianWebDriver;
+import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 
 public class OrganizationDiv
 {
     @Inject
     private PageBinder pageBinder;
     
-    @Inject
-    private AtlassianWebDriver driver;
-
     @Inject
     private PageElementFinder elementFinder;
     
@@ -45,23 +39,15 @@ public class OrganizationDiv
      */
     public void delete()
     {
-        // disable confirm popup
-        driver.executeScript("window.confirm = function(){ return true; }");
         // add marker to wait for post complete
         PageElement ddButton = rootElement.find(By.className("aui-dd-trigger"));
         ddButton.click();
         PageElement deleteLink = rootElement.find(By.className("dvcs-control-delete-org"));
         deleteLink.click();
         
-        // wait for popup to show up
-        try
-        {
-            Poller.waitUntilTrue(elementFinder.find(By.id("deleting-account-dialog")).timed().isVisible());
-        } catch (AssertionError e)
-        {
-            // ignore, the deletion was probably very quick and the popup has been already closed.
-        }
-        Poller.waitUntil(elementFinder.find(By.id("deleting-account-dialog")).timed().isVisible(), is(false), by(30000));
+        ConfirmationDialog dialog = elementFinder.find(By.id("confirm-dialog"), ConfirmationDialog.class, TimeoutType.DIALOG_LOAD);
+        dialog.confirm();
+        dialog.waitUntilVisible();
     }
 
     public List<RepositoryDiv> getRepositories()

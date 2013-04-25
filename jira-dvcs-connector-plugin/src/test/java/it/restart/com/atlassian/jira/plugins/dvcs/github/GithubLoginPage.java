@@ -19,10 +19,23 @@ public class GithubLoginPage implements Page
     @ElementBy(name = "commit")
     private PageElement githubWebSubmitButton;
 
+    private final String hostUrl;
+
+    
+    public GithubLoginPage()
+    {
+        this("https://github.com");
+    }
+    
+    public GithubLoginPage(String hostUrl)
+    {
+        this.hostUrl = hostUrl;
+    }
+
     @Override
     public String getUrl()
     {
-        return "https://github.com/login";
+        return hostUrl+"/login";
     }
 
     public void doLogin()

@@ -40,10 +40,22 @@ public class GithubOAuthPage implements Page
     @ElementBy(tagName = "body")
     private PageElement body;
 
+    private final String hostUrl;
+
+    public GithubOAuthPage()
+    {
+        this("https://github.com");
+    }
+    
+    public GithubOAuthPage(String hostUrl)
+    {
+        this.hostUrl = hostUrl;
+    }
+
     @Override
     public String getUrl()
     {
-        return "https://github.com/settings/applications/new";
+        return hostUrl + "/settings/applications/new";
     }
 
     public OAuth addConsumer(String jiraBaseUrl)

@@ -242,28 +242,19 @@
 							<version>${greenhopper.version}</version>
 						</pluginArtifact>
 					</pluginArtifacts>
-					<functionalTestPattern>${functionalTestPattern}</functionalTestPattern>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
 
 	<properties>
-		<functionalTestPattern>it/**/*Test.java</functionalTestPattern>
 		<jirabitbucketconnector.password>Im here so AMPS wont fail when just
 			building stuff</jirabitbucketconnector.password>
 		<dvcsconnectortest.password>Im here so AMPS wont fail when just
 			building stuff</dvcsconnectortest.password>
-		<!-- GithubEnterprise only <functionalTestPattern>it/githubenterprise/**/*Test.java</functionalTestPattern> -->
 	</properties>
 
 	<profiles>
-		<profile>
-			<id>skipGithubEnterpriseTests</id>
-			<properties>
-				<functionalTestPattern>it/com/**/*Test.java</functionalTestPattern>
-			</properties>
-		</profile>
 		<profile>
 			<id>dev-mysql</id>
 			<properties>
