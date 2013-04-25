@@ -1,103 +1,87 @@
-function deleteRepository(repositoryId, repositoryUrl) {
-    var answer = confirm("Are you sure you want to remove this repository? \n " + repositoryUrl)
-    if (answer) {
-        AJS.$.ajax({
-            url: BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId,
-            type: 'DELETE',
-            success: function(result) {
-                window.location.reload();
-            }
-        });
-    }
-}
-
 function switchDvcsDetails(selectSwitch) {
-	var dvcsType = selectSwitch.selectedIndex;
-	switchDvcsDetailsInternal(dvcsType);
+    var dvcsType = selectSwitch.selectedIndex;
+    switchDvcsDetailsInternal(dvcsType);
 }
 
 function switchDvcsDetailsInternal(dvcsType) {
-	// clear all form errors
-	DvcsValidator.clearAllErrors();
+    // clear all form errors
+    DvcsValidator.clearAllErrors();
 
-	// impose real URL to hidden input
-	AJS.$("#url").val( dvcsKnownUrls[AJS.$("#urlSelect option:selected").val()] ); 
-	AJS.$("#organization").focus().select();
+    // impose real URL to hidden input
+    AJS.$("#url").val( dvcsKnownUrls[AJS.$("#urlSelect option:selected").val()] ); 
+    AJS.$("#organization").focus().select();
 
-	if (dvcsType == 0) {
-		
-		AJS.$('#github-form-section').hide();
-		AJS.$('#githube-form-section').hide();
-		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
-		AJS.$("#bitbucket-form-section").fadeIn();
+    if (dvcsType == 0) {
+        
+        AJS.$('#github-form-section').hide();
+        AJS.$('#githube-form-section').hide();
+        AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
+        AJS.$("#bitbucket-form-section").fadeIn();
 
-	} else if (dvcsType == 1) {
+    } else if (dvcsType == 1) {
 
-		AJS.$('#bitbucket-form-section').hide();
-		AJS.$('#githube-form-section').hide();
-		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
-		AJS.$("#github-form-section").fadeIn();
-		
-	}  else if (dvcsType == 2) {
+        AJS.$('#bitbucket-form-section').hide();
+        AJS.$('#githube-form-section').hide();
+        AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
+        AJS.$("#github-form-section").fadeIn();
+        
+    }  else if (dvcsType == 2) {
 
-		AJS.$('#bitbucket-form-section').hide();
-		AJS.$('#github-form-section').hide();
-		AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubEnterpriseOrganization.jspa");
-		AJS.$("#githube-form-section").fadeIn();
-	}  
-
+        AJS.$('#bitbucket-form-section').hide();
+        AJS.$('#github-form-section').hide();
+        AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubEnterpriseOrganization.jspa");
+        AJS.$("#githube-form-section").fadeIn();
+    }  
 }
 
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
 function forceSync(event, repositoryId) {
-	if (event.shiftKey) {
-		var dialogTrigger = AJS.$("#jira-dvcs-connector-forceSyncDialog-" + repositoryId);
-		var dialog = dialogTrigger.data('jira-dvcs-connector-forceSyncDialog');
-		
-		if (!dialog) {
-			dialog = AJS.InlineDialog(AJS.$("#jira-dvcs-connector-forceSyncDialog-" + repositoryId), "jira-dvcs-connector-forceSyncDialog"  + repositoryId, function(content, trigger, showPopup) {
-				content.html(jira.dvcs.connector.plugin.soy.forceSyncDialog({
-					'repositoryId' : repositoryId,
-				}));
-				showPopup();
-				return false;
-			}, { width: 500, hideDelay: null, noBind: true } );
-			dialogTrigger.data('jira-dvcs-connector-forceSyncDialog', dialog);
-		}
-
-		dialog.show();
-	
-	} else {
-		softSync(repositoryId);
-	}
+    if (event.shiftKey) {
+        var dialogTrigger = AJS.$("#jira-dvcs-connector-forceSyncDialog-" + repositoryId);
+        var dialog = dialogTrigger.data('jira-dvcs-connector-forceSyncDialog');
+        
+        if (!dialog) {
+            dialog = AJS.InlineDialog(AJS.$("#jira-dvcs-connector-forceSyncDialog-" + repositoryId), "jira-dvcs-connector-forceSyncDialog"  + repositoryId, function(content, trigger, showPopup) {
+                content.html(jira.dvcs.connector.plugin.soy.forceSyncDialog({
+                    'repositoryId' : repositoryId,
+                }));
+                showPopup();
+                return false;
+            }, { width: 500, hideDelay: null, noBind: true } );
+            dialogTrigger.data('jira-dvcs-connector-forceSyncDialog', dialog);
+        }
+        dialog.show();
+    
+    } else {
+        softSync(repositoryId);
+    }
 }
 
 function fullSync(repositoryId) {
-	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/fullsync", function (data) {
-		updateSyncStatus(data);
-	});
+    AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/fullsync", function (data) {
+        updateSyncStatus(data);
+    });
 }
 
 function softSync(repositoryId) {
-	AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/softsync", function (data) {
-		updateSyncStatus(data);
-	});
+    AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId + "/softsync", function (data) {
+        updateSyncStatus(data);
+    });
 }
 
 function retrieveSyncStatus() {
-
-	AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/repositories", function (data) {
-		AJS.$.each(data.repositories, function (a, repo) {
-			updateSyncStatus(repo);
-		});
-		window.setTimeout(retrieveSyncStatus, 4000)
-	});
+    AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/repositories", function (data) {
+        AJS.$.each(data.repositories, function (a, repo) {
+            updateSyncStatus(repo);
+        });
+        window.setTimeout(retrieveSyncStatus, 4000)
+    });
 }
 
 function updateSyncStatus(repo) {
-	var syncStatusDiv = AJS.$('#sync_status_message_' + repo.id);
+    var syncStatusDiv = AJS.$('#sync_status_message_' + repo.id);
     var syncErrorDiv = AJS.$('#sync_error_message_' + repo.id);
     var syncIconElement = AJS.$('#syncicon_' + repo.id);
     var syncRepoIconElement = AJS.$('#syncrepoicon_' + repo.id);
@@ -122,8 +106,8 @@ function updateSyncStatus(repo) {
             syncErrorDiv.html("<span class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</span>" +
                                 "<span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>");
         } else {
-        	syncErrorDiv.html("");
-    	}
+            syncErrorDiv.html("");
+        }
     }
     
     else {
@@ -132,7 +116,6 @@ function updateSyncStatus(repo) {
     syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
     syncRepoIconElement.removeClass("running").addClass(syncRepoIcon);
     syncStatusDiv.html(syncStatusHtml);
-
 }
 
 function getLastCommitRelativeDateHtml(daysAgo) {
@@ -144,161 +127,157 @@ function getLastCommitRelativeDateHtml(daysAgo) {
 }
 
 function showAddRepoDetails(show) {
+    if (!jira.dvcs.connector.plugin.addOrganizationDialog) {
+        createAddOrganizationDialog();
+    }
+    var dialog = jira.dvcs.connector.plugin.addOrganizationDialog;
+    // Reset to default view:
+    AJS.$('#repoEntry').attr("action", "");
+    // - hide username/password
+    AJS.$("#github-form-section").hide();
+    // - show url, organization field
+    AJS.$('#urlSelect').show();
+    AJS.$('#urlSelect').val(0); // select BB by default
+    AJS.$('#urlReadOnly').hide();
 
-	if (!jira.dvcs.connector.plugin.addOrganizationDialog) {
-		createAddOrganizationDialog();
-	}
-	var dialog = jira.dvcs.connector.plugin.addOrganizationDialog;
-	// Reset to default view:
-	AJS.$('#repoEntry').attr("action", "");
-	// - hide username/password
-	AJS.$("#github-form-section").hide();
-	// - show url, organization field
-	AJS.$('#urlSelect').show();
-	AJS.$('#urlSelect').val(0); // select BB by default
-	AJS.$('#urlReadOnly').hide();
+    AJS.$('#organization').show();
+    AJS.$('#organizationReadOnly').hide();
+    
+    dialog.enabled(true);
+    
+    // clear all form errors
+    DvcsValidator.clearAllErrors();
+    
+    // enable bitbucket form
+    switchDvcsDetailsInternal(0);
 
-	AJS.$('#organization').show();
-	AJS.$('#organizationReadOnly').hide();
-	
-	dialog.enabled(true);
-	
-	// clear all form errors
-	DvcsValidator.clearAllErrors();
-	
-	// enable bitbucket form
-	switchDvcsDetailsInternal(0);
-
-	AJS.$("#organization").focus().select();
-	dialog.gotoPage(0);
+    AJS.$("#organization").focus().select();
+    dialog.gotoPage(0);
     dialog.gotoPanel(0);
-	dialog.show();
-	dialog.updateHeight();
+    dialog.show();
+    dialog.updateHeight();
 }
 
 function createAddOrganizationDialog(action) {
-	var dialog = new AJS.Dialog({
-		width: 800, 
-		height: 400, 
-		id: "add-organization-dialog", 
-		closeOnOutsideClick: false
-	});
-	
-	// First page
-	dialog.addHeader("Add New Account");
-
-	dialog.addPanel("", jira.dvcs.connector.plugin.soy.addOrganizationDialog({
-		isGithubEnterpriseEnabled: jira.dvcs.connector.plugin.githubEnterpriseEnabled,
-		isOnDemandLicense: jira.dvcs.connector.plugin.onDemandLicense,
-		atlToken : jira.dvcs.connector.plugin.atlToken,
-		oAuthStore : jira.dvcs.connector.plugin.oAuthStore
-	}), "panel-body");
-	
-	dialog.addButtonPanel();
-
-	dialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon' style='padding-right:10px'>&nbsp;</span>");
-	
-	dialog.addSubmit("Add", function (dialog, event) {
-		if (dvcsSubmitFormHandler(event,false)) {
-			AJS.$("#repoEntry").submit();
-		}
-	});
-
-	dialog.addCancel("Cancel", function (dialog) {
-		AJS.$("#repoEntry").trigger('reset');
-		AJS.$("#aui-message-bar").empty();
-	    dialog.hide();
-	}, "#");
-	
-	AJS.$('#urlSelect').change(function(event) {
-		switchDvcsDetails(event.target);
-		dialog.updateHeight();
-	});
+    var dialog = new AJS.Dialog({
+        width: 800, 
+        height: 400, 
+        id: "add-organization-dialog", 
+        closeOnOutsideClick: false
+    });
     
-	// Second page, GitHub Enterprise confirmation page
+    // First page
+    dialog.addHeader("Add New Account");
+
+    dialog.addPanel("", jira.dvcs.connector.plugin.soy.addOrganizationDialog({
+        isGithubEnterpriseEnabled: jira.dvcs.connector.plugin.githubEnterpriseEnabled,
+        isOnDemandLicense: jira.dvcs.connector.plugin.onDemandLicense,
+        atlToken : jira.dvcs.connector.plugin.atlToken,
+        oAuthStore : jira.dvcs.connector.plugin.oAuthStore
+    }), "panel-body");
+    
+    dialog.addButtonPanel();
+    dialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon' style='padding-right:10px'>&nbsp;</span>");
+    dialog.addSubmit("Add", function (dialog, event) {
+        if (dvcsSubmitFormHandler(event,false)) {
+            AJS.$("#repoEntry").submit();
+        }
+    });
+
+    dialog.addCancel("Cancel", function (dialog) {
+        AJS.$("#repoEntry").trigger('reset');
+        AJS.$("#aui-message-bar").empty();
+        dialog.hide();
+    }, "#");
+    
+    AJS.$('#urlSelect').change(function(event) {
+        switchDvcsDetails(event.target);
+        dialog.updateHeight();
+    });
+    
+    // Second page, GitHub Enterprise confirmation page
     dialog.addPage();
     dialog.addHeader("Add New Account");
     dialog.addPanel("Confirmation", "<div id='githubeConfirmation'>Test</div>", "panel-body");
     dialog.addSubmit("Continue", function (dialog, event) {
-    	dialog.gotoPage(0);
-    	if (dvcsSubmitFormHandler(event, true)) {
-    		AJS.$("#repoEntry").submit();
-    	}
-	});
+        dialog.gotoPage(0);
+        if (dvcsSubmitFormHandler(event, true)) {
+            AJS.$("#repoEntry").submit();
+        }
+    });
 
     dialog.addButton("Previous", function(dialog) {
-    	   dialog.prevPage();
-    	   dialog.updateHeight();
-    	});
+           dialog.prevPage();
+           dialog.updateHeight();
+        });
     
-	dialog.addCancel("Cancel", function (dialog) {
-		AJS.$("#repoEntry").trigger('reset');
-		AJS.$("#aui-message-bar").empty();
-	    dialog.hide();
-	}, "#");
+    dialog.addCancel("Cancel", function (dialog) {
+        AJS.$("#repoEntry").trigger('reset');
+        AJS.$("#aui-message-bar").empty();
+        dialog.hide();
+    }, "#");
     
     dialog.enabled = function(enabled) {
-    	if (enabled) {
-    		AJS.$("#add-organization-wait").removeClass("aui-icon-wait");
-    		AJS.$('#add-organization-dialog .button-panel-submit-button').removeAttr("disabled");
-    	} else {
-    		AJS.$("#add-organization-wait").addClass("aui-icon-wait");
-    		AJS.$('#add-organization-dialog .button-panel-submit-button').attr("disabled", "disabled");
-    	}
+        if (enabled) {
+            AJS.$("#add-organization-wait").removeClass("aui-icon-wait");
+            AJS.$('#add-organization-dialog .button-panel-submit-button').removeAttr("disabled");
+        } else {
+            AJS.$("#add-organization-wait").addClass("aui-icon-wait");
+            AJS.$('#add-organization-dialog .button-panel-submit-button').attr("disabled", "disabled");
+        }
     }
     jira.dvcs.connector.plugin.addOrganizationDialog = dialog;
 }
 
 function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     var dialog = jira.dvcs.connector.plugin.addOrganizationDialog;
-	// submit form
+    // submit form
     var organizationElement = AJS.$("#organization");
     // if not custom URL
-    if ( !dvcsContainsSlash( organizationElement.val()) ) {
-    	// some really simple validation
-    	if (!validateAddOrganizationForm()) {
-    		dialog.enabled(true);
-    		dialog.updateHeight();
-    		return false;
-    	}
-    	var selectedDvcs = AJS.$("#urlSelect option:selected");
-    	var dvcsHost = selectedDvcs.text();
-    	
-    	if ( selectedDvcs.val() == "githube") { // Github Enterprise
-    		// impose real URL to hidden input
-    		AJS.$("#url").val(AJS.$("#urlGhe").val()); 
+    if ( !parseAccountUrl( organizationElement.val()) ) {
+        // some really simple validation
+        if (!validateAddOrganizationForm()) {
+            dialog.enabled(true);
+            dialog.updateHeight();
+            return false;
+        }
+        var selectedDvcs = AJS.$("#urlSelect option:selected");
+        var dvcsHost = selectedDvcs.text();
+        
+        if ( selectedDvcs.val() == "githube") { // Github Enterprise
+            // impose real URL to hidden input
+            AJS.$("#url").val(AJS.$("#urlGhe").val()); 
 
-    		if (!skipLoggingAlert) {
-    			AJS.$("#githubeConfirmation").html(jira.dvcs.connector.plugin.soy.confirmLoggedIn({
-					dvcsHost: dvcsHost
-				}));
-    			dialog.nextPage();
-    			dialog.updateHeight();
-    			return false;
-    		}
-    	}
+            if (!skipLoggingAlert) {
+                AJS.$("#githubeConfirmation").html(jira.dvcs.connector.plugin.soy.confirmLoggedIn({
+                    dvcsHost: dvcsHost
+                }));
+                dialog.nextPage();
+                dialog.updateHeight();
+                return false;
+            }
+        }
 
-    	// disable add form
-    	dialog.enabled(false);
+        // disable add form
+        dialog.enabled(false);
 
-    	//
+        //
         AJS.messages.info("#aui-message-bar", { title: "Connecting to " + dvcsHost + " to configure your account...", closeable : false});
         dialog.updateHeight();
         // set url by selected type
         return true; // submit form
-	}
+    }
 
     // else - lets try to identify account
     // account info
     if (!validateAccountInfoForm()) {
-    	dialog.enabled(true);
-    	return false;
+        dialog.enabled(true);
+        return false;
     }
     
-    var account = dvcsGetAccountNameFromUrl(AJS.$("#organization").val());
-    var dvcsUrl = dvcsGetUrlFromAccountUrl(AJS.$("#organization").val());
-    AJS.$("#url").val(dvcsUrl);
-    AJS.$("#organization").val(account);
+    var account = parseAccountUrl(AJS.$("#organization").val());
+    AJS.$("#url").val(account.hostUrl);
+    AJS.$("#organization").val(account.name);
 
     AJS.$("#aui-message-bar").empty();
     
@@ -313,21 +292,21 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     AJS.$.getJSON(requestUrl,
         function(data) {
             
-    		AJS.$("#aui-message-bar").empty();
+            AJS.$("#aui-message-bar").empty();
             dialog.enabled(true);
            
             if (data.validationErrors && data.validationErrors.length > 0) {
-            	AJS.$.each(data.validationErrors, function(i, msg){
-            		AJS.messages.error("#aui-message-bar", {title : "Error!", body : msg});
-            		dialog.updateHeight();
-            	})
+                AJS.$.each(data.validationErrors, function(i, msg){
+                    AJS.messages.error("#aui-message-bar", {title : "Error!", body : msg});
+                    dialog.updateHeight();
+                })
             } else{
-            	dvcsSubmitFormAjaxHandler[data.dvcsType].apply(this, arguments);
-        	}
-    	}).error(function(a) {
+                dvcsSubmitFormAjaxHandler[data.dvcsType].apply(this, arguments);
+            }
+        }).error(function(a) {
             AJS.$("#aui-message-bar").empty();
             AJS.messages.error("#aui-message-bar", { title: "Error!", 
-            	body: "The url [<b>" + AJS.escapeHtml(AJS.$("#url").val()) + "</b>] is incorrect or the server is not responding." 
+                body: "The url [<b>" + AJS.escapeHtml(AJS.$("#url").val()) + "</b>] is incorrect or the server is not responding." 
             });
             dialog.enabled(true);
             dialog.updateHeight();
@@ -336,545 +315,481 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
 }
 
 function validateAccountInfoForm() {
-	var validator = new DvcsValidator();
-	validator.addItem("organization", "org-error", "required");
-	return validator.runValidation();
+    var validator = new DvcsValidator();
+    validator.addItem("organization", "org-error", "required");
+    return validator.runValidation();
 }
 
 function validateAddOrganizationForm() {
-	var validator = new DvcsValidator();
-	validator.addItem("organization", "org-error", "required");
+    var validator = new DvcsValidator();
+    validator.addItem("organization", "org-error", "required");
 
-	if (AJS.$("#oauthClientIdGhe").is(":visible")) {
-	    validator.addItem("urlGhe","ghe-url-error", "required");
-	    validator.addItem("urlGhe","ghe-invalid-url-error", "url");
-		validator.addItem("oauthClientIdGhe", "oauth-ghe-client-error", "required");
-		validator.addItem("oauthSecretGhe", "oauth-ghe-secret-error", "required");
-	} else if (AJS.$("#oauthBbClientId").is(":visible")) {
-		validator.addItem("oauthBbClientId", "oauth-bb-client-error", "required");
-		validator.addItem("oauthBbSecret", "oauth-bb-secret-error", "required");
-	} else if (AJS.$("#oauthClientId").is(":visible")) {
-		validator.addItem("oauthClientId", "oauth-gh-client-error", "required");
-		validator.addItem("oauthSecret", "oauth-gh-secret-error", "required");
-	} else if (AJS.$("#adminUsername").is(":visible")){
-		// validator.addItem("adminUsername", "admin-username-error", "required");
-		// validator.addItem("adminPassword", "admin-password-error", "required");
-	}
-	return validator.runValidation();
+    if (AJS.$("#oauthClientIdGhe").is(":visible")) {
+        validator.addItem("urlGhe","ghe-url-error", "required");
+        validator.addItem("urlGhe","ghe-invalid-url-error", "url");
+        validator.addItem("oauthClientIdGhe", "oauth-ghe-client-error", "required");
+        validator.addItem("oauthSecretGhe", "oauth-ghe-secret-error", "required");
+    } else if (AJS.$("#oauthBbClientId").is(":visible")) {
+        validator.addItem("oauthBbClientId", "oauth-bb-client-error", "required");
+        validator.addItem("oauthBbSecret", "oauth-bb-secret-error", "required");
+    } else if (AJS.$("#oauthClientId").is(":visible")) {
+        validator.addItem("oauthClientId", "oauth-gh-client-error", "required");
+        validator.addItem("oauthSecret", "oauth-gh-secret-error", "required");
+    } else if (AJS.$("#adminUsername").is(":visible")){
+        // validator.addItem("adminUsername", "admin-username-error", "required");
+        // validator.addItem("adminPassword", "admin-password-error", "required");
+    }
+    return validator.runValidation();
 }
 
 var dvcsSubmitFormAjaxHandler = {
-		"bitbucket": function(data){
-			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
-			AJS.$('#repoEntry').submit();
-		}, 
+    "bitbucket": function(data){
+        AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
+        AJS.$('#repoEntry').submit();
+    }, 
 
-		"github": function(data) {
-			AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
-			AJS.$('#repoEntry').submit();
-		}
-}
-
-function changePassword(username, id) {
-	
-	 // clear all
-	 AJS.$("#organizationId").val("");
-	 AJS.$("#usernameUp").val("");
-	 AJS.$("#adminPasswordUp").val("");
-	
-	 var popup = new AJS.Dialog({
-		 		width: 400, 
-		 		height: 300, 
-		 		id: "dvcs-change-pass-dialog"
-	 });
-	 
-	 AJS.$("#organizationId").val(id);
-	 AJS.$("#usernameUp").val(username);
-
-	 popup.addHeader("Update Account Credentials");
-	 var dialogContent = AJS.$(".update-credentials");
-	 popup.addPanel("", "#updatePasswordForm", "dvcs-update-cred-dialog");
-	 popup.addButton("Update", function (dialog) {
-		 AJS.$("#updatePasswordForm").submit();
-     }, "aui-button submit");
-     popup.addButton("Cancel", function (dialog) {
-         dialog.hide();
-     }, "aui-button submit");
-     
-	 popup.show();
-	 AJS.$("#adminPasswordUp").focus().select();
+    "github": function(data) {
+        AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
+        AJS.$('#repoEntry').submit();
+    }
 }
 
 function configureDefaultGroups(orgName, id) {
-	
-	// clear all
-	AJS.$("#organizationIdDefaultGroups").val("");
-	AJS.$("#configureDefaultGroupsContent").html("");
-	AJS.$("#configureDefaultGroupsContentWorking").show();
- 	AJS.$("#aui-message-bar-default-groups").empty();
-	var popup = new AJS.Dialog({
-		width: 600, 
-		height: 400, 
-		id: "dvcs-default-groups-dialog"
-	});
-	
-	AJS.$("#organizationIdDefaultGroups").val(id);
+    
+    // clear all
+    AJS.$("#organizationIdDefaultGroups").val("");
+    AJS.$("#configureDefaultGroupsContent").html("");
+    AJS.$("#configureDefaultGroupsContentWorking").show();
+     AJS.$("#aui-message-bar-default-groups").empty();
+    var popup = new AJS.Dialog({
+        width: 600, 
+        height: 400, 
+        id: "dvcs-default-groups-dialog"
+    });
+    
+    AJS.$("#organizationIdDefaultGroups").val(id);
 
-	popup.addHeader("Configure Default Groups");
-	var dialogContent = AJS.$(".configure-default-groups");
-	popup.addPanel("", "#configureDefaultGroupsForm", "configure-default-groups-dialog");
-	popup.addButton("Save", function (dialog) {
-		AJS.$("#configureDefaultGroupsForm").submit();
-		
-	}, "aui-button submit");
-	
-	popup.addCancel("Cancel", function (dialog) {
-		dialog.hide();
-	});
+    popup.addHeader("Configure Default Groups");
+    var dialogContent = AJS.$(".configure-default-groups");
+    popup.addPanel("", "#configureDefaultGroupsForm", "configure-default-groups-dialog");
+    popup.addButton("Save", function (dialog) {
+        AJS.$("#configureDefaultGroupsForm").submit();
+        
+    }, "aui-button submit");
+    
+    popup.addCancel("Cancel", function (dialog) {
+        dialog.hide();
+    });
 
-	popup.show();
-	// load web fragment
-	AJS.$.ajax(
-			{
-				type : 'GET',
-				url : BASE_URL + "/rest/bitbucket/1.0/fragment/" + id + "/defaultgroups",
-				success :
-				function (data) {
-					AJS.$("#configureDefaultGroupsContentWorking").hide()
-					AJS.$("#configureDefaultGroupsContent").html(data);
-				}
-			}
-		
-	).error(function (err) { 
-			showError("Unexpected error occurred. Please contact the server administrator.", "#aui-message-bar-"+id);
-			popup.hide();
-		});
+    popup.show();
+    // load web fragment
+    AJS.$.ajax({
+            type : 'GET',
+            url : BASE_URL + "/rest/bitbucket/1.0/fragment/" + id + "/defaultgroups",
+            success :
+            function (data) {
+                AJS.$("#configureDefaultGroupsContentWorking").hide()
+                AJS.$("#configureDefaultGroupsContent").html(data);
+            }
+        }
+    ).error(function (err) { 
+            showError("Unexpected error occurred. Please contact the server administrator.", "#aui-message-bar-"+id);
+            popup.hide();
+        });
 }
 
 function getOAuthHelpText(org){
-	if (org.dvcsType=="bitbucket") {
-		return "Obtain Key and Secret from your <a target='_blank' href='"+org.hostUrl+"/account/'>Bitbucket account settings</a> in <b>Integrated Applications</b> section."; 
-	} else if (org.dvcsType=="github") {
-		return "Obtain Key and Secret from your <a target='_blank' href='https://github.com/settings/applications'>GitHub account settings</a>.";
-	} else {
-		return "Obtain Key and Secret from your <a target='_blank' href='"+org.hostUrl+"/settings/applications'>GitHub Enterprise account settings</a>.";
-	}
+    if (org.dvcsType=="bitbucket") {
+        return "Obtain Key and Secret from your <a target='_blank' href='"+org.hostUrl+"/account/'>Bitbucket account settings</a> in <b>Integrated Applications</b> section."; 
+    } else if (org.dvcsType=="github") {
+        return "Obtain Key and Secret from your <a target='_blank' href='https://github.com/settings/applications'>GitHub account settings</a>.";
+    } else {
+        return "Obtain Key and Secret from your <a target='_blank' href='"+org.hostUrl+"/settings/applications'>GitHub Enterprise account settings</a>.";
+    }
 }
 
 function configureOAuth(org, atlToken) {
-	function validateField(field, errorMsg) {
-		if (!AJS.$.trim(field.val())) {
-			field.next().html(errorMsg);
-			return false;
-		}
-		field.next().html("&nbsp;");
-		return true;
-	}
-	
-	var popup = new AJS.Dialog({
-		width: 600, 
-		height: 350, 
-		id: "repositoryOAuthDialog"
-	});
-	
-	popup.addHeader("Configure OAuth for account " + org.name);
-	popup.addPanel("", jira.dvcs.connector.plugin.soy.repositoryOAuthDialog({
-		'organizationId': org.id,
-		'oAuthKey': org.credential.key,
-		'oAuthSecret': org.credential.secret,
-		'helpText': new soydata.SanitizedHtml(getOAuthHelpText(org))
-		}));
-	
-	popup.addButton("Regenerate Access Token", function (dialog) {
-		// validate
-		var v1 = validateField(AJS.$("#updateOAuthForm #key"), "OAuth key must not be blank");
-		var v2 = validateField(AJS.$("#updateOAuthForm #secret"), "OAuth secret must not be blank");
-		if (!v1 || !v2) return;
-			
-		AJS.$("#repositoryOAuthDialog .dialog-button-panel button").attr("disabled", "disabled");
-		AJS.$("#repositoryOAuthDialog .dialog-button-panel").prepend("<span class='aui-icon aui-icon-wait' style='padding-right:10px'>Wait</span>");
-		
-		// submit form
-		AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + org.id + "/oauth", AJS.$("#updateOAuthForm").serialize())
-			.done(function(data) {
+    function validateField(field, errorMsg) {
+        if (!AJS.$.trim(field.val())) {
+            field.next().html(errorMsg);
+            return false;
+        }
+        field.next().html("&nbsp;");
+        return true;
+    }
+    
+    var popup = new AJS.Dialog({
+        width: 600, 
+        height: 350, 
+        id: "repositoryOAuthDialog"
+    });
+    
+    popup.addHeader("Configure OAuth for account " + org.name);
+    popup.addPanel("", jira.dvcs.connector.plugin.soy.repositoryOAuthDialog({
+        'organizationId': org.id,
+        'oAuthKey': org.credential.key,
+        'oAuthSecret': org.credential.secret,
+        'helpText': new soydata.SanitizedHtml(getOAuthHelpText(org))
+        }));
+    
+    popup.addButton("Regenerate Access Token", function (dialog) {
+        // validate
+        var v1 = validateField(AJS.$("#updateOAuthForm #key"), "OAuth key must not be blank");
+        var v2 = validateField(AJS.$("#updateOAuthForm #secret"), "OAuth secret must not be blank");
+        if (!v1 || !v2) return;
+            
+        AJS.$("#repositoryOAuthDialog .dialog-button-panel button").attr("disabled", "disabled");
+        AJS.$("#repositoryOAuthDialog .dialog-button-panel").prepend("<span class='aui-icon aui-icon-wait' style='padding-right:10px'>Wait</span>");
+        
+        // submit form
+        AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + org.id + "/oauth", AJS.$("#updateOAuthForm").serialize())
+            .done(function(data) {
 
-				var actionName;
+                var actionName;
                 if (org.dvcsType == "bitbucket")
-                	actionName="RegenerateBitbucketOauthToken.jspa";
+                    actionName="RegenerateBitbucketOauthToken.jspa";
                 else if (org.dvcsType == "github")
-                	actionName="RegenerateGithubOauthToken.jspa";
+                    actionName="RegenerateGithubOauthToken.jspa";
                 else
-                	actionName="RegenerateGithubEnterpriseOauthToken.jspa";
-				
-				window.location.replace(BASE_URL+"/secure/admin/"+actionName+"?organization=" + org.id + "&atl_token="+atlToken);
-			})
-			.error(function (err) {
-				AJS.$("#aui-message-bar-oauth-dialog").empty();
-		        AJS.messages.error("#aui-message-bar-oauth-dialog", { title: "Error!", 
-		          	body: "Could not configure OAuth.",
-		          	closeable : false
-		        });
-		        AJS.$("#repositoryOAuthDialog .dialog-button-panel button").removeAttr("disabled", "disabled");
-		        AJS.$("#repositoryOAuthDialog .dialog-button-panel .aui-icon-wait").remove();
-		        popup.updateHeight();
-			});
-	}, "aui-button submit");
-	
-	popup.addCancel("Cancel", function (dialog) {
-		dialog.remove();
-	});
+                    actionName="RegenerateGithubEnterpriseOauthToken.jspa";
+                
+                window.location.replace(BASE_URL+"/secure/admin/"+actionName+"?organization=" + org.id + "&atl_token="+atlToken);
+            })
+            .error(function (err) {
+                AJS.$("#aui-message-bar-oauth-dialog").empty();
+                AJS.messages.error("#aui-message-bar-oauth-dialog", { title: "Error!", 
+                      body: "Could not configure OAuth.",
+                      closeable : false
+                });
+                AJS.$("#repositoryOAuthDialog .dialog-button-panel button").removeAttr("disabled", "disabled");
+                AJS.$("#repositoryOAuthDialog .dialog-button-panel .aui-icon-wait").remove();
+                popup.updateHeight();
+            });
+    }, "aui-button submit");
+    
+    popup.addCancel("Cancel", function (dialog) {
+        dialog.remove();
+    });
 
-	popup.show();
-	return false;
+    popup.show();
+    return false;
 }
 
 function autoLinkIssuesOrg(organizationId, checkboxId) {
-	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
-	AJS.$("#" + checkboxId).attr("disabled", "disabled");
-
-	AJS.$("#" + checkboxId  + "working").show();
-	
-	AJS.$.ajax(
-		{
-			type : 'POST',
-			dataType : "json",
-			contentType : "application/json",
-			url : BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autolink",
-			data : '{ "payload" : "' + checkedValue+ '"}',
-			success :
-			function (data) {
-				  AJS.$("#" + checkboxId  + "working").hide();
-				  AJS.$("#" + checkboxId).removeAttr("disabled");
-				  if (!checkedValue && AJS.$("#org_global_smarts" + organizationId)) {
-					  AJS.$("#org_global_smarts" + organizationId).attr("disabled", "disabled");
-				  } else {
-					  AJS.$("#org_global_smarts" + organizationId).removeAttr("disabled");
-				  }
-			}
-		}
-	).error(function (err) { 
-				  showError("Unexpected error occurred. Please contact the server administrator.", "#aui-message-bar-"+organizationId);
-				  AJS.$("#" + checkboxId  + "working").hide();
-				  AJS.$("#" + checkboxId).removeAttr("disabled");
-				  setChecked(checkboxId, !checkedValue);
-			  });
+    var checkedValue = AJS.$("#" + checkboxId).is(':checked');
+    AJS.$("#" + checkboxId).attr("disabled", "disabled");
+    AJS.$("#" + checkboxId  + "working").show();
+    AJS.$.ajax({
+            type : 'POST',
+            dataType : "json",
+            contentType : "application/json",
+            url : BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autolink",
+            data : '{ "payload" : "' + checkedValue+ '"}',
+            success :
+            function (data) {
+                  AJS.$("#" + checkboxId  + "working").hide();
+                  AJS.$("#" + checkboxId).removeAttr("disabled");
+                  if (!checkedValue && AJS.$("#org_global_smarts" + organizationId)) {
+                      AJS.$("#org_global_smarts" + organizationId).attr("disabled", "disabled");
+                  } else {
+                      AJS.$("#org_global_smarts" + organizationId).removeAttr("disabled");
+                  }
+            }
+        }
+    ).error(function (err) { 
+          showError("Unexpected error occurred. Please contact the server administrator.", "#aui-message-bar-"+organizationId);
+          AJS.$("#" + checkboxId  + "working").hide();
+          AJS.$("#" + checkboxId).removeAttr("disabled");
+          setChecked(checkboxId, !checkedValue);
+      });
 }
 
 function enableSmartcommitsOnNewRepos(organizationId, checkboxId) {
-	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
-	AJS.$("#" + checkboxId).attr("disabled", "disabled");
-	AJS.$.ajax(
-		{
-			type : 'POST',
-			dataType : "json",
-			contentType : "application/json",
-			url : BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/globalsmarts",
-			data : '{ "payload" : "' + checkedValue+ '"}',
-			
-			success :
-			function (data) {
-				AJS.$("#" + checkboxId).removeAttr("disabled");
-			}
-		}
-	  ).error(function (err) {
-				  showError("Unexpected error occurred when enabling smart commits on new repositories. Please contact the server administrator.", "#aui-message-bar-"+organizationId);
-				  setChecked(checkboxId, !checkedValue);
-	  });
+    var checkedValue = AJS.$("#" + checkboxId).is(':checked');
+    AJS.$("#" + checkboxId).attr("disabled", "disabled");
+    AJS.$.ajax({
+            type : 'POST',
+            dataType : "json",
+            contentType : "application/json",
+            url : BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/globalsmarts",
+            data : '{ "payload" : "' + checkedValue+ '"}',
+            success :
+            function (data) {
+                AJS.$("#" + checkboxId).removeAttr("disabled");
+            }
+        }
+      ).error(function (err) {
+              showError("Unexpected error occurred when enabling smart commits on new repositories. Please contact the server administrator.", "#aui-message-bar-"+organizationId);
+              setChecked(checkboxId, !checkedValue);
+      });
 }
 
 function autoLinkIssuesRepo(repoId, checkboxId) {
-	var checkedValue = AJS.$("#" + checkboxId).is(":checked");
-	AJS.$("#" + checkboxId).attr("disabled", "disabled");
-	AJS.$("#" + checkboxId  + "working").show();
-	AJS.$.ajax( 
-		{
-			type : 'POST',
-			dataType : "json",
-			contentType : "application/json",
-			url : BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/autolink",
-			data : '{ "payload" : "' + checkedValue+ '"}',
-			
-			success :
-			function (registration) {
-				  if (registration.callBackUrlInstalled != checkedValue) {
+    var checkedValue = AJS.$("#" + checkboxId).is(":checked");
+    AJS.$("#" + checkboxId).attr("disabled", "disabled");
+    AJS.$("#" + checkboxId  + "working").show();
+    AJS.$.ajax( 
+        {
+            type : 'POST',
+            dataType : "json",
+            contentType : "application/json",
+            url : BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/autolink",
+            data : '{ "payload" : "' + checkedValue+ '"}',
+            
+            success :
+            function (registration) {
+                  if (registration.callBackUrlInstalled != checkedValue) {
 
-					var popup = new AJS.Dialog({
-					 		width: 600, 
-					 		height: 400, 
-					 		id: "dvcs-postcommit-hook-registration-dialog",
-					 		closeOnOutsideClick: false
-				    });
+                    var popup = new AJS.Dialog({
+                             width: 600, 
+                             height: 400, 
+                             id: "dvcs-postcommit-hook-registration-dialog",
+                             closeOnOutsideClick: false
+                    });
 
-					popup.addHeader((checkedValue ? "Linking" : "Unlinking") + " the repository");
-					popup.addPanel("Registration", jira.dvcs.connector.plugin.soy.postCommitHookDialog({
-												'registering': checkedValue,
-												'callbackUrl': registration.callBackUrl
-												}));
-					popup.addButton("Ok", function (dialog) {
-						popup.remove();
-				    }, "aui-button submit");
-					popup.show();
-					popup.updateHeight();
-					
-					// show warning icon if not already shown
-					var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
-					errorStatusIcon.addClass("admin_permission aui-icon aui-icon-warning");
-					registerAdminPermissionInlineDialogTooltip(errorStatusIcon);
-				 }
-				  
-				  AJS.$("#" + checkboxId  + "working").hide();
-				  AJS.$("#" + checkboxId).removeAttr("disabled");
-				  if (checkedValue) {
-					  AJS.$("#dvcs-action-container-" + repoId).removeClass("dvcs-nodisplay");
-					  AJS.$("#dvcs-action-container2-" + repoId).removeClass("dvcs-nodisplay");
-					  AJS.$("#dvcs-action-container3-" + repoId).removeClass("dvcs-nodisplay");
-					  AJS.$("#dvcs-repo-row-" + repoId).removeClass("dvcs-disabled");
-				  } else {
-					  AJS.$("#dvcs-action-container-" + repoId).addClass("dvcs-nodisplay");
-					  AJS.$("#dvcs-action-container2-" + repoId).addClass("dvcs-nodisplay");
-					  AJS.$("#dvcs-action-container3-" + repoId).addClass("dvcs-nodisplay");
-					  AJS.$("#dvcs-repo-row-" + repoId).addClass("dvcs-disabled");
-				  }
-			  }
-		}
-	 
-	).error(function (err) { 
-				  var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
-				  errorStatusIcon.removeClass("admin_permission aui-icon-warning").addClass("aui-icon aui-icon-error");
-				  var response = jQuery.parseJSON(err.responseText);
-				  var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", response.message + "<br/>Please contact the server administrator.");
-				  tooltip.show();
-				  AJS.$("#" + checkboxId  + "working").hide();
-				  AJS.$("#" + checkboxId).removeAttr("disabled");
-				  setChecked(checkboxId, !checkedValue);
-			  });
+                    popup.addHeader((checkedValue ? "Linking" : "Unlinking") + " the repository");
+                    popup.addPanel("Registration", jira.dvcs.connector.plugin.soy.postCommitHookDialog({
+                                                'registering': checkedValue,
+                                                'callbackUrl': registration.callBackUrl
+                                                }));
+                    popup.addButton("Ok", function (dialog) {
+                        popup.remove();
+                    }, "aui-button submit");
+                    popup.show();
+                    popup.updateHeight();
+                    
+                    // show warning icon if not already shown
+                    var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
+                    errorStatusIcon.addClass("admin_permission aui-icon aui-icon-warning");
+                    registerAdminPermissionInlineDialogTooltip(errorStatusIcon);
+                 }
+                  
+                  AJS.$("#" + checkboxId  + "working").hide();
+                  AJS.$("#" + checkboxId).removeAttr("disabled");
+                  if (checkedValue) {
+                      AJS.$("#dvcs-action-container-" + repoId).removeClass("dvcs-nodisplay");
+                      AJS.$("#dvcs-action-container2-" + repoId).removeClass("dvcs-nodisplay");
+                      AJS.$("#dvcs-action-container3-" + repoId).removeClass("dvcs-nodisplay");
+                      AJS.$("#dvcs-repo-row-" + repoId).removeClass("dvcs-disabled");
+                  } else {
+                      AJS.$("#dvcs-action-container-" + repoId).addClass("dvcs-nodisplay");
+                      AJS.$("#dvcs-action-container2-" + repoId).addClass("dvcs-nodisplay");
+                      AJS.$("#dvcs-action-container3-" + repoId).addClass("dvcs-nodisplay");
+                      AJS.$("#dvcs-repo-row-" + repoId).addClass("dvcs-disabled");
+                  }
+              }
+        }
+     
+    ).error(function (err) { 
+              var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
+              errorStatusIcon.removeClass("admin_permission aui-icon-warning").addClass("aui-icon aui-icon-error");
+              var response = jQuery.parseJSON(err.responseText);
+              var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", response.message + "<br/>Please contact the server administrator.");
+              tooltip.show();
+              AJS.$("#" + checkboxId  + "working").hide();
+              AJS.$("#" + checkboxId).removeAttr("disabled");
+              setChecked(checkboxId, !checkedValue);
+          });
 }
 
 function registerAdminPermissionInlineDialogTooltips() {
-	AJS.$(".admin-permission").each(function(index) {
-		registerAdminPermissionInlineDialogTooltip(this);
-	});
+    AJS.$(".admin-permission").each(function(index) {
+        registerAdminPermissionInlineDialogTooltip(this);
+    });
 }
 
 function registerAdminPermissionInlineDialogTooltip(element) {
-	registerInlineDialogTooltip(element, "No admin permission", "The post commit hook could not be installed.");
+    registerInlineDialogTooltip(element, "No admin permission", "The post commit hook could not be installed.");
 }
 
 function registerInlineDialogTooltip(element, title, body) {
-	return AJS.InlineDialog(AJS.$(element), "tooltip_"+AJS.$(element).attr('id'),
-		    function(content, trigger, showPopup) {
-				content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><p>" + body + "</p>");
-				showPopup();
-		        return false;
-		    },
-		    {onHover:true, hideDelay:200, showDelay:1000, arrowOffsetX:-8, offsetX:-80}
-		);
+    return AJS.InlineDialog(AJS.$(element), "tooltip_"+AJS.$(element).attr('id'),
+            function(content, trigger, showPopup) {
+                content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><p>" + body + "</p>");
+                showPopup();
+                return false;
+            },
+            {onHover:true, hideDelay:200, showDelay:1000, arrowOffsetX:-8, offsetX:-80}
+        );
 }
 
 function enableRepoSmartcommits(repoId, checkboxId) {
-	var checkedValue = AJS.$("#" + checkboxId).is(":checked");
-	AJS.$("#" + checkboxId).attr("disabled", "disabled");
-	AJS.$("#" + checkboxId  + "working").show();
-	AJS.$.ajax( 
-		{
-			type : 'POST',
-			dataType : "json",
-			contentType : "application/json",
-			url : BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/smart",
-			data : '{ "payload" : "' + checkedValue+ '"}',
-			
-			success :
-			function (data) {
-				  AJS.$("#" + checkboxId  + "working").hide();
-				  AJS.$("#" + checkboxId).removeAttr("disabled");
-			  }
-		}
-	).error(function (err) { 
-				  showError("Unexpected error occurred.");
-				  AJS.$("#" + checkboxId  + "working").hide();
-				  AJS.$("#" + checkboxId).removeAttr("disabled");
-				  setChecked(checkboxId, !checkedValue);
-			  });
+    var checkedValue = AJS.$("#" + checkboxId).is(":checked");
+    AJS.$("#" + checkboxId).attr("disabled", "disabled");
+    AJS.$("#" + checkboxId  + "working").show();
+    AJS.$.ajax( 
+        {
+            type : 'POST',
+            dataType : "json",
+            contentType : "application/json",
+            url : BASE_URL + "/rest/bitbucket/1.0/repo/" + repoId + "/smart",
+            data : '{ "payload" : "' + checkedValue+ '"}',
+            
+            success :
+            function (data) {
+                  AJS.$("#" + checkboxId  + "working").hide();
+                  AJS.$("#" + checkboxId).removeAttr("disabled");
+              }
+        }
+    ).error(function (err) { 
+                  showError("Unexpected error occurred.");
+                  AJS.$("#" + checkboxId  + "working").hide();
+                  AJS.$("#" + checkboxId).removeAttr("disabled");
+                  setChecked(checkboxId, !checkedValue);
+              });
 }
 
 function confirmationDialog(options) {
-	var dialog = new AJS.Dialog({width:500, height:150, id: "confirm-dialog", closeOnOutsideClick: false});
-	dialog.addHeader(options.header);
-	dialog.addPanel("ConfirmPanel", options.body);
-	
-	dialog.addButtonPanel();
-	dialog.page[0].buttonpanel.append("<span id='confirm-action-wait' class='aui-icon' style='padding-right:10px'>&nbsp;</span>");
-	
-	dialog.addSubmit(options.submitButtonLabel, function (dialog, event) {
-		dialog.working(true);
-		if (typeof options.okAction == 'function') {
-			options.okAction(dialog);
-		}
-	});
+    var dialog = new AJS.Dialog({width:500, height:150, id: "confirm-dialog", closeOnOutsideClick: false});
+    dialog.addHeader(options.header);
+    dialog.addPanel("ConfirmPanel", options.body);
     
-	dialog.addCancel("Cancel", function (dialog) {
-	    if (typeof options.cancelAction == 'function') {
-	    	options.cancelAction(dialog);
-	    }
-		dialog.remove();
-	}, "#");
-	
-	dialog.working = function(working) {
-		if (working) {
-			AJS.$("#confirm-action-wait").addClass("aui-icon-wait");
-			AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", true);
-		} else {
-			AJS.$("#confirm-action-wait").removeClass("aui-icon-wait");
-			AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", false);
-		}
-	}
-	
-	dialog.showError = function(message) {
-		dialog.working(false);
-		showError(message, "#aui-message-bar-delete-org");
-    	dialog.updateHeight();
-	}
+    dialog.addButtonPanel();
+    dialog.page[0].buttonpanel.append("<span id='confirm-action-wait' class='aui-icon' style='padding-right:10px'>&nbsp;</span>");
+    
+    dialog.addSubmit(options.submitButtonLabel, function (dialog, event) {
+        dialog.working(true);
+        if (typeof options.okAction == 'function') {
+            options.okAction(dialog);
+        }
+    });
+    
+    dialog.addCancel("Cancel", function (dialog) {
+        if (typeof options.cancelAction == 'function') {
+            options.cancelAction(dialog);
+        }
+        dialog.remove();
+    }, "#");
+    
+    dialog.working = function(working) {
+        if (working) {
+            AJS.$("#confirm-action-wait").addClass("aui-icon-wait");
+            AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", true);
+        } else {
+            AJS.$("#confirm-action-wait").removeClass("aui-icon-wait");
+            AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", false);
+        }
+    }
+    
+    dialog.showError = function(message) {
+        dialog.working(false);
+        showError(message, "#aui-message-bar-delete-org");
+        dialog.updateHeight();
+    }
     dialog.show(); 
-	dialog.updateHeight();
+    dialog.updateHeight();
 }
 
 function deleteOrganization(organizationId, organizationName) {
-	confirmationDialog({
-		header: "Deleting Account '" + organizationName + "'",
-		body: jira.dvcs.connector.plugin.soy.confirmDelete({'organizationName': organizationName}),
-		submitButtonLabel: "Delete",
-		okAction: function (dialog) { deleteOrganizationInternal(dialog, organizationId, organizationName); }
-		});
+    confirmationDialog({
+        header: "Deleting Account '" + organizationName + "'",
+        body: jira.dvcs.connector.plugin.soy.confirmDelete({'organizationName': organizationName}),
+        submitButtonLabel: "Delete",
+        okAction: function (dialog) { deleteOrganizationInternal(dialog, organizationId, organizationName); }
+        });
 }
 
 function deleteOrganizationInternal(dialog, organizationId, organizationName) {
-	AJS.$.ajax({
+    AJS.$.ajax({
         url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId,
         type: 'DELETE',
         success: function(result) {
             window.location.reload();
         }
     }).error(function (err) {
-    	dialog.showError("Error when deleting account '" + organizationName + "'.");
-	});
+        dialog.showError("Error when deleting account '" + organizationName + "'.");
+    });
 }
 
 function syncRepositoryList(organizationId,organizationName) {
-	var dialog = new AJS.Dialog({width:400, height:150, id:"refreshing-account-dialog", closeOnOutsideClick: false});
-	dialog.addHeader("Refreshing Account");
-	dialog.addPanel("RefreshPanel", "<span class='dvcs-wait'>Refreshing '" + organizationName + "' account. Please wait...</span>");
-	dialog.show(); 
-	
-	AJS.$.ajax({
+    var dialog = new AJS.Dialog({width:400, height:150, id:"refreshing-account-dialog", closeOnOutsideClick: false});
+    dialog.addHeader("Refreshing Account");
+    dialog.addPanel("RefreshPanel", "<span class='dvcs-wait'>Refreshing '" + organizationName + "' account. Please wait...</span>");
+    dialog.show(); 
+    
+    AJS.$.ajax({
         url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId + "/syncRepoList",
         type: 'GET',
         success: function(result) {
             window.location.reload();
         }
     }).error(function (err) {
-    	showError("Error when refreshing account '" + organizationName + "'.", "#aui-message-bar-"+organizationId);
-    	dialog.remove();
-	});
+        showError("Error when refreshing account '" + organizationName + "'.", "#aui-message-bar-"+organizationId);
+        dialog.remove();
+    });
 }
 
 function showError(message, auiMessageElement, closeable) {
-	if (typeof auiMessageElement == 'undefined') {
-		auiMessageElement = "#aui-message-bar-global";
-	}
-		
-	AJS.$(auiMessageElement).empty();
-	AJS.messages.error(auiMessageElement, {
-		title: message,
-		closeable: closeable
-	});
+    if (typeof auiMessageElement == 'undefined') {
+        auiMessageElement = "#aui-message-bar-global";
+    }
+        
+    AJS.$(auiMessageElement).empty();
+    AJS.messages.error(auiMessageElement, {
+        title: message,
+        closeable: closeable
+    });
 }
 
 function setChecked(checkboxId, checked) {
-	if (checked) {
-		AJS.$("#" + checkboxId).attr("checked", "checked");
-	} else {
-		AJS.$("#" + checkboxId).removeAttr("checked");
-	}
+    if (checked) {
+        AJS.$("#" + checkboxId).attr("checked", "checked");
+    } else {
+        AJS.$("#" + checkboxId).removeAttr("checked");
+    }
 }
 
 function dvcsShowHidePanel(id) {
-	var jqElement = AJS.$("#" + id);
-	if (jqElement.is(":visible")) {
-		AJS.$("#" + id).fadeOut().slideUp();
-	} else {
-		AJS.$("#" + id).fadeIn().slideDown();
-	}
+    var jqElement = AJS.$("#" + id);
+    if (jqElement.is(":visible")) {
+        AJS.$("#" + id).fadeOut().slideUp();
+    } else {
+        AJS.$("#" + id).fadeIn().slideDown();
+    }
 }
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
 var dvcsKnownUrls = {
-		"bitbucket" : "https://bitbucket.org",
-		"github" : "https://github.com",
-		"githube" : "https://github.com"
+    "bitbucket" : "https://bitbucket.org",
+    "github" : "https://github.com",
+    "githube" : "https://github.com"
 };
 
-function dvcsContainsSlash(stringType) {
-	return stringType.indexOf("/") != -1;
-};
-
-function dvcsGetAccountNameFromUrl (stringType) {
-	// case of i.e. https://bitbucket.org/someuser/
-	if (dvcsEndsWith(stringType, "/")) {
-		stringType = stringType.substring(0, stringType.length - 1);
-	}
-	var extracted = stringType.substring(stringType.lastIndexOf("/") + 1, stringType.length);
-	return extracted.replace("/");
+function parseAccountUrl(url) {
+    var pattern=/(.*)\/(.+?)\/?$/;
+    var matches = url.match(pattern);
+    return {hostUrl:matches[1], name:matches[2]};
 }
 
-function dvcsGetUrlFromAccountUrl (stringType) {
-	// case of i.e. https://bitbucket.org/someuser/
-	if (dvcsEndsWith(stringType, "/")) {
-		stringType = stringType.substring(0, stringType.length - 1);
-	}
-	return stringType.substring(0, stringType.lastIndexOf("/"));
-}
-
-function dvcsEndsWith (stringType, suffix) {
-	  return stringType.indexOf(suffix, stringType.length - suffix.length) !== -1;
-}
-
-function dvcsCopyOrganizationToUsername() {
-	if (AJS.$("#organization").val() && !dvcsContainsSlash(AJS.$("#organization").val())) {
-		if (AJS.$("#adminUsername").val().length == 0) {
-			AJS.$("#adminUsername").val(AJS.$("#organization").val());
-			AJS.$("#adminUsername").focus().select();
-		}
-	}
-}
 //------------------------------------------------------------
 
 AJS.$(document).ready(function() {
     if (typeof init_repositories == 'function') {
-    	// cancel annoying leave message even when browser pre-fill some fields
-    	window.onbeforeunload = function () {};
-    	// some organization gear
-    	AJS.$(".dvcs-organization-controls-tool").dvcsGearMenu(
-    			{ noHideItemsSelector : ".dvcs-gearmenu-nohide" }
-    	);
-    	// defined in macro
-    	init_repositories();
-    	//
-    	if (window.location.hash == '#expand') {
-    		showAddRepoDetails(true);
-    	}
+        // cancel annoying leave message even when browser pre-fill some fields
+        window.onbeforeunload = function () {};
+        // some organization gear
+        AJS.$(".dvcs-organization-controls-tool").dvcsGearMenu(
+                { noHideItemsSelector : ".dvcs-gearmenu-nohide" }
+        );
+        // defined in macro
+        init_repositories();
+        //
+        if (window.location.hash == '#expand') {
+            showAddRepoDetails(true);
+        }
     }
 });
 
 //---------------------------------------------------------
 
 AJS.$.fn.extend({
-	    dvcsGearMenu : function(opts) {
-	    	// original AUI dropdown
-	    	this.dropDown();
-	    	// stop further propagation - causes not hide dropdown menu
-	    	AJS.$(opts.noHideItemsSelector).bind("click", function (e){
-	    		e.stopPropagation();
-	    	});
-	    }
+    dvcsGearMenu : function(opts) {
+        // original AUI dropdown
+        this.dropDown();
+        // stop further propagation - causes not hide dropdown menu
+        AJS.$(opts.noHideItemsSelector).bind("click", function (e){
+            e.stopPropagation();
+        });
+    }
 });
