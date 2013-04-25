@@ -32,9 +32,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.0-m07.1</jira.compile.version>
-        <jira.version>6.0-m07</jira.version>
-        <jira.data.version>6.0-m07.1</jira.data.version>
+        <jira.compile.version>6.0-OD-09-4</jira.compile.version>
+        <jira.version>6.0-OD-09-4</jira.version>
+        <jira.data.version>6.0-OD-09-4</jira.data.version>
 
     <!--
         <jira.version>5.0.1</jira.version>
