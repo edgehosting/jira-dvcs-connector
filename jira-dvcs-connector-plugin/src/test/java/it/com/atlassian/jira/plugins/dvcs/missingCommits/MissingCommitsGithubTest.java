@@ -75,7 +75,7 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
         oauthAppLink = registeredOAuthAppsPage.getOauthAppUrl();
         return oAuthCredentials;
     }
-
+    
     @Override
     void pushToRemoteDvcsRepository(String pathToRepoZip) throws Exception
     {
