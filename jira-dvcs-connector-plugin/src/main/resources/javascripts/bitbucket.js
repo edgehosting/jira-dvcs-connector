@@ -760,7 +760,8 @@ var dvcsKnownUrls = {
 function parseAccountUrl(url) {
     var pattern=/(.*)\/(.+?)\/?$/;
     var matches = url.match(pattern);
-    return {hostUrl:matches[1], name:matches[2]};
+    if (matches)
+        return {hostUrl:matches[1], name:matches[2]};
 }
 
 //------------------------------------------------------------
