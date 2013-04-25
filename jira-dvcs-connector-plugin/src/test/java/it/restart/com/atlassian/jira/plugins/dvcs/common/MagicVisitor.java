@@ -15,12 +15,17 @@ public class MagicVisitor
         this.jira = jira;
     }
     
+    public  <P extends Page> P visit(Class<P> pageClass, Object... args)
+    {
+        return visit(jira.getPageBinder().delayedBind(pageClass, args).bind().getUrl(), pageClass);
+    }
+    
     public  <P extends Page> P visit(Class<P> pageClass)
     {
-        return visit(pageClass, jira.getPageBinder().delayedBind(pageClass).bind().getUrl());
+        return visit(jira.getPageBinder().delayedBind(pageClass).bind().getUrl(), pageClass);
     }
 
-    public <P> P visit(Class<P> pageClass, String url)
+    public <P> P visit(String url, Class<P> pageClass)
     {
         jira.getTester().gotoUrl(url);
         return jira.getPageBinder().bind(pageClass);
