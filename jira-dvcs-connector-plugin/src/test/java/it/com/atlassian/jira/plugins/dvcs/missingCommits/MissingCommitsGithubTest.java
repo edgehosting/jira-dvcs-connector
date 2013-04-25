@@ -24,7 +24,8 @@ import com.atlassian.plugin.util.zip.FileUnzipper;
 public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubConfigureOrganizationsPage>
 {
     private static final String GITHUB_URL = "api.github.com";
-
+    private static final String USER_AGENT = "DVCS Connector Test/X.x";
+    
     private static final String _1ST_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_1st_push.zip";
     private static final String _2ND_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_2nd_push_after_merge.zip";
 
@@ -36,6 +37,7 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     public static void initializeGithubRepositoriesREST()
     {
         GitHubClient gitHubClient = new GitHubClient(GITHUB_URL);
+        gitHubClient.setUserAgent(USER_AGENT);        
         gitHubClient.setCredentials(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
         
         githubRepositoriesREST = new GithubRepositoriesRemoteRestpoint(gitHubClient);
