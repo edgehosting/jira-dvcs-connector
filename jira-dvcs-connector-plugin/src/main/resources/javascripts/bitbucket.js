@@ -704,11 +704,12 @@ function deleteOrganizationInternal(dialog, organizationId, organizationName) {
 function syncRepositoryList(organizationId,organizationName) {
     var dialog = new AJS.Dialog({width:400, height:150, id:"refreshing-account-dialog", closeOnOutsideClick: false});
     dialog.addHeader("Refreshing Account");
-    dialog.addPanel("RefreshPanel", "<span class='dvcs-wait'>Refreshing '" + organizationName + "' account. Please wait...</span>");
+	dialog.addPanel("RefreshPanel", "<p>Refreshing '" + organizationName + "' account. Please wait... <span class='aui-icon aui-icon-wait'>&nbsp;</span></p>");
     dialog.show(); 
+	dialog.updateHeight();
     
     AJS.$.ajax({
-        url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId + "/syncRepoList",
+      url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId + "/syncRepoList",
         type: 'GET',
         success: function(result) {
             window.location.reload();
