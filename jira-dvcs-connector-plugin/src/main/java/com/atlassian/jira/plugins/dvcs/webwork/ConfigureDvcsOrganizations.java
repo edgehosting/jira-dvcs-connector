@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.conditions.GithubEnterpriseEnabledCondition;
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -25,26 +26,25 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
  */
 public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 {
-	private static final long serialVersionUID = 8695500426304238626L;
-
 	private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
 	private String postCommitRepositoryType;
 	private final FeatureManager featureManager;
 	private final OrganizationService organizationService;
 	private final DvcsCommunicatorProvider communicatorProvider;
-
     private final PluginFeatureDetector featuresDetector;
-
     private final InvalidOrganizationManager invalidOrganizationsManager;
+    private final OAuthStore oAuthStore;
 
-	public ConfigureDvcsOrganizations(OrganizationService organizationService,
-			FeatureManager featureManager, DvcsCommunicatorProvider communicatorProvider, PluginFeatureDetector featuresDetector, PluginSettingsFactory pluginSettingsFactory)
+    public ConfigureDvcsOrganizations(OrganizationService organizationService, FeatureManager featureManager,
+            DvcsCommunicatorProvider communicatorProvider, PluginFeatureDetector featuresDetector,
+            PluginSettingsFactory pluginSettingsFactory, OAuthStore oAuthStore)
 	{
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
 		this.featureManager = featureManager;
         this.featuresDetector = featuresDetector;
+        this.oAuthStore = oAuthStore;
         this.invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
 	}
 
@@ -115,21 +115,6 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         return featuresDetector.isUserInvitationsEnabled();
     }
 
-    public boolean isGithubOauthRequired()
-    {
-        return !communicatorProvider.getCommunicator("github").isOauthConfigured();
-    }
-
-    public boolean isGithubEnterpriseOauthRequired()
-    {
-        return !communicatorProvider.getCommunicator("githube").isOauthConfigured();
-    }
-
-    public boolean isBitbucketOauthRequired()
-    {
-        return !communicatorProvider.getCommunicator("bitbucket").isOauthConfigured();
-    }
-
     public boolean isGithubEnterpriseEnabled()
     {
         return GithubEnterpriseEnabledCondition.isGitHubEnterpriseEnabled();
@@ -138,5 +123,10 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     public boolean isIntegratedAccount(Organization org)
     {
         return org.isIntegratedAccount();
+    }
+    
+    public OAuthStore getOAuthStore()
+    {
+        return oAuthStore;
     }
 }

@@ -23,15 +23,15 @@ public class OrganizationDiv
     
     private final PageElement rootElement;
     private final PageElement repositoriesTable;
-    private final PageElement repositoryType;
-    private final PageElement repositoryName;
+    private final PageElement organizationType;
+    private final PageElement organizationName;
   
     public OrganizationDiv(PageElement row)
     {
         this.rootElement = row;
         this.repositoriesTable = rootElement.find(By.tagName("table"));
-        this.repositoryType =  rootElement.find(By.xpath("div/h4"));
-        this.repositoryName = rootElement.find(By.xpath("div/h4/a"));
+        this.organizationType =  rootElement.find(By.xpath("div/h4"));
+        this.organizationName = rootElement.find(By.xpath("div/h4/a"));
     }
 
     /**
@@ -61,15 +61,28 @@ public class OrganizationDiv
         return list;
     }
     
-    public String getRepositoryType()
+    public boolean containsRepository(String name)
     {
-        // <h4 class="aui bitbucketLogo">
-        return repositoryType.getAttribute("class").replaceAll("aui (.*)Logo", "$1");
+        List<RepositoryDiv> repositories = getRepositories();
+        for (RepositoryDiv repositoryDiv : repositories)
+        {
+            if (name.equals(repositoryDiv.getRepositoryName()))
+            {
+                return true;
+            }
+        }
+        return false;
     }
     
-    public String getRepositoryName()
+    public String getOrganizationType()
     {
-        return repositoryName.getText();
+        // <h4 class="aui bitbucketLogo">
+        return organizationType.getAttribute("class").replaceAll("aui (.*)Logo", "$1");
+    }
+    
+    public String getOrganizationName()
+    {
+        return organizationName.getText();
     }
     
 }

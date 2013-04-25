@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.githubenterprise;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
@@ -33,7 +32,7 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
         {
             userService.getUser(accountName);
 
-            return new AccountInfo(GithubCommunicator.GITHUB, !isOauthConfigured());
+            return new AccountInfo(GithubCommunicator.GITHUB);
 
         } catch (RequestException e)
         {
@@ -43,7 +42,7 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
             // GitHub Enterprise returns a 403 status for unauthorized requests.
             if (e.getStatus() == 403)
             {
-                return new AccountInfo(GithubCommunicator.GITHUB, !isOauthConfigured());
+                return new AccountInfo(GithubCommunicator.GITHUB);
             }
 
         } catch (IOException e)
@@ -53,14 +52,6 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
         }
         return null;
 
-    }
-
-    @Override
-    public boolean isOauthConfigured()
-    {
-        return StringUtils.isNotBlank(oAuthStore.getUrl(GITHUB_ENTERPRISE))
-                && StringUtils.isNotBlank(oAuthStore.getClientId(GITHUB_ENTERPRISE))
-                && StringUtils.isNotBlank(oAuthStore.getSecret(GITHUB_ENTERPRISE));
     }
     
     @Override

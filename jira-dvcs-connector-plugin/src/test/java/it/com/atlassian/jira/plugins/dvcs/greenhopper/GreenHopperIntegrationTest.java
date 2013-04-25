@@ -1,12 +1,13 @@
 package it.com.atlassian.jira.plugins.dvcs.greenhopper;
 
+import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
+
+import org.testng.annotations.Test;
+
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
-
-import org.testng.annotations.Test;
-import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 
 /**
  * @author Martin Skurla
@@ -21,9 +22,9 @@ public class GreenHopperIntegrationTest extends BaseOrganizationTest<BitBucketCo
     @Test
     public void greenHopperIntegration_ShouldAddDvcsCommitsTab()
     {
-        loginToBitbucketAndSetJiraOAuthCredentials();
+        OAuthCredentials oAuthCredentials = loginToBitbucketAndSetJiraOAuthCredentials();
 
-        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, true);
+        configureOrganizations.addOrganizationSuccessfully(TEST_ORGANIZATION, oAuthCredentials, true);
 
         GreenHopperBoardPage greenHopperBoardPage = jira.getPageBinder().navigateToAndBind(GreenHopperBoardPage.class);
         greenHopperBoardPage.goToQABoardPlan();
@@ -38,8 +39,7 @@ public class GreenHopperIntegrationTest extends BaseOrganizationTest<BitBucketCo
         return BitBucketConfigureOrganizationsPage.class;
     }
 
-
-    private void loginToBitbucketAndSetJiraOAuthCredentials()
+    private OAuthCredentials loginToBitbucketAndSetJiraOAuthCredentials()
     {
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin();
@@ -47,13 +47,14 @@ public class GreenHopperIntegrationTest extends BaseOrganizationTest<BitBucketCo
         jira.getTester().gotoUrl(BitbucketIntegratedApplicationsPage.PAGE_URL);
         bitbucketIntegratedApplicationsPage = jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
 
-        BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
+        OAuthCredentials oAuthCredentials =
                 bitbucketIntegratedApplicationsPage.addConsumer();
 
-        BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
-        oauthConfigPage.setCredentials(oauthCredentials.oauthKey, oauthCredentials.oauthSecret);
+//        BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
+//        oauthConfigPage.setCredentials(oauthCredentials.oauthKey, oauthCredentials.oauthSecret);
 
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
+        return oAuthCredentials;
     }
 
     private void removeOAuthConsumer()

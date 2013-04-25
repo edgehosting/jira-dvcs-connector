@@ -294,14 +294,6 @@
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
 
-            <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.ConfigureGithubOAuth" alias="ConfigureGithubOAuth">
-                <view name="input">/templates/configuregithuboauth.vm</view>
-            </action>
-            
-             <action name="com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork.ConfigureGithubEnterpriseOAuth" alias="ConfigureGithubEnterpriseOAuth">
-                <view name="input">/templates/configuregithubenterpriseoauth.vm</view>
-            </action>
-
 			<!-- New organization driven actions -->
             <action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.AddGithubOrganization"
                     alias="AddGithubOrganization" roles-required="admin">
@@ -325,12 +317,12 @@
 
 			<action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken"
                     alias="RegenerateGithubOauthToken" roles-required="admin">
-                <view name="input">/templates/dvcs/add-organization.vm</view>
+                <view name="input">/templates/dvcs/regenerate-oauth.vm</view>
             </action>
             
             <action name="com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork.RegenerateGithubEnterpriseOauthToken"
                     alias="RegenerateGithubEnterpriseOauthToken" roles-required="admin">
-                <view name="input">/templates/dvcs/add-organization.vm</view>
+                <view name="input">/templates/dvcs/regenerate-oauth.vm</view>
             </action>
 
             <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.RegenerateBitbucketOauthToken"
@@ -343,10 +335,6 @@
                 <view name="input">/templates/dvcs/add-organization.vm</view>
             </action>
 
-            <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.ConfigureBitbucketOAuth" alias="ConfigureBitbucketOAuth">
-                <view name="input">/templates/dvcs/configure-bitbucket-oauth.vm</view>
-            </action>
-
         </actions>
     </webwork1>
 
@@ -357,33 +345,6 @@
 
         <link>/secure/admin/ConfigureDvcsOrganizations!default.jspa</link>
         <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
-    </web-item>
-
-    <web-item key="github_oauth" name="GitHub OAuth" section="admin_plugins_menu/source_control" weight="10">
-        <description>Static link to github.com.</description>
-        <label>GitHub OAuth Settings</label>
-        <name>GitHub Name Item</name>
-        <link>/secure/admin/ConfigureGithubOAuth!default.jspa</link>
-        <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
-    </web-item>
-    
-    <web-item key="github_enterprise_oauth" name="GitHub Enerprise OAuth" section="admin_plugins_menu/source_control" weight="10">
-       <description>Static link to github.com.</description>
-       <label>GitHub Enterprise OAuth Settings</label>
-       <name>GitHub Enterprise Name Item</name>
-       <link>/secure/admin/ConfigureGithubEnterpriseOAuth!default.jspa</link>
-       <conditions type="AND">
-           <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
-           <condition class="com.atlassian.jira.plugins.dvcs.conditions.GithubEnterpriseEnabledCondition" />
-       </conditions>
-    </web-item>
-
-    <web-item key="bitbucket_oauth" name="Bitbucket OAuth" section="admin_plugins_menu/source_control" weight="10">
-        <description>Static link to bitbucket.com.</description>
-        <label>Bitbucket OAuth Settings</label>
-        <name>Bitbucket Name Item</name>
-        <link>/secure/admin/ConfigureBitbucketOAuth!default.jspa</link>
-        <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition" />
     </web-item>
 
     <web-resource name="resources" key="resources">

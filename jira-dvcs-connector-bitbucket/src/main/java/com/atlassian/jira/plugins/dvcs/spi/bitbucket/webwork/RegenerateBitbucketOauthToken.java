@@ -9,7 +9,6 @@ import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
@@ -25,9 +24,9 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
     private final ApplicationProperties ap;
 
     public RegenerateBitbucketOauthToken(OrganizationService organizationService, RepositoryService repositoryService,
-            ApplicationProperties ap, OAuthStore oAuthStore)
+            ApplicationProperties ap)
     {
-        super(organizationService, repositoryService, oAuthStore);
+        super(organizationService, repositoryService);
         this.ap = ap;
     }
 
