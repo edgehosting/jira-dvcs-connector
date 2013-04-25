@@ -32,9 +32,9 @@ public class GreenHopperBoardPage implements Page
         return "/secure/RapidBoard.jspa?rapidView=1&useStoredSettings=true";
     }
 
-
     public void goToQABoardPlan()
     {
+        Poller.waitUntilTrue(boardPlanToggleViewButton.timed().isVisible());
         boardPlanToggleViewButton.click();
     }
 

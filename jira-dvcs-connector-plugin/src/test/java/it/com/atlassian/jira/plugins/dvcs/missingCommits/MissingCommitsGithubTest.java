@@ -8,7 +8,6 @@ import java.net.URL;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
@@ -75,14 +74,6 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
         registeredOAuthAppsPage.parseClientIdAndSecret(oauthAppName);
         oauthAppLink = registeredOAuthAppsPage.getOauthAppUrl();
         return oAuthCredentials;
-    }
-
-    @Test
-    @Override
-    public void commitsIssueTab_ShouldNotMissAnyRelatedCommits() throws Exception
-    {
-        // TODO Auto-generated method stub
-        super.commitsIssueTab_ShouldNotMissAnyRelatedCommits();
     }
     
     @Override
