@@ -26,7 +26,7 @@
 	        </div>
 	    </fieldset>
 	    </form>
-        <div id="aui-message-bar"></div>
+        <div id="aui-message-bar-oauth-dialog"></div>
 	</div>
 {/template}
 
@@ -266,4 +266,19 @@
         <div id="aui-message-bar"></div>
 
     </form>
+{/template}
+
+/**
+ *	@param organizationName
+ */
+{template .confirmDelete}
+	<div>
+		<p>
+			Are you sure you want to remove account '{$organizationName}' from JIRA?
+		<p>
+		<p>
+			Deleting an account removes it permanently from JIRA, including all of its repositories and synchronized changesets.
+		<p>
+		<div id="aui-message-bar-delete-org"></div>
+	</div>
 {/template}
