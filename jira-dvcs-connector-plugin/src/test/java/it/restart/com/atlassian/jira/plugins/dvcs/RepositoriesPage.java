@@ -77,9 +77,8 @@ public class RepositoriesPage implements Page
     @ElementBy(id = "oauthSecretGhe")
     private PageElement oauthSecretGhe;
     
-    
-//    @ElementBy(className = "gh_messages")
-//    private PageElement syncStatusDiv;
+    @ElementBy(xpath="//button[contains(concat(' ', @class , ' '),' button-panel-submit-button ') and text()='Continue']")
+    PageElement continueAddOrgButton;
 
     @Override
     public String getUrl()
@@ -120,13 +119,13 @@ public class RepositoriesPage implements Page
         addOrgButton.click();
     }
 
-    public OrganizationDiv getOrganization(String repositoryType, String repositoryName)
+    public OrganizationDiv getOrganization(String organizationType, String organizationName)
     {
         List<OrganizationDiv> organizations = getOrganizations();
         for (OrganizationDiv organizationDiv : organizations)
         {
-            if (repositoryType.equals(organizationDiv.getOrganizationType())
-                    && repositoryName.equals(organizationDiv.getOrganizationName()))
+            if (organizationType.equals(organizationDiv.getOrganizationType())
+                    && organizationName.equals(organizationDiv.getOrganizationName()))
             {
                 return organizationDiv;
             }
@@ -134,7 +133,6 @@ public class RepositoriesPage implements Page
         return null;
     }
 
-    
     public List<OrganizationDiv> getOrganizations()
     {
         List<OrganizationDiv> list = new ArrayList<OrganizationDiv>();
