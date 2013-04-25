@@ -106,9 +106,9 @@ public class ChangesetDaoImpl implements ChangesetDao
                 ChangesetMapping chm = getChangesetMapping(changeset);
                 if (chm == null) {
                     chm = activeObjects.create(ChangesetMapping.class);
+                    fillProperties(changeset, chm);
+                    chm.save();
                 }
-                fillProperties(changeset, chm);
-                chm.save();
 
                 associateRepositoryToChangeset(chm, changeset.getRepositoryId());
                 if (extractedIssues != null)
@@ -378,7 +378,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 .join(ChangesetMapping.class, "chm.ID = pk." + IssueToChangesetMapping.CHANGESET_ID)
                 .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
                 .where("rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ?", repositoryId)
-                .order("pk." + IssueToChangesetMapping.PROJECT_KEY);
+                .order(IssueToChangesetMapping.PROJECT_KEY);
 
 
 

@@ -46,8 +46,8 @@ public class SmartcommitOperation implements Runnable
 				@Override
 				public void execute(ChangesetMapping changesetMapping)
 				{
-					log.debug("Processing message \n {} \n for smartcommits. Changeset id = {}.", new Object[]
-					{ changesetMapping.getMessage(), changesetMapping.getID() });
+					log.debug("Processing message \n {} \n for smartcommits. Changeset id = {} node = {}.", new Object[]
+					{ changesetMapping.getMessage(), changesetMapping.getID() , changesetMapping.getNode()});
 
 					// first mark as processed
 					changesetDao.markSmartcommitAvailability(changesetMapping.getID(), false);

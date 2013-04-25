@@ -114,7 +114,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                 //--------------------------------------------
                 // mark smart commit can be processed
                 // + store extracted project key for incremental linking
-                markChangesetForSmartCommit(changesetForSave, CollectionUtils.isNotEmpty(extractedIssues));
+                markChangesetForSmartCommit(changesetForSave, softSync && CollectionUtils.isNotEmpty(extractedIssues));
 //                        if (softSync && !changesetAlreadyMarkedForSmartCommits)
 //                        {
 //                            markChangesetForSmartCommit(changesetForSave, true);
