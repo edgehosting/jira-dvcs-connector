@@ -614,6 +614,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 						popup.remove();
 				    }, "aui-button submit");
 					popup.show();
+					popup.updateHeight();
 					
 					// show warning icon if not already shown
 					var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
