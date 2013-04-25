@@ -614,6 +614,11 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 						popup.remove();
 				    }, "aui-button submit");
 					popup.show();
+					
+					// show warning icon if not already shown
+					var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
+					errorStatusIcon.addClass("admin_permission aui-icon aui-icon-warning");
+					registerAdminPermissionInlineDialogTooltip(errorStatusIcon);
 				 }
 				  
 				  AJS.$("#" + checkboxId  + "working").hide();
@@ -633,24 +638,36 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 		}
 	 
 	).error(function (err) { 
-				  showError("Unable to " + (checkedValue ? "link" : "unlink") + " selected repository. Please contact the server administrator.", "#aui-message-bar-global");
+				  var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
+				  errorStatusIcon.removeClass("admin_permission aui-icon-warning").addClass("aui-icon aui-icon-error");
+				  var response = jQuery.parseJSON(err.responseText);
+				  var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", response.message + "<br/>Please contact the server administrator.");
+				  tooltip.show();
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);
 			  });
 }
 
-function registerAdminPermissionInlineDialogTooltip() {
+function registerAdminPermissionInlineDialogTooltips() {
 	AJS.$(".admin-permission").each(function(index) {
-		AJS.InlineDialog(AJS.$(this), "admin-tooltip"+index,
+		registerAdminPermissionInlineDialogTooltip(this);
+	});
+}
+
+function registerAdminPermissionInlineDialogTooltip(element) {
+	registerInlineDialogTooltip(element, "No admin permission", "The post commit hook could not be installed.");
+}
+
+function registerInlineDialogTooltip(element, title, body) {
+	return AJS.InlineDialog(AJS.$(element), "tooltip_"+AJS.$(element).attr('id'),
 		    function(content, trigger, showPopup) {
-				content.css({"padding":"10px"}).html('<p>No admin permission. The post commit hook could not be installed.</p>');
+				content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><p>" + body + "</p>");
 				showPopup();
 		        return false;
 		    },
 		    {onHover:true, hideDelay:200, showDelay:1000, arrowOffsetX:-8, offsetX:-80}
 		);
-	});
 }
 
 function enableRepoSmartcommits(repoId, checkboxId) {

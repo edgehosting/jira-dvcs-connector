@@ -14,7 +14,7 @@
         {
             // run timer for repos sync statuses
 			retrieveSyncStatus();
-			registerAdminPermissionInlineDialogTooltip();
+			registerAdminPermissionInlineDialogTooltips();
         }
 		
 		if (typeof jira == 'undefined') { var jira = {}; }
@@ -221,9 +221,8 @@
                 </td>
                 
                 <td class="dvcs-org-reponame">
-                    #if($repo.sync && !$repo.sync.hasAdminPermission())
-						<span class="admin-permission aui-icon aui-icon-warning">&nbsp;</span>
-                    #end
+                    <span id="error_status_icon_$repo.id" class="#if($repo.sync && !$repo.sync.hasAdminPermission())admin-permission aui-icon aui-icon-warning#end">&nbsp;</span>
+                    
                     <a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
 				</td>
                 
