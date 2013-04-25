@@ -7,6 +7,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.JiraAddUserPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
@@ -83,7 +84,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
     public void addOrganization()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+        OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull(); 
         assertThat(organization.getRepositories().size()).isEqualTo(4);  
@@ -98,7 +99,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
     public void addOrganizationWaitForSync()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
         
         assertThat(organization).isNotNull(); 
         assertThat(organization.getRepositories().size()).isEqualTo(4);
@@ -113,7 +114,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
     public void addOrganizationInvalidUrl()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(RepositoriesPageController.BITBUCKET, "https://privatebitbucket.org/someaccount", getOAuthCredentials(), false);
+        rpc.addOrganization(AccountType.BITBUCKET, "https://privatebitbucket.org/someaccount", getOAuthCredentials(), false);
     }
     
     @Override
@@ -121,7 +122,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
     public void addOrganizationInvalidAccount()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(RepositoriesPageController.BITBUCKET, "I_AM_SURE_THIS_ACCOUNT_IS_INVALID", getOAuthCredentials(), false);
+        rpc.addOrganization(AccountType.BITBUCKET, "I_AM_SURE_THIS_ACCOUNT_IS_INVALID", getOAuthCredentials(), false);
     }
 
     @Override
@@ -129,7 +130,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
     public void addOrganizationInvalidOAuth()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true);
+        OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true);
         
         assertThat(organization).isNotNull(); 
         assertThat(organization.getRepositories().size()).isEqualTo(4);  
@@ -140,7 +141,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
     public void testCommitStatistics()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2", 1); // throws AssertionError with other than 1 message
@@ -176,7 +177,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
 
         // add organization
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check postcommit hook is there
         String servicesConfig = getBitbucketServices(bitbucketServiceConfigUrl, "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
@@ -199,7 +200,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
     {
         // add organization
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // Activity streams gadget expected at dashboard page!
         DashboardActivityStreamsPage page = jira.visit(DashboardActivityStreamsPage.class);
@@ -241,7 +242,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         setupAnonymousAccessAllowed();
         // add organization
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // Activity streams gadget expected at dashboard page!
         DashboardActivityStreamsPage page = jira.visit(DashboardActivityStreamsPage.class);
@@ -269,7 +270,6 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         new JiraLoginPageController(jira).login();
         setupAnonymousAccessForbidden();
     }
-    
     
     //-------------------------------------------------------------------
     //--------- these methods should go to some common utility/class ---- 
@@ -350,6 +350,13 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount()
+    {
+        // Not relevant for Bitbucket - is uses same api for organizations ans users
+        // but maybe we add something heee one day
     }
 
    

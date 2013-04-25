@@ -326,7 +326,7 @@ a:hover.repositoryNameLink {
 	color: #959595 !important;
 }
 .dvcs-repos-table .dvcs-disabled a {
-	color: #A1B9ED !important;
+	color: #6f98c1 !important;
 }
 .dvcs-action-container {
 	/*white-space: nowrap;*/
@@ -452,16 +452,6 @@ html[xmlns] .dvcs-dclear {
     top: 4px;
 }
 
-.dvcs-wait {
-	background-image:url(../../../../images/icons/wait.gif);
-	background-repeat: no-repeat;
-	background-position: right center;
-	padding-right:25px;
-	min-height:25px;
-	color: #777;
-	font-size: 1.2em;
-}
-
 /* Force synchronization inline dialog style */
 div.jira-dvcs-connector-plugin.forceSyncDialog {
 	margin: 2.5ex;
@@ -539,6 +529,6 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	margin-right: 1ex;
 }
 
-.admin-permission {
+.repository-error-icon {
 	display: inline-block;
 }

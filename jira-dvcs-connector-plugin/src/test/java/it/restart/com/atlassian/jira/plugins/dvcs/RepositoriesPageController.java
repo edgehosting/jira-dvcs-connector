@@ -30,18 +30,23 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     public OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials, boolean autosync)
     {
-        return addOrganization(accountType, accountName, null, oAuthCredentials, autosync);
-    }
-    
-    public OrganizationDiv addOrganization(AccountType accountType, String accountName, String url, OAuthCredentials oAuthCredentials, boolean autosync)
-    {
-        page.addOrganisation(accountType.index, accountName, url, oAuthCredentials, autosync);
+        page.addOrganisation(accountType.index, accountName, accountType.hostUrl, oAuthCredentials, autosync);
         assertThat(page.getErrorStatusMessage()).isNull();
+
+        if ("githube".equals(accountType.type))
+        {
+            // Confirm submit for GitHub Enterprise
+            // "Please be sure that you are logged in to GitHub Enterprise before clicking "Continue" button."
+            page.continueAddOrgButton.click();
+        }
+
         if(requiresGrantAccess())
         {
             accountType.grantAccessPageController.grantAccess(jira);
         }
         
+        assertThat(page.getErrorStatusMessage()).isNull();
+
         OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
         if (autosync)
         {
@@ -92,15 +97,16 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     /**
     *
     */
-    public static final AccountType BITBUCKET = new AccountType(0, "bitbucket", null, new BitbucketGrantAccessPageController());
-    public static final AccountType GITHUB = new AccountType(1, "github", null, new GithubGrantAccessPageController());
-    public static AccountType getGHEAccountType(String hostUrl)
-    {
-        return new AccountType(2, "github1", hostUrl, null); // TODO GrantAccessPageController
-    }
 
-    static class AccountType
+    public static class AccountType
     {
+        public static final AccountType BITBUCKET = new AccountType(0, "bitbucket", null, new BitbucketGrantAccessPageController());
+        public static final AccountType GITHUB = new AccountType(1, "github", null, new GithubGrantAccessPageController());
+        public static AccountType getGHEAccountType(String hostUrl)
+        {
+            return new AccountType(2, "githube", hostUrl, new GithubGrantAccessPageController()); // TODO GrantAccessPageController
+        }
+        
         public final int index;
         public final String type;
         public final GrantAccessPageController grantAccessPageController;
