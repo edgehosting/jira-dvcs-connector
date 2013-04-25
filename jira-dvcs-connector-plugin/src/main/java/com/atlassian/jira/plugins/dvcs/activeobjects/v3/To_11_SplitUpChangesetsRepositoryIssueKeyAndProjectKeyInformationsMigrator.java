@@ -321,7 +321,7 @@ public class To_11_SplitUpChangesetsRepositoryIssueKeyAndProjectKeyInformationsM
                     // prevention in front of memory leak
                     deltaTime.begin(DeltaTimePart.CACHE);
                     ao.flushAll();
-                    deltaTime.begin(DeltaTimePart.CACHE);
+                    deltaTime.end(DeltaTimePart.CACHE);
 
                     progress.update(founded.length);
                     deltaTime.log();
