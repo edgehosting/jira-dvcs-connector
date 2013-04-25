@@ -282,7 +282,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     	dialog.enabled(false);
 
     	//
-        AJS.messages.info({ title: "Connecting to " + dvcsHost + " to configure your account...", closeable : false});
+        AJS.messages.info("#aui-message-bar", { title: "Connecting to " + dvcsHost + " to configure your account...", closeable : false});
         dialog.updateHeight();
         // set url by selected type
         return true; // submit form
@@ -302,7 +302,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
 
     AJS.$("#aui-message-bar").empty();
     
-    AJS.messages.info({ title: "Trying to identify repository type...", closeable : false});
+    AJS.messages.info("#aui-message-bar", { title: "Trying to identify repository type...", closeable : false});
     dialog.updateHeight();
     
     var repositoryUrl = AJS.$("#url").val().trim();
@@ -318,7 +318,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
            
             if (data.validationErrors && data.validationErrors.length > 0) {
             	AJS.$.each(data.validationErrors, function(i, msg){
-            		AJS.messages.error({title : "Error!", body : msg});
+            		AJS.messages.error("#aui-message-bar", {title : "Error!", body : msg});
             		dialog.updateHeight();
             	})
             } else{
@@ -326,7 +326,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
         	}
     	}).error(function(a) {
             AJS.$("#aui-message-bar").empty();
-            AJS.messages.error({ title: "Error!", 
+            AJS.messages.error("#aui-message-bar", { title: "Error!", 
             	body: "The url [<b>" + AJS.escapeHtml(AJS.$("#url").val()) + "</b>] is incorrect or the server is not responding." 
             });
             dialog.enabled(true);
@@ -411,7 +411,7 @@ function configureDefaultGroups(orgName, id) {
 	AJS.$("#organizationIdDefaultGroups").val("");
 	AJS.$("#configureDefaultGroupsContent").html("");
 	AJS.$("#configureDefaultGroupsContentWorking").show();
-	
+ 	AJS.$("#aui-message-bar-default-groups").empty();
 	var popup = new AJS.Dialog({
 		width: 600, 
 		height: 400, 
@@ -446,8 +446,8 @@ function configureDefaultGroups(orgName, id) {
 			}
 		
 	).error(function (err) { 
-			AJS.$("#configureDefaultGroupsContentWorking").show()
-			showError("Unexpected error occurred. Please contact the server administrator.");
+			showError("Unexpected error occurred. Please contact the server administrator.", "#aui-message-bar-"+id);
+			popup.hide();
 		});
 }
 
@@ -509,8 +509,8 @@ function configureOAuth(org, atlToken) {
 				window.location.replace(BASE_URL+"/secure/admin/"+actionName+"?organization=" + org.id + "&atl_token="+atlToken);
 			})
 			.error(function (err) {
-				AJS.$("#aui-message-bar").empty();
-		        AJS.messages.error({ title: "Error!", 
+				AJS.$("#aui-message-bar-oauth-dialog").empty();
+		        AJS.messages.error("#aui-message-bar-oauth-dialog", { title: "Error!", 
 		          	body: "Could not configure OAuth.",
 		          	closeable : false
 		        });
@@ -553,7 +553,7 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 			}
 		}
 	).error(function (err) { 
-				  showError("Unexpected error occurred. Please contact the server administrator.");
+				  showError("Unexpected error occurred. Please contact the server administrator.", "#aui-message-bar-"+organizationId);
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);
@@ -577,7 +577,7 @@ function enableSmartcommitsOnNewRepos(organizationId, checkboxId) {
 			}
 		}
 	  ).error(function (err) {
-				  showError("Unexpected error occurred. Please contact the server administrator.");
+				  showError("Unexpected error occurred when enabling smart commits on new repositories. Please contact the server administrator.", "#aui-message-bar-"+organizationId);
 				  setChecked(checkboxId, !checkedValue);
 	  });
 }
@@ -614,6 +614,12 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 						popup.remove();
 				    }, "aui-button submit");
 					popup.show();
+					popup.updateHeight();
+					
+					// show warning icon if not already shown
+					var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
+					errorStatusIcon.addClass("admin_permission aui-icon aui-icon-warning");
+					registerAdminPermissionInlineDialogTooltip(errorStatusIcon);
 				 }
 				  
 				  AJS.$("#" + checkboxId  + "working").hide();
@@ -633,25 +639,36 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 		}
 	 
 	).error(function (err) { 
-		          err.callbackUrl
-				  showError("Unable to " + (checkedValue ? "link" : "unlink") + " selected repository. Please contact the server administrator.");
+				  var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
+				  errorStatusIcon.removeClass("admin_permission aui-icon-warning").addClass("aui-icon aui-icon-error");
+				  var response = jQuery.parseJSON(err.responseText);
+				  var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", response.message + "<br/>Please contact the server administrator.");
+				  tooltip.show();
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
 				  setChecked(checkboxId, !checkedValue);
 			  });
 }
 
-function registerAdminPermissionInlineDialogTooltip() {
+function registerAdminPermissionInlineDialogTooltips() {
 	AJS.$(".admin-permission").each(function(index) {
-		AJS.InlineDialog(AJS.$(this), "admin-tooltip"+index,
+		registerAdminPermissionInlineDialogTooltip(this);
+	});
+}
+
+function registerAdminPermissionInlineDialogTooltip(element) {
+	registerInlineDialogTooltip(element, "No admin permission", "The post commit hook could not be installed.");
+}
+
+function registerInlineDialogTooltip(element, title, body) {
+	return AJS.InlineDialog(AJS.$(element), "tooltip_"+AJS.$(element).attr('id'),
 		    function(content, trigger, showPopup) {
-				content.css({"padding":"10px"}).html('<p>No admin permission. The post commit hook could not be installed.</p>');
+				content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><p>" + body + "</p>");
 				showPopup();
 		        return false;
 		    },
 		    {onHover:true, hideDelay:200, showDelay:1000, arrowOffsetX:-8, offsetX:-80}
 		);
-	});
 }
 
 function enableRepoSmartcommits(repoId, checkboxId) {
@@ -680,26 +697,66 @@ function enableRepoSmartcommits(repoId, checkboxId) {
 			  });
 }
 
-function deleteOrganization(organizationId, organizationName) {
-	var answer = confirm("Are you sure you want to remove account '" +organizationName + "' from JIRA ?");
+function confirmationDialog(options) {
+	var dialog = new AJS.Dialog({width:500, height:150, id: "confirm-dialog", closeOnOutsideClick: false});
+	dialog.addHeader(options.header);
+	dialog.addPanel("ConfirmPanel", options.body);
 	
-	if (answer) {
-		var dialog = new AJS.Dialog({width:400, height:150, id:"deleting-account-dialog", closeOnOutsideClick: false});
-		dialog.addHeader("Deleting Account");
-		dialog.addPanel("DeletePanel", "<span class='dvcs-wait'>Deleting '" + organizationName + "' account. Please wait...</span>");
-		dialog.show(); 
-		
-		AJS.$.ajax({
-            url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId,
-            type: 'DELETE',
-            success: function(result) {
-                window.location.reload();
-            }
-        }).error(function (err) { 
-        	dialog.remove();
-        	showError("Error when deleting account '" + organizationName + "'.");
-		});
+	dialog.addButtonPanel();
+	dialog.page[0].buttonpanel.append("<span id='confirm-action-wait' class='aui-icon' style='padding-right:10px'>&nbsp;</span>");
+	
+	dialog.addSubmit(options.submitButtonLabel, function (dialog, event) {
+		dialog.working(true);
+		if (typeof options.okAction == 'function') {
+			options.okAction(dialog);
+		}
+	});
+    
+	dialog.addCancel("Cancel", function (dialog) {
+	    if (typeof options.cancelAction == 'function') {
+	    	options.cancelAction(dialog);
+	    }
+		dialog.remove();
+	}, "#");
+	
+	dialog.working = function(working) {
+		if (working) {
+			AJS.$("#confirm-action-wait").addClass("aui-icon-wait");
+			AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", true);
+		} else {
+			AJS.$("#confirm-action-wait").removeClass("aui-icon-wait");
+			AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", false);
+		}
 	}
+	
+	dialog.showError = function(message) {
+		dialog.working(false);
+		showError(message, "#aui-message-bar-delete-org");
+    	dialog.updateHeight();
+	}
+    dialog.show(); 
+	dialog.updateHeight();
+}
+
+function deleteOrganization(organizationId, organizationName) {
+	confirmationDialog({
+		header: "Deleting Account '" + organizationName + "'",
+		body: jira.dvcs.connector.plugin.soy.confirmDelete({'organizationName': organizationName}),
+		submitButtonLabel: "Delete",
+		okAction: function (dialog) { deleteOrganizationInternal(dialog, organizationId, organizationName); }
+		});
+}
+
+function deleteOrganizationInternal(dialog, organizationId, organizationName) {
+	AJS.$.ajax({
+        url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId,
+        type: 'DELETE',
+        success: function(result) {
+            window.location.reload();
+        }
+    }).error(function (err) {
+    	dialog.showError("Error when deleting account '" + organizationName + "'.");
+	});
 }
 
 function syncRepositoryList(organizationId,organizationName) {
@@ -714,13 +771,22 @@ function syncRepositoryList(organizationId,organizationName) {
         success: function(result) {
             window.location.reload();
         }
-    }).error(function (err) { 
-    	window.location.reload();
+    }).error(function (err) {
+    	showError("Error when refreshing account '" + organizationName + "'.", "#aui-message-bar-"+organizationId);
+    	dialog.remove();
 	});
 }
 
-function showError(message) {
-	alert(message);
+function showError(message, auiMessageElement, closeable) {
+	if (typeof auiMessageElement == 'undefined') {
+		auiMessageElement = "#aui-message-bar-global";
+	}
+		
+	AJS.$(auiMessageElement).empty();
+	AJS.messages.error(auiMessageElement, {
+		title: message,
+		closeable: closeable
+	});
 }
 
 function setChecked(checkboxId, checked) {

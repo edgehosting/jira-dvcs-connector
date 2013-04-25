@@ -14,7 +14,7 @@
         {
             // run timer for repos sync statuses
 			retrieveSyncStatus();
-			registerAdminPermissionInlineDialogTooltip();
+			registerAdminPermissionInlineDialogTooltips();
         }
 		
 		if (typeof jira == 'undefined') { var jira = {}; }
@@ -59,8 +59,8 @@
         #else
             <p>Connect your <a href="http://confluence.atlassian.com/display/BITBUCKET/Using+the+JIRA+DVCS+Connector+Plugin" target="_blank">Bitbucket and GitHub accounts to JIRA</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
         #end
-        <br/>
-    
+		
+		<div id="aui-message-bar-global"></div>
         #foreach ($errorMessage in $action.getErrorMessages())
                 <div class="aui-message error shadowed">
                     <p class="title">
@@ -70,7 +70,7 @@
                     <p>$errorMessage</p>
                 </div>
         #end
-        
+	    <br/>
 
 	   <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account" />
 
@@ -95,7 +95,7 @@
 
 #foreach( $org in $action.loadOrganizations() )
   <div class="dvcs-orgdata-container">
-            
+    <div id="aui-message-bar-$org.id"></div>        
     #if($org.isAutolinkNewRepos())
         #set( $orgAutolink = "checked='checked'")
         #set( $orgSmartcommitsOnNewReposDisabled = "")
@@ -221,9 +221,8 @@
                 </td>
                 
                 <td class="dvcs-org-reponame">
-                    #if($repo.sync && !$repo.sync.hasAdminPermission())
-						<span class="admin-permission aui-icon aui-icon-warning">&nbsp;</span>
-                    #end
+                    <span id="error_status_icon_$repo.id" class="#if($repo.sync && !$repo.sync.hasAdminPermission())admin-permission aui-icon aui-icon-warning#end">&nbsp;</span>
+                    
                     <a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
 				</td>
                 
