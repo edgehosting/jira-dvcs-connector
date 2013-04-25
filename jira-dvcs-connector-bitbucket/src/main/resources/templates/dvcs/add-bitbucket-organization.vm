@@ -31,19 +31,16 @@
                 <input class="field-value" type="text" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 			  </div>
 			  
-			   #if($action.getOauthBbRequired() == "true")
-	          	<h3>OAuth Credentials</h3>
-	          	<input type="hidden" name="oauthBbRequired" value="true" />
-	          	<div class="field-group" >
-	          		<label for="oauthBbClientId">Key:</label>
-	            	<input type="text" id="oauthBbClientId" name="oauthBbClientId" value="$textutils.htmlEncode($action.getOauthBbClientId())"/>
-			    </div>
-			  
-			   <div class="field-group" >
-	          		<label for="oauthBbSecret">Secret:</label>
-	            	<input type="text" id="oauthBbSecret" name="oauthBbSecret" value="$textutils.htmlEncode($action.getOauthBbSecret())"/>
-			   </div>
-	          #end
+                <h3>OAuth Credentials</h3>
+                <div class="field-group" >
+                	<label for="oauthBbClientId">Key:</label>
+                	<input type="text" id="oauthBbClientId" name="oauthBbClientId" value="$textutils.htmlEncode($action.getOauthBbClientId())"/>
+                </div>
+                  
+                   <div class="field-group" >
+                	<label for="oauthBbSecret">Secret:</label>
+                	<input type="text" id="oauthBbSecret" name="oauthBbSecret" value="$textutils.htmlEncode($action.getOauthBbSecret())"/>
+                   </div>
 			  
 			 <div class="field-group" style="margin-top: 10px; clear: both" >
 				  <label for="autoLinking">Auto Link New Repositories:</label>

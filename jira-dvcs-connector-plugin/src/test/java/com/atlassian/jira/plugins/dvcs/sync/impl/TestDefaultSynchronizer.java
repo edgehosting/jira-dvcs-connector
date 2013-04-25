@@ -88,8 +88,6 @@ public final class TestDefaultSynchronizer
         // one changeset is saved with issue key, another without
         assertThat(extractedIssuesCaptor.getAllValues().get(0).contains("MES-123")).isTrue();
         assertThat(extractedIssuesCaptor.getAllValues().get(1).isEmpty()).isTrue();
-//        assertThat(savedChangesetCaptor.getAllValues().get(0).getIssueKey()).isEqualTo("MES-123");
-//        assertThat(savedChangesetCaptor.getAllValues().get(1).getIssueKey()).isEqualTo("NON_EXISTING-0");
     }
     
     @Test

@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
@@ -27,7 +28,6 @@ public class RepositoriesPage implements Page
 
     @Inject
     private PageElementFinder elementFinder;
-
 
     @ElementBy(id = "aui-message-bar")
     private PageElement messageBarDiv;
@@ -52,6 +52,31 @@ public class RepositoriesPage implements Page
     
     @ElementBy(className = "button-panel-submit-button")
     private PageElement addOrgButton;
+
+    // ------------------ BB ------------------------
+    @ElementBy(id = "oauthBbClientId")
+    private PageElement oauthBbClientId;
+    
+    @ElementBy(id = "oauthBbSecret")
+    private PageElement oauthBbSecret;
+    
+    // ------------------ GH ------------------------
+    @ElementBy(id = "oauthClientId")
+    private PageElement oauthClientId;
+    
+    @ElementBy(id = "oauthSecret")
+    private PageElement oauthSecret;
+    
+    // ------------------ GHE ------------------------
+    @ElementBy(id = "urlGhe")
+    private PageElement urlGhe;
+    
+    @ElementBy(id = "oauthClientIdGhe")
+    private PageElement oauthClientIdGhe;
+    
+    @ElementBy(id = "oauthSecretGhe")
+    private PageElement oauthSecretGhe;
+    
     
 //    @ElementBy(className = "gh_messages")
 //    private PageElement syncStatusDiv;
@@ -62,12 +87,32 @@ public class RepositoriesPage implements Page
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
     }
     
-    public void addOrganisation(int accountType, String accountName, boolean autoSync)
+    public void addOrganisation(int accountType, String accountName, String url, OAuthCredentials oAuthCredentials, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(accountType));
         organization.clear().type(accountName);
+        
+        switch (accountType)
+        {
+        case 0:
+            oauthBbClientId.clear().type(oAuthCredentials.key);
+            oauthBbSecret.clear().type(oAuthCredentials.secret);
+            break;
+        case 1:
+            oauthClientId.clear().type(oAuthCredentials.key);
+            oauthSecret.clear().type(oAuthCredentials.secret);
+            break;
+        case 2:
+            urlGhe.clear().type(url);
+            oauthClientIdGhe.clear().type(oAuthCredentials.key);
+            oauthSecretGhe.clear().type(oAuthCredentials.secret);
+            break;
+        default:
+            break;
+        } 
+        
         if (!autoSync)
         {
             autoLinkNewRepos.click();
@@ -80,8 +125,8 @@ public class RepositoriesPage implements Page
         List<OrganizationDiv> organizations = getOrganizations();
         for (OrganizationDiv organizationDiv : organizations)
         {
-            if (repositoryType.equals(organizationDiv.getRepositoryType())
-                    && repositoryName.equals(organizationDiv.getRepositoryName()))
+            if (repositoryType.equals(organizationDiv.getOrganizationType())
+                    && repositoryName.equals(organizationDiv.getOrganizationName()))
             {
                 return organizationDiv;
             }

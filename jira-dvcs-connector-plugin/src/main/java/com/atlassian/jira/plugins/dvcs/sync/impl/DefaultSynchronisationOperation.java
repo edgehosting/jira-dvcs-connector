@@ -138,8 +138,8 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
                 foundProjectKeys.add(ChangesetDaoImpl.parseProjectKey(issueKey));
             }
 
+            progress.inProgress(changesetCount, jiraCount, 0);
         }
-        progress.inProgress(changesetCount, jiraCount, 0);
 
         setupNewLinkers(foundProjectKeys);
     }

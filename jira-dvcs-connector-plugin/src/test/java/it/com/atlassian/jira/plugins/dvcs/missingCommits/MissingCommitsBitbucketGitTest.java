@@ -3,19 +3,19 @@ package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
+import org.testng.annotations.BeforeClass;
+
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.util.ZipUtils;
-
-import org.apache.commons.io.FileUtils;
-import org.testng.annotations.BeforeClass;
 
 /**
  * @author Martin Skurla
@@ -55,7 +55,7 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
     }
 
     @Override
-    void loginToDvcsAndSetJiraOAuthCredentials()
+    OAuthCredentials loginToDvcsAndGetJiraOAuthCredentials()
     {
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
@@ -64,11 +64,7 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
         bitbucketIntegratedApplicationsPage =
                 jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
         
-        BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
-                bitbucketIntegratedApplicationsPage.addConsumer();
-
-        BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
-        oauthConfigPage.setCredentials(oauthCredentials.oauthKey, oauthCredentials.oauthSecret);
+        return bitbucketIntegratedApplicationsPage.addConsumer();
     }
 
     @Override

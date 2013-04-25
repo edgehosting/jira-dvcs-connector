@@ -128,12 +128,6 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public boolean isOauthConfigured()
-    {
-        return delegate.isOauthConfigured();
-    }
-
-    @Override
     public Set<Group> getGroupsForOrganization(Organization organization)
     {
         try
