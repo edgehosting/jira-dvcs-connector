@@ -1,10 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.exception;
 
+
 /**
  * Indicates an unhandled exceptional condition within the bitbucket client
  */
 public class SourceControlException extends RuntimeException
 {
+
     public SourceControlException()
     {
     }
@@ -24,7 +26,16 @@ public class SourceControlException extends RuntimeException
         super(cause);
     }
     
-    
+    public static class Forbidden_403 extends SourceControlException
+    {
+
+        public Forbidden_403(Throwable cause) 
+        {
+            super(cause);
+        }
+
+    }
+
     public static class UnauthorisedException extends SourceControlException
     {
         public UnauthorisedException(String message)
