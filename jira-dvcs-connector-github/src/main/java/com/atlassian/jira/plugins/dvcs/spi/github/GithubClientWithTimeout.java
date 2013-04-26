@@ -14,7 +14,7 @@ import org.eclipse.egit.github.core.client.GitHubClient;
 public class GithubClientWithTimeout extends GitHubClient
 {
     private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("dvcs.connector.github.connection.timeout", 30000);
-    private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("dvcs.connector.github.socket.timeout", 10000);
+    private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("dvcs.connector.github.socket.timeout", 60000);
     
     public GithubClientWithTimeout(String host, int i, String protocol)
     {
