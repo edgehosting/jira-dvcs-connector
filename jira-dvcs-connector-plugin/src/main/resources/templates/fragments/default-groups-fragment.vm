@@ -1,6 +1,6 @@
 <table class="aui">
 
-    #if(!$groups)
+    #if($error)
         <tbody>
             <tr><td>
         
@@ -9,7 +9,7 @@
                         <span class="aui-icon icon-error"></span>
                         <strong>Error!</strong>
                     </p>
-                    <p>Error retrieving list of groups. Do you have administration permissions?</p>
+                    <p>$error</p>
                 </div>
             
             </td></tr>
