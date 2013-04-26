@@ -28,6 +28,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,10 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadReq
 public class BaseRemoteRequestor implements RemoteRequestor
 {
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
+    
+    private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("dvcs.connector.bitbucket.connection.timeout", 30000);
+    private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("dvcs.connector.bitbucket.socket.timeout", 60000);
+    
     protected final ApiProvider apiProvider;
     private final HttpClientProxyConfig proxyConfig;
 
@@ -351,7 +356,10 @@ public class BaseRemoteRequestor implements RemoteRequestor
         {
             HttpProtocolParams.setUserAgent(client.getParams(), apiProvider.getUserAgent());
         }
-
+        
+        HttpConnectionParams.setConnectionTimeout(client.getParams(), DEFAULT_CONNECT_TIMEOUT);
+        HttpConnectionParams.setSoTimeout(client.getParams(), DEFAULT_SOCKET_TIMEOUT);
+        
         String apiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
         proxyConfig.configureProxy(client, apiUrl + uri);
         
