@@ -201,6 +201,7 @@ function createAddOrganizationDialog(action) {
     dialog.addPanel("Confirmation", "<div id='githubeConfirmation'>Test</div>", "panel-body");
     dialog.addSubmit("Continue", function (dialog, event) {
         dialog.gotoPage(0);
+        dialog.updateHeight();
         if (dvcsSubmitFormHandler(event, true)) {
             AJS.$("#repoEntry").submit();
         }
@@ -398,24 +399,24 @@ function configureDefaultGroups(orgName, id) {
         });
 }
 
-function getOAuthHelpText(org){
-    if (org.dvcsType=="bitbucket") {
-        return "Obtain Key and Secret from your <a target='_blank' href='"+org.hostUrl+"/account/'>Bitbucket account settings</a> in <b>Integrated Applications</b> section."; 
-    } else if (org.dvcsType=="github") {
-        return "Obtain Key and Secret from your <a target='_blank' href='https://github.com/settings/applications'>GitHub account settings</a>.";
-    } else {
-        return "Obtain Key and Secret from your <a target='_blank' href='"+org.hostUrl+"/settings/applications'>GitHub Enterprise account settings</a>.";
-    }
-}
-
 function configureOAuth(org, atlToken) {
     function validateField(field, errorMsg) {
         if (!AJS.$.trim(field.val())) {
-            field.next().html(errorMsg);
+            showError(field, errorMsg);
             return false;
         }
-        field.next().html("&nbsp;");
+        clearError(field);
         return true;
+    }
+    
+    function showError(field, errorMsg) {
+    	field.next().html(errorMsg);
+        field.next().show();
+    }
+    
+    function clearError(field) {
+    	field.next().html("&nbsp;");
+    	field.next().hide();
     }
     
     var popup = new AJS.Dialog({
@@ -429,13 +430,17 @@ function configureOAuth(org, atlToken) {
         'organizationId': org.id,
         'oAuthKey': org.credential.key,
         'oAuthSecret': org.credential.secret,
-        'helpText': new soydata.SanitizedHtml(getOAuthHelpText(org))
+        'showHelp': org.dvcsType!="githube",
+        'isOnDemandLicense': jira.dvcs.connector.plugin.onDemandLicense
         }));
     
+    clearError(AJS.$("#updateOAuthForm #key"));
+    clearError(AJS.$("#updateOAuthForm #secret"));
     popup.addButton("Regenerate Access Token", function (dialog) {
         // validate
         var v1 = validateField(AJS.$("#updateOAuthForm #key"), "OAuth key must not be blank");
         var v2 = validateField(AJS.$("#updateOAuthForm #secret"), "OAuth secret must not be blank");
+        popup.updateHeight();
         if (!v1 || !v2) return;
             
         AJS.$("#repositoryOAuthDialog .dialog-button-panel button").attr("disabled", "disabled");
@@ -470,8 +475,9 @@ function configureOAuth(org, atlToken) {
     popup.addCancel("Cancel", function (dialog) {
         dialog.remove();
     });
-
+    
     popup.show();
+    popup.updateHeight();
     return false;
 }
 
