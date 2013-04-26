@@ -21,6 +21,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.opensymphony.util.TextUtils;
@@ -186,7 +187,14 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
             model.put("configuredSlugs", createExistingSlugsSet(organization));
         } catch (SourceControlException e)
         {
-            log.warn("Error retrieving groups for " + organization.getOrganizationUrl());
+            if (e.getCause() instanceof BitbucketRequestException.Forbidden_403)
+            {
+                model.put("error", "Error retrieving list of groups for " + organization.getOrganizationUrl() + ". Do you have administration permissions?");
+            } else
+            {
+                model.put("error", "Error retrieving list of groups for " + organization.getOrganizationUrl() + ". Please check JIRA logs for details.");
+                log.warn("Error retrieving groups for " + organization.getOrganizationUrl(), e);
+            }
         }
 		
 		return model;
