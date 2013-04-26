@@ -4,7 +4,6 @@
  * @param organizationId
  * @param oAuthKey
  * @param oAuthSecret
- * @param showHelp
  * @param isOnDemandLicense
  */
 {template .repositoryOAuthDialog}
@@ -16,7 +15,6 @@
 	            <label for="d-fname">Key<span class="aui-icon icon-required"> required</span></label>
 	            <input class="text long-field" type="text" id="key" name="key" title="first name" value="{$oAuthKey}">
 	            <div class="error">&nbsp;</div>
-		        {if $showHelp}
 	            <div class="description">
 		       	    {if $isOnDemandLicense}
 		                <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
@@ -24,7 +22,6 @@
 		                <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
 		            {/if}
 		        Help with my key and secret.</a></div>
-		        {/if}
 	        </div>
 	        <div class="field-group">
 	            <label for="d-fname">Secret<span class="aui-icon icon-required"> required</span></label>
@@ -249,6 +246,13 @@
                <input class="text" type="text" id="urlGhe" name="urlGhe" value="{$oAuthStore.githube.url}"/>
                <div id="ghe-url-error" class="dvcs-error error">This field is required.</div>
                <div id="ghe-invalid-url-error" class="dvcs-error error">Valid url is required.</div>
+               <div class="description">
+	           {if $isOnDemandLicense}
+                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+               {else}
+                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+               {/if}
+	           Help with my key and secret.</a></div>
             </div>
             <div class="field-group">
                 <label for="oauthClientIdGhe">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>

@@ -430,7 +430,6 @@ function configureOAuth(org, atlToken) {
         'organizationId': org.id,
         'oAuthKey': org.credential.key,
         'oAuthSecret': org.credential.secret,
-        'showHelp': org.dvcsType!="githube",
         'isOnDemandLicense': jira.dvcs.connector.plugin.onDemandLicense
         }));
     
