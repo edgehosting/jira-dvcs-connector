@@ -21,7 +21,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.opensymphony.util.TextUtils;
@@ -185,16 +184,14 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
             groups = communicator.getGroupsForOrganization(organization);
             model.put("groups", groups);
             model.put("configuredSlugs", createExistingSlugsSet(organization));
+        } catch (SourceControlException.Forbidden_403 e)
+        {
+            model.put("error", "Error retrieving list of groups for " + organization.getOrganizationUrl() + ". Do you have administration permissions?");
+            log.debug("Error retrieving groups for " + organization.getOrganizationUrl(), e);
         } catch (SourceControlException e)
         {
-            if (e.getCause() instanceof BitbucketRequestException.Forbidden_403)
-            {
-                model.put("error", "Error retrieving list of groups for " + organization.getOrganizationUrl() + ". Do you have administration permissions?");
-            } else
-            {
-                model.put("error", "Error retrieving list of groups for " + organization.getOrganizationUrl() + ". Please check JIRA logs for details.");
-                log.warn("Error retrieving groups for " + organization.getOrganizationUrl(), e);
-            }
+            model.put("error", "Error retrieving list of groups for " + organization.getOrganizationUrl() + ". Please check JIRA logs for details.");
+            log.warn("Error retrieving groups for " + organization.getOrganizationUrl(), e);
         }
 		
 		return model;
