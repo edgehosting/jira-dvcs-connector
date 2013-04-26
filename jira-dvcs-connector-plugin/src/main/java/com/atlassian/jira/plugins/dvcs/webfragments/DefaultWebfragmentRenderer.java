@@ -15,13 +15,14 @@ import org.apache.commons.collections.Transformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.sal.api.ApplicationProperties;
-import com.atlassian.templaterenderer.RenderingException;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.opensymphony.util.TextUtils;
 
@@ -64,14 +65,12 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
 		this.appProperties = appProperties;
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public String renderDefaultGroupsFragment (int orgId) throws IOException
 	{
-	
 		StringWriter writer = new StringWriter();
 		
 		Map<String, Object> model = createDefaultGroupsModel(orgId);
@@ -79,7 +78,6 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
 		templateRenderer.render("templates/fragments/default-groups-fragment.vm", model, writer);
 		
 		return writer.toString();
-		
 	}
 
 	@Override
@@ -178,13 +176,26 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
 	{
 		Organization organization = organizationService.get(orgId, false);
 		DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType());
-		Set<Group> groups = communicator.getGroupsForOrganization(organization);
-		
-		//
+		Set<Group> groups;
+
 		HashMap<String, Object> model = new HashMap<String, Object>();
 		model.put("organization", organization);
-		model.put("groups", groups);
-		model.put("configuredSlugs", createExistingSlugsSet(organization));
+        try
+        {
+            groups = communicator.getGroupsForOrganization(organization);
+            model.put("groups", groups);
+            model.put("configuredSlugs", createExistingSlugsSet(organization));
+        } catch (SourceControlException e)
+        {
+            if (e.getCause() instanceof BitbucketRequestException.Forbidden_403)
+            {
+                model.put("error", "Error retrieving list of groups for " + organization.getOrganizationUrl() + ". Do you have administration permissions?");
+            } else
+            {
+                model.put("error", "Error retrieving list of groups for " + organization.getOrganizationUrl() + ". Please check JIRA logs for details.");
+                log.warn("Error retrieving groups for " + organization.getOrganizationUrl(), e);
+            }
+        }
 		
 		return model;
 	}
@@ -193,16 +204,13 @@ public class DefaultWebfragmentRenderer implements WebfragmentRenderer
 	private Set<String> createExistingSlugsSet(Organization organization)
 	{
         Collection<String> existingSlugs = CollectionUtils.collect(organization.getDefaultGroups(), new Transformer() {
-
             @Override
             public Object transform(Object input)
             {
                 Group group = (Group) input;
-                
                 return group.getSlug();
             }
         });
-        
         return new HashSet<String>(existingSlugs);
 	}
 
