@@ -151,7 +151,6 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
                 String changesetAsHtml = getHtmlForChangeset(changesetsWithSameNode);
                 if (StringUtils.isNotBlank(changesetAsHtml))
                 {
-                    // TODO: mfa - doesn't matter which one is it? first?
                     bitbucketActions.add(new CommitsIssueAction(changesetAsHtml, changesetsWithSameNode.get(0).getDate()));
                 }
             }
@@ -208,6 +207,11 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
 
             Map<ChangesetFile, String> fileCommitUrls = changesetService.getFileCommitUrls(repository, changeset);
             fileCommitUrlsByRepo.put(repository, fileCommitUrls);
+        }
+
+        // all repositories which are associated with given changesets is deleted or unlinked
+        if (repositories.isEmpty()) {
+            return null;
         }
 
         Changeset firstChangeset = changesets.get(0);
