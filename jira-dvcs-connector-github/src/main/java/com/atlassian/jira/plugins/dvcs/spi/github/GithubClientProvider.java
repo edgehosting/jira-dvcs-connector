@@ -41,14 +41,14 @@ public class GithubClientProvider
         return client;
     }
 
-	public GitHubClient createClient(String hostUrl)
+    public GitHubClient createClient(String hostUrl)
     {
         return createClientInternal(hostUrl, userAgent);
     }
     
     protected GitHubClient createClientInternal(String url, String userAgent)
     {
-    	return createClient(url, userAgent);
+        return createClient(url, userAgent);
     }
 
     public GitHubClient createClient(Organization organization)
@@ -109,7 +109,7 @@ public class GithubClientProvider
                 host = HOST_API;
             }
 
-            GitHubClient result = new GitHubClient(host, -1, urlObject.getProtocol());
+            GitHubClient result = new GithubClientWithTimeout(host, -1, urlObject.getProtocol());
             result.setUserAgent(userAgent);
             return result;
         } catch (IOException e)
