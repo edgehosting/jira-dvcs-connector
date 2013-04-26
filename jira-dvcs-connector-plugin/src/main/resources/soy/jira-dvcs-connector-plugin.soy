@@ -198,7 +198,13 @@
 	           <label for="oauthBbClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
 	           <input class="text" type="text" id="oauthBbClientId" name="oauthBbClientId" value="{$oAuthStore.bitbucket.key}"/>
 	           <div id="oauth-bb-client-error" class="dvcs-error error">This field is required.</div>
-	           <div class="description">How do I <a href="{contextPath() +'/secure/admin/ConfigureBitbucketOAuth!default.jspa'}">find OAuth key and secret</a>?</div>
+	           <div class="description">
+	           {if $isOnDemandLicense}
+                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+               {else}
+                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+               {/if}
+	           Help with my key and secret.</a></div>
 	        </div>
 	        <div class="field-group">
 	           <label for="oauthBbSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
@@ -213,7 +219,13 @@
 	           <label for="oauthClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
 	           <input class="text" type="text" id="oauthClientId" name="oauthClientId" value="{$oAuthStore.github.key}"/>
 	           <div id="oauth-gh-client-error" class="dvcs-error error">This field is required.</div>
-	           <div class="description">How do I <a href="{contextPath() +'/secure/admin/ConfigureGithubOAuth!default.jspa'}">find OAuth key and secret</a>?</div>
+	           <div class="description">
+	           {if $isOnDemandLicense}
+                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+               {else}
+                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+               {/if}
+	           Help with my key and secret.</a></div>
 	        </div>
 	        <div class="field-group">
 	           <label for="oauthSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
@@ -257,7 +269,7 @@
                 {else}
                     <a href="https://confluence.atlassian.com/display/BITBUCKET/Processing+JIRA+issues+with+commit+messages" target="_blank">
                 {/if}
-                Smart Commits</a> allow repository committers to perform actions like transitioning JIRA issues
+                Transition JIRA issues</a> through commit messages. 
             </div>
         </div>
  
