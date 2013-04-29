@@ -527,3 +527,7 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 .repository-error-icon {
 	display: inline-block;
 }
+
+.field-group .static-text {
+	padding-top: 5px;
+}
