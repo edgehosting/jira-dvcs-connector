@@ -406,6 +406,10 @@ public class BitbucketCommunicator implements DvcsCommunicator
             BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForOrganization(organization);
             Set<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
             return GroupTransformer.fromBitbucketGroups(groups);
+        } catch (BitbucketRequestException.Forbidden_403 e)
+        {
+            log.debug("Could not get groups for organization [" + organization.getName() + "]");
+            throw new SourceControlException.Forbidden_403(e);
         } catch (BitbucketRequestException e)
         {
             log.debug("Could not get groups for organization [" + organization.getName() + "]");
