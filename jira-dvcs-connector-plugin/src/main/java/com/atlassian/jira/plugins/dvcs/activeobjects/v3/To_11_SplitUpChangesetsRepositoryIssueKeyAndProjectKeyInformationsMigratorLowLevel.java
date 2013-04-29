@@ -165,7 +165,7 @@ public class To_11_SplitUpChangesetsRepositoryIssueKeyAndProjectKeyInformationsM
         private final ResultSet resultSet;
 
         /**
-         * @see #hasNext
+         * @see #hasNext()
          */
         private boolean hasNext;
 
@@ -298,7 +298,7 @@ public class To_11_SplitUpChangesetsRepositoryIssueKeyAndProjectKeyInformationsM
         this.activeObjects = activeObjects;
 
         logger.debug("upgrade [ " + getModelVersion() + " ]");
-        activeObjects.migrate(ChangesetMapping.class, IssueToChangesetMapping.class, RepositoryToChangesetMapping.class);
+        activeObjects.migrate(OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class, IssueToChangesetMapping.class, RepositoryToChangesetMapping.class);
 
         // initializes migration process
         try
@@ -661,7 +661,7 @@ public class To_11_SplitUpChangesetsRepositoryIssueKeyAndProjectKeyInformationsM
      */
     private PreparedStatement newMarkAsUpdatedStatement() throws SQLException
     {
-        String sql = "update " + table(ChangesetMapping.class) + "set " //
+        String sql = "update " + table(ChangesetMapping.class) + " set " //
                 + column(ChangesetMapping.REPOSITORY_ID) + " = ?, " //
                 + column(ChangesetMapping.PROJECT_KEY) + " = ?, " //
                 + column(ChangesetMapping.ISSUE_KEY) + " = ? " //
