@@ -33,7 +33,7 @@ import com.atlassian.activeobjects.external.ModelVersion;
  */
 // suppress deprecation - we want to have migrators stable as much as possible
 @SuppressWarnings("deprecation")
-public class To_11_SplitUpChangesetsRepositoryIssueKeyAndProjectKeyInformationsMigratorLowLevel implements ActiveObjectsUpgradeTask
+public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 {
 
     /**
@@ -45,7 +45,7 @@ public class To_11_SplitUpChangesetsRepositoryIssueKeyAndProjectKeyInformationsM
      * Logger for this class.
      */
     private final Logger logger = LoggerFactory
-            .getLogger(To_11_SplitUpChangesetsRepositoryIssueKeyAndProjectKeyInformationsMigratorLowLevel.class);
+            .getLogger(To_11_SplitUpChangesetsMigrator.class);
 
     /**
      * @see #getModelVersion()

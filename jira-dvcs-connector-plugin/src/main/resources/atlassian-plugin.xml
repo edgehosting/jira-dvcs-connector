@@ -70,9 +70,7 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_09_SmartCommitsColumnsMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_10_LastChangesetNodeMigrator</upgradeTask>
-        <!-- 
-        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_11_SplitUpChangesetsRepositoryIssueKeyAndProjectKeyInformationsMigratorLowLevel</upgradeTask>
-         -->
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_11_SplitUpChangesetsMigrator</upgradeTask>
     </ao>
 	
 	<!-- Integrated account -->
