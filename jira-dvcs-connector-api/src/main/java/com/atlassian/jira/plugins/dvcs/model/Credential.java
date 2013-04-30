@@ -2,6 +2,10 @@ package com.atlassian.jira.plugins.dvcs.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import com.atlassian.gzipfilter.org.apache.commons.lang.builder.EqualsBuilder;
+
 @XmlRootElement
 public class Credential
 {
@@ -9,7 +13,6 @@ public class Credential
     private String adminUsername;
     @Deprecated
     private String adminPassword;
-
 
     private String accessToken;
 
@@ -90,5 +93,30 @@ public class Credential
     public void setOauthSecret(String oauthSecret)
     {
         this.oauthSecret = oauthSecret;
+    }
+    
+    @Override
+    public boolean equals(Object other)
+    {
+        Credential o = (Credential) other;
+        return new EqualsBuilder()
+            .append(adminUsername, o.adminUsername)
+            .append(adminPassword, o.adminPassword)
+            .append(accessToken, o.accessToken)
+            .append(oauthKey, o.oauthKey)
+            .append(oauthSecret, o.oauthSecret)
+            .isEquals();
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        return new HashCodeBuilder()
+            .append(adminUsername)
+            .append(adminPassword)
+            .append(accessToken)
+            .append(oauthKey)
+            .append(oauthSecret)
+            .hashCode();
     }
 }

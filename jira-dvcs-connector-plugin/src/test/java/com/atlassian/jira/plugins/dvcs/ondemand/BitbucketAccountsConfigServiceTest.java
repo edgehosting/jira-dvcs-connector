@@ -132,7 +132,7 @@ public class BitbucketAccountsConfigServiceTest
 
         testedService.reload(false);
 
-        verify(organizationService).updateCredentialsKeySecret(eq(5), eq("K"), eq("S"), (String) eq(null));
+        verify(organizationService).updateCredentials(eq(5), eq(new Credential("K", "S",null)));
 
     }
 
@@ -169,7 +169,7 @@ public class BitbucketAccountsConfigServiceTest
 
         testedService.reload(false);
 
-        verify(organizationService).updateCredentialsKeySecret(userAddedAccount.getId(), "K", "S", null);
+        verify(organizationService).updateCredentials(userAddedAccount.getId(), new Credential("K", "S", null));
     }
 
     //--
@@ -180,7 +180,7 @@ public class BitbucketAccountsConfigServiceTest
         Organization org = new Organization();
         org.setId(5);
         org.setName(name);
-        org.setCredential(new Credential(key, secret, null, null, null));
+        org.setCredential(new Credential(key, secret, null));
         return org;
     }
 

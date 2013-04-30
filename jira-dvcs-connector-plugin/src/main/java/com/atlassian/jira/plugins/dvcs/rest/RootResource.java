@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
@@ -273,7 +274,7 @@ public class RootResource
     public Response setOrganizationOAuth(@PathParam("id") int id, @FormParam("key") String key,  @FormParam("secret") String secret)
     {
         Organization organization = organizationService.get(id, false);
-        organizationService.updateCredentialsKeySecret(id, key, secret, organization.getCredential().getAccessToken());
+        organizationService.updateCredentials(id, new Credential(key, secret, organization.getCredential().getAccessToken()));
         return Response.ok(organization).build();
     }
 
