@@ -221,9 +221,8 @@
                 </td>
                 
                 <td class="dvcs-org-reponame">
-                    <span id="error_status_icon_$repo.id" class="repository-error-icon #if($repo.sync && !$repo.sync.hasAdminPermission())admin-permission aui-icon aui-icon-warning#end">&nbsp;</span>
-                    
                     <a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
+					<span id="error_status_icon_$repo.id" class="repository-error-icon #if($repo.sync && !$repo.sync.hasAdminPermission())admin-permission aui-icon aui-icon-warning#end">&nbsp;</span>
 				</td>
                 
                 <td class="action" headers="action" style="text-align: right; white-space: nowrap;">
