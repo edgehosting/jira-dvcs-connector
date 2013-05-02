@@ -202,8 +202,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
     private Organization getUserAddedAccount(AccountInfo info)
     {
         Organization userAddedAccount = organizationService.getByHostAndName(BITBUCKET_URL, info.accountName);
-        if (userAddedAccount != null && (StringUtils.isBlank(userAddedAccount.getCredential().getOauthKey())
-                                     || StringUtils.isBlank(userAddedAccount.getCredential().getOauthSecret())) )
+        if (userAddedAccount != null && StringUtils.isNotBlank(userAddedAccount.getCredential().getAccessToken()))
         {
             return userAddedAccount;
         } else
