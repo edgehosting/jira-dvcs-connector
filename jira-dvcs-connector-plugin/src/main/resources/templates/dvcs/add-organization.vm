@@ -312,7 +312,7 @@
              <input type="hidden" id="organizationIdDefaultGroups" name="organizationIdDefaultGroups" value="" />
              
              <div id="configureDefaultGroupsContentWorking" style="margin:10px; display: none">
-                 &nbsp;
+                 <span class="aui-icon aui-icon-wait">&nbsp;</span>
              </div>
              
              <div id="configureDefaultGroupsContent">
