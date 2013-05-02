@@ -595,7 +595,11 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
               var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
               errorStatusIcon.removeClass("admin_permission aui-icon-warning").addClass("aui-icon aui-icon-error");
               var response = jQuery.parseJSON(err.responseText);
-              var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", response.message + "<br/>Please contact the server administrator.");
+              var message = "";
+              if (response) {
+            	  message = "<p>" + response.message + "</p>";
+              }
+              var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", message + "<p>Please contact the server administrator.</p>");
               tooltip.show();
               AJS.$("#" + checkboxId  + "working").hide();
               AJS.$("#" + checkboxId).removeAttr("disabled");
@@ -616,7 +620,7 @@ function registerAdminPermissionInlineDialogTooltip(element) {
 function registerInlineDialogTooltip(element, title, body) {
     return AJS.InlineDialog(AJS.$(element), "tooltip_"+AJS.$(element).attr('id'),
             function(content, trigger, showPopup) {
-                content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><p>" + body + "</p>");
+                content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><div>" + body + "</div>");
                 showPopup();
                 return false;
             },
