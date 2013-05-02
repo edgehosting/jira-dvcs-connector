@@ -36,7 +36,7 @@ public class BranchServiceImpl implements BranchService
     {
         for (BranchHead branchHead : newBranchHeads)
         {
-            branchDao.saveOrUpdateBranchHead(repository.getId(), branchHead);
+            branchDao.saveBranchHeadIfNeeded(repository.getId(), branchHead);
         }
         
         if (oldBranchHeads != null)

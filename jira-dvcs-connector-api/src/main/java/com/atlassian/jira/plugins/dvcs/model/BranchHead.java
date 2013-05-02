@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.model;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class BranchHead
 {
@@ -61,7 +62,7 @@ public class BranchHead
     @Override
     public String toString()
     {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("branchName", branchName)
                 .append("head", head)
                 .toString();

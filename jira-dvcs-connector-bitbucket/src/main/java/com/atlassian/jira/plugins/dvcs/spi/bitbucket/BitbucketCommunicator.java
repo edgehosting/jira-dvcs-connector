@@ -73,12 +73,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
      */
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
             PluginAccessor pluginAccessor, BitbucketClientRemoteFactory bitbucketClientRemoteFactory,
-            BranchService branchManager)
+            BranchService branchService)
    {
         this.bitbucketLinker = bitbucketLinker;
         this.bitbucketClientRemoteFactory = bitbucketClientRemoteFactory;
         this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
-        this.branchService = branchManager;
+        this.branchService = branchService;
     }
 
     /**
@@ -236,8 +236,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 List<String> heads = bitbucketBranch.getHeads();
                 for (String head : heads)
                 {
-                    // make sure "master" branch is first in the list
-                    if ("master".equals(bitbucketBranch.getName()))
+                    // make sure "default" branch is first in the list
+                    if ("default".equals(bitbucketBranch.getName()))
                     {
                         branches.add(0, new BranchHead(bitbucketBranch.getName(), head));
                     } else

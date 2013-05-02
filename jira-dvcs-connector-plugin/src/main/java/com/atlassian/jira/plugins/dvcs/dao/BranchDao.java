@@ -14,7 +14,7 @@ public interface BranchDao
      * @param repositoryId
      * @param branch
      */
-    void saveOrUpdateBranchHead(int repositoryId, BranchHead branch);
+    void saveBranchHeadIfNeeded(int repositoryId, BranchHead branch);
     
     /**
      * Returns list of branch heads for repository

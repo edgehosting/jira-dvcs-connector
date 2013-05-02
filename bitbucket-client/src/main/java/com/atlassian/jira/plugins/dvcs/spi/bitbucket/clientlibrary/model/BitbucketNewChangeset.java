@@ -52,6 +52,8 @@ public class BitbucketNewChangeset implements Serializable
     private BitbucketAuthor author;
     private Date date;
     private List<BitbucketNewChangeset> parents;
+    private String branch;
+    
     public String getSha()
     {
         return sha;
@@ -99,5 +101,13 @@ public class BitbucketNewChangeset implements Serializable
     public void setParents(List<BitbucketNewChangeset> parents)
     {
         this.parents = parents;
+    }
+    public String getBranch()
+    {
+        return branch;
+    }
+    public void setBranch(String branch)
+    {
+        this.branch = branch;
     }
 }

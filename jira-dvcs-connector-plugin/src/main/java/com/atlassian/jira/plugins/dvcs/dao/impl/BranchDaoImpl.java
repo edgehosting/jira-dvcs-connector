@@ -45,7 +45,7 @@ public class BranchDaoImpl implements BranchDao
     }
 
     @Override
-    public void saveOrUpdateBranchHead(final int repositoryId, final BranchHead branch)
+    public void saveBranchHeadIfNeeded(final int repositoryId, final BranchHead branch)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
@@ -56,12 +56,7 @@ public class BranchDaoImpl implements BranchDao
                         Query.select().where(BranchHeadMapping.REPOSITORY_ID + " = ? AND "
                                 + BranchHeadMapping.BRANCH_NAME + " = ? AND "
                                 + BranchHeadMapping.HEAD + " = ?", repositoryId, branch.getName(), branch.getHead()));
-                if (result.length > 0)
-                {
-                    BranchHeadMapping mapping = result[0];
-                    mapping.setHead(branch.getHead());
-                    mapping.save();
-                } else
+                if (result.length == 0)
                 {
                     final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
                     map.put(BranchHeadMapping.REPOSITORY_ID, repositoryId);
