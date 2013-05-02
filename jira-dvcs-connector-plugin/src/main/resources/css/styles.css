@@ -116,6 +116,7 @@
     width:16px;
     /*background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.png);*/
     background-repeat: no-repeat;
+    vertical-align: text-bottom;
     display: none;
 }
 
@@ -124,6 +125,7 @@
      height: 16px;
      background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/not_working.png);
      background-repeat: no-repeat;
+     vertical-align: text-bottom;
      display: inline-block;
  }
  
