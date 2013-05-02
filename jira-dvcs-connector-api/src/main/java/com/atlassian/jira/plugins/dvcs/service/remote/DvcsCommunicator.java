@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
  */
 public interface DvcsCommunicator
 {
+    
     String getDvcsType();
 
     AccountInfo getAccountInfo(String hostUrl, String accountName);
@@ -40,7 +41,15 @@ public interface DvcsCommunicator
 
     String getFileCommitUrl(Repository repository, Changeset changeset, String file,  int index);
 
-	DvcsUser getUser(Repository repository, String author);
+    DvcsUser getUser(Repository repository, String author);
+
+    /**
+     * Returns remote user who is owner of currently used accessToken
+     * 
+     * @param organization
+     * @return
+     */
+    DvcsUser getTokenOwner(Organization organization);
     
     //-----------------------------------------------------------------------
     // methods for invitation management on bitbucket

@@ -477,6 +477,12 @@ function configureOAuth(org, atlToken) {
     
     popup.show();
     popup.updateHeight();
+
+    AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/organization/" + org.id + "/tokenOwner", function(data) {
+        AJS.$(".repositoryOAuthDialog #tokenUser").html(jira.dvcs.connector.plugin.soy.repositoryOAuthDialogTokenOwner(data));
+        popup.updateHeight();
+    });
+    
     return false;
 }
 

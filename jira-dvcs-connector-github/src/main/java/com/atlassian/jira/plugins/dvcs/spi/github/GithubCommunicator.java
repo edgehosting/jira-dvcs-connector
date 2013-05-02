@@ -347,6 +347,25 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
+    @Override
+    public DvcsUser getTokenOwner(Organization organization)
+    {
+        try
+        {
+            UserService userService = githubClientProvider.getUserService(organization);
+            User ghUser = userService.getUser();
+            String login = ghUser.getLogin();
+            String name = ghUser.getName();
+            String displayName = StringUtils.isNotBlank(name) ? name : login;
+            String gravatarUrl = ghUser.getAvatarUrl();
+
+            return new DvcsUser(login, displayName, null, gravatarUrl, organization.getHostUrl() + "/" + login);
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+    
     private List<BranchHead> getBranches(Repository repository)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
