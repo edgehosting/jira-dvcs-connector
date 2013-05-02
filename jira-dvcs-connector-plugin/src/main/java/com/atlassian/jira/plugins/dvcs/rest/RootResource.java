@@ -37,6 +37,7 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
 import com.atlassian.plugins.rest.common.Status;
+import com.atlassian.plugins.rest.common.Status.StatusResponseBuilder;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
 /**
@@ -237,8 +238,17 @@ public class RootResource
         {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        DvcsUser currentUser = organizationService.getTokenOwner(Integer.parseInt(organizationId));
-        return Response.ok(currentUser).build();
+        DvcsUser currentUser;
+        try
+        {
+            currentUser = organizationService.getTokenOwner(Integer.parseInt(organizationId));
+            return Response.ok(currentUser).build();
+        } catch (Exception e)
+        {
+            log.warn("Error retrieving token owner: " + e.getMessage());
+        }
+        
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
     
     @GET
