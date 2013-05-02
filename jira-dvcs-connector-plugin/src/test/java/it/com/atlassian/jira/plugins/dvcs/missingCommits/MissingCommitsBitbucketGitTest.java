@@ -85,13 +85,6 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
         FileUtils.deleteDirectory(extractedRepoDir);
     }
 
-    private void executeCommand(File workindDirectory, String... command) throws IOException, InterruptedException
-    {
-        Process process = new ProcessBuilder(command).directory(workindDirectory)
-                                                     .start();
-
-        process.waitFor();
-    }
 
     @Override
     String getFirstDvcsZipRepoPathToPush()
