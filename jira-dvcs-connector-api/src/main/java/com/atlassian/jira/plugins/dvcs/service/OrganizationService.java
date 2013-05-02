@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 
 /**
@@ -116,6 +117,14 @@ public interface OrganizationService
 	Organization getByHostAndName(final String hostUrl, final String name);
 
     void updateCredentialsKeySecret(int organizationId, String key, String secret, String accessToken);
+
+    /**
+     * Returns remote user who is owner of currently used accessToken
+     * 
+     * @param organizationId
+     * @return
+     */
+    DvcsUser getTokenOwner(int organizationId);
 
 }
 
