@@ -441,7 +441,8 @@ html[xmlns] .dvcs-dclear {
     position:relative;
     font-weight: normal;
     font-size:11px;
-    top: 4px;
+    top: 2px;
+    color: #D04437;
 }
 
 /* Force synchronization inline dialog style */
