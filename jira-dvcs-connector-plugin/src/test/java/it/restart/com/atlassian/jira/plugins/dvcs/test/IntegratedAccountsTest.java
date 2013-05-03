@@ -159,7 +159,8 @@ public class IntegratedAccountsTest
      * Destroys test environment.
      */
     @AfterMethod(alwaysRun = true)
-    public void afterMethod() {
+    public void afterMethod()
+    {
         removeAllIntegratedAccounts();
         new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
     }
@@ -261,6 +262,15 @@ public class IntegratedAccountsTest
             String restUrl = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/integrated-accounts/reload";
             GetMethod getMethod = new GetMethod(restUrl);
             Assert.assertEquals(200, new HttpClient().executeMethod(getMethod));
+
+            try
+            {
+                Thread.sleep(5000);
+            } catch (InterruptedException e)
+            {
+                throw new RuntimeException(e);
+
+            }
         } catch (IOException e)
         {
             throw new RuntimeException(e);
