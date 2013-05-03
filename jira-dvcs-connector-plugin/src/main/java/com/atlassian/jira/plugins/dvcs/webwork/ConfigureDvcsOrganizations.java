@@ -16,7 +16,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager;
 import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationsManagerImpl;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -31,17 +30,14 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 	private String postCommitRepositoryType;
 	private final FeatureManager featureManager;
 	private final OrganizationService organizationService;
-	private final DvcsCommunicatorProvider communicatorProvider;
     private final PluginFeatureDetector featuresDetector;
     private final InvalidOrganizationManager invalidOrganizationsManager;
     private final OAuthStore oAuthStore;
 
     public ConfigureDvcsOrganizations(OrganizationService organizationService, FeatureManager featureManager,
-            DvcsCommunicatorProvider communicatorProvider, PluginFeatureDetector featuresDetector,
-            PluginSettingsFactory pluginSettingsFactory, OAuthStore oAuthStore)
+            PluginFeatureDetector featuresDetector, PluginSettingsFactory pluginSettingsFactory, OAuthStore oAuthStore)
 	{
 		this.organizationService = organizationService;
-		this.communicatorProvider = communicatorProvider;
 		this.featureManager = featureManager;
         this.featuresDetector = featuresDetector;
         this.oAuthStore = oAuthStore;

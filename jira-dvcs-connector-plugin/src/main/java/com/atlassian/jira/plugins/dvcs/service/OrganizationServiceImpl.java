@@ -9,8 +9,10 @@ import org.apache.commons.collections.CollectionUtils;
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 
 
@@ -193,4 +195,12 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
 
+    @Override
+    public DvcsUser getTokenOwner(int organizationId)
+    {
+        Organization organization = get(organizationId, false);
+        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType());
+        DvcsUser currentUser = communicator.getTokenOwner(organization);
+        return currentUser;
+    }
 }

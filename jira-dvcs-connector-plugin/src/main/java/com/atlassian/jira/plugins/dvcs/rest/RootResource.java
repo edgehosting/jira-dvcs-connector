@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
@@ -37,6 +38,7 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
 import com.atlassian.plugins.rest.common.Status;
+import com.atlassian.plugins.rest.common.Status.StatusResponseBuilder;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
 /**
@@ -72,8 +74,8 @@ public class RootResource
      * @param repositoryService
      *            the repository service
      */
-    public RootResource(OrganizationService organizationService, RepositoryService repositoryService, WebfragmentRenderer webfragmentRenderer,
-            AccountsConfigService ondemandAccountConfig)
+    public RootResource(OrganizationService organizationService, RepositoryService repositoryService,
+            WebfragmentRenderer webfragmentRenderer, AccountsConfigService ondemandAccountConfig)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
@@ -229,6 +231,29 @@ public class RootResource
 
     @GET
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/organization/{id}/tokenOwner")
+    @AdminOnly
+    public Response getTokenOwner(@PathParam("id") String organizationId)
+    {
+        if (organizationId == null)
+        {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        DvcsUser currentUser;
+        try
+        {
+            currentUser = organizationService.getTokenOwner(Integer.parseInt(organizationId));
+            return Response.ok(currentUser).build();
+        } catch (Exception e)
+        {
+            log.warn("Error retrieving token owner: " + e.getMessage());
+        }
+        
+        return Response.status(Response.Status.NOT_FOUND).build();
+    }
+    
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/organization/{id}/syncRepoList")
     @AdminOnly
     public Response syncRepoList(@PathParam("id") String organizationId)
@@ -311,12 +336,10 @@ public class RootResource
         {
             String html = webfragmentRenderer.renderDefaultGroupsFragment(orgId);
             return Response.ok(html).build();
-
         } catch (IOException e)
         {
             log.error("Failed to get default groups for organization with id " + orgId, e);
             return Response.serverError().build();
-
         }
     }
 
@@ -330,7 +353,6 @@ public class RootResource
         {
             String html = webfragmentRenderer.renderGroupsFragmentForAddUser();
             return Response.ok(html).build();
-
         } catch (IOException e)
         {
             log.error("Failed to get groups", e);
@@ -389,7 +411,6 @@ public class RootResource
         try
         {
             organizationService.remove(id);
-
         } catch (Exception e)
         {
             log.error("Failed to remove account with id " + id, e);

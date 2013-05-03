@@ -44,9 +44,11 @@
 	            	<input type="text" id="oauthSecret" name="oauthSecret" value="$textutils.htmlEncode($action.getOauthSecret())"/>
 			   </div>
 	          #end
-	         
-	         <div class="field-group" style="margin-top: 10px; clear: both" >
-			  <label for="autoLinking">Auto Link New Repositories:</label>
+			</fieldset>
+			
+			<fieldset class="group">
+	         <div class="checkbox" style="margin-top: 10px; clear: both" >
+			  <label for="autoLinking">Auto Link New Repositories</label>
 	          #if($action.getAutoLinking() == "true")
 		         <input disabled="disabled" checked="checked" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
 		      #else
@@ -54,8 +56,8 @@
 		      #end
 		     </div>
 		     
-		      <div class="field-group" style="margin-top: 10px; clear: both" >
-				  <label for="autoSmartCommits">Enable Smart Commits:</label>
+		      <div class="checkbox" style="margin-top: 10px; clear: both" >
+				  <label for="autoSmartCommits">Enable Smart Commits</label>
 		          #if($action.getAutoSmartCommits() == "true")
 			         <input disabled="disabled" checked="checked" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true"/>
 			      #else

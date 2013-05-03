@@ -93,15 +93,6 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
         FileUtils.deleteDirectory(extractedRepoDir);
     }
     
-    private void executeCommand(File directory, String... command) throws IOException, InterruptedException
-    {
-        Process gitPushProcess = new ProcessBuilder(command)
-        .directory(directory)
-        .start();
-
-        gitPushProcess.waitFor();
-    }
-    
     private File extractRepoZipIntoTempDir(String pathToRepoZip) throws IOException, URISyntaxException
     {
         URL repoZipResource = getClass().getClassLoader().getResource(pathToRepoZip);

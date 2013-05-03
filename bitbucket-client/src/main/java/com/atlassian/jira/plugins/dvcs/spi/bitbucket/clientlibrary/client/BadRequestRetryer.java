@@ -15,7 +15,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
  */
 public class BadRequestRetryer<V>
 {
-    private static final int DEFAULT_NUM_ATTEMPTS = 3;
+    private static final int DEFAULT_NUM_ATTEMPTS = 2;
     private static final Logger log = LoggerFactory.getLogger(BadRequestRetryer.class);
 
     public V retry(Callable<V> callable)

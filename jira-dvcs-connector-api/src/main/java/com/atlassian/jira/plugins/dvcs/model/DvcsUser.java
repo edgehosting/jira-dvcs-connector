@@ -1,11 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import org.apache.commons.lang3.StringUtils;
 
 
 /**
  * Describes a user 
  */
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 public class DvcsUser
 {
     
@@ -31,12 +37,17 @@ public class DvcsUser
         }
     }
 
-    private final String username;
+    private String username;
     private String fullName;
-    private final String avatar;
-    private final String url;
+    private String avatar;
+    private String url;
     private String rawAuthor;
 
+    public DvcsUser()
+    {
+        
+    }
+    
     public DvcsUser(String username, String fullName, String rawAuthor, String avatar, String url)
     {
         this.username = username;
