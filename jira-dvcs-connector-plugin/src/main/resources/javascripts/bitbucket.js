@@ -594,7 +594,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
     ).error(function (err) { 
               var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
               errorStatusIcon.removeClass("admin_permission aui-icon-warning").addClass("aui-icon aui-icon-error");
-              var response = jQuery.parseJSON(err.responseText);
+              var response = AJS.$.parseJSON(err.responseText);
               var message = "";
               if (response) {
             	  message = "<p>" + response.message + "</p>";
@@ -700,7 +700,7 @@ function confirmationDialog(options) {
         dialog.updateHeight();
     }
     
-    dialog.isAttached = function() { return !jQuery.isEmptyObject(dialog.popup.element);}
+    dialog.isAttached = function() { return !AJS.$.isEmptyObject(dialog.popup.element);}
     
     dialog.show(); 
     dialog.updateHeight();
