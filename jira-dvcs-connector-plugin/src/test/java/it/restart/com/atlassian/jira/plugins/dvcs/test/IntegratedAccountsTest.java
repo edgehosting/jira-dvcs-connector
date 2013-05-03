@@ -27,8 +27,8 @@ import org.json.JSONException;
 import org.json.JSONWriter;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -138,7 +138,7 @@ public class IntegratedAccountsTest
     /**
      * Destroys common environment.
      */
-    @AfterTest(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void afterTestAlways()
     {
         new MagicVisitor(jira).visit(BitbucketOAuthPage.class).removeConsumer(oAuthOriginal.applicationId);
