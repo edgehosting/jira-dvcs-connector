@@ -9,7 +9,7 @@
 #else
 	
     #if($groups.isEmpty())
-        <div> There are no groups configured for the selected account. </div>
+        <div>There are no <a href="https://bitbucket.org/account/user/${organization.name}/groups/" target="_blank">Bitbucket groups</a> configured for the selected account.</div>
     #else
 		<strong>When adding new users to JIRA, by default invite the user to <a href="https://bitbucket.org/account/user/${organization.name}/groups/" target="_blank">join the following Bitbucket groups</a>:</strong>
 		<table class="aui">
