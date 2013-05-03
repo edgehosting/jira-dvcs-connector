@@ -116,6 +116,7 @@
     width:16px;
     /*background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.png);*/
     background-repeat: no-repeat;
+    vertical-align: text-bottom;
     display: none;
 }
 
@@ -124,6 +125,7 @@
      height: 16px;
      background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/not_working.png);
      background-repeat: no-repeat;
+     vertical-align: text-bottom;
      display: inline-block;
  }
  
@@ -137,13 +139,6 @@
      background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
  }
  
- #configureDefaultGroupsContentWorking {
-     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
-     width: 16px;
-     height: 16px;
- }
-
-
 .syncicon.error {
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png);
     display:inline-block;
@@ -318,10 +313,12 @@ a:hover.repositoryNameLink {
 	text-align: center !important;
 }
 .dvcs-repos-table .dvcs-disabled {
-	color: #959595 !important;
+	filter: alpha(opacity=60);
+	opacity: 0.6;
 }
 .dvcs-repos-table .dvcs-disabled a {
-	color: #6f98c1 !important;
+	filter: alpha(opacity=60);
+	opacity: 0.6;
 }
 .dvcs-action-container {
 	/*white-space: nowrap;*/
@@ -444,7 +441,8 @@ html[xmlns] .dvcs-dclear {
     position:relative;
     font-weight: normal;
     font-size:11px;
-    top: 4px;
+    top: 2px;
+    color: #D04437;
 }
 
 /* Force synchronization inline dialog style */

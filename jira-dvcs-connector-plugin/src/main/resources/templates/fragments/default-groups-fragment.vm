@@ -1,29 +1,19 @@
-<table class="aui">
-
-    #if($error)
-        <tbody>
-            <tr><td>
-        
-                <div class="aui-message error">
-                    <p class="title">
-                        <span class="aui-icon icon-error"></span>
-                        <strong>Error!</strong>
-                    </p>
-                    <p>$error</p>
-                </div>
-            
-            </td></tr>
-        </tbody>
+#if($error)
+    <div class="aui-message error">
+        <p class="title">
+            <span class="aui-icon icon-error"></span>
+            <strong>Error!</strong>
+        </p>
+        <p>$error</p>
+    </div>
+#else
+	
+    #if($groups.isEmpty())
+        <div>There are no <a href="https://bitbucket.org/account/user/${organization.name}/groups/" target="_blank">Bitbucket groups</a> configured for the selected account.</div>
     #else
-        <thead>
-        	<tr>
-        		<th>When adding new users to JIRA, by default invite the user to join the following Bitbucket groups:</th>
-        	</tr>
-        </thead>
-        <tbody>
-        #if($groups.isEmpty())
-            <tr><td> There are no groups configured for the selected account. </td></tr>
-        #else
+		<strong>When adding new users to JIRA, by default invite the user to <a href="https://bitbucket.org/account/user/${organization.name}/groups/" target="_blank">join the following Bitbucket groups</a>:</strong>
+		<table class="aui">
+			<tbody>
         	#foreach($group in $groups)
          		#if($configuredSlugs.contains($group.slug))
          			#set( $selectedGroup = "checked='checked'")
@@ -42,8 +32,8 @@
          				</label> 
          			</td>
          		</tr>
-         	#end
-        #end
-        </tbody>
+    		#end
+			</tbody>
+		</table>
     #end
-</table>
+#end

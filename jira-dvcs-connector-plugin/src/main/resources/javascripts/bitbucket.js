@@ -361,41 +361,40 @@ function configureDefaultGroups(orgName, id) {
     AJS.$("#organizationIdDefaultGroups").val("");
     AJS.$("#configureDefaultGroupsContent").html("");
     AJS.$("#configureDefaultGroupsContentWorking").show();
-     AJS.$("#aui-message-bar-default-groups").empty();
-    var popup = new AJS.Dialog({
-        width: 600, 
-        height: 400, 
-        id: "dvcs-default-groups-dialog"
-    });
+    AJS.$("#aui-message-bar-default-groups").empty();
     
     AJS.$("#organizationIdDefaultGroups").val(id);
-
-    popup.addHeader("Configure Default Groups");
-    var dialogContent = AJS.$(".configure-default-groups");
-    popup.addPanel("", "#configureDefaultGroupsForm", "configure-default-groups-dialog");
-    popup.addButton("Save", function (dialog) {
-        AJS.$("#configureDefaultGroupsForm").submit();
-        
-    }, "aui-button submit");
     
-    popup.addCancel("Cancel", function (dialog) {
-        dialog.hide();
-    });
-
-    popup.show();
+    // we need to copy dialog content as dialog will destroy it when removed
+    var dialogContent = AJS.$("#configureDefaultGroupsContainer").html();
+    
+    var dialog = confirmationDialog({
+        header: "Configure Default Groups for '" + orgName + "'",
+        body: dialogContent,
+        submitButtonLabel: "Save",
+        okAction: function (dialog) { AJS.$("#configureDefaultGroupsForm").submit(); }
+        });
+    
+    dialog.disableSubmitButton();
+    
     // load web fragment
     AJS.$.ajax({
             type : 'GET',
             url : BASE_URL + "/rest/bitbucket/1.0/fragment/" + id + "/defaultgroups",
             success :
             function (data) {
-                AJS.$("#configureDefaultGroupsContentWorking").hide()
-                AJS.$("#configureDefaultGroupsContent").html(data);
+            	if (dialog.isAttached())
+            	{
+	            	// we need to reference .dialog-panel-body as this is copy
+	                AJS.$(".dialog-panel-body #configureDefaultGroupsContentWorking").hide()
+	                AJS.$(".dialog-panel-body #configureDefaultGroupsContent").html(data);
+	                dialog.updateHeight();
+	                dialog.enableSubmitButton();
+            	}
             }
         }
     ).error(function (err) { 
-            showError("Unexpected error occurred. Please contact the server administrator.", "#aui-message-bar-"+id);
-            popup.hide();
+            dialog.showError("Unexpected error occurred. Please contact the server administrator.");
         });
 }
 
@@ -595,8 +594,12 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
     ).error(function (err) { 
               var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
               errorStatusIcon.removeClass("admin_permission aui-icon-warning").addClass("aui-icon aui-icon-error");
-              var response = jQuery.parseJSON(err.responseText);
-              var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", response.message + "<br/>Please contact the server administrator.");
+              var response = AJS.$.parseJSON(err.responseText);
+              var message = "";
+              if (response) {
+            	  message = "<p>" + response.message + "</p>";
+              }
+              var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", message + "<p>Please contact the server administrator.</p>");
               tooltip.show();
               AJS.$("#" + checkboxId  + "working").hide();
               AJS.$("#" + checkboxId).removeAttr("disabled");
@@ -617,7 +620,7 @@ function registerAdminPermissionInlineDialogTooltip(element) {
 function registerInlineDialogTooltip(element, title, body) {
     return AJS.InlineDialog(AJS.$(element), "tooltip_"+AJS.$(element).attr('id'),
             function(content, trigger, showPopup) {
-                content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><p>" + body + "</p>");
+                content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><div>" + body + "</div>");
                 showPopup();
                 return false;
             },
@@ -673,6 +676,14 @@ function confirmationDialog(options) {
         dialog.remove();
     }, "#");
     
+    dialog.disableSubmitButton = function() {
+    	AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", true);
+    }
+    
+    dialog.enableSubmitButton = function() {
+    	AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", false);
+    }
+    
     dialog.working = function(working) {
         if (working) {
             AJS.$("#confirm-action-wait").addClass("aui-icon-wait");
@@ -688,8 +699,13 @@ function confirmationDialog(options) {
         showError(message, "#aui-message-bar-delete-org");
         dialog.updateHeight();
     }
+    
+    dialog.isAttached = function() { return !AJS.$.isEmptyObject(dialog.popup.element);}
+    
     dialog.show(); 
     dialog.updateHeight();
+    
+    return dialog;
 }
 
 function deleteOrganization(organizationId, organizationName) {
