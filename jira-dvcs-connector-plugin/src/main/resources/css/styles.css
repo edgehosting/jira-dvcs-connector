@@ -313,10 +313,12 @@ a:hover.repositoryNameLink {
 	text-align: center !important;
 }
 .dvcs-repos-table .dvcs-disabled {
-	color: #959595 !important;
+	filter: alpha(opacity=60);
+	opacity: 0.6;
 }
 .dvcs-repos-table .dvcs-disabled a {
-	color: #6f98c1 !important;
+	filter: alpha(opacity=60);
+	opacity: 0.6;
 }
 .dvcs-action-container {
 	/*white-space: nowrap;*/
