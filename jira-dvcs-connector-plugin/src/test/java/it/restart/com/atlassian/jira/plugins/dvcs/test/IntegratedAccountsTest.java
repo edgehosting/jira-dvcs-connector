@@ -27,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONWriter;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
@@ -150,6 +151,15 @@ public class IntegratedAccountsTest
     @BeforeMethod
     public void beforeMethod()
     {
+        removeAllIntegratedAccounts();
+        new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
+    }
+
+    /**
+     * Destroys test environment.
+     */
+    @AfterMethod(alwaysRun = true)
+    public void afterMethod() {
         removeAllIntegratedAccounts();
         new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
     }
