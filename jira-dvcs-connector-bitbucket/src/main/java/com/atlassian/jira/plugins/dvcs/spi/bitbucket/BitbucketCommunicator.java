@@ -372,7 +372,20 @@ public class BitbucketCommunicator implements DvcsCommunicator
         String avatar = bitbucketAccount.getAvatar();
         return new DvcsUser(username, fullName, null, avatar, repository.getOrgHostUrl() + "/" + username);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DvcsUser getTokenOwner(Organization organization)
+    {
+        BitbucketRemoteClient remoteClient = bitbucketClientRemoteFactory.getForOrganization(organization);
+        BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getCurrentUser();
+        String username = bitbucketAccount.getUsername();
+        String fullName = bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName();
+        String avatar = bitbucketAccount.getAvatar();
+        return new DvcsUser(username, fullName, null, avatar, organization.getHostUrl() + "/" + username);
+    }
 
     /**
      * {@inheritDoc}

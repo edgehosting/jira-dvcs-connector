@@ -16,7 +16,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager;
 import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationsManagerImpl;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -26,89 +25,96 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
  */
 public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 {
-	private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
+    private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
-	private String postCommitRepositoryType;
-	private final FeatureManager featureManager;
-	private final OrganizationService organizationService;
-	private final DvcsCommunicatorProvider communicatorProvider;
+    private String postCommitRepositoryType;
+    private final FeatureManager featureManager;
+    private final OrganizationService organizationService;
     private final PluginFeatureDetector featuresDetector;
     private final InvalidOrganizationManager invalidOrganizationsManager;
     private final OAuthStore oAuthStore;
 
     public ConfigureDvcsOrganizations(OrganizationService organizationService, FeatureManager featureManager,
-            DvcsCommunicatorProvider communicatorProvider, PluginFeatureDetector featuresDetector,
-            PluginSettingsFactory pluginSettingsFactory, OAuthStore oAuthStore)
-	{
-		this.organizationService = organizationService;
-		this.communicatorProvider = communicatorProvider;
-		this.featureManager = featureManager;
+            PluginFeatureDetector featuresDetector, PluginSettingsFactory pluginSettingsFactory, OAuthStore oAuthStore)
+    {
+        this.organizationService = organizationService;
+        this.featureManager = featureManager;
         this.featuresDetector = featuresDetector;
         this.oAuthStore = oAuthStore;
         this.invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
-	}
+    }
 
-	@Override
-	protected void doValidation()
-	{
-	}
+    @Override
+    protected void doValidation()
+    {
+    }
 
-	@Override
-	@RequiresXsrfCheck
-	protected String doExecute() throws Exception
-	{
-		logger.debug("Configure organization default action.");
-		return INPUT;
-	}
+    @Override
+    @RequiresXsrfCheck
+    protected String doExecute() throws Exception
+    {
+        logger.debug("Configure organization default action.");
+        return INPUT;
+    }
 
-	public Organization[] loadOrganizations()
-	{
-		List<Organization> allOrganizations = organizationService.getAll(true);
-		sort(allOrganizations);
-		return allOrganizations.toArray(new Organization[]{});
-	}
+    public Organization[] loadOrganizations()
+    {
+        List<Organization> allOrganizations = organizationService.getAll(true);
+        sort(allOrganizations);
+        return allOrganizations.toArray(new Organization[] {});
+    }
 
-	public boolean isInvalidOrganization(Organization organization)
-	{
-	    return !invalidOrganizationsManager.isOrganizationValid(organization.getId());
-	}
+    public boolean isInvalidOrganization(Organization organization)
+    {
+        return !invalidOrganizationsManager.isOrganizationValid(organization.getId());
+    }
 
+    /**
+     * Custom sorting of organizations - integrated accounts are displayed on top.
+     *
+     * @param allOrganizations
+     */
     private void sort(List<Organization> allOrganizations)
     {
-        // TODO add javadoc, this is to keep integrated account on the top of the list
         Collections.sort(allOrganizations, new Comparator<Organization>()
         {
             @Override
             public int compare(Organization org1, Organization org2)
             {
-                if (org1.isIntegratedAccount() ^ org2.isIntegratedAccount())
-                {
-                    return 0;
-                } else if (org1.isIntegratedAccount())
+                // integrated accounts has precedence
+                if (org1.isIntegratedAccount() && !org2.isIntegratedAccount())
                 {
                     return -1;
+
+                } else if (!org1.isIntegratedAccount() && org2.isIntegratedAccount())
+                {
+                    return +1;
+
                 } else
                 {
-                    return 1;
+                    // by default compares via name
+                    return org1.getName().compareTo(org2.getName());
+
                 }
+
             }
         });
     }
 
     public String getPostCommitRepositoryType()
-	{
-		return postCommitRepositoryType;
-	}
+    {
+        return postCommitRepositoryType;
+    }
 
-	public void setPostCommitRepositoryType(String postCommitRepositoryType)
-	{
-		this.postCommitRepositoryType = postCommitRepositoryType;
-	}
+    public void setPostCommitRepositoryType(String postCommitRepositoryType)
+    {
+        this.postCommitRepositoryType = postCommitRepositoryType;
+    }
 
-	public boolean isOnDemandLicense()
-	{
-		return featureManager.isEnabled(CoreFeatures.ON_DEMAND);
-	}
+    public boolean isOnDemandLicense()
+    {
+        return featureManager.isEnabled(CoreFeatures.ON_DEMAND);
+    }
 
     public boolean isUserInvitationsEnabled()
     {
@@ -124,7 +130,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     {
         return org.isIntegratedAccount();
     }
-    
+
     public OAuthStore getOAuthStore()
     {
         return oAuthStore;

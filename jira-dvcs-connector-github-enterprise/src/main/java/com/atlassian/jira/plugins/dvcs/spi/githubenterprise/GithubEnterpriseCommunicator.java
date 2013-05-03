@@ -31,9 +31,7 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
         try
         {
             userService.getUser(accountName);
-
             return new AccountInfo(GithubCommunicator.GITHUB);
-
         } catch (RequestException e)
         {
             log.debug("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(),
@@ -51,7 +49,6 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
                     hostUrl, accountName);
         }
         return null;
-
     }
     
     @Override

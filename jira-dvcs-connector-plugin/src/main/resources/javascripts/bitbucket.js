@@ -1,16 +1,3 @@
-function deleteRepository(repositoryId, repositoryUrl) {
-    var answer = confirm("Are you sure you want to remove this repository? \n " + repositoryUrl)
-    if (answer) {
-        AJS.$.ajax({
-            url: BASE_URL + "/rest/bitbucket/1.0/repository/" + repositoryId,
-            type: 'DELETE',
-            success: function(result) {
-                window.location.reload();
-            }
-        });
-    }
-}
-
 function switchDvcsDetails(selectSwitch) {
 	var dvcsType = selectSwitch.selectedIndex;
 	switchDvcsDetailsInternal(dvcsType);
@@ -221,6 +208,7 @@ function createAddOrganizationDialog(action) {
     dialog.addPanel("Confirmation", "<div id='githubeConfirmation'>Test</div>", "panel-body");
     dialog.addSubmit("Continue", function (dialog, event) {
     	dialog.gotoPage(0);
+        dialog.updateHeight();
     	if (dvcsSubmitFormHandler(event, true)) {
     		AJS.$("#repoEntry").submit();
     	}
@@ -254,7 +242,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
 	// submit form
     var organizationElement = AJS.$("#organization");
     // if not custom URL
-    if ( !dvcsContainsSlash( organizationElement.val()) ) {
+    if ( !parseAccountUrl( organizationElement.val()) ) {
     	// some really simple validation
     	if (!validateAddOrganizationForm()) {
     		dialog.enabled(true);
@@ -295,10 +283,9 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
     	return false;
     }
     
-    var account = dvcsGetAccountNameFromUrl(AJS.$("#organization").val());
-    var dvcsUrl = dvcsGetUrlFromAccountUrl(AJS.$("#organization").val());
-    AJS.$("#url").val(dvcsUrl);
-    AJS.$("#organization").val(account);
+    var account = parseAccountUrl(AJS.$("#organization").val());
+    AJS.$("#url").val(account.hostUrl);
+    AJS.$("#organization").val(account.name);
 
     AJS.$("#aui-message-bar").empty();
     
@@ -375,36 +362,6 @@ var dvcsSubmitFormAjaxHandler = {
 		}
 }
 
-function changePassword(username, id) {
-	
-	 // clear all
-	 AJS.$("#organizationId").val("");
-	 AJS.$("#usernameUp").val("");
-	 AJS.$("#adminPasswordUp").val("");
-	
-	 var popup = new AJS.Dialog({
-		 		width: 400, 
-		 		height: 300, 
-		 		id: "dvcs-change-pass-dialog"
-	 });
-	 
-	 AJS.$("#organizationId").val(id);
-	 AJS.$("#usernameUp").val(username);
-
-	 popup.addHeader("Update Account Credentials");
-	 var dialogContent = AJS.$(".update-credentials");
-	 popup.addPanel("", "#updatePasswordForm", "dvcs-update-cred-dialog");
-	 popup.addButton("Update", function (dialog) {
-		 AJS.$("#updatePasswordForm").submit();
-     }, "aui-button submit");
-     popup.addButton("Cancel", function (dialog) {
-         dialog.hide();
-     }, "aui-button submit");
-     
-	 popup.show();
-	 AJS.$("#adminPasswordUp").focus().select();
-}
-
 function configureDefaultGroups(orgName, id) {
 	
 	// clear all
@@ -412,64 +369,62 @@ function configureDefaultGroups(orgName, id) {
 	AJS.$("#configureDefaultGroupsContent").html("");
 	AJS.$("#configureDefaultGroupsContentWorking").show();
  	AJS.$("#aui-message-bar-default-groups").empty();
-	var popup = new AJS.Dialog({
-		width: 600, 
-		height: 400, 
-		id: "dvcs-default-groups-dialog"
-	});
 	
 	AJS.$("#organizationIdDefaultGroups").val(id);
 
-	popup.addHeader("Configure Default Groups");
-	var dialogContent = AJS.$(".configure-default-groups");
-	popup.addPanel("", "#configureDefaultGroupsForm", "configure-default-groups-dialog");
-	popup.addButton("Save", function (dialog) {
-		AJS.$("#configureDefaultGroupsForm").submit();
+    // we need to copy dialog content as dialog will destroy it when removed
+    var dialogContent = AJS.$("#configureDefaultGroupsContainer").html();
 		
-	}, "aui-button submit");
+    var dialog = confirmationDialog({
+        header: "Configure Default Groups for '" + orgName + "'",
+        body: dialogContent,
+        submitButtonLabel: "Save",
+        okAction: function (dialog) { AJS.$("#configureDefaultGroupsForm").submit(); }
+        });
 	
-	popup.addCancel("Cancel", function (dialog) {
-		dialog.hide();
-	});
+    dialog.disableSubmitButton();
 
-	popup.show();
 	// load web fragment
-	AJS.$.ajax(
-			{
+	AJS.$.ajax({
 				type : 'GET',
 				url : BASE_URL + "/rest/bitbucket/1.0/fragment/" + id + "/defaultgroups",
 				success :
 				function (data) {
-					AJS.$("#configureDefaultGroupsContentWorking").hide()
-					AJS.$("#configureDefaultGroupsContent").html(data);
+            	if (dialog.isAttached())
+            	{
+	            	// we need to reference .dialog-panel-body as this is copy
+	                AJS.$(".dialog-panel-body #configureDefaultGroupsContentWorking").hide()
+	                AJS.$(".dialog-panel-body #configureDefaultGroupsContent").html(data);
+	                dialog.updateHeight();
+	                dialog.enableSubmitButton();
+            	}
 				}
 			}
 		
 	).error(function (err) { 
-			showError("Unexpected error occurred. Please contact the server administrator.", "#aui-message-bar-"+id);
-			popup.hide();
+            dialog.showError("Unexpected error occurred. Please contact the server administrator.");
 		});
-}
-
-function getOAuthHelpText(org){
-	if (org.dvcsType=="bitbucket") {
-		return "Obtain Key and Secret from your <a target='_blank' href='"+org.hostUrl+"/account/'>Bitbucket account settings</a> in <b>Integrated Applications</b> section."; 
-	} else if (org.dvcsType=="github") {
-		return "Obtain Key and Secret from your <a target='_blank' href='https://github.com/settings/applications'>GitHub account settings</a>.";
-	} else {
-		return "Obtain Key and Secret from your <a target='_blank' href='"+org.hostUrl+"/settings/applications'>GitHub Enterprise account settings</a>.";
-	}
 }
 
 function configureOAuth(org, atlToken) {
 	function validateField(field, errorMsg) {
 		if (!AJS.$.trim(field.val())) {
-			field.next().html(errorMsg);
+            showError(field, errorMsg);
 			return false;
 		}
-		field.next().html("&nbsp;");
+        clearError(field);
 		return true;
 	}
+	
+    function showError(field, errorMsg) {
+    	field.next().html(errorMsg);
+        field.next().show();
+    }
+    
+    function clearError(field) {
+    	field.next().html("&nbsp;");
+    	field.next().hide();
+    }
 	
 	var popup = new AJS.Dialog({
 		width: 600, 
@@ -482,13 +437,17 @@ function configureOAuth(org, atlToken) {
 		'organizationId': org.id,
 		'oAuthKey': org.credential.key,
 		'oAuthSecret': org.credential.secret,
-		'helpText': new soydata.SanitizedHtml(getOAuthHelpText(org))
+        'isOnDemandLicense': jira.dvcs.connector.plugin.onDemandLicense
 		}));
+
+    clearError(AJS.$("#updateOAuthForm #key"));
+    clearError(AJS.$("#updateOAuthForm #secret"));
 	
 	popup.addButton("Regenerate Access Token", function (dialog) {
 		// validate
 		var v1 = validateField(AJS.$("#updateOAuthForm #key"), "OAuth key must not be blank");
 		var v2 = validateField(AJS.$("#updateOAuthForm #secret"), "OAuth secret must not be blank");
+        popup.updateHeight();
 		if (!v1 || !v2) return;
 			
 		AJS.$("#repositoryOAuthDialog .dialog-button-panel button").attr("disabled", "disabled");
@@ -525,6 +484,15 @@ function configureOAuth(org, atlToken) {
 	});
 
 	popup.show();
+    popup.updateHeight();
+    
+
+    AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/organization/" + org.id + "/tokenOwner", function(data) {
+        AJS.$(".repositoryOAuthDialog #tokenUser").html(jira.dvcs.connector.plugin.soy.repositoryOAuthDialogTokenOwner(data));
+    }).error(function (err) { 
+    	AJS.$(".repositoryOAuthDialog #tokenUser").html("<i>&lt;Invalid, please regenerate access token.&gt;<i>");
+    });
+    
 	return false;
 }
 
@@ -533,9 +501,7 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 	AJS.$("#" + checkboxId).attr("disabled", "disabled");
 
 	AJS.$("#" + checkboxId  + "working").show();
-	
-	AJS.$.ajax(
-		{
+    AJS.$.ajax({
 			type : 'POST',
 			dataType : "json",
 			contentType : "application/json",
@@ -563,8 +529,7 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
 function enableSmartcommitsOnNewRepos(organizationId, checkboxId) {
 	var checkedValue = AJS.$("#" + checkboxId).is(':checked');
 	AJS.$("#" + checkboxId).attr("disabled", "disabled");
-	AJS.$.ajax(
-		{
+    AJS.$.ajax({
 			type : 'POST',
 			dataType : "json",
 			contentType : "application/json",
@@ -641,8 +606,12 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 	).error(function (err) { 
 				  var errorStatusIcon = AJS.$("#error_status_icon_" +repoId);
 				  errorStatusIcon.removeClass("admin_permission aui-icon-warning").addClass("aui-icon aui-icon-error");
-				  var response = jQuery.parseJSON(err.responseText);
-				  var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", response.message + "<br/>Please contact the server administrator.");
+              var response = AJS.$.parseJSON(err.responseText);
+              var message = "";
+              if (response) {
+            	  message = "<p>" + response.message + "</p>";
+              }
+              var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", message + "<p>Please contact the server administrator.</p>");
 				  tooltip.show();
 				  AJS.$("#" + checkboxId  + "working").hide();
 				  AJS.$("#" + checkboxId).removeAttr("disabled");
@@ -663,7 +632,7 @@ function registerAdminPermissionInlineDialogTooltip(element) {
 function registerInlineDialogTooltip(element, title, body) {
 	return AJS.InlineDialog(AJS.$(element), "tooltip_"+AJS.$(element).attr('id'),
 		    function(content, trigger, showPopup) {
-				content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><p>" + body + "</p>");
+                content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><div>" + body + "</div>");
 				showPopup();
 		        return false;
 		    },
@@ -719,6 +688,14 @@ function confirmationDialog(options) {
 		dialog.remove();
 	}, "#");
 	
+    dialog.disableSubmitButton = function() {
+    	AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", true);
+    }
+    
+    dialog.enableSubmitButton = function() {
+    	AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", false);
+    }
+    
 	dialog.working = function(working) {
 		if (working) {
 			AJS.$("#confirm-action-wait").addClass("aui-icon-wait");
@@ -734,8 +711,13 @@ function confirmationDialog(options) {
 		showError(message, "#aui-message-bar-delete-org");
     	dialog.updateHeight();
 	}
+    
+    dialog.isAttached = function() { return !AJS.$.isEmptyObject(dialog.popup.element);}
+    
     dialog.show(); 
 	dialog.updateHeight();
+    
+    return dialog;
 }
 
 function deleteOrganization(organizationId, organizationName) {
@@ -815,40 +797,12 @@ var dvcsKnownUrls = {
 		"githube" : "https://github.com"
 };
 
-function dvcsContainsSlash(stringType) {
-	return stringType.indexOf("/") != -1;
-};
-
-function dvcsGetAccountNameFromUrl (stringType) {
-	// case of i.e. https://bitbucket.org/someuser/
-	if (dvcsEndsWith(stringType, "/")) {
-		stringType = stringType.substring(0, stringType.length - 1);
-	}
-	var extracted = stringType.substring(stringType.lastIndexOf("/") + 1, stringType.length);
-	return extracted.replace("/");
+function parseAccountUrl(url) {
+    var pattern=/(.*)\/(.+?)\/?$/;
+    var matches = url.match(pattern);
+    if (matches)
+        return {hostUrl:matches[1], name:matches[2]};
 }
-
-function dvcsGetUrlFromAccountUrl (stringType) {
-	// case of i.e. https://bitbucket.org/someuser/
-	if (dvcsEndsWith(stringType, "/")) {
-		stringType = stringType.substring(0, stringType.length - 1);
-	}
-	return stringType.substring(0, stringType.lastIndexOf("/"));
-}
-
-function dvcsEndsWith (stringType, suffix) {
-	  return stringType.indexOf(suffix, stringType.length - suffix.length) !== -1;
-}
-
-function dvcsCopyOrganizationToUsername() {
-	if (AJS.$("#organization").val() && !dvcsContainsSlash(AJS.$("#organization").val())) {
-		if (AJS.$("#adminUsername").val().length == 0) {
-			AJS.$("#adminUsername").val(AJS.$("#organization").val());
-			AJS.$("#adminUsername").focus().select();
-		}
-	}
-}
-
 
 //------------------------------------------------------------
 

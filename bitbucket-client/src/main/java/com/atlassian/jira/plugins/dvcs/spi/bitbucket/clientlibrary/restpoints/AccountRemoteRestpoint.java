@@ -12,7 +12,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Respo
  * 
  * @author Martin Skurla mskurla@atlassian.com
  */
-public class AccountRemoteRestpoint {
+public class AccountRemoteRestpoint
+{
     private final RemoteRequestor requestor;
 
     
@@ -26,6 +27,20 @@ public class AccountRemoteRestpoint {
     public BitbucketAccount getUser(String ownerOrEmail)
     {
         String getUserUrl = URLPathFormatter.format("/users/%s", ownerOrEmail);
+        
+        return requestor.get(getUserUrl, null, new ResponseCallback<BitbucketAccount>()
+        {
+            @Override
+            public BitbucketAccount onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), BitbucketRepositoriesEnvelope.class).getUser();
+            }
+        });
+    }
+    
+    public BitbucketAccount getCurrentUser()
+    {
+        String getUserUrl = URLPathFormatter.format("/user");
         
         return requestor.get(getUserUrl, null, new ResponseCallback<BitbucketAccount>()
         {

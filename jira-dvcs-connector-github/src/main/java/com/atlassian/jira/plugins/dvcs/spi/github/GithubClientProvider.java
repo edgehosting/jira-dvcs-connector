@@ -70,6 +70,11 @@ public class GithubClientProvider
         return new CommitService(createClient(repository));
     }
 
+    public UserService getUserService(Organization organization)
+    {
+        return new UserService(createClient(organization));
+    }
+    
     public UserService getUserService(Repository repository)
     {
         return new UserService(createClient(repository));

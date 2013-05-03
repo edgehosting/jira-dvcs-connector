@@ -156,7 +156,6 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
             log.info("Creating new integrated account.");
             newOrganization = createNewOrganization(info);
             organizationService.save(newOrganization);
-
         } else
         {
             log.info("Found the same user-added account.");
@@ -197,14 +196,13 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
 
     private void markAsIntegratedAccount(Organization userAddedAccount, AccountInfo info)
     {
-        organizationService.updateCredentialsKeySecret(userAddedAccount.getId(), info.oauthKey, info.oauthSecret, null);
+        organizationService.updateCredentials(userAddedAccount.getId(), new Credential(info.oauthKey, info.oauthSecret, null));
     }
 
     private Organization getUserAddedAccount(AccountInfo info)
     {
         Organization userAddedAccount = organizationService.getByHostAndName(BITBUCKET_URL, info.accountName);
-        if (userAddedAccount != null && (StringUtils.isBlank(userAddedAccount.getCredential().getOauthKey())
-                                     || StringUtils.isBlank(userAddedAccount.getCredential().getOauthSecret())) )
+        if (userAddedAccount != null && StringUtils.isNotBlank(userAddedAccount.getCredential().getAccessToken()))
         {
             return userAddedAccount;
         } else
@@ -231,7 +229,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
                 if (configHasChanged(existingNotNullAccount, providedConfig))
                 {
                     log.info("Detected credentials change.");
-                    organizationService.updateCredentialsKeySecret(existingNotNullAccount.getId(), providedConfig.oauthKey, providedConfig.oauthSecret, null);
+                    markAsIntegratedAccount(existingNotNullAccount, providedConfig);
                 } else if (accountNameHasChanged(existingNotNullAccount, providedConfig))
                 {
                     log.info("Detected integrated account name change.");
@@ -393,7 +391,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
     {
         organization.setId(0);
         organization.setName(info.accountName);
-        organization.setCredential(new Credential(info.oauthKey, info.oauthSecret, null, null, null));
+        organization.setCredential(new Credential(info.oauthKey, info.oauthSecret, null));
         organization.setHostUrl(BITBUCKET_URL);
         organization.setDvcsType("bitbucket");
         organization.setAutolinkNewRepos(true);

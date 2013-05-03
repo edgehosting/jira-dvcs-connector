@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 
 /**
@@ -52,22 +54,20 @@ public interface OrganizationService
      */
     void remove(int organizationId);
 
-    /**
-     * Update credentials.
-     *
-     * @param organizationId the organization id
-     * @param username the username
-     * @param plaintextPassword the password as a plain text
-     */
-    void updateCredentials(int organizationId, String username, String plaintextPassword);
-
 	/**
-	 * Update credentials access token.
-	 *
-	 * @param organizationId the organization id
-	 * @param accessToken the access token
-	 */
-	void updateCredentialsAccessToken(int organizationId, String accessToken);
+	 * Update credentials
+	 * 
+     * @param organizationId
+     * @param credential
+     */
+    public void updateCredentials(int organizationId, Credential credential);
+
+    
+    /**
+     * @param organizationId
+     * @param accessToken
+     */
+    public void updateCredentialsAccessToken(int organizationId, String accessToken);
 
 	/**
 	 * Enable autolink new repos.
@@ -114,8 +114,13 @@ public interface OrganizationService
 	Organization findIntegratedAccount();
 
 	Organization getByHostAndName(final String hostUrl, final String name);
-
-    void updateCredentialsKeySecret(int organizationId, String key, String secret, String accessToken);
+    /**
+     * Returns remote user who is owner of currently used accessToken
+     * 
+     * @param organizationId
+     * @return
+     */
+    DvcsUser getTokenOwner(int organizationId);
 
 }
 
