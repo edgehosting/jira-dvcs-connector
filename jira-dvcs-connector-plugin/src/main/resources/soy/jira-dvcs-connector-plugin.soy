@@ -28,9 +28,10 @@
 	            <input class="text long-field" type="text" id="secret" name="secret" title="first name" value="{$oAuthSecret}">
 	            <div class="error">&nbsp;</div>
 	        </div>
-	        <div class="field-group" id="tokenUser">
+	        <div class="field-group">
+				<label for="d-fname">Token User</label>
+				<div class="static-text" id="tokenUser"><span class="aui-icon aui-icon-wait">Wait</span></div>
 	        </div>
-	        
 	    </fieldset>
 	    </form>
         <div id="aui-message-bar-oauth-dialog"></div>
@@ -42,9 +43,7 @@
  * @param url
  */
 {template .repositoryOAuthDialogTokenOwner}
-	<label for="d-fname">Token User</label>
-	<div class="static-text"><a href="{$url}">{$fullName}</a></div>
-	<div class="error">&nbsp;</div>
+	<a href="{$url}">{$fullName}</a>
 {/template}
 
 /**

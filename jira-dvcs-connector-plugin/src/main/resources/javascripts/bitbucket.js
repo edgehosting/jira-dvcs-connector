@@ -479,8 +479,9 @@ function configureOAuth(org, atlToken) {
 
     AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/organization/" + org.id + "/tokenOwner", function(data) {
         AJS.$(".repositoryOAuthDialog #tokenUser").html(jira.dvcs.connector.plugin.soy.repositoryOAuthDialogTokenOwner(data));
-        popup.updateHeight();
-    });
+    }).error(function (err) { 
+    	AJS.$(".repositoryOAuthDialog #tokenUser").html("<i>&lt;Invalid, please regenerate access token.&gt;<i>");
+    });;
     
     return false;
 }
