@@ -105,6 +105,6 @@ public class ConfirmationDialog extends WebDriverElement
     
     public void waitUntilVisible()
     {
-        Poller.waitUntil(timed().isVisible(), is(false), by(30000));
+        Poller.waitUntil(timed().isVisible(), is(false), by(60000));
     }
 }

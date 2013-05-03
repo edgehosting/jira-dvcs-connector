@@ -78,7 +78,6 @@
            #printOrganizations
        </div>
            
-        #printUpdateCredentialsFormHidden
         #printConfigureDefaultGroupsFormHidden
     
   </body>
@@ -275,30 +274,6 @@
   </div>
 #end
 
-
-#end
-
-#macro (printUpdateCredentialsFormHidden)
-    
-    <div class="update-credentials" style="display:none">
-    
-        <form id="updatePasswordForm" class="aui" method="post" action="$baseurl/secure/admin/UpdateBitbucketCredentials.jspa" >
-        
-             <input type="hidden" name="atl_token" value="$atl_token">
-             <input type="hidden" id="organizationId" name="organizationId" value="" />
-
-             <div class="field-group">
-                   <label for="usernameUp">Username:</label>
-                   <input type="text" id="usernameUp" name="usernameUp" value="" />
-             </div>
-                        
-             <div class="field-group">
-                  <label for="adminPasswordUp">Password:</label>
-                  <input type="password" id="adminPasswordUp" name="adminPasswordUp" value=""/>
-             </div>
-             
-        </form>
-    </div>
 
 #end
 

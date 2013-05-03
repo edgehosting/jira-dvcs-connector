@@ -17,8 +17,19 @@ import com.google.gson.JsonParseException;
 
 public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvider
 {
+    
+    /**
+     * @see #absoluteConfigFilePath
+     */
+    public static final String ENV_ONDEMAND_CONFIGURATION = "ondemand.properties";
+    
+    /**
+     * Default value of {@link #ENV_ONDEMAND_CONFIGURATION}
+     */
+    public static final String ENV_ONDEMAND_CONFIGURATION_DEFAULT = "/data/jirastudio/home/ondemand.properties";
+    
     private static Logger log = LoggerFactory.getLogger(JsonFileBasedAccountsConfigProvider.class);
-    private final String absoluteConfigFilePath = "/data/jirastudio/home/ondemand.properties";
+    private final String absoluteConfigFilePath = System.getProperty(ENV_ONDEMAND_CONFIGURATION, ENV_ONDEMAND_CONFIGURATION_DEFAULT);
     private final FeatureManager featureManager;
 
     public JsonFileBasedAccountsConfigProvider(FeatureManager featureManager)

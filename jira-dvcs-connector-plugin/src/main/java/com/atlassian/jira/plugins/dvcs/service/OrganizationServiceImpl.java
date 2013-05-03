@@ -18,7 +18,6 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 
 public class OrganizationServiceImpl implements OrganizationService
 {
-
 	private final OrganizationDao organizationDao;
 	private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
 	private final RepositoryService repositoryService;
@@ -113,46 +112,26 @@ public class OrganizationServiceImpl implements OrganizationService
 		organizationDao.remove(organizationId);
 	}
 
-	@Deprecated
 	@Override
-	public void updateCredentials(int organizationId, String username, String plaintextPassword)
+	public void updateCredentials(int organizationId, Credential credential)
 	{
-		// Check credentials
-		// create organization with plain credentials as we need all data like url, etc
-		//
-		Organization organization = organizationDao.get(organizationId);
-		organization.setCredential(new Credential(null, null, null, username, plaintextPassword));
-
-		organizationDao.updateCredentials(organizationId, username, plaintextPassword, null, null, null);
-	}
-
-	@Deprecated
-	@Override
-	public void updateCredentialsAccessToken(int organizationId, String accessToken)
-	{
-		// Check credentials
-		// create organization with plain credentials as we need all data like url, etc
-		//
-		Organization organization = organizationDao.get(organizationId);
-		organization.setCredential(new Credential(null, null, accessToken, null, null));
-
-		organizationDao.updateCredentials(organizationId, null, null, accessToken, null, null);
-
-	}
-
-	@Override
-    public void updateCredentialsKeySecret(int organizationId, String key, String secret, String accessToken)
-    {
-        // Check credentials
-        // create organization with plain credentials as we need all data like url, etc
-        //
         Organization organization = organizationDao.get(organizationId);
-        organization.setCredential(new Credential(key, secret, accessToken, null, null));
-        //checkCredentials(organization);
-        //
+        if (organization != null)
+        {
+            organization.setCredential(credential);
+            organizationDao.save(organization);
+        }
+	}
 
-        organizationDao.updateCredentialsKeySecret(organizationId, key, secret);
-
+    @Override
+    public void updateCredentialsAccessToken(int organizationId, String accessToken)
+    {
+        Organization organization = organizationDao.get(organizationId);
+        if (organization != null)
+        {
+            organization.getCredential().setAccessToken(accessToken);
+            organizationDao.save(organization);
+        }
     }
 
 	@Override
@@ -214,6 +193,7 @@ public class OrganizationServiceImpl implements OrganizationService
     {
         return organizationDao.getByHostAndName(hostUrl, name);
     }
+
 
     @Override
     public DvcsUser getTokenOwner(int organizationId)
