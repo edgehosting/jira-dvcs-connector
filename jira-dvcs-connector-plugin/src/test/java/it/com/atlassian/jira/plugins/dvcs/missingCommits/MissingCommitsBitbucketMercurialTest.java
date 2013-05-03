@@ -1,9 +1,14 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
@@ -15,6 +20,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthP
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.util.ZipUtils;
+import com.google.common.collect.Lists;
 
 /**
  * @author Martin Skurla
@@ -74,17 +80,10 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
         String hgPushUrl = String.format("https://%1$s:%2$s@bitbucket.org/%1$s/%3$s", DVCS_REPO_OWNER,
                                                                                       DVCS_REPO_PASSWORD,
                                                                                       MISSING_COMMITS_REPOSITORY_NAME);
-        String hgCommand = getHgCommand();
-        
-        Process hgPushProcess = new ProcessBuilder(hgCommand, "push", hgPushUrl)
-                                                  .directory(extractedRepoDir)
-                                                  .start();
-
-        hgPushProcess.waitFor();
-
+        executeCommand(extractedRepoDir, getHgCommand(), "push", hgPushUrl);
         FileUtils.deleteDirectory(extractedRepoDir);
     }
-
+    
     @Override
     String getFirstDvcsZipRepoPathToPush()
     {
