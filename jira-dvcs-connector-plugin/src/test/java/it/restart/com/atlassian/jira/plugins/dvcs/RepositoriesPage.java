@@ -28,7 +28,7 @@ public class RepositoriesPage implements Page
     /**
      * Logger for this class.
      */
-    private Logger LOGGER = LoggerFactory.getLogger(RepositoriesPage.class);
+    private Logger logger = LoggerFactory.getLogger(RepositoriesPage.class);
     
     @Inject
     private PageBinder pageBinder;
@@ -156,7 +156,7 @@ public class RepositoriesPage implements Page
         List<OrganizationDiv> orgs;
         while (!(orgs = getOrganizations()).isEmpty())
         {
-            LOGGER.info("Deleting organization: " + orgs.get(0).getOrganizationName() + ":" + orgs.get(0).getOrganizationType());
+            logger.info("Deleting organization: " + orgs.get(0).getOrganizationName() + ":" + orgs.get(0).getOrganizationType());
             orgs.get(0).delete();
         }
     }
