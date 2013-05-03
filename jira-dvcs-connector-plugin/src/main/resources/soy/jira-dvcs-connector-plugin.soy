@@ -258,6 +258,11 @@
 	               <input class="text" type="text" id="urlGhe" name="urlGhe" value="{$oAuthStore.githube.url}"/>
 	               <div id="ghe-url-error" class="dvcs-error error">This field is required.</div>
 	               <div id="ghe-invalid-url-error" class="dvcs-error error">Valid url is required.</div>
+	            </div>
+	            <div class="field-group">
+	                <label for="oauthClientIdGhe">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
+	               <input class="text" type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value="{$oAuthStore.githube.key}"/>
+	               <div id="oauth-ghe-client-error" class="dvcs-error error">This field is required.</div>
 	               <div class="description">
 		           {if $isOnDemandLicense}
 	                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
@@ -265,12 +270,6 @@
 	                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
 	               {/if}
 		           Help with my key and secret.</a></div>
-	            </div>
-	            <div class="field-group">
-	                <label for="oauthClientIdGhe">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
-	               <input class="text" type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value="{$oAuthStore.githube.key}"/>
-	               <div id="oauth-ghe-client-error" class="dvcs-error error">This field is required.</div>
-	               <div class="description"></div>
 	            </div>
 	            <div class="field-group">
 	               <label for="oauthSecretGhe">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
