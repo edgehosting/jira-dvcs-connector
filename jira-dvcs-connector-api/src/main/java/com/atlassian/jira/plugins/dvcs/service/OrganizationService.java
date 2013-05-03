@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 
 /**
@@ -113,5 +114,13 @@ public interface OrganizationService
 	Organization findIntegratedAccount();
 
 	Organization getByHostAndName(final String hostUrl, final String name);
+    /**
+     * Returns remote user who is owner of currently used accessToken
+     * 
+     * @param organizationId
+     * @return
+     */
+    DvcsUser getTokenOwner(int organizationId);
+
 }
 

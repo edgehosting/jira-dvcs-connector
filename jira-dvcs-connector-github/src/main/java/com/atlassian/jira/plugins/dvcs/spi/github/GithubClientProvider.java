@@ -1,8 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.*;
 
 import java.io.IOException;
 import java.net.URL;
@@ -71,6 +69,11 @@ public class GithubClientProvider
         return new CommitService(createClient(repository));
     }
 
+    public UserService getUserService(Organization organization)
+    {
+        return new UserService(createClient(organization));
+    }
+    
     public UserService getUserService(Repository repository)
     {
         return new UserService(createClient(repository));

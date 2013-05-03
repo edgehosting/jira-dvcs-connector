@@ -222,4 +222,10 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     {
         delegate.linkRepositoryIncremental(repository, withPossibleNewProjectkeys);
     }
+
+    @Override
+    public DvcsUser getTokenOwner(Organization organization)
+    {
+        return delegate.getTokenOwner(organization);
+    }
 }

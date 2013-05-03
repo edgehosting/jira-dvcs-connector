@@ -25,11 +25,6 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
  */
 public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 {
-    /**
-     * Serial version id.
-     */
-    private static final long serialVersionUID = 1L;
-
     private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
     private String postCommitRepositoryType;
@@ -76,7 +71,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
     /**
      * Custom sorting of organizations - integrated accounts are displayed on top.
-     * 
+     *
      * @param allOrganizations
      */
     private void sort(List<Organization> allOrganizations)
