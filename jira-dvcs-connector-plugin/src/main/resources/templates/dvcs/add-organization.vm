@@ -304,7 +304,7 @@
 
 #macro (printConfigureDefaultGroupsFormHidden)
     
-    <div style="display:none">
+    <div id="configureDefaultGroupsContainer" style="display:none">
     
         <form id="configureDefaultGroupsForm" class="aui" method="post" action="$baseurl/secure/admin/ConfigureDefaultBitbucketGroups.jspa" >
         
