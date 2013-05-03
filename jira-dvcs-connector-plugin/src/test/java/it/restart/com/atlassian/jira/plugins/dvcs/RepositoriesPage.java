@@ -7,6 +7,8 @@ import javax.inject.Inject;
 
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
@@ -23,6 +25,11 @@ import com.atlassian.pageobjects.elements.query.Poller;
  */
 public class RepositoriesPage implements Page
 {
+    /**
+     * Logger for this class.
+     */
+    private Logger LOGGER = LoggerFactory.getLogger(RepositoriesPage.class);
+    
     @Inject
     private PageBinder pageBinder;
 
@@ -149,6 +156,7 @@ public class RepositoriesPage implements Page
         List<OrganizationDiv> orgs;
         while (!(orgs = getOrganizations()).isEmpty())
         {
+            LOGGER.info("Deleting organization: " + orgs.get(0).getOrganizationName() + ":" + orgs.get(0).getOrganizationType());
             orgs.get(0).delete();
         }
     }
