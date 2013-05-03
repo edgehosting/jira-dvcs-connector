@@ -383,7 +383,7 @@ function configureDefaultGroups(orgName, id) {
             url : BASE_URL + "/rest/bitbucket/1.0/fragment/" + id + "/defaultgroups",
             success :
             function (data) {
-            	if (dialog.isShown())
+            	if (dialog.isAttached())
             	{
 	            	// we need to reference .dialog-panel-body as this is copy
 	                AJS.$(".dialog-panel-body #configureDefaultGroupsContentWorking").hide()
@@ -699,7 +699,7 @@ function confirmationDialog(options) {
         dialog.updateHeight();
     }
     
-    dialog.isShown = function() { return !jQuery.isEmptyObject(dialog.popup.element);}
+    dialog.isAttached = function() { return !jQuery.isEmptyObject(dialog.popup.element);}
     
     dialog.show(); 
     dialog.updateHeight();
