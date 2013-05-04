@@ -675,22 +675,22 @@ function confirmationDialog(options) {
         }
         dialog.remove();
     }, "#");
-    
+
     dialog.disableSubmitButton = function() {
-    	AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", true);
+    	AJS.$('#confirm-dialog .button-panel-submit-button').attr("disabled", "disabled");
     }
     
     dialog.enableSubmitButton = function() {
-    	AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", false);
+    	AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("disabled");
     }
     
     dialog.working = function(working) {
         if (working) {
             AJS.$("#confirm-action-wait").addClass("aui-icon-wait");
-            AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", true);
+            AJS.$('#confirm-dialog .button-panel-submit-button').attr("disabled", "disabled");
         } else {
             AJS.$("#confirm-action-wait").removeClass("aui-icon-wait");
-            AJS.$('#confirm-dialog .button-panel-submit-button').prop("disabled", false);
+            AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("disabled");
         }
     }
     
