@@ -37,15 +37,16 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 {
 
     /**
-     * Size of window for batch processing.
+     * Size of window for batch processing - commit window.
      */
-    private static final int BATCH_SIZE = 8192;
+    // too big value has not so big performance benefit,
+    // it was also tested with 32768 (opposite to 8192), and there were less than 5% time benefit
+    private static final int COMMIT_BATCH_SIZE = 8192;
 
     /**
      * Logger for this class.
      */
-    private final Logger logger = LoggerFactory
-            .getLogger(To_11_SplitUpChangesetsMigrator.class);
+    private final Logger logger = LoggerFactory.getLogger(To_11_SplitUpChangesetsMigrator.class);
 
     /**
      * @see #getModelVersion()
@@ -274,11 +275,11 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
             {
                 currentCount += proceedCount;
                 logger.info(currentCount + " from " + totalCount + " [" + currentCount * 100 / totalCount
-                        + "%] entities was already proceed");
+                        + "%] entities have been already processed");
             }
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -297,8 +298,9 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
     {
         this.activeObjects = activeObjects;
 
-        logger.debug("upgrade [ " + getModelVersion() + " ]");
-        activeObjects.migrate(OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class, IssueToChangesetMapping.class, RepositoryToChangesetMapping.class);
+        logger.info("upgrade [ " + getModelVersion() + " ]: started");
+        activeObjects.migrate(OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class, IssueToChangesetMapping.class,
+                RepositoryToChangesetMapping.class);
 
         // initializes migration process
         try
@@ -314,9 +316,12 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
         }
 
+        // global parameters
+        int totalCount = activeObjects.count(ChangesetMapping.class, Query.select().where(ChangesetMapping.ISSUE_KEY + " is not null "));
+        int readBatchSize = Math.max(COMMIT_BATCH_SIZE, totalCount / 4); // at least commit batch size, or a quarter of total size
+
         // prepares progress bar
-        this.progress = new Progress(activeObjects.count(ChangesetMapping.class,
-                Query.select().where(ChangesetMapping.ISSUE_KEY + " is not null ")));
+        this.progress = new Progress(totalCount);
         progress.update(0);
 
         ChangesetResult uniqueChangeset = null;
@@ -327,7 +332,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
             {
                 // finds next batch for processing
                 Statement batchStatement = connection.createStatement();
-                batchStatement.setMaxRows(BATCH_SIZE);
+                batchStatement.setMaxRows(readBatchSize);
                 ResultSet founded = batchStatement.executeQuery(newBatchSQL());
 
                 ChangesetResultCursor changesetCursor = new ChangesetResultCursor(founded);
@@ -340,6 +345,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
                 //
                 uniqueChangeset = processBatch(changesetCursor, uniqueChangeset);
+                batchStatement.close();
 
             } catch (SQLException e)
             {
@@ -347,7 +353,8 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
             }
         }
-
+        
+        logger.info("upgrade [ " + getModelVersion() + " ]: finished");
     }
 
     /**
@@ -362,91 +369,97 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
      */
     private ChangesetResult processBatch(ChangesetResultCursor changesetCursor, ChangesetResult uniqueChangeset) throws SQLException
     {
-        // counts proceed rows
-        int count = 0;
-
-        // prepares batch statements
-        PreparedStatement markAsUpdatedStatement = newMarkAsUpdatedStatement();
-        PreparedStatement deleteChangesetStatement = newDeleteChangesetStatement();
-        PreparedStatement issueToChangesetStatement = newIssueToChangesetStatement();
-        PreparedStatement repositoryToChangesetStatement = newRepositoryToChangesetStatement();
-
         // until whole batch was proceed
-        while (changesetCursor.hasNext)
+        do
         {
-            // next batch item
-            ChangesetResult current = changesetCursor.next();
-            count++;
 
-            // hack - github commits are using only node, not raw nodes :(
-            String currentNode = resolveChangesetNode(current.rawNode, current.node);
-            String uniqueChangesetNode;
+            // counts proceed rows
+            int count = 0;
 
-            // restart processing - tries to find previous proceed changeset, or null if it is first attempt
-            if (uniqueChangeset == null)
+            // prepares batch statements
+            PreparedStatement markAsUpdatedStatement = newMarkAsUpdatedStatement();
+            PreparedStatement deleteChangesetStatement = newDeleteChangesetStatement();
+            PreparedStatement issueToChangesetStatement = newIssueToChangesetStatement();
+            PreparedStatement repositoryToChangesetStatement = newRepositoryToChangesetStatement();
+
+            while (changesetCursor.hasNext() && count < COMMIT_BATCH_SIZE)
             {
-                uniqueChangeset = findUniqueChangesetAfterRestart(activeObjects, currentNode);
+                // next batch item
+                ChangesetResult current = changesetCursor.next();
+                count++;
+
+                // hack - github commits are using only node, not raw nodes :(
+                String currentNode = resolveChangesetNode(current.rawNode, current.node);
+                String uniqueChangesetNode;
+
+                // restart processing - tries to find previous proceed changeset, or null if it is first attempt
+                if (uniqueChangeset == null)
+                {
+                    uniqueChangeset = findUniqueChangesetAfterRestart(activeObjects, currentNode);
+                }
+                uniqueChangesetNode = uniqueChangeset != null ? resolveChangesetNode(uniqueChangeset.rawNode, uniqueChangeset.node) : null;
+
+                // false if current changeset is consider to be unique, otherwise it is duplicate
+                boolean isDuplicate = uniqueChangeset != null && uniqueChangesetNode.equals(currentNode);
+
+                // if it is unique changeset - it updates cursor for current valid unique changeset
+                if (!isDuplicate)
+                {
+                    uniqueChangeset = current;
+                }
+
+                // skips non-existing issues
+                if (!"NON_EXISTING".equals(current.projectKey))
+                {
+                    addIssueToChnagesetStatement(issueToChangesetStatement, uniqueChangeset, current);
+                }
+
+                // repository relation is added on unique changeset
+                addRepositoryToChangesetStatement(repositoryToChangesetStatement, uniqueChangeset, current);
+
+                // if current changeset is not unique, means duplicated than will be removed
+                if (isDuplicate)
+                {
+                    addDeleteChangesetStatement(deleteChangesetStatement, current);
+
+                } else
+                {
+                    addMarkAsUpdatedStatement(markAsUpdatedStatement, uniqueChangeset);
+                }
+
             }
-            uniqueChangesetNode = uniqueChangeset != null ? resolveChangesetNode(uniqueChangeset.rawNode, uniqueChangeset.node) : null;
 
-            // false if current changeset is consider to be unique, otherwise it is duplicate
-            boolean isDuplicate = uniqueChangeset != null && uniqueChangesetNode.equals(currentNode);
-
-            // if it is unique changeset - it updates cursor for current valid unique changeset
-            if (!isDuplicate)
+            // execute update inside transaction
+            boolean rollback = true;
+            try
             {
-                uniqueChangeset = current;
+                issueToChangesetStatement.executeBatch();
+                issueToChangesetStatement.close();
+
+                markAsUpdatedStatement.executeBatch();
+                markAsUpdatedStatement.close();
+
+                deleteChangesetStatement.executeBatch();
+                deleteChangesetStatement.close();
+
+                repositoryToChangesetStatement.executeBatch();
+                repositoryToChangesetStatement.close();
+
+                connection.commit();
+                rollback = false;
+
+            } finally
+            {
+                if (rollback)
+                {
+                    connection.rollback();
+                }
             }
 
-            // skips non-existing issues
-            if (!"NON_EXISTING".equals(current.projectKey))
-            {
-                addIssueToChnagesetStatement(issueToChangesetStatement, uniqueChangeset, current);
-            }
+            progress.update(count);
 
-            // repository relation is added on unique changeset
-            addRepositoryToChangesetStatement(repositoryToChangesetStatement, uniqueChangeset, current);
+        } while (changesetCursor.hasNext());
 
-            // if current changeset is not unique, means duplicated than will be removed
-            if (isDuplicate)
-            {
-                addDeleteChangesetStatement(deleteChangesetStatement, current);
-
-            } else
-            {
-                addMarkAsUpdatedStatement(markAsUpdatedStatement, uniqueChangeset);
-            }
-
-        }
-
-        // execute update inside transaction
-        boolean rollback = true;
-        try
-        {
-            issueToChangesetStatement.executeBatch();
-            issueToChangesetStatement.close();
-
-            markAsUpdatedStatement.executeBatch();
-            markAsUpdatedStatement.close();
-
-            deleteChangesetStatement.executeBatch();
-            deleteChangesetStatement.close();
-
-            repositoryToChangesetStatement.executeBatch();
-            repositoryToChangesetStatement.close();
-
-            connection.commit();
-            rollback = false;
-
-        } finally
-        {
-            if (rollback)
-            {
-                connection.rollback();
-            }
-        }
-
-        progress.update(count);
         return uniqueChangeset;
     }
 
