@@ -72,18 +72,6 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12.4</version>
-                <configuration>
-                    <systemPropertyVariables>
-                        <jirabitbucketconnector.password>${jirabitbucketconnector.password}</jirabitbucketconnector.password>
-                        <dvcsconnectortest.password>${dvcsconnectortest.password}</dvcsconnectortest.password>
-                        <ondemand.properties>${basedir}/target/jira/home/ondemand.properties</ondemand.properties>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
