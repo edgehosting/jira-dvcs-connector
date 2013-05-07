@@ -305,56 +305,96 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
         // initializes migration process
         try
         {
-            if (!init())
-            {
-                return;
-            }
-
-        } catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-
-        }
-
-        // global parameters
-        int totalCount = activeObjects.count(ChangesetMapping.class, Query.select().where(ChangesetMapping.ISSUE_KEY + " is not null "));
-        int readBatchSize = Math.max(COMMIT_BATCH_SIZE, totalCount / 4); // at least commit batch size, or a quarter of total size
-
-        // prepares progress bar
-        this.progress = new Progress(totalCount);
-        progress.update(0);
-
-        ChangesetResult uniqueChangeset = null;
-        // batch processing - until everything will be proceed
-        while (true)
-        {
             try
             {
-                // finds next batch for processing
-                Statement batchStatement = connection.createStatement();
-                batchStatement.setMaxRows(readBatchSize);
-                ResultSet founded = batchStatement.executeQuery(newBatchSQL());
-
-                ChangesetResultCursor changesetCursor = new ChangesetResultCursor(founded);
-
-                // end condition <=> nothing else for processing
-                if (!changesetCursor.hasNext())
+                if (!init())
                 {
-                    break;
+                    return;
                 }
-
-                //
-                uniqueChangeset = processBatch(changesetCursor, uniqueChangeset);
-                batchStatement.close();
 
             } catch (SQLException e)
             {
                 throw new RuntimeException(e);
 
             }
+
+            try
+            {
+                sanityClean();
+
+                // global parameters
+                int totalCount = activeObjects.count(ChangesetMapping.class,
+                        Query.select().where(ChangesetMapping.ISSUE_KEY + " is not null "));
+                int readBatchSize = Math.max(COMMIT_BATCH_SIZE, totalCount / 4); // at least commit batch size, or a quarter of total size
+
+                // prepares progress bar
+                this.progress = new Progress(totalCount);
+                progress.update(0);
+
+                ChangesetResult uniqueChangeset = null;
+                // batch processing - until everything will be proceed
+                while (true)
+                {
+                    // finds next batch for processing
+                    Statement batchStatement = connection.createStatement();
+                    batchStatement.setMaxRows(readBatchSize);
+                    ResultSet founded = batchStatement.executeQuery(newBatchSQL());
+
+                    ChangesetResultCursor changesetCursor = new ChangesetResultCursor(founded);
+
+                    // end condition <=> nothing else for processing
+                    if (!changesetCursor.hasNext())
+                    {
+                        break;
+                    }
+
+                    //
+                    uniqueChangeset = processBatch(changesetCursor, uniqueChangeset);
+                    batchStatement.close();
+                }
+            } catch (SQLException e)
+            {
+                if (e.getNextException() != null)
+                {
+                    logger.error("Next exception of statement was: ", e.getNextException());
+                }
+                throw new RuntimeException(e);
+
+            }
+
+        } finally
+        {
+            try
+            {
+                if (connection != null)
+                {
+                    connection.close();
+                }
+
+            } catch (SQLException e)
+            {
+                // silently ignored
+            }
         }
-        
+
         logger.info("upgrade [ " + getModelVersion() + " ]: finished");
+    }
+
+    /**
+     * Removes all changesets pointed to on an un-existing repository.
+     * 
+     * @throws SQLException
+     */
+    private void sanityClean() throws SQLException
+    {
+        Statement sanityStatement = connection.createStatement();
+        sanityStatement.executeUpdate(//
+                "delete from " + table(ChangesetMapping.class) //
+                        + " where " + column(ChangesetMapping.REPOSITORY_ID) + " not in (" //
+                        + " select " + column("ID") + " from " + table(RepositoryMapping.class) //
+                        + " ) ");
+        sanityStatement.close();
+        connection.commit();
     }
 
     /**
