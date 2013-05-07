@@ -70,6 +70,10 @@ public class To_04_AddKeyAndSecretToBBAccounts implements PluginUpgradeTask
                         organizationMapping.setOauthSecret(secret);
                         organizationMapping.save();
                         log.info("Setting key secret for " + organizationMapping.getHostUrl() + " " + organizationMapping.getName());
+                    } else if (StringUtils.isNotBlank(accessToken) && StringUtils.isNotBlank(oauthKey) && StringUtils.isNotBlank(oauthSecret))
+                    {
+                        organizationMapping.setAccessToken(null);
+                        organizationMapping.save();
                     }
 
                 }
