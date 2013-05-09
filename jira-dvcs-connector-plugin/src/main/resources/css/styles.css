@@ -439,6 +439,10 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	margin: 1ex 2.5ex;
 }
 
+.dvcs-organization-controls {
+	min-width: 320px;
+}
+
 .dvcs-advertisement {
 	background-image: url("../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bg-broadcast.png");
 	background-position: right bottom;
