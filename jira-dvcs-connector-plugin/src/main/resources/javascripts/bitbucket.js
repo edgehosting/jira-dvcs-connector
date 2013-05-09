@@ -486,10 +486,28 @@ function configureOAuth(org, atlToken) {
     return false;
 }
 
-function autoLinkIssuesOrg(organizationId, checkboxId) {
-    var checkedValue = AJS.$("#" + checkboxId).is(':checked');
-    AJS.$("#" + checkboxId).attr("disabled", "disabled");
-    AJS.$("#" + checkboxId  + "working").show();
+function registerDropdownCheckboxHandlers() {
+	AJS.$("a[id^='org_autolink_check']").on({
+		"aui-dropdown2-item-check": function() {
+			autoLinkIssuesOrg(this.id.substring("org_autolink_check".length), this.id, true);
+		},
+		"aui-dropdown2-item-uncheck": function() {
+			autoLinkIssuesOrg(this.id.substring("org_autolink_check".length), this.id, false);
+		}
+	});
+	
+	AJS.$("a[id^='org_global_smarts']").on({
+		"aui-dropdown2-item-check": function() {
+			enableSmartcommitsOnNewRepos(this.id.substring("org_global_smarts".length), this.id, true);
+		},
+		"aui-dropdown2-item-uncheck": function() {
+			enableSmartcommitsOnNewRepos(this.id.substring("org_global_smarts".length), this.id, false);
+		}
+	});
+}
+
+function autoLinkIssuesOrg(organizationId, checkboxId, checkedValue) {
+    AJS.$("#" + checkboxId).addClass("disabled");
     AJS.$.ajax({
             type : 'POST',
             dataType : "json",
@@ -498,26 +516,23 @@ function autoLinkIssuesOrg(organizationId, checkboxId) {
             data : '{ "payload" : "' + checkedValue+ '"}',
             success :
             function (data) {
-                  AJS.$("#" + checkboxId  + "working").hide();
-                  AJS.$("#" + checkboxId).removeAttr("disabled");
+                  AJS.$("#" + checkboxId).removeClass("disabled");
                   if (!checkedValue && AJS.$("#org_global_smarts" + organizationId)) {
-                      AJS.$("#org_global_smarts" + organizationId).attr("disabled", "disabled");
+                      AJS.$("#org_global_smarts" + organizationId).addClass("disabled");
                   } else {
-                      AJS.$("#org_global_smarts" + organizationId).removeAttr("disabled");
+                      AJS.$("#org_global_smarts" + organizationId).removeClass("disabled");
                   }
             }
         }
     ).error(function (err) { 
           showError("Unexpected error occurred. Please contact the server administrator.", "#aui-message-bar-"+organizationId);
-          AJS.$("#" + checkboxId  + "working").hide();
-          AJS.$("#" + checkboxId).removeAttr("disabled");
-          setChecked(checkboxId, !checkedValue);
+          AJS.$("#" + checkboxId).removeClass("disabled");
+          setCheckedDropdown2(checkboxId, !checkedValue);
       });
 }
 
-function enableSmartcommitsOnNewRepos(organizationId, checkboxId) {
-    var checkedValue = AJS.$("#" + checkboxId).is(':checked');
-    AJS.$("#" + checkboxId).attr("disabled", "disabled");
+function enableSmartcommitsOnNewRepos(organizationId, checkboxId, checkedValue) {
+    AJS.$("#" + checkboxId).addClass("disabled");
     AJS.$.ajax({
             type : 'POST',
             dataType : "json",
@@ -526,12 +541,13 @@ function enableSmartcommitsOnNewRepos(organizationId, checkboxId) {
             data : '{ "payload" : "' + checkedValue+ '"}',
             success :
             function (data) {
-                AJS.$("#" + checkboxId).removeAttr("disabled");
+                AJS.$("#" + checkboxId).removeClass("disabled");
             }
         }
       ).error(function (err) {
               showError("Unexpected error occurred when enabling smart commits on new repositories. Please contact the server administrator.", "#aui-message-bar-"+organizationId);
-              setChecked(checkboxId, !checkedValue);
+              AJS.$("#" + checkboxId).removeClass("disabled");
+              setCheckedDropdown2(checkboxId, !checkedValue);
       });
 }
 
@@ -768,6 +784,14 @@ function setChecked(checkboxId, checked) {
     }
 }
 
+function setCheckedDropdown2(checkboxId, checked) {
+    if (checked) {
+        AJS.$("#" + checkboxId).addClass("checked");
+    } else {
+        AJS.$("#" + checkboxId).removeClass("checked");
+    }
+}
+
 function dvcsShowHidePanel(id) {
     var jqElement = AJS.$("#" + id);
     if (jqElement.is(":visible")) {
@@ -798,10 +822,7 @@ AJS.$(document).ready(function() {
     if (typeof init_repositories == 'function') {
         // cancel annoying leave message even when browser pre-fill some fields
         window.onbeforeunload = function () {};
-        // some organization gear
-        AJS.$(".dvcs-organization-controls-tool").dvcsGearMenu(
-                { noHideItemsSelector : ".dvcs-gearmenu-nohide" }
-        );
+
         // defined in macro
         init_repositories();
         //

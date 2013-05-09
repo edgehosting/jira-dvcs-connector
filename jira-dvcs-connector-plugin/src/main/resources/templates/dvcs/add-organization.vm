@@ -15,6 +15,7 @@
             // run timer for repos sync statuses
 			retrieveSyncStatus();
 			registerAdminPermissionInlineDialogTooltips();
+			registerDropdownCheckboxHandlers();
         }
 		
 		if (typeof jira == 'undefined') { var jira = {}; }
@@ -43,7 +44,6 @@
                 url: '$!oAuthStore.getUrl("githube")'
             }
          }       
-                
      </script>
 
     <meta name="admin.active.section" content="admin_plugins_menu/source_control"/>
@@ -96,14 +96,14 @@
   <div class="dvcs-orgdata-container">
     <div id="aui-message-bar-$org.id"></div>        
     #if($org.isAutolinkNewRepos())
-        #set( $orgAutolink = "checked='checked'")
+        #set( $orgAutolink = "checked")
         #set( $orgSmartcommitsOnNewReposDisabled = "")
         #else
         #set( $orgAutolink = "")
-        #set( $orgSmartcommitsOnNewReposDisabled = "disabled='disabled'")
+        #set( $orgSmartcommitsOnNewReposDisabled = "disabled")
     #end
     #if($org.isSmartcommitsOnNewRepos())
-        #set( $orgSmartcommitsOnNewRepos = "checked='checked'")
+        #set( $orgSmartcommitsOnNewRepos = "checked")
         #else
         #set( $orgSmartcommitsOnNewRepos = "")
     #end
@@ -114,64 +114,38 @@
         #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end
         </h4>  
 		#if($action.isInvalidOrganization($org)) <span class="dvcs-invalid-organization error">Invalid credentials, please regenerate access token</span> #end
-        <div class="dvcs-org-container aui-toolbar">
-            <ul class="toolbar-group">
-                <li class="toolbar-item toolbar-dropdown dvcs-organization-controls-tool">
-                    <div class="aui-dd-parent">
-
-                        <button title="Show Settings" class="toolbar-trigger aui-dd-trigger">
-                            <span class="icon-tools-small"></span>
-                        </button>
-                    
-                        <ul id="dvcs-organization-controls-$org.id" class=" aui-dropdown dvcs-organization-controls"  >
-                                   
-                           <li class="dropdown-item">
-                             <div class="dvcs-gearmenu-nohide">
-                                 <input id="org_autolink_check$org.id" 
-                                         class="aui" $!orgAutolink 
-                                         type="checkbox" name="org_autolink_check$org.id"
-                                         onclick="javascript: autoLinkIssuesOrg($org.id, 'org_autolink_check$org.id');" />
-                                 <label for="org_autolink_check$org.id"> Autolink new repositories</label>
-                             </div>
-                            </li>
-
-                           <li class="dropdown-item">
-                             <div class="dvcs-gearmenu-nohide" id="org_global_smarts_wrap$org.id">
-                                 <input id="org_global_smarts$org.id" 
-                                         class="aui" $!orgSmartcommitsOnNewRepos $!orgSmartcommitsOnNewReposDisabled
-                                         type="checkbox" name="org_autolink_check$org.id"
-                                         onclick="javascript: enableSmartcommitsOnNewRepos($org.id, 'org_global_smarts$org.id');" />
-                                 <label for="org_global_smarts$org.id"> Enable smart commits on new repositories</label>
-                             </div>
-                            </li>
-                            
-                            <li class="dropdown-item">
-                              <a  href="#" onclick="javascript:syncRepositoryList($org.id,'$org.name'); return false;">Refresh list</a>
-                            </li>
-                            
-                            #if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
-                                <li class="dropdown-item">
-                                  <div class="dvcs-gearmenu-nohide">
-                                    <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id); return false;"> Configure default groups</a>
-                                  </div>
-                                </li>
-                             #end
-                            
-                            #if( !$org.isIntegratedAccount() )
-                                <li class="dropdown-item">
-                                     <a href="#" onclick="return configureOAuth({'id':$org.id,'dvcsType':'$org.dvcsType','name':'$org.name','hostUrl':'$org.hostUrl','credential':{'key':'$!org.credential.oauthKey','secret':'$!org.credential.oauthSecret'}},'$atl_token')">Re-generate OAuth Access Token</a> 
-                                 </li>
-    
-                                <li class="dropdown-item">
-                                  <a  class="dvcs-control-delete-org" href="#" onclick="javascript: deleteOrganization('$org.id','$org.name'); return false;" >Delete</a>
-                                </li>
-                                
-                            #end
-                         </ul>
-                    </div>
-                </li>
-            </ul>
-        </div>
+		<div class="dvcs-org-container">
+			<button aria-owns="setting-dropdown-$org.id" aria-haspopup="true" class="aui-button aui-dropdown2-trigger">
+				<span class="aui-icon aui-icon-small aui-iconfont-configure">Show Settings</span>
+			</button>
+			<div id="setting-dropdown-$org.id" class="aui-dropdown2 aui-style-default">
+				<div class="aui-dropdown2-section">
+                    <ul>
+                      <li><a id="org_autolink_check$org.id" class="aui-dropdown2-checkbox interactive $!orgAutolink">Autolink new repositories</a></li>
+                      <li><a id="org_global_smarts$org.id" class="aui-dropdown2-checkbox interactive $!orgSmartcommitsOnNewRepos $!orgSmartcommitsOnNewReposDisabled">Enable smart commits on new repositories</a></li>
+                    </ul>
+                  </div>
+              <div class="aui-dropdown2-section">
+                <ul>
+					<li><a href="#" onclick="javascript:syncRepositoryList($org.id,'$org.name'); return false;">Refresh list</a></li>
+				    #if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
+                    <li>
+                        <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id); return false;"> Configure default groups</a>
+                    </li>
+                    #end
+                    #if( !$org.isIntegratedAccount() )
+                    <li>
+                         <a href="#" onclick="return configureOAuth({'id':$org.id,'dvcsType':'$org.dvcsType','name':'$org.name','hostUrl':'$org.hostUrl','credential':{'key':'$!org.credential.oauthKey','secret':'$!org.credential.oauthSecret'}},'$atl_token')">Re-generate OAuth Access Token</a> 
+                    </li>
+					<li>
+						<a class="dvcs-control-delete-org" href="#" onclick="javascript: deleteOrganization('$org.id','$org.name'); return false;" >Delete</a>
+                    </li>
+                    #end
+                </ul>
+              </div>
+            </div>
+		</div>
+		
         <div class="dvcs-dclear"></div>
     </div>
            
