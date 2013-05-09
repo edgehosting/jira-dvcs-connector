@@ -32,7 +32,8 @@ public class BitBucketOrganization
         PageElement ddButton = row.find(By.className("aui-dropdown2-trigger"));
         ddButton.click();
         
-        PageElement deleteLink = row.find(By.className("dvcs-control-delete-org"));
+        String dropDownMenuId = ddButton.getAttribute("aria-owns");
+        PageElement deleteLink = elementFinder.find(By.id(dropDownMenuId)).find(By.className("dvcs-control-delete-org"));
         deleteLink.click();
 
         ConfirmationDialog dialog = elementFinder.find(By.id("confirm-dialog"), ConfirmationDialog.class, TimeoutType.DIALOG_LOAD);
