@@ -3,10 +3,13 @@ package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static org.hamcrest.Matchers.is;
 
+import javax.inject.Inject;
+
 import org.openqa.selenium.By;
 
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.query.Poller;
@@ -64,17 +67,14 @@ public class AccountsPageAccount extends WebDriverElement
         }
     }
 
+    @Inject
+    private PageElementFinder elementFinder;
+    
     /**
      * Reference to "Controls" button.
      */
-    @ElementBy(xpath = ".//li[contains(concat(' ', @class, ' '), ' dvcs-organization-controls-tool ')]//button")
+    @ElementBy(xpath = ".//button[contains(concat(' ', @class, ' '), ' aui-dropdown2-trigger ')]")
     private PageElement controlsButton;
-
-    /**
-     * Reference to "Controls" dialog, which appeared after {@link #controlsButton} fire.
-     */
-    @ElementBy(xpath = ".//li[contains(concat(' ', @class, ' '), ' dvcs-organization-controls-tool ')]//ul")
-    private AccountsPageAccountControlsDialog controlsDialog;
 
     /**
      * Reference to {@link AccountsPageAccountOAuthDialog}.
@@ -138,7 +138,7 @@ public class AccountsPageAccount extends WebDriverElement
     public void refresh()
     {
         controlsButton.click();
-        controlsDialog.refresh();
+        findControlDialog().refresh();
         // wait for popup to show up
         try
         {
@@ -158,8 +158,17 @@ public class AccountsPageAccount extends WebDriverElement
     public AccountsPageAccountOAuthDialog regenerate()
     {
         controlsButton.click();
-        controlsDialog.regenerate();
+        findControlDialog().regenerate();
         return oAuthDialog;
     }
-
+    
+    /**
+     * @return "Controls" dialog, which appeared after {@link #controlsButton} fire.
+     */
+    private AccountsPageAccountControlsDialog findControlDialog()
+    {
+        String dropDownMenuId = controlsButton.getAttribute("aria-owns");
+        return elementFinder.find(By.id(dropDownMenuId), AccountsPageAccountControlsDialog.class);
+    }
+    
 }

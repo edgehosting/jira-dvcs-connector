@@ -42,6 +42,27 @@ public class AccountsPageAccountControlsDialog extends WebDriverElement
     }
 
     /**
+     * Constructor.
+     * 
+     * @param locator
+     * @param parent
+     */
+    public AccountsPageAccountControlsDialog(By locator, WebDriverLocatable parent)
+    {
+        super(locator, parent);
+    }
+    
+    /**
+     * Constructor.
+     * 
+     * @param locator
+     */
+    public AccountsPageAccountControlsDialog(By locator)
+    {
+        super(locator);
+    }
+    
+    /**
      * Refreshes repositories list of account.
      */
     public void refresh()

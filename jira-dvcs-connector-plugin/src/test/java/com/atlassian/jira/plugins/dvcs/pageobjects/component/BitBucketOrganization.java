@@ -29,7 +29,7 @@ public class BitBucketOrganization
      */
     public void delete()
     {
-        PageElement ddButton = row.find(By.className("aui-dd-trigger"));
+        PageElement ddButton = row.find(By.className("aui-dropdown2-trigger"));
         ddButton.click();
         
         PageElement deleteLink = row.find(By.className("dvcs-control-delete-org"));
