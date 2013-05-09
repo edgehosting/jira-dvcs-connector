@@ -299,33 +299,22 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
         this.activeObjects = activeObjects;
 
         logger.info("upgrade [ " + getModelVersion() + " ]: started");
-        activeObjects.migrate(OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class, IssueToChangesetMapping.class,
-                RepositoryToChangesetMapping.class);
 
         // initializes migration process
         try
         {
-            try
-            {
-                if (!init())
-                {
-                    return;
-                }
+            activeObjects.migrate(OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class,
+                    IssueToChangesetMapping.class, RepositoryToChangesetMapping.class);
 
-            } catch (SQLException e)
-            {
-                throw new RuntimeException(e);
-
-            }
-
-            try
+            if (init())
             {
                 sanityClean();
 
                 // global parameters
                 int totalCount = activeObjects.count(ChangesetMapping.class,
                         Query.select().where(ChangesetMapping.ISSUE_KEY + " is not null "));
-                int readBatchSize = Math.max(COMMIT_BATCH_SIZE, totalCount / 4); // at least commit batch size, or a quarter of total size
+                int readBatchSize = Math.max(COMMIT_BATCH_SIZE, totalCount / 4); // at least commit batch size, or a quarter of total
+                                                                                 // size
 
                 // prepares progress bar
                 this.progress = new Progress(totalCount);
@@ -352,15 +341,17 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
                     uniqueChangeset = processBatch(changesetCursor, uniqueChangeset);
                     batchStatement.close();
                 }
-            } catch (SQLException e)
-            {
-                if (e.getNextException() != null)
-                {
-                    logger.error("Next exception of statement was: ", e.getNextException());
-                }
-                throw new RuntimeException(e);
-
             }
+
+            logger.info("upgrade [ " + getModelVersion() + " ]: finished");
+
+        } catch (SQLException e)
+        {
+            if (e.getNextException() != null)
+            {
+                logger.error("Next exception of statement was: ", e.getNextException());
+            }
+            throw new RuntimeException(e);
 
         } finally
         {
@@ -377,7 +368,6 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
             }
         }
 
-        logger.info("upgrade [ " + getModelVersion() + " ]: finished");
     }
 
     /**
