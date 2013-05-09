@@ -1,10 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.parsers;
 
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
@@ -13,9 +11,10 @@ import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.User;
 
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
-import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Factory for {@link Changeset} implementations
@@ -60,7 +59,6 @@ public class GithubChangesetFactory
         Changeset changeset = new Changeset(
                 repositoryId,
                 repositoryCommit.getSha(),
-                "",
                 name,
                 login,
                 date,

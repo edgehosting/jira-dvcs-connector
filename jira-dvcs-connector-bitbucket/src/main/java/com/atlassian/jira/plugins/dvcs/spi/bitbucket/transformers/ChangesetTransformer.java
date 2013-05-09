@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers;
 
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
+
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * ChangesetTransformer
@@ -30,7 +30,6 @@ public class ChangesetTransformer {
         Changeset changeset = new Changeset(
                 repositoryId,
                 bitbucketChangeset.getNode(),
-                null, // do not set Issue Key
                 bitbucketChangeset.getRawAuthor(),
                 bitbucketChangeset.getAuthor(),
                 bitbucketChangeset.getUtctimestamp(),

@@ -42,7 +42,7 @@ public final class IssueKeyExtractor
                 for (int i = 1; i <= match.groupCount(); i++)
                 {
                     String issueKey = match.group(i);
-                    matches.add(issueKey);
+                    matches.add(issueKey.toUpperCase());
                 }
             }
         }

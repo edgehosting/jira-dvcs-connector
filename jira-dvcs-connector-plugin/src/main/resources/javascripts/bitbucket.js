@@ -481,7 +481,7 @@ function configureOAuth(org, atlToken) {
         AJS.$(".repositoryOAuthDialog #tokenUser").html(jira.dvcs.connector.plugin.soy.repositoryOAuthDialogTokenOwner(data));
     }).error(function (err) { 
     	AJS.$(".repositoryOAuthDialog #tokenUser").html("<i>&lt;Invalid, please regenerate access token.&gt;<i>");
-    });;
+    });
     
     return false;
 }

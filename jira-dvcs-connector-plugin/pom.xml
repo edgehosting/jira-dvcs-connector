@@ -57,12 +57,12 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-            <groupId>com.atlassian.jira.plugins</groupId>
-            <artifactId>jira-dvcs-connector-github-enterprise</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>        
-        <dependency>
+			<groupId>com.atlassian.jira.plugins</groupId>
+			<artifactId>jira-dvcs-connector-github-enterprise</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.atlassian.jira</groupId>
 			<artifactId>jira-core</artifactId>
 			<version>${jira.compile.version}</version>
@@ -71,7 +71,7 @@
 				<exclusion>
 					<groupId>com.google.collections</groupId>
 					<artifactId>google-collections</artifactId>
-		        </exclusion>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -197,12 +197,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-	 	    <groupId>com.atlassian.jira</groupId>
-    		<artifactId>jira-tests</artifactId>
-    		<version>${jira.compile.version}</version>
-    		<scope>test</scope>
-    		<exclusions>
-    			<exclusion>
+			<groupId>com.atlassian.jira</groupId>
+			<artifactId>jira-tests</artifactId>
+			<version>${jira.compile.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
 					<artifactId>hamcrest-library</artifactId>
 					<groupId>org.hamcrest</groupId>
 				</exclusion>
@@ -210,7 +210,7 @@
 					<artifactId>hamcrest-core</artifactId>
 					<groupId>org.hamcrest</groupId>
 				</exclusion>
-    		</exclusions>
+			</exclusions>
 		</dependency>
 	</dependencies>
 
@@ -222,7 +222,7 @@
 				<version>3.5.2</version>
 				<extensions>true</extensions>
 				<configuration>
-					<jvmArgs>-Xmx720m -XX:MaxPermSize=250m</jvmArgs>
+					<jvmArgs>-Xmx1024m -XX:MaxPermSize=512m</jvmArgs>
 					<systemPropertyVariables>
 						<jira.websudo.is.disabled>true</jira.websudo.is.disabled>
 						<baseurl.jira>http://localhost:2990/jira</baseurl.jira>
@@ -259,12 +259,12 @@
 		<profile>
 			<id>dev-mysql</id>
 			<properties>
-			    <!-- Default: MySQL properties values feel free to customize it via -Dmysql.xxx=xxx -->
-			    <mysql.host>localhost</mysql.host>
-			    <mysql.port>3306</mysql.port>
-			    <mysql.database>jira</mysql.database>
-			    <mysql.username>jira</mysql.username>
-			    <mysql.password>jira</mysql.password>
+				<!-- Default: MySQL properties values feel free to customize it via -Dmysql.xxx=xxx -->
+				<mysql.host>localhost</mysql.host>
+				<mysql.port>3306</mysql.port>
+				<mysql.database>jira</mysql.database>
+				<mysql.username>jira</mysql.username>
+				<mysql.password>jira</mysql.password>
 			</properties>
 			<build>
 				<plugins>
@@ -290,6 +290,54 @@
 													<groupId>mysql</groupId>
 													<artifactId>mysql-connector-java</artifactId>
 													<version>5.1.24</version>
+												</libArtifact>
+											</libArtifacts>
+										</dataSource>
+									</dataSources>
+								</product>
+							</products>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>dev-postgres</id>
+
+			<properties>
+				<!-- Default: Postgres properties values feel free to customize it via 
+					-Dpostgres.xxx=xxx -->
+				<postgres.host>localhost</postgres.host>
+				<postgres.port>5432</postgres.port>
+				<postgres.database>jira</postgres.database>
+				<postgres.username>jira</postgres.username>
+				<postgres.password>jira</postgres.password>
+			</properties>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.atlassian.maven.plugins</groupId>
+						<artifactId>maven-jira-plugin</artifactId>
+						<extensions>true</extensions>
+						<configuration>
+							<products>
+								<product>
+									<id>jira</id>
+									<version>${jira.version}</version>
+									<dataPath>${basedir}/src/test/resources/jira-home-postgres</dataPath>
+									<dataSources>
+										<dataSource>
+											<jndi>jdbc/JiraDS</jndi>
+											<url>jdbc:postgresql://${postgres.host}:${postgres.port}/${postgres.database}</url>
+											<driver>org.postgresql.Driver</driver>
+											<username>${postgres.username}</username>
+											<password>${postgres.password}</password>
+											<libArtifacts>
+												<libArtifact>
+													<groupId>postgresql</groupId>
+													<artifactId>postgresql</artifactId>
+													<version>9.1-901.jdbc3</version>
 												</libArtifact>
 											</libArtifacts>
 										</dataSource>

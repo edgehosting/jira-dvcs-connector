@@ -1,20 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.webfragments;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -24,6 +9,20 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.opensymphony.util.TextUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The Class DefaultWebfragmentRenderer.

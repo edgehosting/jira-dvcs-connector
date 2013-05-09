@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
+import org.eclipse.egit.github.core.client.GitHubClient;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
-
-import org.eclipse.egit.github.core.client.GitHubClient;
 
 /**
  * Github Client with the connection and read timeout set up

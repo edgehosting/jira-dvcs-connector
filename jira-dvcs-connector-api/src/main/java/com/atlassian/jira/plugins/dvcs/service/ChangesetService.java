@@ -1,23 +1,32 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 public interface ChangesetService
 {
     /**
      * save Changeset to storage. If it's new object (without ID) after this operation it will have it assigned.
+     *
      * @param changeset changeset
+     * @param extractedIssues
      * @return changeset
      */
-    Changeset save(Changeset changeset);
+    Changeset create(Changeset changeset, Set<String> extractedIssues);
+
+    /**
+     * update properties of changeset which is already saved in DB
+     *
+     * @param changeset
+     * @return
+     */
+    Changeset update(Changeset changeset);
 
     void removeAllInRepository(int repositoryId);
 

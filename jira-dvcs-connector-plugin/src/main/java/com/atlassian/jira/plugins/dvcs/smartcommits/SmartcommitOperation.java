@@ -1,12 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao.ForEachChangesetClosure;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
 
 /**
  * The Class RunnableChangesetSmartcommitProcessor.
@@ -45,17 +44,17 @@ public class SmartcommitOperation implements Runnable
 			changesetDao.forEachLatestChangesetsAvailableForSmartcommitDo(new ForEachChangesetClosure()
 			{
 				@Override
-				public void execute(Changeset changeset)
+				public void execute(ChangesetMapping changesetMapping)
 				{
-					log.debug("Processing message \n {} \n for smartcommits. Changeset id = {}.", new Object[]
-					{ changeset.getMessage(), changeset.getId() });
+					log.debug("Processing message \n {} \n for smartcommits. Changeset id = {} node = {}.", new Object[]
+					{ changesetMapping.getMessage(), changesetMapping.getID() , changesetMapping.getNode()});
 
 					// first mark as processed
-					changesetDao.markSmartcommitAvailability(changeset.getId(), false);
+					changesetDao.markSmartcommitAvailability(changesetMapping.getID(), false);
 					// parse message
-					CommitCommands commands = commitMessageParser.parseCommitComment(changeset.getMessage());
-					commands.setCommitDate(changeset.getDate());
-					commands.setAuthorEmail(changeset.getAuthorEmail());
+					CommitCommands commands = commitMessageParser.parseCommitComment(changesetMapping.getMessage());
+					commands.setCommitDate(changesetMapping.getDate());
+					commands.setAuthorEmail(changesetMapping.getAuthorEmail());
 					// do commands
 					if (CollectionUtils.isNotEmpty(commands.getCommands())) {
 						smartcommitsService.doCommands(commands);

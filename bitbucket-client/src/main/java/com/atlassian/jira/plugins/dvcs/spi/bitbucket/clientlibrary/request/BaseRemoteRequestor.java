@@ -1,19 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.Callable;
-
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -33,7 +20,19 @@ import org.apache.http.params.HttpProtocolParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 
 /**
  * BaseRemoteRequestor

@@ -58,6 +58,8 @@
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
@@ -68,6 +70,7 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_09_SmartCommitsColumnsMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_10_LastChangesetNodeMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_11_SplitUpChangesetsMigrator</upgradeTask>
     </ao>
 	
 	<!-- Integrated account -->
@@ -353,6 +356,7 @@
 		<context>jira.view.issue</context>
 		<dependency>jira.webresources:viewissue</dependency>
 		<resource type="download" name="css/issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
+        <resource type="download" name="javascripts/dvcs-issue-tabs.js" location="javascripts/dvcs-issue-tabs.js"/>
 	</web-resource>
 
     <web-resource key="requiredResourceForGreenHopperCommitsTab" name="Resources That Needs To be Loaded On GreenHopper Board">

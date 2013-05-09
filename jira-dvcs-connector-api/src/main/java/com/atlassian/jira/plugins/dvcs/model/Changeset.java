@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class Changeset
 {
@@ -14,7 +14,6 @@ public class Changeset
     private int id;
     private int repositoryId;
     private String node;
-    private String issueKey;
     private String rawAuthor;
     private String author;
     private Date date;
@@ -32,18 +31,17 @@ public class Changeset
 
     public Changeset(int repositoryId, String node, String message, Date timestamp)
     {
-        this(repositoryId, node, "", "", "", timestamp, "", "", message, Collections.<String>emptyList(), Collections.<ChangesetFile>emptyList(), 0, "");
+        this(repositoryId, node, "", "", timestamp, "", "", message, Collections.<String>emptyList(), Collections.<ChangesetFile>emptyList(), 0, "");
     }
 
 
-    public Changeset(int repositoryId,String node, String issueKey,
+    public Changeset(int repositoryId,String node,
                      String rawAuthor, String author, Date date,
                      String rawNode, String branch, String message,
                      List<String> parents, List<ChangesetFile> files, int allFileCount, String authorEmail)
     {
         this.repositoryId = repositoryId;
         this.node = node;
-        this.issueKey = issueKey;
         this.rawAuthor = rawAuthor;
         this.author = author;
         this.date = date;
@@ -76,15 +74,6 @@ public class Changeset
         this.node = node;
     }
 
-    public String getIssueKey()
-    {
-        return issueKey;
-    }
-
-    public void setIssueKey(String issueKey)
-    {
-        this.issueKey = issueKey;
-    }
 
     public String getRawAuthor()
     {
@@ -200,7 +189,6 @@ public class Changeset
                 .append(files, that.files)
                 .append(message, that.message)
                 .append(node, that.node)
-                .append(issueKey, that.issueKey)
                 .append(parents, that.parents)
                 .append(rawAuthor, that.rawAuthor)
                 .append(rawNode, that.rawNode)
@@ -219,7 +207,6 @@ public class Changeset
                 .append(files)
                 .append(message)
                 .append(node)
-                .append(issueKey)
                 .append(parents)
                 .append(rawAuthor)
                 .append(rawNode)
