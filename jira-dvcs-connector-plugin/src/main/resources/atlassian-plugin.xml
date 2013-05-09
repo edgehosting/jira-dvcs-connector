@@ -347,6 +347,8 @@
         <resource type="download" name="javascripts/validation.js" location="javascripts/validation.js"/>
 	    <resource type="download" name="css/styles.css" location="css/styles.css" />
         <context>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin</context>
+        <dependency>com.atlassian.auiplugin:aui-experimental-dropdown2</dependency>
+        <dependency>com.atlassian.auiplugin:aui-experimental-iconfont</dependency>
     </web-resource>
 
     <web-resource key="requiredResourceForAjaxCommitsTab" name="Resources That Needs To be Loaded On Issue View">
