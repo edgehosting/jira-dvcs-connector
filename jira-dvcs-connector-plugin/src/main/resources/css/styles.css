@@ -335,8 +335,7 @@ a:hover.repositoryNameLink {
 select#urlSelect {
 	width: 387px;
 }
-.dvcs-organization-controls {
-}
+
 .dvcs-org-container .dropdown-item {
 }
 
@@ -460,27 +459,6 @@ div.jira-dvcs-connector-plugin.forceSyncDialog li {
 }
 div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	margin: 1ex 2.5ex;
-}
-
-.dvcs-organization-controls-tool button.toolbar-trigger.aui-dd-trigger {
-  height: 30px;
-  padding: 0px 12px 0px 2px !important;
-  margin: 0px !important;
-}
-
-.dvcs-organization-controls-tool .icon-tools-small {
-    height: 14px;
-    width: 16px;
-    padding: 0px !important;
-    margin: 0px 6px 0px 0px !important;
-    float: left;
-}
-.dvcs-organization-controls-tool button:after {
-  border: 4px solid transparent;
-  border-top-color: #111;
-  content: "";
-  position: absolute;
-  margin-top: 3px;
 }
 
 .dvcs-advertisement {
