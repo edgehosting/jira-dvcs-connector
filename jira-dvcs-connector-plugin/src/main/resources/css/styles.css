@@ -489,3 +489,27 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 .field-group .static-text {
 	padding-top: 5px;
 }
+
+.aui-icon {
+	vertical-align: text-bottom;
+}
+
+.dvcs-org-container .aui-button.aui-dropdown2-trigger {
+	padding-right: 23px!important;
+	position: relative;
+}
+
+.dvcs-org-container .aui-button.aui-dropdown2-trigger:after {
+	border: 4px solid transparent;
+	border-top-color: #333;
+	content: "";
+	height: 0;
+	left: 100%;
+	margin-left: -18px;
+	margin-top: 0px;
+	opacity: .8;
+	position: absolute;
+	top: 12px;
+	width: 0;
+}
+
