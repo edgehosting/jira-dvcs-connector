@@ -118,7 +118,7 @@
 			<button aria-owns="setting-dropdown-$org.id" aria-haspopup="true" class="aui-button aui-dropdown2-trigger">
 				<span class="aui-icon aui-icon-small aui-iconfont-configure">Show Settings</span>
 			</button>
-			<div id="setting-dropdown-$org.id" class="aui-dropdown2 aui-style-default">
+			<div id="setting-dropdown-$org.id" class="dvcs-organization-controls aui-dropdown2 aui-style-default">
 				<div class="aui-dropdown2-section">
                     <ul>
                       <li><a id="org_autolink_check$org.id" class="aui-dropdown2-checkbox interactive $!orgAutolink">Autolink new repositories</a></li>
