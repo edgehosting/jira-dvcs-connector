@@ -222,9 +222,11 @@ function createAddOrganizationDialog(action) {
         if (enabled) {
             AJS.$("#add-organization-wait").removeClass("aui-icon-wait");
             AJS.$('#add-organization-dialog .button-panel-submit-button').removeAttr("disabled");
+            AJS.$('#add-organization-dialog .button-panel-submit-button').remove("aria-disabled");
         } else {
             AJS.$("#add-organization-wait").addClass("aui-icon-wait");
             AJS.$('#add-organization-dialog .button-panel-submit-button').attr("disabled", "disabled");
+            AJS.$('#add-organization-dialog .button-panel-submit-button').attr("aria-disabled", "true");
         }
     }
     jira.dvcs.connector.plugin.addOrganizationDialog = dialog;
@@ -442,6 +444,7 @@ function configureOAuth(org, atlToken) {
         if (!v1 || !v2) return;
             
         AJS.$("#repositoryOAuthDialog .dialog-button-panel button").attr("disabled", "disabled");
+        AJS.$("#repositoryOAuthDialog .dialog-button-panel button").attr("aria-disabled", "true");
         AJS.$("#repositoryOAuthDialog .dialog-button-panel").prepend("<span class='aui-icon aui-icon-wait' style='padding-right:10px'>Wait</span>");
         
         // submit form
@@ -465,6 +468,7 @@ function configureOAuth(org, atlToken) {
                       closeable : false
                 });
                 AJS.$("#repositoryOAuthDialog .dialog-button-panel button").removeAttr("disabled", "disabled");
+                AJS.$("#repositoryOAuthDialog .dialog-button-panel button").removeAttr("aria-disabled");
                 AJS.$("#repositoryOAuthDialog .dialog-button-panel .aui-icon-wait").remove();
                 popup.updateHeight();
             });
@@ -694,19 +698,21 @@ function confirmationDialog(options) {
 
     dialog.disableSubmitButton = function() {
     	AJS.$('#confirm-dialog .button-panel-submit-button').attr("disabled", "disabled");
+    	AJS.$('#confirm-dialog .button-panel-submit-button').attr("aria-disabled", "true");
     }
     
     dialog.enableSubmitButton = function() {
     	AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("disabled");
+    	AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("aria-disabled");
     }
     
     dialog.working = function(working) {
         if (working) {
             AJS.$("#confirm-action-wait").addClass("aui-icon-wait");
-            AJS.$('#confirm-dialog .button-panel-submit-button').attr("disabled", "disabled");
+            this.disableSubmitButton();
         } else {
             AJS.$("#confirm-action-wait").removeClass("aui-icon-wait");
-            AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("disabled");
+            this.enableSubmitButton();
         }
     }
     
