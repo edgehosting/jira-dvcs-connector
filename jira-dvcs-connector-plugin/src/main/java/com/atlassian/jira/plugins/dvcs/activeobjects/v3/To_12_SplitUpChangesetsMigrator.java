@@ -25,15 +25,14 @@ import com.atlassian.activeobjects.external.ModelVersion;
 /**
  * Realizes migration of issue key and project key from one table: {@link ChangesetMapping} into the {@link ChangesetMapping} and a
  * {@link IssueToChangesetMapping}.
- * 
+ *
  * For more information see BBC-415.
- * 
+ *
  * @author stanislav-dvorscak
- * 
+ *
  */
 // suppress deprecation - we want to have migrators stable as much as possible
-@SuppressWarnings("deprecation")
-public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
+public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 {
 
     /**
@@ -46,12 +45,12 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
     /**
      * Logger for this class.
      */
-    private final Logger logger = LoggerFactory.getLogger(To_11_SplitUpChangesetsMigrator.class);
+    private final Logger logger = LoggerFactory.getLogger(To_12_SplitUpChangesetsMigrator.class);
 
     /**
      * @see #getModelVersion()
      */
-    private static final ModelVersion MODEL_VERSION = ModelVersion.valueOf("11");
+    private static final ModelVersion MODEL_VERSION = ModelVersion.valueOf("12");
 
     /**
      * Reference to injected {@link ActiveObjects}
@@ -86,9 +85,9 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * View of over JDBC result.
-     * 
+     *
      * @author Stanislav Dvorscak
-     * 
+     *
      */
     private class ChangesetResult
     {
@@ -125,7 +124,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
         /**
          * Constructor.
-         * 
+         *
          * @param id
          *            {@link ChangesetMapping#getID()}
          * @param rawNode
@@ -153,9 +152,9 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Makes cursor/mapping between JDBC and {@link ChangesetResult}.
-     * 
+     *
      * @author Stanislav Dvorscak
-     * 
+     *
      */
     private class ChangesetResultCursor implements Iterator<ChangesetResult>
     {
@@ -172,7 +171,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
         /**
          * Constructor.
-         * 
+         *
          * @param resultSet
          */
         public ChangesetResultCursor(ResultSet resultSet)
@@ -236,9 +235,9 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Calculates and logs progress of migration - only for logging purposes.
-     * 
+     *
      * @author Stanislav Dvorscak
-     * 
+     *
      */
     private class Progress
     {
@@ -255,7 +254,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
         /**
          * Constructor.
-         * 
+         *
          * @param totalCount
          *            how much entities are awaiting.
          */
@@ -266,7 +265,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
         /**
          * Update progress by provided count of proceed entities.
-         * 
+         *
          * @param proceedCount
          */
         private void update(int proceedCount)
@@ -372,7 +371,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Removes all changesets pointed to on an un-existing repository.
-     * 
+     *
      * @throws SQLException
      */
     private void sanityClean() throws SQLException
@@ -389,7 +388,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Processes provided batch.
-     * 
+     *
      * @param changesetCursor
      *            cursor over batch
      * @param uniqueChangeset
@@ -494,7 +493,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
     }
 
     /**
-     * 
+     *
      * @param rawNode
      *            {@link ChangesetMapping#getRawNode()}
      * @param node
@@ -514,7 +513,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * It is responsible to find unique changeset after restart. It means to find changeset, which was already proceed for current node.
-     * 
+     *
      * @param activeObjects
      * @param currentNode
      * @return founded unique changeset
@@ -617,7 +616,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Fills {@link #newIssueToChangesetStatement()} by parameters for next batch part.
-     * 
+     *
      * @param statement
      *            get by {@link #newIssueToChangesetStatement()}
      * @param unique
@@ -656,7 +655,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Fills {@link #newRepositoryToChangesetStatement()} by parameters for next batch part.
-     * 
+     *
      * @param statement
      *            get by {@link #newRepositoryToChangesetStatement()}
      * @param unique
@@ -685,7 +684,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Fills {@link #newDeleteChangesetStatement()} by parameters for next batch part.
-     * 
+     *
      * @param statement
      *            get by {@link #newDeleteChangesetStatement()}
      * @param current
@@ -714,7 +713,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Fills {@link #newIssueToChangesetStatement()} by parameters for next batch.
-     * 
+     *
      * @param statement
      * @param unique
      * @throws SQLException
@@ -730,7 +729,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Creates name of table for provided entity. The name is also sanitized.
-     * 
+     *
      * @param entity
      *            for which database entity
      * @return name of table
@@ -749,7 +748,7 @@ public class To_11_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Sanitized provided name of column.
-     * 
+     *
      * @param columnName
      *            which will be sanitized
      * @return sanitized column
