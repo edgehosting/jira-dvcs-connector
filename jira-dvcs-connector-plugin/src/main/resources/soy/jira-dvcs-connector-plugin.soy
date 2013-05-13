@@ -176,7 +176,6 @@
 {/template}
 
 /**
- * @param isGithubEnterpriseEnabled
  * @param isOnDemandLicense
  * @param atlToken
  * @param oAuthStore
@@ -193,9 +192,7 @@
 		      <select id="urlSelect" name="urlSelect" class="select">
 		        <option value="bitbucket">Bitbucket</option>
 		        <option value="github">GitHub</option>
-		        {if $isGithubEnterpriseEnabled}
 		        <option value="githube">GitHub Enterprise</option>
-		        {/if}
 		      </select>
 		      <div class="fieldValue" id="urlReadOnly"></div>
 		      <div id="url-error" class="dvcs-error error">Choose URL.</div>
