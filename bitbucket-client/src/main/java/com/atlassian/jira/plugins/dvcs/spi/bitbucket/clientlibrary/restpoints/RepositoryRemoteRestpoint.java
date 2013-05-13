@@ -54,7 +54,7 @@ public class RepositoryRemoteRestpoint
                 {
                     throw new RuntimeException(
                             "Unexpected response was returned back from server side. Check that all provided information of account '"
-                                    + owner + "' is valid. Basically it means a mistake in provided account name.", e);
+                                    + owner + "' is valid. Basically it means: unexisting account or invalid key/secret combination.", e);
                 }
             }
         });
