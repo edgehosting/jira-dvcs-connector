@@ -170,7 +170,6 @@ function createAddOrganizationDialog(action) {
     dialog.addHeader("Add New Account");
 
     dialog.addPanel("", jira.dvcs.connector.plugin.soy.addOrganizationDialog({
-        isGithubEnterpriseEnabled: jira.dvcs.connector.plugin.githubEnterpriseEnabled,
         isOnDemandLicense: jira.dvcs.connector.plugin.onDemandLicense,
         atlToken : jira.dvcs.connector.plugin.atlToken,
         oAuthStore : jira.dvcs.connector.plugin.oAuthStore
