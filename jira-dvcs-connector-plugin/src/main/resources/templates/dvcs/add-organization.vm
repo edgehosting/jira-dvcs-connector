@@ -93,7 +93,7 @@
 <div class="vert-space">&nbsp;</div>
 
 #foreach( $org in $action.loadOrganizations() )
-  <div class="dvcs-orgdata-container">
+  <div id="dvcs-orgdata-container-$org.id" class="dvcs-orgdata-container">
     <div id="aui-message-bar-$org.id"></div>        
     #if($org.isAutolinkNewRepos())
         #set( $orgAutolink = "checked")

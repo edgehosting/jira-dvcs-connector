@@ -87,6 +87,15 @@ public class RepositoryServiceImpl implements RepositoryService
      * {@inheritDoc}
      */
     @Override
+    public List<Repository> getAllByOrganization(int organizationId, boolean includeDeleted)
+    {
+        return repositoryDao.getAllByOrganization(organizationId, includeDeleted);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Repository get(int repositoryId)
     {
         return repositoryDao.get(repositoryId);
@@ -489,9 +498,14 @@ public class RepositoryServiceImpl implements RepositoryService
      * {@inheritDoc}
      */
     @Override
-    public void removeAllInOrganization(int organizationId)
+    public void removeRepositories(List<Repository> repositories)
     {
-        List<Repository> repositories = repositoryDao.getAllByOrganization(organizationId, true);
+        // we stop all synchronizations first to prevent starting new redundant synchronization
+        for (Repository repository : repositories)
+        {
+            synchronizer.stopSynchronization(repository);
+        }
+        
         for (Repository repository : repositories)
         {
             remove(repository);

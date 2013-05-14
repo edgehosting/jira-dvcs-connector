@@ -677,7 +677,7 @@ function enableRepoSmartcommits(repoId, checkboxId) {
 function confirmationDialog(options) {
     var dialog = new AJS.Dialog({width:500, height:150, id: "confirm-dialog", closeOnOutsideClick: false});
     dialog.addHeader(options.header);
-    dialog.addPanel("ConfirmPanel", options.body);
+    dialog.addPanel("ConfirmPanel", options.body + "<div id='aui-message-bar-confirmation-dialog'></div>");
     
     dialog.addButtonPanel();
     dialog.page[0].buttonpanel.append("<span id='confirm-action-wait' class='aui-icon' style='padding-right:10px'>&nbsp;</span>");
@@ -718,7 +718,7 @@ function confirmationDialog(options) {
     
     dialog.showError = function(message) {
         dialog.working(false);
-        showError(message, "#aui-message-bar-delete-org");
+        showError(message, "#aui-message-bar-confirmation-dialog");
         dialog.updateHeight();
     }
     
@@ -740,11 +740,12 @@ function deleteOrganization(organizationId, organizationName) {
 }
 
 function deleteOrganizationInternal(dialog, organizationId, organizationName) {
-    AJS.$.ajax({
+	AJS.$.ajax({
         url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId,
         type: 'DELETE',
         success: function(result) {
-            window.location.reload();
+        	AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
+        	dialog.remove();
         }
     }).error(function (err) {
         dialog.showError("Error when deleting account '" + organizationName + "'.");

@@ -108,8 +108,9 @@ public class OrganizationServiceImpl implements OrganizationService
 	@Override
 	public void remove(int organizationId)
 	{
-		repositoryService.removeAllInOrganization(organizationId);
+		List<Repository> repositoriesToDelete = repositoryService.getAllByOrganization(organizationId, true);
 		organizationDao.remove(organizationId);
+		repositoryService.removeRepositories(repositoriesToDelete);
 	}
 
 	@Override
