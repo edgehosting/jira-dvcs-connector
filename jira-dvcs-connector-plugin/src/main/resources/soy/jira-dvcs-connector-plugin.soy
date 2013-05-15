@@ -39,6 +39,40 @@
 {/template}
 
 /**
+ * @param organizationId
+ * @param oAuthKey
+ * @param oAuthSecret
+ * @param isOnDemandLicense
+ */
+{template .OAuthSettingsDialog}
+	<div class="jira-dvcs-connector-plugin repositoryOAuthDialog">
+		<form action="%" method="post" id="updateOAuthForm" class="aui">
+		<input type="hidden" name="organizationId" value="{$organizationId}">
+	    <fieldset>
+	        <div class="field-group">
+	            <label for="d-fname">Key<span class="aui-icon icon-required"> required</span></label>
+	            <input class="text long-field" type="text" id="key" name="key" title="first name" value="{$oAuthKey}">
+	            <div class="error">&nbsp;</div>
+	            <div class="description">
+		       	    {if $isOnDemandLicense}
+		                <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+		            {else}
+		                <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+		            {/if}
+		        Help with my key and secret.</a></div>
+	        </div>
+	        <div class="field-group">
+	            <label for="d-fname">Secret<span class="aui-icon icon-required"> required</span></label>
+	            <input class="text long-field" type="text" id="secret" name="secret" title="first name" value="{$oAuthSecret}">
+	            <div class="error">&nbsp;</div>
+	        </div>
+	    </fieldset>
+	    </form>
+        <div id="aui-message-bar-oauth-dialog"></div>
+	</div>
+{/template}
+
+/**
  * @param fullName
  * @param url
  */
