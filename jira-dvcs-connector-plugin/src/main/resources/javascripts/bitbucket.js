@@ -542,15 +542,6 @@ function setOAuthSettings(org) {
             .done(function(data) {
                 popup.hide();
                 syncRepositoryList(org.id,org.name);
-//                var actionName;
-//                if (org.dvcsType == "bitbucket")
-//                    actionName="RegenerateBitbucketOauthToken.jspa";
-//                else if (org.dvcsType == "github")
-//                    actionName="RegenerateGithubOauthToken.jspa";
-//                else
-//                    actionName="RegenerateGithubEnterpriseOauthToken.jspa";
-//
-//                window.location.replace(BASE_URL+"/secure/admin/"+actionName+"?organization=" + org.id + "&atl_token="+atlToken);
             })
             .error(function (err) {
                 AJS.$("#aui-message-bar-oauth-dialog").empty();
