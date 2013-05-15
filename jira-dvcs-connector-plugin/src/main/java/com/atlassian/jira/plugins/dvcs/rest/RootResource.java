@@ -407,6 +407,10 @@ public class RootResource
         {
             return Status.error().message("Failed to delete integrated account.").response();
         }
+        
+        if (organizationService.get(id, false) == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         try
         {

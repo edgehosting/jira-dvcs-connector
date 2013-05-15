@@ -513,3 +513,10 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	width: 0;
 }
 
+.dvcs-link-disabled {
+	color: gray;
+}
+
+.dialog-button-panel span.button-panel-link {
+	margin: 0 10px 0 0;
+}

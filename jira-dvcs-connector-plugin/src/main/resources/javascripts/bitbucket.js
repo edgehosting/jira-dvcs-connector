@@ -1,3 +1,63 @@
+// Custom link plug-in
+(function ($) {
+	
+	var methods = {
+		init: function(options) {
+			if (options.enabled) {
+				methods.enable(options.enabled);
+			}
+			
+			return this;
+		},
+		
+		enable: function (enabled) {
+			return $(this).each(function() {
+				var element = $(this);
+
+				// gets or creates new plug-in related data
+				var data = element.data('jira_dvcs_connector_link');
+				if (typeof data == 'undefined') {
+					data = {};
+					element.data('jira_dvcs_connector_link', data);
+				}
+				
+				// enable/disable
+				if (enabled) {
+					if (data.disablePlaceholder) {
+						data.disablePlaceholder.remove();
+						data.disablePlaceholder = null;
+					}
+					element.show();
+					
+				} else {
+					if (!data.disablePlaceholder) {
+						data.disablePlaceholder = $('<span class="' + element.attr('class')  + '">' + element.html() + '</span>');
+						data.disablePlaceholder.addClass('dvcs-link-disabled');
+						element.after(data.disablePlaceholder);
+					}
+					element.hide();
+					
+				}
+				
+				return element;
+
+			});
+		},
+	};
+	
+	$.fn.jira_dvcs_connector_link = function(options) {
+		if (methods[options]) {
+			return methods[options].apply(this, Array.prototype.slice.call(arguments, 1));
+		
+		} else {
+			return methods.init.apply(this, options);
+			
+		}
+
+	};
+	
+} (jQuery) );
+
 function switchDvcsDetails(selectSwitch) {
     var dvcsType = selectSwitch.selectedIndex;
     switchDvcsDetailsInternal(dvcsType);
@@ -696,23 +756,25 @@ function confirmationDialog(options) {
         dialog.remove();
     }, "#");
 
-    dialog.disableSubmitButton = function() {
+    dialog.disableActions = function() {
     	AJS.$('#confirm-dialog .button-panel-submit-button').attr("disabled", "disabled");
     	AJS.$('#confirm-dialog .button-panel-submit-button').attr("aria-disabled", "true");
+    	AJS.$('#confirm-dialog .button-panel-cancel-link').jira_dvcs_connector_link('enable', false);
     }
     
-    dialog.enableSubmitButton = function() {
+    dialog.enableActions = function() {
     	AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("disabled");
     	AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("aria-disabled");
+    	AJS.$('#confirm-dialog .button-panel-cancel-link').jira_dvcs_connector_link('enable', true);
     }
     
     dialog.working = function(working) {
         if (working) {
             AJS.$("#confirm-action-wait").addClass("aui-icon-wait");
-            this.disableSubmitButton();
+            this.disableActions();
         } else {
             AJS.$("#confirm-action-wait").removeClass("aui-icon-wait");
-            this.enableSubmitButton();
+            this.enableActions();
         }
     }
     
@@ -743,12 +805,21 @@ function deleteOrganizationInternal(dialog, organizationId, organizationName) {
 	AJS.$.ajax({
         url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId,
         type: 'DELETE',
+        timeout: 5 * 60 * 1000,
         success: function(result) {
         	AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
         	dialog.remove();
         }
-    }).error(function (err) {
-        dialog.showError("Error when deleting account '" + organizationName + "'.");
+    }).error(function (jqXHR, textStatus, errorThrown) {
+    	// ignore not found status
+    	if (jqXHR.status == 404) {
+    		AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
+    		dialog.remove();
+    	
+    	} else {
+    		dialog.showError("Error when deleting account '" + organizationName + "'.");
+    	
+    	}
     });
 }
 
