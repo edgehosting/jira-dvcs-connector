@@ -371,12 +371,13 @@ function configureDefaultGroups(orgName, id) {
     var dialogContent = AJS.$("#configureDefaultGroupsContainer").html();
     
     var dialog = confirmationDialog({
-        header: "Configure Default Groups for '" + orgName + "'",
+        header: "Configure automatic access",
         body: dialogContent,
         submitButtonLabel: "Save",
         okAction: function (dialog) { AJS.$("#configureDefaultGroupsForm").submit(); }
         });
-    
+
+    dialog.page[0].buttonpanel.append("<span class='dialog-help'>Help on <a href='https://confluence.atlassian.com/x/Bw4zDQ' target='_blank'>account management</a></span>");
     dialog.disableSubmitButton();
     
     // load web fragment
