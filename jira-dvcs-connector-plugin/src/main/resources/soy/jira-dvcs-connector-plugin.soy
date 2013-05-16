@@ -329,10 +329,7 @@
         <form id="configureDefaultGroupsForm" class="aui" method="post" action="{$baseUrl}/secure/admin/ConfigureDefaultBitbucketGroups.jspa" >
              <input type="hidden" name="atl_token" value="{$atlToken}">
              <input type="hidden" id="organizationIdDefaultGroups" name="organizationIdDefaultGroups" value="{$organizationIdDefaultGroups}" />
-             <div id="configureDefaultGroupsContentWorking">
-                 <span class="aui-icon aui-icon-wait">&nbsp;</span>
-             </div>
-             <div id="configureDefaultGroupsContent"></div>
+             <div id="configureDefaultGroupsContent"><span class="aui-icon aui-icon-wait">&nbsp;</span></div>
         </form>
     </div>
 {/template}

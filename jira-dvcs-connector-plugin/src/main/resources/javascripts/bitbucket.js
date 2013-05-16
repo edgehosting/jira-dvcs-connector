@@ -358,8 +358,7 @@ var dvcsSubmitFormAjaxHandler = {
 }
 
 function configureDefaultGroups(orgName, id) {
-    AJS.$("#organizationIdDefaultGroups").val(id);
-    
+
     var dialog = confirmationDialog({
         header: "Configure automatic access",
         body: jira.dvcs.connector.plugin.soy.defaultGroupsForm({
@@ -382,8 +381,6 @@ function configureDefaultGroups(orgName, id) {
             function (data) {
             	if (dialog.isAttached())
             	{
-	            	// we need to reference .dialog-panel-body as this is copy
-	                AJS.$(".dialog-panel-body #configureDefaultGroupsContentWorking").hide()
 	                AJS.$(".dialog-panel-body #configureDefaultGroupsContent").html(data);
 	                dialog.updateHeight();
 	                dialog.enableActions();
