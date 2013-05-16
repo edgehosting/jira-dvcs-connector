@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.JsonParsingException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryEnvelope;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
@@ -42,20 +41,11 @@ public class RepositoryRemoteRestpoint
             @Override
             public List<BitbucketRepository> onResponse(RemoteResponse response)
             {
-                try
-                {
-                    BitbucketRepositoryEnvelope envelope = ClientUtils.fromJson(response.getResponse(),
-                            new TypeToken<BitbucketRepositoryEnvelope>()
-                            {
-                            }.getType());
-                    return envelope.getRepositories();
-
-                } catch (JsonParsingException e)
-                {
-                    throw new RuntimeException(
-                            "Unexpected response was returned back from server side. Check that all provided information of account '"
-                                    + owner + "' is valid. Basically it means: unexisting account or invalid key/secret combination.", e);
-                }
+                BitbucketRepositoryEnvelope envelope = ClientUtils.fromJson(response.getResponse(),
+                        new TypeToken<BitbucketRepositoryEnvelope>()
+                        {
+                        }.getType());
+                return envelope.getRepositories();
             }
         });
     }

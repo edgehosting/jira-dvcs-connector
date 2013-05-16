@@ -60,6 +60,11 @@ public class SourceControlException extends RuntimeException
         {
             super(message);
         }
+        
+        public InvalidResponseException(String message, Throwable cause)
+        {
+            super(message, cause);
+        }
     }
     
     public static class PostCommitHookRegistrationException extends SourceControlException
