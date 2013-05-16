@@ -754,7 +754,7 @@ function deleteOrganizationInternal(dialog, organizationId, organizationName) {
     	// ignore not found status
     	if (jqXHR.status == 404) {
     		AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
-    		dialog.showError(organizationName + " was already deleted!");
+    		dialog.showError("Account '" + organizationName + "' was already deleted!");
     	
     	} else {
     		dialog.showError("Error when deleting account '" + organizationName + "'.");
