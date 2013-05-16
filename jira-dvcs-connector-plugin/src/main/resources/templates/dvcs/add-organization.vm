@@ -77,8 +77,6 @@
        <div id="organization-list">
            #printOrganizations
        </div>
-           
-        #printConfigureDefaultGroupsFormHidden
     
   </body>
 </html>
@@ -248,27 +246,5 @@
   </div>
 #end
 
-
-#end
-
-#macro (printConfigureDefaultGroupsFormHidden)
-    
-    <div id="configureDefaultGroupsContainer" style="display:none">
-    
-        <form id="configureDefaultGroupsForm" class="aui" method="post" action="$baseurl/secure/admin/ConfigureDefaultBitbucketGroups.jspa" >
-        
-             <input type="hidden" name="atl_token" value="$atl_token">
-             <input type="hidden" id="organizationIdDefaultGroups" name="organizationIdDefaultGroups" value="" />
-             
-             <div id="configureDefaultGroupsContentWorking" style="margin:10px; display: none">
-                 <span class="aui-icon aui-icon-wait">&nbsp;</span>
-             </div>
-             
-             <div id="configureDefaultGroupsContent">
-             
-             </div>
-             
-        </form>
-    </div>
 
 #end

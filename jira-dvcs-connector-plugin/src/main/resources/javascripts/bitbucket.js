@@ -366,13 +366,14 @@ function configureDefaultGroups(orgName, id) {
     AJS.$("#aui-message-bar-default-groups").empty();
     
     AJS.$("#organizationIdDefaultGroups").val(id);
-    
-    // we need to copy dialog content as dialog will destroy it when removed
-    var dialogContent = AJS.$("#configureDefaultGroupsContainer").html();
-    
+
     var dialog = confirmationDialog({
         header: "Configure Default Groups for '" + orgName + "'",
-        body: dialogContent,
+        body: jira.dvcs.connector.plugin.soy.defaultGroupsForm({
+        	'baseUrl' : BASE_URL,
+        	'atlToken' : jira.dvcs.connector.plugin.atlToken,
+        	'organizationIdDefaultGroups' : id,
+        }),
         submitButtonLabel: "Save",
         okAction: function (dialog) { AJS.$("#configureDefaultGroupsForm").submit(); }
         });
