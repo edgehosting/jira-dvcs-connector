@@ -430,3 +430,14 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	float: left;
 	margin: 7px;
 }
+
+.aui-dialog .dialog-button-panel a.button-panel-link.dvcs-link-disabled,
+.dvcs-link-disabled {
+	color: gray;
+	pointer-events: none;
+	cursor: default;
+}
+
+.dialog-button-panel span.button-panel-link {
+	margin: 0 10px 0 0;
+}
