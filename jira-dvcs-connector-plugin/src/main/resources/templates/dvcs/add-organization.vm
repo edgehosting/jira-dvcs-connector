@@ -115,7 +115,7 @@
         </h4>  
 		#if($action.isInvalidOrganization($org))
 			#if($org.isIntegratedAccount())
-				<span class="dvcs-invalid-organization error">Invalid credentials, please contact support.</span>
+				<span class="dvcs-invalid-organization error">Invalid credentials, please reset OAuth settings</span>
 			#else
 				<span class="dvcs-invalid-organization error">Invalid credentials, please regenerate access token</span>
 			#end
