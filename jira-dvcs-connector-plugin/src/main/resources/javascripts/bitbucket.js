@@ -358,13 +358,6 @@ var dvcsSubmitFormAjaxHandler = {
 }
 
 function configureDefaultGroups(orgName, id) {
-    
-    // clear all
-    AJS.$("#organizationIdDefaultGroups").val("");
-    AJS.$("#configureDefaultGroupsContent").html("");
-    AJS.$("#configureDefaultGroupsContentWorking").show();
-    AJS.$("#aui-message-bar-default-groups").empty();
-    
     AJS.$("#organizationIdDefaultGroups").val(id);
 
     var dialog = confirmationDialog({
@@ -377,8 +370,7 @@ function configureDefaultGroups(orgName, id) {
         submitButtonLabel: "Save",
         okAction: function (dialog) { AJS.$("#configureDefaultGroupsForm").submit(); }
         });
-    
-    dialog.disableSubmitButton();
+    dialog.disableActions();
     
     // load web fragment
     AJS.$.ajax({
@@ -392,7 +384,7 @@ function configureDefaultGroups(orgName, id) {
 	                AJS.$(".dialog-panel-body #configureDefaultGroupsContentWorking").hide()
 	                AJS.$(".dialog-panel-body #configureDefaultGroupsContent").html(data);
 	                dialog.updateHeight();
-	                dialog.enableSubmitButton();
+	                dialog.enableActions();
             	}
             }
         }
