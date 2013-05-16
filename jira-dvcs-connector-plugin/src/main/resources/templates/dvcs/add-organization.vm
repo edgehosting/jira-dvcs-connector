@@ -134,7 +134,7 @@
 					<li><a href="#" onclick="javascript:syncRepositoryList($org.id,'$org.name'); return false;">Refresh list</a></li>
 				    #if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
                     <li>
-                        <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id); return false;"> Configure default groups</a>
+                        <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id); return false;">Configure automatic access</a>
                     </li>
                     #end
                     #if( !$org.isIntegratedAccount() )

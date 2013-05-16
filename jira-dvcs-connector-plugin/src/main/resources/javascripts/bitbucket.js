@@ -358,8 +358,9 @@ var dvcsSubmitFormAjaxHandler = {
 }
 
 function configureDefaultGroups(orgName, id) {
+
     var dialog = confirmationDialog({
-        header: "Configure Default Groups for '" + orgName + "'",
+        header: "Configure automatic access",
         body: jira.dvcs.connector.plugin.soy.defaultGroupsForm({
         	'baseUrl' : BASE_URL,
         	'atlToken' : jira.dvcs.connector.plugin.atlToken,
@@ -368,6 +369,8 @@ function configureDefaultGroups(orgName, id) {
         submitButtonLabel: "Save",
         okAction: function (dialog) { AJS.$("#configureDefaultGroupsForm").submit(); }
         });
+
+    dialog.page[0].buttonpanel.append("<span class='dialog-help'>Help on <a href='https://confluence.atlassian.com/x/Bw4zDQ' target='_blank'>account management</a></span>");
     dialog.disableActions();
     
     // load web fragment
@@ -731,7 +734,7 @@ function deleteOrganization(organizationId, organizationName) {
 }
 
 function deleteOrganizationInternal(dialog, organizationId, organizationName) {
-	AJS.$.ajax({
+    AJS.$.ajax({
         url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId,
         type: 'DELETE',
         timeout: 5 * 60 * 1000,
