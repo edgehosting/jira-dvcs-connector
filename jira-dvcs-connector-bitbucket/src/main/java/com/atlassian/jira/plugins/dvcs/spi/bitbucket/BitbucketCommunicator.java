@@ -124,7 +124,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         } catch (BitbucketRequestException.Unauthorized_401 e)
         {
             log.debug("Invalid credentials", e);
-            throw new SourceControlException.UnauthorisedException("Invalid credentials");
+            throw new SourceControlException.UnauthorisedException("Invalid credentials", e);
         } catch ( BitbucketRequestException.BadRequest_400 e)
         {
             // We received bad request status code and we assume that an invalid OAuth is the cause
@@ -132,7 +132,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         } catch (BitbucketRequestException e)
         {
             log.debug(e.getMessage(), e);
-            throw new SourceControlException(e.getMessage());
+            throw new SourceControlException(e.getMessage(), e);
         } catch (JsonParsingException e)
         {
             log.debug(e.getMessage(), e);
@@ -141,7 +141,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 throw new SourceControlException.UnauthorisedException("Unexpected response was returned back from server side. Check that all provided information of account '"
                         + organization.getName() + "' is valid. Basically it means: unexisting account or invalid key/secret combination.", e);
             }
-            throw new SourceControlException.InvalidResponseException("The response could not be parsed.");
+            throw new SourceControlException.InvalidResponseException("The response could not be parsed. This is most likely caused by invalid credentials.", e);
         }
     }
 
@@ -431,7 +431,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         } catch (JsonParsingException e)
         {
             log.debug(e.getMessage(), e);
-            throw new SourceControlException.InvalidResponseException("Could not parse response [" + organization.getName() + "]");
+            throw new SourceControlException.InvalidResponseException("Could not parse response [" + organization.getName() + "]. This is most likely caused by invalid credentials.", e);
         }
     }
 
