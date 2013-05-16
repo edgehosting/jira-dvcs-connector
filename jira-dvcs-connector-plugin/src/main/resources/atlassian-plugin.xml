@@ -70,7 +70,8 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_09_SmartCommitsColumnsMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_10_LastChangesetNodeMigrator</upgradeTask>
-        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_11_SplitUpChangesetsMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_11_AddKeyAndSecretToBBAccounts</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_12_SplitUpChangesetsMigrator</upgradeTask>
     </ao>
 	
 	<!-- Integrated account -->
@@ -96,16 +97,6 @@
 		class="com.atlassian.jira.plugins.dvcs.upgrade.To_02_ProjectBasedRepositoryLinksUpgradeTask">
 		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
 	</component>
-
-    <component key="oAuthStorageUpgradeTask" name="Migrate OAuth details to new location" public="true"
-        class="com.atlassian.jira.plugins.dvcs.upgrade.To_03_UpgradeOAuthDetails">
-        <interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
-    </component>
-
-    <component key="oAuthKeySecretUpgrade" name="Adding OAuth key/secret to each bitbucket organization" public="true"
-        class="com.atlassian.jira.plugins.dvcs.upgrade.To_04_AddKeyAndSecretToBBAccounts">
-        <interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
-    </component>
 
     <component key="bitbucketLinker" name="bitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinkerImpl">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
