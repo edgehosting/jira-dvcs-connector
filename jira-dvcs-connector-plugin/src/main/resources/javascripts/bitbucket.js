@@ -697,23 +697,25 @@ function confirmationDialog(options) {
         dialog.remove();
     }, "#");
 
-    dialog.disableSubmitButton = function() {
+    dialog.disableActions = function() {
     	AJS.$('#confirm-dialog .button-panel-submit-button').attr("disabled", "disabled");
     	AJS.$('#confirm-dialog .button-panel-submit-button').attr("aria-disabled", "true");
+    	AJS.$('#confirm-dialog .button-panel-cancel-link').addClass('dvcs-link-disabled');
     }
     
-    dialog.enableSubmitButton = function() {
+    dialog.enableActions = function() {
     	AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("disabled");
     	AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("aria-disabled");
+    	AJS.$('#confirm-dialog .button-panel-cancel-link').removeClass('dvcs-link-disabled');
     }
     
     dialog.working = function(working) {
         if (working) {
             AJS.$("#confirm-action-wait").addClass("aui-icon-wait");
-            this.disableSubmitButton();
+            this.disableActions();
         } else {
             AJS.$("#confirm-action-wait").removeClass("aui-icon-wait");
-            this.enableSubmitButton();
+            this.enableActions();
         }
     }
     
@@ -744,12 +746,21 @@ function deleteOrganizationInternal(dialog, organizationId, organizationName) {
 	AJS.$.ajax({
         url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId,
         type: 'DELETE',
+        timeout: 5 * 60 * 1000,
         success: function(result) {
         	AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
         	dialog.remove();
         }
-    }).error(function (err) {
-        dialog.showError("Error when deleting account '" + organizationName + "'.");
+    }).error(function (jqXHR, textStatus, errorThrown) {
+    	// ignore not found status
+    	if (jqXHR.status == 404) {
+    		AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
+    		dialog.showError("Account '" + organizationName + "' was already deleted!");
+    	
+    	} else {
+    		dialog.showError("Error when deleting account '" + organizationName + "'.");
+    	
+    	}
     });
 }
 
