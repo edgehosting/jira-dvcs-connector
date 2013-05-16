@@ -1,63 +1,3 @@
-// Custom link plug-in
-(function ($) {
-	
-	var methods = {
-		init: function(options) {
-			if (options.enabled) {
-				methods.enable(options.enabled);
-			}
-			
-			return this;
-		},
-		
-		enable: function (enabled) {
-			return $(this).each(function() {
-				var element = $(this);
-
-				// gets or creates new plug-in related data
-				var data = element.data('jira_dvcs_connector_link');
-				if (typeof data == 'undefined') {
-					data = {};
-					element.data('jira_dvcs_connector_link', data);
-				}
-				
-				// enable/disable
-				if (enabled) {
-					if (data.disablePlaceholder) {
-						data.disablePlaceholder.remove();
-						data.disablePlaceholder = null;
-					}
-					element.show();
-					
-				} else {
-					if (!data.disablePlaceholder) {
-						data.disablePlaceholder = $('<span class="' + element.attr('class')  + '">' + element.html() + '</span>');
-						data.disablePlaceholder.addClass('dvcs-link-disabled');
-						element.after(data.disablePlaceholder);
-					}
-					element.hide();
-					
-				}
-				
-				return element;
-
-			});
-		},
-	};
-	
-	$.fn.jira_dvcs_connector_link = function(options) {
-		if (methods[options]) {
-			return methods[options].apply(this, Array.prototype.slice.call(arguments, 1));
-		
-		} else {
-			return methods.init.apply(this, options);
-			
-		}
-
-	};
-	
-} (jQuery) );
-
 function switchDvcsDetails(selectSwitch) {
     var dvcsType = selectSwitch.selectedIndex;
     switchDvcsDetailsInternal(dvcsType);
@@ -759,13 +699,13 @@ function confirmationDialog(options) {
     dialog.disableActions = function() {
     	AJS.$('#confirm-dialog .button-panel-submit-button').attr("disabled", "disabled");
     	AJS.$('#confirm-dialog .button-panel-submit-button').attr("aria-disabled", "true");
-    	AJS.$('#confirm-dialog .button-panel-cancel-link').jira_dvcs_connector_link('enable', false);
+    	AJS.$('#confirm-dialog .button-panel-cancel-link').addClass('dvcs-link-disabled');
     }
     
     dialog.enableActions = function() {
     	AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("disabled");
     	AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("aria-disabled");
-    	AJS.$('#confirm-dialog .button-panel-cancel-link').jira_dvcs_connector_link('enable', true);
+    	AJS.$('#confirm-dialog .button-panel-cancel-link').removeClass('dvcs-link-disabled');
     }
     
     dialog.working = function(working) {
@@ -814,7 +754,7 @@ function deleteOrganizationInternal(dialog, organizationId, organizationName) {
     	// ignore not found status
     	if (jqXHR.status == 404) {
     		AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
-    		dialog.remove();
+    		dialog.showError(organizationName + " was already deleted!");
     	
     	} else {
     		dialog.showError("Error when deleting account '" + organizationName + "'.");
