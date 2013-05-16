@@ -38,7 +38,6 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
 import com.atlassian.plugins.rest.common.Status;
-import com.atlassian.plugins.rest.common.Status.StatusResponseBuilder;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
 /**
