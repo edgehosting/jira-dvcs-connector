@@ -333,3 +333,30 @@
         </form>
     </div>
 {/template}
+
+/**
+ * 
+ */
+{template .adminPermisionWarning}
+	<h2>No admin permission</h2>
+	<div>
+		<div>
+			The post commit hook could not be installed.
+		</div>
+		<div class="description">
+			<a href="https://confluence.atlassian.com/display/BITBUCKET/Linking+Bitbucket+and+GitHub+accounts+to+JIRA" target="_blank">Do you need help?</a>
+		<div>
+	</div>
+{/template}
+
+/**
+ * @param isLinking
+ * @param errorMessage
+ */
+{template .linkingUnlinkingError}
+	<h2>Unable to {if $isLinking}link{else}unlink{/if} selected repository</h2>
+	{if $errorMessage}
+	<div>{$errorMessage}</div>
+	{/if}
+	<div>Please contact the server administrator.</div>
+{/template}

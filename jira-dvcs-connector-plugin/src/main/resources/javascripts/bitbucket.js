@@ -609,9 +609,9 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
               var response = AJS.$.parseJSON(err.responseText);
               var message = "";
               if (response) {
-            	  message = "<p>" + response.message + "</p>";
+            	  message = response.message;
               }
-              var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", message + "<p>Please contact the server administrator.</p>");
+              var tooltip = registerInlineDialogTooltip(errorStatusIcon, jira.dvcs.connector.plugin.soy.linkingUnlinkingError({'isLinking': checkedValue, 'errorMessage': message}));
               tooltip.show();
               AJS.$("#" + checkboxId  + "working").hide();
               AJS.$("#" + checkboxId).removeAttr("disabled");
@@ -626,13 +626,13 @@ function registerAdminPermissionInlineDialogTooltips() {
 }
 
 function registerAdminPermissionInlineDialogTooltip(element) {
-    registerInlineDialogTooltip(element, "No admin permission", "The post commit hook could not be installed.");
+    registerInlineDialogTooltip(element, jira.dvcs.connector.plugin.soy.adminPermisionWarning());
 }
 
-function registerInlineDialogTooltip(element, title, body) {
+function registerInlineDialogTooltip(element, body) {
     return AJS.InlineDialog(AJS.$(element), "tooltip_"+AJS.$(element).attr('id'),
             function(content, trigger, showPopup) {
-                content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><div>" + body + "</div>");
+                content.css({"padding":"10px"}).html(body);
                 showPopup();
                 return false;
             },
