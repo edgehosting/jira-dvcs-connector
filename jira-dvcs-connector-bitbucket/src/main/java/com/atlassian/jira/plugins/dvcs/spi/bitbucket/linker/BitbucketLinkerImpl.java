@@ -14,7 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbuckeAuthProviderFactory;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketConstants;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLinkHandler;
@@ -38,12 +39,12 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 {
     private final Logger log = LoggerFactory.getLogger(BitbucketLinkerImpl.class);
     private final String baseUrl;
-    private final BitbucketClientRemoteFactory bitbucketClientRemoteFactory;
+    private final BitbuckeAuthProviderFactory bitbucketClientRemoteFactory;
     private final ProjectManager projectManager;
 
     private final static Pattern PATTERN_PROJECTS_IN_LINK_REX = Pattern.compile("[A-Z|a-z]{2,}(|)+");
 
-    public BitbucketLinkerImpl(BitbucketClientRemoteFactory bitbucketClientRemoteFactory,
+    public BitbucketLinkerImpl(BitbuckeAuthProviderFactory bitbucketClientRemoteFactory,
             ApplicationProperties applicationProperties, ProjectManager projectManager)
     {
         this.bitbucketClientRemoteFactory = bitbucketClientRemoteFactory;
@@ -127,8 +128,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             //
             // post the link to bitbucket
             //
-            RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientRemoteFactory
-                    .getForRepository(repository).getRepositoryLinksRest();
+            RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = new BitbucketRemoteClient(bitbucketClientRemoteFactory
+                    .getForRepository(repository)).getRepositoryLinksRest();
 
             repositoryLinkRemoteRestpoint.addCustomRepositoryLink(repository.getOrgName(), repository.getSlug(),
                     baseUrl + "/browse/\\1", constructProjectsRex(forProjects));
@@ -147,8 +148,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 
     private void removeLinks(Repository repository, List<BitbucketRepositoryLink> linksToRemove)
     {
-        RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientRemoteFactory.getForRepository(
-                repository).getRepositoryLinksRest();
+        RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = new BitbucketRemoteClient(bitbucketClientRemoteFactory.getForRepository(
+                repository)).getRepositoryLinksRest();
 
         for (BitbucketRepositoryLink repositoryLink : linksToRemove)
         {
@@ -255,8 +256,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
      */
     private List<BitbucketRepositoryLink> getCurrentLinks(Repository repository)
     {
-        RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientRemoteFactory.getForRepository(
-                repository).getRepositoryLinksRest();
+        RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = new BitbucketRemoteClient(bitbucketClientRemoteFactory.getForRepository(
+                repository)).getRepositoryLinksRest();
         try
         {
             String owner = repository.getOrgName();

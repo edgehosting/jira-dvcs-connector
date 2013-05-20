@@ -1,25 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpProtocolParams;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -33,6 +13,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.cache.HttpCacheStorage;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.cache.BasicHttpCacheStorage;
+import org.apache.http.impl.client.cache.CacheConfig;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpProtocolParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
 
 /**
  * BaseRemoteRequestor
@@ -56,10 +61,15 @@ public class BaseRemoteRequestor implements RemoteRequestor
     protected final ApiProvider apiProvider;
     private final HttpClientProxyConfig proxyConfig;
 
+    private static HttpCacheStorage storage;
+    
+    private final boolean cached;
+    
     public BaseRemoteRequestor(ApiProvider apiProvider)
     {
         this.apiProvider = apiProvider;
         this.proxyConfig = new HttpClientProxyConfig();
+        this.cached = apiProvider.isCached();
     }
 
     @Override
@@ -152,7 +162,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     /**
      * E.g. append basic auth headers ...
      */
-    protected void onConnectionCreated(DefaultHttpClient client, HttpRequestBase method, Map<String, String> params)
+    protected void onConnectionCreated(HttpClient client, HttpRequestBase method, Map<String, String> params)
             throws IOException
     {
 
@@ -217,7 +227,11 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        DefaultHttpClient client = new DefaultHttpClient();
+        HttpClient client = new DefaultHttpClient();
+        if (cached)
+        {
+            client = new EtagCachingHttpClient(client, getStorage());
+        }
         RemoteResponse response = null;
        
         try
@@ -244,7 +258,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
     }
 
-    private RemoteResponse checkAndCreateRemoteResponse(HttpRequestBase method, DefaultHttpClient client, HttpResponse httpResponse) throws IOException
+    private RemoteResponse checkAndCreateRemoteResponse(HttpRequestBase method, HttpClient client, HttpResponse httpResponse) throws IOException
     {
         RemoteResponse response = new RemoteResponse();
 
@@ -348,7 +362,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
     }
 
-    private void createConnection(DefaultHttpClient client, HttpRequestBase method, String uri, Map<String, String> params)
+    private void createConnection(HttpClient client, HttpRequestBase method, String uri, Map<String, String> params)
             throws IOException, URISyntaxException
     {
         if (StringUtils.isNotBlank(apiProvider.getUserAgent()))
@@ -385,5 +399,21 @@ public class BaseRemoteRequestor implements RemoteRequestor
             UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, "UTF-8");
             method.setEntity(entity);
         }
+    }
+    
+    private static HttpCacheStorage getStorage()
+    {
+        if (storage == null)
+        {
+            CacheConfig config = new CacheConfig();
+            Integer maxCacheEntries = Integer.getInteger("dvcs.connector.bitbucket.cache.maxentries");
+            if (maxCacheEntries != null)
+            {
+                config.setMaxCacheEntries(maxCacheEntries);
+            }
+            storage = new BasicHttpCacheStorage(config);
+        }
+        
+        return storage;
     }
 }
