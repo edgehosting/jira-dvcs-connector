@@ -41,31 +41,31 @@ import org.slf4j.LoggerFactory;
 public class EtagCachingHttpClient implements HttpClient
 {
     private final Logger log = LoggerFactory.getLogger(EtagCachingHttpClient.class);
-    
-    private HttpClient backingHttpClient;
-    private HttpCacheStorage storage;
-    
+
+    private final HttpClient backingHttpClient;
+    private final HttpCacheStorage storage;
+
     public EtagCachingHttpClient()
     {
         this(new DefaultHttpClient(), new BasicHttpCacheStorage(new CacheConfig()));
     }
-    
+
     public EtagCachingHttpClient(HttpCacheStorage storage)
     {
         this(new DefaultHttpClient(), storage);
     }
-    
+
     public EtagCachingHttpClient(HttpClient httpClient)
     {
         this(httpClient, new BasicHttpCacheStorage(new CacheConfig()));
     }
-    
+
     public EtagCachingHttpClient(HttpClient httpClient, HttpCacheStorage storage)
     {
         this.backingHttpClient = httpClient;
         this.storage = storage;
     }
-    
+
     @Override
     public HttpParams getParams()
     {
@@ -87,39 +87,38 @@ public class EtagCachingHttpClient implements HttpClient
     @Override
     public HttpResponse execute(HttpUriRequest request, HttpContext context) throws IOException, ClientProtocolException
     {
-        if (shouldBeCached(request))
+        if (!HeaderConstants.GET_METHOD.equals(request.getRequestLine().getMethod()))
         {
-            Date requestDate = new Date();
-            
-            HttpCacheEntry httpCacheEntry = storage.getEntry(generateKey(request));
-            
-            if (httpCacheEntry != null)
-            {
-                Header etagHeader = httpCacheEntry.getFirstHeader(HeaderConstants.ETAG);
-                if (etagHeader != null)
-                {
-                    request.setHeader(HeaderConstants.IF_NONE_MATCH, etagHeader.getValue());
-                }
-                
-                Header lastModifiedHeader = httpCacheEntry.getFirstHeader(HeaderConstants.LAST_MODIFIED);
-                if (lastModifiedHeader != null)
-                {
-                    request.setHeader(HeaderConstants.IF_MODIFIED_SINCE, lastModifiedHeader.getValue());
-                }
-            }
-            HttpResponse httpResponse = backingHttpClient.execute(request, context);
-            
-            if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_NOT_MODIFIED)
-            {
-                log.debug("Generating response from cache.");
-                return generateResponse(httpCacheEntry);
-            }
-            
-            return cacheResponse(request, httpResponse, requestDate,  new Date());
-        } else
-        {
+            // this is not GET method - can't be cached
             return backingHttpClient.execute(request);
         }
+
+        Date requestDate = new Date();
+        HttpCacheEntry httpCacheEntry = storage.getEntry(generateKey(request));
+
+        if (httpCacheEntry != null)
+        {
+            Header etagHeader = httpCacheEntry.getFirstHeader(HeaderConstants.ETAG);
+            if (etagHeader != null)
+            {
+                request.setHeader(HeaderConstants.IF_NONE_MATCH, etagHeader.getValue());
+            }
+
+            Header lastModifiedHeader = httpCacheEntry.getFirstHeader(HeaderConstants.LAST_MODIFIED);
+            if (lastModifiedHeader != null)
+            {
+                request.setHeader(HeaderConstants.IF_MODIFIED_SINCE, lastModifiedHeader.getValue());
+            }
+        }
+        HttpResponse httpResponse = backingHttpClient.execute(request, context);
+
+        if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_NOT_MODIFIED)
+        {
+            log.debug("Generating response from cache.");
+            return generateResponse(httpCacheEntry);
+        }
+
+        return cacheResponse(request, httpResponse, requestDate,  new Date());
     }
 
     @Override
@@ -159,45 +158,39 @@ public class EtagCachingHttpClient implements HttpClient
         throw new UnsupportedOperationException();
     }
 
-    private boolean shouldBeCached(HttpRequest request)
-    {
-        String method = request.getRequestLine().getMethod();
-        return method.equals(HeaderConstants.GET_METHOD);
-    }
-    
     private boolean isResponseCacheable(HttpResponse response)
     {
         return HttpStatus.SC_OK == response.getStatusLine().getStatusCode();
     }
-    
+
     private String generateKey(HttpRequest request)
     {
         return generateKeyFromUri(request.getRequestLine().getUri());
     }
-    
+
     public String generateKeyFromUri(String uri)
     {
         try
         {
             URL u = new URL(uri);
-            
+
             String protocol = u.getProtocol().toLowerCase();
             String hostname = u.getHost().toLowerCase();
             int port = getCanonicalPort(u.getPort(), protocol);
             String path = getCanonicalPath(u.getPath());
-           
+
             if ("".equals(path))
             {
                 path = "/";
             }
-            
+
             String query = u.getQuery();
             String file = (query != null) ? (path + "?" + query) : path;
             return new URL(protocol, hostname, port, file).toString();
         } catch (MalformedURLException e)
         {
         }
-        
+
         return uri;
     }
 
@@ -226,7 +219,7 @@ public class EtagCachingHttpClient implements HttpClient
         }
         return port;
     }
-    
+
     private HttpResponse generateResponse(HttpCacheEntry entry) throws IOException
     {
 
@@ -242,7 +235,7 @@ public class EtagCachingHttpClient implements HttpClient
 
         return response;
     }
-    
+
     public HttpResponse cacheResponse(HttpRequest request,
             HttpResponse response, Date requestSent, Date responseReceived)
             throws IOException
@@ -251,7 +244,7 @@ public class EtagCachingHttpClient implements HttpClient
         {
             return response;
         }
-        
+
         ResponseReader responseReader = getResponseReader(request, response);
         Resource resource = responseReader.getResource();
 
@@ -286,7 +279,7 @@ class ResponseReader
     private InputStream instream;
     private Resource resource;
     private boolean responseRead;
-    
+
     public ResponseReader(ResourceFactory resourceFactory, HttpRequest request, HttpResponse response)
     {
         this.resourceFactory = resourceFactory;
