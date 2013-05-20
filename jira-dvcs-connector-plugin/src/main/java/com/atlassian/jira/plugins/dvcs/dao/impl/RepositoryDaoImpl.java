@@ -56,11 +56,14 @@ public class RepositoryDaoImpl implements RepositoryDao
                 repositoryMapping.getLastCommitDate(),
                 repositoryMapping.isLinked(), repositoryMapping.isDeleted(), credential);
 
+		repository.setEtag(repositoryMapping.getEtag());
+		repository.setLastModified(repositoryMapping.getLastModified());
+		
 		repository.setOrgHostUrl(organizationMapping.getHostUrl());
 		repository.setOrgName(organizationMapping.getName());
 		repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
 		repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
-
+		
 		// set sync progress
 		repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
 
