@@ -55,8 +55,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
 {
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
     
-    private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("dvcs.connector.bitbucket.connection.timeout", 30000);
-    private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("dvcs.connector.bitbucket.socket.timeout", 60000);
+    private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("bitbucket.client.connection.timeout", 30000);
+    private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("bitbucket.client.socket.timeout", 60000);
     
     protected final ApiProvider apiProvider;
     private final HttpClientProxyConfig proxyConfig;
