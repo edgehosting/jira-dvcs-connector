@@ -401,12 +401,12 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
     }
     
-    private static HttpCacheStorage getStorage()
+    private static synchronized HttpCacheStorage getStorage()
     {
         if (storage == null)
         {
             CacheConfig config = new CacheConfig();
-            Integer maxCacheEntries = Integer.getInteger("dvcs.connector.bitbucket.cache.maxentries");
+            Integer maxCacheEntries = Integer.getInteger("bitbucket.client.cache.maxentries");
             if (maxCacheEntries != null)
             {
                 config.setMaxCacheEntries(maxCacheEntries);
