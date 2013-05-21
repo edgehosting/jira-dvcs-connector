@@ -406,6 +406,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         if (storage == null)
         {
             CacheConfig config = new CacheConfig();
+            // if max cache entries value is not present the CacheConfig's default (CacheConfig.DEFAULT_MAX_CACHE_ENTRIES = 1000) will be used
             Integer maxCacheEntries = Integer.getInteger("bitbucket.client.cache.maxentries");
             if (maxCacheEntries != null)
             {
