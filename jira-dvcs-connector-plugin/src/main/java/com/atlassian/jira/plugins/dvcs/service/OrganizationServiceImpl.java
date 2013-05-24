@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
@@ -204,4 +205,14 @@ public class OrganizationServiceImpl implements OrganizationService
         DvcsUser currentUser = communicator.getTokenOwner(organization);
         return currentUser;
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Group> getGroupsForOrganization(Organization organization)
+    {
+        return dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType()).getGroupsForOrganization(organization);
+    }
+    
 }

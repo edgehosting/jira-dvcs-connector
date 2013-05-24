@@ -41,8 +41,6 @@ import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
@@ -69,11 +67,6 @@ public class RootResource
     /** The repository service. */
     private final RepositoryService repositoryService;
 
-    /**
-     * @see #RootResource(OrganizationService, RepositoryService, DvcsCommunicatorProvider, WebfragmentRenderer, AccountsConfigService)
-     */
-    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
-
     /** The webfragment renderer. */
     private final WebfragmentRenderer webfragmentRenderer;
 
@@ -88,12 +81,10 @@ public class RootResource
      *            the repository service
      */
     public RootResource(OrganizationService organizationService, RepositoryService repositoryService,
-            DvcsCommunicatorProvider dvcsCommunicatorProvider, WebfragmentRenderer webfragmentRenderer,
-            AccountsConfigService ondemandAccountConfig)
+            WebfragmentRenderer webfragmentRenderer, AccountsConfigService ondemandAccountConfig)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
-        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
         this.webfragmentRenderer = webfragmentRenderer;
         this.ondemandAccountConfig = ondemandAccountConfig;
     }
@@ -350,9 +341,6 @@ public class RootResource
         Organization organization = organizationService.get(orgId, false);
         try
         {
-            DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType());
-            List<Group> groups = communicator.getGroupsForOrganization(organization);
-
             // organization
             Map<String, Object> organizationResult = new HashMap<String, Object>();
             result.put("organization", organizationResult);
@@ -362,7 +350,7 @@ public class RootResource
             // groups
             List<Map<String, Object>> groupsResult = new LinkedList<Map<String, Object>>();
             result.put("groups", groupsResult);
-            for (Group group : groups)
+            for (Group group : organizationService.getGroupsForOrganization(organization))
             {
                 Map<String, Object> groupView = new HashMap<String, Object>();
                 groupView.put("slug", group.getSlug());
