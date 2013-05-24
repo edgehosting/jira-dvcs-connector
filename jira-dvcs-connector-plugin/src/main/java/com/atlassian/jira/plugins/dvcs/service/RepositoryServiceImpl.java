@@ -328,7 +328,7 @@ public class RepositoryServiceImpl implements RepositoryService
         Repository repository = get(repositoryId);
 
         // looks like repository was deleted before we started to synchronise it
-        if (repository != null)
+        if (repository != null && !repository.isDeleted())
         {
             doSync(repository, softSync);
         } else
@@ -500,18 +500,20 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
     public void removeRepositories(List<Repository> repositories)
     {
-        // we stop all synchronizations first to prevent starting new redundant synchronization
         for (Repository repository : repositories)
         {
-            synchronizer.stopSynchronization(repository);
-        }
-        
-        for (Repository repository : repositories)
-        {
-            remove(repository);
+            markForRemove(repository);
         }
     }
 
+    private void markForRemove(Repository repository)
+    {
+        synchronizer.stopSynchronization(repository);
+        synchronizer.removeProgress(repository);
+        repository.setDeleted(true);
+        repositoryDao.save(repository);
+    }
+    
     /**
      * {@inheritDoc}
      */
@@ -599,6 +601,15 @@ public class RepositoryServiceImpl implements RepositoryService
             log.debug("Could not load user [" + author + ", " + rawAuthor + "]", e);
             return new UnknownUser(author, rawAuthor != null ? rawAuthor : author, repository.getOrgHostUrl());
         }
+    }
+
+    /**
+     * Removes repositories marked as deleted
+     */
+    @Override
+    public void removeDeletedRepositories()
+    {
+        // TODO Auto-generated method stub
     }
 
 }

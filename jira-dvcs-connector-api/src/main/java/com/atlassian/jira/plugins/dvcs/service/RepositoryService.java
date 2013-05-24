@@ -123,6 +123,7 @@ public interface RepositoryService
      */
     void onOffLinkers(boolean onOffBoolean);
 
-
     DvcsUser getUser(Repository repository, String author, String raw_author);
+
+    void removeDeletedRepositories();
 }

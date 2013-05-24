@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.sal.api.scheduling.PluginJob;
@@ -27,6 +28,8 @@ public class DvcsSchedulerJob implements PluginJob
         {
 			repositoryService.syncRepositoryList(organization);
         }
+		
+		repositoryService.removeDeletedRepositories();
     }
 	
 }
