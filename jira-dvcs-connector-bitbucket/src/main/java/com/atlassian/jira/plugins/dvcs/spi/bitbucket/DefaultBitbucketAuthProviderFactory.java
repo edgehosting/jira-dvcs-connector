@@ -6,7 +6,6 @@ import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.NoAuthAuthProvider;
@@ -16,16 +15,16 @@ import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.plugin.PluginAccessor;
 
 /**
- * BitbucketRemoteClientFactory
+ * BitbucketAuthProviderFactory
  *
  * @author Martin Skurla mskurla@atlassian.com
  */
-public final class DefaultBitbucketRemoteClientFactory implements BitbucketClientRemoteFactory
+public final class DefaultBitbucketAuthProviderFactory implements BitbuckeAuthProviderFactory
 {
     private final Encryptor encryptor;
     private final String userAgent;
 
-    public DefaultBitbucketRemoteClientFactory(Encryptor encryptor,
+    public DefaultBitbucketAuthProviderFactory(Encryptor encryptor,
             PluginAccessor pluginAccessor)
     {
         this.encryptor = encryptor;
@@ -33,34 +32,31 @@ public final class DefaultBitbucketRemoteClientFactory implements BitbucketClien
     }
 
     @Override
-    public BitbucketRemoteClient getForOrganization(Organization organization)
+    public AuthProvider getForOrganization(Organization organization)
     {
-        AuthProvider authProvider = createProvider(organization.getHostUrl(), organization.getName(), organization.getCredential());
-        return new BitbucketRemoteClient(authProvider);
+        return createProvider(organization.getHostUrl(), organization.getName(), organization.getCredential());
     }
 
     @Override
-    public BitbucketRemoteClient getForRepository(Repository repository)
+    public AuthProvider getForRepository(Repository repository)
     {
-        AuthProvider authProvider = createProvider(repository.getOrgHostUrl(), repository.getOrgName(), repository.getCredential());
-        return new BitbucketRemoteClient(authProvider);
+        return createProvider(repository.getOrgHostUrl(), repository.getOrgName(), repository.getCredential());
     }
 
     @Override
-    public BitbucketRemoteClient getForRepository(Repository repository, int apiVersion)
+    public AuthProvider getForRepository(Repository repository, int apiVersion)
     {
         AuthProvider authProvider = createProvider(repository.getOrgHostUrl(), repository.getOrgName(), repository.getCredential());
         authProvider.setApiVersion(apiVersion);
-        return new BitbucketRemoteClient(authProvider);
+        return authProvider;
     }
 
-
     @Override
-    public BitbucketRemoteClient getNoAuthClient(String hostUrl)
+    public AuthProvider getNoAuthClient(String hostUrl)
     {
         AuthProvider authProvider = new NoAuthAuthProvider(hostUrl);
         authProvider.setUserAgent(userAgent);
-        return new BitbucketRemoteClient(authProvider);
+        return authProvider;
     }
 
     /**
@@ -69,7 +65,8 @@ public final class DefaultBitbucketRemoteClientFactory implements BitbucketClien
      * @param credential
      * @return
      */
-    private AuthProvider createProvider(String hostUrl, String name, Credential credential)
+    @Override
+    public AuthProvider createProvider(String hostUrl, String name, Credential credential)
     {
         String username =  credential.getAdminUsername();
         String password = credential.getAdminPassword();

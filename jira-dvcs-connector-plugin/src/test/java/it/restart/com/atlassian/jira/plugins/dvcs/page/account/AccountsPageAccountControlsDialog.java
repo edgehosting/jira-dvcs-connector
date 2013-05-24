@@ -10,9 +10,9 @@ import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 
 /**
  * Controls dialog of {@link AccountsPageAccount}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class AccountsPageAccountControlsDialog extends WebDriverElement
 {
@@ -24,14 +24,14 @@ public class AccountsPageAccountControlsDialog extends WebDriverElement
     private PageElement refreshLink;
 
     /**
-     * Reference "Re-generate OAuth Access Token" link.
+     * Reference "Reset OAuth Settings" link.
      */
-    @ElementBy(linkText = "Re-generate OAuth Access Token")
+    @ElementBy(linkText = "Reset OAuth Settings")
     private PageElement regenerateLink;
 
     /**
      * Constructor.
-     * 
+     *
      * @param locator
      * @param parent
      * @param timeoutType
@@ -43,7 +43,7 @@ public class AccountsPageAccountControlsDialog extends WebDriverElement
 
     /**
      * Constructor.
-     * 
+     *
      * @param locator
      * @param parent
      */
@@ -51,17 +51,17 @@ public class AccountsPageAccountControlsDialog extends WebDriverElement
     {
         super(locator, parent);
     }
-    
+
     /**
      * Constructor.
-     * 
+     *
      * @param locator
      */
     public AccountsPageAccountControlsDialog(By locator)
     {
         super(locator);
     }
-    
+
     /**
      * Refreshes repositories list of account.
      */

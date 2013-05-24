@@ -5,9 +5,9 @@ import java.util.Map;
 
 import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * BasicAuthRemoteRequestor
@@ -36,7 +36,7 @@ public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 	}
 
     @Override
-    protected void onConnectionCreated(DefaultHttpClient client, HttpRequestBase method, Map<String, String> params)
+    protected void onConnectionCreated(HttpClient client, HttpRequestBase method, Map<String, String> params)
             throws IOException
     {
         UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);

@@ -170,7 +170,6 @@ function createAddOrganizationDialog(action) {
     dialog.addHeader("Add New Account");
 
     dialog.addPanel("", jira.dvcs.connector.plugin.soy.addOrganizationDialog({
-        isGithubEnterpriseEnabled: jira.dvcs.connector.plugin.githubEnterpriseEnabled,
         isOnDemandLicense: jira.dvcs.connector.plugin.onDemandLicense,
         atlToken : jira.dvcs.connector.plugin.atlToken,
         oAuthStore : jira.dvcs.connector.plugin.oAuthStore
@@ -405,17 +404,17 @@ function configureOAuth(org, atlToken) {
         clearError(field);
         return true;
     }
-    
+
     function showError(field, errorMsg) {
     	field.next().html(errorMsg);
         field.next().show();
     }
-    
+
     function clearError(field) {
     	field.next().html("&nbsp;");
     	field.next().hide();
     }
-    
+
     var popup = new AJS.Dialog({
         width: 600, 
         height: 350, 
@@ -483,6 +482,82 @@ function configureOAuth(org, atlToken) {
     	AJS.$(".repositoryOAuthDialog #tokenUser").html("<i>&lt;Invalid, please regenerate access token.&gt;<i>");
     });
     
+    return false;
+}
+
+function setOAuthSettings(org) {
+    function validateField(field, errorMsg) {
+        if (!AJS.$.trim(field.val())) {
+            showError(field, errorMsg);
+            return false;
+        }
+        clearError(field);
+        return true;
+    }
+
+    function showError(field, errorMsg) {
+    	field.next().html(errorMsg);
+        field.next().show();
+    }
+
+    function clearError(field) {
+    	field.next().html("&nbsp;");
+    	field.next().hide();
+    }
+
+    var popup = new AJS.Dialog({
+        width: 600,
+        height: 350,
+        id: "OAuthSettingsDialog"
+    });
+
+    popup.addHeader("OAuth settings for account " + org.name);
+    popup.addPanel("", jira.dvcs.connector.plugin.soy.OAuthSettingsDialog({
+        'organizationId': org.id,
+        'oAuthKey': org.credential.key,
+        'oAuthSecret': org.credential.secret,
+        'isOnDemandLicense': jira.dvcs.connector.plugin.onDemandLicense
+        }));
+
+    clearError(AJS.$("#updateOAuthForm #key"));
+    clearError(AJS.$("#updateOAuthForm #secret"));
+    popup.addButton("Save", function (dialog) {
+        // validate
+        var v1 = validateField(AJS.$("#updateOAuthForm #key"), "OAuth key must not be blank");
+        var v2 = validateField(AJS.$("#updateOAuthForm #secret"), "OAuth secret must not be blank");
+        popup.updateHeight();
+        if (!v1 || !v2) return;
+
+        AJS.$("#OAuthSettingsDialog .dialog-button-panel button").attr("disabled", "disabled");
+        AJS.$("#OAuthSettingsDialog .dialog-button-panel button").attr("aria-disabled", "true");
+        AJS.$("#OAuthSettingsDialog .dialog-button-panel").prepend("<span class='aui-icon aui-icon-wait' style='padding-right:10px'>Wait</span>");
+
+        // submit form
+        AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + org.id + "/oauth", AJS.$("#updateOAuthForm").serialize())
+            .done(function(data) {
+                popup.hide();
+                syncRepositoryList(org.id,org.name);
+            })
+            .error(function (err) {
+                AJS.$("#aui-message-bar-oauth-dialog").empty();
+                AJS.messages.error("#aui-message-bar-oauth-dialog", { title: "Error!",
+                      body: "Could not configure OAuth.",
+                      closeable : false
+                });
+                AJS.$("#OAuthSettingsDialog .dialog-button-panel button").removeAttr("disabled", "disabled");
+                AJS.$("#OAuthSettingsDialog .dialog-button-panel button").removeAttr("aria-disabled");
+                AJS.$("#OAuthSettingsDialog .dialog-button-panel .aui-icon-wait").remove();
+                popup.updateHeight();
+            });
+    }, "aui-button submit");
+
+    popup.addCancel("Cancel", function (dialog) {
+        dialog.remove();
+    });
+
+    popup.show();
+    popup.updateHeight();
+
     return false;
 }
 
@@ -613,9 +688,9 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
               var response = AJS.$.parseJSON(err.responseText);
               var message = "";
               if (response) {
-            	  message = "<p>" + response.message + "</p>";
+            	  message = response.message;
               }
-              var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", message + "<p>Please contact the server administrator.</p>");
+              var tooltip = registerInlineDialogTooltip(errorStatusIcon, jira.dvcs.connector.plugin.soy.linkingUnlinkingError({'isLinking': checkedValue, 'errorMessage': message}));
               tooltip.show();
               AJS.$("#" + checkboxId  + "working").hide();
               AJS.$("#" + checkboxId).removeAttr("disabled");
@@ -630,13 +705,13 @@ function registerAdminPermissionInlineDialogTooltips() {
 }
 
 function registerAdminPermissionInlineDialogTooltip(element) {
-    registerInlineDialogTooltip(element, "No admin permission", "The post commit hook could not be installed.");
+    registerInlineDialogTooltip(element, jira.dvcs.connector.plugin.soy.adminPermisionWarning());
 }
 
-function registerInlineDialogTooltip(element, title, body) {
+function registerInlineDialogTooltip(element, body) {
     return AJS.InlineDialog(AJS.$(element), "tooltip_"+AJS.$(element).attr('id'),
             function(content, trigger, showPopup) {
-                content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><div>" + body + "</div>");
+                content.css({"padding":"10px"}).html(body);
                 showPopup();
                 return false;
             },

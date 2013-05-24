@@ -238,8 +238,8 @@
     </component>
 
     <component key="bitbucketRemoteClientFactory" name="Bitbucket Remote Client Factory"
-               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketRemoteClientFactory">
-        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory</interface>
+               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketAuthProviderFactory">
+        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbuckeAuthProviderFactory</interface>
     </component>
 
      <component key="pluginFeatureDetector" name="pluginFeatureDetector"
