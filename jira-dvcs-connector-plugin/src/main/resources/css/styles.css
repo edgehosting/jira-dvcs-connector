@@ -1,91 +1,4 @@
-#gh_oauth_app_screenshot{
-     padding-top: 16px;
- }
 
-.gh_steps li {
-     margin-top: 15px;
- }
-
-#gh_config_link{
-    margin-top: 10px;
-}
-
-#gh_config_link a{
-    background: url('../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/pencil_icon.jpg');
-    background-repeat: no-repeat;
-    background-position: right center;
-    padding-right: 20px;
-    font-size: 1em;
-}
-
-.gh_config_h4{
-    font-weight: normal;
-    color: #3676B7;
-    background-repeat: no-repeat;
-    background-position: left center;
-    margin-top: 18px;
-}
-
-#gh_post_receive_header{
-    font-weight: normal;
-    font-size: 1em;
-    color: #666;
-    margin-top: 18px;
-    margin-bottom: 10px;
-}
-
-#gh_post_receive_textbox{
-    font-size: 1em;
-    padding: 4px;
-}
-
-#gh_post_receive{
-    margin-bottom: 10px;
-}
-
-.gh_table{
-    margin-left: 15px;
-    margin-bottom: 30px;
-    width: 96%
-}
-
-.gh_table_project_name{
-    font-size: 1.18em;
-    /*color: #5F6262;*/
-    color: #939393;
-    font-weight: bold;
-}
-
-.gh_table_project_key{
-    font-size: 1.18em;
-    color: #707070;
-    padding-left: 10px;
-}
-
-.gh_table th {
-    font-weight: normal;
-    color: #656565;
-    border-bottom: 1px solid #cccccc;
-    font-size: 1em;
-}
-
-.gh_table td.status{
-    border-bottom: 1px solid #cccccc;
-    font-size: 1em;
-    padding:0 20px;
-}
-
-.gh_table td{
-    font-size: 1em;
-    vertical-align: middle;
-    padding-bottom: 0;
-}
-
-.gh_table_td_pname{
-    /*border-bottom: none !important;*/
-    padding-top: 20px;
-    border-bottom: 1px solid #cccccc;
-}
 
 .gh_messages{
     font-size: 1em;
@@ -513,3 +426,18 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	width: 0;
 }
 
+.dialog-help {
+	float: left;
+	margin: 7px;
+}
+
+.aui-dialog .dialog-button-panel a.button-panel-link.dvcs-link-disabled,
+.dvcs-link-disabled {
+	color: gray;
+	pointer-events: none;
+	cursor: default;
+}
+
+.dialog-button-panel span.button-panel-link {
+	margin: 0 10px 0 0;
+}

@@ -26,6 +26,14 @@ public interface RepositoryService
     List<Repository> getAllByOrganization(int organizationId);
 
     /**
+     * returns all repositories for given organization
+     * @param organizationId organizationId
+     * @param includeDeleted whether to include also deleted repositories
+     * @return repositories
+     */
+    List<Repository> getAllByOrganization(int organizationId, boolean includeDeleted);
+    
+    /**
 	 * Gets the all active (not deleted) repositories and their synchronization
 	 * status.
 	 *
@@ -98,10 +106,10 @@ public interface RepositoryService
 	void enableRepositorySmartcommits(int repoId, boolean enabled);
 
     /**
-     * remove all repositories in organization.
-     * @param organizationId organizationId
+     * remove all the listed repositories
+     * @param repositories list of repositories to delete
      */
-    void removeAllInOrganization(int organizationId);
+    void removeRepositories(List<Repository> repositories);
 
     /**
      * @param repository

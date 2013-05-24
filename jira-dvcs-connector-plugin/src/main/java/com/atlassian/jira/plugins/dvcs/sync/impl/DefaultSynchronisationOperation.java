@@ -42,6 +42,12 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     @Override
     public void synchronise()
     {
+        // If synchronization has been stopped before it began, we'll do nothing
+        if (progress.isShouldStop())
+        {
+            return;
+        }
+        
     	log.debug("Operation going to sync repo " + repository.getSlug() + " softs sync = " + softSync );
     	
     	if (!softSync) 

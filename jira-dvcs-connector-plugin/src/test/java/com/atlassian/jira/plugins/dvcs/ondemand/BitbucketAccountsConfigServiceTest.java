@@ -5,6 +5,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -120,19 +121,18 @@ public class BitbucketAccountsConfigServiceTest
     @Test
     public void testUpdateAccountCredentialsWithSuccess()
     {
-
         AccountsConfig correctConfig = createCorrectConfig();
         when(configProvider.provideConfiguration()).thenReturn(correctConfig);
 
         Organization existingAccount = createSampleAccount("A", "B", "S", "token");
         when(organizationService.findIntegratedAccount()).thenReturn(existingAccount);
-
         when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(null);
 
         testedService.reload(false);
 
-        verify(organizationService).updateCredentials(eq(5), eq(new Credential("K", "S",null)));
-
+        verify(organizationService).findIntegratedAccount();
+        verify(organizationService).getByHostAndName("https://bitbucket.org", "A");
+        verifyNoMoreInteractions(organizationService);
     }
 
     @Test

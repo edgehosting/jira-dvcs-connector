@@ -16,7 +16,8 @@ public abstract class AbstractAuthProvider implements AuthProvider
     private final String hostUrl;
     private int apiVersion = 1;
     private String userAgent;
-
+    private boolean cached;
+    
     public AbstractAuthProvider(String hostUrl)
     {
         this.hostUrl = hostUrl;
@@ -50,5 +51,15 @@ public abstract class AbstractAuthProvider implements AuthProvider
     public String getUserAgent()
     {
         return userAgent;
+    }
+
+    public boolean isCached()
+    {
+        return cached;
+    }
+
+    public void setCached(boolean cached)
+    {
+        this.cached = cached;
     }
 }

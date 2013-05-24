@@ -357,26 +357,20 @@ var dvcsSubmitFormAjaxHandler = {
 }
 
 function configureDefaultGroups(orgName, id) {
-    
-    // clear all
-    AJS.$("#organizationIdDefaultGroups").val("");
-    AJS.$("#configureDefaultGroupsContent").html("");
-    AJS.$("#configureDefaultGroupsContentWorking").show();
-    AJS.$("#aui-message-bar-default-groups").empty();
-    
-    AJS.$("#organizationIdDefaultGroups").val(id);
-    
-    // we need to copy dialog content as dialog will destroy it when removed
-    var dialogContent = AJS.$("#configureDefaultGroupsContainer").html();
-    
+
     var dialog = confirmationDialog({
-        header: "Configure Default Groups for '" + orgName + "'",
-        body: dialogContent,
+        header: "Configure automatic access",
+        body: jira.dvcs.connector.plugin.soy.defaultGroupsForm({
+        	'baseUrl' : BASE_URL,
+        	'atlToken' : jira.dvcs.connector.plugin.atlToken,
+        	'organizationIdDefaultGroups' : id,
+        }),
         submitButtonLabel: "Save",
         okAction: function (dialog) { AJS.$("#configureDefaultGroupsForm").submit(); }
         });
-    
-    dialog.disableSubmitButton();
+
+    dialog.page[0].buttonpanel.append("<span class='dialog-help'>Help on <a href='https://confluence.atlassian.com/x/Bw4zDQ' target='_blank'>account management</a></span>");
+    dialog.disableActions();
     
     // load web fragment
     AJS.$.ajax({
@@ -386,11 +380,9 @@ function configureDefaultGroups(orgName, id) {
             function (data) {
             	if (dialog.isAttached())
             	{
-	            	// we need to reference .dialog-panel-body as this is copy
-	                AJS.$(".dialog-panel-body #configureDefaultGroupsContentWorking").hide()
 	                AJS.$(".dialog-panel-body #configureDefaultGroupsContent").html(data);
 	                dialog.updateHeight();
-	                dialog.enableSubmitButton();
+	                dialog.enableActions();
             	}
             }
         }
@@ -408,17 +400,17 @@ function configureOAuth(org, atlToken) {
         clearError(field);
         return true;
     }
-    
+
     function showError(field, errorMsg) {
     	field.next().html(errorMsg);
         field.next().show();
     }
-    
+
     function clearError(field) {
     	field.next().html("&nbsp;");
     	field.next().hide();
     }
-    
+
     var popup = new AJS.Dialog({
         width: 600, 
         height: 350, 
@@ -486,6 +478,82 @@ function configureOAuth(org, atlToken) {
     	AJS.$(".repositoryOAuthDialog #tokenUser").html("<i>&lt;Invalid, please regenerate access token.&gt;<i>");
     });
     
+    return false;
+}
+
+function setOAuthSettings(org) {
+    function validateField(field, errorMsg) {
+        if (!AJS.$.trim(field.val())) {
+            showError(field, errorMsg);
+            return false;
+        }
+        clearError(field);
+        return true;
+    }
+
+    function showError(field, errorMsg) {
+    	field.next().html(errorMsg);
+        field.next().show();
+    }
+
+    function clearError(field) {
+    	field.next().html("&nbsp;");
+    	field.next().hide();
+    }
+
+    var popup = new AJS.Dialog({
+        width: 600,
+        height: 350,
+        id: "OAuthSettingsDialog"
+    });
+
+    popup.addHeader("OAuth settings for account " + org.name);
+    popup.addPanel("", jira.dvcs.connector.plugin.soy.OAuthSettingsDialog({
+        'organizationId': org.id,
+        'oAuthKey': org.credential.key,
+        'oAuthSecret': org.credential.secret,
+        'isOnDemandLicense': jira.dvcs.connector.plugin.onDemandLicense
+        }));
+
+    clearError(AJS.$("#updateOAuthForm #key"));
+    clearError(AJS.$("#updateOAuthForm #secret"));
+    popup.addButton("Save", function (dialog) {
+        // validate
+        var v1 = validateField(AJS.$("#updateOAuthForm #key"), "OAuth key must not be blank");
+        var v2 = validateField(AJS.$("#updateOAuthForm #secret"), "OAuth secret must not be blank");
+        popup.updateHeight();
+        if (!v1 || !v2) return;
+
+        AJS.$("#OAuthSettingsDialog .dialog-button-panel button").attr("disabled", "disabled");
+        AJS.$("#OAuthSettingsDialog .dialog-button-panel button").attr("aria-disabled", "true");
+        AJS.$("#OAuthSettingsDialog .dialog-button-panel").prepend("<span class='aui-icon aui-icon-wait' style='padding-right:10px'>Wait</span>");
+
+        // submit form
+        AJS.$.post(BASE_URL + "/rest/bitbucket/1.0/org/" + org.id + "/oauth", AJS.$("#updateOAuthForm").serialize())
+            .done(function(data) {
+                popup.hide();
+                syncRepositoryList(org.id,org.name);
+            })
+            .error(function (err) {
+                AJS.$("#aui-message-bar-oauth-dialog").empty();
+                AJS.messages.error("#aui-message-bar-oauth-dialog", { title: "Error!",
+                      body: "Could not configure OAuth.",
+                      closeable : false
+                });
+                AJS.$("#OAuthSettingsDialog .dialog-button-panel button").removeAttr("disabled", "disabled");
+                AJS.$("#OAuthSettingsDialog .dialog-button-panel button").removeAttr("aria-disabled");
+                AJS.$("#OAuthSettingsDialog .dialog-button-panel .aui-icon-wait").remove();
+                popup.updateHeight();
+            });
+    }, "aui-button submit");
+
+    popup.addCancel("Cancel", function (dialog) {
+        dialog.remove();
+    });
+
+    popup.show();
+    popup.updateHeight();
+
     return false;
 }
 
@@ -616,9 +684,9 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
               var response = AJS.$.parseJSON(err.responseText);
               var message = "";
               if (response) {
-            	  message = "<p>" + response.message + "</p>";
+            	  message = response.message;
               }
-              var tooltip = registerInlineDialogTooltip(errorStatusIcon, "Unable to " + (checkedValue ? "link" : "unlink") + " selected repository", message + "<p>Please contact the server administrator.</p>");
+              var tooltip = registerInlineDialogTooltip(errorStatusIcon, jira.dvcs.connector.plugin.soy.linkingUnlinkingError({'isLinking': checkedValue, 'errorMessage': message}));
               tooltip.show();
               AJS.$("#" + checkboxId  + "working").hide();
               AJS.$("#" + checkboxId).removeAttr("disabled");
@@ -633,13 +701,13 @@ function registerAdminPermissionInlineDialogTooltips() {
 }
 
 function registerAdminPermissionInlineDialogTooltip(element) {
-    registerInlineDialogTooltip(element, "No admin permission", "The post commit hook could not be installed.");
+    registerInlineDialogTooltip(element, jira.dvcs.connector.plugin.soy.adminPermisionWarning());
 }
 
-function registerInlineDialogTooltip(element, title, body) {
+function registerInlineDialogTooltip(element, body) {
     return AJS.InlineDialog(AJS.$(element), "tooltip_"+AJS.$(element).attr('id'),
             function(content, trigger, showPopup) {
-                content.css({"padding":"10px"}).html("<h2>"+ title + "</h2><div>" + body + "</div>");
+                content.css({"padding":"10px"}).html(body);
                 showPopup();
                 return false;
             },
@@ -676,7 +744,7 @@ function enableRepoSmartcommits(repoId, checkboxId) {
 function confirmationDialog(options) {
     var dialog = new AJS.Dialog({width:500, height:150, id: "confirm-dialog", closeOnOutsideClick: false});
     dialog.addHeader(options.header);
-    dialog.addPanel("ConfirmPanel", options.body);
+    dialog.addPanel("ConfirmPanel", options.body + "<div id='aui-message-bar-confirmation-dialog'></div>");
     
     dialog.addButtonPanel();
     dialog.page[0].buttonpanel.append("<span id='confirm-action-wait' class='aui-icon' style='padding-right:10px'>&nbsp;</span>");
@@ -695,29 +763,31 @@ function confirmationDialog(options) {
         dialog.remove();
     }, "#");
 
-    dialog.disableSubmitButton = function() {
+    dialog.disableActions = function() {
     	AJS.$('#confirm-dialog .button-panel-submit-button').attr("disabled", "disabled");
     	AJS.$('#confirm-dialog .button-panel-submit-button').attr("aria-disabled", "true");
+    	AJS.$('#confirm-dialog .button-panel-cancel-link').addClass('dvcs-link-disabled');
     }
     
-    dialog.enableSubmitButton = function() {
+    dialog.enableActions = function() {
     	AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("disabled");
     	AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("aria-disabled");
+    	AJS.$('#confirm-dialog .button-panel-cancel-link').removeClass('dvcs-link-disabled');
     }
     
     dialog.working = function(working) {
         if (working) {
             AJS.$("#confirm-action-wait").addClass("aui-icon-wait");
-            this.disableSubmitButton();
+            this.disableActions();
         } else {
             AJS.$("#confirm-action-wait").removeClass("aui-icon-wait");
-            this.enableSubmitButton();
+            this.enableActions();
         }
     }
     
     dialog.showError = function(message) {
         dialog.working(false);
-        showError(message, "#aui-message-bar-delete-org");
+        showError(message, "#aui-message-bar-confirmation-dialog");
         dialog.updateHeight();
     }
     
@@ -742,11 +812,21 @@ function deleteOrganizationInternal(dialog, organizationId, organizationName) {
     AJS.$.ajax({
         url: BASE_URL + "/rest/bitbucket/1.0/organization/" + organizationId,
         type: 'DELETE',
+        timeout: 5 * 60 * 1000,
         success: function(result) {
-            window.location.reload();
+        	AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
+        	dialog.remove();
         }
-    }).error(function (err) {
-        dialog.showError("Error when deleting account '" + organizationName + "'.");
+    }).error(function (jqXHR, textStatus, errorThrown) {
+    	// ignore not found status
+    	if (jqXHR.status == 404) {
+    		AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
+    		dialog.showError("Account '" + organizationName + "' was already deleted!");
+    	
+    	} else {
+    		dialog.showError("Error when deleting account '" + organizationName + "'.");
+    	
+    	}
     });
 }
 

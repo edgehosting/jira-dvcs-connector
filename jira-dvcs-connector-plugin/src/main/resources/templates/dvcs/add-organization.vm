@@ -76,8 +76,6 @@
        <div id="organization-list">
            #printOrganizations
        </div>
-           
-        #printConfigureDefaultGroupsFormHidden
     
   </body>
 </html>
@@ -92,7 +90,7 @@
 <div class="vert-space">&nbsp;</div>
 
 #foreach( $org in $action.loadOrganizations() )
-  <div class="dvcs-orgdata-container">
+  <div id="dvcs-orgdata-container-$org.id" class="dvcs-orgdata-container">
     <div id="aui-message-bar-$org.id"></div>        
     #if($org.isAutolinkNewRepos())
         #set( $orgAutolink = "checked")
@@ -112,7 +110,9 @@
         #if($org.getDvcsType() == "githube") <a href="https://enterprise.github.com/" target="_blank"><span title="GitHubEnterprise" class="dvcs-account-enterprise"> &nbsp; </span></a> #end
         #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end
         </h4>  
-		#if($action.isInvalidOrganization($org)) <span class="dvcs-invalid-organization error">Invalid credentials, please regenerate access token</span> #end
+		#if($action.isInvalidOrganization($org))
+			<span class="dvcs-invalid-organization error">Invalid credentials, please reset OAuth settings</span>
+		#end
 		<div class="dvcs-org-container">
 			<button aria-owns="setting-dropdown-$org.id" aria-haspopup="true" class="aui-button aui-dropdown2-trigger">
 				<span class="aui-icon aui-icon-small aui-iconfont-configure">Show Settings</span>
@@ -129,16 +129,21 @@
 					<li><a href="#" onclick="javascript:syncRepositoryList($org.id,'$org.name'); return false;">Refresh list</a></li>
 				    #if($org.dvcsType == "bitbucket" && $action.isUserInvitationsEnabled())
                     <li>
-                        <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id); return false;"> Configure default groups</a>
+                        <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id); return false;">Configure automatic access</a>
                     </li>
                     #end
-                    #if( !$org.isIntegratedAccount() )
-                    <li>
-                         <a href="#" onclick="return configureOAuth({'id':$org.id,'dvcsType':'$org.dvcsType','name':'$org.name','hostUrl':'$org.hostUrl','credential':{'key':'$!org.credential.oauthKey','secret':'$!org.credential.oauthSecret'}},'$atl_token')">Re-generate OAuth Access Token</a> 
-                    </li>
-					<li>
-						<a class="dvcs-control-delete-org" href="#" onclick="javascript: deleteOrganization('$org.id','$org.name'); return false;" >Delete</a>
-                    </li>
+
+                    #if( $org.isIntegratedAccount() )
+                        <li>
+                            <a href="#" onclick="return setOAuthSettings({'id':$org.id,'dvcsType':'$org.dvcsType','name':'$org.name','hostUrl':'$org.hostUrl','credential':{'key':'$!org.credential.oauthKey','secret':'$!org.credential.oauthSecret'}},'$atl_token')">Reset OAuth Settings</a>
+                        </li>
+                    #else
+                        <li>
+                            <a href="#" onclick="return configureOAuth({'id':$org.id,'dvcsType':'$org.dvcsType','name':'$org.name','hostUrl':'$org.hostUrl','credential':{'key':'$!org.credential.oauthKey','secret':'$!org.credential.oauthSecret'}},'$atl_token')">Reset OAuth Settings</a>
+                        </li>
+                        <li>
+                            <a class="dvcs-control-delete-org" href="#" onclick="javascript: deleteOrganization('$org.id','$org.name'); return false;" >Delete</a>
+                        </li>
                     #end
                 </ul>
               </div>
@@ -247,27 +252,5 @@
   </div>
 #end
 
-
-#end
-
-#macro (printConfigureDefaultGroupsFormHidden)
-    
-    <div id="configureDefaultGroupsContainer" style="display:none">
-    
-        <form id="configureDefaultGroupsForm" class="aui" method="post" action="$baseurl/secure/admin/ConfigureDefaultBitbucketGroups.jspa" >
-        
-             <input type="hidden" name="atl_token" value="$atl_token">
-             <input type="hidden" id="organizationIdDefaultGroups" name="organizationIdDefaultGroups" value="" />
-             
-             <div id="configureDefaultGroupsContentWorking" style="margin:10px; display: none">
-                 <span class="aui-icon aui-icon-wait">&nbsp;</span>
-             </div>
-             
-             <div id="configureDefaultGroupsContent">
-             
-             </div>
-             
-        </form>
-    </div>
 
 #end

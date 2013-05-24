@@ -1,31 +1,24 @@
-package com.atlassian.jira.plugins.dvcs.upgrade;
-
-import java.util.Collection;
+package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.sal.api.message.Message;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-import com.atlassian.sal.api.upgrade.PluginUpgradeTask;
 
 /**
- *
+ * Migrate OAuth details to new location
  */
-public class To_03_UpgradeOAuthDetails implements PluginUpgradeTask
+public class To_11_UpgradeOAuthDetails
 {
-    private static final Logger log = LoggerFactory.getLogger(To_03_UpgradeOAuthDetails.class);
-
+    private static final Logger log = LoggerFactory.getLogger(To_11_UpgradeOAuthDetails.class);
     private final PluginSettings settings;
 
-    public To_03_UpgradeOAuthDetails(PluginSettingsFactory pluginSettingsFactory)
+    public To_11_UpgradeOAuthDetails(PluginSettings settings)
     {
-        this.settings = pluginSettingsFactory.createGlobalSettings();
+        this.settings = settings;
     }
 
-    @Override
-    public Collection<Message> doUpgrade() throws Exception
+    public void doMigrate()
     {
         // Bitbucket
         String clientId = getProperty("bitbucketRepositoryClientID");
@@ -58,7 +51,6 @@ public class To_03_UpgradeOAuthDetails implements PluginUpgradeTask
         removeProperty("ghEnterpriseRepositoryClientSecret");
         removeProperty("ghEnterpriseRepositoryHostUrl");
 
-        return null;
     }
 
     private void store(String hostId, String clientId, String secret, String url)
@@ -85,26 +77,6 @@ public class To_03_UpgradeOAuthDetails implements PluginUpgradeTask
     {
         settings.remove(name);
         log.info("Removing property " + name);
-    }
-    // -------------------------------------------------------------------------------
-    // -------------------------------------------------------------------------------
-
-    @Override
-    public int getBuildNumber()
-    {
-        return 3;
-    }
-
-    @Override
-    public String getShortDescription()
-    {
-        return "Migrate OAuth details to new location";
-    }
-
-    @Override
-    public String getPluginKey()
-    {
-        return "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin";
     }
 
 }

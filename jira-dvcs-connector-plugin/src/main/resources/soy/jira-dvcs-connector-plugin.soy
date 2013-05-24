@@ -29,8 +29,42 @@
 	            <div class="error">&nbsp;</div>
 	        </div>
 	        <div class="field-group">
-				<label for="d-fname">Token User</label>
+				<label for="d-fname">Authorizing account</label>
 				<div class="static-text" id="tokenUser"><span class="aui-icon aui-icon-wait">Wait</span></div>
+	        </div>
+	    </fieldset>
+	    </form>
+        <div id="aui-message-bar-oauth-dialog"></div>
+	</div>
+{/template}
+
+/**
+ * @param organizationId
+ * @param oAuthKey
+ * @param oAuthSecret
+ * @param isOnDemandLicense
+ */
+{template .OAuthSettingsDialog}
+	<div class="jira-dvcs-connector-plugin repositoryOAuthDialog">
+		<form action="%" method="post" id="updateOAuthForm" class="aui">
+		<input type="hidden" name="organizationId" value="{$organizationId}">
+	    <fieldset>
+	        <div class="field-group">
+	            <label for="d-fname">Key<span class="aui-icon icon-required"> required</span></label>
+	            <input class="text long-field" type="text" id="key" name="key" title="first name" value="{$oAuthKey}">
+	            <div class="error">&nbsp;</div>
+	            <div class="description">
+		       	    {if $isOnDemandLicense}
+		                <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+		            {else}
+		                <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+		            {/if}
+		        Help with my key and secret.</a></div>
+	        </div>
+	        <div class="field-group">
+	            <label for="d-fname">Secret<span class="aui-icon icon-required"> required</span></label>
+	            <input class="text long-field" type="text" id="secret" name="secret" title="first name" value="{$oAuthSecret}">
+	            <div class="error">&nbsp;</div>
 	        </div>
 	    </fieldset>
 	    </form>
@@ -309,10 +343,51 @@
 	<div>
 		<p>
 			Are you sure you want to remove account '{$organizationName}' from JIRA?
-		<p>
+		</p>
 		<p>
 			Deleting an account removes it permanently from JIRA, including all of its repositories and synchronized changesets.
-		<p>
-		<div id="aui-message-bar-delete-org"></div>
+		</p>
 	</div>
+{/template}
+
+/**
+*	@param baseUrl
+ *	@param atlToken
+ *	@param organizationIdDefaultGroups
+ */
+{template .defaultGroupsForm}
+    <div>
+        <form id="configureDefaultGroupsForm" class="aui" method="post" action="{$baseUrl}/secure/admin/ConfigureDefaultBitbucketGroups.jspa" >
+             <input type="hidden" name="atl_token" value="{$atlToken}">
+             <input type="hidden" id="organizationIdDefaultGroups" name="organizationIdDefaultGroups" value="{$organizationIdDefaultGroups}" />
+             <div id="configureDefaultGroupsContent"><span class="aui-icon aui-icon-wait">&nbsp;</span></div>
+        </form>
+    </div>
+{/template}
+
+/**
+ * 
+ */
+{template .adminPermisionWarning}
+	<h2>No admin permission</h2>
+	<div>
+		<div>
+			The post commit hook could not be installed.
+		</div>
+		<div class="description">
+			<a href="https://confluence.atlassian.com/display/BITBUCKET/Linking+Bitbucket+and+GitHub+accounts+to+JIRA" target="_blank">Do you need help?</a>
+		<div>
+	</div>
+{/template}
+
+/**
+ * @param isLinking
+ * @param errorMessage
+ */
+{template .linkingUnlinkingError}
+	<h2>Unable to {if $isLinking}link{else}unlink{/if} selected repository</h2>
+	{if $errorMessage}
+	<div>{$errorMessage}</div>
+	{/if}
+	<div>Please contact the server administrator.</div>
 {/template}

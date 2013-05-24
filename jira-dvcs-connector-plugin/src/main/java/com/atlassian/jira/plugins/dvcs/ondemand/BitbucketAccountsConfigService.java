@@ -34,13 +34,15 @@ import com.google.common.collect.Sets;
  * BitbucketAccountsConfigService
  *
  *
- * <br /><br />
- * Created on 1.8.2012, 13:41:20
- * <br /><br />
+ * <br />
+ * <br />
+ * Created on 1.8.2012, 13:41:20 <br />
+ * <br />
+ *
  * @author jhocman@atlassian.com
  *
  */
-public class BitbucketAccountsConfigService implements AccountsConfigService//TODO move to BB module
+public class BitbucketAccountsConfigService implements AccountsConfigService// TODO move to BB module
 {
 
     private static final Logger log = LoggerFactory.getLogger(BitbucketAccountsConfigService.class);
@@ -58,9 +60,8 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
 
     private volatile boolean firstAsyncReload = true;
 
-    public BitbucketAccountsConfigService(AccountsConfigProvider configProvider,
-                                          OrganizationService organizationService, PluginScheduler pluginScheduler,
-                                          PluginController pluginController, PluginAccessor pluginAccessor)
+    public BitbucketAccountsConfigService(AccountsConfigProvider configProvider, OrganizationService organizationService,
+            PluginScheduler pluginScheduler, PluginController pluginController, PluginAccessor pluginAccessor)
     {
         this.configProvider = configProvider;
         this.organizationService = organizationService;
@@ -89,11 +90,10 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
                 Map<String, Object> data = Maps.newHashMap();
                 data.put("bitbucketAccountsConfigService", this);
                 data.put("pluginScheduler", pluginScheduler);
-                pluginScheduler.scheduleJob(BitbucketAccountsReloadJob.JOB_NAME, BitbucketAccountsReloadJob.class,
-                        data, new Date(), TimeUnit.HOURS.toMillis(1));
+                pluginScheduler.scheduleJob(BitbucketAccountsReloadJob.JOB_NAME, BitbucketAccountsReloadJob.class, data, new Date(),
+                        TimeUnit.HOURS.toMillis(1));
                 firstAsyncReload = false;
-            }
-            else
+            } else
             {
                 executorService.submit(new Runnable()
                 {
@@ -123,7 +123,13 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
         {
             if (configuration != null)
             {
-                doNewAccount(configuration);
+                if (hasIntegratedAccount(configuration))
+                {
+                    doNewAccount(configuration);
+                } else
+                {
+                    log.debug("No integrated account found in provided configration.");
+                }
             } else
             {
                 // probably not ondemand instance
@@ -229,7 +235,8 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
                 if (configHasChanged(existingNotNullAccount, providedConfig))
                 {
                     log.info("Detected credentials change.");
-                    markAsIntegratedAccount(existingNotNullAccount, providedConfig);
+                    // BBC-513 users probably changed key/secret from UI, ignore
+                    // valuse in ondemand.properties files and keep using existing ones
                 } else if (accountNameHasChanged(existingNotNullAccount, providedConfig))
                 {
                     log.info("Detected integrated account name change.");
@@ -260,11 +267,21 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
 
     }
 
+    /**
+     * @param configuration
+     * @return True if there is an integrated account
+     */
+    private boolean hasIntegratedAccount(AccountsConfig configuration)
+    {
+        Links links = configuration.getSysadminApplicationLinks().isEmpty() ? null : configuration.getSysadminApplicationLinks().get(0);
+        return links != null && links.getBitbucket() != null && !links.getBitbucket().isEmpty();
+    }
+
     private boolean configHasChanged(Organization existingNotNullAccount, AccountInfo info)
     {
-        return StringUtils.equals(info.accountName, existingNotNullAccount.getName())
-                && (    !StringUtils.equals(info.oauthKey, existingNotNullAccount.getCredential().getOauthKey())
-                    ||  !StringUtils.equals(info.oauthSecret, existingNotNullAccount.getCredential().getOauthSecret()));
+        return StringUtils.equals(info.accountName, existingNotNullAccount.getName()) &&
+                (!StringUtils.equals(info.oauthKey, existingNotNullAccount.getCredential().getOauthKey()) ||
+                 !StringUtils.equals(info.oauthSecret, existingNotNullAccount.getCredential().getOauthSecret()));
     }
 
     private boolean accountNameHasChanged(Organization existingNotNullAccount, AccountInfo providedConfig)
@@ -407,4 +424,3 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
         String oauthSecret;
     }
 }
-

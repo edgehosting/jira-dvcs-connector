@@ -31,7 +31,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     private static final Logger log = LoggerFactory.getLogger(AbstractMissingCommitsTest.class);
     static final String DVCS_REPO_OWNER = "dvcsconnectortest";
     static final String DVCS_REPO_PASSWORD = PasswordUtil.getPassword("dvcsconnectortest");
-    static final String MISSING_COMMITS_REPOSITORY_NAME = "missingcommitsfixproof";
+    static final String MISSING_COMMITS_REPOSITORY_NAME = "missingcommitstest";
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
 
