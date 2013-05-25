@@ -3,6 +3,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
 import it.restart.com.atlassian.jira.plugins.dvcs.DashboardActivityStreamsPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.GreenHopperBoardPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraAddUserPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
@@ -263,6 +264,18 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         // log in to JIRA
         new JiraLoginPageController(jira).login();
         setupAnonymousAccessForbidden();
+    }
+
+    @Test
+    public void greenHopperIntegration_ShouldAddDvcsCommitsTab()
+    {
+        // add organization
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+
+        GreenHopperBoardPage greenHopperBoardPage = jira.getPageBinder().navigateToAndBind(GreenHopperBoardPage.class);
+        greenHopperBoardPage.goToQABoardPlan();
+        greenHopperBoardPage.assertCommitsAppearOnIssue("QA-1", 5);
     }
 
     //-------------------------------------------------------------------
