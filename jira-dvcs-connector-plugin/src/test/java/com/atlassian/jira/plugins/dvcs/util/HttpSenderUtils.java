@@ -36,7 +36,7 @@ public class HttpSenderUtils
     {
         String hooksJsonString = HttpSenderUtils.makeHttpRequest(new GetMethod(url), username, password);
 
-        String regexp = "\"id\":.([0-9]*)";
+        String regexp = "\"id\":\\s?([0-9]*)";
         Matcher m = Pattern.compile(regexp).matcher(hooksJsonString);
         while (m.find())
         {
