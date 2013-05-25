@@ -1,4 +1,4 @@
-package it.com.atlassian.jira.plugins.dvcs.greenhopper;
+package it.restart.com.atlassian.jira.plugins.dvcs;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static org.fest.assertions.api.Assertions.assertThat;
