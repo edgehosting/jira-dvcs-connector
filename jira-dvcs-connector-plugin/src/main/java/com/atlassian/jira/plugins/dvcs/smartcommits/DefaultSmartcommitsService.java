@@ -79,6 +79,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		String authorEmail = commands.getAuthorEmail();
 		if (StringUtils.isBlank(authorEmail))
 		{
+            results.addGlobalError("Changeset hasn't fill author email.");
 			return results;
 		}
 		//
@@ -87,6 +88,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		User user = getUserByEmailOrNull(authorEmail);
 		if (user == null)
 		{
+            results.addGlobalError("Can't find user with given author email: " + authorEmail);
 			return results;
 		}
 

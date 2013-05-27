@@ -5,6 +5,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import java.util.ArrayList;
+import java.util.List;
 
 @XmlRootElement(name = "sync")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -30,6 +32,9 @@ public class DefaultProgress implements Progress
     @XmlAttribute
     private String error;
 
+    @XmlAttribute
+    private List<String> smartCommitErrors = new ArrayList<String>();
+
     @XmlTransient
     private boolean hasAdminPermission = true;
     
@@ -54,6 +59,7 @@ public class DefaultProgress implements Progress
     public void start()
     {
         startTime = System.currentTimeMillis();
+        smartCommitErrors.clear();
     }
 
     public void finish()
@@ -125,6 +131,14 @@ public class DefaultProgress implements Progress
     public void setSynchroErrorCount(int synchroErrorCount)
     {
         this.synchroErrorCount = synchroErrorCount;
+    }
+
+    public List<String> getSmartCommitErrors() {
+        return smartCommitErrors;
+    }
+
+    public void setSmartCommitErrors(List<String> smartCommitErrors) {
+        this.smartCommitErrors = smartCommitErrors;
     }
 
     @Override

@@ -1,11 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao.ForEachChangesetClosure;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
+import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommandsResults;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
+
+import java.util.List;
 
 /**
  * The Class RunnableChangesetSmartcommitProcessor.
@@ -21,15 +27,19 @@ public class SmartcommitOperation implements Runnable
 
 	private final ChangesetDao changesetDao;
 
+    private final Synchronizer synchronizer;
+
 	/**
 	 * The Constructor.
 	 */
-	public SmartcommitOperation(ChangesetDao changesetDao, CommitMessageParser commitMessageParser, SmartcommitsService smartcommitsService)
+	public SmartcommitOperation(ChangesetDao changesetDao, CommitMessageParser commitMessageParser,
+                                SmartcommitsService smartcommitsService, Synchronizer synchronizer)
 	{
 		this.changesetDao = changesetDao;
 		this.commitMessageParser = commitMessageParser;
 		this.smartcommitsService = smartcommitsService;
-	}
+        this.synchronizer = synchronizer;
+    }
 
 	/**
 	 * {@inheritDoc}
@@ -57,8 +67,18 @@ public class SmartcommitOperation implements Runnable
 					commands.setAuthorEmail(changesetMapping.getAuthorEmail());
 					// do commands
 					if (CollectionUtils.isNotEmpty(commands.getCommands())) {
-						smartcommitsService.doCommands(commands);
-					}
+                        final CommandsResults commandsResults = smartcommitsService.doCommands(commands);
+                        if (commandsResults.hasErrors()) {
+                            final List<RepositoryMapping> repositories = changesetDao.getRepositories(changesetMapping.getID());
+                            for (RepositoryMapping repositoryMapping : repositories) {
+                                final Progress progress = synchronizer.getProgress(repositoryMapping.getID());
+                                if (progress != null) { // this repository has not been synchronized yet
+                                    progress.setSmartCommitErrors(commandsResults.getAllErrors());
+                                }
+                            }
+
+                        }
+                    }
 				}
 			});
 			

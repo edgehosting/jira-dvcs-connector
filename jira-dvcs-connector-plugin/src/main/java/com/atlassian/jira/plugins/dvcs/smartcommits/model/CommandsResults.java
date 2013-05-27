@@ -41,6 +41,19 @@ public class CommandsResults
 		return globalErrors;
 	}
 
+    public List<String> getAllErrors()
+    {
+        List<String> allErrors = new ArrayList<String>();
+
+        allErrors.addAll(globalErrors);
+
+        for (CommitCommand command : results.keySet()) {
+            allErrors.addAll(results.get(command).getErrors());
+        }
+
+        return allErrors;
+    }
+
 	public void setGlobalErrors(List<String> globalErrors)
 	{
 		this.globalErrors = globalErrors;

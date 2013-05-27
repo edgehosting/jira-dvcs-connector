@@ -81,7 +81,7 @@ public class DefaultSynchronizer implements Synchronizer
                     // at the end of execution
                     if (operation.isSoftSync()) 
                     {
-                        smartcommitsChangesetsProcessor.startProcess();
+                        smartcommitsChangesetsProcessor.startProcess(DefaultSynchronizer.this);
                     }
                     //
         
@@ -103,9 +103,9 @@ public class DefaultSynchronizer implements Synchronizer
     }
 
     @Override
-    public Progress getProgress(Repository repository)
+    public Progress getProgress(int repositoryId)
     {
-        return progressMap.get(repository.getId());
+        return progressMap.get(repositoryId);
     }
 
     public void putProgress(Repository repository, Progress progress)

@@ -29,10 +29,10 @@ public interface Synchronizer
      * Get the progress of a sync being executed for given repository
      * This will not return progress of sync triggered by postcommit hook. 
      *
-     * @param repository
-     * @return
+     *
+     * @param repositoryId@return
      */
-    public Progress getProgress(Repository repository);
+    public Progress getProgress(int repositoryId);
 
     /**
      * Puts the progress for given repository

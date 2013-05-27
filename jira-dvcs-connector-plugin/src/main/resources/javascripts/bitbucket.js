@@ -108,6 +108,22 @@ function updateSyncStatus(repo) {
         } else {
             syncErrorDiv.html("");
         }
+
+        var errorSmrtcmmtIcon = AJS.$("#error_smrtcmmt_icon_" +repo.id);
+        // show error icon if smart commit has error
+        if (repo.sync.smartCommitErrors.length > 0) {
+
+            errorSmrtcmmtIcon.addClass("error_smrtcmmt aui-icon aui-icon-error");
+            var tooltip = registerInlineDialogTooltip(errorSmrtcmmtIcon, jira.dvcs.connector.plugin.soy.smartCommitErrors({'errorMessages': repo.sync.smartCommitErrors}));
+            if (tooltip) {
+                // hack for append to DOM now. not after mouse hover.
+                tooltip.show();
+                tooltip.hide();
+            }
+        } else {
+            errorSmrtcmmtIcon.removeClass("error_smrtcmmt aui-icon aui-icon-error")
+        }
+
     }
     
     else {
@@ -706,9 +722,17 @@ function registerAdminPermissionInlineDialogTooltip(element) {
 }
 
 function registerInlineDialogTooltip(element, body) {
+
+    // if already exists
+    if(AJS.$("#inline-dialog-tooltip_"+AJS.$(element).attr('id')).length) {
+        var content = AJS.$("#inline-dialog-tooltip_error_smrtcmmt_icon_93").find(".contents");
+        content.html(body);
+        return;
+    }
+
     return AJS.InlineDialog(AJS.$(element), "tooltip_"+AJS.$(element).attr('id'),
             function(content, trigger, showPopup) {
-                content.css({"padding":"10px"}).html(body);
+                content.css({"padding":"10px", "width":"auto"}).html(body);
                 showPopup();
                 return false;
             },

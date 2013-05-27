@@ -394,3 +394,15 @@
 	{/if}
 	<div>Please contact the server administrator.</div>
 {/template}
+
+/**
+ * @param errorMessages
+ */
+{template .smartCommitErrors}
+	<h2>Smart commit errors</h2>
+	<ul>
+	{foreach $error in $errorMessages}
+	    <li>{$error}</li>
+	{/foreach}
+	</ul>
+{/template}

@@ -65,7 +65,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 		repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
 		
 		// set sync progress
-		repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
+		repository.setSync((DefaultProgress) synchronizer.getProgress(repository.getId()));
 
 		return repository;
 	}

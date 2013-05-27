@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 
@@ -51,6 +52,13 @@ public interface ChangesetDao
      * @return
      */
     List<Changeset> getByIssueKey(String issueKey);
+
+    /**
+     * Return IDs of all repositories from which changeset came in.
+     *
+     * @param changesetId@return repository IDs
+     */
+    List<RepositoryMapping> getRepositories(int changesetId);
 
     /**
      * Returns latest changesets. Used by activity stream.

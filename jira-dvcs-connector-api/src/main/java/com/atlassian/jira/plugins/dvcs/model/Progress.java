@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import java.util.List;
+
 /**
  * Information about the current synchronisation progress
  */
@@ -77,4 +79,16 @@ public interface Progress
 	 * @param hasAdminPermission
 	 */
 	void setAdminPermission(boolean hasAdminPermission);
+
+    /**
+     * get smart commit errors
+     * @return smart commit errors
+     */
+    List<String> getSmartCommitErrors();
+
+    /**
+     * set smart commit errors
+     * @param smartCommitErrors
+     */
+    void setSmartCommitErrors(List<String> smartCommitErrors);
 }
