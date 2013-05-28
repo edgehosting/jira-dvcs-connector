@@ -11,7 +11,7 @@ import com.atlassian.sal.api.scheduling.PluginJob;
  * @author Stanislav Dvorscak
  * 
  */
-public class CleaningShedulerJob implements PluginJob
+public class CleaningSchedulerJob implements PluginJob
 {
 
     /**

@@ -62,9 +62,9 @@ public class DvcsScheduler implements LifecycleAware
 
         // schedules cleaning job
         pluginScheduler.scheduleJob( //
-                CleaningShedulerJob.class.getCanonicalName(), // name of job
-                CleaningShedulerJob.class, // type of job - implementation
-                MapBuilder.<String, Object> build(CleaningShedulerJob.JOB_DATA_REPOSITORY_SERVICE, repositoryService), // job data
+                CleaningSchedulerJob.class.getCanonicalName(), // name of job
+                CleaningSchedulerJob.class, // type of job - implementation
+                MapBuilder.<String, Object> build(CleaningSchedulerJob.JOB_DATA_REPOSITORY_SERVICE, repositoryService), // job data
                 startTime, // the time the job is to start
                 interval // interval between repeats, in milliseconds
                 );
