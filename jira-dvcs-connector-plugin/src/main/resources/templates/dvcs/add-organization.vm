@@ -112,11 +112,7 @@
         #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end
         </h4>  
 		#if($action.isInvalidOrganization($org))
-			#if($org.isIntegratedAccount())
-				<span class="dvcs-invalid-organization error">Invalid credentials, please reset OAuth settings</span>
-			#else
-				<span class="dvcs-invalid-organization error">Invalid credentials, please regenerate access token</span>
-			#end
+			<span class="dvcs-invalid-organization error">Invalid credentials, please reset OAuth settings</span>
 		#end
 		<div class="dvcs-org-container">
 			<button aria-owns="setting-dropdown-$org.id" aria-haspopup="true" class="aui-button aui-dropdown2-trigger">
@@ -137,13 +133,18 @@
                         <a style="display:block;" href="#" onclick="javascript:configureDefaultGroups('$textutils.htmlEncode($org.name)', $org.id); return false;">Configure automatic access</a>
                     </li>
                     #end
-                    #if( !$org.isIntegratedAccount() )
-                    <li>
-                         <a href="#" onclick="return configureOAuth({'id':$org.id,'dvcsType':'$org.dvcsType','name':'$org.name','hostUrl':'$org.hostUrl','credential':{'key':'$!org.credential.oauthKey','secret':'$!org.credential.oauthSecret'}},'$atl_token')">Re-generate OAuth Access Token</a> 
-                    </li>
-					<li>
-						<a class="dvcs-control-delete-org" href="#" onclick="javascript: deleteOrganization('$org.id','$org.name'); return false;" >Delete</a>
-                    </li>
+
+                    #if( $org.isIntegratedAccount() )
+                        <li>
+                            <a href="#" onclick="return setOAuthSettings({'id':$org.id,'dvcsType':'$org.dvcsType','name':'$org.name','hostUrl':'$org.hostUrl','credential':{'key':'$!org.credential.oauthKey','secret':'$!org.credential.oauthSecret'}},'$atl_token')">Reset OAuth Settings</a>
+                        </li>
+                    #else
+                        <li>
+                            <a href="#" onclick="return configureOAuth({'id':$org.id,'dvcsType':'$org.dvcsType','name':'$org.name','hostUrl':'$org.hostUrl','credential':{'key':'$!org.credential.oauthKey','secret':'$!org.credential.oauthSecret'}},'$atl_token')">Reset OAuth Settings</a>
+                        </li>
+                        <li>
+                            <a class="dvcs-control-delete-org" href="#" onclick="javascript: deleteOrganization('$org.id','$org.name'); return false;" >Delete</a>
+                        </li>
                     #end
                 </ul>
               </div>

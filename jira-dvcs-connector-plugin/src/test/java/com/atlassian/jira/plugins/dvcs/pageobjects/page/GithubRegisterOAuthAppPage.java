@@ -1,13 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubConfirmPasswordPage;
+
 import java.util.List;
 
+import org.openqa.selenium.By;
+
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-
-import org.openqa.selenium.By;
 
 /**
  *
@@ -31,7 +34,7 @@ public class GithubRegisterOAuthAppPage implements Page
 
     @ElementBy(tagName = "body")
     PageElement bodyElm;
-    
+
     @ElementBy(cssSelector = ".keys")
     PageElement secrets;
 
@@ -50,26 +53,40 @@ public class GithubRegisterOAuthAppPage implements Page
         oauthApplicationUrl.type(appUrl);
         oauthApplicationCallbackUrl.type(appCallbackUrl);
         submitButton.click();
-        
+
         Poller.waitUntilTrue(secrets.timed().isVisible());
-      
+
         List<PageElement> allSecretsElements = secrets.findAll(By.tagName("dd"));
         clientId = allSecretsElements.get(0);
         clientSecret = allSecretsElements.get(1);
     }
 
-    public void deleteOAuthApp()
+    public void deleteOAuthApp(JiraTestedProduct jira, String password)
     {
-        
+
         PageElement deleteForm = null;
         deleteForm = getDeleteForm(deleteForm);
         List<PageElement> allFormLinks = deleteForm.findAll(By.tagName("a"));
 		allFormLinks.get(allFormLinks.size() - 1).click();
         deleteForm = getPopupDeleteForm(deleteForm);
         deleteForm.find(By.tagName("button")).click();
+
+        if (requiresPasswordConfirmation(jira))
+        {
+            GithubConfirmPasswordPage confirmPasswordPage = jira.getPageBinder().bind(GithubConfirmPasswordPage.class);
+            confirmPasswordPage.confirmPassword(password);
+        }
     }
 
-	private PageElement getDeleteForm(PageElement deleteForm)
+    private boolean requiresPasswordConfirmation(JiraTestedProduct jira)
+    {
+        // if access has been granted before browser will
+        // redirect immediately back to jira
+        String currentUrl = jira.getTester().getDriver().getCurrentUrl();
+        return currentUrl.contains("/session/confirm");
+    }
+
+    private PageElement getDeleteForm(PageElement deleteForm)
 	{
 		List<PageElement> allForms = bodyElm.findAll(By.tagName("form"));
         for (PageElement form : allForms)
@@ -81,7 +98,7 @@ public class GithubRegisterOAuthAppPage implements Page
 		}
 		return deleteForm;
 	}
-	
+
 	private PageElement getPopupDeleteForm(PageElement deleteForm)
 	{
 		List<PageElement> allForms = bodyElm.findAll(By.tagName("form"));
@@ -105,6 +122,6 @@ public class GithubRegisterOAuthAppPage implements Page
 		return clientSecret;
 	}
 
-	
+
 
 }
