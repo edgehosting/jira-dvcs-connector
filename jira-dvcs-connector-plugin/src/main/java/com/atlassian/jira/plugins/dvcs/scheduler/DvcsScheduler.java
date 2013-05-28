@@ -7,7 +7,6 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.util.collect.MapBuilder;
@@ -28,8 +27,7 @@ public class DvcsScheduler implements LifecycleAware
     private final OrganizationService organizationService;
     private final RepositoryService repositoryService;
 
-    public DvcsScheduler(PluginScheduler pluginScheduler, OrganizationService organizationService, RepositoryService repositoryService,
-            ChangesetService changesetService)
+    public DvcsScheduler(PluginScheduler pluginScheduler, OrganizationService organizationService, RepositoryService repositoryService)
     {
         this.pluginScheduler = pluginScheduler;
         this.organizationService = organizationService;
