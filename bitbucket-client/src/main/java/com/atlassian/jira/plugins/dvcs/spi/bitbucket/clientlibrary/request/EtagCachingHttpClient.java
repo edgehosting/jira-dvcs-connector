@@ -23,7 +23,6 @@ import org.apache.http.client.cache.HeaderConstants;
 import org.apache.http.client.cache.HttpCacheEntry;
 import org.apache.http.client.cache.HttpCacheStorage;
 import org.apache.http.client.cache.Resource;
-import org.apache.http.client.cache.ResourceFactory;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.entity.InputStreamEntity;
@@ -261,68 +260,31 @@ public class EtagCachingHttpClient implements HttpClient
             return response;
         }
 
-        ResponseReader responseReader = getResponseReader(request, response);
-        Resource resource = responseReader.getResource();
-
         HttpCacheEntry entry = new HttpCacheEntry(
                 requestSent,
                 responseReceived,
                 response.getStatusLine(),
                 response.getAllHeaders(),
-                resource);
+                createResource(request, response));
         storeInCache(request, entry);
         return generateResponse(entry);
     }
 
+    private Resource createResource(HttpRequest request, HttpResponse response) throws IOException
+    {
+        HttpEntity entity = response.getEntity();
+        if (entity == null)
+        {
+            return null;
+        }
+        String uri = request.getRequestLine().getUri();
+        InputStream instream = entity.getContent();
+        return new HeapResourceFactory().generate(uri, instream, null);
+    }
+    
     private void storeInCache(HttpRequest request, HttpCacheEntry entry) throws IOException
     {
             String uri = generateKey(request);
             storage.putEntry(uri, entry);
     }
-
-    private ResponseReader getResponseReader(HttpRequest request, HttpResponse originResponse)
-    {
-        return new ResponseReader(new HeapResourceFactory(), request, originResponse);
-    }
 }
-
-class ResponseReader
-{
-    private final ResourceFactory resourceFactory;
-    private final HttpRequest request;
-    private final HttpResponse response;
-
-    private InputStream instream;
-    private Resource resource;
-    private boolean responseRead;
-
-    public ResponseReader(ResourceFactory resourceFactory, HttpRequest request, HttpResponse response)
-    {
-        this.resourceFactory = resourceFactory;
-        this.request = request;
-        this.response = response;
-    }
-
-    private void readResponse() throws IOException
-    {
-        responseRead = true;
-        HttpEntity entity = response.getEntity();
-        if (entity == null)
-        {
-            return;
-        }
-        String uri = request.getRequestLine().getUri();
-        instream = entity.getContent();
-        resource = resourceFactory.generate(uri, instream, null);
-    }
-
-    public Resource getResource() throws IOException
-    {
-        if (!responseRead)
-        {
-            readResponse();
-        }
-        return resource;
-    }
-}
-
