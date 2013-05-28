@@ -18,15 +18,22 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 
 public class OrganizationServiceImpl implements OrganizationService
 {
-	private final OrganizationDao organizationDao;
-	private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
-	private final RepositoryService repositoryService;
-
-	public OrganizationServiceImpl(OrganizationDao organizationDao, DvcsCommunicatorProvider dvcsCommunicatorProvider,
-        RepositoryService repositoryService)
+    
+	private OrganizationDao organizationDao;
+	public void setOrganizationDao(OrganizationDao organizationDao)
     {
         this.organizationDao = organizationDao;
+    }
+	
+	private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+	public void setDvcsCommunicatorProvider(DvcsCommunicatorProvider dvcsCommunicatorProvider)
+    {
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
+    }
+	
+	private RepositoryService repositoryService;
+	public void setRepositoryService(RepositoryService repositoryService)
+    {
         this.repositoryService = repositoryService;
     }
 
@@ -112,7 +119,7 @@ public class OrganizationServiceImpl implements OrganizationService
 		organizationDao.remove(organizationId);
 		repositoryService.removeRepositories(repositoriesToDelete);
 	}
-
+	
 	@Override
 	public void updateCredentials(int organizationId, Credential credential)
 	{

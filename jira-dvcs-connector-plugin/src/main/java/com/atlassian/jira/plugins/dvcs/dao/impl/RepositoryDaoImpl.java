@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,36 +37,59 @@ public class RepositoryDaoImpl implements RepositoryDao
 		this.synchronizer = synchronizer;
 	}
 
-	protected Repository transform(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
+	protected Repository transform(RepositoryMapping repositoryMapping)
 	{
-        if (repositoryMapping == null || organizationMapping == null)
+        if (repositoryMapping == null)
         {
             return null;
         }
+        
+        OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId()); 
 
         log.debug("Repository transformation: [{}] ", repositoryMapping);
-        Credential credential = new Credential(
+        
+        if (organizationMapping != null) {
+            Credential credential = new Credential(
                 organizationMapping.getOauthKey(), organizationMapping.getOauthSecret(),
                 organizationMapping.getAccessToken(),
                 organizationMapping.getAdminUsername(), organizationMapping.getAdminPassword());
 
-		Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(),
-				organizationMapping.getDvcsType(), repositoryMapping.getSlug(), repositoryMapping.getName(),
-                repositoryMapping.getLastCommitDate(),
-                repositoryMapping.isLinked(), repositoryMapping.isDeleted(), credential);
+            Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(),
+                    organizationMapping.getDvcsType(), repositoryMapping.getSlug(), repositoryMapping.getName(),
+                    repositoryMapping.getLastCommitDate(),
+                    repositoryMapping.isLinked(), repositoryMapping.isDeleted(), credential);
 
-		repository.setEtag(repositoryMapping.getEtag());
-		repository.setLastModified(repositoryMapping.getLastModified());
-		
-		repository.setOrgHostUrl(organizationMapping.getHostUrl());
-		repository.setOrgName(organizationMapping.getName());
-		repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
-		repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
-		
-		// set sync progress
-		repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
+            repository.setEtag(repositoryMapping.getEtag());
+            repository.setLastModified(repositoryMapping.getLastModified());
+            
+            repository.setOrgHostUrl(organizationMapping.getHostUrl());
+            repository.setOrgName(organizationMapping.getName());
+            repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
+            repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
+            
+            // set sync progress
+            repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
+            return repository;
+            
+        } else {
+            Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(),
+                    null, repositoryMapping.getSlug(), repositoryMapping.getName(),
+                    repositoryMapping.getLastCommitDate(),
+                    repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
 
-		return repository;
+            repository.setEtag(repositoryMapping.getEtag());
+            repository.setLastModified(repositoryMapping.getLastModified());
+            
+            repository.setOrgHostUrl(null);
+            repository.setOrgName(null);
+            repository.setRepositoryUrl(null);
+            repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
+            
+            // set sync progress
+            repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
+            return repository;
+
+        }
 	}
 
 	private String createRepositoryUrl(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
@@ -107,8 +129,6 @@ public class RepositoryDaoImpl implements RepositoryDao
                     }
                 });
 
-		final OrganizationMapping organizationMapping = getOrganizationMapping(organizationId);
-
         return (List<Repository>) CollectionUtils.collect(repositoryMappings, new Transformer() {
 
             @Override
@@ -116,7 +136,7 @@ public class RepositoryDaoImpl implements RepositoryDao
             {
                 RepositoryMapping repositoryMapping = (RepositoryMapping) input;
 
-                return RepositoryDaoImpl.this.transform(repositoryMapping, organizationMapping);
+                return RepositoryDaoImpl.this.transform(repositoryMapping);
             }
         });
 	}
@@ -143,33 +163,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 					}
 				});
 
-		// fill organizations for repositories as we need them for
-		// transformations
-		final Map<Integer, OrganizationMapping> idToOrganizationMapping = new HashMap<Integer, OrganizationMapping>();
-		final List<RepositoryMapping> repositoriesToReturn = new ArrayList<RepositoryMapping>();
-		for (RepositoryMapping repositoryMapping : repositoryMappings)
-		{
-			OrganizationMapping organizationMapping = idToOrganizationMapping
-					.get(repositoryMapping.getOrganizationId());
-			if (organizationMapping == null)
-			{
-				organizationMapping = getOrganizationMapping(repositoryMapping.getOrganizationId());
-				if (organizationMapping == null)
-				{
-					// repository without organization ? invalid data
-					//log.warn("Found repository without organization. Id = " + repositoryMapping.getID());
-					continue;
-				}
-				// organizationMapping.getID() ==
-				// repositoryMapping.getOrganizationId()
-				idToOrganizationMapping.put(organizationMapping.getID(), organizationMapping);
-
-			}
-
-			repositoriesToReturn.add(repositoryMapping);
-		}
-
-		final Collection<Repository> repositories = transformRepositories(idToOrganizationMapping, repositoriesToReturn);
+		final Collection<Repository> repositories = transformRepositories(repositoryMappings);
 
 		return new ArrayList<Repository>(repositories);
 
@@ -200,13 +194,11 @@ public class RepositoryDaoImpl implements RepositoryDao
     /**
 	 * Transform repositories.
 	 *
-	 * @param idToOrganizationMapping the id to organization mapping
 	 * @param repositoriesToReturn the repositories to return
 	 * @return the collection< repository>
 	 */
     @SuppressWarnings("unchecked")
 	private Collection<Repository> transformRepositories(
-			final Map<Integer, OrganizationMapping> idToOrganizationMapping,
 			final List<RepositoryMapping> repositoriesToReturn)
 	{
         return CollectionUtils.collect(repositoriesToReturn, new Transformer() {
@@ -215,9 +207,7 @@ public class RepositoryDaoImpl implements RepositoryDao
             public Object transform(Object input)
             {
                 RepositoryMapping repositoryMapping = (RepositoryMapping) input;
-
-                return RepositoryDaoImpl.this.transform(repositoryMapping,
-                        idToOrganizationMapping.get(repositoryMapping.getOrganizationId()));
+                return RepositoryDaoImpl.this.transform(repositoryMapping);
             }
         });
 	}
@@ -236,14 +226,11 @@ public class RepositoryDaoImpl implements RepositoryDao
 				});
 
 		if (repositoryMapping == null) {
-
 			log.warn("Repository with id {} was not found.", repositoryId);
 			return null;
 
 		} else {
-
-			OrganizationMapping organizationMapping = getOrganizationMapping(repositoryMapping.getOrganizationId());
-			return transform(repositoryMapping, organizationMapping);
+			return transform(repositoryMapping);
 
 		}
 	}
@@ -291,7 +278,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 					}
 				});
 
-		return transform(repositoryMapping, getOrganizationMapping(repository.getOrganizationId()));
+		return transform(repositoryMapping);
 
 	}
 

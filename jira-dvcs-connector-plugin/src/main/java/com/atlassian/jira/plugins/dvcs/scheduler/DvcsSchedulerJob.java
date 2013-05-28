@@ -28,8 +28,6 @@ public class DvcsSchedulerJob implements PluginJob
         {
 			repositoryService.syncRepositoryList(organization);
         }
-		
-		repositoryService.removeDeletedRepositories();
     }
 	
 }

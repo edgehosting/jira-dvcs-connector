@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -37,41 +38,62 @@ public class RepositoryServiceImpl implements RepositoryService
     /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(RepositoryServiceImpl.class);
 
-    /** The communicator provider. */
-    private final DvcsCommunicatorProvider communicatorProvider;
-
-    /** The repository dao. */
-    private final RepositoryDao repositoryDao;
-
-    /** The synchronizer. */
-    private final Synchronizer synchronizer;
-
-    /** The changeset service. */
-    private final ChangesetService changesetService;
-
-    /** The application properties. */
-    private final ApplicationProperties applicationProperties;
-
-    private final PluginSettingsFactory pluginSettingsFactory;
-
     /**
-     * The Constructor.
-     *
-     * @param communicatorProvider the communicator provider
-     * @param repositoryDao the repository dao
-     * @param synchronizer the synchronizer
-     * @param changesetService the changeset service
-     * @param applicationProperties the application properties
+     * Only single {@link #removeOrphanRepositories()} can running at same time.
      */
-    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
-        ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
+    private final Object removeOrphanRepositoriesLock = new Object();
+
+    /** The communicator provider. */
+    private DvcsCommunicatorProvider communicatorProvider;
+    public void setCommunicatorProvider(DvcsCommunicatorProvider communicatorProvider)
     {
         this.communicatorProvider = communicatorProvider;
+    }
+
+    /** The repository dao. */
+    private RepositoryDao repositoryDao;
+    public void setRepositoryDao(RepositoryDao repositoryDao)
+    {
         this.repositoryDao = repositoryDao;
+    }
+
+    /** The synchronizer. */
+    private Synchronizer synchronizer;
+    public void setSynchronizer(Synchronizer synchronizer)
+    {
         this.synchronizer = synchronizer;
+    }
+
+    /** The changeset service. */
+    private ChangesetService changesetService;
+    public void setChangesetService(ChangesetService changesetService)
+    {
         this.changesetService = changesetService;
+    }
+    
+    private ExecutorService executorService;
+    public void setExecutorService(ExecutorService executorService)
+    {
+        this.executorService = executorService;
+    }
+
+    /** The application properties. */
+    private ApplicationProperties applicationProperties;
+    public void setApplicationProperties(ApplicationProperties applicationProperties)
+    {
         this.applicationProperties = applicationProperties;
+    }
+
+    private PluginSettingsFactory pluginSettingsFactory;
+    public void setPluginSettingsFactory(PluginSettingsFactory pluginSettingsFactory)
+    {
         this.pluginSettingsFactory = pluginSettingsFactory;
+    }
+    
+    private OrganizationService organizationService;
+    public void setOrganizationService(OrganizationService organizationService)
+    {
+        this.organizationService = organizationService;
     }
 
     /**
@@ -388,6 +410,15 @@ public class RepositoryServiceImpl implements RepositoryService
     {
         return repositoryDao.getAll(false);
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Repository> getAllRepositories(boolean includeDeleted)
+    {
+        return repositoryDao.getAll(includeDeleted);
+    }
 
     /**
      * {@inheritDoc}
@@ -502,7 +533,17 @@ public class RepositoryServiceImpl implements RepositoryService
     {
         for (Repository repository : repositories)
         {
+            // try remove postcommit hook
+            if (repository.isLinked())
+            {
+                removePostcommitHook(repository);
+                repository.setLinked(false);
+                
+            }
+            
             markForRemove(repository);
+            repositoryDao.save(repository);
+            removeOrphanRepositoriesAsync();
         }
     }
 
@@ -511,7 +552,6 @@ public class RepositoryServiceImpl implements RepositoryService
         synchronizer.stopSynchronization(repository);
         synchronizer.removeProgress(repository);
         repository.setDeleted(true);
-        repositoryDao.save(repository);
     }
     
     /**
@@ -550,6 +590,41 @@ public class RepositoryServiceImpl implements RepositoryService
         {
             log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId()
                             + ", slug = " + repository.getRepositoryUrl(), e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeOrphanRepositoriesAsync()
+    {
+        executorService.execute(new Runnable()
+        {
+            
+            @Override
+            public void run()
+            {
+                removeOrphanRepositories();
+            }
+            
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removeOrphanRepositories()
+    {
+        synchronized (removeOrphanRepositoriesLock)
+        {
+            for (Repository repository : getAllRepositories(true))
+            {
+                if (repository.isDeleted() && organizationService.get(repository.getOrganizationId(), false) == null)
+                {
+                    remove(repository);
+                }
+            }
         }
     }
 
@@ -601,15 +676,6 @@ public class RepositoryServiceImpl implements RepositoryService
             log.debug("Could not load user [" + author + ", " + rawAuthor + "]", e);
             return new UnknownUser(author, rawAuthor != null ? rawAuthor : author, repository.getOrgHostUrl());
         }
-    }
-
-    /**
-     * Removes repositories marked as deleted
-     */
-    @Override
-    public void removeDeletedRepositories()
-    {
-        // TODO Auto-generated method stub
     }
 
 }

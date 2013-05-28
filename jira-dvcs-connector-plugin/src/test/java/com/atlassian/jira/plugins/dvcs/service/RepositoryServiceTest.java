@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
@@ -39,6 +40,9 @@ public class RepositoryServiceTest
 	@Mock
 	private ChangesetService changesetService;
 
+    @Mock
+    private ExecutorService executorService;
+
 	@Mock
 	private ApplicationProperties applicationProperties;
 
@@ -60,8 +64,16 @@ public class RepositoryServiceTest
 	public void setup()
 	{
 		MockitoAnnotations.initMocks(this);
-		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer,
-				changesetService, applicationProperties, settings);
+		repositoryService = new RepositoryServiceImpl();
+
+		RepositoryServiceImpl repositoryServiceImpl = (RepositoryServiceImpl) repositoryService;
+        repositoryServiceImpl.setCommunicatorProvider(dvcsCommunicatorProvider);
+		repositoryServiceImpl.setRepositoryDao(repositoryDao);
+		repositoryServiceImpl.setSynchronizer(synchronizer);
+		repositoryServiceImpl.setChangesetService(changesetService);
+		repositoryServiceImpl.setExecutorService(executorService);
+		repositoryServiceImpl.setApplicationProperties(applicationProperties);
+		repositoryServiceImpl.setPluginSettingsFactory(settings);
 	}
 
 	@Test

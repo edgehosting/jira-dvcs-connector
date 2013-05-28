@@ -52,7 +52,11 @@ public class OrganizationServiceTest
 	public void setup()
 	{
 		MockitoAnnotations.initMocks(this);
-		organizationService = new OrganizationServiceImpl(organizationDao, dvcsCommunicatorProvider, repositoryService);
+		organizationService = new OrganizationServiceImpl();
+		OrganizationServiceImpl organizationServiceImpl = (OrganizationServiceImpl) organizationService;
+		organizationServiceImpl.setOrganizationDao(organizationDao);
+		organizationServiceImpl.setDvcsCommunicatorProvider(dvcsCommunicatorProvider);
+		organizationServiceImpl.setRepositoryService(repositoryService);
 	}
 
 	@Test
