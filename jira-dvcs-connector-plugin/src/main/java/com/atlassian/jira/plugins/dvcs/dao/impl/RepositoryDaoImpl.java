@@ -59,9 +59,6 @@ public class RepositoryDaoImpl implements RepositoryDao
                     repositoryMapping.getLastCommitDate(),
                     repositoryMapping.isLinked(), repositoryMapping.isDeleted(), credential);
 
-            repository.setEtag(repositoryMapping.getEtag());
-            repository.setLastModified(repositoryMapping.getLastModified());
-            
             repository.setOrgHostUrl(organizationMapping.getHostUrl());
             repository.setOrgName(organizationMapping.getName());
             repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
@@ -77,8 +74,6 @@ public class RepositoryDaoImpl implements RepositoryDao
                     repositoryMapping.getLastCommitDate(),
                     repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
 
-            repository.setEtag(repositoryMapping.getEtag());
-            repository.setLastModified(repositoryMapping.getLastModified());
             
             repository.setOrgHostUrl(null);
             repository.setOrgName(null);

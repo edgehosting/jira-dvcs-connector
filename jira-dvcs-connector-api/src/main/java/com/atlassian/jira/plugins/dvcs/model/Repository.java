@@ -31,9 +31,6 @@ public class Repository
     private transient String orgHostUrl;
     private transient String orgName;
     
-    private String etag;
-    private Date lastModified;
-    
     @XmlElement
     private DefaultProgress sync;
 
@@ -226,26 +223,6 @@ public class Repository
         this.smartcommitsEnabled = smartcommitsEnabled;
     }
 
-    public String getEtag()
-    {
-        return etag;
-    }
-
-    public void setEtag(String etag)
-    {
-        this.etag = etag;
-    }
-
-    public Date getLastModified()
-    {
-        return lastModified;
-    }
-
-    public void setLastModified(Date lastModified)
-    {
-        this.lastModified = lastModified;
-    }
-    
     @Override
     public String toString()
     {
