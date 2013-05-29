@@ -55,8 +55,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
 {
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
     
-    private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("dvcs.connector.bitbucket.connection.timeout", 30000);
-    private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("dvcs.connector.bitbucket.socket.timeout", 60000);
+    private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("bitbucket.client.connection.timeout", 30000);
+    private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("bitbucket.client.socket.timeout", 60000);
     
     protected final ApiProvider apiProvider;
     private final HttpClientProxyConfig proxyConfig;
@@ -401,12 +401,13 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
     }
     
-    private static HttpCacheStorage getStorage()
+    private static synchronized HttpCacheStorage getStorage()
     {
         if (storage == null)
         {
             CacheConfig config = new CacheConfig();
-            Integer maxCacheEntries = Integer.getInteger("dvcs.connector.bitbucket.cache.maxentries");
+            // if max cache entries value is not present the CacheConfig's default (CacheConfig.DEFAULT_MAX_CACHE_ENTRIES = 1000) will be used
+            Integer maxCacheEntries = Integer.getInteger("bitbucket.client.cache.maxentries");
             if (maxCacheEntries != null)
             {
                 config.setMaxCacheEntries(maxCacheEntries);
