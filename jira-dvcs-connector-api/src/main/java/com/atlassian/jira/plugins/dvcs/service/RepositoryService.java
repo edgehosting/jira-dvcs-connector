@@ -42,6 +42,14 @@ public interface RepositoryService
 	 * @return the all active repositories
 	 */
     List<Repository> getAllRepositories();
+    
+    /**
+     * Same as {@link #getAllRepositories()}, but provides choice to include also deleted repositories.
+     * 
+     * @param includeDeleted
+     * @return all repositories
+     */
+    List<Repository> getAllRepositories(boolean includeDeleted);
 
     /**
      * check if there is at least one linked repository
@@ -117,12 +125,26 @@ public interface RepositoryService
     void remove(Repository repository);
 
     /**
+     * The same as {@link #removeOrphanRepositories()}, but it will run in background.
+     * 
+     * @param orphanRepositories to removes
+     */
+    public void removeOrphanRepositoriesAsync(List<Repository> orphanRepositories);
+
+    /**
+     * Removes orphan repositories.
+     * 
+     * @param orphanRepositories to removes
+     */
+    void removeOrphanRepositories(List<Repository> orphanRepositories);
+
+    /**
      * Turn On or off linkers.
      *
      * @param onOffBoolean the on off boolean
      */
     void onOffLinkers(boolean onOffBoolean);
 
-
     DvcsUser getUser(Repository repository, String author, String raw_author);
+
 }
