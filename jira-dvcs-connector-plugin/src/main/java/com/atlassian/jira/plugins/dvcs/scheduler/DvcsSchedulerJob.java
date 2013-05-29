@@ -54,7 +54,7 @@ public class DvcsSchedulerJob implements PluginJob
         List<Repository> orphanRepositories = new LinkedList<Repository>();
         for (Repository repository : repositoryService.getAllRepositories(true))
         {
-            if (repository.isDeleted() && organizationService.get(repository.getOrganizationId(), false) == null)
+            if (organizationService.get(repository.getOrganizationId(), false) == null)
             {
                 orphanRepositories.add(repository);
             }
