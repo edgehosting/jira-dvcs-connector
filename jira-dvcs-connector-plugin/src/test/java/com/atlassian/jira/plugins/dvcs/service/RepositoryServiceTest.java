@@ -7,6 +7,9 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -19,10 +22,6 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-
-import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 public class RepositoryServiceTest
 {
@@ -56,13 +55,13 @@ public class RepositoryServiceTest
 		super();
 	}
 
-	@BeforeMethod
-	public void setup()
-	{
-		MockitoAnnotations.initMocks(this);
-		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer,
-				changesetService, applicationProperties, settings);
-	}
+    @BeforeMethod
+    public void setup()
+    {
+        MockitoAnnotations.initMocks(this);
+        repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer, changesetService,
+                applicationProperties, settings);
+    }
 
 	@Test
 	public void testDisableRepository()

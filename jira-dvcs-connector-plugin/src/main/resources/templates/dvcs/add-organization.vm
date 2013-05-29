@@ -23,7 +23,6 @@
 		if (typeof jira.dvcs.connector == 'undefined') { jira.dvcs.connector = {}; }
 		if (typeof jira.dvcs.connector.plugin == 'undefined') { jira.dvcs.connector.plugin = {}; }
 		
-		jira.dvcs.connector.plugin.githubEnterpriseEnabled = $action.isGithubEnterpriseEnabled();
 		jira.dvcs.connector.plugin.onDemandLicense = $action.isOnDemandLicense();
 		jira.dvcs.connector.plugin.atlToken = "$atl_token";
 				

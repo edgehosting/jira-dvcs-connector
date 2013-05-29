@@ -27,7 +27,7 @@ public class Organization
     private transient Credential credential;
 
     // 2/ invitation groups - when adding new user as information holder for rendering form extension
-    private transient Set<Group> groups;
+    private transient List<Group> groups;
 
     // 1/ default groups - when configuring default groups
     private transient Set<Group> defaultGroups;
@@ -83,7 +83,7 @@ public class Organization
         return credential;
     }
 
-    public Set<Group> getGroups()
+    public List<Group> getGroups()
     {
         return groups;
     }
@@ -143,7 +143,7 @@ public class Organization
         this.repositories = repositories;
     }
 
-    public void setGroups(Set<Group> groups)
+    public void setGroups(List<Group> groups)
     {
         this.groups = groups;
     }
