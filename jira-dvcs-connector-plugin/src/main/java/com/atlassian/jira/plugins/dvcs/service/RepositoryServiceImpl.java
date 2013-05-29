@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.collect.Maps;
 
 /**
@@ -43,57 +45,51 @@ public class RepositoryServiceImpl implements RepositoryService
      */
     private final Object removeOrphanRepositoriesLock = new Object();
 
+    /**
+     * @see #removeOrphanRepositoriesAsync()
+     */
+    private final ExecutorService removeOrphanRepositoriesExecutor = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("DVCSConnectoRemoveOrphanRepositoriesExecutorThread"));
+
     /** The communicator provider. */
-    private DvcsCommunicatorProvider communicatorProvider;
-    public void setCommunicatorProvider(DvcsCommunicatorProvider communicatorProvider)
-    {
-        this.communicatorProvider = communicatorProvider;
-    }
+    private final DvcsCommunicatorProvider communicatorProvider;
 
     /** The repository dao. */
-    private RepositoryDao repositoryDao;
-    public void setRepositoryDao(RepositoryDao repositoryDao)
-    {
-        this.repositoryDao = repositoryDao;
-    }
+    private final RepositoryDao repositoryDao;
 
     /** The synchronizer. */
-    private Synchronizer synchronizer;
-    public void setSynchronizer(Synchronizer synchronizer)
-    {
-        this.synchronizer = synchronizer;
-    }
+    private final Synchronizer synchronizer;
 
     /** The changeset service. */
-    private ChangesetService changesetService;
-    public void setChangesetService(ChangesetService changesetService)
-    {
-        this.changesetService = changesetService;
-    }
-    
-    private ExecutorService executorService;
-    public void setExecutorService(ExecutorService executorService)
-    {
-        this.executorService = executorService;
-    }
+    private final ChangesetService changesetService;
 
     /** The application properties. */
-    private ApplicationProperties applicationProperties;
-    public void setApplicationProperties(ApplicationProperties applicationProperties)
-    {
-        this.applicationProperties = applicationProperties;
-    }
+    private final ApplicationProperties applicationProperties;
 
-    private PluginSettingsFactory pluginSettingsFactory;
-    public void setPluginSettingsFactory(PluginSettingsFactory pluginSettingsFactory)
-    {
-        this.pluginSettingsFactory = pluginSettingsFactory;
-    }
+    private final PluginSettingsFactory pluginSettingsFactory;
     
-    private OrganizationService organizationService;
-    public void setOrganizationService(OrganizationService organizationService)
+    /**
+     * The Constructor.
+     * 
+     * @param communicatorProvider
+     *            the communicator provider
+     * @param repositoryDao
+     *            the repository dao
+     * @param synchronizer
+     *            the synchronizer
+     * @param changesetService
+     *            the changeset service Add a comment to this line
+     * @param applicationProperties
+     *            the application properties
+     */
+    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
+            ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
     {
-        this.organizationService = organizationService;
+        this.communicatorProvider = communicatorProvider;
+        this.repositoryDao = repositoryDao;
+        this.synchronizer = synchronizer;
+        this.changesetService = changesetService;
+        this.applicationProperties = applicationProperties;
+        this.pluginSettingsFactory = pluginSettingsFactory;
     }
 
     /**
@@ -543,7 +539,6 @@ public class RepositoryServiceImpl implements RepositoryService
             
             markForRemove(repository);
             repositoryDao.save(repository);
-            removeOrphanRepositoriesAsync();
         }
     }
 
@@ -596,15 +591,15 @@ public class RepositoryServiceImpl implements RepositoryService
     /**
      * {@inheritDoc}
      */
-    public void removeOrphanRepositoriesAsync()
+    public void removeOrphanRepositoriesAsync(final List<Repository> orphanRepositories)
     {
-        executorService.execute(new Runnable()
+        removeOrphanRepositoriesExecutor.execute(new Runnable()
         {
             
             @Override
             public void run()
             {
-                removeOrphanRepositories();
+                removeOrphanRepositories(orphanRepositories);
             }
             
         });
@@ -614,16 +609,13 @@ public class RepositoryServiceImpl implements RepositoryService
      * {@inheritDoc}
      */
     @Override
-    public void removeOrphanRepositories()
+    public void removeOrphanRepositories(List<Repository> orphanRepositories)
     {
         synchronized (removeOrphanRepositoriesLock)
         {
-            for (Repository repository : getAllRepositories(true))
+            for (Repository repository : orphanRepositories)
             {
-                if (repository.isDeleted() && organizationService.get(repository.getOrganizationId(), false) == null)
-                {
-                    remove(repository);
-                }
+                remove(repository);
             }
         }
     }

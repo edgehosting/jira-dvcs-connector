@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.util.collect.MapBuilder;
 import com.atlassian.sal.api.lifecycle.LifecycleAware;
 import com.atlassian.sal.api.scheduling.PluginScheduler;
 import com.google.common.collect.Maps;
@@ -58,13 +57,5 @@ public class DvcsScheduler implements LifecycleAware
                 startTime, // the time the job is to start
                 interval); // interval between repeats, in milliseconds
 
-        // schedules cleaning job
-        pluginScheduler.scheduleJob( //
-                CleaningSchedulerJob.class.getCanonicalName(), // name of job
-                CleaningSchedulerJob.class, // type of job - implementation
-                MapBuilder.<String, Object> build(CleaningSchedulerJob.JOB_DATA_REPOSITORY_SERVICE, repositoryService), // job data
-                startTime, // the time the job is to start
-                interval // interval between repeats, in milliseconds
-                );
     }
 }

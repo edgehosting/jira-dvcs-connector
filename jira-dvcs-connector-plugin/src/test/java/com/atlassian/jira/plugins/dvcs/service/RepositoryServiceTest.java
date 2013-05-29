@@ -60,21 +60,13 @@ public class RepositoryServiceTest
 		super();
 	}
 
-	@BeforeMethod
-	public void setup()
-	{
-		MockitoAnnotations.initMocks(this);
-		repositoryService = new RepositoryServiceImpl();
-
-		RepositoryServiceImpl repositoryServiceImpl = (RepositoryServiceImpl) repositoryService;
-        repositoryServiceImpl.setCommunicatorProvider(dvcsCommunicatorProvider);
-		repositoryServiceImpl.setRepositoryDao(repositoryDao);
-		repositoryServiceImpl.setSynchronizer(synchronizer);
-		repositoryServiceImpl.setChangesetService(changesetService);
-		repositoryServiceImpl.setExecutorService(executorService);
-		repositoryServiceImpl.setApplicationProperties(applicationProperties);
-		repositoryServiceImpl.setPluginSettingsFactory(settings);
-	}
+    @BeforeMethod
+    public void setup()
+    {
+        MockitoAnnotations.initMocks(this);
+        repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer, changesetService,
+                applicationProperties, settings);
+    }
 
 	@Test
 	public void testDisableRepository()
