@@ -1,5 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -16,16 +30,8 @@ import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.collect.Maps;
-import org.apache.commons.lang.BooleanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * The Class RepositoryServiceImpl.
@@ -33,34 +39,35 @@ import java.util.Set;
 public class RepositoryServiceImpl implements RepositoryService
 {
 
-    /**
-     * The Constant log.
-     */
+    /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(RepositoryServiceImpl.class);
 
     /**
-     * The communicator provider.
+     * Only single {@link #removeOrphanRepositories()} can running at same time.
      */
+    private final Object removeOrphanRepositoriesLock = new Object();
+
+    /**
+     * @see #removeOrphanRepositoriesAsync(List)
+     */
+    private final ExecutorService removeOrphanRepositoriesExecutor = new ThreadPoolExecutor(//
+            0, 1, // no remaining threads and at most single thread
+            0, TimeUnit.MILLISECONDS, // destroys thread immediately, when is not used
+            new LinkedBlockingQueue<Runnable>(), ThreadFactories.namedThreadFactory("DVCSConnectoRemoveRepositoriesExecutorThread"));
+
+    /** The communicator provider. */
     private final DvcsCommunicatorProvider communicatorProvider;
 
-    /**
-     * The repository dao.
-     */
+    /** The repository dao. */
     private final RepositoryDao repositoryDao;
 
-    /**
-     * The synchronizer.
-     */
+    /** The synchronizer. */
     private final Synchronizer synchronizer;
 
-    /**
-     * The changeset service.
-     */
+    /** The changeset service. */
     private final ChangesetService changesetService;
 
-    /**
-     * The application properties.
-     */
+    /** The application properties. */
     private final ApplicationProperties applicationProperties;
 
     private final PluginSettingsFactory pluginSettingsFactory;
@@ -68,11 +75,16 @@ public class RepositoryServiceImpl implements RepositoryService
     /**
      * The Constructor.
      *
-     * @param communicatorProvider  the communicator provider
-     * @param repositoryDao         the repository dao
-     * @param synchronizer          the synchronizer
-     * @param changesetService      the changeset service
-     * @param applicationProperties the application properties
+     * @param communicatorProvider
+     *            the communicator provider
+     * @param repositoryDao
+     *            the repository dao
+     * @param synchronizer
+     *            the synchronizer
+     * @param changesetService
+     *            the changeset service Add a comment to this line
+     * @param applicationProperties
+     *            the application properties
      */
     public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
                                  ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
@@ -339,7 +351,7 @@ public class RepositoryServiceImpl implements RepositoryService
         Repository repository = get(repositoryId);
 
         // looks like repository was deleted before we started to synchronise it
-        if (repository != null)
+        if (repository != null && !repository.isDeleted())
         {
             doSync(repository, softSync);
         } else
@@ -350,7 +362,6 @@ public class RepositoryServiceImpl implements RepositoryService
 
     /**
      * synchronization of changesets in all repositories which are in given organization
-     *
      * @param organizationId organizationId
      * @param soft
      * @param newRepoSlugs
@@ -399,6 +410,15 @@ public class RepositoryServiceImpl implements RepositoryService
     public List<Repository> getAllRepositories()
     {
         return repositoryDao.getAll(false);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Repository> getAllRepositories(boolean includeDeleted)
+    {
+        return repositoryDao.getAll(includeDeleted);
     }
 
     /**
@@ -512,16 +532,25 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
     public void removeRepositories(List<Repository> repositories)
     {
-        // we stop all synchronizations first to prevent starting new redundant synchronization
         for (Repository repository : repositories)
         {
-            synchronizer.stopSynchronization(repository);
+            markForRemove(repository);
+            // try remove postcommit hook
+            if (repository.isLinked())
+            {
+                removePostcommitHook(repository);
+                repository.setLinked(false);
+            }
+
+            repositoryDao.save(repository);
+        }
         }
 
-        for (Repository repository : repositories)
+    private void markForRemove(Repository repository)
         {
-            remove(repository);
-        }
+        synchronizer.stopSynchronization(repository);
+        synchronizer.removeProgress(repository);
+        repository.setDeleted(true);
     }
 
     /**
@@ -560,6 +589,37 @@ public class RepositoryServiceImpl implements RepositoryService
         {
             log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId()
                     + ", slug = " + repository.getRepositoryUrl(), e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removeOrphanRepositoriesAsync(final List<Repository> orphanRepositories)
+    {
+        removeOrphanRepositoriesExecutor.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                removeOrphanRepositories(orphanRepositories);
+            }
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removeOrphanRepositories(List<Repository> orphanRepositories)
+    {
+        synchronized (removeOrphanRepositoriesLock)
+        {
+            for (Repository repository : orphanRepositories)
+            {
+                remove(repository);
+            }
         }
     }
 

@@ -23,7 +23,6 @@ import org.apache.http.client.cache.HeaderConstants;
 import org.apache.http.client.cache.HttpCacheEntry;
 import org.apache.http.client.cache.HttpCacheStorage;
 import org.apache.http.client.cache.Resource;
-import org.apache.http.client.cache.ResourceFactory;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.entity.InputStreamEntity;
@@ -93,29 +92,45 @@ public class EtagCachingHttpClient implements HttpClient
             return backingHttpClient.execute(request);
         }
 
-        Date requestDate = new Date();
-        HttpCacheEntry httpCacheEntry = storage.getEntry(generateKey(request));
-
-        if (httpCacheEntry != null)
+        Header requestEtagHeader = request.getFirstHeader(HeaderConstants.IF_NONE_MATCH);
+        Header requestLastModifiedHeader = request.getFirstHeader(HeaderConstants.LAST_MODIFIED);
+        HttpCacheEntry httpCacheEntry = null;
+        
+        // If request doesn't contain Etag nor Last modified date, we take them from cache 
+        if (requestEtagHeader == null && requestLastModifiedHeader == null)
         {
-            Header etagHeader = httpCacheEntry.getFirstHeader(HeaderConstants.ETAG);
-            if (etagHeader != null)
+            httpCacheEntry = storage.getEntry(generateKey(request));
+    
+            if (httpCacheEntry != null)
             {
-                request.setHeader(HeaderConstants.IF_NONE_MATCH, etagHeader.getValue());
-            }
-
-            Header lastModifiedHeader = httpCacheEntry.getFirstHeader(HeaderConstants.LAST_MODIFIED);
-            if (lastModifiedHeader != null)
-            {
-                request.setHeader(HeaderConstants.IF_MODIFIED_SINCE, lastModifiedHeader.getValue());
+                Header etagHeader = httpCacheEntry.getFirstHeader(HeaderConstants.ETAG);
+                if (etagHeader != null)
+                {
+                    request.setHeader(HeaderConstants.IF_NONE_MATCH, etagHeader.getValue());
+                }
+    
+                Header lastModifiedHeader = httpCacheEntry.getFirstHeader(HeaderConstants.LAST_MODIFIED);
+                if (lastModifiedHeader != null)
+                {
+                    request.setHeader(HeaderConstants.IF_MODIFIED_SINCE, lastModifiedHeader.getValue());
+                }
             }
         }
+
+        Date requestDate = new Date();
         HttpResponse httpResponse = backingHttpClient.execute(request, context);
 
         if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_NOT_MODIFIED)
         {
-            log.debug("Generating response from cache.");
-            return generateResponse(httpCacheEntry);
+            if (httpCacheEntry != null)
+            {
+                log.debug("Generating response from cache.");
+                return generateResponse(httpCacheEntry);
+            } else
+            {
+                // etag or last modified date were specified in request, we just return not modified response
+                return httpResponse;
+            }
         }
 
         return cacheResponse(request, httpResponse, requestDate,  new Date());
@@ -245,68 +260,31 @@ public class EtagCachingHttpClient implements HttpClient
             return response;
         }
 
-        ResponseReader responseReader = getResponseReader(request, response);
-        Resource resource = responseReader.getResource();
-
         HttpCacheEntry entry = new HttpCacheEntry(
                 requestSent,
                 responseReceived,
                 response.getStatusLine(),
                 response.getAllHeaders(),
-                resource);
+                createResource(request, response));
         storeInCache(request, entry);
         return generateResponse(entry);
     }
 
+    private Resource createResource(HttpRequest request, HttpResponse response) throws IOException
+    {
+        HttpEntity entity = response.getEntity();
+        if (entity == null)
+        {
+            return null;
+        }
+        String uri = request.getRequestLine().getUri();
+        InputStream instream = entity.getContent();
+        return new HeapResourceFactory().generate(uri, instream, null);
+    }
+    
     private void storeInCache(HttpRequest request, HttpCacheEntry entry) throws IOException
     {
             String uri = generateKey(request);
             storage.putEntry(uri, entry);
     }
-
-    private ResponseReader getResponseReader(HttpRequest request, HttpResponse originResponse)
-    {
-        return new ResponseReader(new HeapResourceFactory(), request, originResponse);
-    }
 }
-
-class ResponseReader
-{
-    private final ResourceFactory resourceFactory;
-    private final HttpRequest request;
-    private final HttpResponse response;
-
-    private InputStream instream;
-    private Resource resource;
-    private boolean responseRead;
-
-    public ResponseReader(ResourceFactory resourceFactory, HttpRequest request, HttpResponse response)
-    {
-        this.resourceFactory = resourceFactory;
-        this.request = request;
-        this.response = response;
-    }
-
-    private void readResponse() throws IOException
-    {
-        responseRead = true;
-        HttpEntity entity = response.getEntity();
-        if (entity == null)
-        {
-            return;
-        }
-        String uri = request.getRequestLine().getUri();
-        instream = entity.getContent();
-        resource = resourceFactory.generate(uri, instream, null);
-    }
-
-    public Resource getResource() throws IOException
-    {
-        if (!responseRead)
-        {
-            readResponse();
-        }
-        return resource;
-    }
-}
-

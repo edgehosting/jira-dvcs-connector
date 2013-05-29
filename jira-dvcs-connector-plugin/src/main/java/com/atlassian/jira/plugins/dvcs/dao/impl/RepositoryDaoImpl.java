@@ -55,9 +55,6 @@ public class RepositoryDaoImpl implements RepositoryDao
 				organizationMapping.getDvcsType(), repositoryMapping.getSlug(), repositoryMapping.getName(),
                 repositoryMapping.getLastCommitDate(),
                 repositoryMapping.isLinked(), repositoryMapping.isDeleted(), credential);
-
-		repository.setEtag(repositoryMapping.getEtag());
-		repository.setLastModified(repositoryMapping.getLastModified());
 		
 		repository.setOrgHostUrl(organizationMapping.getHostUrl());
 		repository.setOrgName(organizationMapping.getName());
