@@ -66,10 +66,10 @@ public class RepositoryServiceImpl implements RepositoryService
     private final ApplicationProperties applicationProperties;
 
     private final PluginSettingsFactory pluginSettingsFactory;
-    
+
     /**
      * The Constructor.
-     * 
+     *
      * @param communicatorProvider
      *            the communicator provider
      * @param repositoryDao
@@ -109,7 +109,7 @@ public class RepositoryServiceImpl implements RepositoryService
     {
         return repositoryDao.getAllByOrganization(organizationId, includeDeleted);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -267,11 +267,11 @@ public class RepositoryServiceImpl implements RepositoryService
                 progress.setFinished(true);
                 synchronizer.putProgress(repository, progress);
             }
-            
+
             progress.setAdminPermission(hasAdminPermission);
         }
     }
-    
+
     /**
      * Removes the deleted repositories.
      *
@@ -406,7 +406,7 @@ public class RepositoryServiceImpl implements RepositoryService
     {
         return repositoryDao.getAll(false);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -529,15 +529,14 @@ public class RepositoryServiceImpl implements RepositoryService
     {
         for (Repository repository : repositories)
         {
+            markForRemove(repository);
             // try remove postcommit hook
             if (repository.isLinked())
             {
                 removePostcommitHook(repository);
                 repository.setLinked(false);
-                
             }
-            
-            markForRemove(repository);
+
             repositoryDao.save(repository);
         }
     }
@@ -548,7 +547,7 @@ public class RepositoryServiceImpl implements RepositoryService
         synchronizer.removeProgress(repository);
         repository.setDeleted(true);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -591,17 +590,16 @@ public class RepositoryServiceImpl implements RepositoryService
     /**
      * {@inheritDoc}
      */
+    @Override
     public void removeOrphanRepositoriesAsync(final List<Repository> orphanRepositories)
     {
         removeOrphanRepositoriesExecutor.execute(new Runnable()
         {
-            
             @Override
             public void run()
             {
                 removeOrphanRepositories(orphanRepositories);
             }
-            
         });
     }
 
