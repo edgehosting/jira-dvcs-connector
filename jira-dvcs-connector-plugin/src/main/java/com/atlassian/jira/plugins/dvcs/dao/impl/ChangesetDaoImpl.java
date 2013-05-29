@@ -44,12 +44,12 @@ public class ChangesetDaoImpl implements ChangesetDao
         this.activeObjects = activeObjects;
     }
 
-    protected List<Changeset> transform(ChangesetMapping changesetMapping)
+    public List<Changeset> transform(ChangesetMapping changesetMapping)
     {
         return transformer.transform(changesetMapping);
     }
 
-    protected List<Changeset> transform(List<ChangesetMapping> changesetMappings)
+    public List<Changeset> transform(List<ChangesetMapping> changesetMappings)
     {
         List<Changeset> changesets = new ArrayList<Changeset>();
 
@@ -98,14 +98,16 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
     }
 
-    public Changeset create(final Changeset changeset, final Set<String> extractedIssues) {
+    public Changeset create(final Changeset changeset, final Set<String> extractedIssues)
+    {
         ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
         {
             @Override
             public ChangesetMapping doInTransaction()
             {
                 ChangesetMapping chm = getChangesetMapping(changeset);
-                if (chm == null) {
+                if (chm == null)
+                {
                     chm = activeObjects.create(ChangesetMapping.class);
                     fillProperties(changeset, chm);
                     chm.save();
@@ -126,14 +128,16 @@ public class ChangesetDaoImpl implements ChangesetDao
         return changeset;
     }
 
-    public Changeset update(final Changeset changeset) {
+    public Changeset update(final Changeset changeset)
+    {
         activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
         {
             @Override
             public ChangesetMapping doInTransaction()
             {
                 ChangesetMapping chm = getChangesetMapping(changeset);
-                if (chm != null) {
+                if (chm != null)
+                {
                     fillProperties(changeset, chm);
                     chm.save();
                 } else
@@ -291,7 +295,6 @@ public class ChangesetDaoImpl implements ChangesetDao
                         .where("chm." + ChangesetMapping.NODE + " = ? AND rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ? ", changesetNode, repositoryId);
 
 
-
                 ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
                 return mappings.length != 0 ? mappings[0] : null;
             }
@@ -325,10 +328,13 @@ public class ChangesetDaoImpl implements ChangesetDao
     }
 
     @Override
-    public List<RepositoryMapping> getRepositories(final int changesetId) {
-        final ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>() {
+    public List<RepositoryMapping> getRepositories(final int changesetId)
+    {
+        final ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
+        {
             @Override
-            public ChangesetMapping doInTransaction() {
+            public ChangesetMapping doInTransaction()
+            {
                 return activeObjects.get(ChangesetMapping.class, changesetId);
             }
         });
@@ -352,10 +358,10 @@ public class ChangesetDaoImpl implements ChangesetDao
             {
                 String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
                 Query query = Query.select()
-                		.alias(ChangesetMapping.class, "CHANGESET")
-                		.alias(IssueToChangesetMapping.class, "ISSUE")
-                		.join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
-                		.where(baseWhereClause).limit(maxResults).order(ChangesetMapping.DATE + " DESC");
+                        .alias(ChangesetMapping.class, "CHANGESET")
+                        .alias(IssueToChangesetMapping.class, "ISSUE")
+                        .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
+                        .where(baseWhereClause).limit(maxResults).order(ChangesetMapping.DATE + " DESC");
                 ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
                 return Arrays.asList(mappings);
             }
@@ -364,24 +370,25 @@ public class ChangesetDaoImpl implements ChangesetDao
         return transform(changesetMappings);
     }
 
-	@Override
-	public void forEachLatestChangesetsAvailableForSmartcommitDo(final ForEachChangesetClosure closure)
-	{
-		Query query = createLatestChangesetsAvailableForSmartcommitQuery();
-		activeObjects.stream(ChangesetMapping.class, query, new EntityStreamCallback<ChangesetMapping, Integer>() {
-			@Override
-			public void onRowRead(ChangesetMapping mapping)
-			{
-				closure.execute(mapping);
-			}
-		});
-	}
+    @Override
+    public void forEachLatestChangesetsAvailableForSmartcommitDo(final ForEachChangesetClosure closure)
+    {
+        Query query = createLatestChangesetsAvailableForSmartcommitQuery();
+        activeObjects.stream(ChangesetMapping.class, query, new EntityStreamCallback<ChangesetMapping, Integer>()
+        {
+            @Override
+            public void onRowRead(ChangesetMapping mapping)
+            {
+                closure.execute(mapping);
+            }
+        });
+    }
 
-	private Query createLatestChangesetsAvailableForSmartcommitQuery()
-	{
-		return Query.select("*").where(ChangesetMapping.SMARTCOMMIT_AVAILABLE + " = ? ", Boolean.TRUE)
-		.order(ChangesetMapping.DATE + " DESC");
-	}
+    private Query createLatestChangesetsAvailableForSmartcommitQuery()
+    {
+        return Query.select("*").where(ChangesetMapping.SMARTCOMMIT_AVAILABLE + " = ? ", Boolean.TRUE)
+                .order(ChangesetMapping.DATE + " DESC");
+    }
 
     @Override
     public Set<String> findReferencedProjects(int repositoryId)
@@ -396,7 +403,6 @@ public class ChangesetDaoImpl implements ChangesetDao
                 .order(IssueToChangesetMapping.PROJECT_KEY);
 
 
-
         final Set<String> projectKeys = new HashSet<String>();
         activeObjects.stream(ProjectKey.class, query, new EntityStreamCallback<ProjectKey, String>()
         {
@@ -409,31 +415,32 @@ public class ChangesetDaoImpl implements ChangesetDao
 
         return projectKeys;
     }
-    
+
     @Table("IssueToChangeset")
-    static interface ProjectKey extends RawEntity<String> {
+    static interface ProjectKey extends RawEntity<String>
+    {
 
         @PrimaryKey(IssueToChangesetMapping.PROJECT_KEY)
         String getProjectKey();
-        
+
         void setProjectKey();
     }
 
-	@Override
-	public void markSmartcommitAvailability(int id, boolean available)
-	{
-		final ChangesetMapping changesetMapping = activeObjects.get(ChangesetMapping.class, id);
-		changesetMapping.setSmartcommitAvailable(available);
-		activeObjects.executeInTransaction(new TransactionCallback<Void>()
-		{
-			@Override
-			public Void doInTransaction()
-			{
-				changesetMapping.save();
-				return null;
-			}
-		});
-	}
+    @Override
+    public void markSmartcommitAvailability(int id, boolean available)
+    {
+        final ChangesetMapping changesetMapping = activeObjects.get(ChangesetMapping.class, id);
+        changesetMapping.setSmartcommitAvailable(available);
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction()
+            {
+                changesetMapping.save();
+                return null;
+            }
+        });
+    }
 
 
 }

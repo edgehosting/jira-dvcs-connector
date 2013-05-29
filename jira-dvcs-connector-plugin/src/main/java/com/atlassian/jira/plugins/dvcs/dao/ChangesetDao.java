@@ -15,7 +15,7 @@ public interface ChangesetDao
 {
     /**
      * Removes all changesets from given repository
-     * 
+     *
      * @param repositoryId
      */
     void removeAllInRepository(int repositoryId);
@@ -47,7 +47,7 @@ public interface ChangesetDao
 
     /**
      * Returns all changetsets related to given issueKey
-     * 
+     *
      * @param issueKey
      * @return
      */
@@ -62,27 +62,26 @@ public interface ChangesetDao
 
     /**
      * Returns latest changesets. Used by activity stream.
-     * 
+     *
      * @param maxResults
      * @param gf
      * @return
      */
     List<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
-    
+
     /**
      * Returns lists of latest commits that need to be processed by smartcommits logic.
-     * 
+     *
      * @param closure
      */
     void forEachLatestChangesetsAvailableForSmartcommitDo(ForEachChangesetClosure closure);
-    
+
     /**
-     * 
      * @param id
      * @param available
      */
     void markSmartcommitAvailability(int id, boolean available);
-    
+
     /**
      * From the changesets in database find all referenced project keys.
      *
@@ -90,7 +89,11 @@ public interface ChangesetDao
      * @return the project keys by repository
      */
     Set<String> findReferencedProjects(int repositoryId);
-    
+
+    List<Changeset> transform(ChangesetMapping changesetMapping);
+
+    List<Changeset> transform(List<ChangesetMapping> changesetMappings);
+
     /**
      *
      */

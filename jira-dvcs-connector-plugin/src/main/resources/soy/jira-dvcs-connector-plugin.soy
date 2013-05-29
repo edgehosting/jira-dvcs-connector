@@ -396,13 +396,13 @@
 {/template}
 
 /**
- * @param errorMessages
+ * @param smartCommitErrors
  */
 {template .smartCommitErrors}
 	<h2>Smart commit errors</h2>
 	<ul>
-	{foreach $error in $errorMessages}
-	    <li>{$error}</li>
+	{foreach $sce in $smartCommitErrors}
+	    <li><a href='{$sce.commitUrl}' target='_blank'>{$sce.shortChangesetNode}</a>: {$sce.error}</li>
 	{/foreach}
 	</ul>
 {/template}
