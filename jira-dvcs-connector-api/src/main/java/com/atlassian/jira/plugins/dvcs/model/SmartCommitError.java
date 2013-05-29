@@ -2,15 +2,19 @@ package com.atlassian.jira.plugins.dvcs.model;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
+@XmlRootElement(name = "smartCommitError")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SmartCommitError
 {
 
+    @XmlAttribute
     private String shortChangesetNode;
+    @XmlAttribute
     private String commitUrl;
+    @XmlAttribute
     private String error;
 
     public SmartCommitError()
