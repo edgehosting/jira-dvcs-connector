@@ -43,43 +43,40 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             return null;
         }
-        
-        OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId()); 
+
+        OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId());
 
         log.debug("Repository transformation: [{}] ", repositoryMapping);
-        
-        if (organizationMapping != null) {
-            Credential credential = new Credential(
-                organizationMapping.getOauthKey(), organizationMapping.getOauthSecret(),
-                organizationMapping.getAccessToken(),
-                organizationMapping.getAdminUsername(), organizationMapping.getAdminPassword());
+
+        if (organizationMapping != null)
+        {
+            Credential credential = new Credential(organizationMapping.getOauthKey(), organizationMapping.getOauthSecret(),
+                    organizationMapping.getAccessToken(), organizationMapping.getAdminUsername(), organizationMapping.getAdminPassword());
 
             Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(),
                     organizationMapping.getDvcsType(), repositoryMapping.getSlug(), repositoryMapping.getName(),
-                    repositoryMapping.getLastCommitDate(),
-                    repositoryMapping.isLinked(), repositoryMapping.isDeleted(), credential);
+                    repositoryMapping.getLastCommitDate(), repositoryMapping.isLinked(), repositoryMapping.isDeleted(), credential);
 
             repository.setOrgHostUrl(organizationMapping.getHostUrl());
             repository.setOrgName(organizationMapping.getName());
             repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
             repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
-            
+
             // set sync progress
             repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
             return repository;
-            
-        } else {
-            Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(),
-                    null, repositoryMapping.getSlug(), repositoryMapping.getName(),
-                    repositoryMapping.getLastCommitDate(),
+
+        } else
+        {
+            Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(), null,
+                    repositoryMapping.getSlug(), repositoryMapping.getName(), repositoryMapping.getLastCommitDate(),
                     repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
 
-            
             repository.setOrgHostUrl(null);
             repository.setOrgName(null);
             repository.setRepositoryUrl(null);
             repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
-            
+
             // set sync progress
             repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
             return repository;
@@ -102,29 +99,29 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Override
     public List<Repository> getAllByOrganization(final int organizationId, final boolean includeDeleted)
     {
-        List<RepositoryMapping> repositoryMappings = activeObjects
-                .executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
+        List<RepositoryMapping> repositoryMappings = activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
+        {
+            @Override
+            public List<RepositoryMapping> doInTransaction()
+            {
+                Query query = Query.select();
+                if (includeDeleted)
                 {
-                    @Override
-                    public List<RepositoryMapping> doInTransaction()
-                    {
-                        Query query = Query.select();
-                        if (includeDeleted)
-                        {
-                            query.where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
-                        } else
-                        {
-                            query.where(RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED
-                                            + " = ? ", organizationId, Boolean.FALSE);
-                        }
-                        query.order(RepositoryMapping.NAME);
+                    query.where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
+                } else
+                {
+                    query.where(RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED + " = ? ", organizationId,
+                            Boolean.FALSE);
+                }
+                query.order(RepositoryMapping.NAME);
 
-                        final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, query);
-                        return Arrays.asList(rms);
-                    }
-                });
+                final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, query);
+                return Arrays.asList(rms);
+            }
+        });
 
-        return (List<Repository>) CollectionUtils.collect(repositoryMappings, new Transformer() {
+        return (List<Repository>) CollectionUtils.collect(repositoryMappings, new Transformer()
+        {
 
             @Override
             public Object transform(Object input)
@@ -140,23 +137,22 @@ public class RepositoryDaoImpl implements RepositoryDao
     public List<Repository> getAll(final boolean includeDeleted)
     {
 
-        List<RepositoryMapping> repositoryMappings = activeObjects
-                .executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
+        List<RepositoryMapping> repositoryMappings = activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
+        {
+            @Override
+            public List<RepositoryMapping> doInTransaction()
+            {
+                Query select = Query.select();
+                if (!includeDeleted)
                 {
-                    @Override
-                    public List<RepositoryMapping> doInTransaction()
-                    {
-                        Query select = Query.select();
-                        if (!includeDeleted)
-                        {
-                            select = select.where(RepositoryMapping.DELETED + " = ? ", Boolean.FALSE);
-                        }
-                        select.order(RepositoryMapping.NAME);
+                    select = select.where(RepositoryMapping.DELETED + " = ? ", Boolean.FALSE);
+                }
+                select.order(RepositoryMapping.NAME);
 
-                        final RepositoryMapping[] repos = activeObjects.find(RepositoryMapping.class, select);
-                        return Arrays.asList(repos);
-                    }
-                });
+                final RepositoryMapping[] repos = activeObjects.find(RepositoryMapping.class, select);
+                return Arrays.asList(repos);
+            }
+        });
 
         final Collection<Repository> repositories = transformRepositories(repositoryMappings);
 
@@ -165,7 +161,8 @@ public class RepositoryDaoImpl implements RepositoryDao
     }
 
     @Override
-    public boolean existsLinkedRepositories(final boolean includeDeleted) {
+    public boolean existsLinkedRepositories(final boolean includeDeleted)
+    {
         return activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
         {
             @Override
@@ -177,8 +174,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                     query.where(RepositoryMapping.LINKED + " = ?", Boolean.TRUE);
                 } else
                 {
-                    query.where(RepositoryMapping.LINKED + " = ? AND " + RepositoryMapping.DELETED
-                                    + " = ? ", Boolean.TRUE, Boolean.FALSE);
+                    query.where(RepositoryMapping.LINKED + " = ? AND " + RepositoryMapping.DELETED + " = ? ", Boolean.TRUE, Boolean.FALSE);
                 }
 
                 return activeObjects.count(RepositoryMapping.class, query) > 0;
@@ -188,15 +184,16 @@ public class RepositoryDaoImpl implements RepositoryDao
 
     /**
      * Transform repositories.
-     *
-     * @param repositoriesToReturn the repositories to return
+     * 
+     * @param repositoriesToReturn
+     *            the repositories to return
      * @return the collection< repository>
      */
     @SuppressWarnings("unchecked")
-    private Collection<Repository> transformRepositories(
-            final List<RepositoryMapping> repositoriesToReturn)
+    private Collection<Repository> transformRepositories(final List<RepositoryMapping> repositoriesToReturn)
     {
-        return CollectionUtils.collect(repositoriesToReturn, new Transformer() {
+        return CollectionUtils.collect(repositoriesToReturn, new Transformer()
+        {
 
             @Override
             public Object transform(Object input)
@@ -210,21 +207,22 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Override
     public Repository get(final int repositoryId)
     {
-        RepositoryMapping repositoryMapping = activeObjects
-                .executeInTransaction(new TransactionCallback<RepositoryMapping>()
-                {
-                    @Override
-                    public RepositoryMapping doInTransaction()
-                    {
-                        return activeObjects.get(RepositoryMapping.class, repositoryId);
-                    }
-                });
+        RepositoryMapping repositoryMapping = activeObjects.executeInTransaction(new TransactionCallback<RepositoryMapping>()
+        {
+            @Override
+            public RepositoryMapping doInTransaction()
+            {
+                return activeObjects.get(RepositoryMapping.class, repositoryId);
+            }
+        });
 
-        if (repositoryMapping == null) {
+        if (repositoryMapping == null)
+        {
             log.warn("Repository with id {} was not found.", repositoryId);
             return null;
 
-        } else {
+        } else
+        {
             return transform(repositoryMapping);
 
         }
@@ -233,45 +231,44 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Override
     public Repository save(final Repository repository)
     {
-        final RepositoryMapping repositoryMapping = activeObjects
-                .executeInTransaction(new TransactionCallback<RepositoryMapping>()
+        final RepositoryMapping repositoryMapping = activeObjects.executeInTransaction(new TransactionCallback<RepositoryMapping>()
+        {
+
+            @Override
+            public RepositoryMapping doInTransaction()
+            {
+                RepositoryMapping rm;
+                if (repository.getId() == 0)
                 {
+                    // we need to remove null characters '\u0000' because PostgreSQL cannot store String values
+                    // with such characters
+                    final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
+                    map.put(RepositoryMapping.ORGANIZATION_ID, repository.getOrganizationId());
+                    map.put(RepositoryMapping.SLUG, repository.getSlug());
+                    map.put(RepositoryMapping.NAME, repository.getName());
+                    map.put(RepositoryMapping.LAST_COMMIT_DATE, repository.getLastCommitDate());
+                    map.put(RepositoryMapping.LINKED, repository.isLinked());
+                    map.put(RepositoryMapping.DELETED, repository.isDeleted());
+                    map.put(RepositoryMapping.SMARTCOMMITS_ENABLED, repository.isSmartcommitsEnabled());
 
-                    @Override
-                    public RepositoryMapping doInTransaction()
-                    {
-                        RepositoryMapping rm;
-                        if (repository.getId() == 0)
-                        {
-                            // we need to remove null characters '\u0000' because PostgreSQL cannot store String values
-                            // with such characters
-                            final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
-                            map.put(RepositoryMapping.ORGANIZATION_ID, repository.getOrganizationId());
-                            map.put(RepositoryMapping.SLUG, repository.getSlug());
-                            map.put(RepositoryMapping.NAME, repository.getName());
-                            map.put(RepositoryMapping.LAST_COMMIT_DATE, repository.getLastCommitDate());
-                            map.put(RepositoryMapping.LINKED, repository.isLinked());
-                            map.put(RepositoryMapping.DELETED, repository.isDeleted());
-                            map.put(RepositoryMapping.SMARTCOMMITS_ENABLED, repository.isSmartcommitsEnabled());
+                    rm = activeObjects.create(RepositoryMapping.class, map);
+                    rm = activeObjects.find(RepositoryMapping.class, "ID = ?", rm.getID())[0];
+                } else
+                {
+                    rm = activeObjects.get(RepositoryMapping.class, repository.getId());
 
-                            rm = activeObjects.create(RepositoryMapping.class, map);
-                            rm = activeObjects.find(RepositoryMapping.class, "ID = ?", rm.getID())[0];
-                        } else
-                        {
-                            rm = activeObjects.get(RepositoryMapping.class, repository.getId());
+                    rm.setSlug(repository.getSlug());
+                    rm.setName(repository.getName());
+                    rm.setLastCommitDate(repository.getLastCommitDate());
+                    rm.setLinked(repository.isLinked());
+                    rm.setDeleted(repository.isDeleted());
+                    rm.setSmartcommitsEnabled(repository.isSmartcommitsEnabled());
 
-                            rm.setSlug(repository.getSlug());
-                            rm.setName(repository.getName());
-                            rm.setLastCommitDate(repository.getLastCommitDate());
-                            rm.setLinked(repository.isLinked());
-                            rm.setDeleted(repository.isDeleted());
-                            rm.setSmartcommitsEnabled(repository.isSmartcommitsEnabled());
-
-                            rm.save();
-                        }
-                        return rm;
-                    }
-                });
+                    rm.save();
+                }
+                return rm;
+            }
+        });
 
         return transform(repositoryMapping);
 
