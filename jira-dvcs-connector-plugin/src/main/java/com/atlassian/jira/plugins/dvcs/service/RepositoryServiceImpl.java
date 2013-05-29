@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -46,9 +48,12 @@ public class RepositoryServiceImpl implements RepositoryService
     private final Object removeOrphanRepositoriesLock = new Object();
 
     /**
-     * @see #removeOrphanRepositoriesAsync()
+     * @see #removeOrphanRepositoriesAsync(List)
      */
-    private final ExecutorService removeOrphanRepositoriesExecutor = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("DVCSConnectoRemoveOrphanRepositoriesExecutorThread"));
+    private final ExecutorService removeOrphanRepositoriesExecutor = new ThreadPoolExecutor(//
+            0, 1, // no remaining threads and at most single thread
+            0, TimeUnit.MILLISECONDS, // destroys thread immediately, when is not used
+            new LinkedBlockingQueue<Runnable>(), ThreadFactories.namedThreadFactory("DVCSConnectoRemoveRepositoriesExecutorThread"));
 
     /** The communicator provider. */
     private final DvcsCommunicatorProvider communicatorProvider;
@@ -66,10 +71,10 @@ public class RepositoryServiceImpl implements RepositoryService
     private final ApplicationProperties applicationProperties;
 
     private final PluginSettingsFactory pluginSettingsFactory;
-    
+
     /**
      * The Constructor.
-     * 
+     *
      * @param communicatorProvider
      *            the communicator provider
      * @param repositoryDao
@@ -109,7 +114,7 @@ public class RepositoryServiceImpl implements RepositoryService
     {
         return repositoryDao.getAllByOrganization(organizationId, includeDeleted);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -267,11 +272,11 @@ public class RepositoryServiceImpl implements RepositoryService
                 progress.setFinished(true);
                 synchronizer.putProgress(repository, progress);
             }
-            
+
             progress.setAdminPermission(hasAdminPermission);
         }
     }
-    
+
     /**
      * Removes the deleted repositories.
      *
@@ -406,7 +411,7 @@ public class RepositoryServiceImpl implements RepositoryService
     {
         return repositoryDao.getAll(false);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -529,15 +534,14 @@ public class RepositoryServiceImpl implements RepositoryService
     {
         for (Repository repository : repositories)
         {
+            markForRemove(repository);
             // try remove postcommit hook
             if (repository.isLinked())
             {
                 removePostcommitHook(repository);
                 repository.setLinked(false);
-                
             }
-            
-            markForRemove(repository);
+
             repositoryDao.save(repository);
         }
     }
@@ -548,7 +552,7 @@ public class RepositoryServiceImpl implements RepositoryService
         synchronizer.removeProgress(repository);
         repository.setDeleted(true);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -591,17 +595,16 @@ public class RepositoryServiceImpl implements RepositoryService
     /**
      * {@inheritDoc}
      */
+    @Override
     public void removeOrphanRepositoriesAsync(final List<Repository> orphanRepositories)
     {
         removeOrphanRepositoriesExecutor.execute(new Runnable()
         {
-            
             @Override
             public void run()
             {
                 removeOrphanRepositories(orphanRepositories);
             }
-            
         });
     }
 
