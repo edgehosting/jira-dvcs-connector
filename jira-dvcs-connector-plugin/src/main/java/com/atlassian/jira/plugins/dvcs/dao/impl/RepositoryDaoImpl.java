@@ -45,43 +45,32 @@ public class RepositoryDaoImpl implements RepositoryDao
         }
 
         OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId());
-
         log.debug("Repository transformation: [{}] ", repositoryMapping);
+
+        Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(), null,
+                repositoryMapping.getSlug(), repositoryMapping.getName(), repositoryMapping.getLastCommitDate(),
+                repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
+        repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
+        // set sync progress
+        repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
 
         if (organizationMapping != null)
         {
             Credential credential = new Credential(organizationMapping.getOauthKey(), organizationMapping.getOauthSecret(),
                     organizationMapping.getAccessToken(), organizationMapping.getAdminUsername(), organizationMapping.getAdminPassword());
-
-            Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(),
-                    organizationMapping.getDvcsType(), repositoryMapping.getSlug(), repositoryMapping.getName(),
-                    repositoryMapping.getLastCommitDate(), repositoryMapping.isLinked(), repositoryMapping.isDeleted(), credential);
-
+            repository.setCredential(credential);
+            repository.setDvcsType(organizationMapping.getDvcsType());
             repository.setOrgHostUrl(organizationMapping.getHostUrl());
             repository.setOrgName(organizationMapping.getName());
             repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
-            repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
-
-            // set sync progress
-            repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
-            return repository;
-
         } else
         {
-            Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(), null,
-                    repositoryMapping.getSlug(), repositoryMapping.getName(), repositoryMapping.getLastCommitDate(),
-                    repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
-
             repository.setOrgHostUrl(null);
             repository.setOrgName(null);
             repository.setRepositoryUrl(null);
-            repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
-
-            // set sync progress
-            repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
-            return repository;
-
         }
+
+        return repository;
     }
 
     private String createRepositoryUrl(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
@@ -184,7 +173,7 @@ public class RepositoryDaoImpl implements RepositoryDao
 
     /**
      * Transform repositories.
-     * 
+     *
      * @param repositoriesToReturn
      *            the repositories to return
      * @return the collection< repository>
