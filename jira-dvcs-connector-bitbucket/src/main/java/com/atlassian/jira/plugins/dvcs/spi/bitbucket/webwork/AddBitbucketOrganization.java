@@ -122,6 +122,12 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         // now get the access token
         Verifier verifier = new Verifier(request.getParameter("oauth_verifier"));
         Token requestToken = (Token) request.getSession().getAttribute("requestToken");
+
+        if (requestToken == null) {
+            log.debug("Request token is NULL. It has been removed in the previous attempt of adding organization. Now we will stop.");
+            return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
+        }
+
         request.getSession().removeAttribute("requestToken");
 
         OAuthService service = createOAuthScribeService();
