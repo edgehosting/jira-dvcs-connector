@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -46,9 +48,12 @@ public class RepositoryServiceImpl implements RepositoryService
     private final Object removeOrphanRepositoriesLock = new Object();
 
     /**
-     * @see #removeOrphanRepositoriesAsync()
+     * @see #removeOrphanRepositoriesAsync(List)
      */
-    private final ExecutorService removeOrphanRepositoriesExecutor = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("DVCSConnectoRemoveOrphanRepositoriesExecutorThread"));
+    private final ExecutorService removeOrphanRepositoriesExecutor = new ThreadPoolExecutor(//
+            0, 1, // no remaining threads and at most single thread
+            0, TimeUnit.MILLISECONDS, // destroys thread immediately, when is not used
+            new LinkedBlockingQueue<Runnable>(), ThreadFactories.namedThreadFactory("DVCSConnectoRemoveRepositoriesExecutorThread"));
 
     /** The communicator provider. */
     private final DvcsCommunicatorProvider communicatorProvider;
