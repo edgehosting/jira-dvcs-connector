@@ -375,20 +375,24 @@ function configureDefaultGroups(orgName, id) {
     // load web fragment
     AJS.$.ajax({
             type : 'GET',
-            url : BASE_URL + "/rest/bitbucket/1.0/fragment/" + id + "/defaultgroups",
+            url : BASE_URL + "/rest/bitbucket/1.0/organization/" + id + "/defaultgroups",
             success :
             function (data) {
             	if (dialog.isAttached())
             	{
-	                AJS.$(".dialog-panel-body #configureDefaultGroupsContent").html(data);
+	                AJS.$(".dialog-panel-body #configureDefaultGroupsContent").html(jira.dvcs.connector.plugin.soy.defaultGroups({
+	                	organization: data.organization,
+	                	groups: data.groups,
+	                }));
 	                dialog.updateHeight();
 	                dialog.enableActions();
             	}
             }
         }
-    ).error(function (err) { 
-            dialog.showError("Unexpected error occurred. Please contact the server administrator.");
-        });
+    ).error(function (err) {
+    	dialog.showError(AJS.$(err.responseXML).find('status').find('message').text());
+        dialog.updateHeight();
+    });
 }
 
 function configureOAuth(org, atlToken) {

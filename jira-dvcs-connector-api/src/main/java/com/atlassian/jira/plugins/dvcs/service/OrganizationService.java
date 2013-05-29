@@ -6,6 +6,7 @@ import java.util.List;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 
 /**
@@ -121,6 +122,12 @@ public interface OrganizationService
      * @return
      */
     DvcsUser getTokenOwner(int organizationId);
+    
+    /**
+     * @param organization
+     * @return returns {@link Group}-s available for provided {@link Organization}
+     */
+    List<Group> getGroupsForOrganization(Organization organization);
 
 }
 

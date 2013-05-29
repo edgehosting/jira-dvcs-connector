@@ -3,7 +3,10 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -425,26 +428,45 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public Set<Group> getGroupsForOrganization(Organization organization)
+    public List<Group> getGroupsForOrganization(Organization organization)
     {
         try
         {
             AuthProvider authProvider = bitbucketAuthProviderFactory.getForOrganization(organization);
             BitbucketRemoteClient remoteClient = new BitbucketRemoteClient(authProvider);
             Set<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
-            return GroupTransformer.fromBitbucketGroups(groups);
+
+            Set<Group> result = GroupTransformer.fromBitbucketGroups(groups);
+            List<Group> sortedResult = new LinkedList<Group>(result);
+            Collections.sort(sortedResult, new Comparator<Group>()
+            {
+
+                @Override
+                public int compare(Group o1, Group o2)
+                {
+                    return o1.getNiceName().compareTo(o2.getNiceName());
+                }
+
+            });
+
+            return sortedResult;
+
         } catch (BitbucketRequestException.Forbidden_403 e)
         {
             log.debug("Could not get groups for organization [" + organization.getName() + "]");
             throw new SourceControlException.Forbidden_403(e);
+        
         } catch (BitbucketRequestException e)
         {
             log.debug("Could not get groups for organization [" + organization.getName() + "]");
             throw new SourceControlException(e);
+     
         } catch (JsonParsingException e)
         {
             log.debug(e.getMessage(), e);
-            throw new SourceControlException.InvalidResponseException("Could not parse response [" + organization.getName() + "]. This is most likely caused by invalid credentials.", e);
+            throw new SourceControlException.InvalidResponseException("Could not parse response [" + organization.getName()
+                    + "]. This is most likely caused by invalid credentials.", e);
+        
         }
     }
 
