@@ -148,35 +148,33 @@
 {template .advertisement}
 	<div class="dvcs-advertisement">
 		<div class="header">
-			<h3>Do more by connecting your source</h3>
-			Easily see the progress of work being done and the code changes related to an issue. Add a JIRA key 
-			to any commit message to see it here and quickly navigate to your commits. 
+			<h3>Connect your code to JIRA</h3>
+			Link every code change to JIRA just by adding an issue keys in commit messages. Bridge the gap back to your source and know which changes fixed which JIRA issues.
 		</div>
 		<div class="main">
-			{call .advertisementProduct}
-				{param logoUrl}{contextPath() + '/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/logo_stash.png'}{/param}
-				{param title: 'Git behind the firewall' /}
-				{param content}
-					Manage Git repositories and collaborate on code behind your firewall. 
-				{/param}
-				{param linkConnect}{contextPath() + '/plugins/servlet/applinks/listApplicationLinks'}{/param}
-				{param linkMore: 'http://www.atlassian.com/software/stash/overview?utm_source=jirafe-stash&utm_medium=website&utm_campaign=jirafe' /}
-			{/call}
-			{call .advertisementProduct}
+            {call .advertisementProduct}
 				{param logoUrl}{contextPath() + '/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/logo_bitbucket.png'}{/param}
 				{param title: 'Git & Mercurial in the cloud' /}
 				{param content}
-					Unlimited private repositories to collaborate on your code.
+					Collaborate across unlimited private code repositories.
 				{/param}
 				{param linkConnect}{contextPath() + '/secure/admin/ConfigureDvcsOrganizations!default.jspa'}{/param}
 				{param linkMore: 'http://www.bitbucket.org/?utm_source=jirafe-bitbucket&utm_medium=website&utm_campaign=jirafe' /}
 			{/call}
 			{call .advertisementProduct}
+				{param logoUrl}{contextPath() + '/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/logo_stash.png'}{/param}
+				{param title: 'Git behind the firewall' /}
+				{param content}
+					Manage and collaborate on Git repositories behind a firewall.
+				{/param}
+				{param linkConnect}{contextPath() + '/plugins/servlet/applinks/listApplicationLinks'}{/param}
+				{param linkMore: 'http://www.atlassian.com/software/stash/overview?utm_source=jirafe-stash&utm_medium=website&utm_campaign=jirafe' /}
+			{/call}
+			{call .advertisementProduct}
 				{param logoUrl}{contextPath() + '/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/logo_fisheye.png'}{/param}
 				{param title: 'Browse and search code' /}
 				{param content}
-					Browse, search, and track 
-					your source code repositories.
+					Browse, search, and track source code repositories.
 				{/param}
 				{param linkConnect}{contextPath() + '/plugins/servlet/applinks/listApplicationLinks'}{/param}
 				{param linkMore: 'http://www.atlassian.com/software/fisheye/overview?utm_source=jirafe-fisheye&utm_medium=website&utm_campaign=jirafe' /}
@@ -197,7 +195,7 @@
  */
 {template .advertisementProduct}
 	<div class="product">
-		<div class="logo"><img src="{$logoUrl}" /></div>
+		<div><img src="{$logoUrl}" /></div>
 		<h4>{$title}</h4>
 		<div class="content">
 			{$content}
