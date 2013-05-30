@@ -58,6 +58,8 @@
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
@@ -69,6 +71,8 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_08_ActiveObjectsV3Migrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_09_SmartCommitsColumnsMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_10_LastChangesetNodeMigrator</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_11_AddKeyAndSecretToBBAccounts</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_12_SplitUpChangesetsMigrator</upgradeTask>
     </ao>
 	
 	<!-- Integrated account -->
@@ -94,16 +98,6 @@
 		class="com.atlassian.jira.plugins.dvcs.upgrade.To_02_ProjectBasedRepositoryLinksUpgradeTask">
 		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
 	</component>
-
-    <component key="oAuthStorageUpgradeTask" name="Migrate OAuth details to new location" public="true"
-        class="com.atlassian.jira.plugins.dvcs.upgrade.To_03_UpgradeOAuthDetails">
-        <interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
-    </component>
-
-    <component key="oAuthKeySecretUpgrade" name="Adding OAuth key/secret to each bitbucket organization" public="true"
-        class="com.atlassian.jira.plugins.dvcs.upgrade.To_04_AddKeyAndSecretToBBAccounts">
-        <interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
-    </component>
 
     <component key="bitbucketLinker" name="bitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinkerImpl">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
@@ -257,8 +251,8 @@
     </component>
 
     <component key="bitbucketRemoteClientFactory" name="Bitbucket Remote Client Factory"
-               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketRemoteClientFactory">
-        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory</interface>
+               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketAuthProviderFactory">
+        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbuckeAuthProviderFactory</interface>
     </component>
 
      <component key="pluginFeatureDetector" name="pluginFeatureDetector"
@@ -323,11 +317,6 @@
                 <view name="input">/templates/dvcs/add-bitbucket-organization.vm</view>
             </action>
 
-            <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.UpdateBitbucketCredentials"
-                    alias="UpdateBitbucketCredentials" roles-required="admin">
-                <view name="input">/templates/dvcs/update-bitbucket-password.vm</view>
-            </action>
-
 			<action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken"
                     alias="RegenerateGithubOauthToken" roles-required="admin">
                 <view name="input">/templates/dvcs/regenerate-oauth.vm</view>
@@ -365,12 +354,15 @@
         <resource type="download" name="javascripts/validation.js" location="javascripts/validation.js"/>
 	    <resource type="download" name="css/styles.css" location="css/styles.css" />
         <context>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin</context>
+        <dependency>com.atlassian.auiplugin:aui-experimental-dropdown2</dependency>
+        <dependency>com.atlassian.auiplugin:aui-experimental-iconfont</dependency>
     </web-resource>
 
     <web-resource key="requiredResourceForAjaxCommitsTab" name="Resources That Needs To be Loaded On Issue View">
 		<context>jira.view.issue</context>
 		<dependency>jira.webresources:viewissue</dependency>
 		<resource type="download" name="css/issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
+        <resource type="download" name="javascripts/dvcs-issue-tabs.js" location="javascripts/dvcs-issue-tabs.js"/>
 	</web-resource>
 
     <web-resource key="requiredResourceForGreenHopperCommitsTab" name="Resources That Needs To be Loaded On GreenHopper Board">

@@ -222,3 +222,12 @@
     position: absolute;
     width: 17px;
 }
+
+.ForksDropDown {
+    float: right;
+    top: -5px;
+}
+
+.icon.fork {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABV0RVh0Q3JlYXRpb24gVGltZQAxMi83LzEyiCJQPAAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNXG14zYAAADlSURBVDiNpZK9cQIxEIU/IHFIB9ABhMpsd2A6OCp4sbu4rYBLHTpyKofKcOaQEgjJ7IA9z834tMPPm9HMStr39hfuxOxagqQ2pXQqpRwAJlcQn9xsgRWwNbMuFJC0dsJjxcWqJUhqgA9gGcQ4jWbg5N3gqQMObjcu2pnZdiLpJ4hwBDZmlgfi2ckdQCRwBJ7NbB8EYBr8zYF1RO4F8sjpsfN+/EFSltT290ub+DkQboAF8A401T2Q9OIi86CCr+oelFK+U0pvLrAEHkbcXi9e5UFmmfMqb8wsR1OoYc95vPkG7n/8Ah6gSpKoIyCvAAAAAElFTkSuQmCC');
+}

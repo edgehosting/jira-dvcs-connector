@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -66,7 +67,7 @@ public class RootResource
 
     /**
      * The Constructor.
-     *
+     * 
      * @param organizationService
      *            the organization service
      * @param repositoryService
@@ -83,7 +84,7 @@ public class RootResource
 
     /**
      * Gets the repository.
-     *
+     * 
      * @param id
      *            the id
      * @return the repository
@@ -106,7 +107,7 @@ public class RootResource
 
     /**
      * Gets the all repositories.
-     *
+     * 
      * @return the all repositories
      */
     @GET
@@ -121,7 +122,7 @@ public class RootResource
 
     /**
      * Start repository sync.
-     *
+     * 
      * @param id
      *            the id
      * @param payload
@@ -143,7 +144,7 @@ public class RootResource
 
     /**
      * Start repository softsync.
-     *
+     * 
      * @param id
      *            the id
      * @return the response
@@ -169,7 +170,7 @@ public class RootResource
 
     /**
      * Start repository fullsync.
-     *
+     * 
      * @param id
      *            the id
      * @return the response
@@ -195,7 +196,7 @@ public class RootResource
 
     /**
      * Account info.
-     *
+     * 
      * @param server
      *            the server
      * @param account
@@ -210,8 +211,7 @@ public class RootResource
     {
         if (StringUtils.isEmpty(server) || StringUtils.isEmpty(account))
         {
-            log.debug("REST call /accountInfo contained empty server '{}' or account '{}' param",
-                    new Object[] {server, account});
+            log.debug("REST call /accountInfo contained empty server '{}' or account '{}' param", new Object[] { server, account });
 
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
@@ -237,10 +237,19 @@ public class RootResource
         {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        DvcsUser currentUser = organizationService.getTokenOwner(Integer.parseInt(organizationId));
-        return Response.ok(currentUser).build();
+        DvcsUser currentUser;
+        try
+        {
+            currentUser = organizationService.getTokenOwner(Integer.parseInt(organizationId));
+            return Response.ok(currentUser).build();
+        } catch (Exception e)
+        {
+            log.warn("Error retrieving token owner: " + e.getMessage());
+        }
+
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
-    
+
     @GET
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/organization/{id}/syncRepoList")
@@ -260,7 +269,7 @@ public class RootResource
     @POST
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/org/{id}/autolink")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({ MediaType.APPLICATION_JSON })
     @AdminOnly
     public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, SentData autolink)
     {
@@ -271,31 +280,30 @@ public class RootResource
     @POST
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/org/{id}/globalsmarts")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({ MediaType.APPLICATION_JSON })
     @AdminOnly
-    public Response enableSmartcommitsOnNewRepos(@PathParam("id") int id,
-            SentData autoinvite)
+    public Response enableSmartcommitsOnNewRepos(@PathParam("id") int id, SentData autoinvite)
     {
         organizationService.enableSmartcommitsOnNewRepos(id, Boolean.parseBoolean(autoinvite.getPayload()));
         return Response.noContent().build();
     }
 
     @POST
-    @Produces({ MediaType.APPLICATION_XML})
+    @Produces({ MediaType.APPLICATION_XML })
     @Path("/org/{id}/oauth")
-    @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
+    @Consumes({ MediaType.APPLICATION_FORM_URLENCODED })
     @AdminOnly
-    public Response setOrganizationOAuth(@PathParam("id") int id, @FormParam("key") String key,  @FormParam("secret") String secret)
+    public Response setOrganizationOAuth(@PathParam("id") int id, @FormParam("key") String key, @FormParam("secret") String secret)
     {
         Organization organization = organizationService.get(id, false);
-        organizationService.updateCredentialsKeySecret(id, key, secret, organization.getCredential().getAccessToken());
+        organizationService.updateCredentials(id, new Credential(key, secret, organization.getCredential().getAccessToken()));
         return Response.ok(organization).build();
     }
 
     @POST
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repo/{id}/autolink")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({ MediaType.APPLICATION_JSON })
     @AdminOnly
     public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
     {
@@ -306,7 +314,7 @@ public class RootResource
     @POST
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repo/{id}/smart")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({ MediaType.APPLICATION_JSON })
     @AdminOnly
     public Response enableSmartcommits(@PathParam("id") int id, SentData enabled)
     {
@@ -351,7 +359,7 @@ public class RootResource
 
     @POST
     @Path("/linkers/{onoff}")
-    @Consumes({ MediaType.TEXT_PLAIN})
+    @Consumes({ MediaType.TEXT_PLAIN })
     @Produces({ MediaType.TEXT_PLAIN })
     @AdminOnly
     public Response onOffLinkers(@PathParam("onoff") String onOff)
@@ -371,8 +379,8 @@ public class RootResource
     @GET
     @AnonymousAllowed
     @Path("/integrated-accounts/reload")
-    @Consumes({MediaType.TEXT_PLAIN, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.TEXT_PLAIN})
+    @Consumes({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_FORM_URLENCODED })
+    @Produces({ MediaType.TEXT_PLAIN })
     public Response reloadIntegratedAccountConfig()
     {
         try
@@ -385,7 +393,7 @@ public class RootResource
             return Response.serverError().build();
         }
     }
-    
+
     @DELETE
     @Path("/organization/{id}")
     @AdminOnly
@@ -395,6 +403,11 @@ public class RootResource
         if (integratedAccount != null && id == integratedAccount.getId())
         {
             return Status.error().message("Failed to delete integrated account.").response();
+        }
+
+        if (organizationService.get(id, false) == null)
+        {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         try

@@ -44,19 +44,6 @@ public interface OrganizationDao
     void remove(int organizationId);
 
 	/**
-	 * Update credentials.
-	 *
-	 * @param organizationId the organization id
-	 * @param username the username
-	 * @param plaintextPassword the plaintext password, null safe
-	 * @param accessToken the access token, null safe
-	 */
-	void updateCredentials(int organizationId, String username, String plaintextPassword,
-			String accessToken, String oauthKey, String oauthSecret);
-	
-	void updateCredentialsKeySecret(int organizationId, String oauthKey, String oauthSecret);
-
-	/**
 	 * Gets the all by ids.
 	 *
 	 * @param ids the ids

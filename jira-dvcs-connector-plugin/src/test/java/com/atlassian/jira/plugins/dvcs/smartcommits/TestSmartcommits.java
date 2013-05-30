@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -83,12 +84,11 @@ public final class TestSmartcommits
 
 		waitUntilProgressEnds(synchronizer);
        
-		
 		verify(changesetsProcessorMock).startProcess();
-		verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
+		verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
 
 		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isTrue();
-		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isNull();
+		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isFalse();
 	}
     
 
@@ -109,9 +109,8 @@ public final class TestSmartcommits
 
 		waitUntilProgressEnds(synchronizer);
        
-		
 		verify(changesetsProcessorMock).startProcess();
-		verify(changesetServiceMock, times(2)).save(savedChangesetCaptor.capture());
+		verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
 
 		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isNull();
 		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isNull();

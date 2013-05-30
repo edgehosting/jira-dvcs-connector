@@ -15,43 +15,43 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Repository
 {
-	private int id;
-	private int organizationId;
-	private String dvcsType;
-	private String slug;
-	private String name;
-	private Date lastCommitDate;
-	private boolean linked;
+    private int id;
+    private int organizationId;
+    private String dvcsType;
+    private String slug;
+    private String name;
+    private Date lastCommitDate;
+    private boolean linked;
     private boolean deleted;
     private boolean smartcommitsEnabled;
     
     private String repositoryUrl;
     
-	private transient Credential credential;
-	private transient String orgHostUrl;
-	private transient String orgName;
-	
-	@XmlElement
+    private transient Credential credential;
+    private transient String orgHostUrl;
+    private transient String orgName;
+    
+    @XmlElement
     private DefaultProgress sync;
 
-	public Repository()
-	{
-		super();
-	}
+    public Repository()
+    {
+        super();
+    }
 
-	public Repository(int id, int organizationId, String dvcsType, String slug, String name, Date lastCommitDate,
-			 boolean linked, boolean deleted, Credential credential)
-	{
-		this.id = id;
-		this.organizationId = organizationId;
-		this.dvcsType = dvcsType;
-		this.slug = slug;
-		this.name = name;
-		this.lastCommitDate = lastCommitDate;
-		this.linked = linked;
+    public Repository(int id, int organizationId, String dvcsType, String slug, String name, Date lastCommitDate,
+             boolean linked, boolean deleted, Credential credential)
+    {
+        this.id = id;
+        this.organizationId = organizationId;
+        this.dvcsType = dvcsType;
+        this.slug = slug;
+        this.name = name;
+        this.lastCommitDate = lastCommitDate;
+        this.linked = linked;
         this.deleted = deleted;
         this.credential = credential;
-	}
+    }
 
     public int getId()
     {
@@ -143,44 +143,44 @@ public class Repository
         this.deleted = deleted;
     }
     
-	public String getOrgHostUrl()
-	{
-		return orgHostUrl;
-	}
+    public String getOrgHostUrl()
+    {
+        return orgHostUrl;
+    }
 
-	public void setOrgHostUrl(String orgHostUrl)
-	{
-		this.orgHostUrl = orgHostUrl;
-	}
+    public void setOrgHostUrl(String orgHostUrl)
+    {
+        this.orgHostUrl = orgHostUrl;
+    }
 
-	public String getOrgName()
-	{
-		return orgName;
-	}
+    public String getOrgName()
+    {
+        return orgName;
+    }
 
-	public void setOrgName(String orgName)
-	{
-		this.orgName = orgName;
-	}
+    public void setOrgName(String orgName)
+    {
+        this.orgName = orgName;
+    }
 
-	public Progress getSync()
-	{
-		return sync;
-	}
+    public Progress getSync()
+    {
+        return sync;
+    }
 
-	public void setSync(DefaultProgress sync)
-	{
-		this.sync = sync;
-	}
+    public void setSync(DefaultProgress sync)
+    {
+        this.sync = sync;
+    }
 
     @Override
-	public boolean equals(Object obj)
-	{
-		if (obj == null) return false;
-		if (this==obj) return true;
-		if (this.getClass()!=obj.getClass()) return false;
-		Repository that = (Repository) obj;
-		return new EqualsBuilder()
+    public boolean equals(Object obj)
+    {
+        if (obj == null) return false;
+        if (this==obj) return true;
+        if (this.getClass()!=obj.getClass()) return false;
+        Repository that = (Repository) obj;
+        return new EqualsBuilder()
                 .append(organizationId, that.organizationId)
                 .append(dvcsType, that.dvcsType)
                 .append(slug, that.slug)
@@ -188,9 +188,9 @@ public class Repository
                 .append(linked, that.linked)
                 .append(deleted, that.deleted)
                 .isEquals();
-	}
+    }
 
-	@Override
+    @Override
     public int hashCode()
     {
         return new HashCodeBuilder(17, 37)
@@ -203,29 +203,29 @@ public class Repository
                 .toHashCode();
     }
 
-	public String getRepositoryUrl()
-	{
-		return repositoryUrl;
-	}
+    public String getRepositoryUrl()
+    {
+        return repositoryUrl;
+    }
 
-	public void setRepositoryUrl(String repositoryUrl)
-	{
-		this.repositoryUrl = repositoryUrl;
-	}
+    public void setRepositoryUrl(String repositoryUrl)
+    {
+        this.repositoryUrl = repositoryUrl;
+    }
 
-	public boolean isSmartcommitsEnabled()
-	{
-		return smartcommitsEnabled;
-	}
+    public boolean isSmartcommitsEnabled()
+    {
+        return smartcommitsEnabled;
+    }
 
-	public void setSmartcommitsEnabled(boolean smartcommitsEnabled)
-	{
-		this.smartcommitsEnabled = smartcommitsEnabled;
-	}
+    public void setSmartcommitsEnabled(boolean smartcommitsEnabled)
+    {
+        this.smartcommitsEnabled = smartcommitsEnabled;
+    }
 
-	@Override
-	public String toString()
-	{
+    @Override
+    public String toString()
+    {
         return repositoryUrl + ", " + name + ", " + linked + ", " + deleted + ", " + smartcommitsEnabled;
-	}
+    }
 }

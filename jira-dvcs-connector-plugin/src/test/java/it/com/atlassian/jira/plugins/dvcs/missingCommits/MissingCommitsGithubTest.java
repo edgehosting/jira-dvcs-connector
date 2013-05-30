@@ -1,5 +1,9 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
+import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -8,11 +12,11 @@ import java.net.URL;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisteredOAuthAppsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
 import com.atlassian.plugin.util.zip.FileUnzipper;
@@ -20,25 +24,26 @@ import com.atlassian.plugin.util.zip.FileUnzipper;
 /**
  * @author Miroslav Stencel
  */
+@Test
 public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubConfigureOrganizationsPage>
 {
     private static final String GITHUB_URL = "api.github.com";
     private static final String USER_AGENT = "DVCS Connector Test/X.x";
-    
+
     private static final String _1ST_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_1st_push.zip";
     private static final String _2ND_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_2nd_push_after_merge.zip";
 
     private static GithubRepositoriesRemoteRestpoint githubRepositoriesREST;
 
-    private static String oauthAppLink;
-    
+    private static OAuth oAuth;
+
     @BeforeClass
     public static void initializeGithubRepositoriesREST()
     {
         GitHubClient gitHubClient = new GitHubClient(GITHUB_URL);
-        gitHubClient.setUserAgent(USER_AGENT);        
+        gitHubClient.setUserAgent(USER_AGENT);
         gitHubClient.setCredentials(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
-        
+
         githubRepositoriesREST = new GithubRepositoriesRemoteRestpoint(gitHubClient);
     }
 
@@ -57,25 +62,14 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     @Override
     OAuthCredentials loginToDvcsAndGetJiraOAuthCredentials()
     {
-        jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
-        jira.getPageBinder().bind(GithubLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
+        // log in to github
+        new MagicVisitor(jira).visit(GithubLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
+        // setup up OAuth from github
+        oAuth = new MagicVisitor(jira).visit(GithubOAuthPage.class).addConsumer(jira.getProductInstance().getBaseUrl());
 
-        jira.getTester().gotoUrl(GithubRegisterOAuthAppPage.PAGE_URL);
-        GithubRegisterOAuthAppPage githubRegisterOAuthAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
-
-        String oauthAppName = "testApp" + System.currentTimeMillis();
-        String baseUrl = jira.getProductInstance().getBaseUrl();
-        githubRegisterOAuthAppPage.registerApp(oauthAppName, baseUrl, baseUrl);
-        OAuthCredentials oAuthCredentials = new OAuthCredentials(githubRegisterOAuthAppPage.getClientId().getText(), githubRegisterOAuthAppPage.getClientSecret().getText());
-        
-     // find out app URL
-        jira.getTester().gotoUrl(GithubRegisteredOAuthAppsPage.PAGE_URL);
-        GithubRegisteredOAuthAppsPage registeredOAuthAppsPage = jira.getPageBinder().bind(GithubRegisteredOAuthAppsPage.class);
-        registeredOAuthAppsPage.parseClientIdAndSecret(oauthAppName);
-        oauthAppLink = registeredOAuthAppsPage.getOauthAppUrl();
-        return oAuthCredentials;
+        return new OAuthCredentials(oAuth.key, oAuth.secret);
     }
-    
+
     @Override
     void pushToRemoteDvcsRepository(String pathToRepoZip) throws Exception
     {
@@ -92,16 +86,7 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
 
         FileUtils.deleteDirectory(extractedRepoDir);
     }
-    
-    private void executeCommand(File directory, String... command) throws IOException, InterruptedException
-    {
-        Process gitPushProcess = new ProcessBuilder(command)
-        .directory(directory)
-        .start();
 
-        gitPushProcess.waitFor();
-    }
-    
     private File extractRepoZipIntoTempDir(String pathToRepoZip) throws IOException, URISyntaxException
     {
         URL repoZipResource = getClass().getClassLoader().getResource(pathToRepoZip);
@@ -143,7 +128,7 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
         // | Miroslav Stencel | db26d59a1f | MC-1 1st commit {user1} [14:16]            |
         return _2ND_GIT_REPO_ZIP_TO_PUSH;
     }
-    
+
     @Override
     protected Class<GithubConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
     {
@@ -153,10 +138,10 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     @Override
     void removeOAuth()
     {
-        jira.getTester().gotoUrl(oauthAppLink);
+        jira.getTester().gotoUrl(oAuth.applicationId);
 
         GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
-        registerAppPage.deleteOAuthApp();
+        registerAppPage.deleteOAuthApp(jira, DVCS_REPO_PASSWORD);
 
         jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
         GithubLoginPage ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);

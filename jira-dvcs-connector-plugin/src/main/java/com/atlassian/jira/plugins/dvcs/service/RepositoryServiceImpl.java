@@ -5,6 +5,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -27,6 +31,7 @@ import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.collect.Maps;
 
 /**
@@ -37,6 +42,19 @@ public class RepositoryServiceImpl implements RepositoryService
 
     /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(RepositoryServiceImpl.class);
+
+    /**
+     * Only single {@link #removeOrphanRepositories()} can running at same time.
+     */
+    private final Object removeOrphanRepositoriesLock = new Object();
+
+    /**
+     * @see #removeOrphanRepositoriesAsync(List)
+     */
+    private final ExecutorService removeOrphanRepositoriesExecutor = new ThreadPoolExecutor(//
+            0, 1, // no remaining threads and at most single thread
+            0, TimeUnit.MILLISECONDS, // destroys thread immediately, when is not used
+            new LinkedBlockingQueue<Runnable>(), ThreadFactories.namedThreadFactory("DVCSConnectoRemoveRepositoriesExecutorThread"));
 
     /** The communicator provider. */
     private final DvcsCommunicatorProvider communicatorProvider;
@@ -61,14 +79,19 @@ public class RepositoryServiceImpl implements RepositoryService
     /**
      * The Constructor.
      *
-     * @param communicatorProvider the communicator provider
-     * @param repositoryDao the repository dao
-     * @param synchronizer the synchronizer
-     * @param changesetService the changeset service
-     * @param applicationProperties the application properties
+     * @param communicatorProvider
+     *            the communicator provider
+     * @param repositoryDao
+     *            the repository dao
+     * @param synchronizer
+     *            the synchronizer
+     * @param changesetService
+     *            the changeset service Add a comment to this line
+     * @param applicationProperties
+     *            the application properties
      */
     public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, BranchDao branchDao, Synchronizer synchronizer,
-        ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
+            ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
@@ -86,6 +109,15 @@ public class RepositoryServiceImpl implements RepositoryService
     public List<Repository> getAllByOrganization(int organizationId)
     {
         return repositoryDao.getAllByOrganization(organizationId, false);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Repository> getAllByOrganization(int organizationId, boolean includeDeleted)
+    {
+        return repositoryDao.getAllByOrganization(organizationId, includeDeleted);
     }
 
     /**
@@ -245,11 +277,11 @@ public class RepositoryServiceImpl implements RepositoryService
                 progress.setFinished(true);
                 synchronizer.putProgress(repository, progress);
             }
-            
+
             progress.setAdminPermission(hasAdminPermission);
         }
     }
-    
+
     /**
      * Removes the deleted repositories.
      *
@@ -324,7 +356,7 @@ public class RepositoryServiceImpl implements RepositoryService
         Repository repository = get(repositoryId);
 
         // looks like repository was deleted before we started to synchronise it
-        if (repository != null)
+        if (repository != null && !repository.isDeleted())
         {
             doSync(repository, softSync);
         } else
@@ -383,6 +415,15 @@ public class RepositoryServiceImpl implements RepositoryService
     public List<Repository> getAllRepositories()
     {
         return repositoryDao.getAll(false);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Repository> getAllRepositories(boolean includeDeleted)
+    {
+        return repositoryDao.getAll(includeDeleted);
     }
 
     /**
@@ -494,13 +535,27 @@ public class RepositoryServiceImpl implements RepositoryService
      * {@inheritDoc}
      */
     @Override
-    public void removeAllInOrganization(int organizationId)
+    public void removeRepositories(List<Repository> repositories)
     {
-        List<Repository> repositories = repositoryDao.getAllByOrganization(organizationId, true);
         for (Repository repository : repositories)
         {
-            remove(repository);
+            markForRemove(repository);
+            // try remove postcommit hook
+            if (repository.isLinked())
+            {
+                removePostcommitHook(repository);
+                repository.setLinked(false);
+            }
+
+            repositoryDao.save(repository);
         }
+    }
+
+    private void markForRemove(Repository repository)
+    {
+        synchronizer.stopSynchronization(repository);
+        synchronizer.removeProgress(repository);
+        repository.setDeleted(true);
     }
 
     /**
@@ -541,6 +596,37 @@ public class RepositoryServiceImpl implements RepositoryService
         {
             log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId()
                             + ", slug = " + repository.getRepositoryUrl(), e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removeOrphanRepositoriesAsync(final List<Repository> orphanRepositories)
+    {
+        removeOrphanRepositoriesExecutor.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                removeOrphanRepositories(orphanRepositories);
+            }
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removeOrphanRepositories(List<Repository> orphanRepositories)
+    {
+        synchronized (removeOrphanRepositoriesLock)
+        {
+            for (Repository repository : orphanRepositories)
+            {
+                remove(repository);
+            }
         }
     }
 

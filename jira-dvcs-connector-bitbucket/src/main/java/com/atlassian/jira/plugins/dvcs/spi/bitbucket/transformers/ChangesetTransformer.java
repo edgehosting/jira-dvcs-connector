@@ -32,7 +32,6 @@ public class ChangesetTransformer {
         Changeset changeset = new Changeset(
                 repositoryId,
                 bitbucketChangeset.getNode(),
-                null, // do not set Issue Key
                 bitbucketChangeset.getRawAuthor(),
                 bitbucketChangeset.getAuthor(),
                 bitbucketChangeset.getUtctimestamp(),
@@ -61,7 +60,6 @@ public class ChangesetTransformer {
         Changeset changeset = new Changeset(
                 repositoryId,
                 bitbucketChangeset.getSha(),
-                null, // do not set Issue Key
                 rawAuthor,
                 null, // bitbucketChangeset.getAuthor(),
                 bitbucketChangeset.getDate(),

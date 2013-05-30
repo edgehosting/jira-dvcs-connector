@@ -23,6 +23,8 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntr
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
 
@@ -31,11 +33,11 @@ public class GithubTests implements BasicTests, MissingCommitsTests
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
     private OAuth oAuth;
-    
+
     @BeforeClass
     public void beforeClass()
     {
-        // log in to JIRA 
+        // log in to JIRA
         new JiraLoginPageController(jira).login();
         // log in to github
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogin();
@@ -54,23 +56,23 @@ public class GithubTests implements BasicTests, MissingCommitsTests
         // log out from github
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
     }
-    
+
     @BeforeMethod
     public void beforeMethod()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
     }
-    
+
     @Override
     @Test
     public void addOrganization()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), false);
-        
-        assertThat(organization).isNotNull(); 
-        assertThat(organization.getRepositories().size()).isEqualTo(4);  
+
+        assertThat(organization).isNotNull();
+        assertThat(organization.getRepositories().size()).isEqualTo(4);
     }
 
     @Override
@@ -79,15 +81,15 @@ public class GithubTests implements BasicTests, MissingCommitsTests
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(),true);
-        
-        assertThat(organization).isNotNull(); 
+
+        assertThat(organization).isNotNull();
         assertThat(organization.getRepositories().size()).isEqualTo(4);
         assertThat(organization.getRepositories().get(3).getMessage()).isEqualTo("Mon Feb 06 2012");
-        
+
         assertThat(getCommitsForIssue("QA-2", 6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
-    
+
     @Override
     @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
     public void addOrganizationInvalidUrl()
@@ -95,7 +97,7 @@ public class GithubTests implements BasicTests, MissingCommitsTests
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(AccountType.GITHUB, "https://nonexisting.org/someaccount", getOAuthCredentials(), false);
     }
-    
+
     @Override
     @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
     public void addOrganizationInvalidAccount()
@@ -112,15 +114,20 @@ public class GithubTests implements BasicTests, MissingCommitsTests
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME,
                 new OAuthCredentials("xxx", "yyy"), true);
-        
-        assertThat(organization).isNotNull(); 
-        assertThat(organization.getRepositories().size()).isEqualTo(4);  
+
+        assertThat(organization).isNotNull();
+        assertThat(organization.getRepositories().size()).isEqualTo(4);
     }
-    
+
     @Test
     @Override
     public void testPostCommitHookAdded()
     {
+        // remove existing hooks
+        String hooksUrl = "https://api.github.com/repos/jirabitbucketconnector/test-project/hooks";
+        HttpSenderUtils.removeJsonElementsUsingIDs(hooksUrl, "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+
+        // add organization
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), true);
 
@@ -165,10 +172,22 @@ public class GithubTests implements BasicTests, MissingCommitsTests
         assertThat(commitMessage.isAdded(statistics.get(0))).isTrue();
     }
 
+    @Override
+    @Test
+    public void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount()
+    {
+        // we should see 'private-dvcs-connector-test' repo
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, "atlassian",
+                getOAuthCredentials(), false);
+
+        assertThat(organization.containsRepository("private-dvcs-connector-test"));
+    }
+
     //-------------------------------------------------------------------
-    //--------- these methods should go to some common utility/class ---- 
+    //--------- these methods should go to some common utility/class ----
     //-------------------------------------------------------------------
- 
+
     private OAuthCredentials getOAuthCredentials()
     {
         return new OAuthCredentials(oAuth.key, oAuth.secret);
@@ -181,16 +200,4 @@ public class GithubTests implements BasicTests, MissingCommitsTests
                 .waitForNumberOfMessages(exectedNumberOfCommits, 1000L, 5);
     }
 
-    @Override
-    @Test
-    public void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount()
-    {
-        // we should see 'private-dvcs-connector-test' repo
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, "atlassian",
-                getOAuthCredentials(), false);
-
-        assertThat(organization.containsRepository("private-dvcs-connector-test"));
-    }    
-    
 }

@@ -28,9 +28,44 @@
 	            <input class="text long-field" type="text" id="secret" name="secret" title="first name" value="{$oAuthSecret}">
 	            <div class="error">&nbsp;</div>
 	        </div>
-	        <div class="field-group" id="tokenUser">
+	        <div class="field-group">
+				<label for="d-fname">Authorizing account</label>
+				<div class="static-text" id="tokenUser"><span class="aui-icon aui-icon-wait">Wait</span></div>
 	        </div>
-	        
+	    </fieldset>
+	    </form>
+        <div id="aui-message-bar-oauth-dialog"></div>
+	</div>
+{/template}
+
+/**
+ * @param organizationId
+ * @param oAuthKey
+ * @param oAuthSecret
+ * @param isOnDemandLicense
+ */
+{template .OAuthSettingsDialog}
+	<div class="jira-dvcs-connector-plugin repositoryOAuthDialog">
+		<form action="%" method="post" id="updateOAuthForm" class="aui">
+		<input type="hidden" name="organizationId" value="{$organizationId}">
+	    <fieldset>
+	        <div class="field-group">
+	            <label for="d-fname">Key<span class="aui-icon icon-required"> required</span></label>
+	            <input class="text long-field" type="text" id="key" name="key" title="first name" value="{$oAuthKey}">
+	            <div class="error">&nbsp;</div>
+	            <div class="description">
+		       	    {if $isOnDemandLicense}
+		                <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+		            {else}
+		                <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+		            {/if}
+		        Help with my key and secret.</a></div>
+	        </div>
+	        <div class="field-group">
+	            <label for="d-fname">Secret<span class="aui-icon icon-required"> required</span></label>
+	            <input class="text long-field" type="text" id="secret" name="secret" title="first name" value="{$oAuthSecret}">
+	            <div class="error">&nbsp;</div>
+	        </div>
 	    </fieldset>
 	    </form>
         <div id="aui-message-bar-oauth-dialog"></div>
@@ -42,9 +77,7 @@
  * @param url
  */
 {template .repositoryOAuthDialogTokenOwner}
-	<label for="d-fname">Token User</label>
-	<div class="static-text"><a href="{$url}">{$fullName}</a></div>
-	<div class="error">&nbsp;</div>
+	<a href="{$url}">{$fullName}</a>
 {/template}
 
 /**
@@ -188,115 +221,117 @@
 	    <input type="hidden" name="atl_token" id="atl_token" value="{$atlToken}">
 	    <input type="hidden" name="isPrivate" id="isPrivate">
 	    <input type="hidden" name="url" id="url" >
-	  
-	    <div class="field-group" >
-	      <label for="urlSelect">Host</label>
-	      <select id="urlSelect" name="urlSelect" class="select">
-	        <option value="bitbucket">Bitbucket</option>
-	        <option value="github">GitHub</option>
-	        {if $isGithubEnterpriseEnabled}
-	        <option value="githube">GitHub Enterprise</option>
-	        {/if}
-	      </select>
-	      <div class="fieldValue" id="urlReadOnly"></div>
-	      <div id="url-error" class="dvcs-error error">Choose URL.</div>
-	    </div>
-	
-	    <div class="field-group" >
-	      <label for="organization">Team or User Account<span class="aui-icon icon-required">&nbsp;</span></label>
-	      <input class="text" type="text" id="organization" name="organization" value=""/>
-	      <div class="fieldValue" id="organizationReadOnly"></div>
-	      <div id="org-error" class="dvcs-error error">This field is required.</div>
-	    </div>
-	    
-	    // BB form section
-	    <div id="bitbucket-form-section">
-	        <div class="field-group">
-	           <label for="oauthBbClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
-	           <input class="text" type="text" id="oauthBbClientId" name="oauthBbClientId" value="{$oAuthStore.bitbucket.key}"/>
-	           <div id="oauth-bb-client-error" class="dvcs-error error">This field is required.</div>
-	           <div class="description">
-	           {if $isOnDemandLicense}
-                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
-               {else}
-                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
-               {/if}
-	           Help with my key and secret.</a></div>
+	  	<fieldset>
+		    <div class="field-group" >
+		      <label for="urlSelect">Host</label>
+		      <select id="urlSelect" name="urlSelect" class="select">
+		        <option value="bitbucket">Bitbucket</option>
+		        <option value="github">GitHub</option>
+		        {if $isGithubEnterpriseEnabled}
+		        <option value="githube">GitHub Enterprise</option>
+		        {/if}
+		      </select>
+		      <div class="fieldValue" id="urlReadOnly"></div>
+		      <div id="url-error" class="dvcs-error error">Choose URL.</div>
+		    </div>
+		
+		    <div class="field-group" >
+		      <label for="organization">Team or User Account<span class="aui-icon icon-required">&nbsp;</span></label>
+		      <input class="text" type="text" id="organization" name="organization" value=""/>
+		      <div class="fieldValue" id="organizationReadOnly"></div>
+		      <div id="org-error" class="dvcs-error error">This field is required.</div>
+		    </div>
+		    
+		    // BB form section
+		    <div id="bitbucket-form-section">
+		        <div class="field-group">
+		           <label for="oauthBbClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
+		           <input class="text" type="text" id="oauthBbClientId" name="oauthBbClientId" value="{$oAuthStore.bitbucket.key}"/>
+		           <div id="oauth-bb-client-error" class="dvcs-error error">This field is required.</div>
+		           <div class="description">
+		           {if $isOnDemandLicense}
+	                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+	               {else}
+	                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+	               {/if}
+		           Help with my key and secret.</a></div>
+		        </div>
+		        <div class="field-group">
+		           <label for="oauthBbSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
+		           <input class="text" type="text" id="oauthBbSecret" name="oauthBbSecret" value="{$oAuthStore.bitbucket.secret}"/>
+		           <div id="oauth-bb-secret-error" class="dvcs-error error">This field is required.</div>
+		        </div>
+		    </div>
+		
+		    // GH form section
+		    <div id="github-form-section">
+		        <div class="field-group">
+		           <label for="oauthClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
+		           <input class="text" type="text" id="oauthClientId" name="oauthClientId" value="{$oAuthStore.github.key}"/>
+		           <div id="oauth-gh-client-error" class="dvcs-error error">This field is required.</div>
+		           <div class="description">
+		           {if $isOnDemandLicense}
+	                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+	               {else}
+	                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+	               {/if}
+		           Help with my key and secret.</a></div>
+		        </div>
+		        <div class="field-group">
+		           <label for="oauthSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
+		           <input class="text" type="text" id="oauthSecret" name="oauthSecret" value="{$oAuthStore.github.secret}"/>
+		           <div id="oauth-gh-secret-error" class="dvcs-error error">This field is required.</div>
+		        </div>
+		    </div>
+		    
+		    // GHE form section
+	        <div id="githube-form-section">
+	            <div class="field-group">
+	               <label for="urlGhe">Host URL<span class="aui-icon icon-required">&nbsp;</span></label>
+	               <input class="text" type="text" id="urlGhe" name="urlGhe" value="{$oAuthStore.githube.url}"/>
+	               <div id="ghe-url-error" class="dvcs-error error">This field is required.</div>
+	               <div id="ghe-invalid-url-error" class="dvcs-error error">Valid url is required.</div>
+	            </div>
+	            <div class="field-group">
+	                <label for="oauthClientIdGhe">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
+	               <input class="text" type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value="{$oAuthStore.githube.key}"/>
+	               <div id="oauth-ghe-client-error" class="dvcs-error error">This field is required.</div>
+	               <div class="description">
+		           {if $isOnDemandLicense}
+	                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+	               {else}
+	                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+	               {/if}
+		           Help with my key and secret.</a></div>
+	            </div>
+	            <div class="field-group">
+	               <label for="oauthSecretGhe">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
+	               <input class="text" type="text" id="oauthSecretGhe" name="oauthSecretGhe" value="{$oAuthStore.githube.secret}"/>
+	               <div id="oauth-ghe-secret-error" class="dvcs-error error">This field is required.</div>
+	            </div>
 	        </div>
-	        <div class="field-group">
-	           <label for="oauthBbSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
-	           <input class="text" type="text" id="oauthBbSecret" name="oauthBbSecret" value="{$oAuthStore.bitbucket.secret}"/>
-	           <div id="oauth-bb-secret-error" class="dvcs-error error">This field is required.</div>
+        </fieldset>
+        
+        <fieldset class="group">
+	        <div style="margin-top: 10px;" class="checkbox">
+	            <input class="checkbox" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true" checked="checked" />
+	            <label for="autoLinking">Auto Link New Repositories</label>
 	        </div>
-	    </div>
-	
-	    // GH form section
-	    <div id="github-form-section">
-	        <div class="field-group">
-	           <label for="oauthClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
-	           <input class="text" type="text" id="oauthClientId" name="oauthClientId" value="{$oAuthStore.github.key}"/>
-	           <div id="oauth-gh-client-error" class="dvcs-error error">This field is required.</div>
-	           <div class="description">
-	           {if $isOnDemandLicense}
-                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
-               {else}
-                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
-               {/if}
-	           Help with my key and secret.</a></div>
+	           
+	        <div style="margin-top: 10px;" class="checkbox">
+	            <input class="checkbox" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true" checked="checked" />
+	            <label for="autoSmartCommits">Enable Smart Commits</label>
+	            <div class="description">
+	                {if $isOnDemandLicense}
+	                    <a href="https://confluence.atlassian.com/display/AOD/Processing+JIRA+issues+with+commit+messages" target="_blank">
+	                {else}
+	                    <a href="https://confluence.atlassian.com/display/BITBUCKET/Processing+JIRA+issues+with+commit+messages" target="_blank">
+	                {/if}
+	                Transition JIRA issues</a> through commit messages. 
+	            </div>
 	        </div>
-	        <div class="field-group">
-	           <label for="oauthSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
-	           <input class="text" type="text" id="oauthSecret" name="oauthSecret" value="{$oAuthStore.github.secret}"/>
-	           <div id="oauth-gh-secret-error" class="dvcs-error error">This field is required.</div>
-	        </div>
-	    </div>
-	    
-	    // GHE form section
-        <div id="githube-form-section">
-            <div class="field-group">
-               <label for="urlGhe">Host URL<span class="aui-icon icon-required">&nbsp;</span></label>
-               <input class="text" type="text" id="urlGhe" name="urlGhe" value="{$oAuthStore.githube.url}"/>
-               <div id="ghe-url-error" class="dvcs-error error">This field is required.</div>
-               <div id="ghe-invalid-url-error" class="dvcs-error error">Valid url is required.</div>
-               <div class="description">
-	           {if $isOnDemandLicense}
-                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
-               {else}
-                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
-               {/if}
-	           Help with my key and secret.</a></div>
-            </div>
-            <div class="field-group">
-                <label for="oauthClientIdGhe">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
-               <input class="text" type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value="{$oAuthStore.githube.key}"/>
-               <div id="oauth-ghe-client-error" class="dvcs-error error">This field is required.</div>
-               <div class="description"></div>
-            </div>
-            <div class="field-group">
-               <label for="oauthSecretGhe">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
-               <input class="text" type="text" id="oauthSecretGhe" name="oauthSecretGhe" value="{$oAuthStore.githube.secret}"/>
-               <div id="oauth-ghe-secret-error" class="dvcs-error error">This field is required.</div>
-            </div>
-        </div>
-            
-        <div style="margin-top: 10px;"  class="field-group">
-            <label for="autoLinking">Auto Link New Repositories</label>
-            <input class="checkbox" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true" checked="checked" />
-        </div>
-           
-        <div style="margin-top: 10px;"  class="field-group">
-            <label for="autoSmartCommits">Enable Smart Commits</label>
-            <input class="checkbox" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true" checked="checked" />
-            <div class="description">
-                {if $isOnDemandLicense}
-                    <a href="https://confluence.atlassian.com/display/AOD/Processing+JIRA+issues+with+commit+messages" target="_blank">
-                {else}
-                    <a href="https://confluence.atlassian.com/display/BITBUCKET/Processing+JIRA+issues+with+commit+messages" target="_blank">
-                {/if}
-                Transition JIRA issues</a> through commit messages. 
-            </div>
-        </div>
- 
+ 		</fieldset>
+ 		
         <div id="bbCredentials"></div>
 
         <div id="aui-message-bar"></div>
@@ -311,10 +346,51 @@
 	<div>
 		<p>
 			Are you sure you want to remove account '{$organizationName}' from JIRA?
-		<p>
+		</p>
 		<p>
 			Deleting an account removes it permanently from JIRA, including all of its repositories and synchronized changesets.
-		<p>
-		<div id="aui-message-bar-delete-org"></div>
+		</p>
 	</div>
+{/template}
+
+/**
+*	@param baseUrl
+ *	@param atlToken
+ *	@param organizationIdDefaultGroups
+ */
+{template .defaultGroupsForm}
+    <div>
+        <form id="configureDefaultGroupsForm" class="aui" method="post" action="{$baseUrl}/secure/admin/ConfigureDefaultBitbucketGroups.jspa" >
+             <input type="hidden" name="atl_token" value="{$atlToken}">
+             <input type="hidden" id="organizationIdDefaultGroups" name="organizationIdDefaultGroups" value="{$organizationIdDefaultGroups}" />
+             <div id="configureDefaultGroupsContent"><span class="aui-icon aui-icon-wait">&nbsp;</span></div>
+        </form>
+    </div>
+{/template}
+
+/**
+ * 
+ */
+{template .adminPermisionWarning}
+	<h2>No admin permission</h2>
+	<div>
+		<div>
+			The post commit hook could not be installed.
+		</div>
+		<div class="description">
+			<a href="https://confluence.atlassian.com/display/BITBUCKET/Linking+Bitbucket+and+GitHub+accounts+to+JIRA" target="_blank">Do you need help?</a>
+		<div>
+	</div>
+{/template}
+
+/**
+ * @param isLinking
+ * @param errorMessage
+ */
+{template .linkingUnlinkingError}
+	<h2>Unable to {if $isLinking}link{else}unlink{/if} selected repository</h2>
+	{if $errorMessage}
+	<div>{$errorMessage}</div>
+	{/if}
+	<div>Please contact the server administrator.</div>
 {/template}

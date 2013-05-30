@@ -27,7 +27,7 @@ public class TestGlobalFilterQueryWhereClauseBuilder
     @Test
     public void fullGlobalFilter()
     {
-        final String expected = "(PROJECT_KEY in ('projectIn')  AND PROJECT_KEY not in ('projectNotIn') ) AND (ISSUE_KEY in ('issueIn')  AND ISSUE_KEY not in ('issueNotIn') ) AND (AUTHOR in ('userIn') AUTHOR not in ('userNotIn') )";
+        final String expected = "(ISSUE.PROJECT_KEY in ('projectIn')  AND ISSUE.PROJECT_KEY not in ('projectNotIn') ) AND (ISSUE.ISSUE_KEY in ('issueIn')  AND ISSUE.ISSUE_KEY not in ('issueNotIn') ) AND (CHANGESET.AUTHOR in ('userIn') CHANGESET.AUTHOR not in ('userNotIn') )";
         GlobalFilter gf = new GlobalFilter();
         gf.setInProjects(Arrays.asList("projectIn"));
         gf.setNotInProjects(Arrays.asList("projectNotIn"));

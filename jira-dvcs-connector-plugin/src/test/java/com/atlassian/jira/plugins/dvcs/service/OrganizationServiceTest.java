@@ -145,24 +145,7 @@ public class OrganizationServiceTest
 				Organization savingOrganization = (Organization) argument;
 				return !savingOrganization.isAutolinkNewRepos();
 			}
-
 		}));
-
-	}
-
-	@Test
-	public void testUpdateCredentials()
-	{
-		Organization sampleOrganization = createSampleOrganization();
-		Mockito.when(organizationDao.get(0)).thenReturn(sampleOrganization);
-		Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
-
-		organizationService.updateCredentials(0, "doesnotmatter_u", "doesnotmatter_p");
-
-		//
-		Mockito.verify(organizationDao).updateCredentials(Mockito.eq(0), Mockito.eq("doesnotmatter_u"),
-				Mockito.eq("doesnotmatter_p"), (String) Mockito.isNull(),  (String) Mockito.isNull(),  (String) Mockito.isNull());
-
 	}
 
 	@Test
@@ -174,9 +157,8 @@ public class OrganizationServiceTest
 
 		organizationService.updateCredentialsAccessToken(0, "doesnotmatter_AT");
 
-		Mockito.verify(organizationDao).updateCredentials(Mockito.eq(0), (String) Mockito.isNull(),
-				(String) Mockito.isNull(), Mockito.eq("doesnotmatter_AT"),  (String) Mockito.isNull(),  (String) Mockito.isNull());
-
+		Mockito.verify(organizationDao).save(sampleOrganization);
+		assertThat(sampleOrganization.getCredential().getAccessToken().equals("doesnotmatter_AT"));
 	}
 
 	private Organization createSampleOrganization()

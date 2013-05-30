@@ -41,25 +41,26 @@
                 	<label for="oauthBbSecret">Secret:</label>
                 	<input type="text" id="oauthBbSecret" name="oauthBbSecret" value="$textutils.htmlEncode($action.getOauthBbSecret())"/>
                    </div>
-			  
-			 <div class="field-group" style="margin-top: 10px; clear: both" >
-				  <label for="autoLinking">Auto Link New Repositories:</label>
+		  </fieldset>
+		
+		  <fieldset class="group">
+			 <div class="checkbox" style="margin-top: 10px; clear: both" >
 		          #if($action.getAutoLinking() == "true")
 			         <input disabled="disabled" checked="checked" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
 			      #else
 			      	 <input disabled="disabled" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
 			      #end
+				  <label for="autoLinking">Auto Link New Repositories</label>
 		     </div>
 		     
-		      <div class="field-group" style="margin-top: 10px; clear: both" >
-				  <label for="autoSmartCommits">Enable Smart Commits:</label>
+		      <div class="checkbox" style="margin-top: 10px; clear: both" >
 		          #if($action.getAutoSmartCommits() == "true")
 			         <input disabled="disabled" checked="checked" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true"/>
 			      #else
 			      	 <input disabled="disabled" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true"/>
 			      #end
+				  <label for="autoSmartCommits">Enable Smart Commits</label>
 		     </div>
-	         
 	      </fieldset>
 	
 	 

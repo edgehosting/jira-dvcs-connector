@@ -15,16 +15,17 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 
-
 public class OrganizationServiceImpl implements OrganizationService
 {
 
-	private final OrganizationDao organizationDao;
-	private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
-	private final RepositoryService repositoryService;
+    private final OrganizationDao organizationDao;
 
-	public OrganizationServiceImpl(OrganizationDao organizationDao, DvcsCommunicatorProvider dvcsCommunicatorProvider,
-        RepositoryService repositoryService)
+    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
+
+    private final RepositoryService repositoryService;
+
+    public OrganizationServiceImpl(OrganizationDao organizationDao, DvcsCommunicatorProvider dvcsCommunicatorProvider,
+            RepositoryService repositoryService)
     {
         this.organizationDao = organizationDao;
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
@@ -32,10 +33,10 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-	public AccountInfo getAccountInfo(String hostUrl, String accountName)
-	{
-		return dvcsCommunicatorProvider.getAccountInfo(hostUrl, accountName);
-	}
+    public AccountInfo getAccountInfo(String hostUrl, String accountName)
+    {
+        return dvcsCommunicatorProvider.getAccountInfo(hostUrl, accountName);
+    }
 
     @Override
     public List<Organization> getAll(boolean loadRepositories)
@@ -53,9 +54,9 @@ public class OrganizationServiceImpl implements OrganizationService
         return organizations;
     }
 
-	@Override
-	public List<Organization> getAll(boolean loadRepositories, String type)
-	{
+    @Override
+    public List<Organization> getAll(boolean loadRepositories, String type)
+    {
         List<Organization> organizations = organizationDao.getAllByType(type);
 
         if (loadRepositories)
@@ -67,127 +68,108 @@ public class OrganizationServiceImpl implements OrganizationService
             }
         }
 
-		return organizations;
-	}
+        return organizations;
+    }
 
-	@Override
-	public Organization get(int organizationId, boolean loadRepositories)
-	{
-		Organization organization = organizationDao.get(organizationId);
-
-		if (loadRepositories && organization != null)
-		{
-			List<Repository> repositories = repositoryService.getAllByOrganization(organizationId);
-			organization.setRepositories(repositories);
-		}
-
-		return organization;
-	}
-
-	@Override
-	public Organization save(Organization organization)
-	{
-		Organization org = organizationDao.getByHostAndName(organization.getHostUrl(), organization.getName());
-		if (org != null)
-		{
-			// nop;
-			// we've already have this organization, don't save another one
-			return org;
-		}
-
-		//
-		// it's brand new organization. save it.
-		//
-		org = organizationDao.save(organization);
-
-		// sync repository list
-		repositoryService.syncRepositoryList(org, false);
-
-		return org;
-	}
-
-	@Override
-	public void remove(int organizationId)
-	{
-		repositoryService.removeAllInOrganization(organizationId);
-		organizationDao.remove(organizationId);
-	}
-
-	@Deprecated
-	@Override
-	public void updateCredentials(int organizationId, String username, String plaintextPassword)
-	{
-		// Check credentials
-		// create organization with plain credentials as we need all data like url, etc
-		//
-		Organization organization = organizationDao.get(organizationId);
-		organization.setCredential(new Credential(null, null, null, username, plaintextPassword));
-
-		organizationDao.updateCredentials(organizationId, username, plaintextPassword, null, null, null);
-	}
-
-	@Deprecated
-	@Override
-	public void updateCredentialsAccessToken(int organizationId, String accessToken)
-	{
-		// Check credentials
-		// create organization with plain credentials as we need all data like url, etc
-		//
-		Organization organization = organizationDao.get(organizationId);
-		organization.setCredential(new Credential(null, null, accessToken, null, null));
-
-		organizationDao.updateCredentials(organizationId, null, null, accessToken, null, null);
-
-	}
-
-	@Override
-    public void updateCredentialsKeySecret(int organizationId, String key, String secret, String accessToken)
+    @Override
+    public Organization get(int organizationId, boolean loadRepositories)
     {
-        // Check credentials
-        // create organization with plain credentials as we need all data like url, etc
-        //
         Organization organization = organizationDao.get(organizationId);
-        organization.setCredential(new Credential(key, secret, accessToken, null, null));
-        //checkCredentials(organization);
-        //
 
-        organizationDao.updateCredentialsKeySecret(organizationId, key, secret);
+        if (loadRepositories && organization != null)
+        {
+            List<Repository> repositories = repositoryService.getAllByOrganization(organizationId);
+            organization.setRepositories(repositories);
+        }
+
+        return organization;
+    }
+
+    @Override
+    public Organization save(Organization organization)
+    {
+        Organization org = organizationDao.getByHostAndName(organization.getHostUrl(), organization.getName());
+        if (org != null)
+        {
+            // nop;
+            // we've already have this organization, don't save another one
+            return org;
+        }
+
+        //
+        // it's brand new organization. save it.
+        //
+        org = organizationDao.save(organization);
+
+        // sync repository list
+        repositoryService.syncRepositoryList(org, false);
+
+        return org;
+    }
+
+    @Override
+    public void remove(int organizationId)
+    {
+        List<Repository> repositoriesToDelete = repositoryService.getAllByOrganization(organizationId, true);
+        organizationDao.remove(organizationId);
+        repositoryService.removeRepositories(repositoriesToDelete);
+        repositoryService.removeOrphanRepositoriesAsync(repositoriesToDelete);
+    }
+
+    @Override
+    public void updateCredentials(int organizationId, Credential credential)
+    {
+        Organization organization = organizationDao.get(organizationId);
+        if (organization != null)
+        {
+            organization.setCredential(credential);
+            organizationDao.save(organization);
+        }
+    }
+
+    @Override
+    public void updateCredentialsAccessToken(int organizationId, String accessToken)
+    {
+        Organization organization = organizationDao.get(organizationId);
+        if (organization != null)
+        {
+            organization.getCredential().setAccessToken(accessToken);
+            organizationDao.save(organization);
+        }
+    }
+
+    @Override
+    public void enableAutolinkNewRepos(int orgId, boolean autolink)
+    {
+        Organization organization = organizationDao.get(orgId);
+        if (organization != null)
+        {
+            organization.setAutolinkNewRepos(autolink);
+            organizationDao.save(organization);
+        }
+    }
+
+    @Override
+    public void enableSmartcommitsOnNewRepos(int id, boolean enabled)
+    {
+        Organization organization = organizationDao.get(id);
+        if (organization != null)
+        {
+            organization.setSmartcommitsOnNewRepos(enabled);
+            organizationDao.save(organization);
+        }
 
     }
 
-	@Override
-	public void enableAutolinkNewRepos(int orgId, boolean autolink)
-	{
-		Organization organization = organizationDao.get(orgId);
-		if (organization != null)
-		{
-			organization.setAutolinkNewRepos(autolink);
-			organizationDao.save(organization);
-		}
-	}
+    @Override
+    public List<Organization> getAutoInvitionOrganizations()
+    {
+        return organizationDao.getAutoInvitionOrganizations();
+    }
 
-
-	@Override
-	public void enableSmartcommitsOnNewRepos(int id, boolean enabled)
-	{
-		Organization organization = organizationDao.get(id);
-		if (organization != null)
-		{
-			organization.setSmartcommitsOnNewRepos(enabled);
-			organizationDao.save(organization);
-		}
-
-	}
-
-	@Override
-	public List<Organization> getAutoInvitionOrganizations()
-	{
-		return organizationDao.getAutoInvitionOrganizations();
-	}
-
-	@Override
-	public List<Organization> getAllByIds(Collection<Integer> ids)
-	{
+    @Override
+    public List<Organization> getAllByIds(Collection<Integer> ids)
+    {
         if (CollectionUtils.isNotEmpty(ids))
         {
             return organizationDao.getAllByIds(ids);
@@ -195,13 +177,13 @@ public class OrganizationServiceImpl implements OrganizationService
         {
             return Collections.emptyList();
         }
-	}
+    }
 
-	@Override
-	public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
-	{
-		organizationDao.setDefaultGroupsSlugs(orgId, groupsSlugs);
-	}
+    @Override
+    public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
+    {
+        organizationDao.setDefaultGroupsSlugs(orgId, groupsSlugs);
+    }
 
     @Override
     public Organization findIntegratedAccount()

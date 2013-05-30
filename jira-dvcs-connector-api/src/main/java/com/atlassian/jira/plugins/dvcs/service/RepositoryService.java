@@ -26,6 +26,14 @@ public interface RepositoryService
     List<Repository> getAllByOrganization(int organizationId);
 
     /**
+     * returns all repositories for given organization
+     * @param organizationId organizationId
+     * @param includeDeleted whether to include also deleted repositories
+     * @return repositories
+     */
+    List<Repository> getAllByOrganization(int organizationId, boolean includeDeleted);
+    
+    /**
 	 * Gets the all active (not deleted) repositories and their synchronization
 	 * status.
 	 *
@@ -34,6 +42,14 @@ public interface RepositoryService
 	 * @return the all active repositories
 	 */
     List<Repository> getAllRepositories();
+    
+    /**
+     * Same as {@link #getAllRepositories()}, but provides choice to include also deleted repositories.
+     * 
+     * @param includeDeleted
+     * @return all repositories
+     */
+    List<Repository> getAllRepositories(boolean includeDeleted);
 
     /**
      * check if there is at least one linked repository
@@ -98,15 +114,29 @@ public interface RepositoryService
 	void enableRepositorySmartcommits(int repoId, boolean enabled);
 
     /**
-     * remove all repositories in organization.
-     * @param organizationId organizationId
+     * remove all the listed repositories
+     * @param repositories list of repositories to delete
      */
-    void removeAllInOrganization(int organizationId);
+    void removeRepositories(List<Repository> repositories);
 
     /**
      * @param repository
      */
     void remove(Repository repository);
+
+    /**
+     * The same as {@link #removeOrphanRepositories()}, but it will run in background.
+     * 
+     * @param orphanRepositories to removes
+     */
+    public void removeOrphanRepositoriesAsync(List<Repository> orphanRepositories);
+
+    /**
+     * Removes orphan repositories.
+     * 
+     * @param orphanRepositories to removes
+     */
+    void removeOrphanRepositories(List<Repository> orphanRepositories);
 
     /**
      * Turn On or off linkers.
@@ -115,6 +145,6 @@ public interface RepositoryService
      */
     void onOffLinkers(boolean onOffBoolean);
 
-
     DvcsUser getUser(Repository repository, String author, String raw_author);
+
 }

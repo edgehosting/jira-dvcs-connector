@@ -238,7 +238,6 @@ public class OrganizationDaoImpl implements OrganizationDao
                     @Override
                     public OrganizationMapping doInTransaction()
                     {
-
                         String adminPassword = organization.getCredential().getAdminPassword();
 
                         OrganizationMapping om = null;
@@ -278,12 +277,12 @@ public class OrganizationDaoImpl implements OrganizationDao
                             om.setName(organization.getName());
                             om.setDvcsType(organization.getDvcsType());
                             om.setAutolinkNewRepos(organization.isAutolinkNewRepos());
-                            om.setAdminUsername(organization.getCredential().getAdminUsername());
-                            om.setAdminPassword(adminPassword);
-                            om.setAccessToken(organization.getCredential().getAccessToken());
                             om.setSmartcommitsForNewRepos(organization.isSmartcommitsOnNewRepos());
                             om.setDefaultGroupsSlugs(serializeDefaultGroups(organization.getDefaultGroups()));
 
+                            om.setAdminUsername(organization.getCredential().getAdminUsername());
+                            om.setAdminPassword(adminPassword);
+                            om.setAccessToken(organization.getCredential().getAccessToken());
                             om.setOauthKey(organization.getCredential().getOauthKey());
                             om.setOauthSecret(organization.getCredential().getOauthSecret());
 
@@ -309,75 +308,6 @@ public class OrganizationDaoImpl implements OrganizationDao
         InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
         invalidOrganizationsManager.setOrganizationValid(organizationId, true);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void updateCredentials(int organizationId, String username, String plaintextPassword, String accessToken,
-            String oauthKey, String oauthSecret)
-    {
-
-        final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, organizationId);
-
-        // username
-        if (StringUtils.isNotBlank(username))
-        {
-            organization.setAdminUsername(username);
-        }
-
-        // password
-        if (StringUtils.isNotBlank(plaintextPassword))
-        {
-            organization.setAdminPassword(encryptor.encrypt(plaintextPassword, organization.getName(),
-                    organization.getHostUrl()));
-        }
-
-        // access token
-        if (StringUtils.isNotBlank(accessToken))
-        {
-            organization.setAccessToken(accessToken);
-        }
-
-        if (StringUtils.isNotBlank(oauthKey) && StringUtils.isNotBlank(oauthSecret))
-        {
-            organization.setOauthKey(oauthKey);
-            organization.setOauthSecret(oauthSecret);
-        }
-
-        activeObjects.executeInTransaction(new TransactionCallback<Void>()
-        {
-            @Override
-            public Void doInTransaction()
-            {
-                organization.save();
-                return null;
-            }
-
-        });
-
-    }
-
-    @Override
-    public void updateCredentialsKeySecret(int organizationId, String oauthKey, String oauthSecret)
-    {
-        final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, organizationId);
-
-        organization.setOauthKey(oauthKey);
-        organization.setOauthSecret(oauthSecret);
-
-        activeObjects.executeInTransaction(new TransactionCallback<Void>()
-        {
-            @Override
-            public Void doInTransaction()
-            {
-                organization.save();
-                return null;
-            }
-
-        });
-    }
-
 
     /**
      * {@inheritDoc}

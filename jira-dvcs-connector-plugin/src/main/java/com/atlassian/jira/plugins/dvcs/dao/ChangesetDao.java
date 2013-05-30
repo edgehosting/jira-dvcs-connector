@@ -1,10 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import java.util.List;
-import java.util.Set;
-
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -19,12 +20,22 @@ public interface ChangesetDao
     void removeAllInRepository(int repositoryId);
 
     /**
-     * save Changeset to storage. If it's new object (without ID) after this operation it will have it assigned.
-     * 
+     * create Changeset and save to storage. If it's new object (without ID) after this operation it will have it assigned.
+     * it's create alse all associations (repository- changeset, issues-changest)
+     *
+     * @param changeset
+     * @param extractedIssues
+     * @return
+     */
+    Changeset create(Changeset changeset, Set<String> extractedIssues);
+
+    /**
+     * update properties of changeset which is already saved in DB
+     *
      * @param changeset
      * @return
      */
-    Changeset save(Changeset changeset);
+    Changeset update(Changeset changeset);
 
     /**
      * @param repositoryId
@@ -80,6 +91,6 @@ public interface ChangesetDao
         /**
          * @param changeset
          */
-        void execute(Changeset changeset);
+        void execute(ChangesetMapping changesetMapping);
     }
 }
