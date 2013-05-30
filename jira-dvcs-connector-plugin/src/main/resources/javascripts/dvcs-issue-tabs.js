@@ -23,6 +23,6 @@ function registerInlineDialogTooltip(element, body) {
                 showPopup();
                 return false;
             },
-            {onHover:true, hideDelay:200, showDelay:1000, arrowOffsetX:-8, offsetX:-80}
+            {onHover:true, hideDelay:200, showDelay:1000, arrowOffsetX:-8, offsetX:-80, addActiveClass:false}
         );
 }
