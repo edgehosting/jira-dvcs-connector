@@ -153,6 +153,15 @@
 			to any commit message to see it here and quickly navigate to your commits. 
 		</div>
 		<div class="main">
+            {call .advertisementProduct}
+				{param logoUrl}{contextPath() + '/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/logo_bitbucket.png'}{/param}
+				{param title: 'Git & Mercurial in the cloud' /}
+				{param content}
+					Unlimited private repositories to collaborate on your code.
+				{/param}
+				{param linkConnect}{contextPath() + '/secure/admin/ConfigureDvcsOrganizations!default.jspa'}{/param}
+				{param linkMore: 'http://www.bitbucket.org/?utm_source=jirafe-bitbucket&utm_medium=website&utm_campaign=jirafe' /}
+			{/call}
 			{call .advertisementProduct}
 				{param logoUrl}{contextPath() + '/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/logo_stash.png'}{/param}
 				{param title: 'Git behind the firewall' /}
@@ -161,15 +170,6 @@
 				{/param}
 				{param linkConnect}{contextPath() + '/plugins/servlet/applinks/listApplicationLinks'}{/param}
 				{param linkMore: 'http://www.atlassian.com/software/stash/overview?utm_source=jirafe-stash&utm_medium=website&utm_campaign=jirafe' /}
-			{/call}
-			{call .advertisementProduct}
-				{param logoUrl}{contextPath() + '/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/logo_bitbucket.png'}{/param}
-				{param title: 'Git & Mercurial in the cloud' /}
-				{param content}
-					Unlimited private repositories to collaborate on your code.
-				{/param}
-				{param linkConnect}{contextPath() + '/secure/admin/ConfigureDvcsOrganizations!default.jspa'}{/param}
-				{param linkMore: 'http://www.bitbucket.org/?utm_source=jirafe-bitbucket&utm_medium=website&utm_campaign=jirafe' /}
 			{/call}
 			{call .advertisementProduct}
 				{param logoUrl}{contextPath() + '/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/logo_fisheye.png'}{/param}
