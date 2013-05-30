@@ -250,12 +250,12 @@
         <interface>com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer</interface>
     </component>
 
-    <component key="bitbucketRemoteClientFactory" name="Bitbucket Remote Client Factory"
-               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketAuthProviderFactory">
-        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbuckeAuthProviderFactory</interface>
+    <component key="bitbucketRemoteClientBuilder" name="Bitbucket Remote Client Builder"
+               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketRemoteClientBuilder">
+        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder</interface>
     </component>
 
-     <component key="pluginFeatureDetector" name="pluginFeatureDetector"
+    <component key="pluginFeatureDetector" name="pluginFeatureDetector"
                class="com.atlassian.jira.plugins.dvcs.listener.DefaultPluginFeatureDetector">
         <interface>com.atlassian.jira.plugins.dvcs.listener.IPluginFeatureDetector</interface>
     </component>

@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -56,8 +56,8 @@ public class BitbucketCommunicatorTest
     private BitbucketLinker bitbucketLinker;
     @Mock
     private PluginAccessor pluginAccessor;
-    @Mock
-    private BitbucketClientRemoteFactory bitbucketClientRemoteFactory;
+
+    private BitbucketClientBuilder bitbucketClientBuilder;
 
     private BranchService branchService;
 
@@ -76,6 +76,19 @@ public class BitbucketCommunicatorTest
     private PluginInformation pluginInformation;
 
     private DvcsCommunicator communicator;
+    
+    private static class BuilderAnswer implements Answer<Object>{
+
+        public Object answer(InvocationOnMock invocation) throws Throwable {
+            Object mock = invocation.getMock();
+            if( invocation.getMethod().getReturnType().isInstance( mock )){
+                return mock;
+            }
+            else{
+                return Mockito.RETURNS_DEFAULTS.answer(invocation);
+            }
+        }
+    }
     
     private class BranchDaoMock implements BranchDao
     {
@@ -141,8 +154,10 @@ public class BitbucketCommunicatorTest
         branchDao = new BranchDaoMock();
         branchService = new BranchServiceImpl(branchDao);
         
-        communicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientRemoteFactory, branchService);
-        when(bitbucketClientRemoteFactory.getForRepository(any(Repository.class))).thenReturn(bitbucketRemoteClient);
+        bitbucketClientBuilder = mock(BitbucketClientBuilder.class, new BuilderAnswer());
+        
+        communicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilder, branchService);
+        when(bitbucketClientBuilder.build()).thenReturn(bitbucketRemoteClient);
         when(bitbucketRemoteClient.getChangesetsRest()).thenReturn(changesetRestpoint);
         when(bitbucketRemoteClient.getBranchesAndTagsRemoteRestpoint()).thenReturn(branchesAndTagsRemoteRestpoint);
     }
