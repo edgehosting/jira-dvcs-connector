@@ -77,14 +77,16 @@ public class BitbucketCommunicatorTest
 
     private DvcsCommunicator communicator;
     
-    private static class BuilderAnswer implements Answer<Object>{
-
-        public Object answer(InvocationOnMock invocation) throws Throwable {
-            Object mock = invocation.getMock();
-            if( invocation.getMethod().getReturnType().isInstance( mock )){
-                return mock;
-            }
-            else{
+    private static class BuilderAnswer implements Answer<Object>
+    {
+        public Object answer(InvocationOnMock invocation) throws Throwable
+        {
+            Object builderMock = invocation.getMock();
+            if (invocation.getMethod().getReturnType().isInstance(builderMock))
+            {
+                return builderMock;
+            } else
+            {
                 return Mockito.RETURNS_DEFAULTS.answer(invocation);
             }
         }
