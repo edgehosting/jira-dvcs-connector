@@ -356,13 +356,6 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	min-width: 320px;
 }
 
-.dvcs-advertisement {
-	background-image: url("../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bg-broadcast.png");
-	background-position: right bottom;
-	background-repeat: no-repeat;
-	background-size: 10ex;
-}
-
 .dvcs-advertisement .product {
 	display: inline-block;
 	width: 33ex;
