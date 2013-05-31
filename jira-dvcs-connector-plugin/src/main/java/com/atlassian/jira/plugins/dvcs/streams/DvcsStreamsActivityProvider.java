@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,11 +93,11 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     {
         List<StreamsEntry> entries = new ArrayList<StreamsEntry>();
         Set<String> alreadyAddedChangesetRawNodes = new HashSet<String>(entries.size(), 1.0F);
-        
+
         for (Changeset changeset : changesetEntries)
         {
             if (cancelled.get()) {
-            
+
                 throw new CancelledException();
 
             } else {
@@ -120,15 +120,15 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     private String getNode(Changeset changeset)
     {
         String node = changeset.getRawNode();
-        // if we don't have raw node e.g. for Github , we use node 
+        // if we don't have raw node e.g. for Github , we use node
         if (StringUtils.isEmpty(node))
         {
             node = changeset.getNode();
         }
-        
+
         return node;
     }
-    
+
     /**
      * Transforms a single {@link com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping} to a {@link com.atlassian.streams.api.StreamsEntry}.
      *
@@ -138,7 +138,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     private StreamsEntry toStreamsEntry(final Changeset changeset)
     {
         final Repository repository = repositoryService.get(changeset.getRepositoryId());
-        
+
         if (repository == null) {
             return null;
         }

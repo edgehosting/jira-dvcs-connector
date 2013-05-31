@@ -4,24 +4,24 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 
 /**
- * Describes a user 
+ * Describes a user
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DvcsUser
 {
-    
+
     public static class UnknownUser extends DvcsUser
     {
         public UnknownUser(String author, String raw_author, String url)
         {
             super(author, extractFullNameFromRawAuthor(raw_author), raw_author, "https://secure.gravatar.com/avatar/unknown?d=mm", url);
         }
-        
+
         /**
          * Converts "First Last <email@domain.com>" to "First Last"
          * @param raw_author
@@ -45,9 +45,9 @@ public class DvcsUser
 
     public DvcsUser()
     {
-        
+
     }
-    
+
     public DvcsUser(String username, String fullName, String rawAuthor, String avatar, String url)
     {
         this.username = username;
@@ -66,7 +66,7 @@ public class DvcsUser
     {
         return fullName;
     }
-    
+
     public void setFullName(String fullName)
     {
         this.fullName = fullName;
@@ -76,7 +76,7 @@ public class DvcsUser
     {
         return avatar;
     }
-    
+
     public String getUrl()
     {
         return url;
