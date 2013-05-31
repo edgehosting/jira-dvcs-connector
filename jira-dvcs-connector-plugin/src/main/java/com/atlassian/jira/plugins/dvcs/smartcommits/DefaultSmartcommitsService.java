@@ -1,14 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-import java.util.Iterator;
-
-import javax.ws.rs.core.CacheControl;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.crowd.embedded.api.CrowdService;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.crowd.search.EntityDescriptor;
@@ -30,6 +21,13 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import javax.ws.rs.core.CacheControl;
+import java.util.Iterator;
 
 public class DefaultSmartcommitsService implements SmartcommitsService
 {
@@ -79,6 +77,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		String authorEmail = commands.getAuthorEmail();
 		if (StringUtils.isBlank(authorEmail))
 		{
+            results.addGlobalError("Changeset doesn't contain author email. Unable to map this to JIRA user.");
 			return results;
 		}
 		//
@@ -87,6 +86,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		User user = getUserByEmailOrNull(authorEmail);
 		if (user == null)
 		{
+            results.addGlobalError("Can't find JIRA user with given author email: " + authorEmail);
 			return results;
 		}
 

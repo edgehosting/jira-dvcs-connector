@@ -418,3 +418,15 @@
 	{/if}
 	<div>Please contact the server administrator.</div>
 {/template}
+
+/**
+ * @param smartCommitErrors
+ */
+{template .smartCommitErrors}
+	<h2>Smart commit errors</h2>
+	<ul>
+	{foreach $sce in $smartCommitErrors}
+	    <li><a href='{$sce.commitUrl}' target='_blank'>{$sce.shortChangesetNode}</a>: {$sce.error}</li>
+	{/foreach}
+	</ul>
+{/template}

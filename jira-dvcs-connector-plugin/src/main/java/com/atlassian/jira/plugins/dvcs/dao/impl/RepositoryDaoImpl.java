@@ -52,7 +52,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                 repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
         repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
         // set sync progress
-        repository.setSync((DefaultProgress) synchronizer.getProgress(repository));
+        repository.setSync((DefaultProgress) synchronizer.getProgress(repository.getId()));
 
         if (organizationMapping != null)
         {

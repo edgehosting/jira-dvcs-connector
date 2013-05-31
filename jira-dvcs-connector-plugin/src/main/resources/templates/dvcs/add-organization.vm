@@ -195,11 +195,15 @@
                     <input class="radio" id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
 						onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
                     <span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
+
                 </td>
                 
                 <td class="dvcs-org-reponame">
                     <a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
 					<span id="error_status_icon_$repo.id" class="repository-error-icon #if($repo.sync && !$repo.sync.hasAdminPermission())admin-permission aui-icon aui-icon-warning#end">&nbsp;</span>
+
+
+                    <span id="error_smrtcmmt_icon_$repo.id" class="#if($repo.sync && !$repo.sync.smartCommitErrors.isEmpty())error_smrtcmmt aui-icon aui-icon-error#end">&nbsp;</span>
 				</td>
                 
                 <td class="action" headers="action" style="text-align: right; white-space: nowrap;">
@@ -226,10 +230,14 @@
                 <td class="dvcs-smartcommits-repo">
                     <div id="dvcs-action-container3-$repo.id" class="$!dvcsNoDisplayClass">
                         <span style="padding-left: 1px;">&nbsp;</span>
+
+
+
                         <input class="radio" id="repo_smartcommits$repo.id" type="checkbox" $!smartcommitsEnabled $!localSmartcommitsDisabled
                          onclick="javascript: enableRepoSmartcommits($repo.id, 'repo_smartcommits$repo.id');" />
 
                         <span style="display:none; width: 16px; height: 16px;" id="repo_smartcommit_check${repo.id}working" class="syncicon running">&nbsp;</span>
+
                     </div>
                 </td>
 
