@@ -532,6 +532,12 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
     public void removeRepositories(List<Repository> repositories)
     {
+        // we stop all synchronizations first to prevent starting a new redundant synchronization
+        for (Repository repository : repositories)
+        {
+            synchronizer.stopSynchronization(repository);
+        }
+        
         for (Repository repository : repositories)
         {
             markForRemove(repository);
@@ -548,7 +554,6 @@ public class RepositoryServiceImpl implements RepositoryService
 
     private void markForRemove(Repository repository)
     {
-        synchronizer.stopSynchronization(repository);
         synchronizer.removeProgress(repository);
         repository.setDeleted(true);
     }
