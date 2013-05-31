@@ -88,7 +88,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		User user = getUserByEmailOrNull(authorEmail);
 		if (user == null)
 		{
-            results.addGlobalError("Can't find user with given author email: " + authorEmail);
+            results.addGlobalError("Can't find JIRA user with given author email: " + authorEmail);
 			return results;
 		}
 
