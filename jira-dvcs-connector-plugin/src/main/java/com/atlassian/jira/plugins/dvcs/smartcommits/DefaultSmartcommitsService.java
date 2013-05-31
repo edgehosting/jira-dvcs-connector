@@ -1,14 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-import java.util.Iterator;
-
-import javax.ws.rs.core.CacheControl;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.crowd.embedded.api.CrowdService;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.crowd.search.EntityDescriptor;
@@ -30,6 +21,13 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import javax.ws.rs.core.CacheControl;
+import java.util.Iterator;
 
 public class DefaultSmartcommitsService implements SmartcommitsService
 {
