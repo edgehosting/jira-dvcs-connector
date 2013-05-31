@@ -4,7 +4,6 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
@@ -44,12 +43,12 @@ public class ChangesetDaoImpl implements ChangesetDao
         this.activeObjects = activeObjects;
     }
 
-    public List<Changeset> transform(ChangesetMapping changesetMapping)
+    private List<Changeset> transform(ChangesetMapping changesetMapping)
     {
         return transformer.transform(changesetMapping);
     }
 
-    public List<Changeset> transform(List<ChangesetMapping> changesetMappings)
+    private List<Changeset> transform(List<ChangesetMapping> changesetMappings)
     {
         List<Changeset> changesets = new ArrayList<Changeset>();
 
@@ -325,23 +324,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
 
         return transform(changesetMappings);
-    }
-
-    @Override
-    public List<RepositoryMapping> getRepositories(final int changesetId)
-    {
-        final ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
-        {
-            @Override
-            public ChangesetMapping doInTransaction()
-            {
-                return activeObjects.get(ChangesetMapping.class, changesetId);
-            }
-        });
-
-        return (changesetMapping.getRepositories() != null) ?
-                Arrays.asList(changesetMapping.getRepositories()) :
-                Collections.<RepositoryMapping>emptyList();
     }
 
     @Override

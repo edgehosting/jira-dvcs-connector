@@ -32,8 +32,8 @@ public class SmartcommitOperation implements Runnable
     private final ChangesetDao changesetDao;
 
     private final Synchronizer synchronizer;
-    private Repository repository;
-    private ChangesetService changesetService;
+    private final Repository repository;
+    private final ChangesetService changesetService;
 
     /**
      * The Constructor.
