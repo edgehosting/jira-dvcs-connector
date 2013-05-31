@@ -14,7 +14,7 @@ import net.java.ao.EntityManager;
 import net.java.ao.Query;
 import net.java.ao.schema.TableNameConverter;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
