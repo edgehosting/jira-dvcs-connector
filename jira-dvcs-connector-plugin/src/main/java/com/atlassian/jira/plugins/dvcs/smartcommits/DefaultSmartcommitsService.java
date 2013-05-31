@@ -79,7 +79,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		String authorEmail = commands.getAuthorEmail();
 		if (StringUtils.isBlank(authorEmail))
 		{
-            results.addGlobalError("Changeset hasn't fill author email.");
+            results.addGlobalError("Changeset doesn't contain author email. Unable to map this to JIRA user.");
 			return results;
 		}
 		//
