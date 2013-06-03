@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.NoAuthAuthProvider;
@@ -14,59 +15,81 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scrib
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.plugin.PluginAccessor;
 
-/**
- * BitbucketAuthProviderFactory
- *
- * @author Martin Skurla mskurla@atlassian.com
- */
-public final class DefaultBitbucketAuthProviderFactory implements BitbuckeAuthProviderFactory
+public class DefaultBitbucketRemoteClientBuilder implements BitbucketClientBuilder
 {
+    private AuthProvider authProvider;
+    private int apiVersion = 1;
+    private boolean cached;
+    
     private final Encryptor encryptor;
     private final String userAgent;
 
-    public DefaultBitbucketAuthProviderFactory(Encryptor encryptor,
+    public DefaultBitbucketRemoteClientBuilder(Encryptor encryptor,
             PluginAccessor pluginAccessor)
     {
         this.encryptor = encryptor;
         this.userAgent = DvcsConstants.getUserAgent(pluginAccessor);
     }
-
+    
     @Override
-    public AuthProvider getForOrganization(Organization organization)
+    public BitbucketClientBuilder forOrganization(Organization organization)
     {
-        return createProvider(organization.getHostUrl(), organization.getName(), organization.getCredential());
+        this.authProvider = createProvider(organization.getHostUrl(), organization.getName(), organization.getCredential());
+        return this;
     }
 
     @Override
-    public AuthProvider getForRepository(Repository repository)
+    public BitbucketClientBuilder forRepository(Repository repository)
     {
-        return createProvider(repository.getOrgHostUrl(), repository.getOrgName(), repository.getCredential());
+        this.authProvider = createProvider(repository.getOrgHostUrl(), repository.getOrgName(), repository.getCredential());
+        return this;
     }
 
     @Override
-    public AuthProvider getForRepository(Repository repository, int apiVersion)
+    public BitbucketClientBuilder noAuthClient(String hostUrl)
     {
-        AuthProvider authProvider = createProvider(repository.getOrgHostUrl(), repository.getOrgName(), repository.getCredential());
+        this.authProvider = new NoAuthAuthProvider(hostUrl);
+        this.authProvider.setUserAgent(userAgent);
+        return this;
+    }
+
+    @Override
+    public BitbucketClientBuilder authClient(String hostUrl, String name, Credential credential)
+    {
+        this.authProvider = createProvider(hostUrl, name, credential);
+        return this;
+    }
+    
+    @Override
+    public BitbucketClientBuilder cached()
+    {
+        this.cached = true;
+        return this;
+    }
+
+    @Override
+    public BitbucketClientBuilder apiVersion(int apiVersion)
+    {
+        this.apiVersion = apiVersion;
+        return this;
+    }
+    
+    @Override
+    public BitbucketRemoteClient build()
+    {
+        if (authProvider == null)
+        {
+            throw new IllegalStateException("AuthProvider must be provided.");
+        }
+        
         authProvider.setApiVersion(apiVersion);
-        return authProvider;
+        
+        authProvider.setCached(cached);
+
+        return new BitbucketRemoteClient(authProvider);
     }
 
-    @Override
-    public AuthProvider getNoAuthClient(String hostUrl)
-    {
-        AuthProvider authProvider = new NoAuthAuthProvider(hostUrl);
-        authProvider.setUserAgent(userAgent);
-        return authProvider;
-    }
-
-    /**
-     * @param hostUrl
-     * @param name
-     * @param credential
-     * @return
-     */
-    @Override
-    public AuthProvider createProvider(String hostUrl, String name, Credential credential)
+    private AuthProvider createProvider(String hostUrl, String name, Credential credential)
     {
         String username =  credential.getAdminUsername();
         String password = credential.getAdminPassword();
