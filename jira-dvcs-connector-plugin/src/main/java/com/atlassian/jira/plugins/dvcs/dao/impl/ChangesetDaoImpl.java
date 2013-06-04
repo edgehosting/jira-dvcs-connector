@@ -372,19 +372,12 @@ public class ChangesetDaoImpl implements ChangesetDao
 
     private Query createLatestChangesetsAvailableForSmartcommitQuery(int repositoryId)
     {
-        Query query = Query.select("*")
-                .alias(ProjectKey.class, "pk")
+        return Query.select("*")
+                .from(ChangesetMapping.class)
                 .alias(ChangesetMapping.class, "chm")
                 .alias(RepositoryToChangesetMapping.class, "rtchm")
-                .join(ChangesetMapping.class, "chm.ID = pk." + IssueToChangesetMapping.CHANGESET_ID)
                 .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
-                .where("rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ?", repositoryId)
-                .order(IssueToChangesetMapping.PROJECT_KEY);
-
-
-        return Query.select("*").alias(table, alias)
-                .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
-                .where(ChangesetMapping.SMARTCOMMIT_AVAILABLE + " = ? ", Boolean.TRUE)
+                .where("chm.ID = ? and chm."+ChangesetMapping.SMARTCOMMIT_AVAILABLE+" = ? " , repositoryId, Boolean.TRUE)
                 .order(ChangesetMapping.DATE + " DESC");
     }
 

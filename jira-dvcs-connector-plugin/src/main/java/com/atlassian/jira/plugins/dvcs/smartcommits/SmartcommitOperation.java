@@ -1,5 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao.ForEachChangesetClosure;
@@ -11,11 +17,6 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommandsResults;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * The Class RunnableChangesetSmartcommitProcessor.
@@ -59,7 +60,7 @@ public class SmartcommitOperation implements Runnable
         {
             log.debug("Running SmartcommitOperation ... ");
 
-            changesetDao.forEachLatestChangesetsAvailableForSmartcommitDo(new ForEachChangesetClosure()
+            changesetDao.forEachLatestChangesetsAvailableForSmartcommitDo(repository.getId(), new ForEachChangesetClosure()
             {
                 @Override
                 public void execute(ChangesetMapping changesetMapping)
