@@ -2,9 +2,11 @@ package com.atlassian.jira.plugins.dvcs.sync.impl;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -17,10 +19,10 @@ import com.google.common.collect.MapMaker;
 /**
  * Synchronization services
  */
-public class DefaultSynchronizer implements Synchronizer
+public class DefaultSynchronizer implements Synchronizer, DisposableBean
 {
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
-    
+
     private final ExecutorService executorService;
     private final SmartcommitsChangesetsProcessor smartcommitsChangesetsProcessor;
 
@@ -61,7 +63,7 @@ public class DefaultSynchronizer implements Synchronizer
     {
         final DefaultProgress progress = operation.getProgress();
         progressMap.put(repository.getId(), progress);
-        
+
         Runnable runnable = new Runnable()
         {
             @Override
@@ -70,21 +72,21 @@ public class DefaultSynchronizer implements Synchronizer
                 try
                 {
                     progress.start();
-                
+
                     if (progress.isShouldStop())
                     {
                         return;
                     }
-                    
+
                     operation.synchronise();
-                    
+
                     // at the end of execution
-                    if (operation.isSoftSync()) 
+                    if (operation.isSoftSync())
                     {
                         smartcommitsChangesetsProcessor.startProcess();
                     }
                     //
-        
+
                 } catch (Throwable e)
                 {
                     String errorMessage = e.getMessage() == null ? e.toString() : e.getMessage();
@@ -96,9 +98,9 @@ public class DefaultSynchronizer implements Synchronizer
                 }
             }
         };
-       
+
         executorService.submit(runnable);
-        
+
         progress.queued();
     }
 
@@ -108,6 +110,7 @@ public class DefaultSynchronizer implements Synchronizer
         return progressMap.get(repository.getId());
     }
 
+    @Override
     public void putProgress(Repository repository, Progress progress)
     {
         progressMap.put(repository.getId(), progress);
@@ -117,5 +120,17 @@ public class DefaultSynchronizer implements Synchronizer
     public void removeProgress(Repository repository)
     {
         progressMap.remove(repository.getId());
+    }
+
+    @Override
+    public void destroy() throws Exception
+    {
+        for (Progress progress : progressMap.values())
+        {
+            progress.setShouldStop(true);
+        }
+        executorService.shutdown();
+        boolean result = executorService.awaitTermination(1, TimeUnit.MINUTES);
+        log.info("Terminating Synchronizer executor returned: " + result);
     }
 }
