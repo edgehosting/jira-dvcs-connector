@@ -130,6 +130,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean
             progress.setShouldStop(true);
         }
         executorService.shutdown();
-        executorService.awaitTermination(1, TimeUnit.MINUTES);
+        boolean result = executorService.awaitTermination(1, TimeUnit.MINUTES);
+        log.info("Terminating Synchronizer executor returned: " + result);
     }
 }
