@@ -138,6 +138,7 @@ public class RootResource
      */
     @AnonymousAllowed
     @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repository/{id}/sync")
     public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
