@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -41,7 +40,6 @@ import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
@@ -67,9 +65,6 @@ public class RootResource
     /** The repository service. */
     private final RepositoryService repositoryService;
 
-    /** The webfragment renderer. */
-    private final WebfragmentRenderer webfragmentRenderer;
-
     private final AccountsConfigService ondemandAccountConfig;
 
     /**
@@ -81,11 +76,10 @@ public class RootResource
      *            the repository service
      */
     public RootResource(OrganizationService organizationService, RepositoryService repositoryService,
-            WebfragmentRenderer webfragmentRenderer, AccountsConfigService ondemandAccountConfig)
+            AccountsConfigService ondemandAccountConfig)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
-        this.webfragmentRenderer = webfragmentRenderer;
         this.ondemandAccountConfig = ondemandAccountConfig;
     }
 
@@ -379,20 +373,60 @@ public class RootResource
     }
 
     @GET
-    @Produces({ MediaType.TEXT_HTML })
-    @Path("/fragment/groups")
+    @Path("/defaultgroups")
     @AdminOnly
-    public Response renderGroupsFragment()
+    public Response getDefaultGroups()
     {
-        try
+
+        List<Map<String, Object>> organizations = new LinkedList<Map<String, Object>>();
+        int groupsCount = 0;
+
+        List<Map<String, Object>> errors = new LinkedList<Map<String, Object>>();
+
+        for (Organization organization : organizationService.getAll(false, "bitbucket"))
         {
-            String html = webfragmentRenderer.renderGroupsFragmentForAddUser();
-            return Response.ok(html).build();
-        } catch (IOException e)
-        {
-            log.error("Failed to get groups", e);
-            return Response.serverError().build();
+            try
+            {
+                Map<String, Object> organizationView = new HashMap<String, Object>();
+
+                organizationView.put("id", organization.getId());
+                organizationView.put("name", organization.getName());
+                organizationView.put("organizationUrl", organization.getOrganizationUrl());
+
+                List<Map<String, Object>> groups = new LinkedList<Map<String, Object>>();
+                for (Group group : organizationService.getGroupsForOrganization(organization))
+                {
+                    groupsCount++;
+
+                    Map<String, Object> groupView = new HashMap<String, Object>();
+                    groupView.put("slug", group.getSlug());
+                    groupView.put("niceName", group.getNiceName());
+                    groupView.put("selected", organization.getDefaultGroups().contains(group));
+                    groups.add(groupView);
+
+                }
+
+                organizationView.put("groups", groups);
+
+                organizations.add(organizationView);
+
+            } catch (Exception e)
+            {
+                log.warn("Failed to get groups for organization {}. Cause message is {}", organization.getName(), e.getMessage());
+
+                Map<String, Object> groupView = new HashMap<String, Object>();
+                groupView.put("url", organization.getOrganizationUrl());
+                groupView.put("name", organization.getName());
+                errors.add(groupView);
+            }
         }
+
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("organizations", organizations);
+        result.put("groupsCount", groupsCount);
+        result.put("errors", errors);
+
+        return Response.ok(result).build();
     }
 
     @POST
