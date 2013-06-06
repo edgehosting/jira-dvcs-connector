@@ -1,8 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
-import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -24,9 +26,11 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
@@ -36,7 +40,6 @@ import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
@@ -44,6 +47,8 @@ import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
  * The Class RootResource.
  */
 @Path("/")
+@Consumes({ MediaType.APPLICATION_JSON })
+@Produces({ MediaType.APPLICATION_JSON })
 public class RootResource
 {
 
@@ -60,9 +65,6 @@ public class RootResource
     /** The repository service. */
     private final RepositoryService repositoryService;
 
-    /** The webfragment renderer. */
-    private final WebfragmentRenderer webfragmentRenderer;
-
     private final AccountsConfigService ondemandAccountConfig;
 
     /**
@@ -74,11 +76,10 @@ public class RootResource
      *            the repository service
      */
     public RootResource(OrganizationService organizationService, RepositoryService repositoryService,
-            WebfragmentRenderer webfragmentRenderer, AccountsConfigService ondemandAccountConfig)
+            AccountsConfigService ondemandAccountConfig)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
-        this.webfragmentRenderer = webfragmentRenderer;
         this.ondemandAccountConfig = ondemandAccountConfig;
     }
 
@@ -131,6 +132,7 @@ public class RootResource
      */
     @AnonymousAllowed
     @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repository/{id}/sync")
     public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
@@ -324,37 +326,107 @@ public class RootResource
     }
 
     @GET
-    @Produces({ MediaType.TEXT_HTML })
-    @Path("/fragment/{id}/defaultgroups")
+    @Path("/organization/{id}/defaultgroups")
     @AdminOnly
-    public Response renderDefaultGroupsFragment(@PathParam("id") int orgId)
+    @Produces({ MediaType.APPLICATION_JSON })
+    public Response getDefaultGroups(@PathParam("id") int orgId)
     {
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        Organization organization = organizationService.get(orgId, false);
         try
         {
-            String html = webfragmentRenderer.renderDefaultGroupsFragment(orgId);
-            return Response.ok(html).build();
-        } catch (IOException e)
+            // organization
+            Map<String, Object> organizationResult = new HashMap<String, Object>();
+            result.put("organization", organizationResult);
+            organizationResult.put("id", organization.getId());
+            organizationResult.put("name", organization.getName());
+
+            // groups
+            List<Map<String, Object>> groupsResult = new LinkedList<Map<String, Object>>();
+            result.put("groups", groupsResult);
+            for (Group group : organizationService.getGroupsForOrganization(organization))
+            {
+                Map<String, Object> groupView = new HashMap<String, Object>();
+                groupView.put("slug", group.getSlug());
+                groupView.put("niceName", group.getNiceName());
+                groupView.put("selected", organization.getDefaultGroups().contains(group));
+                groupsResult.add(groupView);
+            }
+
+            return Response.ok(result).build();
+
+        } catch (SourceControlException.Forbidden_403 e)
         {
-            log.error("Failed to get default groups for organization with id " + orgId, e);
-            return Response.serverError().build();
+            return Status.forbidden().message("Unable to access Bitbucket").response();
+
+        } catch (SourceControlException e)
+        {
+            return Status
+                    .error()
+                    .message(
+                            "Error retrieving list of groups for " + organization.getOrganizationUrl()
+                                    + ". Please check JIRA logs for details.").response();
+
         }
+
     }
 
     @GET
-    @Produces({ MediaType.TEXT_HTML })
-    @Path("/fragment/groups")
+    @Path("/defaultgroups")
     @AdminOnly
-    public Response renderGroupsFragment()
+    public Response getDefaultGroups()
     {
-        try
+
+        List<Map<String, Object>> organizations = new LinkedList<Map<String, Object>>();
+        int groupsCount = 0;
+
+        List<Map<String, Object>> errors = new LinkedList<Map<String, Object>>();
+
+        for (Organization organization : organizationService.getAll(false, "bitbucket"))
         {
-            String html = webfragmentRenderer.renderGroupsFragmentForAddUser();
-            return Response.ok(html).build();
-        } catch (IOException e)
-        {
-            log.error("Failed to get groups", e);
-            return Response.serverError().build();
+            try
+            {
+                Map<String, Object> organizationView = new HashMap<String, Object>();
+
+                organizationView.put("id", organization.getId());
+                organizationView.put("name", organization.getName());
+                organizationView.put("organizationUrl", organization.getOrganizationUrl());
+
+                List<Map<String, Object>> groups = new LinkedList<Map<String, Object>>();
+                for (Group group : organizationService.getGroupsForOrganization(organization))
+                {
+                    groupsCount++;
+
+                    Map<String, Object> groupView = new HashMap<String, Object>();
+                    groupView.put("slug", group.getSlug());
+                    groupView.put("niceName", group.getNiceName());
+                    groupView.put("selected", organization.getDefaultGroups().contains(group));
+                    groups.add(groupView);
+
+                }
+
+                organizationView.put("groups", groups);
+
+                organizations.add(organizationView);
+
+            } catch (Exception e)
+            {
+                log.warn("Failed to get groups for organization {}. Cause message is {}", organization.getName(), e.getMessage());
+
+                Map<String, Object> groupView = new HashMap<String, Object>();
+                groupView.put("url", organization.getOrganizationUrl());
+                groupView.put("name", organization.getName());
+                errors.add(groupView);
+            }
         }
+
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("organizations", organizations);
+        result.put("groupsCount", groupsCount);
+        result.put("errors", errors);
+
+        return Response.ok(result).build();
     }
 
     @POST

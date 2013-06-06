@@ -2,9 +2,9 @@
 
     // load web fragment
     ## AJS.$ doesn't play nice with Velocity, using jQuery instead
-    jQuery.get("${baseurl}/rest/bitbucket/1.0/fragment/groups")
+    jQuery.get("${baseurl}/rest/bitbucket/1.0/defaultgroups")
                .success(function (data) {
-                    jQuery("#configureGroupsContent").html(data);
+                    jQuery("#configureGroupsContent").html(jira.dvcs.connector.plugin.soy.addUserGroup(data));
                 })
                .error(function (err) { 
                     jQuery("#configureGroupsContent").empty();

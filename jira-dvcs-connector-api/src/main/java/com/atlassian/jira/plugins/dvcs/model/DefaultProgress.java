@@ -3,8 +3,11 @@ package com.atlassian.jira.plugins.dvcs.model;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import java.util.ArrayList;
+import java.util.List;
 
 @XmlRootElement(name = "sync")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -30,9 +33,12 @@ public class DefaultProgress implements Progress
     @XmlAttribute
     private String error;
 
+    @XmlElement
+    private List<SmartCommitError> smartCommitErrors = new ArrayList<SmartCommitError>();
+
     @XmlTransient
     private boolean hasAdminPermission = true;
-    
+
     public DefaultProgress()
     {
     }
@@ -54,6 +60,7 @@ public class DefaultProgress implements Progress
     public void start()
     {
         startTime = System.currentTimeMillis();
+        smartCommitErrors.clear();
     }
 
     public void finish()
@@ -127,6 +134,16 @@ public class DefaultProgress implements Progress
         this.synchroErrorCount = synchroErrorCount;
     }
 
+    public List<SmartCommitError> getSmartCommitErrors()
+    {
+        return smartCommitErrors;
+    }
+
+    public void setSmartCommitErrors(List<SmartCommitError> smartCommitErrors)
+    {
+        this.smartCommitErrors = smartCommitErrors;
+    }
+
     @Override
     public boolean isShouldStop()
     {
@@ -139,15 +156,15 @@ public class DefaultProgress implements Progress
         this.shouldStop = shouldStop;
     }
 
-	@Override
-	public boolean hasAdminPermission()
-	{
-		return hasAdminPermission;
-	}
+    @Override
+    public boolean hasAdminPermission()
+    {
+        return hasAdminPermission;
+    }
 
-	@Override
-	public void setAdminPermission(boolean hasAdminPermission)
-	{
-		this.hasAdminPermission = hasAdminPermission;
-	}
+    @Override
+    public void setAdminPermission(boolean hasAdminPermission)
+    {
+        this.hasAdminPermission = hasAdminPermission;
+    }
 }
