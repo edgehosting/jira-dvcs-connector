@@ -11,6 +11,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -18,7 +19,7 @@ import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.util.concurrent.ThreadFactories;
 
-public class DeferredBitbucketLinker implements BitbucketLinker
+public class DeferredBitbucketLinker implements BitbucketLinker, DisposableBean
 {
     private final Logger log = LoggerFactory.getLogger(DeferredBitbucketLinker.class);
 
@@ -38,6 +39,19 @@ public class DeferredBitbucketLinker implements BitbucketLinker
 		executor = new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(),
 		        ThreadFactories.namedThreadFactory("BitbucketLinkerThread"));
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void destroy() throws Exception
+    {
+        executor.shutdown();
+        if (!executor.awaitTermination(1, TimeUnit.MINUTES))
+        {
+            log.error("Unable properly shutdown queued tasks.");
+        }
     }
 
 	@Override

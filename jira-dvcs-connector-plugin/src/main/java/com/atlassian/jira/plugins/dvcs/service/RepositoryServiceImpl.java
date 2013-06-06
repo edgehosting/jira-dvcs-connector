@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -36,7 +37,7 @@ import com.google.common.collect.Maps;
 /**
  * The Class RepositoryServiceImpl.
  */
-public class RepositoryServiceImpl implements RepositoryService
+public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 {
 
     /** The Constant log. */
@@ -97,6 +98,19 @@ public class RepositoryServiceImpl implements RepositoryService
         this.pluginSettingsFactory = pluginSettingsFactory;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void destroy() throws Exception
+    {
+        removeOrphanRepositoriesExecutor.shutdown();
+        if (!removeOrphanRepositoriesExecutor.awaitTermination(1, TimeUnit.MINUTES))
+        {
+            log.error("Unable properly shutdown queued tasks.");
+        }
+    }
+    
     /**
      * {@inheritDoc}
      */
