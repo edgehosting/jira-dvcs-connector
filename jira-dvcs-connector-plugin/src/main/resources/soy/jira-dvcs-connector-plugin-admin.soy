@@ -1,0 +1,52 @@
+{namespace jira.dvcs.connector.plugin.soy}
+
+/**
+ *  @param organizations
+ *  @param groupsCount
+ *  @param errors
+ */
+{template .addUserGroup}
+    {if $groupsCount > 0}
+        <fieldset class="field-group" id="dvcs-bitucket-extension">
+          
+            <label>{getText('com.atlassian.jira.plugins.dvcs.adduser.accounts.label')}</label>
+            {foreach $organization in $organizations}
+                <div class="checkbox" style="padding-left: 0px; margin-top: 2px; margin-bottom: 5px;">
+                    
+                    <div style="padding-top: 1px; margin-bottom: 4px; font-weight: bold; font-size: 1.1em; padding-left: 25px; background: url('{contextPath()}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png') no-repeat transparent">
+                        <span><a href="{$organization.organizationUrl}">{$organization.name}</a></span>
+                    </div>
+        
+                    {if $organization.groups.length > 0}
+                        {foreach $group in $organization.groups}
+                            <div style="margin-left: 25px; margin-bottom: 3px">
+                                <input {if $group.selected} checked='checked' {/if} 
+                                    id="dvcs_org_selector_{$organization.id}_{$group.slug}" 
+                                    class="checkbox" type="checkbox" 
+                                    name="dvcs_org_selector" value="{$organization.id}:{$group.slug}" />
+                                <label for="dvcs_org_selector_{$organization.id}_{$group.slug}">{$group.niceName}</label>
+                            </div>
+                        {/foreach}
+                    {/if}
+                </div>
+            {/foreach}
+      
+        </fieldset>
+    {/if}
+
+    {if $errors}
+        <div class="aui-message warning">
+            <p class="title">
+                <span class="aui-icon icon-warning"></span>
+                <strong>{getText('com.atlassian.jira.plugins.dvcs.adduser.accounts.failed')}</strong>
+            </p>
+            <p>
+                {foreach $errorOrganization in $errors}
+                    <div style="padding-top: 1px; margin-bottom: 4px; font-weight: bold; font-size: 1.1em; padding-left: 25px; background: url('{contextPath()}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png') no-repeat transparent">
+                        <span><a href='{$errorOrganization.organizationUrl}'>{$errorOrganization.name}</a></span>
+                    </div>
+                {/foreach}
+            </p>
+        </div>
+    {/if}
+{/template}
