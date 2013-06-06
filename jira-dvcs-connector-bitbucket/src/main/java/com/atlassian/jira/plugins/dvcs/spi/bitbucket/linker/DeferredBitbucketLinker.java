@@ -48,7 +48,8 @@ public class DeferredBitbucketLinker implements BitbucketLinker, DisposableBean
     public void destroy() throws Exception
     {
         executor.shutdown();
-        if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
+        if (!executor.awaitTermination(1, TimeUnit.MINUTES))
+        {
             log.error("Unable properly shutdown queued tasks.");
         }
     }

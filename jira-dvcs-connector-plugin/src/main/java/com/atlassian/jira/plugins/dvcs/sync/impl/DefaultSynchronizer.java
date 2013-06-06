@@ -130,9 +130,10 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean
         {
             progress.setShouldStop(true);
         }
-        
+
         executorService.shutdown();
-        if (!executorService.awaitTermination(1, TimeUnit.MINUTES)) {
+        if (!executorService.awaitTermination(1, TimeUnit.MINUTES))
+        {
             log.error("Unable properly shutdown queued tasks.");
         }
     }

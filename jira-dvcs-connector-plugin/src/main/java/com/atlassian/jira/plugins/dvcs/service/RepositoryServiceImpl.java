@@ -105,7 +105,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     public void destroy() throws Exception
     {
         removeOrphanRepositoriesExecutor.shutdown();
-        if (!removeOrphanRepositoriesExecutor.awaitTermination(1, TimeUnit.MINUTES)) {
+        if (!removeOrphanRepositoriesExecutor.awaitTermination(1, TimeUnit.MINUTES))
+        {
             log.error("Unable properly shutdown queued tasks.");
         }
     }

@@ -79,7 +79,8 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
     public void destroy() throws Exception
     {
         executorService.shutdown();
-        if (!executorService.awaitTermination(1, TimeUnit.MINUTES)) {
+        if (!executorService.awaitTermination(1, TimeUnit.MINUTES))
+        {
             log.error("Unable properly shutdown queued tasks.");
         }
     }
