@@ -356,27 +356,16 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	min-width: 320px;
 }
 
-.dvcs-advertisement {
-	background-image: url("../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bg-broadcast.png");
-	background-position: right bottom;
-	background-repeat: no-repeat;
-	background-size: 10ex;
-}
-
 .dvcs-advertisement .product {
 	display: inline-block;
-	width: 33ex;
-	margin: 2.5ex 2.5ex;
+	width: 30ex;
+	margin: 2ex 2ex;
 	vertical-align: top;
 	border-right: solid 1px #dddddd;
 }
 
 .dvcs-advertisement .product:last-child {
 	border: none;
-}
-
-.dvcs-advertisement .product .logo img {
-	height: 3ex;
 }
 
 .dvcs-advertisement .product h4 {

@@ -1,5 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -8,16 +16,11 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProces
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.google.common.collect.MapMaker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
 
 /**
  * Synchronization services
  */
-public class DefaultSynchronizer implements Synchronizer
+public class DefaultSynchronizer implements Synchronizer, DisposableBean
 {
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
@@ -108,6 +111,7 @@ public class DefaultSynchronizer implements Synchronizer
         return progressMap.get(repositoryId);
     }
 
+    @Override
     public void putProgress(Repository repository, Progress progress)
     {
         progressMap.put(repository.getId(), progress);
@@ -117,5 +121,17 @@ public class DefaultSynchronizer implements Synchronizer
     public void removeProgress(Repository repository)
     {
         progressMap.remove(repository.getId());
+    }
+
+    @Override
+    public void destroy() throws Exception
+    {
+        for (Progress progress : progressMap.values())
+        {
+            progress.setShouldStop(true);
+        }
+        executorService.shutdown();
+        boolean result = executorService.awaitTermination(1, TimeUnit.MINUTES);
+        log.info("Terminating Synchronizer executor returned: " + result);
     }
 }
