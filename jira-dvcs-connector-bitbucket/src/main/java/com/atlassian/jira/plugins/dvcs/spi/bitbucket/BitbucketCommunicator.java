@@ -3,10 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -420,22 +417,9 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forOrganization(organization).build();
-            Set<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
+            List<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
 
-            Set<Group> result = GroupTransformer.fromBitbucketGroups(groups);
-            List<Group> sortedResult = new LinkedList<Group>(result);
-            Collections.sort(sortedResult, new Comparator<Group>()
-            {
-
-                @Override
-                public int compare(Group o1, Group o2)
-                {
-                    return o1.getNiceName().compareTo(o2.getNiceName());
-                }
-
-            });
-
-            return sortedResult;
+            return GroupTransformer.fromBitbucketGroups(groups);
 
         } catch (BitbucketRequestException.Forbidden_403 e)
         {
