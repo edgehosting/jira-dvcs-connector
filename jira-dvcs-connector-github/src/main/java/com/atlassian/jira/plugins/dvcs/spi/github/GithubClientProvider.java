@@ -1,5 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
+import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
+
+import java.io.IOException;
+import java.net.URL;
+
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.CommitService;
+import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.service.UserService;
+
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
@@ -8,17 +20,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.plugin.PluginAccessor;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.service.CommitService;
-import org.eclipse.egit.github.core.service.RepositoryService;
-import org.eclipse.egit.github.core.service.UserService;
-
-import java.io.IOException;
-import java.net.URL;
-
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
 
 public class GithubClientProvider
 {
@@ -31,12 +32,12 @@ public class GithubClientProvider
         this.userAgent = DvcsConstants.getUserAgent(pluginAccessor);
     }
 
-    public GitHubClient createClient(Repository repository)
+    public GithubClientWithTimeout createClient(Repository repository)
     {
-        GitHubClient client = createClientInternal(repository.getOrgHostUrl(), userAgent);
+        GithubClientWithTimeout client = createClientInternal(repository.getOrgHostUrl(), userAgent);
         OAuthAuthentication auth = (OAuthAuthentication) authenticationFactory.getAuthentication(repository);
         client.setOAuth2Token(auth.getAccessToken());
-        
+
         return client;
     }
 
@@ -44,8 +45,8 @@ public class GithubClientProvider
     {
         return createClientInternal(hostUrl, userAgent);
     }
-    
-    protected GitHubClient createClientInternal(String url, String userAgent)
+
+    protected GithubClientWithTimeout createClientInternal(String url, String userAgent)
     {
         return createClient(url, userAgent);
     }
@@ -64,7 +65,7 @@ public class GithubClientProvider
         }
         return client;
     }
-    
+
     public CommitService getCommitService(Repository repository)
     {
         return new CommitService(createClient(repository));
@@ -74,10 +75,12 @@ public class GithubClientProvider
     {
         return new UserService(createClient(organization));
     }
-    
+
     public UserService getUserService(Repository repository)
     {
-        return new UserService(createClient(repository));
+        GithubClientWithTimeout client = createClient(repository);
+        client.setTimeout(2000);
+        return new UserService(client);
     }
 
     public RepositoryService getRepositoryService(Repository repository)
@@ -92,16 +95,16 @@ public class GithubClientProvider
 
 
     /**
-     * Create a GitHubClient to connect to the api.
+     * Create a GithubClientWithTimeout to connect to the api.
      *
      * It uses the right host in case we're calling the github.com api.
      * It uses the right protocol in case we're calling the GitHub Enterprise api.
      *
      * @param url is the GitHub's oauth host.
-     * @param userAgent 
-     * @return a GitHubClient
+     * @param userAgent
+     * @return a GithubClientWithTimeout
      */
-    public static GitHubClient createClient(String url, String userAgent)
+    public static GithubClientWithTimeout createClient(String url, String userAgent)
     {
         try
         {
@@ -113,7 +116,7 @@ public class GithubClientProvider
                 host = HOST_API;
             }
 
-            GitHubClient result = new GithubClientWithTimeout(host, -1, urlObject.getProtocol());
+            GithubClientWithTimeout result = new GithubClientWithTimeout(host, -1, urlObject.getProtocol());
             result.setUserAgent(userAgent);
             return result;
         } catch (IOException e)
@@ -121,5 +124,5 @@ public class GithubClientProvider
             throw new IllegalArgumentException(e);
         }
     }
-    
+
 }
