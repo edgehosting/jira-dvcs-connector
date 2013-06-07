@@ -11,8 +11,12 @@ public interface ApiProvider
     void setUserAgent(String userAgent);
 
     String getUserAgent();
-    
+
     void setCached(boolean cached);
-    
+
     boolean isCached();
+
+    void setTimeout(int timeout);
+
+    int getTimeout();
 }
