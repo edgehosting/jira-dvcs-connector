@@ -265,6 +265,11 @@ public class GithubCommunicator implements DvcsCommunicator
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
+	    Map<String, RepositoryHook> hooksForRepo = getHooksForRepo(repositoryService, repositoryId);
+	    if (hooksForRepo.containsKey(postCommitUrl)) {
+	    	return;
+	    }
+        
         final RepositoryHook repositoryHook = new RepositoryHook();
         repositoryHook.setName("web");
         repositoryHook.setActive(true);
@@ -282,6 +287,24 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
+    private Map<String, RepositoryHook> getHooksForRepo(RepositoryService repositoryService,
+            RepositoryId repositoryId)
+    {
+	    try
+        {
+	        List<RepositoryHook> hooks = repositoryService.getHooks(repositoryId);
+	        Map<String, RepositoryHook> urlToHooks = new HashMap<String, RepositoryHook>();
+	        for (RepositoryHook repositoryHook : hooks)
+	        {
+	            urlToHooks.put(repositoryHook.getConfig().get("url"), repositoryHook);
+	        }
+	        return urlToHooks;
+        } catch (IOException e)
+        {
+        	throw new SourceControlException.PostCommitHookRegistrationException("Problem getting hooks from Github.", e);
+        }
+    }
+    
     @Override
     public void removePostcommitHook(Repository repository, String postCommitUrl)
     {
