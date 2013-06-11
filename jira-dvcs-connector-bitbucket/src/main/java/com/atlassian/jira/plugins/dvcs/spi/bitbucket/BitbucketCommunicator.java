@@ -386,14 +386,14 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getUser(Repository repository, String author)
     {
-        BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).build();
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).timeout(2000).build();
         BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getUser(author);
         String username = bitbucketAccount.getUsername();
         String fullName = bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName();
         String avatar = bitbucketAccount.getAvatar();
         return new DvcsUser(username, fullName, null, avatar, repository.getOrgHostUrl() + "/" + username);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -425,18 +425,18 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             log.debug("Could not get groups for organization [" + organization.getName() + "]");
             throw new SourceControlException.Forbidden_403(e);
-        
+
         } catch (BitbucketRequestException e)
         {
             log.debug("Could not get groups for organization [" + organization.getName() + "]");
             throw new SourceControlException(e);
-     
+
         } catch (JsonParsingException e)
         {
             log.debug(e.getMessage(), e);
             throw new SourceControlException.InvalidResponseException("Could not parse response [" + organization.getName()
                     + "]. This is most likely caused by invalid credentials.", e);
-        
+
         }
     }
 
