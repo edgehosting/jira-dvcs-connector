@@ -93,8 +93,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
                 } else
                 {
                     // by default compares via name
-                    return org1.getName().compareTo(org2.getName());
-
+                    return org1.getName().toLowerCase().compareTo(org2.getName().toLowerCase());
                 }
 
             }

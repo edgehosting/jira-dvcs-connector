@@ -6,6 +6,7 @@ import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
@@ -13,7 +14,7 @@ import com.atlassian.sal.api.lifecycle.LifecycleAware;
 import com.atlassian.sal.api.scheduling.PluginScheduler;
 import com.google.common.collect.Maps;
 
-public class DvcsScheduler implements LifecycleAware
+public class DvcsScheduler implements LifecycleAware, DisposableBean
 {
     private static final Logger log = LoggerFactory.getLogger(DvcsScheduler.class);
     private static final String JOB_NAME = DvcsScheduler.class.getName() + ":job";
@@ -56,6 +57,12 @@ public class DvcsScheduler implements LifecycleAware
                 data, // data that needs to be passed to the job
                 startTime, // the time the job is to start
                 interval); // interval between repeats, in milliseconds
+    }
 
+    @Override
+    public void destroy() throws Exception
+    {
+        pluginScheduler.unscheduleJob(JOB_NAME);
+        log.debug("DvcsScheduler job unscheduled");
     }
 }

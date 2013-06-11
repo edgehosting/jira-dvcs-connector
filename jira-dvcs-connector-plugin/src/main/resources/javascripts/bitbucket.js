@@ -825,10 +825,11 @@ function deleteOrganizationInternal(dialog, organizationId, organizationName) {
     	if (jqXHR.status == 404) {
     		AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
     		dialog.showError("Account '" + organizationName + "' was already deleted!");
-    	
+    	} else if(jqXHR.status == 0) { // timeout can happen if organization has too many repositories and uninstalling postcommit hooks takes too long. Pretend deletion is succesfull (it will continue on the server)
+            AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
+            dialog.remove();
     	} else {
     		dialog.showError("Error when deleting account '" + organizationName + "'.");
-    	
     	}
     });
 }
