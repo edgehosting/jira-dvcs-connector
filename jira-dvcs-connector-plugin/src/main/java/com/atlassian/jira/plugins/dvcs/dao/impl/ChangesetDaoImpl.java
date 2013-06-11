@@ -1,5 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
+import net.java.ao.RawEntity;
+import net.java.ao.schema.PrimaryKey;
+import net.java.ao.schema.Table;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
@@ -14,22 +32,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import net.java.ao.EntityStreamCallback;
-import net.java.ao.Query;
-import net.java.ao.RawEntity;
-import net.java.ao.schema.PrimaryKey;
-import net.java.ao.schema.Table;
-import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class ChangesetDaoImpl implements ChangesetDao
 {
@@ -97,6 +99,7 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
     }
 
+    @Override
     public Changeset create(final Changeset changeset, final Set<String> extractedIssues)
     {
         ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
@@ -127,6 +130,7 @@ public class ChangesetDaoImpl implements ChangesetDao
         return changeset;
     }
 
+    @Override
     public Changeset update(final Changeset changeset)
     {
         activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
@@ -353,9 +357,9 @@ public class ChangesetDaoImpl implements ChangesetDao
     }
 
     @Override
-    public void forEachLatestChangesetsAvailableForSmartcommitDo(final ForEachChangesetClosure closure)
+    public void forEachLatestChangesetsAvailableForSmartcommitDo(final int repositoryId, final ForEachChangesetClosure closure)
     {
-        Query query = createLatestChangesetsAvailableForSmartcommitQuery();
+        Query query = createLatestChangesetsAvailableForSmartcommitQuery(repositoryId);
         activeObjects.stream(ChangesetMapping.class, query, new EntityStreamCallback<ChangesetMapping, Integer>()
         {
             @Override
@@ -366,9 +370,14 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
     }
 
-    private Query createLatestChangesetsAvailableForSmartcommitQuery()
+    private Query createLatestChangesetsAvailableForSmartcommitQuery(int repositoryId)
     {
-        return Query.select("*").where(ChangesetMapping.SMARTCOMMIT_AVAILABLE + " = ? ", Boolean.TRUE)
+        return Query.select("*")
+                .from(ChangesetMapping.class)
+                .alias(ChangesetMapping.class, "chm")
+                .alias(RepositoryToChangesetMapping.class, "rtchm")
+                .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
+                .where("rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ? and chm."+ChangesetMapping.SMARTCOMMIT_AVAILABLE+" = ? " , repositoryId, Boolean.TRUE)
                 .order(ChangesetMapping.DATE + " DESC");
     }
 
