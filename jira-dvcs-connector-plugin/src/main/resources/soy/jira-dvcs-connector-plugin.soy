@@ -208,7 +208,6 @@
 {/template}
 
 /**
- * @param isGithubEnterpriseEnabled
  * @param isOnDemandLicense
  * @param atlToken
  * @param oAuthStore
@@ -225,9 +224,7 @@
 		      <select id="urlSelect" name="urlSelect" class="select">
 		        <option value="bitbucket">Bitbucket</option>
 		        <option value="github">GitHub</option>
-		        {if $isGithubEnterpriseEnabled}
 		        <option value="githube">GitHub Enterprise</option>
-		        {/if}
 		      </select>
 		      <div class="fieldValue" id="urlReadOnly"></div>
 		      <div id="url-error" class="dvcs-error error">Choose URL.</div>
@@ -352,7 +349,7 @@
 {/template}
 
 /**
-*	@param baseUrl
+ *	@param baseUrl
  *	@param atlToken
  *	@param organizationIdDefaultGroups
  */
@@ -364,6 +361,33 @@
              <div id="configureDefaultGroupsContent"><span class="aui-icon aui-icon-wait">&nbsp;</span></div>
         </form>
     </div>
+{/template}
+
+/**
+ *	@param organization
+ *	@param groups
+ */
+{template .defaultGroups}
+	{if $groups.length == 0}
+        <div>There are no <a href="https://bitbucket.org/account/user/${organization.name}/groups/" target="_blank">Bitbucket groups</a> configured for the selected account.</div>
+	{else}
+		Automatically give newly-added JIRA users access to <strong>{$organization.name}</strong> repositories through these <a href="https://bitbucket.org/account/user/{$organization.name}/groups/" target="_blank">Bitbucket groups</a>:
+		<table class="aui">
+			<tbody>
+				{foreach $group in $groups}
+	         		<tr>
+			 			<td>
+			 				<input type="checkbox" 
+			 					id="default-group-slug-{$group.slug}"
+			 					name="organizationDefaultGroups" value="{$group.slug}"
+			 					{if $group.selected}checked="checked"{/if} /> 
+			 				<label for="default-group-slug-{$group.slug}" >{$group.niceName}</label> 
+			 			</td>
+	         		</tr>
+         		{/foreach}
+			</tbody>
+		</table>
+	{/if}
 {/template}
 
 /**
@@ -391,4 +415,16 @@
 	<div>{$errorMessage}</div>
 	{/if}
 	<div>Please contact the server administrator.</div>
+{/template}
+
+/**
+ * @param smartCommitErrors
+ */
+{template .smartCommitErrors}
+	<h2>Smart commit errors</h2>
+	<ul>
+	{foreach $sce in $smartCommitErrors}
+	    <li><a href='{$sce.commitUrl}' target='_blank'>{$sce.shortChangesetNode}</a>: {$sce.error}</li>
+	{/foreach}
+	</ul>
 {/template}

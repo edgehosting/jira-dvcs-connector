@@ -41,35 +41,43 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadReq
 
 /**
  * BaseRemoteRequestor
- * 
- * 
+ *
+ *
  * <br />
  * <br />
  * Created on 13.7.2012, 10:25:24 <br />
  * <br />
- * 
+ *
  * @author jhocman@atlassian.com
- * 
+ *
  */
 public class BaseRemoteRequestor implements RemoteRequestor
 {
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
-    
+
     private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("bitbucket.client.connection.timeout", 30000);
     private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("bitbucket.client.socket.timeout", 60000);
-    
+
+    private int connectionTimeout = DEFAULT_CONNECT_TIMEOUT;
+    private int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
+
     protected final ApiProvider apiProvider;
     private final HttpClientProxyConfig proxyConfig;
 
     private static HttpCacheStorage storage;
-    
+
     private final boolean cached;
-    
+
     public BaseRemoteRequestor(ApiProvider apiProvider)
     {
         this.apiProvider = apiProvider;
         this.proxyConfig = new HttpClientProxyConfig();
         this.cached = apiProvider.isCached();
+        if (apiProvider.getTimeout() >= 0)
+        {
+            this.connectionTimeout = apiProvider.getTimeout();
+            this.socketTimeout = apiProvider.getTimeout();
+        }
     }
 
     @Override
@@ -99,7 +107,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // --------------------------------------------------------------------------------------------------
     // Retryers...
     // --------------------------------------------------------------------------------------------------
-    
+
     private <T> T getWithRetry(final String uri, final Map<String, String> parameters,
             final ResponseCallback<T> callback)
     {
@@ -189,7 +197,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     {
         DefaultHttpClient client = new DefaultHttpClient();
         RemoteResponse response = null;
-       
+
         try
         {
             createConnection(client, method, uri, params);
@@ -233,21 +241,21 @@ public class BaseRemoteRequestor implements RemoteRequestor
             client = new EtagCachingHttpClient(client, getStorage());
         }
         RemoteResponse response = null;
-       
+
         try
         {
             createConnection(client, method, uri + paramsToString(parameters, uri.contains("?")), parameters);
-          
+
             HttpResponse httpResponse = client.execute(method);
             response = checkAndCreateRemoteResponse(method, client, httpResponse);
-            
+
             return callback.onResponse(response);
 
         } catch (IOException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
             throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-            
+
         } catch (URISyntaxException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
@@ -266,10 +274,10 @@ public class BaseRemoteRequestor implements RemoteRequestor
         if (statusCode >= 300)
         {
             logRequestAndResponse(method, httpResponse, statusCode);
-            
+
             RuntimeException toBeThrown = new BitbucketRequestException.Other("Error response code during the request : "
-                    + statusCode);            
-             
+                    + statusCode);
+
             switch (statusCode)
             {
             case HttpStatus.SC_BAD_REQUEST:
@@ -285,7 +293,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
                 toBeThrown = new BitbucketRequestException.NotFound_404();
                 break;
             }
-            
+
             throw toBeThrown;
         }
 
@@ -308,7 +316,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
             IOUtils.copy(is, writer, "UTF-8");
             responseAsString = writer.toString();
         }
-        log.warn("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}", 
+        log.warn("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
                 new Object[] {method.getMethod(), method.getURI(), method.getAllHeaders(), method.getParams(), statusCode, responseAsString });
     }
 
@@ -369,15 +377,15 @@ public class BaseRemoteRequestor implements RemoteRequestor
         {
             HttpProtocolParams.setUserAgent(client.getParams(), apiProvider.getUserAgent());
         }
-        
-        HttpConnectionParams.setConnectionTimeout(client.getParams(), DEFAULT_CONNECT_TIMEOUT);
-        HttpConnectionParams.setSoTimeout(client.getParams(), DEFAULT_SOCKET_TIMEOUT);
-        
+
+        HttpConnectionParams.setConnectionTimeout(client.getParams(), connectionTimeout);
+        HttpConnectionParams.setSoTimeout(client.getParams(), socketTimeout);
+
         String apiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
         proxyConfig.configureProxy(client, apiUrl + uri);
-        
+
         String finalUrl = afterFinalUriConstructed(method, apiUrl + uri, params);
-        method.setURI(new URI(finalUrl)); 
+        method.setURI(new URI(finalUrl));
         //
         logRequest(method, finalUrl, params);
         //
@@ -400,7 +408,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
             method.setEntity(entity);
         }
     }
-    
+
     private static synchronized HttpCacheStorage getStorage()
     {
         if (storage == null)
@@ -414,7 +422,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
             }
             storage = new BasicHttpCacheStorage(config);
         }
-        
+
         return storage;
     }
 }

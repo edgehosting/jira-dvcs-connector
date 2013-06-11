@@ -7,7 +7,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Bitbuc
 
 /**
  * BitbucketClientBuilder interface
- * 
+ *
  * @author Miroslav Stencel <mstencel@atlassian.com>
  */
 public interface BitbucketClientBuilder
@@ -17,12 +17,14 @@ public interface BitbucketClientBuilder
     BitbucketClientBuilder forRepository(Repository repository);
 
     BitbucketClientBuilder noAuthClient(String hostUrl);
-    
+
     BitbucketClientBuilder authClient(String hostUrl, String name, Credential credential);
-    
+
     BitbucketClientBuilder cached();
-    
+
     BitbucketClientBuilder apiVersion(int apiVersion);
-    
+
+    BitbucketClientBuilder timeout(int timeout);
+
     BitbucketRemoteClient build();
 }

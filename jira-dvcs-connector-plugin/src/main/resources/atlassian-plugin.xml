@@ -245,11 +245,6 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.BranchService</interface>
     </component>
 
-    <component key="webFragmentRenderer" name="webFragmentRenderer"
-               class="com.atlassian.jira.plugins.dvcs.webfragments.DefaultWebfragmentRenderer">
-        <interface>com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer</interface>
-    </component>
-
     <component key="bitbucketRemoteClientBuilder" name="Bitbucket Remote Client Builder"
                class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketRemoteClientBuilder">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder</interface>
@@ -370,9 +365,20 @@
         <resource type="download" name="issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
         <resource type="download" name="greenhopper-overrides.css" location="css/greenhopper-overrides.css" />
     </web-resource>
+
+	<web-resource key="soy-templates-admin-context">
+		<context>atl.admin</context>
+	    <dependency>com.atlassian.soy.soy-template-plugin:soy-deps</dependency>
+	    
+	    <transformation extension="soy">
+	        <transformer key="soyTransformer"/>
+	    </transformation>
+    
+		<resource type="download" name="jira-dvcs-connector-plugin-admin.soy.js" location="soy/jira-dvcs-connector-plugin-admin.soy" />
+	</web-resource>
     
     
-	<web-resource key="soy-templates">
+	<web-resource key="soy-templates-plugin-context">
 		<context>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin</context>
 	    <dependency>com.atlassian.soy.soy-template-plugin:soy-deps</dependency>
 	    
@@ -380,10 +386,6 @@
 	        <transformer key="soyTransformer"/>
 	    </transformation>
     
-	    <directory location="/templates/">
-	        <include>/**/*.soy</include>
-	    </directory>
-		
 		<resource type="download" name="jira-dvcs-connector-plugin.soy.js" location="soy/jira-dvcs-connector-plugin.soy" />
 	</web-resource>
 

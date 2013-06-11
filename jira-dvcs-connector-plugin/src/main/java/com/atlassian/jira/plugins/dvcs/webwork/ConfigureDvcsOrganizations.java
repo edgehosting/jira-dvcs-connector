@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
-import com.atlassian.jira.plugins.dvcs.conditions.GithubEnterpriseEnabledCondition;
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager;
@@ -118,11 +117,6 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     public boolean isUserInvitationsEnabled()
     {
         return featuresDetector.isUserInvitationsEnabled();
-    }
-
-    public boolean isGithubEnterpriseEnabled()
-    {
-        return GithubEnterpriseEnabledCondition.isGitHubEnterpriseEnabled();
     }
 
     public boolean isIntegratedAccount(Organization org)

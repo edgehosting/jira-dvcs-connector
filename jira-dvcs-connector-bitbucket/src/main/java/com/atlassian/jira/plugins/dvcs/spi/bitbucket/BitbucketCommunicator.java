@@ -73,11 +73,11 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * @param bitbucketClientBuilder
      */
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
-            PluginAccessor pluginAccessor, BitbucketClientBuilder bitbucketAuthProviderFactory,
+            PluginAccessor pluginAccessor, BitbucketClientBuilder bitbucketClientBuilder,
             BranchService branchService)
    {
         this.bitbucketLinker = bitbucketLinker;
-        this.bitbucketClientBuilder = bitbucketAuthProviderFactory;
+        this.bitbucketClientBuilder = bitbucketClientBuilder;
         this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
         this.branchService = branchService;
     }
@@ -213,7 +213,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
                                                                    repository.getSlug(),
                                                                    extractBranchHeads(oldBranchHeads), 15);
-            
+
             branchService.updateBranchHeads(repository, branchHeads, oldBranchHeads);
 
             return new NewChangesetIterableAdapter(repository, bitbucketChangesets);
@@ -231,7 +231,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             return null;
         }
-        
+
         return Lists.transform(branches, new Function<BranchHead, String>()
         {
             @Override
@@ -241,7 +241,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             }
         });
     }
-    
+
     private List<BranchHead> getBranchHeads(Repository repository)
     {
         List<BranchHead> branches = new ArrayList<BranchHead>();
@@ -285,7 +285,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).cached().build();
             // Using undocumented https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
-//            BitbucketRemoteClient remoteClient = bitbucketClientBuilder.getForRepository(repository);
             return remoteClient.getBranchesAndTagsRemoteRestpoint().getBranchesAndTags(repository.getOrgName(),repository.getSlug());
         } catch (BitbucketRequestException e)
         {
@@ -407,14 +406,14 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getUser(Repository repository, String author)
     {
-        BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).build();
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).timeout(2000).build();
         BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getUser(author);
         String username = bitbucketAccount.getUsername();
         String fullName = bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName();
         String avatar = bitbucketAccount.getAvatar();
         return new DvcsUser(username, fullName, null, avatar, repository.getOrgHostUrl() + "/" + username);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -433,25 +432,31 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public Set<Group> getGroupsForOrganization(Organization organization)
+    public List<Group> getGroupsForOrganization(Organization organization)
     {
         try
         {
             BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forOrganization(organization).build();
-            Set<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
+            List<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
+
             return GroupTransformer.fromBitbucketGroups(groups);
+
         } catch (BitbucketRequestException.Forbidden_403 e)
         {
             log.debug("Could not get groups for organization [" + organization.getName() + "]");
             throw new SourceControlException.Forbidden_403(e);
+
         } catch (BitbucketRequestException e)
         {
             log.debug("Could not get groups for organization [" + organization.getName() + "]");
             throw new SourceControlException(e);
+
         } catch (JsonParsingException e)
         {
             log.debug(e.getMessage(), e);
-            throw new SourceControlException.InvalidResponseException("Could not parse response [" + organization.getName() + "]. This is most likely caused by invalid credentials.", e);
+            throw new SourceControlException.InvalidResponseException("Could not parse response [" + organization.getName()
+                    + "]. This is most likely caused by invalid credentials.", e);
+
         }
     }
 

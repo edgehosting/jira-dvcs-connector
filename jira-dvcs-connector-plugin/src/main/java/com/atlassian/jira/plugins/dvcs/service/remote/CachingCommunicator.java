@@ -93,11 +93,11 @@ public class CachingCommunicator implements CachingDvcsCommunicator
                 
             });
 
-    private final Map<OrganisationKey, Set<Group>> groupsCache =
-            new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(new Function<OrganisationKey, Set<Group>>()
+    private final Map<OrganisationKey, List<Group>> groupsCache =
+            new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(new Function<OrganisationKey, List<Group>>()
                     {
                         @Override
-                        public Set<Group> apply(OrganisationKey key)
+                        public List<Group> apply(OrganisationKey key)
                         {
                             return delegate.getGroupsForOrganization(key.organization);
                         }
@@ -128,7 +128,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public Set<Group> getGroupsForOrganization(Organization organization)
+    public List<Group> getGroupsForOrganization(Organization organization)
     {
         try
         {

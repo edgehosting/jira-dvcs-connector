@@ -20,7 +20,8 @@ public class DefaultBitbucketRemoteClientBuilder implements BitbucketClientBuild
     private AuthProvider authProvider;
     private int apiVersion = 1;
     private boolean cached;
-    
+    private int timeout = -1;
+
     private final Encryptor encryptor;
     private final String userAgent;
 
@@ -30,7 +31,7 @@ public class DefaultBitbucketRemoteClientBuilder implements BitbucketClientBuild
         this.encryptor = encryptor;
         this.userAgent = DvcsConstants.getUserAgent(pluginAccessor);
     }
-    
+
     @Override
     public BitbucketClientBuilder forOrganization(Organization organization)
     {
@@ -59,7 +60,7 @@ public class DefaultBitbucketRemoteClientBuilder implements BitbucketClientBuild
         this.authProvider = createProvider(hostUrl, name, credential);
         return this;
     }
-    
+
     @Override
     public BitbucketClientBuilder cached()
     {
@@ -73,7 +74,14 @@ public class DefaultBitbucketRemoteClientBuilder implements BitbucketClientBuild
         this.apiVersion = apiVersion;
         return this;
     }
-    
+
+    @Override
+    public BitbucketClientBuilder timeout(int timeout)
+    {
+        this.timeout = timeout;
+        return this;
+    }
+
     @Override
     public BitbucketRemoteClient build()
     {
@@ -81,13 +89,16 @@ public class DefaultBitbucketRemoteClientBuilder implements BitbucketClientBuild
         {
             throw new IllegalStateException("AuthProvider must be provided.");
         }
-        
+
         authProvider.setApiVersion(apiVersion);
-        
+
         authProvider.setCached(cached);
+
+        authProvider.setTimeout(timeout);
 
         return new BitbucketRemoteClient(authProvider);
     }
+
 
     private AuthProvider createProvider(String hostUrl, String name, Credential credential)
     {

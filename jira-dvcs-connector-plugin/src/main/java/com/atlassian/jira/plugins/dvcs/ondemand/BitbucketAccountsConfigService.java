@@ -12,6 +12,7 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
@@ -42,7 +43,7 @@ import com.google.common.collect.Sets;
  * @author jhocman@atlassian.com
  *
  */
-public class BitbucketAccountsConfigService implements AccountsConfigService// TODO move to BB module
+public class BitbucketAccountsConfigService implements AccountsConfigService, DisposableBean // TODO move to BB module
 {
 
     private static final Logger log = LoggerFactory.getLogger(BitbucketAccountsConfigService.class);
@@ -69,6 +70,19 @@ public class BitbucketAccountsConfigService implements AccountsConfigService// T
         this.pluginController = pluginController;
         this.pluginAccessor = pluginAccessor;
         this.executorService = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("BitbucketAccountsConfigService"));
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void destroy() throws Exception
+    {
+        executorService.shutdown();
+        if (!executorService.awaitTermination(1, TimeUnit.MINUTES))
+        {
+            log.error("Unable properly shutdown queued tasks.");
+        }
     }
 
     @Override
@@ -173,12 +187,12 @@ public class BitbucketAccountsConfigService implements AccountsConfigService// T
     {
         log.info("Enabling app switcher plugin module");
         pluginController.enablePluginModule(APP_SWITCHER_LINK_MODULE_KEY);
-        ModuleDescriptor descriptor = pluginAccessor.getEnabledPluginModule(APP_SWITCHER_LINK_MODULE_KEY);
+        ModuleDescriptor<?> descriptor = pluginAccessor.getEnabledPluginModule(APP_SWITCHER_LINK_MODULE_KEY);
         // if the descriptor isn't the right type, it's probably because we are on an older version of JIRA that
         // doesn't have the navigation-link plugin module type
         if (descriptor instanceof WebFragmentModuleDescriptor)
         {
-            WebFragmentModuleDescriptor webFragmentModuleDescriptor = (WebFragmentModuleDescriptor) descriptor;
+            WebFragmentModuleDescriptor<?> webFragmentModuleDescriptor = (WebFragmentModuleDescriptor<?>) descriptor;
 
             Document document = DocumentHelper.createDocument();
             Element element = document.addElement("navigation-link");

@@ -35,21 +35,21 @@ import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer;
  */
 public final class TestSmartcommits
 {
-	@Mock
-	private Repository repositoryMock;
+    @Mock
+    private Repository repositoryMock;
 
-	@Mock
-	private ChangesetService changesetServiceMock;
+    @Mock
+    private ChangesetService changesetServiceMock;
 
 
-	@Mock
-	private SmartcommitsChangesetsProcessor changesetsProcessorMock;
-    
-	@Mock
+    @Mock
+    private SmartcommitsChangesetsProcessor changesetsProcessorMock;
+
+    @Mock
     DvcsCommunicator communicatorMock;
-	
-	@Captor
-	private ArgumentCaptor<Changeset> savedChangesetCaptor;
+
+    @Captor
+    private ArgumentCaptor<Changeset> savedChangesetCaptor;
 
     private Changeset changesetWithJIRAIssue()
     {
@@ -68,10 +68,10 @@ public final class TestSmartcommits
         MockitoAnnotations.initMocks(this);
     }
 
-	@Test
-	public void softSynchronization_ShouldMarkSmartcommit() throws InterruptedException
-	{
-		when(repositoryMock.isSmartcommitsEnabled()).thenReturn(Boolean.TRUE);
+    @Test
+    public void softSynchronization_ShouldMarkSmartcommit() throws InterruptedException
+    {
+        when(repositoryMock.isSmartcommitsEnabled()).thenReturn(Boolean.TRUE);
 
 		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(true))).thenReturn(
 				Arrays.asList(changesetWithJIRAIssue(), changesetWithoutJIRAIssue()));
@@ -79,50 +79,50 @@ public final class TestSmartcommits
 		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
                 mock(RepositoryService.class), changesetServiceMock, true); // soft sync
 
-		Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
-		synchronizer.synchronize(repositoryMock, synchronisationOperation);
+        Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
+        synchronizer.synchronize(repositoryMock, synchronisationOperation, changesetServiceMock);
 
-		waitUntilProgressEnds(synchronizer);
-       
-		verify(changesetsProcessorMock).startProcess();
-		verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
+        waitUntilProgressEnds(synchronizer);
 
-		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isTrue();
-		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isFalse();
-	}
-    
+        verify(changesetsProcessorMock).startProcess(synchronizer, repositoryMock, changesetServiceMock);
+        verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
 
-	@Test
-	public void softSynchronization_ShouldnotMarkSmartcommit() throws InterruptedException
-	{
-		when(repositoryMock.isSmartcommitsEnabled()).thenReturn(Boolean.FALSE);
+        assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isTrue();
+        assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isFalse();
+    }
+
+
+    @Test
+    public void softSynchronization_ShouldnotMarkSmartcommit() throws InterruptedException
+    {
+        when(repositoryMock.isSmartcommitsEnabled()).thenReturn(Boolean.FALSE);
 
         changesetServiceMock = mock(ChangesetService.class);
 		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(true))).thenReturn(
 				Arrays.asList(changesetWithJIRAIssue(), changesetWithoutJIRAIssue()));
 
-		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
+        SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
                 mock(RepositoryService.class), changesetServiceMock, true); // soft sync
 
-		Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
-		synchronizer.synchronize(repositoryMock, synchronisationOperation);
+        Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
+        synchronizer.synchronize(repositoryMock, synchronisationOperation, changesetServiceMock);
 
-		waitUntilProgressEnds(synchronizer);
-       
-		verify(changesetsProcessorMock).startProcess();
-		verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
+        waitUntilProgressEnds(synchronizer);
 
-		assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isNull();
-		assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isNull();
-	}
-    
-	private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException
-	{
-		Progress progress = synchronizer.getProgress(repositoryMock);
+        verify(changesetsProcessorMock).startProcess(synchronizer, repositoryMock, changesetServiceMock);
+        verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
 
-		while (!progress.isFinished())
-		{
-			Thread.sleep(50);
-		}
-	}
+        assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isNull();
+        assertThat(savedChangesetCaptor.getAllValues().get(1).isSmartcommitAvaliable()).isNull();
+    }
+
+    private void waitUntilProgressEnds(Synchronizer synchronizer) throws InterruptedException
+    {
+        Progress progress = synchronizer.getProgress(repositoryMock.getId());
+
+        while (!progress.isFinished())
+        {
+            Thread.sleep(50);
+        }
+    }
 }
