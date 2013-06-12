@@ -32,6 +32,7 @@ import com.atlassian.activeobjects.external.ModelVersion;
  *
  */
 // suppress deprecation - we want to have migrators stable as much as possible
+@SuppressWarnings("deprecation")
 public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 {
 
@@ -379,9 +380,10 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
         Statement sanityStatement = connection.createStatement();
         sanityStatement.executeUpdate(//
                 "delete from " + table(ChangesetMapping.class) //
-                        + " where " + column(ChangesetMapping.REPOSITORY_ID) + " not in (" //
+                        + " where (" + column(ChangesetMapping.REPOSITORY_ID) + " != 0 " //
+                        + " and " + column(ChangesetMapping.REPOSITORY_ID) + " not in (" //
                         + " select " + column("ID") + " from " + table(RepositoryMapping.class) //
-                        + " ) ");
+                        + " )) or " + column(ChangesetMapping.REPOSITORY_ID) + " is null ");
         sanityStatement.close();
         connection.commit();
     }
