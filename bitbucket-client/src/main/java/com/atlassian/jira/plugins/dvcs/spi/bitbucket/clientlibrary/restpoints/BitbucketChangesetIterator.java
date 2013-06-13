@@ -22,7 +22,7 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
     private final String slug;
     private final List<String> excludeNodes;
     private BitbucketChangesetPage currentPage = null;
-    
+
     // services
     private final RemoteRequestor requestor;
 
@@ -69,7 +69,7 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
         {
             readPage();
         }
-        
+
         BitbucketNewChangeset currentChangeset = currentPage.getValues().remove(0);
 
         return currentChangeset;
@@ -89,8 +89,8 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
 
     private String createUrl()
     {
-        StringBuilder url = new StringBuilder(String.format("/api/2.0/repositories/%s/%s/walk/?pagelen=%s", owner, slug, pageLength));
-        
+        StringBuilder url = new StringBuilder(String.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s", owner, slug, pageLength));
+
         if (excludeNodes != null)
         {
             for (String branchTip : excludeNodes)
@@ -98,7 +98,7 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
                 url.append("&excludes=").append(branchTip);
             }
         }
-        
+
         return url.toString();
     }
 
