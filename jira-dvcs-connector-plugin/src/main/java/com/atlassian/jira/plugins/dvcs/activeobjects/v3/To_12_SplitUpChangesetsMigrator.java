@@ -440,7 +440,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
                 }
 
                 // skips non-existing issues
-                if (!"NON_EXISTING".equals(current.projectKey))
+                if (current.projectKey != null && !"NON_EXISTING".equals(current.projectKey))
                 {
                     addIssueToChnagesetStatement(issueToChangesetStatement, uniqueChangeset, current);
                 }
