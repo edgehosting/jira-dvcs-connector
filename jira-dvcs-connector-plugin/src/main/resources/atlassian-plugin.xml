@@ -299,6 +299,11 @@
                 <view name="input">/templates/dvcs/add-bitbucket-organization.vm</view>
             </action>
 
+            <action name="com.atlassian.jira.plugins.dvcs.webwork.AddOrganizationProgressAction"
+                    alias="AddOrganizationProgressAction" roles-required="admin">
+                <view name="input">/templates/dvcs/add-in-progress.vm</view>
+            </action>
+
 			<action name="com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken"
                     alias="RegenerateGithubOauthToken" roles-required="admin">
                 <view name="input">/templates/dvcs/regenerate-oauth.vm</view>
@@ -338,6 +343,11 @@
         <context>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin</context>
         <dependency>com.atlassian.auiplugin:aui-experimental-dropdown2</dependency>
         <dependency>com.atlassian.auiplugin:aui-experimental-iconfont</dependency>
+    </web-resource>
+    
+    <web-resource name="cssResources" key="cssResources">
+	    <resource type="download" name="css/styles.css" location="css/styles.css" />
+        <context>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin-css</context>
     </web-resource>
 
     <web-resource key="requiredResourceForAjaxCommitsTab" name="Resources That Needs To be Loaded On Issue View">

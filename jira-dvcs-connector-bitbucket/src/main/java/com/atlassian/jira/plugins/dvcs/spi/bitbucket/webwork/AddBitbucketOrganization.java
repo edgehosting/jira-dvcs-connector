@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationManagementService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
@@ -51,12 +52,15 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     private final OAuthStore oAuthStore;
 
+	private final OrganizationManagementService managementService;
+
     public AddBitbucketOrganization(com.atlassian.sal.api.ApplicationProperties ap,
-            OrganizationService organizationService, OAuthStore oAuthStore)
+            OrganizationService organizationService, OAuthStore oAuthStore, OrganizationManagementService managementService)
     {
         this.ap = ap;
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
+		this.managementService = managementService;
     }
 
     @Override
@@ -77,7 +81,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
             Token requestToken = service.getRequestToken();
             String authUrl = service.getAuthorizationUrl(requestToken);
 
-            request.getSession().setAttribute("requestToken", requestToken);
+            this.request.getSession().setAttribute("requestToken", requestToken);
 
             return SystemUtils.getRedirect(this, authUrl, true);
         } catch (Exception e)
@@ -89,19 +93,22 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     }
 
     private OAuthService createOAuthScribeService()
-    {
-        String redirectBackUrl = ap.getBaseUrl() + "/secure/admin/AddBitbucketOrganization!finish.jspa?organization="
-                + organization + "&autoLinking=" + getAutoLinking() + "&url=" + url + "&autoSmartCommits=" + getAutoSmartCommits() + "&atl_token=" + getXsrfToken();
+	{
+		String redirectBackUrl = this.ap.getBaseUrl()
+		        + "/secure/admin/AddOrganizationProgressAction!default.jspa?organization="
+		        + this.organization + "&autoLinking=" + getAutoLinking()
+		        + "&url=" + this.url + "&autoSmartCommits="
+		        + getAutoSmartCommits() + "&atl_token=" + getXsrfToken() + "&t=1";
 
         return createBitbucketOAuthScribeService(redirectBackUrl);
     }
 
     private OAuthService createBitbucketOAuthScribeService(String callbackUrl)
     {
-        ServiceBuilder sb = new ServiceBuilder().apiKey(oAuthStore.getClientId(Host.BITBUCKET.id))
+        ServiceBuilder sb = new ServiceBuilder().apiKey(this.oAuthStore.getClientId(Host.BITBUCKET.id))
                                                 .signatureType(SignatureType.Header)
-                                                .apiSecret(oAuthStore.getSecret(Host.BITBUCKET.id))
-                                                .provider(new Bitbucket10aScribeApi(url))
+                                                .apiSecret(this.oAuthStore.getSecret(Host.BITBUCKET.id))
+                                                .provider(new Bitbucket10aScribeApi(this.url))
                                                 .debugStream(new DebugOutputStream(log));
 
         if (!StringUtils.isBlank(callbackUrl))
@@ -114,42 +121,43 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     private void storeLatestOAuth()
     {
-        oAuthStore.store(Host.BITBUCKET, oauthBbClientId, oauthBbSecret);
+        this.oAuthStore.store(Host.BITBUCKET, this.oauthBbClientId, this.oauthBbSecret);
     }
 
     public String doFinish()
     {
         // now get the access token
-        Verifier verifier = new Verifier(request.getParameter("oauth_verifier"));
-        Token requestToken = (Token) request.getSession().getAttribute("requestToken");
+        Verifier verifier = new Verifier(this.request.getParameter("oauth_verifier"));
+        Token requestToken = (Token) this.request.getSession().getAttribute("requestToken");
 
         if (requestToken == null) {
             log.debug("Request token is NULL. It has been removed in the previous attempt of adding organization. Now we will stop.");
             return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
         }
 
-        request.getSession().removeAttribute("requestToken");
+        this.request.getSession().removeAttribute("requestToken");
 
         OAuthService service = createOAuthScribeService();
         Token accessTokenObj = service.getAccessToken(requestToken, verifier);
-        accessToken = BitbucketOAuthAuthentication.generateAccessTokenString(accessTokenObj);
+        this.accessToken = BitbucketOAuthAuthentication.generateAccessTokenString(accessTokenObj);
 
         return doAddOrganization();
     }
 
     private String doAddOrganization()
     {
+    	
         try
         {
             Organization newOrganization = new Organization();
-            newOrganization.setName(organization);
-            newOrganization.setHostUrl(url);
+            newOrganization.setName(this.organization);
+            newOrganization.setHostUrl(this.url);
             newOrganization.setDvcsType("bitbucket");
-            newOrganization.setCredential(new Credential(oAuthStore.getClientId(Host.BITBUCKET.id), oAuthStore.getSecret(Host.BITBUCKET.id), accessToken));
+            newOrganization.setCredential(new Credential(this.oAuthStore.getClientId(Host.BITBUCKET.id), this.oAuthStore.getSecret(Host.BITBUCKET.id), this.accessToken));
             newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
             newOrganization.setSmartcommitsOnNewRepos(hadAutoSmartCommitsChecked());
             newOrganization.setDefaultGroups(Sets.newHashSet(new Group(DEFAULT_INVITATION_GROUP)));
-            organizationService.save(newOrganization);
+            this.organizationService.save(newOrganization);
 
         } catch (SourceControlException.UnauthorisedException e)
         {
@@ -164,31 +172,31 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         }
 
         // go back to main DVCS configuration page
-                return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
     }
 
     @Override
     protected void doValidation()
     {
-        if (StringUtils.isBlank(organization) || StringUtils.isBlank(url))
+        if (StringUtils.isBlank(this.organization) || StringUtils.isBlank(this.url))
         {
             addErrorMessage("Invalid request, missing url or organization/account information.");
         }
 
-        if (StringUtils.isNotBlank(organization))
+        if (StringUtils.isNotBlank(this.organization))
         {
-            Organization integratedAccount = organizationService.findIntegratedAccount();
-            if (integratedAccount != null && organization.trim().equalsIgnoreCase(integratedAccount.getName()))
+            Organization integratedAccount = this.organizationService.findIntegratedAccount();
+            if (integratedAccount != null && this.organization.trim().equalsIgnoreCase(integratedAccount.getName()))
             {
                 addErrorMessage("It is not possible to add the same account as the integrated one.");
             }
         }
 
-        AccountInfo accountInfo = organizationService.getAccountInfo("https://bitbucket.org", organization);
+        AccountInfo accountInfo = this.organizationService.getAccountInfo("https://bitbucket.org", this.organization);
         // Bitbucket REST API to determine existence of accountInfo accepts valid email associated with BB account, but
         // it is not possible to create an account containing the '@' character.
         // [https://confluence.atlassian.com/display/BITBUCKET/account+Resource#accountResource-GETtheaccountprofile]
-        if (accountInfo == null || organization.contains("@"))
+        if (accountInfo == null || this.organization.contains("@"))
         {
             addErrorMessage("Invalid user/team account.");
         }
@@ -196,7 +204,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public String getAdminPassword()
     {
-        return adminPassword;
+        return this.adminPassword;
     }
 
     public void setAdminPassword(String adminPassword)
@@ -206,7 +214,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public String getUrl()
     {
-        return url;
+        return this.url;
     }
 
     public void setUrl(String url)
@@ -216,7 +224,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public String getOrganization()
     {
-        return organization;
+        return this.organization;
     }
 
     public void setOrganization(String organization)
@@ -226,7 +234,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public String getAdminUsername()
     {
-        return adminUsername;
+        return this.adminUsername;
     }
 
     public void setAdminUsername(String adminUsername)
@@ -237,7 +245,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public String getOauthBbClientId()
     {
-        return oauthBbClientId;
+        return this.oauthBbClientId;
     }
 
     public void setOauthBbClientId(String oauthBbClientId)
@@ -247,7 +255,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public String getOauthBbSecret()
     {
-        return oauthBbSecret;
+        return this.oauthBbSecret;
     }
 
     public void setOauthBbSecret(String oauthBbSecret)
