@@ -306,13 +306,38 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).cached().build();
-            remoteClient.getServicesRest().addPOSTService(repository.getOrgName(), // owner
-                    repository.getSlug(), postCommitUrl);
+            
+            if (!hookDoesExist(repository, postCommitUrl, remoteClient)) {
+	            remoteClient.getServicesRest().addPOSTService(repository.getOrgName(), // owner
+	                    repository.getSlug(), postCommitUrl);
+            }
 
         } catch (BitbucketRequestException e)
         {
             throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook", e);
         }
+    }
+
+	private boolean hookDoesExist(Repository repository, String postCommitUrl,
+            BitbucketRemoteClient remoteClient)
+    {
+	    List<BitbucketServiceEnvelope> services = remoteClient.getServicesRest().getAllServices(
+	            repository.getOrgName(), // owner
+	            repository.getSlug());
+	    for (BitbucketServiceEnvelope bitbucketServiceEnvelope : services)
+	    {
+	        for (BitbucketServiceField serviceField : bitbucketServiceEnvelope.getService().getFields())
+	        {
+	            boolean fieldNameIsUrl = serviceField.getName().equals("URL");
+	            boolean fieldValueIsRequiredPostCommitUrl = serviceField.getValue().equals(postCommitUrl);
+
+	            if (fieldNameIsUrl && fieldValueIsRequiredPostCommitUrl)
+	            {
+	                return true;
+	            }
+	        }
+	    }
+	    return false;
     }
 
     /**
