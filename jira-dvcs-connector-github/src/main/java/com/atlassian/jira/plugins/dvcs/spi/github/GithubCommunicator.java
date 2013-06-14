@@ -287,6 +287,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, RepositoryHook> getHooksForRepo(RepositoryService repositoryService,
             RepositoryId repositoryId)
     {
@@ -301,7 +302,8 @@ public class GithubCommunicator implements DvcsCommunicator
 	        return urlToHooks;
         } catch (IOException e)
         {
-        	throw new SourceControlException.PostCommitHookRegistrationException("Problem getting hooks from Github.", e);
+        	log.warn("Problem getting hooks from Github.", e);
+        	return Collections.EMPTY_MAP;
         }
     }
     
