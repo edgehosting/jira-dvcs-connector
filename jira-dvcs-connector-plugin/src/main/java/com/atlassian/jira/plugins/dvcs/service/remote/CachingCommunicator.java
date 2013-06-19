@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
@@ -25,7 +26,12 @@ import com.google.common.collect.MapMaker;
  */
 public class CachingCommunicator implements CachingDvcsCommunicator
 {
-    private final DvcsCommunicator delegate;
+    private DvcsCommunicator delegate;
+    
+     public void setDelegate(DvcsCommunicator delegate)
+    {
+        this.delegate = delegate;
+    }
 
     private class UserKey
     {
@@ -103,11 +109,6 @@ public class CachingCommunicator implements CachingDvcsCommunicator
                         }
                         
                     });
-    
-    public CachingCommunicator(DvcsCommunicator delegate)
-    {
-        this.delegate = delegate;
-    }
 
     @Override
     public DvcsUser getUser(Repository repository, String username)
@@ -227,5 +228,11 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     public DvcsUser getTokenOwner(Organization organization)
     {
         return delegate.getTokenOwner(organization);
+    }
+    
+    @Override
+    public void synchronize(Repository repository, Progress progress)
+    {
+        delegate.synchronize(repository, progress);
     }
 }

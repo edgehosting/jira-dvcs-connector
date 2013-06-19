@@ -24,6 +24,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
@@ -75,11 +76,13 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * The Constructor.
-     *
+     * 
      * @param communicatorProvider
      *            the communicator provider
      * @param repositoryDao
      *            the repository dao
+     * @param messagingService
+     *            injected {@link MessagingService} dependency
      * @param synchronizer
      *            the synchronizer
      * @param changesetService
@@ -410,6 +413,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     {
         if (repository.isLinked())
         {
+//            DefaultProgress progress = new DefaultProgress();
+//            synchronizer.putProgress(repository, progress);
+//            communicatorProvider.getCommunicator(repository.getDvcsType()).synchronize(repository, progress);
             DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
                     communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService,
                     softSync);

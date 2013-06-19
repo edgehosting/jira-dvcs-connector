@@ -61,6 +61,9 @@ public interface ChangesetMapping extends Entity
     @StringLength(StringLength.UNLIMITED)
     String getFilesData();
 
+    @ManyToMany(ChangesetToChangesetMapping.class)
+    ChangesetMapping[] getParents();
+
     String getParentsData();
 
     Integer getVersion();

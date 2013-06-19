@@ -6,15 +6,15 @@
                            http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 
     <bean id="cachingBitbucketCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
-        <constructor-arg  ref="bitbucketCommunicator" />
+        <property name="delegate" ref="bitbucketCommunicator" />
     </bean>
 
     <bean id="cachingGithubCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
-        <constructor-arg  ref="githubCommunicator" />
+        <property name="delegate" ref="githubCommunicator" />
     </bean>
 
     <bean id="cachingGithubEnterpriseCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
-        <constructor-arg  ref="githubEnterpriseCommunicator" />
+        <property name="delegate" ref="githubEnterpriseCommunicator" />
     </bean>
 
     <osgi:service interface="com.sun.jersey.spi.container.ResourceFilterFactory">

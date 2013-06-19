@@ -8,7 +8,7 @@ package com.atlassian.jira.plugins.dvcs.service.message;
  * @param <P>
  *            type of message
  */
-public interface MessageSerializer<P>
+public interface MessagePayloadSerializer<P>
 {
 
     /**
@@ -16,14 +16,14 @@ public interface MessageSerializer<P>
      *            of message
      * @return serialized message, necessary for persisting
      */
-    byte[] serialize(P payload);
+    String serialize(P payload);
 
     /**
      * @param payload
      *            serialized version of message payload
      * @return deserialized message
      */
-    P deserialize(byte[] payload);
+    P deserialize(String payload);
 
     /**
      * @return type of payload

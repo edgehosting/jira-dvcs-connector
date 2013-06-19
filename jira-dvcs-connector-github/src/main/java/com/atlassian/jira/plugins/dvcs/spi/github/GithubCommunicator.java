@@ -9,6 +9,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -45,11 +46,15 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.google.common.collect.Iterators;
 
@@ -59,18 +64,31 @@ public class GithubCommunicator implements DvcsCommunicator
 
     public static final String GITHUB = "github";
 
-    private final ChangesetCache changesetCache;
-    protected final GithubClientProvider githubClientProvider;
-
     private final HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
-    protected final OAuthStore oAuthStore;
 
-    public GithubCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
-            @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
+    private ChangesetCache changesetCache;
+    protected GithubClientProvider githubClientProvider;
+    protected OAuthStore oAuthStore;
+    private MessagingService messagingService;
+
+    public void setChangesetCache(ChangesetCache changesetCache)
     {
         this.changesetCache = changesetCache;
+    }
+
+    public void setoAuthStore(OAuthStore oAuthStore)
+    {
         this.oAuthStore = oAuthStore;
+    }
+
+    public void setGithubClientProvider(@Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
+    {
         this.githubClientProvider = githubClientProvider;
+    }
+
+    public void setMessagingService(MessagingService messagingService)
+    {
+        this.messagingService = messagingService;
     }
 
     @Override
@@ -91,8 +109,7 @@ public class GithubCommunicator implements DvcsCommunicator
 
         } catch (IOException e)
         {
-            log.debug("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(), hostUrl,
-                    accountName);
+            log.debug("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(), hostUrl, accountName);
         }
         return null;
 
@@ -122,12 +139,10 @@ public class GithubCommunicator implements DvcsCommunicator
             // for normal account
             List<org.eclipse.egit.github.core.Repository> publicRepositoriesFromOrganization = repositoryService
                     .getRepositories(organization.getName());
-            List<org.eclipse.egit.github.core.Repository> allRepositoriesFromAuthorizedUser = repositoryService
-                    .getRepositories();
+            List<org.eclipse.egit.github.core.Repository> allRepositoriesFromAuthorizedUser = repositoryService.getRepositories();
 
-            Iterator<org.eclipse.egit.github.core.Repository> iterator = Iterators.concat(
-                    repositoriesFromOrganization.iterator(), publicRepositoriesFromOrganization.iterator(),
-                    allRepositoriesFromAuthorizedUser.iterator());
+            Iterator<org.eclipse.egit.github.core.Repository> iterator = Iterators.concat(repositoriesFromOrganization.iterator(),
+                    publicRepositoriesFromOrganization.iterator(), allRepositoriesFromAuthorizedUser.iterator());
 
             Set<Repository> repositories = new HashSet<Repository>();
             while (iterator.hasNext())
@@ -144,15 +159,14 @@ public class GithubCommunicator implements DvcsCommunicator
 
             log.debug("Found repositories: " + repositories.size());
             return new ArrayList<Repository>(repositories);
-        } catch ( RequestException e)
+        } catch (RequestException e)
         {
-            if ( e.getStatus() == 401 )
+            if (e.getStatus() == 401)
             {
                 throw new SourceControlException.UnauthorisedException("Invalid credentials", e);
             }
             throw new SourceControlException("Error retrieving list of repositories", e);
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
             throw new SourceControlException("Error retrieving list of repositories", e);
         }
@@ -168,7 +182,8 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             RepositoryCommit commit = commitService.getCommit(repositoryId, node);
 
-            //TODO Workaround for BBC-455, we need more sophisticated solution that prevents connector to hit GitHub too often when downloading changesets
+            // TODO Workaround for BBC-455, we need more sophisticated solution that prevents connector to hit GitHub too often when
+            // downloading changesets
             checkRequestRateLimit(commitService.getClient());
 
             return GithubChangesetFactory.transform(commit, repository.getId(), null);
@@ -194,17 +209,17 @@ public class GithubCommunicator implements DvcsCommunicator
         }
 
         double threshold = Math.ceil(0.01f * requestLimit);
-        if (remainingRequests<threshold)
+        if (remainingRequests < threshold)
         {
-            long sleepTime = (long) (Math.pow( (remainingRequests / threshold) - 1, 2) * 60 * 60);
+            long sleepTime = (long) (Math.pow((remainingRequests / threshold) - 1, 2) * 60 * 60);
             log.info("Sleeping for " + sleepTime + " s to avoid request rate limit overrun");
             try
             {
-                //TODO when sleeping the synchronization cannot be cancelled
+                // TODO when sleeping the synchronization cannot be cancelled
                 Thread.sleep(sleepTime * 1000);
             } catch (InterruptedException e)
             {
-                //nop
+                // nop
             }
         }
     }
@@ -219,15 +234,14 @@ public class GithubCommunicator implements DvcsCommunicator
     {
         final CommitService commitService = githubClientProvider.getCommitService(repository);
 
-        return commitService.pageCommits(RepositoryId.create(repository.getOrgName(), repository.getSlug()),
-                doTheUtfEncoding(branch), null);
+        return commitService
+                .pageCommits(RepositoryId.create(repository.getOrgName(), repository.getSlug()), doTheUtfEncoding(branch), null);
 
     }
 
     /**
-     * The git library is encoding parameters using ISO-8859-1. Lets trick it
-     * and encode UTF-8 instead
-     *
+     * The git library is encoding parameters using ISO-8859-1. Lets trick it and encode UTF-8 instead
+     * 
      * @param branch
      * @return
      */
@@ -300,8 +314,9 @@ public class GithubCommunicator implements DvcsCommunicator
                         repositoryService.deleteHook(repositoryId, (int) hook.getId());
                     } catch (ProtocolException pe)
                     {
-                        //BBC-364 if delete rest call doesn't work on Java client, we try Apache HttpClient
-                        log.debug("Error removing postcommit hook [{}] for repository [{}], trying Apache HttpClient.", hook.getId(), repository.getRepositoryUrl());
+                        // BBC-364 if delete rest call doesn't work on Java client, we try Apache HttpClient
+                        log.debug("Error removing postcommit hook [{}] for repository [{}], trying Apache HttpClient.", hook.getId(),
+                                repository.getRepositoryUrl());
 
                         deleteHookByHttpClient(repository, hook);
 
@@ -318,8 +333,8 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public String getCommitUrl(Repository repository, Changeset changeset)
     {
-        return MessageFormat.format("{0}/{1}/{2}/commit/{3}", repository.getOrgHostUrl(), repository.getOrgName(),
-                repository.getSlug(), changeset.getNode());
+        return MessageFormat.format("{0}/{1}/{2}/commit/{3}", repository.getOrgHostUrl(), repository.getOrgName(), repository.getSlug(),
+                changeset.getNode());
     }
 
     @Override
@@ -347,7 +362,6 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
-    
     @Override
     public DvcsUser getTokenOwner(Organization organization)
     {
@@ -366,7 +380,7 @@ public class GithubCommunicator implements DvcsCommunicator
             throw new RuntimeException(e);
         }
     }
-    
+
     private List<BranchTip> getBranches(Repository repository)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
@@ -374,8 +388,8 @@ public class GithubCommunicator implements DvcsCommunicator
         List<BranchTip> branches = new ArrayList<BranchTip>();
         try
         {
-            final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(
-                    repository.getOrgName(), repository.getSlug()));
+            final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(repository.getOrgName(),
+                    repository.getSlug()));
             log.debug("Found branches: " + ghBranches.size());
 
             for (RepositoryBranch ghBranch : ghBranches)
@@ -398,6 +412,19 @@ public class GithubCommunicator implements DvcsCommunicator
             return Collections.emptyList();
         }
         return branches;
+    }
+
+    @Override
+    public void synchronize(Repository repository, Progress progress)
+    {
+        Date synchronizationStartedAt = new Date();
+        for (BranchTip branchTip : getBranches(repository))
+        {
+            SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repository, //
+                    branchTip.getBranchName(), branchTip.getNode(), //
+                    synchronizationStartedAt, progress);
+            messagingService.publish(SynchronizeChangesetMessageConsumer.KEY, message, message.getSynchronizationTag());
+        }
     }
 
     private void deleteHookByHttpClient(Repository repository, RepositoryHook hook) throws HttpException, IOException

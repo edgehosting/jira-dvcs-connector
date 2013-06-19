@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 /**
@@ -50,6 +51,14 @@ public interface DvcsCommunicator
      * @return
      */
     DvcsUser getTokenOwner(Organization organization);
+    
+    /**
+     * Starts synchronization of provided repository.
+     * 
+     * @param repository
+     * @param progress
+     */
+    void synchronize(Repository repository, Progress progress);
     
     //-----------------------------------------------------------------------
     // methods for invitation management on bitbucket

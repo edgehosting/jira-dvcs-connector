@@ -60,6 +60,7 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
@@ -181,9 +182,9 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
     </component>
 
-    <component key="dvcsCommunicatorProvider" name="dvcsCommunicatorProvider"
-               class="com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider">
+    <component key="dvcsCommunicatorProvider" name="dvcsCommunicatorProvider" class="com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProviderImpl">
         <description>dvcsCommunicatorProvider</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider</interface>
     </component>
 
 	<component key="oAuthStore" name="oAuthStore"
@@ -236,6 +237,10 @@
                class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketRemoteClientBuilder">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder</interface>
     </component>
+    
+    <component key="linkedIssueService" class="com.atlassian.jira.plugins.dvcs.service.LinkedIssueServiceImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.service.LinkedIssueService</interface>
+    </component>
 
     <component key="pluginFeatureDetector" name="pluginFeatureDetector"
                class="com.atlassian.jira.plugins.dvcs.listener.DefaultPluginFeatureDetector">
@@ -249,6 +254,14 @@
 
     <!-- Listener -->
     <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />
+    
+    <!-- Messaging -->
+    <component key="messagingService" class="com.atlassian.jira.plugins.dvcs.service.MessagingServiceImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagingService</interface>
+    </component>
+    <component key="synchronizeChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
 
     <issue-tabpanel key="dvcs-commits-tabpanel" name="Dvcs Changesets Tab Panel"
                     class="com.atlassian.jira.plugins.dvcs.webwork.DvcsTabPanel">

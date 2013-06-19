@@ -2,15 +2,19 @@ package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 
-public class DvcsCommunicatorProvider
+public class DvcsCommunicatorProviderImpl implements DvcsCommunicatorProvider
 {
     private final DvcsCommunicator[] dvcsCommunicators;
     
-    public DvcsCommunicatorProvider(CachingDvcsCommunicator... dvcsCommunicators)
+    public DvcsCommunicatorProviderImpl(CachingDvcsCommunicator... dvcsCommunicators)
     {
         this.dvcsCommunicators = dvcsCommunicators;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public DvcsCommunicator getCommunicator(String dvcsType)
     {
         for (DvcsCommunicator dvcsCommunicator : dvcsCommunicators)
@@ -23,6 +27,10 @@ public class DvcsCommunicatorProvider
         throw new IllegalArgumentException("Unsupported DVCS Type: " + dvcsType);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
         for (DvcsCommunicator dvcsCommunicator : dvcsCommunicators)

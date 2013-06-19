@@ -1,5 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -10,13 +18,6 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.google.common.collect.Sets;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
@@ -47,6 +48,15 @@ public class ChangesetServiceImpl implements ChangesetService
     public void removeAllInRepository(int repositoryId)
     {
         changesetDao.removeAllInRepository(repositoryId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Changeset getByNode(int repositoryId, String changesetNode)
+    {
+        return changesetDao.getByNode(repositoryId, changesetNode);
     }
 
     @Override

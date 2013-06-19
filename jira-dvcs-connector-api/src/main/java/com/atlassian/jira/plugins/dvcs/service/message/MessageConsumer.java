@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service.message;
 
 /**
- * Re
+ * Consumes a received message.
  * 
  * @author Stanislav Dvorscak
  * 

@@ -1,11 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageTag;
 
 /**
  * Routes messages to consumers listening on a {@link #getKey()}.
@@ -17,33 +16,18 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
  * @param <P>
  *            type of message payload
  */
-final class MessageKeyRouter<K extends MessageKey<P>, P> implements Runnable
+final class MessageKeyRouter<K extends MessageKey<P>, P>
 {
-
-    /**
-     * Thread which realizes routing.
-     */
-    private final Thread thread;
-
-    /**
-     * Messages determined for routing over a {@link #getKey()}.
-     */
-    private final BlockingQueue<P> messages = new LinkedBlockingQueue<P>();
 
     /**
      * Consumers listening over a {@link #getKey()}.
      */
-    private final List<MessageConsumerRouter<Object>> consumers = new CopyOnWriteArrayList<MessageConsumerRouter<Object>>();
+    private final List<MessageConsumerRouter<K, P>> consumers = new CopyOnWriteArrayList<MessageConsumerRouter<K, P>>();
 
     /**
      * @see #getKey()
      */
     private final MessageKey<?> key;
-
-    /**
-     * @see #stop()
-     */
-    private boolean stop;
 
     /**
      * Constructor.
@@ -54,9 +38,6 @@ final class MessageKeyRouter<K extends MessageKey<P>, P> implements Runnable
     public MessageKeyRouter(MessageKey<?> key)
     {
         this.key = key;
-
-        this.thread = new Thread(this, "Messages consumer @ " + key);
-        this.thread.start();
     }
 
     /**
@@ -64,20 +45,7 @@ final class MessageKeyRouter<K extends MessageKey<P>, P> implements Runnable
      */
     public void stop()
     {
-        stop = true;
-        thread.interrupt();
-
-        try
-        {
-            thread.join();
-
-        } catch (InterruptedException e)
-        {
-            throw new RuntimeException(e);
-
-        }
-
-        for (MessageConsumerRouter<?> consumer : consumers)
+        for (MessageConsumerRouter<?, ?> consumer : consumers)
         {
             consumer.stop();
         }
@@ -96,10 +64,9 @@ final class MessageKeyRouter<K extends MessageKey<P>, P> implements Runnable
      * 
      * @param consumerMessagesRouter
      */
-    @SuppressWarnings("unchecked")
-    public void addConsumer(MessageConsumerRouter<?> consumerMessagesRouter)
+    public void addConsumer(MessageConsumerRouter<K, P> consumerMessagesRouter)
     {
-        consumers.add((MessageConsumerRouter<Object>) consumerMessagesRouter);
+        consumers.add(consumerMessagesRouter);
     }
 
     /**
@@ -108,43 +75,28 @@ final class MessageKeyRouter<K extends MessageKey<P>, P> implements Runnable
      * @param message
      *            for publishing
      */
-    public void route(P message)
+    public void route(Message<K, P> message)
     {
-        try
+        for (MessageConsumerRouter<K, P> consumer : consumers)
         {
-            messages.put(message);
-        } catch (InterruptedException e)
-        {
-            throw new RuntimeException(e);
-
+            consumer.route(message);
         }
     }
 
     /**
-     * {@inheritDoc}
+     * @param tag
+     *            message discriminator
+     * @return Count of queued messages for provided message tag.
      */
-    @Override
-    public void run()
+    public int getQueuedCount(MessageTag tag)
     {
-        while (!stop)
+        int result = 0;
+        for (MessageConsumerRouter<K, P> consumer : consumers)
         {
-            try
-            {
-                Object message = messages.take();
-                for (MessageConsumerRouter<Object> consumer : consumers)
-                {
-                    consumer.put(message);
-                }
-
-            } catch (InterruptedException e)
-            {
-                if (!stop)
-                {
-                    throw new RuntimeException(e);
-
-                }
-
-            }
+            result = Math.max(result, consumer.getQueuedCount(tag));
         }
+
+        return result;
     }
+
 }

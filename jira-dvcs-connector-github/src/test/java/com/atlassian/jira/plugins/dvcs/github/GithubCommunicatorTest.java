@@ -33,6 +33,7 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
@@ -56,6 +57,9 @@ public class GithubCommunicatorTest
     private UserService userService;
     @Mock
     private User githubUser;
+    
+    @Mock
+    private MessagingService messagingService;
     
     // tested object
     private DvcsCommunicator communicator;
@@ -84,7 +88,13 @@ public class GithubCommunicatorTest
     {
         MockitoAnnotations.initMocks(this);
 
-        communicator = new GithubCommunicator(changesetCache = new ChangesetCacheImpl(), mock(OAuthStore.class), githubClientProvider);
+        GithubCommunicator githubCommunicator = new GithubCommunicator();
+        githubCommunicator.setChangesetCache(changesetCache = new ChangesetCacheImpl());
+        githubCommunicator.setoAuthStore(mock(OAuthStore.class));
+        githubCommunicator.setGithubClientProvider(githubClientProvider);
+        githubCommunicator.setMessagingService(messagingService);
+        this.communicator = githubCommunicator;
+        
         when(githubClientProvider.getRepositoryService(repositoryMock)).thenReturn(repositoryService);
         when(githubClientProvider.getUserService(repositoryMock)).thenReturn(userService);
         when(githubClientProvider.getCommitService(repositoryMock)).thenReturn(commitService);
