@@ -64,7 +64,7 @@ public class ChangesetTransformer {
                 null, // bitbucketChangeset.getAuthor(),
                 bitbucketChangeset.getDate(),
                 bitbucketChangeset.getHash(),
-                null, // bitbucketChangeset.getBranch(),
+                bitbucketChangeset.getBranch(),
                 bitbucketChangeset.getMessage(),
                 transformParents(bitbucketChangeset.getParents()),
                 null,// changesetFiles,

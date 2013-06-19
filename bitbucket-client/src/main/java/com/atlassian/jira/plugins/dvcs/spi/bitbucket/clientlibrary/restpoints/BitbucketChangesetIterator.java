@@ -25,17 +25,19 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
     private final String slug;
     private final List<String> excludeNodes;
     private BitbucketChangesetPage currentPage = null;
+    private final Map<String,String> changesetBranch;
 
     // services
     private final RemoteRequestor requestor;
 
-    public BitbucketChangesetIterator(RemoteRequestor requestor, String owner, String slug, List<String> excludeNodes, int pageLength)
+    public BitbucketChangesetIterator(RemoteRequestor requestor, String owner, String slug, List<String> excludeNodes, Map<String,String> changesetBranch, int pageLength)
     {
         this.requestor = requestor;
         this.owner = owner;
         this.slug = slug;
         this.excludeNodes = excludeNodes;
         this.pageLength = pageLength;
+        this.changesetBranch = changesetBranch;
     }
 
     @Override
@@ -99,7 +101,20 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
 
         BitbucketNewChangeset currentChangeset = currentPage.getValues().remove(0);
 
+        assignBranch(currentChangeset);
+
         return currentChangeset;
+    }
+
+    private void assignBranch(BitbucketNewChangeset changeset)
+    {
+        String branch = changesetBranch.get(changeset.getHash());
+        changeset.setBranch(branch);
+        changesetBranch.remove(changeset.getHash());
+        for (BitbucketNewChangeset parent : changeset.getParents())
+        {
+            changesetBranch.put(parent.getHash(), branch);
+        }
     }
 
     @Override

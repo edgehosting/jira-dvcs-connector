@@ -50,6 +50,7 @@ public class BitbucketNewChangeset implements Serializable
     private List<BitbucketNewChangeset> parents;
     private Date date;
 	private String message;
+	private String branch;
 
     public String getHash()
     {
@@ -109,5 +110,15 @@ public class BitbucketNewChangeset implements Serializable
     public void setMessage(String message)
     {
         this.message = message;
+    }
+
+    public String getBranch()
+    {
+        return branch;
+    }
+
+    public void setBranch(String branch)
+    {
+        this.branch = branch;
     }
 }

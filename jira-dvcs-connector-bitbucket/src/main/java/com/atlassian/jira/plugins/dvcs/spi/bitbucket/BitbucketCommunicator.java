@@ -3,7 +3,9 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -205,14 +207,22 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         try
         {
+            //remote branch head list
             List<BranchHead> branchHeads = getBranchHeads(repository);
+            //local branch head list
             List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repository, softSync);
+
+            Map<String, String> changesetBranch = new HashMap<String, String>();
+            for (BranchHead branchHead : branchHeads)
+            {
+                changesetBranch.put(branchHead.getHead(), branchHead.getName());
+            }
 
             BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).build();
             Iterable<BitbucketNewChangeset> bitbucketChangesets =
                     remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
                                                                    repository.getSlug(),
-                                                                   extractBranchHeads(oldBranchHeads), 50);
+                                                                   extractBranchHeads(oldBranchHeads), changesetBranch, 50);
 
             branchService.updateBranchHeads(repository, branchHeads, oldBranchHeads);
 

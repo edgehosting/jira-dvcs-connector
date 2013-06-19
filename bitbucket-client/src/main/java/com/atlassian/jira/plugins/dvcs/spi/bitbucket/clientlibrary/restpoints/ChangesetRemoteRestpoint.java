@@ -16,7 +16,7 @@ import com.google.gson.reflect.TypeToken;
 
 /**
  * ChangesetRemoteRestpoint
- * 
+ *
  * @author Martin Skurla mskurla@atlassian.com
  */
 public class ChangesetRemoteRestpoint
@@ -64,17 +64,17 @@ public class ChangesetRemoteRestpoint
                     }
                 });
     }
-    
-    
+
+
     public Iterable<BitbucketNewChangeset> getChangesets(final String owner, final String slug,
-            final List<String> excludeNodes, final int changesetsLimit)
+            final List<String> excludeNodes, final Map<String,String> changesetBranch, final int changesetsLimit)
     {
         return new Iterable<BitbucketNewChangeset>()
         {
             @Override
             public Iterator<BitbucketNewChangeset> iterator()
             {
-                return new BitbucketChangesetIterator(requestor, owner, slug, excludeNodes, changesetsLimit);
+                return new BitbucketChangesetIterator(requestor, owner, slug, excludeNodes, changesetBranch, changesetsLimit);
             }
         };
     }
