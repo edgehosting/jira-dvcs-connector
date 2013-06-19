@@ -76,9 +76,10 @@ public class BitbucketCommunicatorTest
     private PluginInformation pluginInformation;
 
     private DvcsCommunicator communicator;
-    
+
     private static class BuilderAnswer implements Answer<Object>
     {
+        @Override
         public Object answer(InvocationOnMock invocation) throws Throwable
         {
             Object builderMock = invocation.getMock();
@@ -91,11 +92,11 @@ public class BitbucketCommunicatorTest
             }
         }
     }
-    
+
     private class BranchDaoMock implements BranchDao
     {
-        private ArrayListMultimap<Integer, BranchHead> heads = ArrayListMultimap.create();
-        
+        private final ArrayListMultimap<Integer, BranchHead> heads = ArrayListMultimap.create();
+
         @Override
         public void saveBranchHeadIfNeeded(int repositoryId, BranchHead branch)
         {
@@ -109,7 +110,7 @@ public class BitbucketCommunicatorTest
         public List<BranchHead> getBranchHeads(int repositoryId)
         {
             List<BranchHead> result = heads.get(repositoryId);
-            
+
             if (result == null)
             {
                 return Collections.emptyList();
@@ -130,7 +131,7 @@ public class BitbucketCommunicatorTest
         {
             heads.removeAll(repositoryId);
         }
-        
+
         public List<String> getHeads(int repositoryId)
         {
             return Lists.transform(heads.get(repositoryId), new Function<BranchHead, String>()
@@ -143,35 +144,35 @@ public class BitbucketCommunicatorTest
             });
         }
     }
-    
+
     @BeforeMethod
     public void initializeMocksAndGithubCommunicator()
     {
         MockitoAnnotations.initMocks(this);
-    
+
         when(pluginInformation.getVersion()).thenReturn("0");
         when(plugin.getPluginInformation()).thenReturn(pluginInformation);
         when(pluginAccessor.getPlugin(anyString())).thenReturn(plugin);
-        
+
         branchDao = new BranchDaoMock();
         branchService = new BranchServiceImpl(branchDao);
-        
+
         bitbucketClientBuilder = mock(BitbucketClientBuilder.class, new BuilderAnswer());
-        
+
         communicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilder, branchService);
         when(bitbucketClientBuilder.build()).thenReturn(bitbucketRemoteClient);
         when(bitbucketRemoteClient.getChangesetsRest()).thenReturn(changesetRestpoint);
         when(bitbucketRemoteClient.getBranchesAndTagsRemoteRestpoint()).thenReturn(branchesAndTagsRemoteRestpoint);
     }
-    
+
     private class Graph
     {
         private class Data
         {
-            private String node;
-            private String branch;
-            private Date date;
-            
+            private final String node;
+            private final String branch;
+            private final Date date;
+
             Data(String node, String branch, Date date)
             {
                 this.node = node;
@@ -179,19 +180,19 @@ public class BitbucketCommunicatorTest
                 this.date = date;
             }
         }
-        
+
         //TODO Do we need child nodes?
         private LinkedHashMultimap<String, String> children;
         private LinkedHashMultimap<String, String> parents;
         private HashMap<String, Data> data;
         private LinkedHashMultimap<String,String> heads;
         private long fakeDate = System.currentTimeMillis();
-        
+
         public Graph()
         {
             initGraph();
         }
-        
+
         private void initGraph()
         {
             children = LinkedHashMultimap.create();
@@ -199,25 +200,25 @@ public class BitbucketCommunicatorTest
             heads = LinkedHashMultimap.create();
             data = Maps.newHashMap();
         }
-        
+
         public Graph merge(String node, String parentNode, String... parentNodes)
         {
             commit(node, data.get(parentNode).branch, parentNode, parentNodes);
             return this;
         }
-        
+
         public Graph branch(String node, String parentNode)
         {
             branch(data.get(parentNode).branch, node, parentNode);
             return this;
         }
-        
+
         public Graph branch(String newBranch, String node, String parentNode)
         {
             commit(node, newBranch, parentNode);
             return this;
         }
-        
+
         public Graph commit(String node, String parentNode)
         {
             if (parentNode == null)
@@ -229,7 +230,7 @@ public class BitbucketCommunicatorTest
             }
             return this;
         }
-        
+
         public Graph commit(String node, String branch, String parentNode, String... parentNodes)
         {
             if (parentNode != null)
@@ -243,21 +244,21 @@ public class BitbucketCommunicatorTest
                     addNode(node, branch, parent);
                 }
             }
-            
+
             data.put(node, new Data(node, branch, new Date(fakeDate)));
             fakeDate += 1000*60*60;
-            
+
             heads.put(branch, node);
             return this;
         }
-        
+
         private void addNode(String node, String branch, String parentNode)
         {
             parents.put(node, parentNode);
             children.put(parentNode, node);
             removeOldHead(branch, parentNode);
         }
-        
+
         private void removeOldHead(String branch, String parentNode)
         {
             if (data.get(parentNode).branch.equals(branch))
@@ -265,27 +266,27 @@ public class BitbucketCommunicatorTest
                 heads.remove(branch, parentNode);
             }
         }
-        
+
         public Set<String> getParent(String node)
         {
             return parents.get(node);
         }
-        
+
         public Set<String> getChildren(String node)
         {
             return children.get(node);
         }
-        
+
         public List<String> getHeads()
         {
             return Lists.newArrayList(heads.values());
         }
-        
+
         public List<String> getNodes()
         {
             return Lists.newArrayList(data.keySet());
         }
-        
+
         public void mock()
         {
             when(bitbucketBranchesAndTags.getBranches()).thenReturn(
@@ -298,7 +299,7 @@ public class BitbucketCommunicatorTest
                         }
                     }));
             when(branchesAndTagsRemoteRestpoint.getBranchesAndTags(anyString(), anyString())).thenReturn(bitbucketBranchesAndTags);
-            
+
             when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyInt())).then(new Answer<Iterable<BitbucketNewChangeset>>() {
 
                 @Override
@@ -308,15 +309,15 @@ public class BitbucketCommunicatorTest
                     List<String> excludes = (List<String>)invocation.getArguments()[2];
                     return getIterable(excludes);
                 }
-                
+
             });
         }
-        
+
         public Iterable<BitbucketNewChangeset> getIterable(final List<String> excludes)
         {
             return new Iterable<BitbucketNewChangeset>()
             {
-                
+
                 @Override
                 public Iterator<BitbucketNewChangeset> iterator()
                 {
@@ -326,15 +327,15 @@ public class BitbucketCommunicatorTest
                         public BitbucketNewChangeset apply(String input)
                         {
                             BitbucketNewChangeset changeset = new BitbucketNewChangeset();
-                            changeset.setSha(input);
+                            changeset.setHash(input);
                             changeset.setParents(Collections.<BitbucketNewChangeset>emptyList());
-                            
+
                             Data changesetData = data.get(input);
-                            changeset.setBranch(changesetData.branch);
+//                            changeset.setBranch(changesetData.branch);
                             changeset.setDate(changesetData.date);
                             return changeset;
                         }
-                        
+
                     });
                 }
             };
@@ -344,9 +345,9 @@ public class BitbucketCommunicatorTest
             Iterator<String> iterator = new AbstractIterator<String>()
             {
 
-                private Set<String> nextNodes = Sets.newHashSet();
-                private Set<String> processedNodes = Sets.newHashSet();
-                private Set<String> excludeNodes = Sets.newHashSet();
+                private final Set<String> nextNodes = Sets.newHashSet();
+                private final Set<String> processedNodes = Sets.newHashSet();
+                private final Set<String> excludeNodes = Sets.newHashSet();
 
                 {
                     excludeNodes(exclude);
@@ -358,22 +359,22 @@ public class BitbucketCommunicatorTest
                         }
                     }
                 }
-                
+
                 private void excludeNodes(Collection<String> nodes)
                 {
                     if (nodes == null)
                     {
                         return;
                     }
-                    
+
                     excludeNodes.addAll(nodes);
-                    
+
                     for (String node : nodes)
                     {
                         excludeNodes(getParent(node));
                     }
                 }
-                
+
                 @Override
                 protected String computeNext()
                 {
@@ -382,7 +383,7 @@ public class BitbucketCommunicatorTest
                         endOfData();
                         return null;
                     }
-                    
+
                     Iterator<String> it = nextNodes.iterator();
                     String node = it.next();
                     it.remove();
@@ -390,7 +391,7 @@ public class BitbucketCommunicatorTest
                     addNodes(getParent(node));
                     return node;
                 }
-                
+
                 private void addNodes(Set<String> nodes)
                 {
                     for (String node : nodes)
@@ -412,7 +413,7 @@ public class BitbucketCommunicatorTest
             Set<String> head = heads.get(name);
             bitbucketBranch.setHeads(Lists.newArrayList(head));
             bitbucketBranch.setChangeset(head.iterator().next());
-            
+
             return bitbucketBranch;
         }
 
@@ -421,10 +422,10 @@ public class BitbucketCommunicatorTest
     @Test
     public void getChangesets_softSync()
     {
-//       B3   D  B1   B2     
+//       B3   D  B1   B2
 //                    14
 //               13   |
-//               |    12    
+//               |    12
 //            10 11  /
 //           / |/| >9
 //          /  8 7
@@ -438,7 +439,7 @@ public class BitbucketCommunicatorTest
 //             1
         Graph graph = new Graph();
         List<String> processedNodes = Lists.newArrayList();
-        
+
         graph
             .commit("node1", null)
             .commit("node2", "node1")
@@ -452,9 +453,9 @@ public class BitbucketCommunicatorTest
             .merge("node11", "node7", "node8", "node9")
             .commit("node13", "node11")
             .mock();
-        
+
         checkSynchronization(graph, processedNodes, true);
-        
+
         // add more commits
         graph
             .branch("B2", "node12", "node9")
@@ -462,15 +463,15 @@ public class BitbucketCommunicatorTest
             .branch("B3", "node15", "node3")
             .merge("node10", "node8", "node15")
             .mock();
-        
+
         checkSynchronization(graph, processedNodes, true);
     }
-    
+
     @Test
     public void getChangesets_fullSync()
     {
         Graph graph = new Graph();
-        
+
         graph
             .commit("node1", null)
             .commit("node2", "node1")
@@ -484,9 +485,9 @@ public class BitbucketCommunicatorTest
             .merge("node11", "node7", "node8", "node9")
             .commit("node13", "node11")
             .mock();
-        
+
         checkSynchronization(graph, false);
-        
+
         // add more commits
         graph
             .branch("B2", "node12", "node9")
@@ -494,15 +495,15 @@ public class BitbucketCommunicatorTest
             .branch("B3", "node15", "node3")
             .merge("node10", "node8", "node15")
             .mock();
-        
+
         checkSynchronization(graph, false);
     }
-    
+
     private void checkSynchronization(Graph graph, boolean softSync)
     {
         checkSynchronization(graph, new ArrayList<String>(), softSync);
     }
-    
+
     private void checkSynchronization(Graph graph, List<String> processedNodes, boolean softSync)
     {
         for ( Changeset changeset : communicator.getChangesets(repositoryMock, softSync) )

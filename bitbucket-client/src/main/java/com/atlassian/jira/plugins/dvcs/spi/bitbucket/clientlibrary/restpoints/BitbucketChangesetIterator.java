@@ -1,7 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.lang.StringUtils;
@@ -49,15 +52,39 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
 
     private void readPage()
     {
-        String url = currentPage == null ? createUrl() : currentPage.getNext();
+        Map<String, List<String>> parameters = null;
+        String url = null;
+
+        if (currentPage == null)
+        {
+            // this is the first request, first page
+            url = createUrl();
+
+            parameters = new HashMap<String, List<String>>();
+            if (excludeNodes != null)
+            {
+                parameters.put("exclude", new ArrayList<String>(excludeNodes));
+            }
+        } else
+        {
+            url = currentPage.getNext();
+        }
+
         if (StringUtils.isBlank(url))
         {
             return;
         }
-        currentPage = requestor.get(url, null, createResponseCallback());
+
+        if (parameters == null)
+        {
+            currentPage = requestor.get(url, null, createResponseCallback());
+        } else
+        {
+            currentPage = requestor.post(url, parameters, createResponseCallback());
+        }
     }
 
-    @Override
+            @Override
     public BitbucketNewChangeset next()
     {
         if (!hasNext())
@@ -89,17 +116,7 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
 
     private String createUrl()
     {
-        StringBuilder url = new StringBuilder(String.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s", owner, slug, pageLength));
-
-        if (excludeNodes != null)
-        {
-            for (String branchTip : excludeNodes)
-            {
-                url.append("&excludes=").append(branchTip);
-            }
-        }
-
-        return url.toString();
+        return String.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s", owner, slug, pageLength);
     }
 
     private ResponseCallback<BitbucketChangesetPage> createResponseCallback()

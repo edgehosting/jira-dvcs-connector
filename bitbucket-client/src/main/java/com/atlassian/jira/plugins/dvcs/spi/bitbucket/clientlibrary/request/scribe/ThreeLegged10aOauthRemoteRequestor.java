@@ -48,7 +48,7 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
 
 
     @Override
-    protected void onConnectionCreated(HttpClient client, HttpRequestBase method, Map<String, String> parameters)
+    protected void onConnectionCreated(HttpClient client, HttpRequestBase method, Map<String, ? extends Object> parameters)
             throws IOException
     {
         long start = System.currentTimeMillis();

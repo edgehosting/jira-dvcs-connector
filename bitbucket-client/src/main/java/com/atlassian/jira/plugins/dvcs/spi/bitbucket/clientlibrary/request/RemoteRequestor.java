@@ -13,7 +13,7 @@ public interface RemoteRequestor
     /**
      * @param uri correctly encoded uri required
      */
-    <T> T post(String uri,  Map<String, String> parameters, ResponseCallback<T> callback);
+    <T> T post(String uri,  Map<String, ? extends Object> parameters, ResponseCallback<T> callback);
 
     /**
      * @param uri correctly encoded uri required

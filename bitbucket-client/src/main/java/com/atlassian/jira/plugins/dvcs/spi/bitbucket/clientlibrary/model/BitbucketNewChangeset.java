@@ -5,38 +5,36 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 
+ *
  * BitbucketChangeset
- * 
+ *
  * <pre>
  * {
- *     "links": [
- *         {
- *             "href": "/api/1.0/repositories/mstencel/test-git/changesets/b50c32732daa539cf4a00831286f0490fd8981a0",
- *             "rel": "self"
- *         }
- *     ],
- *     "author": {
- *         "raw": "Stanislav Dvorscak <stanislav-dvorscak@solumiss.eu>"
- *     },
- *     "sha": "b50c32732daa539cf4a00831286f0490fd8981a0",
- *     "parents": [
- *         {
- *             "sha": "5447d064602e89aa1ce381c6c17ca8cab385fdf1",
- *             "links": [
- *                 {
- *                     "href": "/api/1.0/repositories/mstencel/test-git/changesets/5447d064602e89aa1ce381c6c17ca8cab385fdf1",
- *                     "rel": "self"
- *                 }
- *             ]
- *         }
- *     ],
- *     "date": "2013-04-12T14:55:59+00:00",
- *     "message": "Close branch issue/BBC-472\n"
- * }
+ *   "hash": "2c10238df694c8809b56dc7a9b7fe19d4d555c1a",
+ *   "repository": {
+ *      "links": [...],
+ *      "full_name": "bitbucket/bitbucket"
+ *   },
+ *   "links": [...],
+ *   "author": {
+ *     "raw": "John Doe <john.doe@gmail.com>",
+ *     "user": {
+ *       "username": "jdoe",
+ *       "display_name": "John Doe",
+ *       "links": [...]
+ *     }
+ *   },
+ *   "parents": [
+ *     {
+ *       "hash": "4c3b7e9e13d425cfba1cee4e82f72f8b2c812512",
+ *       "links": [...]
+ *     }
+ *   ],
+ *   "date": "2013-06-17T03:49:13+00:00",
+ *   "message": "convert BB.delay to AMD"
+ * },
  * </pre>
  *
- * 
  * <br /><br />
  *
  * @author Miroslav Stencel <mstencel@atlassian.com>
@@ -46,68 +44,70 @@ public class BitbucketNewChangeset implements Serializable
 {
     private static final long serialVersionUID = 4500500360628759017L;
 
-    private String sha;
-	private String message;
-    private String rawNode;
+    private String hash;
+    private BitbucketRepositoryInfo repository;
     private BitbucketAuthor author;
-    private Date date;
     private List<BitbucketNewChangeset> parents;
-    private String branch;
-    
-    public String getSha()
+    private Date date;
+	private String message;
+
+    public String getHash()
     {
-        return sha;
+        return hash;
     }
-    public void setSha(String sha)
+
+    public void setHash(String hash)
     {
-        this.sha = sha;
+        this.hash = hash;
     }
-    public String getMessage()
+
+    public BitbucketRepositoryInfo getRepository()
     {
-        return message;
+        return repository;
     }
-    public void setMessage(String message)
+
+    public void setRepository(BitbucketRepositoryInfo repository)
     {
-        this.message = message;
+        this.repository = repository;
     }
-    public String getRawNode()
-    {
-        return rawNode;
-    }
-    public void setRawNode(String rawNode)
-    {
-        this.rawNode = rawNode;
-    }
+
     public BitbucketAuthor getAuthor()
     {
         return author;
     }
+
     public void setAuthor(BitbucketAuthor author)
     {
         this.author = author;
     }
-    public Date getDate()
-    {
-        return date;
-    }
-    public void setDate(Date date)
-    {
-        this.date = date;
-    }
+
     public List<BitbucketNewChangeset> getParents()
     {
         return parents;
     }
+
     public void setParents(List<BitbucketNewChangeset> parents)
     {
         this.parents = parents;
     }
-    public String getBranch()
+
+    public Date getDate()
     {
-        return branch;
+        return date;
     }
-    public void setBranch(String branch)
+
+    public void setDate(Date date)
     {
-        this.branch = branch;
+        this.date = date;
+    }
+
+    public String getMessage()
+    {
+        return message;
+    }
+
+    public void setMessage(String message)
+    {
+        this.message = message;
     }
 }

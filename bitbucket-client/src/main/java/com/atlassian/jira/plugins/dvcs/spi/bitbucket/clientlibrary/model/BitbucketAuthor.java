@@ -1,9 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
-public class BitbucketAuthor
+import java.io.Serializable;
+
+/**
+ * BitbucketAuthor
+ * {
+ *   "raw": "John Doe <john.doe@gmail.com>",
+ *   "user": {...}
+ * }
+ *
+ * @author Miroslav Stencel <mstencel@atlassian.com>
+ *
+ */
+public class BitbucketAuthor implements Serializable
 {
+    private static final long serialVersionUID = -6345263554099823139L;
+
     private String raw;
-    private BitbucketUser user; 
+    private BitbucketUser user;
 
     public String getRaw()
     {

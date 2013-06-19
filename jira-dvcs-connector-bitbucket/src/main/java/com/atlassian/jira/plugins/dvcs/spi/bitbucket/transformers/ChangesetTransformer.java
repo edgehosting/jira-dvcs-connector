@@ -56,15 +56,15 @@ public class ChangesetTransformer {
             authorEmail = parseEmailFromRawAuthor(bitbucketChangeset.getAuthor().getRaw());
             rawAuthor = bitbucketChangeset.getAuthor().getRaw();
         }
-        
+
         Changeset changeset = new Changeset(
                 repositoryId,
-                bitbucketChangeset.getSha(),
+                bitbucketChangeset.getHash(),
                 rawAuthor,
                 null, // bitbucketChangeset.getAuthor(),
                 bitbucketChangeset.getDate(),
-                bitbucketChangeset.getSha(),
-                bitbucketChangeset.getBranch(),
+                bitbucketChangeset.getHash(),
+                null, // bitbucketChangeset.getBranch(),
                 bitbucketChangeset.getMessage(),
                 transformParents(bitbucketChangeset.getParents()),
                 null,// changesetFiles,
@@ -74,17 +74,17 @@ public class ChangesetTransformer {
 
         return changeset;
     }
-    
+
     private static List<String> transformParents(List<BitbucketNewChangeset> parents)
     {
         List<String> parentsList = new ArrayList<String>();
         for ( BitbucketNewChangeset parent : parents)
         {
-            parentsList.add(parent.getSha());
+            parentsList.add(parent.getHash());
         }
         return parentsList;
     }
-    
+
     private static String parseEmailFromRawAuthor(String rawAuthor)
 	{
 		try

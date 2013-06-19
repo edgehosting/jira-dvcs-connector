@@ -212,7 +212,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             Iterable<BitbucketNewChangeset> bitbucketChangesets =
                     remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
                                                                    repository.getSlug(),
-                                                                   extractBranchHeads(oldBranchHeads), 15);
+                                                                   extractBranchHeads(oldBranchHeads), 50);
 
             branchService.updateBranchHeads(repository, branchHeads, oldBranchHeads);
 
@@ -306,7 +306,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).cached().build();
-            
+
             if (!hookDoesExist(repository, postCommitUrl, remoteClient)) {
 	            remoteClient.getServicesRest().addPOSTService(repository.getOrgName(), // owner
 	                    repository.getSlug(), postCommitUrl);
