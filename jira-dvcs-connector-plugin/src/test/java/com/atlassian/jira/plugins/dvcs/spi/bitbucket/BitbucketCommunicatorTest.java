@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -58,6 +59,9 @@ public class BitbucketCommunicatorTest
     private PluginAccessor pluginAccessor;
 
     private BitbucketClientBuilder bitbucketClientBuilder;
+
+    @Mock
+    private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
 
     private BranchService branchService;
 
@@ -159,7 +163,9 @@ public class BitbucketCommunicatorTest
 
         bitbucketClientBuilder = mock(BitbucketClientBuilder.class, new BuilderAnswer());
 
-        communicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilder, branchService);
+        when(bitbucketClientBuilderFactory.forRepository(Matchers.any(Repository.class))).thenReturn(bitbucketClientBuilder);
+
+        communicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, branchService);
         when(bitbucketClientBuilder.build()).thenReturn(bitbucketRemoteClient);
         when(bitbucketRemoteClient.getChangesetsRest()).thenReturn(changesetRestpoint);
         when(bitbucketRemoteClient.getBranchesAndTagsRemoteRestpoint()).thenReturn(branchesAndTagsRemoteRestpoint);
@@ -300,7 +306,7 @@ public class BitbucketCommunicatorTest
                     }));
             when(branchesAndTagsRemoteRestpoint.getBranchesAndTags(anyString(), anyString())).thenReturn(bitbucketBranchesAndTags);
 
-            when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyInt())).then(new Answer<Iterable<BitbucketNewChangeset>>() {
+            when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyMapOf(String.class, String.class), Mockito.anyInt())).then(new Answer<Iterable<BitbucketNewChangeset>>() {
 
                 @Override
                 public Iterable<BitbucketNewChangeset> answer(InvocationOnMock invocation) throws Throwable

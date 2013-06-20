@@ -245,9 +245,9 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.BranchService</interface>
     </component>
 
-    <component key="bitbucketRemoteClientBuilder" name="Bitbucket Remote Client Builder"
-               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketRemoteClientBuilder">
-        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder</interface>
+    <component key="bitbucketRemoteClientBuilderFactory" name="Bitbucket Remote Client Builder Factory"
+               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketClientBuilderFactory">
+        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory</interface>
     </component>
 
     <component key="pluginFeatureDetector" name="pluginFeatureDetector"
