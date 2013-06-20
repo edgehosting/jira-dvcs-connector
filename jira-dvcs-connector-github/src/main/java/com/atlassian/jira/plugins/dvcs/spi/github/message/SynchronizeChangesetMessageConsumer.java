@@ -22,17 +22,14 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
 {
 
     /**
+     * @see #getId()
+     */
+    private static final String ID = SynchronizeChangesetMessageConsumer.class.getCanonicalName();
+
+    /**
      * @see #getKey()
      */
-    public static final MessageKey<SynchronizeChangesetMessage> KEY = new MessageKey<SynchronizeChangesetMessage>()
-    {
-
-        /**
-         * Serial version id.
-         */
-        private static final long serialVersionUID = 1L;
-
-    };
+    public static final String KEY = SynchronizeChangesetMessage.class.getCanonicalName();
 
     // ==========================================
     // ===== Injected dependencies
@@ -140,7 +137,7 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
 
         for (String parentChangesetNode : changeset.getParents())
         {
-            messagingService.publish(KEY, //
+            messagingService.publish(getKey(), //
                     new SynchronizeChangesetMessage(payload.getRepository(), //
                             payload.getBranch(), //
                             parentChangesetNode, //
@@ -156,11 +153,20 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
             repositoryService.save(payload.getRepository());
         }
 
-        if (messagingService.getQueuedCount(KEY, payload.getSynchronizationTag()) == 0)
+        if (messagingService.getQueuedCount(getKey(), payload.getSynchronizationTag()) == 0)
         {
             payload.getProgress().finish();
         }
 
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getId()
+    {
+        return ID;
     }
 
     /**
@@ -169,7 +175,7 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
     @Override
     public MessageKey<SynchronizeChangesetMessage> getKey()
     {
-        return KEY;
+        return messagingService.get(SynchronizeChangesetMessage.class, KEY);
     }
 
 }

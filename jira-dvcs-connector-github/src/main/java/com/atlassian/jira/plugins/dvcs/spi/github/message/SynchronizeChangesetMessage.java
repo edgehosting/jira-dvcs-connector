@@ -5,7 +5,6 @@ import java.util.Date;
 
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageTag;
 
 /**
  * Message which is fired when a changeset should be synchronized.
@@ -50,7 +49,7 @@ public class SynchronizeChangesetMessage implements Serializable
     /**
      * @see #getSynchronizationTag()
      */
-    private final MessageTag synchronizationTag;
+    private final String synchronizationTag;
 
     /**
      * Constructor.
@@ -67,12 +66,7 @@ public class SynchronizeChangesetMessage implements Serializable
      */
     public SynchronizeChangesetMessage(Repository repository, String branch, String node, Date refreshAfterSynchronizedAt, Progress progress)
     {
-        this(repository, branch, node, refreshAfterSynchronizedAt, progress, new MessageTag()
-        {
-
-            private static final long serialVersionUID = 1L;
-
-        });
+        this(repository, branch, node, refreshAfterSynchronizedAt, progress, node);
     }
 
     /**
@@ -91,7 +85,7 @@ public class SynchronizeChangesetMessage implements Serializable
      *            {@link #getSynchronizationTag()}
      */
     public SynchronizeChangesetMessage(Repository repository, String branch, String node, Date refreshAfterSynchronizedAt,
-            Progress progress, MessageTag synchronizationTag)
+            Progress progress, String synchronizationTag)
     {
         this.repository = repository;
         this.branch = branch;
@@ -145,7 +139,7 @@ public class SynchronizeChangesetMessage implements Serializable
     /**
      * @return Tag of synchronization - necessary by progress tracking.
      */
-    public MessageTag getSynchronizationTag()
+    public String getSynchronizationTag()
     {
         return synchronizationTag;
     }

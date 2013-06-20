@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import com.atlassian.jira.plugins.dvcs.service.message.MessageTag;
 
 /**
  * Message which should be delivered.
@@ -19,7 +18,7 @@ final class Message<K, P>
     /**
      * @see #getTags()
      */
-    private final MessageTag[] tags;
+    private final String[] tags;
 
     /**
      * Constructor.
@@ -29,7 +28,7 @@ final class Message<K, P>
      * @param tags
      *            {@link #getTags()}
      */
-    public Message(P payload, MessageTag[] tags)
+    public Message(P payload, String[] tags)
     {
         this.payload = payload;
         this.tags = tags;
@@ -46,7 +45,7 @@ final class Message<K, P>
     /**
      * @return tags of message
      */
-    public MessageTag[] getTags()
+    public String[] getTags()
     {
         return tags;
     }

@@ -1,16 +1,21 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import net.java.ao.DBParam;
+import net.java.ao.Query;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageTag;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
  * Routes messages to consumer.
@@ -31,19 +36,34 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageConsumer.class);
 
     /**
-     * Message tag to count of remaining/queued.
+     * @see #setActiveObjects(ActiveObjects)
      */
-    private final Map<MessageTag, Integer> tagToQueuedCount = new ConcurrentHashMap<MessageTag, Integer>();
+    private final ActiveObjects activeObjects;
 
     /**
      * Each consumer has own thread.
      */
-    private final Thread thread;
+    private final Thread workerThread;
 
     /**
-     * @see #getDelegate()
+     * Thread which listens for incoming messages.
+     */
+    private Thread listenThread;
+
+    /**
+     * @see #MessageConsumerRouter(MessageKey, MessageConsumer, MessagePayloadSerializer)
+     */
+    private final MessageKey<P> key;
+
+    /**
+     * @see #MessageConsumerRouter(MessageKey, MessageConsumer, MessagePayloadSerializer)
      */
     private final MessageConsumer<P> delegate;
+
+    /**
+     * @see #MessageConsumerRouter(MessageKey, MessageConsumer, MessagePayloadSerializer)
+     */
+    private final MessagePayloadSerializer<P> payloadSerializer;
 
     /**
      * @see #stop()
@@ -56,57 +76,133 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
     private final BlockingQueue<Message<K, P>> messageQueue = new LinkedBlockingQueue<Message<K, P>>();
 
     /**
-     * Constructor.
-     * 
-     * @param delegate
-     *            {@link #getDelegate()}
+     * News message available.
      */
-    public MessageConsumerRouter(MessageConsumer<P> delegate)
-    {
-        this.delegate = delegate;
+    public final Object MESSAGE_TRIGGER = new Object();
 
-        thread = new Thread(this, delegate.getKey().getClass().getCanonicalName() + "@" + delegate.toString());
-        thread.start();
+    /**
+     * Responses for message retrieving from database.
+     * 
+     * @author Stanislav Dvorscak
+     * 
+     */
+    private final class DBQueueFiller implements Runnable
+    {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void run()
+        {
+            while (!stop)
+            {
+                MessageMapping[] founded;
+                synchronized (MESSAGE_TRIGGER)
+                {
+                    founded = activeObjects.find(MessageMapping.class);
+
+                    if (founded.length == 0)
+                    {
+                        try
+                        {
+                            MESSAGE_TRIGGER.wait();
+                        } catch (InterruptedException e)
+                        {
+                            if (!stop)
+                            {
+                                throw new RuntimeException(e);
+
+                            }
+
+                        }
+
+                        continue;
+                    }
+                }
+
+                for (MessageMapping foundedItem : founded)
+                {
+
+                    P payload = payloadSerializer.deserialize(foundedItem.getPayload());
+                    try
+                    {
+                        messageQueue.put(new Message<K, P>(payload, foundedItem.getTags()));
+                    } catch (InterruptedException e)
+                    {
+                        if (!stop)
+                        {
+                            throw new RuntimeException(e);
+
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
-     * @return Original consumer of messages.
+     * Constructor.
+     * 
+     * @param activeObjects
+     * @param key
+     *            key Key of messages for which this consumer listens.
+     * @param delegate
+     *            for messages processing
+     * @param payloadSerializer
+     *            serializer of {@link Message#getPayload()}
      */
-    public MessageConsumer<P> getDelegate()
+    public MessageConsumerRouter(ActiveObjects activeObjects, MessageKey<P> key, MessageConsumer<P> delegate,
+            MessagePayloadSerializer<P> payloadSerializer)
     {
-        return delegate;
+        this.activeObjects = activeObjects;
+
+        this.key = key;
+        this.delegate = delegate;
+        this.payloadSerializer = payloadSerializer;
+
+        listenThread = new Thread(new DBQueueFiller(), DBQueueFiller.class.getCanonicalName() + "@" + delegate.toString());
+        listenThread.start();
+
+        workerThread = new Thread(this, delegate.getKey().getClass().getCanonicalName() + "@" + delegate.toString());
+        workerThread.start();
     }
 
     /**
      * @param message
      *            adds message which is determined for this queue
      */
-    public void route(Message<K, P> message)
+    public void route(final Message<K, P> message)
     {
-        synchronized (tagToQueuedCount)
+
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
-            for (MessageTag tag : message.getTags())
+
+            @Override
+            public Void doInTransaction()
             {
-                Integer count = tagToQueuedCount.get(tag);
-                if (count == null)
-                {
-                    tagToQueuedCount.put(tag, 1);
+                MessageMapping messageMapping = activeObjects.create(MessageMapping.class, //
+                        new DBParam(MessageMapping.KEY, key.getId()), //
+                        new DBParam(MessageMapping.PAYLOAD, payloadSerializer.serialize(message.getPayload())), //
+                        new DBParam(MessageMapping.CONSUMER, delegate.getId()) //
+                        );
 
-                } else
+                for (String tag : message.getTags())
                 {
-                    tagToQueuedCount.put(tag, count + 1);
+                    activeObjects.create(MessageTagMapping.class, //
+                            new DBParam(MessageTagMapping.MESSAGE, messageMapping.getID()), //
+                            new DBParam(MessageTagMapping.TAG, tag));
                 }
+
+                return null;
             }
-        }
 
-        try
+        });
+
+        // notify that new message was received
+        synchronized (MESSAGE_TRIGGER)
         {
-            messageQueue.put(message);
-
-        } catch (InterruptedException e)
-        {
-            throw new RuntimeException(e);
-
+            MESSAGE_TRIGGER.notify();
         }
     }
 
@@ -116,10 +212,21 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
     public void stop()
     {
         stop = true;
-        thread.interrupt();
+
+        listenThread.interrupt();
         try
         {
-            thread.join();
+            listenThread.join();
+        } catch (InterruptedException e)
+        {
+            throw new RuntimeException(e);
+
+        }
+
+        workerThread.interrupt();
+        try
+        {
+            workerThread.join();
 
         } catch (InterruptedException e)
         {
@@ -133,10 +240,14 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
      *            message discriminator
      * @return Count of queued messages for provided message tag.
      */
-    public int getQueuedCount(MessageTag tag)
+    public int getQueuedCount(String tag)
     {
-        Integer result = tagToQueuedCount.get(tag);
-        return result != null ? result : 0;
+        Query query = Query.select().from(MessageMapping.class).where( //
+                MessageMapping.KEY + " = ? AND " + MessageMapping.CONSUMER + " = ? ", //
+                key.getId(), //
+                delegate.getId() //
+                );
+        return activeObjects.count(MessageMapping.class, query);
     }
 
     /**
@@ -151,28 +262,6 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
             try
             {
                 message = messageQueue.take();
-
-                synchronized (tagToQueuedCount)
-                {
-                    if (message != null)
-                    {
-                        for (MessageTag tag : message.getTags())
-                        {
-                            Integer count = tagToQueuedCount.get(tag);
-                            count--;
-                            if (count == 0)
-                            {
-                                tagToQueuedCount.remove(tag);
-
-                            } else
-                            {
-                                tagToQueuedCount.put(tag, count);
-
-                            }
-                        }
-                    }
-                }
-
                 delegate.onReceive(message.getPayload());
 
             } catch (InterruptedException e)

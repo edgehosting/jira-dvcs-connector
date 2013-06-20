@@ -19,7 +19,7 @@ public interface MessagingService
      * @param tags
      *            of messages
      */
-    <K extends MessageKey<P>, P> void publish(K key, P payload, MessageTag... tags);
+    <K extends MessageKey<P>, P> void publish(K key, P payload, String... tags);
 
     /**
      * Returns count of queued messages with provided publication key and marked by provided tag.
@@ -30,6 +30,17 @@ public interface MessagingService
      *            of message
      * @return count of queued messages
      */
-    <K extends MessageKey<?>> int getQueuedCount(K key, MessageTag tag);
+    <K extends MessageKey<?>> int getQueuedCount(K key, String tag);
+
+    /**
+     * Creates message key, necessary by publishing and routing.
+     * 
+     * @param payloadType
+     *            type of payload
+     * @param id
+     *            of route
+     * @return created message key
+     */
+    <P> MessageKey<P> get(Class<P> payloadType, String id);
 
 }

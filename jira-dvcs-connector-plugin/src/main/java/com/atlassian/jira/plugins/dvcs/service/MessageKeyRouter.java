@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageTag;
 
 /**
  * Routes messages to consumers listening on a {@link #getKey()}.
@@ -88,7 +87,7 @@ final class MessageKeyRouter<K extends MessageKey<P>, P>
      *            message discriminator
      * @return Count of queued messages for provided message tag.
      */
-    public int getQueuedCount(MessageTag tag)
+    public int getQueuedCount(String tag)
     {
         int result = 0;
         for (MessageConsumerRouter<K, P> consumer : consumers)

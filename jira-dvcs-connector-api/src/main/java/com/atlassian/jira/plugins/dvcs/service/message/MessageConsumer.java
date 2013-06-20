@@ -12,6 +12,11 @@ public interface MessageConsumer<P>
 {
 
     /**
+     * @return Identity of consumer resp. consumer queue.
+     */
+    String getId();
+
+    /**
      * Called when a payload.
      * 
      * @param payload

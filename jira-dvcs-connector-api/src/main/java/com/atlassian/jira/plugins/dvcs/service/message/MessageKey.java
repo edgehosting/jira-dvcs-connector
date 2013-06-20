@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service.message;
 
-import java.io.Serializable;
-
 /**
  * Represents key of a message.
  * 
@@ -10,6 +8,17 @@ import java.io.Serializable;
  * @param <P>
  *            type of message payload
  */
-public interface MessageKey<P> extends Serializable
+public interface MessageKey<P>
 {
+
+    /**
+     * @return identity of key
+     */
+    String getId();
+    
+    /**
+     * @return type of payload
+     */
+    Class<P> getPayloadType();
+
 }
