@@ -177,7 +177,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
     public String getOauthClientIdGhe()
     {
-        return oauthClientIdGhe;
+        return oAuthStore.getClientId(GITHUB_ENTERPRISE);
     }
 
     public void setOauthClientIdGhe(String oauthClientIdGhe)
@@ -187,7 +187,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
     public String getOauthSecretGhe()
     {
-        return oauthSecretGhe;
+        return oAuthStore.getSecret(GITHUB_ENTERPRISE);
     }
 
     public void setOauthSecretGhe(String oauthSecretGhe)
