@@ -22,6 +22,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
@@ -80,7 +81,7 @@ final class MessageConsumerRouter<P> implements Runnable
     /**
      * Holds messages determined for this consumer.
      */
-    private final BlockingQueue<Message<P>> messageQueue = new LinkedBlockingQueue<Message<P>>();
+    private final BlockingQueue<Message<P>> messageQueue = new LinkedBlockingQueue<Message<P>>(1);
 
     /**
      * News message available.
@@ -102,19 +103,36 @@ final class MessageConsumerRouter<P> implements Runnable
         @Override
         public void run()
         {
+            // FIXME: AO can not be access immediately - it is available lazy
+            try
+            {
+                activeObjects.count(MessageMapping.class);
+
+            } catch (PluginException e)
+            {
+                try
+                {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ie)
+                {
+                    // nothing to do
+                }
+
+            }
+
             while (!stop)
             {
                 MessageMapping[] founded;
                 synchronized (MESSAGE_TRIGGER)
                 {
-                    Query query = Query.select().from(MessageMapping.class).alias(MessageMapping.class, "message")
-                            //
-                            .join(MessageConsumerMapping.class, "message.ID = consumer." + MessageConsumerMapping.MESSAGE)
+                    Query query = Query.select().distinct().from(MessageMapping.class).alias(MessageMapping.class, "message") //
+                            .join(MessageConsumerMapping.class, "message.ID = consumer." + MessageConsumerMapping.MESSAGE) //
                             .alias(MessageConsumerMapping.class, "consumer") //
-                            //
                             .where( //
-                            "message." + MessageMapping.KEY + " = ? AND consumer." + MessageConsumerMapping.CONSUMER + " = ? ", //
-                            key.getId(), delegate.getId() //
+                            "message." + MessageMapping.KEY + " = ? AND consumer." + MessageConsumerMapping.CONSUMER + " = ? " //
+                                    + " AND consumer." + MessageConsumerMapping.QUEUED + " = ?  " //
+                                    + " AND consumer." + MessageConsumerMapping.WAIT_FOR_RETRY + " = ? ", //
+                            key.getId(), delegate.getId(), false, false //
                             );
                     founded = activeObjects.find(MessageMapping.class, query);
 
@@ -140,10 +158,18 @@ final class MessageConsumerRouter<P> implements Runnable
                 for (MessageMapping foundedItem : founded)
                 {
 
-                    P payload = payloadSerializer.deserialize(foundedItem.getPayload());
                     try
                     {
-                        messageQueue.put(new Message<P>(foundedItem.getID(), payload, foundedItem.getTags()));
+                        P payload = payloadSerializer.deserialize(foundedItem.getPayload());
+                        String tags[] = new String[foundedItem.getTags().length];
+                        for (int i = 0; i < tags.length; i++)
+                        {
+                            tags[i] = foundedItem.getTags()[i].getTag();
+                        }
+
+                        markQueued(foundedItem);
+                        messageQueue.put(new Message<P>(foundedItem.getID(), payload, tags));
+
                     } catch (InterruptedException e)
                     {
                         if (!stop)
@@ -151,7 +177,32 @@ final class MessageConsumerRouter<P> implements Runnable
                             throw new RuntimeException(e);
 
                         }
+
+                    } catch (Exception e)
+                    {
+                        LOGGER.error(e.getMessage(), e);
+                        fail(foundedItem.getID());
+
                     }
+                }
+            }
+        }
+
+        /**
+         * Marks messages as queued for processing.
+         * 
+         * @param message
+         *            for marking
+         */
+        private void markQueued(MessageMapping message)
+        {
+            for (MessageConsumerMapping consumer : message.getConsumers())
+            {
+                if (consumer.getConsumer().equals(delegate.getId()))
+                {
+                    consumer.setQueued(true);
+                    consumer.save();
+                    break;
                 }
             }
         }
@@ -213,7 +264,10 @@ final class MessageConsumerRouter<P> implements Runnable
             {
                 activeObjects.create(MessageConsumerMapping.class, //
                         new DBParam(MessageConsumerMapping.MESSAGE, messageId), //
-                        new DBParam(MessageConsumerMapping.CONSUMER, delegate.getId()) //
+                        new DBParam(MessageConsumerMapping.CONSUMER, delegate.getId()), //
+                        new DBParam(MessageConsumerMapping.QUEUED, Boolean.FALSE), //
+                        new DBParam(MessageConsumerMapping.WAIT_FOR_RETRY, Boolean.FALSE), //
+                        new DBParam(MessageConsumerMapping.RETRIES_COUNT, 0) //
                         );
 
                 for (String tag : tags)
@@ -264,6 +318,10 @@ final class MessageConsumerRouter<P> implements Runnable
 
                 if (consumers.isEmpty())
                 {
+                    for (MessageTagMapping messageTag : message.getTags())
+                    {
+                        activeObjects.delete(messageTag);
+                    }
                     activeObjects.delete(message);
                 }
 
@@ -292,6 +350,8 @@ final class MessageConsumerRouter<P> implements Runnable
                     {
                         messageConsumer.setLastFailed(new Date());
                         messageConsumer.setWaitForRetry(true);
+                        messageConsumer.setRetriesCount(messageConsumer.getRetriesCount() + 1);
+                        messageConsumer.save();
                         break;
                     }
                 }
@@ -338,15 +398,17 @@ final class MessageConsumerRouter<P> implements Runnable
      */
     public int getQueuedCount(String tag)
     {
-        Query query = Query.select().from(MessageMapping.class).alias(MessageMapping.class, "message")
-                //
+        Query query = Query
+                .select()
+                .from(MessageMapping.class)
+                .alias(MessageMapping.class, "message")
                 .join(MessageConsumerMapping.class, "message.ID = consumer." + MessageConsumerMapping.MESSAGE)
-                .alias(MessageConsumerMapping.class, "consumer") //
-                //
-                .where( //
-                "message." + MessageMapping.KEY + " = ? AND consumer." + MessageConsumerMapping.CONSUMER + " = ? ", //
-                key.getId(), delegate.getId() //
-                );
+                .join(MessageTagMapping.class, "message.ID = tag." + MessageTagMapping.MESSAGE)
+                .alias(MessageConsumerMapping.class, "consumer")
+                .alias(MessageTagMapping.class, "tag")
+                .where("message." + MessageMapping.KEY + " = ? AND consumer." + MessageConsumerMapping.CONSUMER
+                        + " = ? AND tag.tag = ? AND consumer." + MessageConsumerMapping.QUEUED + " = ? AND consumer."
+                        + MessageConsumerMapping.WAIT_FOR_RETRY + "  = ?", key.getId(), delegate.getId(), tag, false, false);
         return activeObjects.count(MessageMapping.class, query);
     }
 

@@ -414,7 +414,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public void synchronize(Repository repository, Progress progress)
+    public void synchronize(Repository repository)
     {
         // FIXME
         throw new UnsupportedOperationException("Not yet implemented!");

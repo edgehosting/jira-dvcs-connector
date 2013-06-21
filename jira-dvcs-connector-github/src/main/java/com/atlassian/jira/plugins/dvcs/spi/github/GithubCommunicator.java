@@ -46,7 +46,6 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
@@ -416,7 +415,7 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public void synchronize(Repository repository, Progress progress)
+    public void synchronize(Repository repository)
     {
         Date synchronizationStartedAt = new Date();
         for (BranchTip branchTip : getBranches(repository))
@@ -424,7 +423,7 @@ public class GithubCommunicator implements DvcsCommunicator
             SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repository, //
                     branchTip.getBranchName(), branchTip.getNode(), //
                     synchronizationStartedAt, //
-                    progress);
+                    null);
             MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
                     SynchronizeChangesetMessage.class, //
                     SynchronizeChangesetMessageConsumer.KEY //

@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import net.java.ao.Entity;
-import net.java.ao.ManyToMany;
+import net.java.ao.OneToMany;
 import net.java.ao.schema.Table;
 
 import com.atlassian.sal.api.message.Message;
@@ -51,12 +51,13 @@ public interface MessageMapping extends Entity
     /**
      * @return Marker tags of message.
      */
-    @ManyToMany(value = MessageTagMapping.class)
-    String[] getTags();
+    @OneToMany()
+    MessageTagMapping[] getTags();
 
     /**
      * @return awaited/remaining consumers of this message
      */
+    @OneToMany
     MessageConsumerMapping[] getConsumers();
 
 }

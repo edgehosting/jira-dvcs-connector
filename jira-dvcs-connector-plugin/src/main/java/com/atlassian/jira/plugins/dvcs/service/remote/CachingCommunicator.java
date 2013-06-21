@@ -15,7 +15,6 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.google.common.base.Function;
 import com.google.common.collect.ComputationException;
@@ -231,8 +230,8 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
     
     @Override
-    public void synchronize(Repository repository, Progress progress)
+    public void synchronize(Repository repository)
     {
-        delegate.synchronize(repository, progress);
+        delegate.synchronize(repository);
     }
 }

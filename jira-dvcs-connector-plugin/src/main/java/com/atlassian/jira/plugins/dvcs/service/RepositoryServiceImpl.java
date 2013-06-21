@@ -27,6 +27,7 @@ import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
@@ -413,13 +414,16 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     {
         if (repository.isLinked())
         {
-//            DefaultProgress progress = new DefaultProgress();
-//            synchronizer.putProgress(repository, progress);
-//            communicatorProvider.getCommunicator(repository.getDvcsType()).synchronize(repository, progress);
-            DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
-                    communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService,
-                    softSync);
-            synchronizer.synchronize(repository, synchronisationOperation, changesetService);
+            if (repository.getDvcsType().equals(GithubCommunicator.GITHUB)) {
+                communicatorProvider.getCommunicator(repository.getDvcsType()).synchronize(repository);
+            
+            } else {
+                DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
+                        communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService,
+                        softSync);
+                synchronizer.synchronize(repository, synchronisationOperation, changesetService);
+                
+            }
         }
     }
 

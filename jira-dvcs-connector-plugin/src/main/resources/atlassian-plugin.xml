@@ -62,6 +62,9 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageConsumerMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v2.To_04_ActiveObjectsV2Migrator</upgradeTask>

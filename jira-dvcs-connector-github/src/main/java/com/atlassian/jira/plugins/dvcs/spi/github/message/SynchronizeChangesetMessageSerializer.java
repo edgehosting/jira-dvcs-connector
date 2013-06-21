@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.message;
 
-import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -58,15 +57,14 @@ public class SynchronizeChangesetMessageSerializer implements MessagePayloadSeri
     @Override
     public String serialize(SynchronizeChangesetMessage payload)
     {
-        StringWriter resultString = new StringWriter();
-
         try
         {
-            JSONObject result = new JSONObject(resultString);
+            JSONObject result = new JSONObject();
             result.put("branch", payload.getBranch());
             result.put("node", payload.getNode());
             result.put("refreshAfterSynchronizedAt", getDateFormat().format(payload.getRefreshAfterSynchronizedAt()));
             result.put("repository", payload.getRepository().getId());
+            return result.toString();
 
         } catch (JSONException e)
         {
@@ -74,8 +72,6 @@ public class SynchronizeChangesetMessageSerializer implements MessagePayloadSeri
 
         }
 
-        resultString.flush();
-        return resultString.toString();
     }
 
     /**
@@ -100,7 +96,7 @@ public class SynchronizeChangesetMessageSerializer implements MessagePayloadSeri
             refreshAfterSynchronizedAt = getDateFormat().parse(result.getString("refreshAfterSynchronizedAt"));
 
             progress = synchronizer.getProgress(repository.getId());
-            if (progress == null)
+            if (progress == null || progress.isFinished())
             {
                 synchronizer.putProgress(repository, progress = new DefaultProgress());
             }

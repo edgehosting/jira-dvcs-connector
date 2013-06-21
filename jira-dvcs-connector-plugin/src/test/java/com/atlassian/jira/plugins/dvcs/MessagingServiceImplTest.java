@@ -7,6 +7,7 @@ import org.testng.annotations.Test;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
 import com.atlassian.jira.plugins.dvcs.service.MessagingServiceImpl;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
@@ -189,7 +190,7 @@ public class MessagingServiceImplTest
 
         // first message - 1
         EasyMock.expect(message.getPayload()).andReturn("1").once();
-        EasyMock.expect(message.getTags()).andReturn(new String[] {}).once();
+        EasyMock.expect(message.getTags()).andReturn(new MessageTagMapping[] {}).once();
         EasyMock.expect(activeObjects.executeInTransaction((TransactionCallback<Void>) EasyMock.anyObject())).andReturn(null).once();
         EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] { message });
         EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] {});
@@ -199,14 +200,14 @@ public class MessagingServiceImplTest
         EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] { message });
         EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] {});
         EasyMock.expect(message.getPayload()).andReturn("3").once();
-        EasyMock.expect(message.getTags()).andReturn(new String[] {}).once();
+        EasyMock.expect(message.getTags()).andReturn(new MessageTagMapping[] {}).once();
 
         // third message - 5 
         EasyMock.expect(activeObjects.executeInTransaction((TransactionCallback<Void>) EasyMock.anyObject())).andReturn(null).once();
         EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] { message });
         EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] {});
         EasyMock.expect(message.getPayload()).andReturn("5").once();
-        EasyMock.expect(message.getTags()).andReturn(new String[] {}).once();
+        EasyMock.expect(message.getTags()).andReturn(new MessageTagMapping[] {}).once();
 
         EasyMock.replay(activeObjects, message);
 

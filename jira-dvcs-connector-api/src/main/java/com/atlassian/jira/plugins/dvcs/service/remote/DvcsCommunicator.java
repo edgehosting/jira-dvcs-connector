@@ -56,9 +56,8 @@ public interface DvcsCommunicator
      * Starts synchronization of provided repository.
      * 
      * @param repository
-     * @param progress
      */
-    void synchronize(Repository repository, Progress progress);
+    void synchronize(Repository repository);
     
     //-----------------------------------------------------------------------
     // methods for invitation management on bitbucket

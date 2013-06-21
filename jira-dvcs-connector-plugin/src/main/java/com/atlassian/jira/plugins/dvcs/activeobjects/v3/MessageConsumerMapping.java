@@ -26,6 +26,11 @@ public interface MessageConsumerMapping extends Entity
     String CONSUMER = "CONSUMER";
 
     /**
+     * @see #isQueued()
+     */
+    String QUEUED = "QUEUED";
+
+    /**
      * @see #isWaitForRetry()
      */
     String WAIT_FOR_RETRY = "WAIT_FOR_RETRY";
@@ -55,6 +60,17 @@ public interface MessageConsumerMapping extends Entity
      *            {@link #getConsumer()}
      */
     void setConsumer(String consumer);
+
+    /**
+     * @return true if it is waiting for processing - was already queued.
+     */
+    boolean isQueued();
+
+    /**
+     * @param queued
+     *            {@link #isQueued()}
+     */
+    void setQueued(boolean queued);
 
     /**
      * @return True if this message is waiting for retry.
