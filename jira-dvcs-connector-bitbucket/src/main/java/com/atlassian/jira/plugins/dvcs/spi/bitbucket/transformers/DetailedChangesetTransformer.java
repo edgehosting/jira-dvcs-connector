@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers;
 
+import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
-
-import java.util.List;
 
 /**
  * DetailedChangesetTransformer
@@ -14,7 +14,7 @@ import java.util.List;
 public final class DetailedChangesetTransformer {
     private DetailedChangesetTransformer() {}
 
-    
+
     public static Changeset fromChangesetAndBitbucketDiffstats(Changeset inputChangeset,
             List<BitbucketChangesetWithDiffstat> diffstats)
     {
@@ -23,11 +23,16 @@ public final class DetailedChangesetTransformer {
         {
             List<ChangesetFile> files = ChangesetFileTransformer.fromBitbucketChangesetsWithDiffstat(diffstats);
             changeset.setFiles(files);
+
+            if (changeset.getAllFileCount() < files.size())
+            {
+                changeset.setAllFileCount(files.size());
+            }
         }
-        
+
         return changeset;
     }
-    
+
     private static Changeset copyChangeset(Changeset changesetToCopy)
     {
         Changeset changeset = new Changeset(changesetToCopy.getRepositoryId(),
@@ -42,7 +47,7 @@ public final class DetailedChangesetTransformer {
                                             changesetToCopy.getFiles(),
                                             changesetToCopy.getAllFileCount(),
                                             changesetToCopy.getAuthorEmail());
-        
+
         return changeset;
     }
 }
