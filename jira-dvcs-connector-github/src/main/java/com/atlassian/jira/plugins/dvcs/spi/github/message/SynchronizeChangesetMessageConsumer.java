@@ -3,6 +3,9 @@ package com.atlassian.jira.plugins.dvcs.spi.github.message;
 import java.util.Date;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.LinkedIssueService;
@@ -22,6 +25,11 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
 {
 
     /**
+     * Logger of this class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(SynchronizeChangesetMessageConsumer.class);
+
+    /**
      * @see #getId()
      */
     private static final String ID = SynchronizeChangesetMessageConsumer.class.getCanonicalName();
@@ -31,10 +39,9 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
      */
     public static final String KEY = SynchronizeChangesetMessage.class.getCanonicalName();
 
-    // ==========================================
-    // ===== Injected dependencies
-    // ==========================================
-
+    /**
+     * @see #setDvcsCommunicatorProvider(DvcsCommunicatorProvider)
+     */
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
     /**
@@ -102,64 +109,72 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
         this.messagingService = messagingService;
     }
 
-    // ==========================================
-    // ===== End of: Injected dependencies
-    // ==========================================
-
     /**
      * {@inheritDoc}
      */
     @Override
-    public void onReceive(SynchronizeChangesetMessage payload)
+    public void onReceive(int messageId, SynchronizeChangesetMessage payload)
     {
-        Changeset fromDB = changesetService.getByNode(payload.getRepository().getId(), payload.getNode());
-        if (fromDB != null && //
-                fromDB.getSynchronizedAt() != null && payload.getRefreshAfterSynchronizedAt().before(fromDB.getSynchronizedAt()))
+        try
         {
-            return;
-        }
+            Changeset fromDB = changesetService.getByNode(payload.getRepository().getId(), payload.getNode());
+            if (fromDB != null && //
+                    fromDB.getSynchronizedAt() != null && payload.getRefreshAfterSynchronizedAt().before(fromDB.getSynchronizedAt()))
+            {
+                return;
+            }
 
-        Date synchronizedAt = new Date();
-        Changeset changeset = dvcsCommunicatorProvider.getCommunicator(payload.getRepository().getDvcsType()).getChangeset(
-                payload.getRepository(), payload.getNode());
-        changeset.setSynchronizedAt(synchronizedAt);
-        changeset.setBranch(payload.getBranch());
+            Date synchronizedAt = new Date();
+            Changeset changeset = dvcsCommunicatorProvider.getCommunicator(payload.getRepository().getDvcsType()).getChangeset(
+                    payload.getRepository(), payload.getNode());
+            changeset.setSynchronizedAt(synchronizedAt);
+            changeset.setBranch(payload.getBranch());
 
-        Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
+            Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
 
-        changesetService.create(changeset, issues);
+            changesetService.create(changeset, issues);
 
-        payload.getProgress().inProgress( //
-                payload.getProgress().getChangesetCount() + 1, //
-                payload.getProgress().getJiraCount() + issues.size(), //
-                0 //
-                );
+            payload.getProgress().inProgress( //
+                    payload.getProgress().getChangesetCount() + 1, //
+                    payload.getProgress().getJiraCount() + issues.size(), //
+                    0 //
+                    );
 
-        for (String parentChangesetNode : changeset.getParents())
+            for (String parentChangesetNode : changeset.getParents())
+            {
+                messagingService.publish(getKey(), //
+                        new SynchronizeChangesetMessage(payload.getRepository(), //
+                                payload.getBranch(), //
+                                parentChangesetNode, //
+                                payload.getRefreshAfterSynchronizedAt(), //
+                                payload.getProgress(), //
+                                payload.getSynchronizationTag() //
+                        ), payload.getSynchronizationTag());
+            }
+
+            if (payload.getRepository().getLastCommitDate() == null
+                    || payload.getRepository().getLastCommitDate().before(changeset.getDate()))
+            {
+                payload.getRepository().setLastCommitDate(changeset.getDate());
+                repositoryService.save(payload.getRepository());
+            }
+
+            if (messagingService.getQueuedCount(getKey(), payload.getSynchronizationTag()) == 0)
+            {
+                payload.getProgress().finish();
+            }
+
+            messagingService.ok(this, messageId);
+
+        } catch (Exception e)
         {
-            messagingService.publish(getKey(), //
-                    new SynchronizeChangesetMessage(payload.getRepository(), //
-                            payload.getBranch(), //
-                            parentChangesetNode, //
-                            payload.getRefreshAfterSynchronizedAt(), //
-                            payload.getProgress(), //
-                            payload.getSynchronizationTag() //
-                    ), payload.getSynchronizationTag());
-        }
+            messagingService.fail(this, messageId);
+            LOGGER.error(e.getMessage(), e);
 
-        if (payload.getRepository().getLastCommitDate() == null || payload.getRepository().getLastCommitDate().before(changeset.getDate()))
-        {
-            payload.getRepository().setLastCommitDate(changeset.getDate());
-            repositoryService.save(payload.getRepository());
-        }
-
-        if (messagingService.getQueuedCount(getKey(), payload.getSynchronizationTag()) == 0)
-        {
-            payload.getProgress().finish();
         }
 
     }
-    
+
     /**
      * {@inheritDoc}
      */

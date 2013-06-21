@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
@@ -17,12 +18,8 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
  * @author Stanislav Dvorscak
  * 
  */
-public class MessagingServiceImpl implements MessagingService, DisposableBean
+public class MessagingServiceImpl implements MessagingService, InitializingBean, DisposableBean
 {
-
-    // ==========================================
-    // ===== Injected dependencies
-    // ==========================================
 
     /**
      * @see #setActiveObjects(ActiveObjects)
@@ -32,7 +29,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     /**
      * Holds key based messages routers.
      */
-    private final Map<MessageKey<Object>, MessageKeyRouter<MessageKey<Object>, Object>> messageRouters = new ConcurrentHashMap<MessageKey<Object>, MessageKeyRouter<MessageKey<Object>, Object>>();
+    private final Map<MessageKey<Object>, MessageKeyRouter<Object>> keyToMessageRouter = new ConcurrentHashMap<MessageKey<Object>, MessageKeyRouter<Object>>();
 
     /**
      * Maps identity of message key to appropriate message key.
@@ -43,6 +40,11 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * Maps type of payload to appropriate {@link MessagePayloadSerializer}.
      */
     private final Map<Class<?>, MessagePayloadSerializer<?>> payloadTypeToSerializer = new ConcurrentHashMap<Class<?>, MessagePayloadSerializer<?>>();
+
+    /**
+     * @see #setConsumers(MessageConsumer[])
+     */
+    private MessageConsumer<?>[] consumers;
 
     /**
      * @param activeObjects
@@ -65,57 +67,96 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         }
     }
 
-    // ==========================================
-    // ===== End of: Injected dependencies
-    // ==========================================
-
     /**
      * @param consumers
      *            injected {@link MessageConsumer}-s dependencies
      */
-    @SuppressWarnings("unchecked")
     public void setConsumers(MessageConsumer<?>[] consumers)
+    {
+        this.consumers = consumers;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public void afterPropertiesSet() throws Exception
     {
         for (MessageConsumer<?> consumer : consumers)
         {
-            MessageKeyRouter<MessageKey<Object>, Object> consumersByKey;
-            synchronized (this.messageRouters)
+            MessagePayloadSerializer<?> payloadSerializer = payloadTypeToSerializer.get(consumer.getKey().getPayloadType());
+
+            MessageKeyRouter<Object> consumersByKey;
+            synchronized (this.keyToMessageRouter)
             {
-                consumersByKey = (MessageKeyRouter<MessageKey<Object>, Object>) this.messageRouters.get(consumer.getKey());
+                consumersByKey = (MessageKeyRouter<Object>) this.keyToMessageRouter.get(consumer.getKey());
                 if (consumersByKey == null)
                 {
-                    this.messageRouters.put((MessageKey<Object>) consumer.getKey(),
-                            consumersByKey = new MessageKeyRouter<MessageKey<Object>, Object>(consumer.getKey()));
+                    this.keyToMessageRouter.put((MessageKey<Object>) consumer.getKey(), consumersByKey = new MessageKeyRouter<Object>( //
+                            activeObjects, //
+                            (MessageKey<Object>) consumer.getKey(), //
+                            (MessagePayloadSerializer<Object>) payloadSerializer));
                 }
             }
 
-            MessagePayloadSerializer<?> serializer = payloadTypeToSerializer.get(consumer.getKey().getPayloadType());
-            if (serializer == null)
+            if (payloadSerializer == null)
             {
                 throw new RuntimeException("Unable to find appropriate serializer for provided payload type: "
                         + consumer.getKey().getPayloadType());
             }
 
-            consumersByKey.addConsumer(new MessageConsumerRouter<MessageKey<Object>, Object>( //
+            consumersByKey.addConsumer(new MessageConsumerRouter<Object>( //
                     activeObjects, //
                     (MessageKey<Object>) consumer.getKey(), //
                     (MessageConsumer<Object>) consumer, //
-                    (MessagePayloadSerializer<Object>) serializer) //
+                    (MessagePayloadSerializer<Object>) payloadSerializer) //
                     );
         }
+
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public <K extends MessageKey<P>, P> void publish(K key, P payload, String... tags)
+    public <P> void publish(MessageKey<P> key, P payload, String... tags)
     {
         @SuppressWarnings("unchecked")
-        MessageKeyRouter<K, P> messageKeyRouter = (MessageKeyRouter<K, P>) messageRouters.get(key);
+        MessageKeyRouter<P> messageKeyRouter = (MessageKeyRouter<P>) keyToMessageRouter.get(key);
         if (messageKeyRouter != null)
         {
-            messageKeyRouter.route(new Message<K, P>(payload, tags));
+            messageKeyRouter.route(payload, tags);
+        }
+    }
+
+    /**
+     * @in
+     * @param consumer
+     * @param messageId
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public void ok(MessageConsumer<?> consumer, int messageId)
+    {
+        MessageKeyRouter<Object> messageKeyRouter = (MessageKeyRouter<Object>) keyToMessageRouter.get(consumer.getKey());
+        if (messageKeyRouter != null)
+        {
+            messageKeyRouter.ok((MessageConsumer<Object>) consumer, messageId);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public void fail(MessageConsumer<?> consumer, int messageId)
+    {
+        MessageKeyRouter<Object> messageKeyRouter = (MessageKeyRouter<Object>) keyToMessageRouter.get(consumer.getKey());
+        if (messageKeyRouter != null)
+        {
+            messageKeyRouter.fail((MessageConsumer<Object>) consumer, messageId);
         }
     }
 
@@ -125,8 +166,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @Override
     public <K extends MessageKey<?>> int getQueuedCount(K key, String tag)
     {
-        @SuppressWarnings("unchecked")
-        MessageKeyRouter<K, ?> messageKeyRouter = (MessageKeyRouter<K, ?>) messageRouters.get(key);
+        MessageKeyRouter<?> messageKeyRouter = (MessageKeyRouter<?>) keyToMessageRouter.get(key);
         if (messageKeyRouter != null)
         {
             return messageKeyRouter.getQueuedCount(tag);
@@ -177,7 +217,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @Override
     public void destroy() throws Exception
     {
-        for (MessageKeyRouter<?, ?> messagesRouter : messageRouters.values())
+        for (MessageKeyRouter<?> messagesRouter : keyToMessageRouter.values())
         {
             messagesRouter.stop();
         }

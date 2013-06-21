@@ -1,14 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-
 /**
  * Message which should be delivered.
  * 
  * @author Stanislav Dvorscak
  * 
  */
-final class Message<K, P>
+final class Message<P>
 {
+
+    /**
+     * @see #getId()
+     */
+    private final Integer id;
 
     /**
      * @see #getPayload()
@@ -23,15 +27,26 @@ final class Message<K, P>
     /**
      * Constructor.
      * 
+     * @param id
+     *            {@link #getId()}
      * @param payload
      *            {@link #getPayload()}
      * @param tags
      *            {@link #getTags()}
      */
-    public Message(P payload, String[] tags)
+    public Message(Integer id, P payload, String[] tags)
     {
+        this.id = id;
         this.payload = payload;
         this.tags = tags;
+    }
+
+    /**
+     * @return Identity of message.
+     */
+    public Integer getId()
+    {
+        return id;
     }
 
     /**

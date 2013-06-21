@@ -5,6 +5,8 @@ package com.atlassian.jira.plugins.dvcs.service.message;
  * 
  * @author Stanislav Dvorscak
  * 
+ * @param <K>
+ *            type of key
  * @param <P>
  *            type of payload
  */
@@ -19,9 +21,12 @@ public interface MessageConsumer<P>
     /**
      * Called when a payload.
      * 
+     * @param messageId
+     *            identity of message
      * @param payload
+     *            of message
      */
-    void onReceive(P payload);
+    void onReceive(int messageId, P payload);
 
     /**
      * @return key of messages which will be received

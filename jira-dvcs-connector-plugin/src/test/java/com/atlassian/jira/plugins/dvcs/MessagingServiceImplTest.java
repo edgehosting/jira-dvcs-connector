@@ -122,9 +122,10 @@ public class MessagingServiceImplTest
          * {@inheritDoc}
          */
         @Override
-        public void onReceive(Integer payload)
+        public void onReceive(int messageId, Integer payload)
         {
             sum += payload != null ? payload : 0;
+            testedObject.ok(this, messageId);
         }
 
         /**

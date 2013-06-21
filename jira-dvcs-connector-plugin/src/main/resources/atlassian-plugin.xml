@@ -262,6 +262,9 @@
     <component key="synchronizeChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageConsumer">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
     </component>
+    <component key="synchronizeChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageSerializer">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
 
     <issue-tabpanel key="dvcs-commits-tabpanel" name="Dvcs Changesets Tab Panel"
                     class="com.atlassian.jira.plugins.dvcs.webwork.DvcsTabPanel">

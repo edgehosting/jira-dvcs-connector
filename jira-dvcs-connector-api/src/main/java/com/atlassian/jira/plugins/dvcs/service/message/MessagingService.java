@@ -19,7 +19,27 @@ public interface MessagingService
      * @param tags
      *            of messages
      */
-    <K extends MessageKey<P>, P> void publish(K key, P payload, String... tags);
+    <P> void publish(MessageKey<P> key, P payload, String... tags);
+
+    /**
+     * Marks message specified by provided message id, as proceed successfully.
+     * 
+     * @param consumer
+     *            of message
+     * @param messageId
+     *            message for marking
+     */
+    void ok(MessageConsumer<?> consumer, int messageId);
+
+    /**
+     * Marks message specified by provided message id, as proceed successfully.
+     * 
+     * @param consumer
+     *            of message
+     * @param messageId
+     *            message for marking
+     */
+    void fail(MessageConsumer<?> consumer, int messageId);
 
     /**
      * Returns count of queued messages with provided publication key and marked by provided tag.

@@ -1,5 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -10,11 +15,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageConsumerMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
@@ -27,7 +34,7 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
  * @param <P>
  *            type of message
  */
-final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnable
+final class MessageConsumerRouter<P> implements Runnable
 {
 
     /**
@@ -73,7 +80,7 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
     /**
      * Holds messages determined for this consumer.
      */
-    private final BlockingQueue<Message<K, P>> messageQueue = new LinkedBlockingQueue<Message<K, P>>();
+    private final BlockingQueue<Message<P>> messageQueue = new LinkedBlockingQueue<Message<P>>();
 
     /**
      * News message available.
@@ -100,7 +107,16 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
                 MessageMapping[] founded;
                 synchronized (MESSAGE_TRIGGER)
                 {
-                    founded = activeObjects.find(MessageMapping.class);
+                    Query query = Query.select().from(MessageMapping.class).alias(MessageMapping.class, "message")
+                            //
+                            .join(MessageConsumerMapping.class, "message.ID = consumer." + MessageConsumerMapping.MESSAGE)
+                            .alias(MessageConsumerMapping.class, "consumer") //
+                            //
+                            .where( //
+                            "message." + MessageMapping.KEY + " = ? AND consumer." + MessageConsumerMapping.CONSUMER + " = ? ", //
+                            key.getId(), delegate.getId() //
+                            );
+                    founded = activeObjects.find(MessageMapping.class, query);
 
                     if (founded.length == 0)
                     {
@@ -127,7 +143,7 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
                     P payload = payloadSerializer.deserialize(foundedItem.getPayload());
                     try
                     {
-                        messageQueue.put(new Message<K, P>(payload, foundedItem.getTags()));
+                        messageQueue.put(new Message<P>(foundedItem.getID(), payload, foundedItem.getTags()));
                     } catch (InterruptedException e)
                     {
                         if (!stop)
@@ -148,7 +164,7 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
      * @param key
      *            key Key of messages for which this consumer listens.
      * @param delegate
-     *            for messages processing
+     *            #getDe
      * @param payloadSerializer
      *            serializer of {@link Message#getPayload()}
      */
@@ -169,10 +185,24 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
     }
 
     /**
-     * @param message
-     *            adds message which is determined for this queue
+     * @return delegate for messages processing
      */
-    public void route(final Message<K, P> message)
+    public MessageConsumer<P> getDelegate()
+    {
+        return delegate;
+    }
+
+    /**
+     * Routes provided message information.
+     * 
+     * @param messageId
+     *            identity of message
+     * @param payload
+     *            of message
+     * @param tags
+     *            of message
+     */
+    public void route(final int messageId, final P payload, final String... tags)
     {
 
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
@@ -181,16 +211,15 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
             @Override
             public Void doInTransaction()
             {
-                MessageMapping messageMapping = activeObjects.create(MessageMapping.class, //
-                        new DBParam(MessageMapping.KEY, key.getId()), //
-                        new DBParam(MessageMapping.PAYLOAD, payloadSerializer.serialize(message.getPayload())), //
-                        new DBParam(MessageMapping.CONSUMER, delegate.getId()) //
+                activeObjects.create(MessageConsumerMapping.class, //
+                        new DBParam(MessageConsumerMapping.MESSAGE, messageId), //
+                        new DBParam(MessageConsumerMapping.CONSUMER, delegate.getId()) //
                         );
 
-                for (String tag : message.getTags())
+                for (String tag : tags)
                 {
                     activeObjects.create(MessageTagMapping.class, //
-                            new DBParam(MessageTagMapping.MESSAGE, messageMapping.getID()), //
+                            new DBParam(MessageTagMapping.MESSAGE, messageId), //
                             new DBParam(MessageTagMapping.TAG, tag));
                 }
 
@@ -204,6 +233,73 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
         {
             MESSAGE_TRIGGER.notify();
         }
+    }
+
+    /**
+     * @see MessagingService#ok(MessageConsumer, int)
+     * @param messageId
+     */
+    public void ok(final int messageId)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+
+            @Override
+            public Void doInTransaction()
+            {
+                MessageMapping message = activeObjects.get(MessageMapping.class, messageId);
+                List<MessageConsumerMapping> consumers = new LinkedList<MessageConsumerMapping>(Arrays.asList(message.getConsumers()));
+                Iterator<MessageConsumerMapping> consumersIterator = consumers.iterator();
+
+                while (consumersIterator.hasNext())
+                {
+                    MessageConsumerMapping messageConsumer = consumersIterator.next();
+                    if (messageConsumer.getConsumer().equals(delegate.getId()))
+                    {
+                        activeObjects.delete(messageConsumer);
+                        consumersIterator.remove();
+                        break;
+                    }
+                }
+
+                if (consumers.isEmpty())
+                {
+                    activeObjects.delete(message);
+                }
+
+                return null;
+            }
+
+        });
+    }
+
+    /**
+     * @see MessagingService#fail(MessageConsumer, int)
+     * @param messageId
+     */
+    public void fail(final int messageId)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+
+            @Override
+            public Void doInTransaction()
+            {
+                MessageMapping message = activeObjects.get(MessageMapping.class, messageId);
+                for (MessageConsumerMapping messageConsumer : message.getConsumers())
+                {
+                    if (messageConsumer.getConsumer().equals(delegate.getId()))
+                    {
+                        messageConsumer.setLastFailed(new Date());
+                        messageConsumer.setWaitForRetry(true);
+                        break;
+                    }
+                }
+
+                return null;
+            }
+
+        });
     }
 
     /**
@@ -242,10 +338,14 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
      */
     public int getQueuedCount(String tag)
     {
-        Query query = Query.select().from(MessageMapping.class).where( //
-                MessageMapping.KEY + " = ? AND " + MessageMapping.CONSUMER + " = ? ", //
-                key.getId(), //
-                delegate.getId() //
+        Query query = Query.select().from(MessageMapping.class).alias(MessageMapping.class, "message")
+                //
+                .join(MessageConsumerMapping.class, "message.ID = consumer." + MessageConsumerMapping.MESSAGE)
+                .alias(MessageConsumerMapping.class, "consumer") //
+                //
+                .where( //
+                "message." + MessageMapping.KEY + " = ? AND consumer." + MessageConsumerMapping.CONSUMER + " = ? ", //
+                key.getId(), delegate.getId() //
                 );
         return activeObjects.count(MessageMapping.class, query);
     }
@@ -258,11 +358,11 @@ final class MessageConsumerRouter<K extends MessageKey<P>, P> implements Runnabl
     {
         while (!stop)
         {
-            Message<K, P> message = null;
+            Message<P> message = null;
             try
             {
                 message = messageQueue.take();
-                delegate.onReceive(message.getPayload());
+                delegate.onReceive(message.getId(), message.getPayload());
 
             } catch (InterruptedException e)
             {
