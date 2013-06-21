@@ -168,6 +168,15 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     {
         return delegate.getRepositories(organization);
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<BranchTip> getBranches(Repository repository)
+    {
+        return delegate.getBranches(repository);
+    }
 
     @Override
     public Changeset getChangeset(Repository repository, String node)
@@ -229,9 +238,4 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         return delegate.getTokenOwner(organization);
     }
     
-    @Override
-    public void synchronize(Repository repository)
-    {
-        delegate.synchronize(repository);
-    }
 }

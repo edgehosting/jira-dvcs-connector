@@ -88,13 +88,7 @@ public class GithubCommunicatorTest
     {
         MockitoAnnotations.initMocks(this);
 
-        GithubCommunicator githubCommunicator = new GithubCommunicator();
-        githubCommunicator.setChangesetCache(changesetCache = new ChangesetCacheImpl());
-        githubCommunicator.setoAuthStore(mock(OAuthStore.class));
-        githubCommunicator.setGithubClientProvider(githubClientProvider);
-        githubCommunicator.setMessagingService(messagingService);
-        this.communicator = githubCommunicator;
-        
+        communicator = new GithubCommunicator(changesetCache = new ChangesetCacheImpl(), mock(OAuthStore.class), githubClientProvider);
         when(githubClientProvider.getRepositoryService(repositoryMock)).thenReturn(repositoryService);
         when(githubClientProvider.getUserService(repositoryMock)).thenReturn(userService);
         when(githubClientProvider.getCommitService(repositoryMock)).thenReturn(commitService);

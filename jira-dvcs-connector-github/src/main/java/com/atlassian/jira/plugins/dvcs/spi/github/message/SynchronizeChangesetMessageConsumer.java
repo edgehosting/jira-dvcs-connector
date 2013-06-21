@@ -118,8 +118,7 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
         try
         {
             Changeset fromDB = changesetService.getByNode(payload.getRepository().getId(), payload.getNode());
-            if (fromDB != null && //
-                    fromDB.getSynchronizedAt() != null && payload.getRefreshAfterSynchronizedAt().before(fromDB.getSynchronizedAt()))
+            if (fromDB != null)
             {
                 return;
             }

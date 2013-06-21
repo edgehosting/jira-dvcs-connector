@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -20,7 +19,6 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
@@ -213,7 +211,11 @@ public class BitbucketCommunicator implements DvcsCommunicator
         };
     }
 
-    private List<BranchTip> getBranches(Repository repository)
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<BranchTip> getBranches(Repository repository)
     {
         List<BranchTip> branchTips = new ArrayList<BranchTip>();
         BitbucketBranchesAndTags branchesAndTags = retrieveBranchesAndTags(repository);
@@ -433,16 +435,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
         String fullName = bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName();
         String avatar = bitbucketAccount.getAvatar();
         return new DvcsUser(username, fullName, null, avatar, organization.getHostUrl() + "/" + username);
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void synchronize(Repository repository)
-    {
-        // FIXME
-        throw new UnsupportedOperationException("Not yet implemented!");
     }
 
     /**
