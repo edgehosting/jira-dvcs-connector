@@ -49,7 +49,7 @@ public class ChangesetRemoteRestpoint
         String getChangesetDiffStatUrl = URLPathFormatter.format("/repositories/%s/%s/changesets/%s/diffstat", owner, slug, node);
 
         Map<String, String> parameters = null;
-        parameters = Collections.singletonMap("limit", "" + limit + 1);
+        parameters = Collections.singletonMap("limit", "" + (limit + 1));
 
         return requestor.get(getChangesetDiffStatUrl, parameters,
                 new ResponseCallback<List<BitbucketChangesetWithDiffstat>>()
