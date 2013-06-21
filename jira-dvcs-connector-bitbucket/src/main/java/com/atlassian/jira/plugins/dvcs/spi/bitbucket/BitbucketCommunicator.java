@@ -59,7 +59,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     private final BitbucketLinker bitbucketLinker;
     private final String pluginVersion;
-    private final BitbucketClientBuilder bitbucketClientBuilder;
+    private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
 
     private final ChangesetCache changesetCache;
 
@@ -72,11 +72,11 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * @param bitbucketAuthProviderFactory
      */
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
-            PluginAccessor pluginAccessor, BitbucketClientBuilder bitbucketClientBuilder,
+            PluginAccessor pluginAccessor, BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
             ChangesetCache changesetCache)
    {
         this.bitbucketLinker = bitbucketLinker;
-        this.bitbucketClientBuilder = bitbucketClientBuilder;
+        this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
         this.changesetCache = changesetCache;
         this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
     }
@@ -98,7 +98,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         try
         {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilder.noAuthClient(hostUrl).build();
+            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.noAuthClient(hostUrl).build();
 
             // just to call the rest
             remoteClient.getAccountRest().getUser(accountName);
@@ -117,7 +117,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         try
         {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forOrganization(organization).cached().build();
+            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forOrganization(organization).cached().build();
             List<BitbucketRepository> repositories = remoteClient.getRepositoriesRest().getAllRepositories(
                     organization.getName());
             return RepositoryTransformer.fromBitbucketRepositories(repositories);
@@ -154,7 +154,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             // get the changeset
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).build();
+            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
             BitbucketChangeset bitbucketChangeset = remoteClient.getChangesetsRest().getChangeset(repository.getOrgName(),
                             repository.getSlug(), node);
 
@@ -180,7 +180,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             // get the commit statistics for changeset
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).build();
+            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
             List<BitbucketChangesetWithDiffstat> changesetDiffStat = remoteClient.getChangesetsRest().getChangesetDiffStat(repository.getOrgName(),
                     repository.getSlug(), changeset.getNode(), Changeset.MAX_VISIBLE_FILES);
             // merge it all
@@ -263,7 +263,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         try
         {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).cached().build();
+            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
             // Using undocumented https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
             return remoteClient.getBranchesAndTagsRemoteRestpoint().getBranchesAndTags(repository.getOrgName(),repository.getSlug());
         } catch (BitbucketRequestException e)
@@ -285,8 +285,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         try
         {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).cached().build();
-            
+            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
+
             if (!hookDoesExist(repository, postCommitUrl, remoteClient)) {
 	            remoteClient.getServicesRest().addPOSTService(repository.getOrgName(), // owner
 	                    repository.getSlug(), postCommitUrl);
@@ -361,7 +361,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             bitbucketLinker.unlinkRepository(repository);
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).build();
+            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
             List<BitbucketServiceEnvelope> services = remoteClient.getServicesRest().getAllServices(
                     repository.getOrgName(), // owner
                     repository.getSlug());
@@ -411,7 +411,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getUser(Repository repository, String author)
     {
-        BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forRepository(repository).timeout(2000).build();
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).timeout(2000).build();
         BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getUser(author);
         String username = bitbucketAccount.getUsername();
         String fullName = bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName();
@@ -425,7 +425,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getTokenOwner(Organization organization)
     {
-        BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forOrganization(organization).build();
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forOrganization(organization).build();
         BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getCurrentUser();
         String username = bitbucketAccount.getUsername();
         String fullName = bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName();
@@ -441,7 +441,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         try
         {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forOrganization(organization).build();
+            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forOrganization(organization).build();
             List<BitbucketGroup> groups = remoteClient.getGroupsRest().getGroups(organization.getName()); // owner
 
             return GroupTransformer.fromBitbucketGroups(groups);
@@ -482,7 +482,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         try
         {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilder.forOrganization(organization).build();
+            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forOrganization(organization).build();
             for (String groupSlug : groupSlugs)
             {
                 log.debug("Going invite " + userEmail + " to group " + groupSlug + " of bitbucket organization "
