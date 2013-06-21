@@ -306,20 +306,22 @@ public class BitbucketCommunicatorTest
                     }));
             when(branchesAndTagsRemoteRestpoint.getBranchesAndTags(anyString(), anyString())).thenReturn(bitbucketBranchesAndTags);
 
-            when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyMapOf(String.class, String.class), Mockito.anyInt())).then(new Answer<Iterable<BitbucketNewChangeset>>() {
+            when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), Mockito.anyMapOf(String.class, String.class), Mockito.anyInt())).then(new Answer<Iterable<BitbucketNewChangeset>>() {
 
                 @Override
                 public Iterable<BitbucketNewChangeset> answer(InvocationOnMock invocation) throws Throwable
                 {
                     @SuppressWarnings("unchecked")
-                    List<String> excludes = (List<String>)invocation.getArguments()[2];
-                    return getIterable(excludes);
+                    List<String> includes = (List<String>)invocation.getArguments()[2];
+                    @SuppressWarnings("unchecked")
+                    List<String> excludes = (List<String>)invocation.getArguments()[3];
+                    return getIterable(includes, excludes);
                 }
 
             });
         }
 
-        public Iterable<BitbucketNewChangeset> getIterable(final List<String> excludes)
+        public Iterable<BitbucketNewChangeset> getIterable(final List<String> includes, final List<String> excludes)
         {
             return new Iterable<BitbucketNewChangeset>()
             {
@@ -327,7 +329,7 @@ public class BitbucketCommunicatorTest
                 @Override
                 public Iterator<BitbucketNewChangeset> iterator()
                 {
-                    return Iterators.transform(Graph.this.iterator(excludes), new Function<String, BitbucketNewChangeset>()
+                    return Iterators.transform(Graph.this.iterator(includes, excludes), new Function<String, BitbucketNewChangeset>()
                     {
                         @Override
                         public BitbucketNewChangeset apply(String input)
@@ -346,7 +348,8 @@ public class BitbucketCommunicatorTest
                 }
             };
         }
-        private Iterator<String> iterator(final Collection<String> exclude)
+
+        private Iterator<String> iterator(final Collection<String> include, final Collection<String> exclude)
         {
             Iterator<String> iterator = new AbstractIterator<String>()
             {
@@ -357,7 +360,19 @@ public class BitbucketCommunicatorTest
 
                 {
                     excludeNodes(exclude);
-                    for (String node : heads.values())
+
+                    if (include == null || include.isEmpty())
+                    {
+                        includeNodes(heads.values());
+                    } else
+                    {
+                        includeNodes(include);
+                    }
+                }
+
+                private void includeNodes(Collection<String> nodes)
+                {
+                    for (String node : nodes)
                     {
                         if (!excludeNodes.contains(node))
                         {

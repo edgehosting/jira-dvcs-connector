@@ -23,6 +23,7 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
     private final int pageLength;
     private final String owner;
     private final String slug;
+    private final List<String> includeNodes;
     private final List<String> excludeNodes;
     private BitbucketChangesetPage currentPage = null;
     private final Map<String,String> changesetBranch;
@@ -30,11 +31,12 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
     // services
     private final RemoteRequestor requestor;
 
-    public BitbucketChangesetIterator(RemoteRequestor requestor, String owner, String slug, List<String> excludeNodes, Map<String,String> changesetBranch, int pageLength)
+    public BitbucketChangesetIterator(RemoteRequestor requestor, String owner, String slug, List<String> includeNodes, List<String> excludeNodes, Map<String,String> changesetBranch, int pageLength)
     {
         this.requestor = requestor;
         this.owner = owner;
         this.slug = slug;
+        this.includeNodes = includeNodes;
         this.excludeNodes = excludeNodes;
         this.pageLength = pageLength;
         this.changesetBranch = changesetBranch;
@@ -63,6 +65,10 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
             url = createUrl();
 
             parameters = new HashMap<String, List<String>>();
+            if (includeNodes != null)
+            {
+                parameters.put("include", new ArrayList<String>(includeNodes));
+            }
             if (excludeNodes != null)
             {
                 parameters.put("exclude", new ArrayList<String>(excludeNodes));

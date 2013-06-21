@@ -208,12 +208,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             //remote branch head list
-            List<BranchHead> branchHeads = getBranchHeads(repository);
+            List<BranchHead> newBranchHeads = getBranchHeads(repository);
             //local branch head list
             List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repository, softSync);
 
             Map<String, String> changesetBranch = new HashMap<String, String>();
-            for (BranchHead branchHead : branchHeads)
+            for (BranchHead branchHead : newBranchHeads)
             {
                 changesetBranch.put(branchHead.getHead(), branchHead.getName());
             }
@@ -222,9 +222,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
             Iterable<BitbucketNewChangeset> bitbucketChangesets =
                     remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
                                                                    repository.getSlug(),
-                                                                   extractBranchHeads(oldBranchHeads), changesetBranch, 50);
+                                                                   extractBranchHeads(newBranchHeads),
+                                                                   extractBranchHeads(oldBranchHeads),
+                                                                   changesetBranch,
+                                                                   50);
 
-            branchService.updateBranchHeads(repository, branchHeads, oldBranchHeads);
+            branchService.updateBranchHeads(repository, newBranchHeads, oldBranchHeads);
 
             return new NewChangesetIterableAdapter(repository, bitbucketChangesets);
         }
