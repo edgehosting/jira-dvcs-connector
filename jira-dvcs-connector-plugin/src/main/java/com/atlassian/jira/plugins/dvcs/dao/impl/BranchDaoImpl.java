@@ -21,19 +21,19 @@ import com.google.common.collect.Lists;
 public class BranchDaoImpl implements BranchDao
 {
     private static final Logger log = LoggerFactory.getLogger(BranchDaoImpl.class);
-    
+
     private final ActiveObjects activeObjects;
-    
+
     public BranchDaoImpl(ActiveObjects activeObjects)
     {
         this.activeObjects = activeObjects;
     }
-    
+
     @Override
     public List<BranchHead> getBranchHeads(int repositoryId)
     {
         BranchHeadMapping[] result = activeObjects.find(BranchHeadMapping.class, Query.select().where(BranchHeadMapping.REPOSITORY_ID + " = ?", repositoryId));
-        
+
         return Lists.transform(Arrays.asList(result), new Function<BranchHeadMapping, BranchHead>()
         {
             @Override
@@ -45,27 +45,20 @@ public class BranchDaoImpl implements BranchDao
     }
 
     @Override
-    public void saveBranchHeadIfNeeded(final int repositoryId, final BranchHead branch)
+    public void createBranchHead(final int repositoryId, final BranchHead branchHead)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
             @Override
             public Void doInTransaction()
             {
-                BranchHeadMapping[] result = activeObjects.find(BranchHeadMapping.class,
-                        Query.select().where(BranchHeadMapping.REPOSITORY_ID + " = ? AND "
-                                + BranchHeadMapping.BRANCH_NAME + " = ? AND "
-                                + BranchHeadMapping.HEAD + " = ?", repositoryId, branch.getName(), branch.getHead()));
-                if (result.length == 0)
-                {
-                    final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
-                    map.put(BranchHeadMapping.REPOSITORY_ID, repositoryId);
-                    map.put(BranchHeadMapping.BRANCH_NAME, branch.getName());
-                    map.put(BranchHeadMapping.HEAD, branch.getHead());
-                    
-                    activeObjects.create(BranchHeadMapping.class, map);
-                }
-                
+                final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
+                map.put(BranchHeadMapping.REPOSITORY_ID, repositoryId);
+                map.put(BranchHeadMapping.BRANCH_NAME, branchHead.getName());
+                map.put(BranchHeadMapping.HEAD, branchHead.getHead());
+
+                activeObjects.create(BranchHeadMapping.class, map);
+
                 return null;
             }
         });
@@ -86,7 +79,7 @@ public class BranchDaoImpl implements BranchDao
             }
         });
     }
-    
+
     @Override
     public void removeAllBranchHeadsInRepository(final int repositoryId)
     {

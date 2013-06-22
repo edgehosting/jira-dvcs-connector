@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -102,12 +104,10 @@ public class BitbucketCommunicatorTest
         private final ArrayListMultimap<Integer, BranchHead> heads = ArrayListMultimap.create();
 
         @Override
-        public void saveBranchHeadIfNeeded(int repositoryId, BranchHead branch)
+        public void createBranchHead(int repositoryId, BranchHead branch)
         {
-            if (!heads.containsEntry(repositoryId, branch))
-            {
-                heads.put(repositoryId, branch);
-            }
+            Assert.assertFalse(String.format("BranchHead %d must not exist for repository %s", repositoryId, branch), heads.containsEntry(repositoryId, branch));
+            heads.put(repositoryId, branch);
         }
 
         @Override
@@ -339,7 +339,7 @@ public class BitbucketCommunicatorTest
                             changeset.setParents(Collections.<BitbucketNewChangeset>emptyList());
 
                             Data changesetData = data.get(input);
-//                            changeset.setBranch(changesetData.branch);
+                            changeset.setBranch(changesetData.branch);
                             changeset.setDate(changesetData.date);
                             return changeset;
                         }
@@ -533,7 +533,7 @@ public class BitbucketCommunicatorTest
             processedNodes.add(changeset.getNode());
         }
 
-        assertThat(processedNodes).containsAll(graph.getNodes()).doesNotHaveDuplicates().hasSameSizeAs(graph.getNodes());
-        assertThat(((BranchDaoMock)branchDao).getHeads(repositoryMock.getId())).containsAll(graph.getHeads()).doesNotHaveDuplicates().hasSameSizeAs(graph.getHeads());
+        assertThat(processedNodes).as("Incorrect synchronization").containsAll(graph.getNodes()).doesNotHaveDuplicates().hasSameSizeAs(graph.getNodes());
+        assertThat(((BranchDaoMock)branchDao).getHeads(repositoryMock.getId())).as("BranchHeads are incorrectly saved").containsAll(graph.getHeads()).doesNotHaveDuplicates().hasSameSizeAs(graph.getHeads());
     }
 }

@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
 import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 
 /**
@@ -9,23 +10,23 @@ import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 public interface BranchDao
 {
     /**
-     * Saves list of branch head for given repository
-     * 
+     * Saves new branch head for given repository
+     *
      * @param repositoryId
-     * @param branch
+     * @param branchHead
      */
-    void saveBranchHeadIfNeeded(int repositoryId, BranchHead branch);
-    
+    void createBranchHead(int repositoryId, BranchHead branchHead);
+
     /**
      * Returns list of branch heads for repository
-     * 
+     *
      * @param repositoryId
      */
     List<BranchHead> getBranchHeads(int repositoryId);
 
     /**
      * Removes branch head for given repository
-     * 
+     *
      * @param repositoryId
      * @param branchHead
      */
@@ -33,7 +34,7 @@ public interface BranchDao
 
     /**
      * Removes branch heads for given repository
-     * 
+     *
      * @param repositoryId
      */
     void removeAllBranchHeadsInRepository(int repositoryId);
