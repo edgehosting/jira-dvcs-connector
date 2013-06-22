@@ -46,8 +46,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTran
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 /**
  * The Class BitbucketCommunicator.
@@ -214,8 +212,16 @@ public class BitbucketCommunicator implements DvcsCommunicator
             List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repository, softSync);
 
             Iterable<Changeset> result = null;
+
+            List<String> includeNodes = extractBranchHeads(newBranchHeads);
+            List<String> excludeNodes = extractBranchHeads(oldBranchHeads);
+            if (includeNodes != null && excludeNodes != null)
+            {
+                includeNodes.removeAll(excludeNodes);
+            }
+
             // Do we have new heads?
-            if (!oldBranchHeads.containsAll(newBranchHeads))
+            if (includeNodes == null || !includeNodes.isEmpty())
             {
                 Map<String, String> changesetBranch = new HashMap<String, String>();
                 for (BranchHead branchHead : newBranchHeads)
@@ -227,8 +233,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 Iterable<BitbucketNewChangeset> bitbucketChangesets =
                         remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
                                                                        repository.getSlug(),
-                                                                       extractBranchHeads(newBranchHeads),
-                                                                       extractBranchHeads(oldBranchHeads),
+                                                                       includeNodes,
+                                                                       excludeNodes,
                                                                        changesetBranch,
                                                                        50);
 
@@ -248,21 +254,20 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
-    private List<String> extractBranchHeads(List<BranchHead> branches)
+    private List<String> extractBranchHeads(List<BranchHead> branchHeads)
     {
-        if (branches == null)
+        if (branchHeads == null)
         {
             return null;
         }
 
-        return Lists.transform(branches, new Function<BranchHead, String>()
+        List<String> result = new ArrayList<String>();
+        for (BranchHead branchHead : branchHeads)
         {
-            @Override
-            public String apply(BranchHead input)
-            {
-                return input.getHead();
-            }
-        });
+            result.add(branchHead.getHead());
+        }
+
+        return result;
     }
 
     private List<BranchHead> getBranchHeads(Repository repository)
