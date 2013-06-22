@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -212,24 +213,33 @@ public class BitbucketCommunicator implements DvcsCommunicator
             //local branch head list
             List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repository, softSync);
 
-            Map<String, String> changesetBranch = new HashMap<String, String>();
-            for (BranchHead branchHead : newBranchHeads)
+            Iterable<Changeset> result = null;
+            // Do we have new heads?
+            if (!oldBranchHeads.containsAll(newBranchHeads))
             {
-                changesetBranch.put(branchHead.getHead(), branchHead.getName());
+                Map<String, String> changesetBranch = new HashMap<String, String>();
+                for (BranchHead branchHead : newBranchHeads)
+                {
+                    changesetBranch.put(branchHead.getHead(), branchHead.getName());
+                }
+
+                BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
+                Iterable<BitbucketNewChangeset> bitbucketChangesets =
+                        remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
+                                                                       repository.getSlug(),
+                                                                       extractBranchHeads(newBranchHeads),
+                                                                       extractBranchHeads(oldBranchHeads),
+                                                                       changesetBranch,
+                                                                       50);
+
+                result = new NewChangesetIterableAdapter(repository, bitbucketChangesets);
+            } else
+            {
+                result = Collections.emptyList();
             }
 
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
-            Iterable<BitbucketNewChangeset> bitbucketChangesets =
-                    remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
-                                                                   repository.getSlug(),
-                                                                   extractBranchHeads(newBranchHeads),
-                                                                   extractBranchHeads(oldBranchHeads),
-                                                                   changesetBranch,
-                                                                   50);
-
             branchService.updateBranchHeads(repository, newBranchHeads, oldBranchHeads);
-
-            return new NewChangesetIterableAdapter(repository, bitbucketChangesets);
+            return result;
         }
         catch (BitbucketRequestException e)
         {
