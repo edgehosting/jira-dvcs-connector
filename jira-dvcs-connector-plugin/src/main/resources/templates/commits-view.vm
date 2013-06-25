@@ -110,9 +110,17 @@
                                 <!--  -->
                             #end
                             #if ( $changeset.getAllFileCount() gt $max_visible_files )
-                                #set ( $rest = $changeset.getAllFileCount() - $max_visible_files )
                                 <a href="$commit_url" target="_blank">
-                                    <div class="CommitRows">... $rest more files not shown</div>
+                                    <div class="CommitRows">... see more changes 
+									#set ($dvcstype = $repository.getDvcsType())  
+									#if ($dvcstype == "bitbucket")
+                                		in Bitbucket
+                                    #elseif ($dvcstype == "github")
+                                		in GitHub
+                                	#elseif ($dvcdtype == "githube")
+                                		in GitHub Enterprise
+                                	#end
+									</div>
                                 </a>
                             #end
                         </div>
