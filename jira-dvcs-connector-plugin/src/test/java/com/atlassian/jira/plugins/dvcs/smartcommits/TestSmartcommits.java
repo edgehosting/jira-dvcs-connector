@@ -22,6 +22,7 @@ import org.testng.annotations.Test;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
@@ -41,6 +42,8 @@ public final class TestSmartcommits
     @Mock
     private ChangesetService changesetServiceMock;
 
+    @Mock
+    private BranchService branchServiceMock;
 
     @Mock
     private SmartcommitsChangesetsProcessor changesetsProcessorMock;
@@ -73,11 +76,11 @@ public final class TestSmartcommits
     {
         when(repositoryMock.isSmartcommitsEnabled()).thenReturn(Boolean.TRUE);
 
-		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(true))).thenReturn(
+		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(
 				Arrays.asList(changesetWithJIRAIssue(), changesetWithoutJIRAIssue()));
 
 		SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
-                mock(RepositoryService.class), changesetServiceMock, true); // soft sync
+                mock(RepositoryService.class), changesetServiceMock, branchServiceMock, true); // soft sync
 
         Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
         synchronizer.synchronize(repositoryMock, synchronisationOperation, changesetServiceMock);
@@ -98,11 +101,11 @@ public final class TestSmartcommits
         when(repositoryMock.isSmartcommitsEnabled()).thenReturn(Boolean.FALSE);
 
         changesetServiceMock = mock(ChangesetService.class);
-		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock), eq(true))).thenReturn(
+		when(changesetServiceMock.getChangesetsFromDvcs(eq(repositoryMock))).thenReturn(
 				Arrays.asList(changesetWithJIRAIssue(), changesetWithoutJIRAIssue()));
 
         SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
-                mock(RepositoryService.class), changesetServiceMock, true); // soft sync
+                mock(RepositoryService.class), changesetServiceMock, branchServiceMock, true); // soft sync
 
         Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
         synchronizer.synchronize(repositoryMock, synchronisationOperation, changesetServiceMock);

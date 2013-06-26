@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
-import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -69,8 +68,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     /** The changeset service. */
     private final ChangesetService changesetService;
 
-    /** Branch dao */
-    private final BranchDao branchDao;
+    /** The branch service. */
+    private final BranchService branchService;
 
     /** The application properties. */
     private final ApplicationProperties applicationProperties;
@@ -91,12 +90,12 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      * @param applicationProperties
      *            the application properties
      */
-    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, BranchDao branchDao, Synchronizer synchronizer,
-                                 ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
+    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
+                                 ChangesetService changesetService, BranchService branchService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
-        this.branchDao = branchDao;
+        this.branchService = branchService;
         this.synchronizer = synchronizer;
         this.changesetService = changesetService;
         this.applicationProperties = applicationProperties;
@@ -416,7 +415,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         if (repository.isLinked())
         {
             DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
-                    communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService,
+                    communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService, branchService,
                     softSync);
             synchronizer.synchronize(repository, synchronisationOperation, changesetService);
         }
@@ -594,7 +593,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         // remove progress
         synchronizer.removeProgress(repository);
         // delete branch heads saved for repository
-        branchDao.removeAllBranchHeadsInRepository(repository.getId());
+        branchService.removeAllBranchHeadsInRepository(repository.getId());
         // delete repository record itself
         repositoryDao.remove(repository.getId());
     }

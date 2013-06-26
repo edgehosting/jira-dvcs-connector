@@ -202,14 +202,14 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public Iterable<Changeset> getChangesets(final Repository repository, boolean softSync)
+    public Iterable<Changeset> getChangesets(final Repository repository)
     {
         try
         {
             //remote branch head list
             List<BranchHead> newBranchHeads = getBranchHeads(repository);
             //local branch head list
-            List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repository, softSync);
+            List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repository);
 
             Iterable<Changeset> result = null;
 

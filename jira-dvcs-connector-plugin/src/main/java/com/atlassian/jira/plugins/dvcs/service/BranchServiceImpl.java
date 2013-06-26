@@ -17,17 +17,16 @@ public class BranchServiceImpl implements BranchService
     }
 
     @Override
-    public List<BranchHead> getListOfBranchHeads(Repository repository, boolean softSync)
+    public void removeAllBranchHeadsInRepository(int repositoryId)
+    {
+        branchDao.removeAllBranchHeadsInRepository(repositoryId);
+    }
+
+    @Override
+    public List<BranchHead> getListOfBranchHeads(Repository repository)
     {
         List<BranchHead> branchHeads = null;
-
-        if (softSync)
-        {
-            branchHeads = branchDao.getBranchHeads(repository.getId());
-        } else
-        {
-            branchDao.removeAllBranchHeadsInRepository(repository.getId());
-        }
+        branchHeads = branchDao.getBranchHeads(repository.getId());
         return branchHeads;
     }
 

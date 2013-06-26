@@ -246,7 +246,7 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(final Repository repository, boolean softSync)
+    public Iterable<Changeset> getChangesets(final Repository repository)
     {
         return new Iterable<Changeset>()
         {
@@ -269,7 +269,7 @@ public class GithubCommunicator implements DvcsCommunicator
 	    if (hooksForRepo.containsKey(postCommitUrl)) {
 	    	return;
 	    }
-        
+
         final RepositoryHook repositoryHook = new RepositoryHook();
         repositoryHook.setName("web");
         repositoryHook.setActive(true);
@@ -306,7 +306,7 @@ public class GithubCommunicator implements DvcsCommunicator
         	return Collections.EMPTY_MAP;
         }
     }
-    
+
     @Override
     public void removePostcommitHook(Repository repository, String postCommitUrl)
     {
@@ -390,7 +390,7 @@ public class GithubCommunicator implements DvcsCommunicator
             throw new RuntimeException(e);
         }
     }
-    
+
     private List<BranchHead> getBranches(Repository repository)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);

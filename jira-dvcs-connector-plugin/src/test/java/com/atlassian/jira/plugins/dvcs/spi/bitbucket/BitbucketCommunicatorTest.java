@@ -527,7 +527,12 @@ public class BitbucketCommunicatorTest
 
     private void checkSynchronization(Graph graph, List<String> processedNodes, boolean softSync)
     {
-        for ( Changeset changeset : communicator.getChangesets(repositoryMock, softSync) )
+        if (!softSync)
+        {
+            branchService.removeAllBranchHeadsInRepository(repositoryMock.getId());
+        }
+
+        for ( Changeset changeset : communicator.getChangesets(repositoryMock) )
         {
             assertThat(processedNodes).doesNotContain(changeset.getNode());
             processedNodes.add(changeset.getNode());

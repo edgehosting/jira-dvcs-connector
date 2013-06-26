@@ -1,20 +1,22 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
@@ -24,17 +26,19 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     private final RepositoryService repositoryService;
     private final DefaultProgress progress;
     private final ChangesetService changesetService;
+    private final BranchService branchService;
     private final boolean softSync;
 
     private final DvcsCommunicator communicator;
 
-    public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository, RepositoryService repositoryService, ChangesetService changesetService,
+    public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository, RepositoryService repositoryService, ChangesetService changesetService, BranchService branchService,
             boolean softSync)
     {
         this.communicator = communicator;
         this.repository = repository;
         this.repositoryService = repositoryService;
         this.changesetService = changesetService;
+        this.branchService = branchService;
         this.progress = new DefaultProgress();
         this.softSync = softSync;
     }
@@ -47,14 +51,15 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         {
             return;
         }
-        
+
     	log.debug("Operation going to sync repo " + repository.getSlug() + " softs sync = " + softSync );
-    	
-    	if (!softSync) 
+
+    	if (!softSync)
         {
             // we are doing full sync, lets delete all existing changesets
             // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
             changesetService.removeAllInRepository(repository.getId());
+            branchService.removeAllBranchHeadsInRepository(repository.getId());
             repository.setLastCommitDate(null);
             repositoryService.save(repository);
         }
@@ -62,7 +67,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         int changesetCount = 0;
         int jiraCount = 0;
 
-        Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository, softSync);
+        Iterable<Changeset> allOrLatestChangesets = changesetService.getChangesetsFromDvcs(repository);
 
         Set<String> foundProjectKeys = new HashSet<String>();
 
@@ -72,12 +77,12 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         	{
         		return;
         	}
-        	
+
         	if (changeset == null)
         	{
         	    continue;
         	}
-        	
+
             if (repository.getLastCommitDate() == null || repository.getLastCommitDate().before(changeset.getDate()))
             {
                 repository.setLastCommitDate(changeset.getDate());
@@ -100,7 +105,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
             // get detail changeset because in this response is not information about files
             Changeset detailChangeset = null;
-            
+
             try
             {
                 if (CollectionUtils.isNotEmpty(extractedIssues))
@@ -149,7 +154,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
         setupNewLinkers(foundProjectKeys);
     }
-    
+
     private void setupNewLinkers(Set<String> extractedProjectKeys)
     {
         if (!extractedProjectKeys.isEmpty())
