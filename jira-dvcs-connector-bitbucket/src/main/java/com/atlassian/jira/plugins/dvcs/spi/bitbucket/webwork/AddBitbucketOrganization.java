@@ -206,7 +206,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public void setAdminPassword(String adminPassword)
     {
-        adminPassword = adminPassword;
+    	this.adminPassword = adminPassword;
     }
 
     public String getUrl()
@@ -216,7 +216,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public void setUrl(String url)
     {
-        url = url;
+        this.url = url;
     }
 
     public String getOrganization()
@@ -226,7 +226,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public void setOrganization(String organization)
     {
-        organization = organization;
+        this.organization = organization;
     }
 
     public String getAdminUsername()
@@ -236,7 +236,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public void setAdminUsername(String adminUsername)
     {
-        adminUsername = adminUsername;
+        this.adminUsername = adminUsername;
     }
 
 
@@ -247,7 +247,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public void setOauthBbClientId(String oauthBbClientId)
     {
-        oauthBbClientId = oauthBbClientId;
+        this.oauthBbClientId = oauthBbClientId;
     }
 
     public String getOauthBbSecret()
@@ -257,7 +257,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public void setOauthBbSecret(String oauthBbSecret)
     {
-        oauthBbSecret = oauthBbSecret;
+        this.oauthBbSecret = oauthBbSecret;
     }
 
 }
