@@ -22,19 +22,20 @@ public final class DetailedChangesetTransformer {
         if (diffstats!=null)
         {
             List<ChangesetFile> files = ChangesetFileTransformer.fromBitbucketChangesetsWithDiffstat(diffstats);
+            // if total modified files count is less than limited size, we use at least the actual limited size
+            // one case of this is when total files equal zero, because the value has not been gained from Bitbucket's commits endpoint
             if (changeset.getAllFileCount() < files.size())
             {
                 changeset.setAllFileCount(files.size());
             }
 
+            // if we downloaded more then MAX_VISIBLE_FILES, to find out, whether there are some, we cut the end of the list
             if (files.size() >= Changeset.MAX_VISIBLE_FILES)
             {
                 files.subList(Changeset.MAX_VISIBLE_FILES, files.size()).clear();
             }
 
-            //TODO commits-view.vm and activityentry-summary.vm to be fixed not displaying exact number of rest files
             changeset.setFiles(files);
-
         }
 
         return changeset;
