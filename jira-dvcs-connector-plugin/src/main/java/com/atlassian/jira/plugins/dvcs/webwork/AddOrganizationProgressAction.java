@@ -12,7 +12,8 @@ public class AddOrganizationProgressAction extends JiraWebActionSupport
 	private static final long serialVersionUID = -8035393686536929940L;
 	private ApplicationProperties ap;
 	private static Map<String, String> typeToRedirectUrls = new HashMap<String, String>();
-	static {
+	static 
+	{
 		typeToRedirectUrls.put("1", "AddBitbucketOrganization");
 		typeToRedirectUrls.put("2", "AddGithubOrganization");
 		typeToRedirectUrls.put("3", "AddGithubEnterpriseOrganization");
