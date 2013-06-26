@@ -66,6 +66,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 		String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddGithubEnterpriseOrganization",
 		        url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
+		// param "t" is holding information where to redirect from "wainting screen" (AddBitbucketOrganization, AddGithubOrganization ...)
 		return SystemUtils.getRedirect(this, githubAuthorizeUrl + urlEncode("&t=3"), true);
 	}
 

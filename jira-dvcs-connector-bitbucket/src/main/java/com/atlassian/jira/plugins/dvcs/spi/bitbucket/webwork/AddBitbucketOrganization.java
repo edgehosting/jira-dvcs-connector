@@ -90,6 +90,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     private OAuthService createOAuthScribeService()
 	{
+     // param "t" is holding information where to redirect from "wainting screen" (AddBitbucketOrganization, AddGithubOrganization ...)
 		String redirectBackUrl = ap.getBaseUrl()
 		        + "/secure/admin/AddOrganizationProgressAction!default.jspa?organization="
 		        + organization + "&autoLinking=" + getAutoLinking()
