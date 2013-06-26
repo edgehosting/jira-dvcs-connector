@@ -25,7 +25,7 @@ public class TwoLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequestor
 	}
 
 	@Override
-	protected String afterFinalUriConstructed(HttpRequestBase forMethod, String finalUri, Map<String, String> parameters)
+	protected String afterFinalUriConstructed(HttpRequestBase forMethod, String finalUri, Map<String, ? extends Object> parameters)
 	{
 	    long start = System.currentTimeMillis();
 		//

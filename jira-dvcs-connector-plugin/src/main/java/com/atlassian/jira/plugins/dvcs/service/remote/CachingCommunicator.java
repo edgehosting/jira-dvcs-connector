@@ -55,7 +55,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         }
 
     }
-    
+
     private class OrganisationKey
     {
         private final Organization organization;
@@ -72,7 +72,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
             OrganisationKey that = (OrganisationKey) obj;
             return new EqualsBuilder()
                     .append(organization.getHostUrl(), that.organization.getHostUrl())
-                    .append(organization.getName(), that.organization.getName())                
+                    .append(organization.getName(), that.organization.getName())
                     .isEquals();
         }
         @Override
@@ -90,7 +90,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
                 {
                     return delegate.getUser(key.repository, key.username);
                 }
-                
+
             });
 
     private final Map<OrganisationKey, List<Group>> groupsCache =
@@ -101,9 +101,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
                         {
                             return delegate.getGroupsForOrganization(key.organization);
                         }
-                        
+
                     });
-    
+
     public CachingCommunicator(DvcsCommunicator delegate)
     {
         this.delegate = delegate;
@@ -180,7 +180,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     {
         return delegate.getDetailChangeset(repository, changeset);
     }
-    
+
     @Override
     public Iterable<Changeset> getChangesets(Repository repository)
     {

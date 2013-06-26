@@ -16,8 +16,7 @@ Changes:<br>
 </ul>
 
  #if ( $changeset.getAllFileCount() gt $max_visible_files )
- #set ( $rest = $changeset.getAllFileCount() - $max_visible_files )
 	<a href="$commit_url" target="_blank" class="CommitRowsMore">
-		<div class="CommitRows">... $rest more files not shown</div>
+		<div class="CommitRows">... see more changes</div>
 	</a>
  #end

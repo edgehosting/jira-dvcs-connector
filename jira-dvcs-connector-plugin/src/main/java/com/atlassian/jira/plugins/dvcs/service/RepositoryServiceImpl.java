@@ -68,6 +68,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     /** The changeset service. */
     private final ChangesetService changesetService;
 
+    /** The branch service. */
+    private final BranchService branchService;
+
     /** The application properties. */
     private final ApplicationProperties applicationProperties;
 
@@ -88,10 +91,11 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      *            the application properties
      */
     public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
-                                 ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
+                                 ChangesetService changesetService, BranchService branchService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
+        this.branchService = branchService;
         this.synchronizer = synchronizer;
         this.changesetService = changesetService;
         this.applicationProperties = applicationProperties;
@@ -110,7 +114,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             log.error("Unable properly shutdown queued tasks.");
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -411,7 +415,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         if (repository.isLinked())
         {
             DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
-                    communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService,
+                    communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService, branchService,
                     softSync);
             synchronizer.synchronize(repository, synchronisationOperation, changesetService);
         }
@@ -588,6 +592,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         changesetService.removeAllInRepository(repository.getId());
         // remove progress
         synchronizer.removeProgress(repository);
+        // delete branch heads saved for repository
+        branchService.removeAllBranchHeadsInRepository(repository.getId());
         // delete repository record itself
         repositoryDao.remove(repository.getId());
     }

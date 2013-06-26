@@ -61,6 +61,7 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping</entity>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v2.To_04_ActiveObjectsV2Migrator</upgradeTask>
@@ -208,6 +209,12 @@
         <interface>com.atlassian.jira.plugins.dvcs.dao.ChangesetDao</interface>
     </component>
 
+	<component key="branchDao" name="branchDao"
+               class="com.atlassian.jira.plugins.dvcs.dao.impl.BranchDaoImpl">
+        <description>branchDao</description>
+        <interface>com.atlassian.jira.plugins.dvcs.dao.BranchDao</interface>
+    </component>
+
     <component key="organizationService" name="organizationService"
                class="com.atlassian.jira.plugins.dvcs.service.OrganizationServiceImpl">
         <description>organizationService</description>
@@ -230,6 +237,12 @@
                class="com.atlassian.jira.plugins.dvcs.service.ChangesetCacheImpl">
         <description>changesetCache</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetCache</interface>
+    </component>
+    
+    <component key="branchService" name="branchService"
+               class="com.atlassian.jira.plugins.dvcs.service.BranchServiceImpl">
+        <description>branchService</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.BranchService</interface>
     </component>
 
     <component key="bitbucketRemoteClientBuilderFactory" name="Bitbucket Remote Client Builder Factory"

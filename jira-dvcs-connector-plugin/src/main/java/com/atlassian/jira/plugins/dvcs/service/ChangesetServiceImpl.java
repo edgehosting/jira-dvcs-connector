@@ -1,5 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -10,13 +18,6 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.google.common.collect.Sets;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
@@ -62,7 +63,7 @@ public class ChangesetServiceImpl implements ChangesetService
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
         return communicator.getDetailChangeset(repository, changeset);
     }
-    
+
     @Override
     public List<Changeset> getByIssueKey(String issueKey)
     {
@@ -111,8 +112,8 @@ public class ChangesetServiceImpl implements ChangesetService
             public Object transform(Object input)
             {
                 Changeset changeset = (Changeset) input;
-                
-                return ChangesetServiceImpl.this.checkChangesetVersion(changeset);                
+
+                return ChangesetServiceImpl.this.checkChangesetVersion(changeset);
             }
         });
     }
@@ -164,6 +165,6 @@ public class ChangesetServiceImpl implements ChangesetService
     {
         return changesetDao.findReferencedProjects(repositoryId);
     }
-	
-	
+
+
 }

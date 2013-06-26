@@ -36,7 +36,7 @@ public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 	}
 
     @Override
-    protected void onConnectionCreated(HttpClient client, HttpRequestBase method, Map<String, String> params)
+    protected void onConnectionCreated(HttpClient client, HttpRequestBase method, Map<String, ? extends Object> params)
             throws IOException
     {
         UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
