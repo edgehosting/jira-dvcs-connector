@@ -30,11 +30,11 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
     @ElementBy(id = "oauthClientId")
     private PageElement oauthClientId;
-    
+
     @ElementBy(id = "oauthSecret")
     private PageElement oauthSecret;
-    
-    
+
+
     @Override
     public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autoSync)
     {
@@ -46,7 +46,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         oauthClientId.clear().type(oAuthCredentials.key);
         oauthSecret.clear().type(oAuthCredentials.secret);
-        
+
         setPageAsOld();
         if (!autoSync)
         {
@@ -61,7 +61,9 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         {
             throw new AssertionError("Expected was Valid OAuth login and redirect to JIRA!");
         }
-        
+
+        Poller.waitUntilTrue(linkRepositoryButton.timed().isPresent());
+
         if (autoSync)
         {
             JiraPageUtils.checkSyncProcessSuccess(jiraTestedProduct);
@@ -69,7 +71,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         return this;
     }
-    
+
     @Override
     public GithubConfigureOrganizationsPage addOrganizationFailingStep1(String url)
     {
@@ -99,7 +101,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         oauthClientId.clear().type("xx");
         oauthSecret.clear().type("yy");
-        
+
 
         setPageAsOld();
 
