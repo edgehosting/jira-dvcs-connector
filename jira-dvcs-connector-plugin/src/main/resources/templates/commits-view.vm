@@ -17,7 +17,7 @@
                 <div class="CommitingDate">$velocity_utils.getRelativePastDate($changeset.getDate())</div>
 
                 #if ($repositories.size() > 1)
-                    <button class="ForksDropDown aui-button aui-dropdown2-trigger" href="#fork-list-$changeset.getNode()-$changeset.getRepositoryId()" aria-owns="fork-list-$changeset.getNode()-$changeset.getRepositoryId()" aria-haspopup="true" aria-controls="fork-list-$changeset.getNode()-$changeset.getRepositoryId()">
+                    <button class="ForksDropDown aui-button aui-dropdown2-trigger" id="fork-drop-down-$changeset.getNode()" href="#fork-list-$changeset.getNode()-$changeset.getRepositoryId()" aria-owns="fork-list-$changeset.getNode()-$changeset.getRepositoryId()" aria-haspopup="true" aria-controls="fork-list-$changeset.getNode()-$changeset.getRepositoryId()">
                         <span class="icon fork">Fork icon</span>
                         <span>Forks</span>
                         <span class="aui-badge">$repositories.size()</span>
@@ -25,11 +25,14 @@
                     <div id="fork-list-$changeset.getNode()-$changeset.getRepositoryId()" class="aui-dropdown2 aui-style-default">
                         <ul class="aui-list-truncate-$changeset.getNode()-$changeset.getRepositoryId()">
                             #foreach ( $repository in $repositories )
-                                <li><a href="javascript:showChangesetByFork('$changeset.getNode()','$repository.getId()');">$repository.getOrgName()/$repository.getName()</a></li>
+                                <li><a class="aui-dropdown2-radio #if($repository == $repositories.get(0)) checked#end" href="javascript:showChangesetByFork('$changeset.getNode()','$repository.getId()', '$repository.getOrgName()/$repository.getName()', '$repository.getRepositoryUrl()');">$repository.getOrgName()/$repository.getName()</a></li>
                             #end
 
                         </ul>
                     </div>
+                    <script type="text/javascript">
+                        registerForksTooltip('$changeset.getNode()', '$repositories.get(0).getOrgName()/$repositories.get(0).getName()', '$repositories.get(0).getRepositoryUrl()');
+                    </script>
                 #end
 
             </div>
@@ -107,9 +110,17 @@
                                 <!--  -->
                             #end
                             #if ( $changeset.getAllFileCount() gt $max_visible_files )
-                                #set ( $rest = $changeset.getAllFileCount() - $max_visible_files )
                                 <a href="$commit_url" target="_blank">
-                                    <div class="CommitRows">... $rest more files not shown</div>
+                                    <div class="CommitRows">... see more changes 
+									#set ($dvcstype = $repository.getDvcsType())  
+									#if ($dvcstype == "bitbucket")
+                                		in Bitbucket
+                                    #elseif ($dvcstype == "github")
+                                		in GitHub
+                                	#elseif ($dvcdtype == "githube")
+                                		in GitHub Enterprise
+                                	#end
+									</div>
                                 </a>
                             #end
                         </div>

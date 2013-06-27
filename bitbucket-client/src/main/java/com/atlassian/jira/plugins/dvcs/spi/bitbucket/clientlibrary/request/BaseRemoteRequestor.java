@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,9 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("bitbucket.client.connection.timeout", 30000);
     private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("bitbucket.client.socket.timeout", 60000);
 
+    private int connectionTimeout = DEFAULT_CONNECT_TIMEOUT;
+    private int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
+
     protected final ApiProvider apiProvider;
     private final HttpClientProxyConfig proxyConfig;
 
@@ -70,6 +74,11 @@ public class BaseRemoteRequestor implements RemoteRequestor
         this.apiProvider = apiProvider;
         this.proxyConfig = new HttpClientProxyConfig();
         this.cached = apiProvider.isCached();
+        if (apiProvider.getTimeout() >= 0)
+        {
+            this.connectionTimeout = apiProvider.getTimeout();
+            this.socketTimeout = apiProvider.getTimeout();
+        }
     }
 
     @Override
@@ -85,7 +94,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     @Override
-    public  <T> T post(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
+    public  <T> T post(String uri, Map<String, ? extends Object> parameters, ResponseCallback<T> callback)
     {
         return postWithRetry(uri, parameters, callback);
     }
@@ -128,7 +137,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         });
     }
 
-    private <T> T postWithRetry(final String uri, final Map<String, String> parameters,
+    private <T> T postWithRetry(final String uri, final Map<String, ? extends Object> parameters,
             final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
@@ -162,7 +171,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     /**
      * E.g. append basic auth headers ...
      */
-    protected void onConnectionCreated(HttpClient client, HttpRequestBase method, Map<String, String> params)
+    protected void onConnectionCreated(HttpClient client, HttpRequestBase method, Map<String, ? extends Object> params)
             throws IOException
     {
 
@@ -171,7 +180,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     /**
      * E.g. append oauth params ...
      */
-    protected String afterFinalUriConstructed(HttpRequestBase method, String finalUri, Map<String, String> params)
+    protected String afterFinalUriConstructed(HttpRequestBase method, String finalUri, Map<String, ? extends Object> params)
     {
         return finalUri;
     }
@@ -180,12 +189,28 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // Helpers
     // --------------------------------------------------------------------------------------------------
 
-    protected void logRequest(HttpRequestBase method, String finalUrl, Map<String, String> params)
+    protected void logRequest(HttpRequestBase method, String finalUrl, Map<String, ? extends Object> params)
     {
-        log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, params, method.getAllHeaders() });
+        final StringBuilder sb = new StringBuilder("{");
+        processParams(params, new ParameterProcessor()
+        {
+            @Override
+            public void process(String key, String value)
+            {
+                if (sb.length() > 1)
+                {
+                    sb.append(",");
+                }
+                sb.append(key).append("=").append(value);
+            }
+        });
+
+        sb.append("}");
+
+        log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, sb.toString(), method.getAllHeaders() });
     }
 
-    private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, String> params, ResponseCallback<T> callback)
+    private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, ? extends Object> params, ResponseCallback<T> callback)
     {
         DefaultHttpClient client = new DefaultHttpClient();
         RemoteResponse response = null;
@@ -362,7 +387,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
     }
 
-    private void createConnection(HttpClient client, HttpRequestBase method, String uri, Map<String, String> params)
+    private void createConnection(HttpClient client, HttpRequestBase method, String uri, Map<String, ? extends Object> params)
             throws IOException, URISyntaxException
     {
         if (StringUtils.isNotBlank(apiProvider.getUserAgent()))
@@ -370,8 +395,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
             HttpProtocolParams.setUserAgent(client.getParams(), apiProvider.getUserAgent());
         }
 
-        HttpConnectionParams.setConnectionTimeout(client.getParams(), DEFAULT_CONNECT_TIMEOUT);
-        HttpConnectionParams.setSoTimeout(client.getParams(), DEFAULT_SOCKET_TIMEOUT);
+        HttpConnectionParams.setConnectionTimeout(client.getParams(), connectionTimeout);
+        HttpConnectionParams.setSoTimeout(client.getParams(), socketTimeout);
 
         String apiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
         proxyConfig.configureProxy(client, apiUrl + uri);
@@ -387,17 +412,57 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     }
 
-    private void setPayloadParams(HttpEntityEnclosingRequestBase method, Map<String, String> params) throws IOException
+    protected interface ParameterProcessor
+    {
+        void process(String key, String value);
+    }
+
+    private void setPayloadParams(HttpEntityEnclosingRequestBase method, Map<String, ? extends Object> params) throws IOException
     {
         if (params != null)
         {
-            List<NameValuePair> formparams = new ArrayList<NameValuePair>();
-            for (Entry<String, String> entry : params.entrySet())
+            final List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+            processParams(params, new ParameterProcessor()
             {
-                formparams.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
-            }
+                @Override
+                public void process(String key, String value)
+                {
+                    formparams.add(new BasicNameValuePair(key, value));
+                }
+
+            });
+
             UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, "UTF-8");
             method.setEntity(entity);
+        }
+    }
+
+    protected void processParams(Map<String, ? extends Object> params, ParameterProcessor processParameter)
+    {
+        if (params == null)
+        {
+            return;
+        }
+
+        for (Entry<String, ? extends Object> entry : params.entrySet())
+        {
+            Object value = entry.getValue();
+            if (value instanceof Collection)
+            {
+                for (Object v : (Collection<?>) value)
+                {
+                    if (v != null)
+                    {
+                        processParameter.process(entry.getKey(), v.toString());
+                    }
+                }
+            } else
+            {
+                if (value != null)
+                {
+                    processParameter.process(entry.getKey(), value.toString());
+                }
+            }
         }
     }
 

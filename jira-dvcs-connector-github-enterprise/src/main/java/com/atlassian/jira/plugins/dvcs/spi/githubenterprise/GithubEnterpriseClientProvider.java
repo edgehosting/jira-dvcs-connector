@@ -1,5 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.spi.githubenterprise;
 
+import static com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.URL;
+import java.util.Date;
+
+import org.eclipse.egit.github.core.client.DateFormatter;
+import org.eclipse.egit.github.core.client.EventFormatter;
+import org.eclipse.egit.github.core.event.Event;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientWithTimeout;
@@ -12,24 +30,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import org.eclipse.egit.github.core.client.DateFormatter;
-import org.eclipse.egit.github.core.client.EventFormatter;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.event.Event;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.net.URL;
-import java.util.Date;
-
-import static com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES;
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
 
 public class GithubEnterpriseClientProvider extends GithubClientProvider
 {
@@ -39,12 +39,12 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
     }
 
     @Override
-    public GitHubClient createClientInternal(String url, String userAgent)
+    public GithubClientWithTimeout createClientInternal(String url, String userAgent)
     {
         return createClientForGithubEnteprise(url, userAgent);
     }
 
-    public static GitHubClient createClientForGithubEnteprise(String url, String userAgent)
+    public static GithubClientWithTimeout createClientForGithubEnteprise(String url, String userAgent)
     {
         try
         {
@@ -56,7 +56,7 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
                 host = HOST_API;
             }
 
-            GitHubClient result = new GitHubEnterpriseClient(host, -1, urlObject.getProtocol());
+            GithubClientWithTimeout result = new GitHubEnterpriseClient(host, -1, urlObject.getProtocol());
             result.setUserAgent(userAgent);
             return result;
         } catch (IOException e)

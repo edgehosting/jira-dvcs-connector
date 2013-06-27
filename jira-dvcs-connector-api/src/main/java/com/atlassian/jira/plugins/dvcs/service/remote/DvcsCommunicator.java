@@ -16,7 +16,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
  */
 public interface DvcsCommunicator
 {
-    
+
     String getDvcsType();
 
     AccountInfo getAccountInfo(String hostUrl, String accountName);
@@ -24,7 +24,7 @@ public interface DvcsCommunicator
     List<Repository> getRepositories(Organization organization);
 
     Changeset getChangeset(Repository repository, String node);
-    
+
     Changeset getDetailChangeset(Repository repository, Changeset changeset);
 
     Iterable<Changeset> getChangesets(Repository repository);
@@ -32,7 +32,7 @@ public interface DvcsCommunicator
     void setupPostcommitHook(Repository repository, String postCommitUrl);
 
     void linkRepository(Repository repository, Set<String> withProjectkeys);
-    
+
     void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys);
 
     void removePostcommitHook(Repository repository, String postCommitUrl);
@@ -45,12 +45,12 @@ public interface DvcsCommunicator
 
     /**
      * Returns remote user who is owner of currently used accessToken
-     * 
+     *
      * @param organization
      * @return
      */
     DvcsUser getTokenOwner(Organization organization);
-    
+
     //-----------------------------------------------------------------------
     // methods for invitation management on bitbucket
     //-----------------------------------------------------------------------
@@ -65,7 +65,7 @@ public interface DvcsCommunicator
      * @return list of groups
      */
     List<Group> getGroupsForOrganization(Organization organization);
-    
+
     /**
      * Supports invitation.
      *
@@ -73,7 +73,7 @@ public interface DvcsCommunicator
      * @return true, if supports invitation for given organization
      */
     boolean supportsInvitation(Organization organization);
-    
+
     /**
      * Invite user.
      *

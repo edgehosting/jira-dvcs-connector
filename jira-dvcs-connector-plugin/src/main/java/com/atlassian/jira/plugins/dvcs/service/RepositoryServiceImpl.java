@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -36,7 +37,7 @@ import com.google.common.collect.Maps;
 /**
  * The Class RepositoryServiceImpl.
  */
-public class RepositoryServiceImpl implements RepositoryService
+public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 {
 
     /** The Constant log. */
@@ -67,6 +68,9 @@ public class RepositoryServiceImpl implements RepositoryService
     /** The changeset service. */
     private final ChangesetService changesetService;
 
+    /** The branch service. */
+    private final BranchService branchService;
+
     /** The application properties. */
     private final ApplicationProperties applicationProperties;
 
@@ -87,14 +91,28 @@ public class RepositoryServiceImpl implements RepositoryService
      *            the application properties
      */
     public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
-                                 ChangesetService changesetService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
+                                 ChangesetService changesetService, BranchService branchService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
+        this.branchService = branchService;
         this.synchronizer = synchronizer;
         this.changesetService = changesetService;
         this.applicationProperties = applicationProperties;
         this.pluginSettingsFactory = pluginSettingsFactory;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void destroy() throws Exception
+    {
+        removeOrphanRepositoriesExecutor.shutdown();
+        if (!removeOrphanRepositoriesExecutor.awaitTermination(1, TimeUnit.MINUTES))
+        {
+            log.error("Unable properly shutdown queued tasks.");
+        }
     }
 
     /**
@@ -397,7 +415,7 @@ public class RepositoryServiceImpl implements RepositoryService
         if (repository.isLinked())
         {
             DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
-                    communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService,
+                    communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService, branchService,
                     softSync);
             synchronizer.synchronize(repository, synchronisationOperation, changesetService);
         }
@@ -532,6 +550,12 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
     public void removeRepositories(List<Repository> repositories)
     {
+        // we stop all synchronizations first to prevent starting a new redundant synchronization
+        for (Repository repository : repositories)
+        {
+            synchronizer.stopSynchronization(repository);
+        }
+
         for (Repository repository : repositories)
         {
             markForRemove(repository);
@@ -547,8 +571,7 @@ public class RepositoryServiceImpl implements RepositoryService
         }
 
     private void markForRemove(Repository repository)
-        {
-        synchronizer.stopSynchronization(repository);
+    {
         synchronizer.removeProgress(repository);
         repository.setDeleted(true);
     }
@@ -569,6 +592,8 @@ public class RepositoryServiceImpl implements RepositoryService
         changesetService.removeAllInRepository(repository.getId());
         // remove progress
         synchronizer.removeProgress(repository);
+        // delete branch heads saved for repository
+        branchService.removeAllBranchHeadsInRepository(repository.getId());
         // delete repository record itself
         repositoryDao.remove(repository.getId());
     }

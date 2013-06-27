@@ -1,12 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
@@ -14,7 +16,7 @@ import com.google.gson.reflect.TypeToken;
 
 /**
  * ChangesetRemoteRestpoint
- * 
+ *
  * @author Martin Skurla mskurla@atlassian.com
  */
 public class ChangesetRemoteRestpoint
@@ -47,7 +49,7 @@ public class ChangesetRemoteRestpoint
         String getChangesetDiffStatUrl = URLPathFormatter.format("/repositories/%s/%s/changesets/%s/diffstat", owner, slug, node);
 
         Map<String, String> parameters = null;
-        parameters = Collections.singletonMap("limit", "" + limit);
+        parameters = Collections.singletonMap("limit", "" + (limit + 1));
 
         return requestor.get(getChangesetDiffStatUrl, parameters,
                 new ResponseCallback<List<BitbucketChangesetWithDiffstat>>()
@@ -62,4 +64,19 @@ public class ChangesetRemoteRestpoint
                     }
                 });
     }
+
+
+    public Iterable<BitbucketNewChangeset> getChangesets(final String owner, final String slug, final List<String> includeNodes,
+            final List<String> excludeNodes, final Map<String,String> changesetBranch, final int changesetsLimit)
+    {
+        return new Iterable<BitbucketNewChangeset>()
+        {
+            @Override
+            public Iterator<BitbucketNewChangeset> iterator()
+            {
+                return new BitbucketChangesetIterator(requestor, owner, slug, includeNodes, excludeNodes, changesetBranch, changesetsLimit);
+            }
+        };
+    }
+
 }

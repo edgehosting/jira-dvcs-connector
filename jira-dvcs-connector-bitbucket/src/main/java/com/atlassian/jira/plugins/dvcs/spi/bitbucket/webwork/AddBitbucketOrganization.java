@@ -89,9 +89,13 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     }
 
     private OAuthService createOAuthScribeService()
-    {
-        String redirectBackUrl = ap.getBaseUrl() + "/secure/admin/AddBitbucketOrganization!finish.jspa?organization="
-                + organization + "&autoLinking=" + getAutoLinking() + "&url=" + url + "&autoSmartCommits=" + getAutoSmartCommits() + "&atl_token=" + getXsrfToken();
+	{
+     // param "t" is holding information where to redirect from "wainting screen" (AddBitbucketOrganization, AddGithubOrganization ...)
+		String redirectBackUrl = ap.getBaseUrl()
+		        + "/secure/admin/AddOrganizationProgressAction!default.jspa?organization="
+		        + organization + "&autoLinking=" + getAutoLinking()
+		        + "&url=" + url + "&autoSmartCommits="
+		        + getAutoSmartCommits() + "&atl_token=" + getXsrfToken() + "&t=1";
 
         return createBitbucketOAuthScribeService(redirectBackUrl);
     }
@@ -123,7 +127,8 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         Verifier verifier = new Verifier(request.getParameter("oauth_verifier"));
         Token requestToken = (Token) request.getSession().getAttribute("requestToken");
 
-        if (requestToken == null) {
+        if (requestToken == null) 
+        {
             log.debug("Request token is NULL. It has been removed in the previous attempt of adding organization. Now we will stop.");
             return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
         }
@@ -139,6 +144,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     private String doAddOrganization()
     {
+    	
         try
         {
             Organization newOrganization = new Organization();
@@ -164,7 +170,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         }
 
         // go back to main DVCS configuration page
-                return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
     }
 
     @Override
@@ -184,7 +190,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
             }
         }
 
-        AccountInfo accountInfo = organizationService.getAccountInfo("https://bitbucket.org", organization);
+        AccountInfo accountInfo = organizationService.getAccountInfo(url, organization);
         // Bitbucket REST API to determine existence of accountInfo accepts valid email associated with BB account, but
         // it is not possible to create an account containing the '@' character.
         // [https://confluence.atlassian.com/display/BITBUCKET/account+Resource#accountResource-GETtheaccountprofile]
@@ -201,7 +207,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     public void setAdminPassword(String adminPassword)
     {
-        this.adminPassword = adminPassword;
+    	this.adminPassword = adminPassword;
     }
 
     public String getUrl()

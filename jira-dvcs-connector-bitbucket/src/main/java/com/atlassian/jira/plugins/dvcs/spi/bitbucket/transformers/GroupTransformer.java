@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
@@ -20,7 +20,7 @@ public class GroupTransformer
 {
 
     @SuppressWarnings("unchecked")
-    public static Set<Group> fromBitbucketGroups(Set<BitbucketGroup> bitbucketGroups)
+    public static List<Group> fromBitbucketGroups(List<BitbucketGroup> bitbucketGroups)
     {
         Collection<Group> transformedGroups = CollectionUtils.collect(bitbucketGroups, new Transformer() {
 
@@ -33,6 +33,6 @@ public class GroupTransformer
             }
         });
 
-        return new HashSet<Group>(transformedGroups);
+        return new LinkedList<Group>(transformedGroups);
     }
 }

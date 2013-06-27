@@ -10,10 +10,11 @@
 
   <body>
   
-   <div class="aui-message shadowed" id="add-org-form-container">
+   <script id="repoEntry-template" type="text/template">
+
+   <div class="" id="add-org-form-container">
    
 	   <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddGithubOrganization.jspa" class="aui long-label">
-	      <h4>New GitHub Account</h4>
 	      <input type="hidden" name="atl_token" value="$atl_token">
 	      <input type="hidden" name="autoLinking" id="autoLinking" value="$action.autoLinking">
 	       <input type="hidden" name="autoSmartCommits" id="autoSmartCommits" value="$action.autoSmartCommits">
@@ -21,27 +22,26 @@
 	        <fieldset>
 	         
 	          <div class="field-group">
-	              <label for="url">Url:</label>
+	              <label for="url">Host:</label>
 	              <span class="field-value">$textutils.htmlEncode($action.getUrl())</span>
 	              <input type="hidden" id="url" name="url" value="$textutils.htmlEncode($action.getUrl())"/>
 	          </div>
 	          
 	          <div class="field-group" >
-	          	<label for="organization">Team Account Username:</label>
-	            <input class="field-value" type="text" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
+	          	<label for="organization">Team or User Account:</label>
+	            <input class="field-value text" type="text" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 			  </div>
 	 			
 	          #if($action.getOauthRequired() == "true")
-	          	<h3>OAuth Credentials</h3>
 	          	<input type="hidden" name="oauthRequired" value="true" />
 	          	<div class="field-group" >
-	          		<label for="oauthClientId">Key:</label>
-	            	<input type="text" id="oauthClientId" name="oauthClientId" value="$textutils.htmlEncode($action.getOauthClientId())"/>
+	          		<label for="oauthClientId"> OAuth Key:</label>
+	            	<input class="field-value text" type="text" id="oauthClientId" name="oauthClientId" value="$textutils.htmlEncode($action.getOauthClientId())"/>
 			    </div>
 			  
 			   <div class="field-group" >
-	          		<label for="oauthSecret">Secret:</label>
-	            	<input type="text" id="oauthSecret" name="oauthSecret" value="$textutils.htmlEncode($action.getOauthSecret())"/>
+	          		<label for="oauthSecret">OAuth Secret:</label>
+	            	<input class="field-value text" type="text" id="oauthSecret" name="oauthSecret" value="$textutils.htmlEncode($action.getOauthSecret())"/>
 			   </div>
 	          #end
 			</fieldset>
@@ -81,14 +81,46 @@
 	
 	      <div class="buttons-container">
 	        <div class="buttons">
-	            <input class="button submit" type="submit" name="Submit" id="Submit" value="Try Again"/>
-	            <a class="cancel" href="${baseurl}/secure/admin/ConfigureDvcsOrganizations.jspa?atl_token=${atl_token}">Cancel</a>
+
 	        </div>
 	      </div>
 	    
 	  </form>
   
   </div>
+
+  </script>
+  
+  <script type="text/javascript">
+
+ 	AJS.$(document).ready(function () {
+	
+	 	var ddialog = new AJS.Dialog({
+	 	    width:800, 
+	 	    height:500, 
+	 	    id:"repoEntry-dialog", 
+	 	    closeOnOutsideClick: false
+	 	});
+	 	ddialog.addHeader("New GitHub Account");
+	 	ddialog.addPanel("", AJS.$('#repoEntry-template').html(), "panel-body");
+	 	ddialog.addButtonPanel();
+	 	ddialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon' style='padding-right:10px'>&nbsp;</span>")
+	 	ddialog.addSubmit("Try Again", function (dialog, event) {
+	 		 	AJS.$("#add-organization-wait").addClass("aui-icon-wait");
+	            AJS.$("#repoEntry").submit();
+	    });
+	 	ddialog.addLink("Cancel",  function (dialog) {
+	 	   return true;
+	 	}, "", "${baseurl}/secure/admin/ConfigureDvcsOrganizations.jspa?atl_token=${atl_token}");
+	 	ddialog.show();
+	 	ddialog.updateHeight();
+	 	
+	 	
+	});
+ 	
+ 	
+	</script>
         
   </body>
+
 </html>
