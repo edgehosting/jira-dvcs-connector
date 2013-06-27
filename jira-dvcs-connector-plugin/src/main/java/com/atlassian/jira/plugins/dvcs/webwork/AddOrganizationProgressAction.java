@@ -10,9 +10,9 @@ import com.atlassian.sal.api.ApplicationProperties;
 public class AddOrganizationProgressAction extends JiraWebActionSupport
 {
 	private static final long serialVersionUID = -8035393686536929940L;
-	private ApplicationProperties ap;
+	private final ApplicationProperties ap;
 	private static Map<String, String> typeToRedirectUrls = new HashMap<String, String>();
-	static 
+	static
 	{
 		typeToRedirectUrls.put("1", "AddBitbucketOrganization");
 		typeToRedirectUrls.put("2", "AddGithubOrganization");
@@ -38,12 +38,13 @@ public class AddOrganizationProgressAction extends JiraWebActionSupport
 
 	public String getCurrentUrl()
 	{
-		String redirectEndpoint = typeToRedirectUrls.get(this.getHttpRequest().getParameter("t"));
+	    // using request directly because of compatibility with Jira 5.2
+		String redirectEndpoint = typeToRedirectUrls.get(this.request.getParameter("t"));
 		if (redirectEndpoint != null)
 		{
 			return ap.getBaseUrl()
 			        + "/secure/admin/" + redirectEndpoint + "!finish.jspa?"
-			        + this.getHttpRequest().getQueryString();
+			        + this.request.getQueryString();
 		} else
 		{
 			return SystemUtils.getRedirect(this, "ConfigureDvcsOrganizations.jspa?atl_token=" + getXsrfToken(), false);
