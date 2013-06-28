@@ -51,24 +51,29 @@ public class ChangesetTransformer {
     {
         String authorEmail = null;
         String rawAuthor = null;
+        String author = null;
         if (bitbucketChangeset.getAuthor() != null)
         {
             authorEmail = parseEmailFromRawAuthor(bitbucketChangeset.getAuthor().getRaw());
             rawAuthor = bitbucketChangeset.getAuthor().getRaw();
+            if (bitbucketChangeset.getAuthor().getUser() != null)
+            {
+                author = bitbucketChangeset.getAuthor().getUser().getUsername();
+            }
         }
 
         Changeset changeset = new Changeset(
                 repositoryId,
                 bitbucketChangeset.getHash(),
                 rawAuthor,
-                null, // bitbucketChangeset.getAuthor(),
+                author,
                 bitbucketChangeset.getDate(),
                 bitbucketChangeset.getHash(),
                 bitbucketChangeset.getBranch(),
                 bitbucketChangeset.getMessage(),
                 transformParents(bitbucketChangeset.getParents()),
-                null,// changesetFiles,
-                0,// changesetFiles.size(),
+                null,// changesetFiles, we don't have modified files information
+                0,// changesetFiles.size(), we don't have file size
                 authorEmail
         );
 
