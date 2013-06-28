@@ -6,7 +6,7 @@
 		$webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin-css")
 		
 		 <meta name="admin.active.section" content="admin_plugins_menu/source_control"/>
-		 <meta http-equiv="refresh" content="3; url=$action.getCurrentUrl()">
+		 <meta http-equiv="refresh" content="0; url=$action.getCurrentUrl()">
 	</head>
 	
 	<body>
