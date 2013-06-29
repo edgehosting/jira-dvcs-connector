@@ -28,7 +28,7 @@ import com.atlassian.pageobjects.elements.PageElement;
 public class GithubEnterpriseTests implements BasicTests
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
-    public static final String GITHUB_ENTERPRISE_URL = System.getProperty("githubenterprise.url", "http://192.168.2.47");
+    public static final String GITHUB_ENTERPRISE_URL = System.getProperty("githubenterprise.url", "http://192.168.2.214");
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
     private OAuth oAuth;
     
