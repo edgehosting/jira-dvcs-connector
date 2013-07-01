@@ -37,7 +37,7 @@ public class GithubOAuthUtils
 
         // Redirect back URL
         String redirectBackUrl = baseUrl + "/secure/admin/" + nextAction
-                + "!finish.jspa?url=" + encodedRepositoryUrl + "&atl_token=" + xsrfToken + "&organization="
+                + "!default.jspa?url=" + encodedRepositoryUrl + "&atl_token=" + xsrfToken + "&organization="
                 + organization + "&autoLinking=" + autoLinking + "&autoSmartCommits=" + autoSmartCommits;
         String encodedRedirectBackUrl = encode(redirectBackUrl);
         //
