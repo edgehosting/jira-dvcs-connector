@@ -333,8 +333,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
             IOUtils.copy(is, writer, "UTF-8");
             responseAsString = writer.toString();
         }
-        log.warn("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
-                new Object[] {method.getMethod(), method.getURI(), method.getAllHeaders(), method.getParams(), statusCode, responseAsString });
+        log.warn("Failed to properly execute request [{} {}], \nhttpResponse: {}, \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
+                new Object[] {method.getMethod(), method.getURI(), httpResponse, method.getAllHeaders(), method.getParams(), statusCode, responseAsString });
     }
 
     protected String paramsToString(Map<String, String> parameters, boolean urlAlreadyHasParams)
