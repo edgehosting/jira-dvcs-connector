@@ -259,6 +259,9 @@
     <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />
     
     <!-- Messaging -->
+    <component key="messageRouter" class="com.atlassian.jira.plugins.dvcs.service.MessageRouterImpl">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessageRouter</interface>
+    </component>
     <component key="messagingService" class="com.atlassian.jira.plugins.dvcs.service.MessagingServiceImpl">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagingService</interface>
     </component>

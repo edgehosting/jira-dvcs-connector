@@ -70,13 +70,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     /** The repository dao. */
     private final RepositoryDao repositoryDao;
 
-    private MessagingService messagingService;
-    
-    @Autowired
-    public void setMessagingService(MessagingService messagingService)
-    {
-        this.messagingService = messagingService;
-    }
+    private final MessagingService messagingService;
 
     /** The synchronizer. */
     private final Synchronizer synchronizer;
@@ -100,17 +94,20 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      *            the synchronizer
      * @param changesetService
      *            the changeset service Add a comment to this line
+     * @param messagingService
+     *            injected messaginService
      * @param applicationProperties
      *            the application properties
      */
-    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, 
-            Synchronizer synchronizer, ChangesetService changesetService,
-            ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
+    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
+            ChangesetService changesetService, MessagingService messagingService, ApplicationProperties applicationProperties,
+            PluginSettingsFactory pluginSettingsFactory)
     {
         this.communicatorProvider = communicatorProvider;
         this.repositoryDao = repositoryDao;
         this.synchronizer = synchronizer;
         this.changesetService = changesetService;
+        this.messagingService = messagingService;
         this.applicationProperties = applicationProperties;
         this.pluginSettingsFactory = pluginSettingsFactory;
     }

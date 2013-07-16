@@ -1,17 +1,24 @@
 package com.atlassian.jira.plugins.dvcs;
 
+import net.java.ao.DBParam;
+import net.java.ao.Query;
+
+import org.easymock.Capture;
 import org.easymock.classextension.EasyMock;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageConsumerMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
+import com.atlassian.jira.plugins.dvcs.service.MessageRouterImpl;
 import com.atlassian.jira.plugins.dvcs.service.MessagingServiceImpl;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageRouter;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
@@ -155,19 +162,35 @@ public class MessagingServiceImplTest
     private MessageMapping message;
 
     /**
+     * Mocked {@link MessageConsumerMapping} entity.
+     */
+    private MessageConsumerMapping messageConsumer;
+
+    /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     @BeforeMethod
-    public void before()
+    public void before() throws Exception
     {
-        MessagingServiceImpl messagingServiceImpl = new MessagingServiceImpl();
-
-        testedObject = messagingServiceImpl;
         activeObjects = EasyMock.createStrictMock(ActiveObjects.class);
         message = EasyMock.createStrictMock(MessageMapping.class);
+        messageConsumer = EasyMock.createStrictMock(MessageConsumerMapping.class);
 
-        messagingServiceImpl.setMessagePayloadSerializer(new MessagePayloadSerializer<?>[] { new MockMessagePayloadSerializer() });
-        messagingServiceImpl.setActiveObjects(activeObjects);
+        // expects count invocation - workaround to check that active objects is available
+        EasyMock.expect(activeObjects.<Integer> count(MessageMapping.class)).andReturn(0).once();
+        EasyMock.expect(
+                activeObjects.<MessageMapping, Integer> find((Class<MessageMapping>) EasyMock.anyObject(), (Query) EasyMock.anyObject()))
+                .andReturn(new MessageMapping[] {}).once();
+
+        EasyMock.replay(activeObjects);
+        MessageRouter messageRouter = new MessageRouterImpl(activeObjects, new MessageConsumer<?>[] { mockMessageConsumer },
+                new MessagePayloadSerializer<?>[] { new MockMessagePayloadSerializer() });
+        MessagingServiceImpl messagingServiceImpl = new MessagingServiceImpl(messageRouter);
+        testedObject = messagingServiceImpl;
+        Thread.sleep(1000);
+        EasyMock.verify(activeObjects);
+        EasyMock.reset(activeObjects);
     }
 
     /**
@@ -175,56 +198,79 @@ public class MessagingServiceImplTest
      * 
      * @throws Exception
      */
-    @SuppressWarnings("unchecked")
     public void testPublish() throws Exception
     {
-        // first mock - initialization
-        EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] {});
-
-        EasyMock.replay(activeObjects, message);
-        ((MessagingServiceImpl) testedObject).setConsumers(new MessageConsumer<?>[] { mockMessageConsumer });
-        EasyMock.verify(activeObjects, message);
-
-        // messaging
-        EasyMock.reset(activeObjects, message);
-
         // first message - 1
-        EasyMock.expect(message.getPayload()).andReturn("1").once();
-        EasyMock.expect(message.getTags()).andReturn(new MessageTagMapping[] {}).once();
-        EasyMock.expect(activeObjects.executeInTransaction((TransactionCallback<Void>) EasyMock.anyObject())).andReturn(null).once();
-        EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] { message });
-        EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] {});
-        
-        // second message - 3
-        EasyMock.expect(activeObjects.executeInTransaction((TransactionCallback<Void>) EasyMock.anyObject())).andReturn(null).once();
-        EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] { message });
-        EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] {});
-        EasyMock.expect(message.getPayload()).andReturn("3").once();
-        EasyMock.expect(message.getTags()).andReturn(new MessageTagMapping[] {}).once();
+        Capture<TransactionCallback<Void>> createMessageCallback = new Capture<TransactionCallback<Void>>();
 
-        // third message - 5 
-        EasyMock.expect(activeObjects.executeInTransaction((TransactionCallback<Void>) EasyMock.anyObject())).andReturn(null).once();
-        EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] { message });
-        EasyMock.expect(activeObjects.find(MessageMapping.class)).andReturn(new MessageMapping[] {});
-        EasyMock.expect(message.getPayload()).andReturn("5").once();
-        EasyMock.expect(message.getTags()).andReturn(new MessageTagMapping[] {}).once();
+        createMessageInDB(createMessageCallback);
+        returnAndProcessMessage(1);
+        createMessageInDB(createMessageCallback);
+        returnAndProcessMessage(2);
+        createMessageInDB(createMessageCallback);
+        returnAndProcessMessage(5);
 
-        EasyMock.replay(activeObjects, message);
+        EasyMock.replay(activeObjects, message, messageConsumer);
 
         testedObject.publish(MESSAGE_MOCK_KEY, 1);
-        Thread.sleep(1); // sleep - it is multi-thread - we need to wait until first message is queued & proceed
-        
-        testedObject.publish(MESSAGE_MOCK_KEY, 3);
-        Thread.sleep(1); // sleep - it is multi-thread - we need to wait until second message is queued & proceed
-        
+        createMessageCallback.getValues().get(0).doInTransaction();
+        Thread.sleep(1000); // sleep - it is multi-thread - we need to wait until first message is queued & proceed
+
+        testedObject.publish(MESSAGE_MOCK_KEY, 2);
+        createMessageCallback.getValues().get(0).doInTransaction();
+        Thread.sleep(1000); // sleep - it is multi-thread - we need to wait until second message is queued & proceed
+
         testedObject.publish(MESSAGE_MOCK_KEY, 5);
-        Thread.sleep(1); // sleep - it is multi-thread - we need to wait until third message is queued & proceed
-        
-        ((MessagingServiceImpl) testedObject).destroy();
+        createMessageCallback.getValues().get(0).doInTransaction();
+        Thread.sleep(1000); // sleep - it is multi-thread - we need to wait until third message is queued & proceed
 
-        Assert.assertEquals(mockMessageConsumer.getSum(), 9);
+        Assert.assertEquals(mockMessageConsumer.getSum(), 8);
 
-        EasyMock.verify(activeObjects, message);
+        EasyMock.verify(activeObjects, message, messageConsumer);
 
     }
+
+    /**
+     * Creates message in DB.
+     * 
+     * @param createMessageCallback
+     */
+    @SuppressWarnings("unchecked")
+    private void createMessageInDB(Capture<TransactionCallback<Void>> createMessageCallback)
+    {
+        EasyMock.expect(activeObjects.executeInTransaction((TransactionCallback<Void>) EasyMock.capture(createMessageCallback))).andReturn(
+                null);
+        EasyMock.expect(
+                activeObjects.<MessageMapping, Integer> create((Class<MessageMapping>) EasyMock.anyObject(),
+                        (DBParam) EasyMock.anyObject(), (DBParam) EasyMock.anyObject())).andReturn(message);
+        EasyMock.expect(message.getID()).andReturn(1);
+        EasyMock.expect(activeObjects.executeInTransaction((TransactionCallback<Void>) EasyMock.anyObject())).andReturn(null);
+    }
+
+    /**
+     * Returns created message and process it.
+     * 
+     * @param messagePayload
+     */
+    @SuppressWarnings("unchecked")
+    private void returnAndProcessMessage(Integer messagePayload)
+    {
+        EasyMock.expect(
+                activeObjects.<MessageMapping, Integer> find((Class<MessageMapping>) EasyMock.anyObject(), (Query) EasyMock.anyObject()))
+                .andReturn(new MessageMapping[] { message });
+        EasyMock.expect(message.getPayload()).andReturn(messagePayload + "");
+        EasyMock.expect(message.getTags()).andReturn(new MessageTagMapping[] {});
+        EasyMock.expect(message.getConsumers()).andReturn(new MessageConsumerMapping[] { messageConsumer });
+        EasyMock.expect(messageConsumer.getConsumer()).andReturn("messageConsumer");
+        EasyMock.expect(message.getID()).andReturn(1);
+
+        // next message
+        EasyMock.expect(
+                activeObjects.<MessageMapping, Integer> find((Class<MessageMapping>) EasyMock.anyObject(), (Query) EasyMock.anyObject()))
+                .andReturn(new MessageMapping[] {});
+
+        // mark as ok
+        EasyMock.expect(activeObjects.executeInTransaction((TransactionCallback<Void>) EasyMock.anyObject())).andReturn(null);
+    }
+
 }
