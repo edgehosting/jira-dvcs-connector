@@ -210,7 +210,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
         sb.append("}");
 
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled())
+        {
             log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders()) });
         }
     }
@@ -339,12 +340,14 @@ public class BaseRemoteRequestor implements RemoteRequestor
             responseAsString = writer.toString();
         }
 
-        if (log.isWarnEnabled()) {
+        if (log.isWarnEnabled())
+        {
             log.warn("Failed to properly execute request [{} {}], \nParams: {}, \nResponse code {}",
                     new Object[] { method.getMethod(), method.getURI(), method.getParams(), statusCode });
         }
 
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled())
+        {
             log.debug("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
                     new Object[] { method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
                     statusCode, responseAsString });
@@ -358,7 +361,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         Iterator<Header> iterator = result.iterator();
         while (iterator.hasNext())
         {
-            if (iterator.next().getName().toLowerCase().contains("Authorization"))
+            if (iterator.next().getName().toLowerCase().contains("authorization"))
             {
                 iterator.remove();
             }
