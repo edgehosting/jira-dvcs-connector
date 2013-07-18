@@ -210,7 +210,9 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
         sb.append("}");
 
-        log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders()) });
+        if (log.isDebugEnabled()) {
+            log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders()) });
+        }
     }
 
     private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, ? extends Object> params, ResponseCallback<T> callback)
@@ -337,9 +339,17 @@ public class BaseRemoteRequestor implements RemoteRequestor
             responseAsString = writer.toString();
         }
 
-        log.debug("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
-                new Object[] { method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
-                        statusCode, responseAsString });
+        if (log.isWarnEnabled()) {
+            log.warn("Failed to properly execute request [{} {}], \nParams: {}, \nResponse code {}",
+                    new Object[] { method.getMethod(), method.getURI(), method.getParams(), statusCode });
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
+                    new Object[] { method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
+                    statusCode, responseAsString });
+        }
+
     }
     
     private Header[] sanitizeHeadersForLogging(Header[] headers)
