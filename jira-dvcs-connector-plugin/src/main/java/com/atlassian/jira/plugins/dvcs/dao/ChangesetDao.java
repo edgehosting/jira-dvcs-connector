@@ -83,6 +83,14 @@ public interface ChangesetDao
     Set<String> findReferencedProjects(int repositoryId);
 
     /**
+     * Returns number of changesets synchronizes for the repository
+     *
+     * @param repositoryId
+     * @return number of changesets
+     */
+    public int getChangesetCount(final int repositoryId);
+
+    /**
      *
      */
     public interface ForEachChangesetClosure
