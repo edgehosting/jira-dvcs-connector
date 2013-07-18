@@ -8,8 +8,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,6 +19,7 @@ import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -207,7 +210,10 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
         sb.append("}");
 
-        log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, sb.toString(), method.getAllHeaders() });
+        if (log.isDebugEnabled())
+        {
+            log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders()) });
+        }
     }
 
     private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, ? extends Object> params, ResponseCallback<T> callback)
@@ -333,8 +339,34 @@ public class BaseRemoteRequestor implements RemoteRequestor
             IOUtils.copy(is, writer, "UTF-8");
             responseAsString = writer.toString();
         }
-        log.warn("Failed to properly execute request [{} {}], \nhttpResponse: {}, \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
-                new Object[] {method.getMethod(), method.getURI(), httpResponse, method.getAllHeaders(), method.getParams(), statusCode, responseAsString });
+
+        if (log.isWarnEnabled())
+        {
+            log.warn("Failed to properly execute request [{} {}], \nParams: {}, \nResponse code {}",
+                    new Object[] { method.getMethod(), method.getURI(), method.getParams(), statusCode });
+        }
+
+        if (log.isDebugEnabled())
+        {
+            log.debug("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
+                    new Object[] { method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
+                    statusCode, responseAsString });
+        }
+
+    }
+    
+    private Header[] sanitizeHeadersForLogging(Header[] headers)
+    {
+        List<Header> result = new LinkedList<Header>(Arrays.asList(headers));
+        Iterator<Header> iterator = result.iterator();
+        while (iterator.hasNext())
+        {
+            if (iterator.next().getName().toLowerCase().contains("authorization"))
+            {
+                iterator.remove();
+            }
+        }
+        return result.toArray(new Header[result.size()]);
     }
 
     protected String paramsToString(Map<String, String> parameters, boolean urlAlreadyHasParams)
