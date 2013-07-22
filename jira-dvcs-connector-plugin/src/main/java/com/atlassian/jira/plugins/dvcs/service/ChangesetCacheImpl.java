@@ -24,4 +24,10 @@ public class ChangesetCacheImpl implements ChangesetCache
         return changesetDao.getByNode(repositoryId, changesetNode) !=null;
     }
 
+	@Override
+    public boolean isEmpty(int repositoryId)
+	{
+	    return changesetDao.getChangesetCount(repositoryId) == 0;
+	}
+
 }

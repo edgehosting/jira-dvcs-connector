@@ -433,5 +433,19 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
     }
 
+    @Override
+    public int getChangesetCount(final int repositoryId)
+    {
+        return activeObjects.executeInTransaction(new TransactionCallback<Integer>()
+        {
+            @Override
+            public Integer doInTransaction()
+            {
+                Query query = Query.select().where(RepositoryToChangesetMapping.REPOSITORY_ID + " = ?", repositoryId);
+
+                return activeObjects.count(RepositoryToChangesetMapping.class, query);
+            }
+        });
+    }
 
 }
