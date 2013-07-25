@@ -169,7 +169,7 @@ public class ChangesetDaoImpl implements ChangesetDao
 
         String shortNode = changeset.getNode().substring(0, 13) + "%";
         ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, "(" + hasRawNode + " AND " + matchRawNode + " ) OR ( NOT "
-                + hasRawNode + " AND " + matchNode + " ) ", changeset.getRawNode(), shortNode + "%");
+                + hasRawNode + " AND " + matchNode + " ) ", changeset.getRawNode(), shortNode);
 
         if (mappings.length > 1)
         {
