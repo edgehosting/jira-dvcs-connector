@@ -156,13 +156,25 @@ public class ChangesetDaoImpl implements ChangesetDao
 
     private ChangesetMapping getChangesetMapping(Changeset changeset)
     {
-        ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
-                ChangesetMapping.NODE + " = ? ", changeset.getNode());
+        // A Query is little bit more complicated, but:
+
+        // 1. previous implementation did not properly fill RAW_NODE, in some cases it is null, in some other cases it is empty string
+        String hasRawNode = "( " + ChangesetMapping.RAW_NODE + " is not null AND " + ChangesetMapping.RAW_NODE + " != '') ";
+
+        // 2. Latest implementation is using full RAW_NODE, but not all records contains it!
+        String matchRawNode = ChangesetMapping.RAW_NODE + " = ? ";
+
+        // 3. Previous implementation has used NODE, but it is mix in some cases it is short version, in some cases it is full version
+        String matchNode = ChangesetMapping.NODE + " like ? ";
+
+        String shortNode = changeset.getNode().substring(0, 13) + "%";
+        ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, "(" + hasRawNode + " AND " + matchRawNode + " ) OR ( NOT "
+                + hasRawNode + " AND " + matchNode + " ) ", changeset.getRawNode(), shortNode);
 
         if (mappings.length > 1)
         {
-            log.warn("More changesets with same Node. Same changesets count: {}, Node: {}, Repository: {}",
-                    new Object[]{mappings.length, changeset.getNode(), changeset.getRepositoryId()});
+            log.warn("More changesets with same Node. Same changesets count: {}, Node: {}, Repository: {}", new Object[] { mappings.length,
+                    changeset.getNode(), changeset.getRepositoryId() });
         }
         return (ArrayUtils.isNotEmpty(mappings)) ? mappings[0] : null;
     }
