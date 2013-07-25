@@ -38,7 +38,7 @@ public interface ConcurrencyService
      * @param synchronizedBlock
      *            for performing
      * @param key
-     *            for locking - two keys are equals, if each key part is equal
+     *            for locking - two keys are equals, if each key part is equal includes order of parts
      * @return result of synchronized block
      * @throws T
      *             throwable of synchronized block
