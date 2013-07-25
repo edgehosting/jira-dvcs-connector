@@ -156,8 +156,20 @@ public class ChangesetDaoImpl implements ChangesetDao
 
     private ChangesetMapping getChangesetMapping(Changeset changeset)
     {
+        // A Query is little bit more complicated, but:
+
+        // 1. previous implementation did not properly fill RAW_NODE, in some cases it is null, in some other cases it is empty string
+        String hasRawNode = "( " + ChangesetMapping.RAW_NODE + " is not null AND " + ChangesetMapping.RAW_NODE + " != '') ";
+        
+        // 2. Latest implementation is using full RAW_NODE, but not all records contains it!
+        String matchRawNode = ChangesetMapping.RAW_NODE + " = ? ";
+        
+        // 3. Previous implementation has used NODE, but it is mix in some cases it is short version, in some cases it is full version 
+        String matchNode = "substring( \"" + ChangesetMapping.NODE + "\" from 0 for 13)" + " = substring(? from 0 for 13) ";
+        
         ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
-                ChangesetMapping.NODE + " = ? ", changeset.getNode());
+                "(" + hasRawNode + " AND " + matchRawNode + " ) OR ( NOT " + hasRawNode + " AND " + matchNode + " ) ", changeset.getRawNode(), changeset.getNode());
+
 
         if (mappings.length > 1)
         {

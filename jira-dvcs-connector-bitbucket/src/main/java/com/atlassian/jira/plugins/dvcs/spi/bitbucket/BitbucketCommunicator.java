@@ -214,7 +214,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             //remote branch head list
-            List<BranchHead> newBranchHeads = getBranchHeads(repository);
+            final List<BranchHead> newBranchHeads = getBranchHeads(repository);
             //local branch head list
             List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repository);
 
@@ -228,8 +228,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     @Override
                     public Iterator<Changeset> iterator()
                     {
-                        List<BranchHead> branches = getBranchHeads(repository);
-                        return new BranchedChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, branches);
+                        return new BranchedChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, newBranchHeads);
                     }
 
                 };
