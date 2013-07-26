@@ -218,7 +218,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, ? extends Object> params, ResponseCallback<T> callback)
     {
-        DefaultHttpClient client = new DefaultHttpClient();
+        HttpClient client = newDefaultHttpClient();
         RemoteResponse response = null;
 
         try
@@ -258,7 +258,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        HttpClient client = new DefaultHttpClient();
+        HttpClient client = newDefaultHttpClient();
         if (cached)
         {
             client = new EtagCachingHttpClient(client, getStorage());
@@ -430,10 +430,17 @@ public class BaseRemoteRequestor implements RemoteRequestor
         HttpConnectionParams.setConnectionTimeout(client.getParams(), connectionTimeout);
         HttpConnectionParams.setSoTimeout(client.getParams(), socketTimeout);
 
-        String apiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
-        proxyConfig.configureProxy(client, apiUrl + uri);
+        String remoteUrl;
+        if (uri.startsWith("http:/") || uri.startsWith("https:/")) {
+            remoteUrl = uri;
 
-        String finalUrl = afterFinalUriConstructed(method, apiUrl + uri, params);
+        } else {
+            String apiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
+            remoteUrl = apiUrl + uri;
+        }
+
+        proxyConfig.configureProxy(client, remoteUrl);
+        String finalUrl = afterFinalUriConstructed(method, remoteUrl, params);
         method.setURI(new URI(finalUrl));
         //
         logRequest(method, finalUrl, params);
@@ -442,6 +449,10 @@ public class BaseRemoteRequestor implements RemoteRequestor
         //
         onConnectionCreated(client, method, params);
 
+    }
+    
+    protected HttpClient newDefaultHttpClient() {
+        return new DefaultHttpClient();
     }
 
     protected interface ParameterProcessor
