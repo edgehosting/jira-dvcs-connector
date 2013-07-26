@@ -167,7 +167,7 @@ public class ChangesetDaoImpl implements ChangesetDao
         // 3. Previous implementation has used NODE, but it is mix in some cases it is short version, in some cases it is full version
         String matchNode = ChangesetMapping.NODE + " like ? ";
 
-        String shortNode = changeset.getNode().substring(0, 13) + "%";
+        String shortNode = changeset.getNode().substring(0, 12) + "%";
         ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, "(" + hasRawNode + " AND " + matchRawNode + " ) OR ( NOT "
                 + hasRawNode + " AND " + matchNode + " ) ", changeset.getRawNode(), shortNode);
 
