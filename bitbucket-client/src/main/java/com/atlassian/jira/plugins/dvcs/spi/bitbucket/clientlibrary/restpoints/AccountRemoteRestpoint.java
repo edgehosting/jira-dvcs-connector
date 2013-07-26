@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
+import com.google.common.base.Preconditions;
 
 /**
  * AccountRemoteRestpoint
@@ -26,6 +27,8 @@ public class AccountRemoteRestpoint
     // https://confluence.atlassian.com/display/BITBUCKET/account+Resource#accountResource-GETtheaccountprofile
     public BitbucketAccount getUser(String ownerOrEmail)
     {
+        checkBlank(ownerOrEmail, "Empty username information. This is probably unassigned user.");
+        
         String getUserUrl = URLPathFormatter.format("/users/%s", ownerOrEmail);
         
         return requestor.get(getUserUrl, null, new ResponseCallback<BitbucketAccount>()
@@ -36,6 +39,14 @@ public class AccountRemoteRestpoint
                 return ClientUtils.fromJson(response.getResponse(), BitbucketRepositoriesEnvelope.class).getUser();
             }
         });
+    }
+    
+    private void checkBlank(String string, String message) {
+        Preconditions.checkState(string != null && !string.trim().isEmpty(), message);
+    }
+
+    public static void main(String[] args) {
+        Preconditions.checkState(false, "Empty username information. This is probably unassigned user.");
     }
     
     public BitbucketAccount getCurrentUser()
