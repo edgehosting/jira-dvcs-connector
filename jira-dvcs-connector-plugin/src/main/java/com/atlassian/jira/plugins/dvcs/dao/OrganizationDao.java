@@ -12,6 +12,11 @@ public interface OrganizationDao
      * @return list of organizations
      */
     List<Organization> getAll();
+    
+    /**
+     * @return returns count of all organizations
+     */
+    int getAllCount();
 
     /**
      * returns Organization by ID
