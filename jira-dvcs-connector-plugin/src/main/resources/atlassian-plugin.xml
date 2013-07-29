@@ -54,6 +54,14 @@
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor</interface>
 	</component>
 
+    <!-- ===============================================================================================================================
+         Externally consumable services
+         =============================================================================================================================== -->
+
+    <component key="dvcsLinkService" name="DVCS Link Service"  class="com.atlassian.jira.plugins.dvcs.service.DvcsLinkServiceImpl" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.service.DvcsLinkService</interface>
+    </component>
+
     <!-- Active Objects -->
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
