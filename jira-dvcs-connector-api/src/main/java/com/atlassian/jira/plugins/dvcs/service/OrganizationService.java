@@ -30,6 +30,11 @@ public interface OrganizationService
      * @return list of organizations
      */
     List<Organization> getAll(boolean loadRepositories);
+    
+    /**
+     * @return returns count of all organizations
+     */
+    int getAllCount();
 
     /**
      * returns Organization by ID.
