@@ -21,21 +21,33 @@ import com.google.common.collect.Sets;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
+    
+    private final ConcurrencyService concurrencyService;
     private final ChangesetDao changesetDao;
     private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
     private final RepositoryDao repositoryDao;
 
-    public ChangesetServiceImpl(ChangesetDao changesetDao, DvcsCommunicatorProvider dvcsCommunicatorProvider, RepositoryDao repositoryDao)
+    public ChangesetServiceImpl(ConcurrencyService concurrencyService, ChangesetDao changesetDao, DvcsCommunicatorProvider dvcsCommunicatorProvider, RepositoryDao repositoryDao)
     {
+        this.concurrencyService = concurrencyService;
         this.changesetDao = changesetDao;
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
         this.repositoryDao = repositoryDao;
     }
 
     @Override
-    public Changeset create(Changeset changeset, Set<String> extractedIssues)
+    public Changeset create(final Changeset changeset, final Set<String> extractedIssues)
     {
-        return changesetDao.create(changeset, extractedIssues);
+        return concurrencyService.synchronizedBlock(new ConcurrencyService.SynchronizedBlock<Changeset, RuntimeException>()
+        {
+
+            @Override
+            public Changeset perform() throws RuntimeException
+            {
+                return changesetDao.create(changeset, extractedIssues);
+            }
+
+        }, Changeset.class, changeset.getRawNode());
     }
 
     @Override
