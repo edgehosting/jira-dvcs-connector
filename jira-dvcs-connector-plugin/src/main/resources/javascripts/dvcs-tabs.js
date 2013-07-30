@@ -3,7 +3,7 @@ if (typeof(com.atlassian) == 'undefined') com.atlassian = {};
 if (typeof(com.atlassian.jira) == 'undefined') com.atlassian.jira = {};
 if (typeof(com.atlassian.jira.dvcs) == 'undefined') com.atlassian.jira.dvcs = {};
 
-com.atlassian.jira.dvcs.dvcsShowChangesetByFork = function(node, repoId, repoName, repoUrl) {
+com.atlassian.jira.dvcs.showChangesetByFork = function(node, repoId, repoName, repoUrl) {
 
     // hide all changesets CommitPanels
     AJS.$('#' + node + ' .CommitPanel').each(function(n, el) {
