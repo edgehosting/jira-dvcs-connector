@@ -4,6 +4,22 @@
         <description>${project.description}</description>
         <version>${project.version}</version>
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
+        <bundle-instructions>
+            <Export-Package>
+                <!--
+                    Explicit declaration of the packages to export externally
+
+                    All new public services must also have their packages exported here.
+                    Atlassian Plugin SDK does not automatically generate an osgi manifest when
+                    an explicit build-instruction is specified.
+                -->
+                com.atlassian.jira.plugins.dvcs.model,
+                com.atlassian.jira.plugins.dvcs.service.api,
+                com.atlassian.jira.plugins.dvcs.smartcommits,
+                com.atlassian.jira.plugins.dvcs.smartcommits.handlers,
+                com.atlassian.jira.plugins.dvcs.ondemand
+            </Export-Package>
+        </bundle-instructions>
     </plugin-info>
 
     <component-import key="templateRenderer" interface="com.atlassian.templaterenderer.TemplateRenderer" />
@@ -53,6 +69,14 @@
 	<component key="smartcommitsChangesetsProcessor" name="DVCS Smartcommits Changesets Processor"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsChangesetsProcessor" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor</interface>
 	</component>
+
+    <!-- ===============================================================================================================================
+         Externally consumable services
+         =============================================================================================================================== -->
+
+    <component key="dvcsLinkService" name="DVCS Link Service"  class="com.atlassian.jira.plugins.dvcs.service.api.DvcsLinkServiceImpl" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.service.api.DvcsLinkService</interface>
+    </component>
 
     <!-- Active Objects -->
     <ao key="ao-module" name="Active Objects Module">
