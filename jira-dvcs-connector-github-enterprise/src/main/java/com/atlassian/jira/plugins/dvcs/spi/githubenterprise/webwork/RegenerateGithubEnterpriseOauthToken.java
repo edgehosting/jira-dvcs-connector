@@ -14,8 +14,8 @@ public class RegenerateGithubEnterpriseOauthToken extends RegenerateGithubOauthT
     }
 
     @Override
-    protected String getRedirectAction()
+    protected String getRedirectActionAndCommand()
     {
-        return "RegenerateGithubEnterpriseOauthToken";
+        return "RegenerateGithubEnterpriseOauthToken!finish";
     }
 }
