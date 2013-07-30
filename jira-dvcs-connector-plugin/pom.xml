@@ -256,6 +256,13 @@
 	</properties>
 
 	<profiles>
+        <profile>
+            <id>skipTests</id>
+            <properties>
+                <maven.test.unit.skip>true</maven.test.unit.skip>
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
 		<profile>
 			<id>dev-mysql</id>
 			<properties>
