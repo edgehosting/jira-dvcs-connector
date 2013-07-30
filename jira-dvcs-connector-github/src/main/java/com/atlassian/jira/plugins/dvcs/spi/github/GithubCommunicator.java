@@ -266,9 +266,10 @@ public class GithubCommunicator implements DvcsCommunicator
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
 	    Map<String, RepositoryHook> hooksForRepo = getHooksForRepo(repositoryService, repositoryId);
-	    if (hooksForRepo.containsKey(postCommitUrl)) {
-	    	return;
-	    }
+        if (hooksForRepo.containsKey(postCommitUrl))
+        {
+            return;
+        }
 
         final RepositoryHook repositoryHook = new RepositoryHook();
         repositoryHook.setName("web");
@@ -283,7 +284,12 @@ public class GithubCommunicator implements DvcsCommunicator
             repositoryService.createHook(repositoryId, repositoryHook);
         } catch (IOException e)
         {
-            throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. " + e.getMessage(), e);
+            if ((e instanceof RequestException) && ((RequestException) e).getStatus() == 422)
+            {
+                throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. Maximum number of postcommit hooks exceeded. ", e);
+
+            }
+            throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. Do you have administrator permissions?" , e);
         }
     }
 
@@ -302,7 +308,7 @@ public class GithubCommunicator implements DvcsCommunicator
 	        return urlToHooks;
         } catch (IOException e)
         {
-        	log.warn("Problem getting hooks from Github.", e);
+        	log.warn("Problem getting hooks from Github: " + e.getMessage());
         	return Collections.EMPTY_MAP;
         }
     }

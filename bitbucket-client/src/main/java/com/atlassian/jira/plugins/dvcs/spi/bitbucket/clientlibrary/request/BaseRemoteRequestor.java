@@ -8,8 +8,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,6 +19,7 @@ import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -207,12 +210,15 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
         sb.append("}");
 
-        log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, sb.toString(), method.getAllHeaders() });
+        if (log.isDebugEnabled())
+        {
+            log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders()) });
+        }
     }
 
     private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, ? extends Object> params, ResponseCallback<T> callback)
     {
-        DefaultHttpClient client = new DefaultHttpClient();
+        HttpClient client = newDefaultHttpClient();
         RemoteResponse response = null;
 
         try
@@ -252,7 +258,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        HttpClient client = new DefaultHttpClient();
+        HttpClient client = newDefaultHttpClient();
         if (cached)
         {
             client = new EtagCachingHttpClient(client, getStorage());
@@ -333,8 +339,34 @@ public class BaseRemoteRequestor implements RemoteRequestor
             IOUtils.copy(is, writer, "UTF-8");
             responseAsString = writer.toString();
         }
-        log.warn("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
-                new Object[] {method.getMethod(), method.getURI(), method.getAllHeaders(), method.getParams(), statusCode, responseAsString });
+
+        if (log.isWarnEnabled())
+        {
+            log.warn("Failed to properly execute request [{} {}], \nParams: {}, \nResponse code {}",
+                    new Object[] { method.getMethod(), method.getURI(), method.getParams(), statusCode });
+        }
+
+        if (log.isDebugEnabled())
+        {
+            log.debug("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
+                    new Object[] { method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
+                    statusCode, responseAsString });
+        }
+
+    }
+    
+    private Header[] sanitizeHeadersForLogging(Header[] headers)
+    {
+        List<Header> result = new LinkedList<Header>(Arrays.asList(headers));
+        Iterator<Header> iterator = result.iterator();
+        while (iterator.hasNext())
+        {
+            if (iterator.next().getName().toLowerCase().contains("authorization"))
+            {
+                iterator.remove();
+            }
+        }
+        return result.toArray(new Header[result.size()]);
     }
 
     protected String paramsToString(Map<String, String> parameters, boolean urlAlreadyHasParams)
@@ -398,10 +430,17 @@ public class BaseRemoteRequestor implements RemoteRequestor
         HttpConnectionParams.setConnectionTimeout(client.getParams(), connectionTimeout);
         HttpConnectionParams.setSoTimeout(client.getParams(), socketTimeout);
 
-        String apiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
-        proxyConfig.configureProxy(client, apiUrl + uri);
+        String remoteUrl;
+        if (uri.startsWith("http:/") || uri.startsWith("https:/")) {
+            remoteUrl = uri;
 
-        String finalUrl = afterFinalUriConstructed(method, apiUrl + uri, params);
+        } else {
+            String apiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
+            remoteUrl = apiUrl + uri;
+        }
+
+        proxyConfig.configureProxy(client, remoteUrl);
+        String finalUrl = afterFinalUriConstructed(method, remoteUrl, params);
         method.setURI(new URI(finalUrl));
         //
         logRequest(method, finalUrl, params);
@@ -410,6 +449,10 @@ public class BaseRemoteRequestor implements RemoteRequestor
         //
         onConnectionCreated(client, method, params);
 
+    }
+    
+    protected HttpClient newDefaultHttpClient() {
+        return new DefaultHttpClient();
     }
 
     protected interface ParameterProcessor

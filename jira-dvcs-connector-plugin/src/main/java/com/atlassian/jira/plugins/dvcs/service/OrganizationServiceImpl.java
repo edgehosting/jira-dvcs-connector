@@ -72,6 +72,15 @@ public class OrganizationServiceImpl implements OrganizationService
         return organizations;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getAllCount()
+    {
+        return organizationDao.getAllCount();
+    }
+
     @Override
     public Organization get(int organizationId, boolean loadRepositories)
     {

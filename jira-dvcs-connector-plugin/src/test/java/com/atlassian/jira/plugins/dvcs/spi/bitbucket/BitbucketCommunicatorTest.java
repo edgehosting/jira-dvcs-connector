@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,10 +33,13 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.BranchServiceImpl;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranch;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranchesAndTags;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetFile;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.BranchesAndTagsRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ChangesetRemoteRestpoint;
@@ -64,6 +68,9 @@ public class BitbucketCommunicatorTest
 
     @Mock
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
+
+    @Mock
+    private ChangesetCache changesetCache;
 
     private BranchService branchService;
 
@@ -165,7 +172,8 @@ public class BitbucketCommunicatorTest
 
         when(bitbucketClientBuilderFactory.forRepository(Matchers.any(Repository.class))).thenReturn(bitbucketClientBuilder);
 
-        communicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, branchService);
+        communicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, branchService, changesetCache);
+
         when(bitbucketClientBuilder.build()).thenReturn(bitbucketRemoteClient);
         when(bitbucketRemoteClient.getChangesetsRest()).thenReturn(changesetRestpoint);
         when(bitbucketRemoteClient.getBranchesAndTagsRemoteRestpoint()).thenReturn(branchesAndTagsRemoteRestpoint);
@@ -295,6 +303,8 @@ public class BitbucketCommunicatorTest
 
         public void mock()
         {
+            Mockito.reset(bitbucketBranchesAndTags, branchesAndTagsRemoteRestpoint, changesetRestpoint);
+
             when(bitbucketBranchesAndTags.getBranches()).thenReturn(
                     Lists.transform(Lists.newArrayList(heads.keySet()), new Function<String, BitbucketBranch>()
                     {
@@ -306,7 +316,9 @@ public class BitbucketCommunicatorTest
                     }));
             when(branchesAndTagsRemoteRestpoint.getBranchesAndTags(anyString(), anyString())).thenReturn(bitbucketBranchesAndTags);
 
-            when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), Mockito.anyMapOf(String.class, String.class), Mockito.anyInt())).then(new Answer<Iterable<BitbucketNewChangeset>>() {
+
+            when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), Mockito.anyMapOf(String.class, String.class), Mockito.anyInt())).then(new Answer<Iterable<BitbucketNewChangeset>>()
+            {
 
                 @Override
                 public Iterable<BitbucketNewChangeset> answer(InvocationOnMock invocation) throws Throwable
@@ -316,6 +328,27 @@ public class BitbucketCommunicatorTest
                     @SuppressWarnings("unchecked")
                     List<String> excludes = (List<String>)invocation.getArguments()[3];
                     return getIterable(includes, excludes);
+                }
+
+            });
+
+            when(changesetRestpoint.getChangeset(anyString(), anyString(), anyString())).then(new Answer<BitbucketChangeset>()
+            {
+
+                @Override
+                public BitbucketChangeset answer(InvocationOnMock invocation) throws Throwable
+                {
+                    String node = (String)invocation.getArguments()[2];
+
+                    BitbucketChangeset changeset = new BitbucketChangeset();
+                    changeset.setNode(node);
+                    changeset.setParents(new ArrayList<String>(parents.get(node)));
+                    changeset.setFiles(Collections.<BitbucketChangesetFile>emptyList());
+
+                    Data changesetData = data.get(node);
+                    changeset.setBranch(changesetData.branch);
+                    changeset.setUtctimestamp(changesetData.date);
+                    return changeset;
                 }
 
             });
@@ -459,7 +492,27 @@ public class BitbucketCommunicatorTest
 //             |
 //             1
         Graph graph = new Graph();
-        List<String> processedNodes = Lists.newArrayList();
+        final List<String> processedNodes = Lists.newArrayList();
+
+        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                return processedNodes.isEmpty();
+            }
+        });
+
+        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                String node = (String)invocation.getArguments()[1];
+
+                return processedNodes.contains(node);
+            }
+        });
 
         graph
             .commit("node1", null)
@@ -491,6 +544,15 @@ public class BitbucketCommunicatorTest
     @Test
     public void getChangesets_fullSync()
     {
+        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                return true;
+            }
+        });
+
         Graph graph = new Graph();
 
         graph
@@ -518,6 +580,59 @@ public class BitbucketCommunicatorTest
             .mock();
 
         checkSynchronization(graph, false);
+    }
+
+    @Test
+    public void getChangesets_softSyncWithNoHeads()
+    {
+        Graph graph = new Graph();
+        final List<String> processedNodes = Lists.newArrayList();
+
+        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                return false;
+            }
+        });
+
+        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                String node = (String)invocation.getArguments()[1];
+
+                return processedNodes.contains(node);
+            }
+        });
+
+        graph
+            .commit("node1", null)
+            .commit("node2", "node1")
+            .branch("node3", "node2")
+            .commit("node4", "node3")
+            .commit("node5", "node2")
+            .commit("node6", "node5")
+            .merge("node8", "node6", "node4")
+            .branch("B1", "node7", "node6")
+            .branch("node9", "node7")
+            .merge("node11", "node7", "node8", "node9")
+            .commit("node13", "node11")
+            .mock();
+
+        checkSynchronization(graph, processedNodes, true);
+
+        // add more commits
+        graph
+            .branch("B2", "node12", "node9")
+            .commit("node14", "node12")
+            .branch("B3", "node15", "node3")
+            .merge("node10", "node8", "node15")
+            .mock();
+
+        checkSynchronization(graph, processedNodes, true);
     }
 
     private void checkSynchronization(Graph graph, boolean softSync)

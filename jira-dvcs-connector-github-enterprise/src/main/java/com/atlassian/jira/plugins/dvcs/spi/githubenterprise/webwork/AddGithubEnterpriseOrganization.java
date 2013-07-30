@@ -66,7 +66,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
     private String redirectUserToGithub()
     {
-        String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddOrganizationProgressAction",
+        String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddOrganizationProgressAction!default",
                 url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
         // param "t" is holding information where to redirect from "wainting screen" (AddBitbucketOrganization, AddGithubOrganization ...)

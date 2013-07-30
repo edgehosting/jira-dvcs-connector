@@ -80,6 +80,12 @@ public class GithubCommunicatorTest
         {
             cache.add(node);
         }
+
+        @Override
+        public boolean isEmpty(int repositoryId)
+        {
+            return cache.isEmpty();
+        }
     }
 
     @BeforeMethod

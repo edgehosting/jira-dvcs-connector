@@ -150,6 +150,15 @@ public class OrganizationDaoImpl implements OrganizationDao
      * {@inheritDoc}
      */
     @Override
+    public int getAllCount()
+    {
+        return activeObjects.count(OrganizationMapping.class);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<Organization> getAllByType(String type)
     {
         Query query = Query.select().where(OrganizationMapping.DVCS_TYPE + " = ? ", type).order(OrganizationMapping.NAME);

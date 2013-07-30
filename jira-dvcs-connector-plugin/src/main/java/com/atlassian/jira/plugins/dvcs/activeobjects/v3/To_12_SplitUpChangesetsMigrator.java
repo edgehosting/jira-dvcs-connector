@@ -46,7 +46,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
     /**
      * Logger for this class.
      */
-    private final Logger logger = LoggerFactory.getLogger(To_12_SplitUpChangesetsMigrator.class);
+    private static final Logger logger = LoggerFactory.getLogger(To_12_SplitUpChangesetsMigrator.class);
 
     /**
      * @see #getModelVersion()

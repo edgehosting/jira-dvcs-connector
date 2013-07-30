@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.atlassian.jira.plugins</groupId>
 		<artifactId>jira-dvcs-connector-parent</artifactId>
-		<version>1.4.1-rc2-SNAPSHOT</version>
+		<version>1.4.1-rc8-SNAPSHOT</version>
 	</parent>
 
 	<organization>
@@ -256,6 +256,13 @@
 	</properties>
 
 	<profiles>
+        <profile>
+            <id>skipTests</id>
+            <properties>
+                <maven.test.unit.skip>true</maven.test.unit.skip>
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
 		<profile>
 			<id>dev-mysql</id>
 			<properties>

@@ -36,6 +36,31 @@ public class IssueKeyExtractorTest {
         };
     }
 
+    @DataProvider
+    private Object[][] singleIssueKeyWithinMessageDataProviderWithNumbers()
+    {
+        return new Object[][]
+            {
+                {"A1BC-123",                "A1BC-123"}, // exactly the key
+                {"AB8C-123 text",           "AB8C-123"}, // starting line with key
+                {"message A7BC-123",        "A7BC-123"}, // ending line with key
+                {"message AB9C-123 text",   "AB9C-123"}, // separated by whitespaces
+                {"message\nA2BC-123\ntext", "A2BC-123"}, // separated by newlines
+                {"message\rABC0-123\rtext", "ABC0-123"}, // separated by carriage returns
+                {"message.ABC789-123.text", "ABC789-123"}, // separated by dots
+                {"message:A1BC-123:text",   "A1BC-123"}, // separated by colons
+                {"message,A1BC-123,text",   "A1BC-123"}, // separated by commas
+                {"message;A1BC-123;text",   "A1BC-123"}, // separated by semicolons
+                {"message&AB1C-123&text",   "AB1C-123"}, // separated by ampersands
+                {"message=A1BC-123=text",   "A1BC-123"}, // separated by equal signs
+                {"message?A1BC-123?text",   "A1BC-123"}, // separated by question marks
+                {"message!AB1C-123!text",   "AB1C-123"}, // separated by exclamation marks
+                {"message/AB1C-123/text",   "AB1C-123"}, // separated by slashes
+                {"message\\A1BC-123\\text", "A1BC-123"}, // separated by back slashes
+                {"message~A1BC-123~text",   "A1BC-123"}, // separated by tildas
+            };
+    }
+
    @DataProvider
     private Object[][] multipleIssueKeysWithinMessageDataProvider()
     {
@@ -69,6 +94,8 @@ public class IssueKeyExtractorTest {
             {"message M-123 invalid key"},
             {"message MES- invalid key"},
             {"message -123 invalid key"},
+            {"message 1ABC-123 invalid key"},
+            {"message 123-123 invalid key"},
             {"should not parse key0MES-123"},
             {"should not parse MES-123key"},
             {"MES-123k invalid char"},
@@ -78,6 +105,15 @@ public class IssueKeyExtractorTest {
 
     @Test(dataProvider="singleIssueKeyWithinMessageDataProvider")
     public void extractorShouldExtractSingleIssueKeyCorrectly(String messageToExtract, String expectedExtractedKey)
+    {
+        Set<String> extractIssueKeys = IssueKeyExtractor.extractIssueKeys(messageToExtract);
+
+        assertThat(extractIssueKeys).hasSize(1);
+        assertThat(extractIssueKeys).containsOnly(expectedExtractedKey);
+    }
+
+    @Test(dataProvider="singleIssueKeyWithinMessageDataProviderWithNumbers")
+    public void extractorShouldExtractSingleIssueKeyWithNumbersCorrectly(String messageToExtract, String expectedExtractedKey)
     {
         Set<String> extractIssueKeys = IssueKeyExtractor.extractIssueKeys(messageToExtract);
 

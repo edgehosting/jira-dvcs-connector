@@ -29,7 +29,7 @@ public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
     {
         Organization organizationObject = getOrganizationObject();
         String organizationUrl = organizationObject.getHostUrl();
-        String githubAuthorizeUrl = getOAuthUtils(organizationObject).createGithubRedirectUrl(getRedirectAction(),
+        String githubAuthorizeUrl = getOAuthUtils(organizationObject).createGithubRedirectUrl(getRedirectActionAndCommand(),
                 organizationUrl, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
         return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
     }
@@ -39,9 +39,9 @@ public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
         return organizationService.get(Integer.parseInt(organization), false);
     }
 
-    protected String getRedirectAction()
+    protected String getRedirectActionAndCommand()
     {
-        return "RegenerateGithubOauthToken";
+        return "RegenerateGithubOauthToken!finish";
     }
 
     protected GithubOAuthUtils getOAuthUtils(Organization org)
