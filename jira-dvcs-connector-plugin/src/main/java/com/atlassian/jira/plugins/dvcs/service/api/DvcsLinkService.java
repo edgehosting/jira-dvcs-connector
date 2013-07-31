@@ -3,38 +3,42 @@ package com.atlassian.jira.plugins.dvcs.service.api;
 import com.atlassian.annotations.PublicApi;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 
+import java.util.List;
+import javax.annotation.Nonnull;
+
 /**
- * A subset/partial service of {@link com.atlassian.jira.plugins.dvcs.service.OrganizationService}, only exposing basic information that can be
- * consumed externally
+ * Gets the accounts for one or more organisations.
  *
- * @since v6.1
+ * @since 1.4.1
  */
+// a subset/partial service of {@link com.atlassian.jira.plugins.dvcs.service.OrganizationService},
+// only exposing basic information that can be consumed externally.
 @PublicApi
 public interface DvcsLinkService
 {
     /**
-     * returns Organization by ID.
+     * Finds an organization by its ID.
      *
-     * @param organizationId id
-     * @param loadRepositories the load repositories
-     * @return Organization
+     * @param organizationId ID of the organisation to find
+     * @param loadRepositories whether to load the repositories associated with the organisation
+     * @return the matching {@link Organization} or {@code null} if there is no match
      */
     Organization getDvcsLink(boolean loadRepositories, int organizationId);
 
     /**
-     * returns all organizations.
+     * Finds all the organizations.
      *
-     * @param loadRepositories the load repositories
-     * @return list of Organization
+     * @param loadRepositories whether to load the repositories associated with each organisation
+     * @return a list of {@link Organization}
      */
-    Iterable<Organization> getDvcsLinks(boolean loadRepositories);
+    List<Organization> getDvcsLinks(boolean loadRepositories);
 
     /**
-     * returns all organizations.
+     * Finds all the organizations matching a specific application (like BitBucket).
      *
-     * @param loadRepositories the load repositories
-     * @param applicationType type of dvcs application to get
-     * @return list of Organization
+     * @param loadRepositories whether to load the repositories associated with each organisation
+     * @param applicationType type of application the organisation must belong to
+     * @return a list of {@link Organization}
      */
-    Iterable<Organization> getDvcsLinks(boolean loadRepositories, String applicationType);
+    List<Organization> getDvcsLinks(boolean loadRepositories, @Nonnull String applicationType);
 }

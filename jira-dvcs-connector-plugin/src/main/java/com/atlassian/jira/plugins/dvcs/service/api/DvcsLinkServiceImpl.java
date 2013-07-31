@@ -2,15 +2,18 @@ package com.atlassian.jira.plugins.dvcs.service.api;
 
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import org.apache.commons.lang.StringUtils;
 
-/**
- * @since v6.1
- */
+import java.util.List;
+import javax.annotation.Nonnull;
+
+import static java.util.Collections.unmodifiableList;
+
 public class DvcsLinkServiceImpl implements DvcsLinkService
 {
     private final OrganizationService organizationService;
 
-    public DvcsLinkServiceImpl (OrganizationService organizationService)
+    public DvcsLinkServiceImpl(OrganizationService organizationService)
     {
         this.organizationService = organizationService;
     }
@@ -22,14 +25,18 @@ public class DvcsLinkServiceImpl implements DvcsLinkService
     }
 
     @Override
-    public Iterable<Organization> getDvcsLinks(boolean loadRepositories)
+    public List<Organization> getDvcsLinks(boolean loadRepositories)
     {
-        return organizationService.getAll(loadRepositories);
+        return unmodifiableList(organizationService.getAll(loadRepositories));
     }
 
     @Override
-    public Iterable<Organization> getDvcsLinks(boolean loadRepositories, String applicationType)
+    public List<Organization> getDvcsLinks(boolean loadRepositories, @Nonnull String applicationType)
     {
-        return organizationService.getAll(loadRepositories, applicationType);
+        if (StringUtils.isEmpty(applicationType))
+        {
+            throw new IllegalArgumentException("'applicationType' is null or empty");
+        }
+        return unmodifiableList(organizationService.getAll(loadRepositories, applicationType));
     }
 }
