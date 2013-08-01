@@ -90,8 +90,6 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
      */
     private String quote;
 
-    private DatabaseProvider provider;
-
     /**
      * View of over JDBC result.
      * 
@@ -576,8 +574,8 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
         this.entityManager = founded[0].getEntityManager();
         this.tableNameConverter = entityManager.getTableNameConverter();
-        this.provider = entityManager.getProvider();
-        this.connection = provider.getConnection();
+        this.databaseProvider = entityManager.getProvider();
+        this.connection = databaseProvider.getConnection();
         this.connection.setAutoCommit(false);
         this.quote = connection.getMetaData().getIdentifierQuoteString();
 
