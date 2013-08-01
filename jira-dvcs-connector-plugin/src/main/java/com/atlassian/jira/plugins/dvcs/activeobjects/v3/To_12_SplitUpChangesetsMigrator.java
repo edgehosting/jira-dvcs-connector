@@ -9,6 +9,7 @@ import java.util.Iterator;
 
 import javax.wsdl.Types;
 
+import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
 import net.java.ao.EntityManager;
 import net.java.ao.Query;
@@ -25,11 +26,11 @@ import com.atlassian.activeobjects.external.ModelVersion;
 /**
  * Realizes migration of issue key and project key from one table: {@link ChangesetMapping} into the {@link ChangesetMapping} and a
  * {@link IssueToChangesetMapping}.
- *
+ * 
  * For more information see BBC-415.
- *
+ * 
  * @author stanislav-dvorscak
- *
+ * 
  */
 // suppress deprecation - we want to have migrators stable as much as possible
 @SuppressWarnings("deprecation")
@@ -69,6 +70,11 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
     private EntityManager entityManager;
 
     /**
+     * Reference to database provider.
+     */
+    private DatabaseProvider databaseProvider;
+
+    /**
      * JDBC SQL connection.
      */
     private Connection connection;
@@ -84,11 +90,13 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
      */
     private String quote;
 
+    private DatabaseProvider provider;
+
     /**
      * View of over JDBC result.
-     *
+     * 
      * @author Stanislav Dvorscak
-     *
+     * 
      */
     private class ChangesetResult
     {
@@ -125,7 +133,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
         /**
          * Constructor.
-         *
+         * 
          * @param id
          *            {@link ChangesetMapping#getID()}
          * @param rawNode
@@ -153,9 +161,9 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Makes cursor/mapping between JDBC and {@link ChangesetResult}.
-     *
+     * 
      * @author Stanislav Dvorscak
-     *
+     * 
      */
     private class ChangesetResultCursor implements Iterator<ChangesetResult>
     {
@@ -172,7 +180,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
         /**
          * Constructor.
-         *
+         * 
          * @param resultSet
          */
         public ChangesetResultCursor(ResultSet resultSet)
@@ -236,9 +244,9 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Calculates and logs progress of migration - only for logging purposes.
-     *
+     * 
      * @author Stanislav Dvorscak
-     *
+     * 
      */
     private class Progress
     {
@@ -255,7 +263,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
         /**
          * Constructor.
-         *
+         * 
          * @param totalCount
          *            how much entities are awaiting.
          */
@@ -266,7 +274,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
         /**
          * Update progress by provided count of proceed entities.
-         *
+         * 
          * @param proceedCount
          */
         private void update(int proceedCount)
@@ -372,7 +380,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Removes all changesets pointed to on an un-existing repository.
-     *
+     * 
      * @throws SQLException
      */
     private void sanityClean() throws SQLException
@@ -390,7 +398,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Processes provided batch.
-     *
+     * 
      * @param changesetCursor
      *            cursor over batch
      * @param uniqueChangeset
@@ -495,7 +503,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
     }
 
     /**
-     *
+     * 
      * @param rawNode
      *            {@link ChangesetMapping#getRawNode()}
      * @param node
@@ -515,7 +523,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * It is responsible to find unique changeset after restart. It means to find changeset, which was already proceed for current node.
-     *
+     * 
      * @param activeObjects
      * @param currentNode
      * @return founded unique changeset
@@ -568,7 +576,8 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
         this.entityManager = founded[0].getEntityManager();
         this.tableNameConverter = entityManager.getTableNameConverter();
-        this.connection = entityManager.getProvider().getConnection();
+        this.provider = entityManager.getProvider();
+        this.connection = provider.getConnection();
         this.connection.setAutoCommit(false);
         this.quote = connection.getMetaData().getIdentifierQuoteString();
 
@@ -618,7 +627,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Fills {@link #newIssueToChangesetStatement()} by parameters for next batch part.
-     *
+     * 
      * @param statement
      *            get by {@link #newIssueToChangesetStatement()}
      * @param unique
@@ -657,7 +666,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Fills {@link #newRepositoryToChangesetStatement()} by parameters for next batch part.
-     *
+     * 
      * @param statement
      *            get by {@link #newRepositoryToChangesetStatement()}
      * @param unique
@@ -686,7 +695,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Fills {@link #newDeleteChangesetStatement()} by parameters for next batch part.
-     *
+     * 
      * @param statement
      *            get by {@link #newDeleteChangesetStatement()}
      * @param current
@@ -715,7 +724,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Fills {@link #newIssueToChangesetStatement()} by parameters for next batch.
-     *
+     * 
      * @param statement
      * @param unique
      * @throws SQLException
@@ -731,7 +740,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
     /**
      * Creates name of table for provided entity. The name is also sanitized.
-     *
+     * 
      * @param entity
      *            for which database entity
      * @return name of table
@@ -739,18 +748,22 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
     private String table(Class<? extends Entity> entity)
     {
         String tableName = tableNameConverter.getName(entity);
+
+        String quotedTableName;
         if (!StringUtils.isBlank(quote))
         {
-            return quote + tableName + quote;
+            quotedTableName = quote + tableName + quote;
         } else
         {
-            return tableName;
+            quotedTableName = tableName;
         }
+        
+        return databaseProvider.withSchema(quotedTableName);
     }
 
     /**
      * Sanitized provided name of column.
-     *
+     * 
      * @param columnName
      *            which will be sanitized
      * @return sanitized column
