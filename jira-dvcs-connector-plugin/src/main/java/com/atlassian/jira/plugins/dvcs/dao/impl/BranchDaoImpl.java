@@ -52,6 +52,7 @@ public class BranchDaoImpl implements BranchDao
             @Override
             public Void doInTransaction()
             {
+                log.debug("adding branch head {} for repository with id = [ {} ]", new Object[]{branchHead, repositoryId});
                 final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
                 map.put(BranchHeadMapping.REPOSITORY_ID, repositoryId);
                 map.put(BranchHeadMapping.BRANCH_NAME, branchHead.getName());
@@ -72,8 +73,8 @@ public class BranchDaoImpl implements BranchDao
             @Override
             public Void doInTransaction()
             {
+                log.debug("deleting branch head {} for repository with id = [ {} ]", new Object[]{branch, repositoryId});
                 Query query = Query.select().where(BranchHeadMapping.REPOSITORY_ID + " = ? AND " + BranchHeadMapping.BRANCH_NAME + " = ?", repositoryId, branch.getName());
-                log.debug("deleting branch {} for repository with id = [ {} ]", new Object[]{branch, repositoryId});
                 ActiveObjectsUtils.delete(activeObjects, BranchHeadMapping.class, query);
                 return null;
             }
