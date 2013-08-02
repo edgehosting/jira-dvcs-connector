@@ -74,7 +74,9 @@ public class BranchDaoImpl implements BranchDao
             public Void doInTransaction()
             {
                 log.debug("deleting branch head {} for repository with id = [ {} ]", new Object[]{branch, repositoryId});
-                Query query = Query.select().where(BranchHeadMapping.REPOSITORY_ID + " = ? AND " + BranchHeadMapping.BRANCH_NAME + " = ?", repositoryId, branch.getName());
+                Query query = Query.select().where(BranchHeadMapping.REPOSITORY_ID + " = ? AND "
+                                                    + BranchHeadMapping.BRANCH_NAME + " = ? AND "
+                                                    + BranchHeadMapping.HEAD + " = ?", repositoryId, branch.getName(), branch.getHead());
                 ActiveObjectsUtils.delete(activeObjects, BranchHeadMapping.class, query);
                 return null;
             }
