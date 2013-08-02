@@ -215,16 +215,16 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             //remote branch head list
             final List<BranchHead> newBranchHeads = getBranchHeads(repository);
-            log.debug("Currrent branch heads: ", newBranchHeads);
+            log.debug("Current branch heads for repository [{}]: {}", repository.getId(), newBranchHeads);
             //local branch head list
             List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repository);
-            log.debug("Previous branch heads: ", oldBranchHeads);
+            log.debug("Previous branch heads for repository [{}]: {}", repository.getId(), oldBranchHeads);
             Iterable<Changeset> result = null;
 
             // if we don't have any previous heads, but we there are some changesets, we will use old synchronization
             if (oldBranchHeads.isEmpty() && !changesetCache.isEmpty(repository.getId()))
             {
-                log.info("No previous branch heads were found, switching to old changeset synchronization.");
+                log.info("No previous branch heads were found, switching to old changeset synchronization for repository [{}].", repository.getId());
                 result = new Iterable<Changeset>()
                 {
                     @Override
@@ -265,7 +265,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     result = new NewChangesetIterableAdapter(repository, bitbucketChangesets);
                 } else
                 {
-                    log.debug("No new changesets detected.");
+                    log.debug("No new changesets detected for repository [{}].", repository.getId());
                     result = Collections.emptyList();
                 }
 
