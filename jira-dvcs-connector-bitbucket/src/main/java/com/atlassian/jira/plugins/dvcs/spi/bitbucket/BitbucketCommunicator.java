@@ -216,6 +216,11 @@ public class BitbucketCommunicator implements DvcsCommunicator
             //remote branch head list
             final List<BranchHead> newBranchHeads = getBranchHeads(repository);
             log.debug("Current branch heads for repository [{}]: {}", repository.getId(), newBranchHeads);
+            if (newBranchHeads.isEmpty())
+            {
+                // this can happen only when empty repository
+                return Collections.emptyList();
+            }
             //local branch head list
             List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repository);
             log.debug("Previous branch heads for repository [{}]: {}", repository.getId(), oldBranchHeads);
