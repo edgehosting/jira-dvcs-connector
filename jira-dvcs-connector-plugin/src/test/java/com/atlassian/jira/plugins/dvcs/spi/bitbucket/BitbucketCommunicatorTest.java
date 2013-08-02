@@ -529,6 +529,7 @@ public class BitbucketCommunicatorTest
             .mock();
 
         checkSynchronization(graph, processedNodes, true);
+        checkSynchronization(graph, processedNodes, true);
 
         // add more commits
         graph
@@ -538,6 +539,7 @@ public class BitbucketCommunicatorTest
             .merge("node10", "node8", "node15")
             .mock();
 
+        checkSynchronization(graph, processedNodes, true);
         checkSynchronization(graph, processedNodes, true);
     }
 
@@ -623,6 +625,7 @@ public class BitbucketCommunicatorTest
             .mock();
 
         checkSynchronization(graph, processedNodes, true);
+        checkSynchronization(graph, processedNodes, true);
 
         // add more commits
         graph
@@ -632,6 +635,7 @@ public class BitbucketCommunicatorTest
             .merge("node10", "node8", "node15")
             .mock();
 
+        checkSynchronization(graph, processedNodes, true);
         checkSynchronization(graph, processedNodes, true);
     }
 
