@@ -14,11 +14,11 @@ com.atlassian.jira.dvcs.showChangesetByFork = function(node, repoId, repoName, r
     AJS.$('#' + node + '-' + repoId).show();
     
     registerForksTooltip(node, repoName, repoUrl);
-}
+};
 
 com.atlassian.jira.dvcs.registerForksTooltip = function(node, repoName, repoUrl) {
     com.atlassian.jira.dvcs.registerInlineDialogTooltip(AJS.$('#fork-drop-down-' + node), "This changeset is present in multiple repositories (forks). Currently showing <a href='"+repoUrl+"' target='_blank'>" + repoName + "</a>.");
-}
+};
 
 com.atlassian.jira.dvcs.registerInlineDialogTooltip = function (element, body) {
     AJS.InlineDialog(AJS.$(element), 'tooltip_' + AJS.$(element).attr('id'),
@@ -29,4 +29,4 @@ com.atlassian.jira.dvcs.registerInlineDialogTooltip = function (element, body) {
             },
             {onHover : true, hideDelay : 200, showDelay : 1000, arrowOffsetX : -8, offsetX : -80, addActiveClass : false}
         );
-}
+};
