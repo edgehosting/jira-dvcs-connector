@@ -45,7 +45,7 @@ function forceSync(event, repositoryId) {
         if (!dialog) {
             dialog = AJS.InlineDialog(AJS.$("#jira-dvcs-connector-forceSyncDialog-" + repositoryId), "jira-dvcs-connector-forceSyncDialog" + repositoryId, function (content, trigger, showPopup) {
                 content.html(jira.dvcs.connector.plugin.soy.forceSyncDialog({
-                    'repositoryId':repositoryId,
+                    'repositoryId':repositoryId
                 }));
                 showPopup();
                 return false;
@@ -166,6 +166,8 @@ function showAddRepoDetails(show) {
     dialog.gotoPanel(0);
     dialog.show();
     dialog.updateHeight();
+
+    triggerAnalyticsEvent("add.started");
 }
 
 function createAddOrganizationDialog(action) {
@@ -182,7 +184,8 @@ function createAddOrganizationDialog(action) {
     dialog.addPanel("", jira.dvcs.connector.plugin.soy.addOrganizationDialog({
         isOnDemandLicense:jira.dvcs.connector.plugin.onDemandLicense,
         atlToken:jira.dvcs.connector.plugin.atlToken,
-        oAuthStore:jira.dvcs.connector.plugin.oAuthStore
+        oAuthStore:jira.dvcs.connector.plugin.oAuthStore,
+        source: getSourceDiv().data("source")
     }), "panel-body");
 
     dialog.addButtonPanel();
@@ -197,6 +200,7 @@ function createAddOrganizationDialog(action) {
         AJS.$("#repoEntry").trigger('reset');
         AJS.$("#aui-message-bar").empty();
         dialog.hide();
+        triggerAnalyticsEvent("add.cancelled");
     }, "#");
 
     AJS.$('#urlSelect').change(function (event) {
@@ -225,6 +229,7 @@ function createAddOrganizationDialog(action) {
         AJS.$("#repoEntry").trigger('reset');
         AJS.$("#aui-message-bar").empty();
         dialog.hide();
+        triggerAnalyticsEvent("add.cancelled");
     }, "#");
 
     dialog.enabled = function (enabled) {
@@ -373,7 +378,7 @@ function configureDefaultGroups(orgName, id) {
         body:jira.dvcs.connector.plugin.soy.defaultGroupsForm({
             'baseUrl':BASE_URL,
             'atlToken':jira.dvcs.connector.plugin.atlToken,
-            'organizationIdDefaultGroups':id,
+            'organizationIdDefaultGroups':id
         }),
         submitButtonLabel:"Save",
         okAction:function (dialog) { AJS.$("#configureDefaultGroupsForm").submit();}
@@ -391,7 +396,7 @@ function configureDefaultGroups(orgName, id) {
                 if (dialog.isAttached()) {
 	                AJS.$(".dialog-panel-body #configureDefaultGroupsContent").html(jira.dvcs.connector.plugin.soy.defaultGroups({
 	                	organization: data.organization,
-	                	groups: data.groups,
+	                	groups: data.groups
 	                }));
                     dialog.updateHeight();
                     dialog.enableActions();
@@ -924,6 +929,18 @@ function parseAccountUrl(url) {
     var matches = url.match(pattern);
     if (matches)
         return {hostUrl:matches[1], name:matches[2]};
+}
+
+function getSourceDiv()
+{
+    return AJS.$("#dvcs-connect-source");
+}
+
+function triggerAnalyticsEvent(eventType) {
+    if (AJS.EventQueue) {
+        var source = getSourceDiv().data("sourceOrDefault");
+        AJS.EventQueue.push({name: "jira.dvcsconnector.config." + eventType + "." + source});
+    }
 }
 
 //------------------------------------------------------------

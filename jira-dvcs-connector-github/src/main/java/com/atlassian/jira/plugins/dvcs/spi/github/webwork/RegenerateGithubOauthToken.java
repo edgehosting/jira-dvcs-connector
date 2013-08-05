@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
+import com.atlassian.event.api.EventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,10 +18,11 @@ public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
     private String code;
     protected final String baseUrl;
 
-    public RegenerateGithubOauthToken(OrganizationService organizationService, RepositoryService repositoryService,
+    public RegenerateGithubOauthToken(EventPublisher eventPublisher,
+            OrganizationService organizationService, RepositoryService repositoryService,
             ApplicationProperties applicationProperties)
     {
-        super(organizationService, repositoryService);
+        super(eventPublisher, organizationService, repositoryService);
         this.baseUrl = applicationProperties.getBaseUrl();
     }
 
