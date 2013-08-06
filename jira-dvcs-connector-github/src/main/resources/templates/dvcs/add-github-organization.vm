@@ -16,7 +16,7 @@
    
 	   <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddGithubOrganization.jspa" class="aui long-label">
            #if ($source)
-               <input type="hidden" name="source" value="$source">
+               <input type="hidden" name="source" value="$textutils.htmlEncode($source)">
            #end
 	      <input type="hidden" name="atl_token" value="$atl_token">
 	      <input type="hidden" name="autoLinking" id="autoLinking" value="$action.autoLinking">
@@ -114,7 +114,7 @@
 	    });
 	 	ddialog.addLink("Cancel",  function (dialog) {
 	 	   return true;
-	 	}, "", "${baseurl}/secure/admin/ConfigureDvcsOrganizations.jspa?atl_token=${atl_token}}#if($source)&source=${source}#end");
+	 	}, "", "${baseurl}/secure/admin/ConfigureDvcsOrganizations.jspa?atl_token=${atl_token}}#if($source)&source=$textutils.htmlEncode(${source})#end");
 	 	ddialog.show();
 	 	ddialog.updateHeight();
 	 	

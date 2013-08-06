@@ -7,8 +7,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * Base class for all dvcs analytics events.
- *
- * @since v6.1
  */
 public abstract class DvcsConfigAnalyticsEvent
 {

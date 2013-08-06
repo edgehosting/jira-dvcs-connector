@@ -2,8 +2,6 @@ package com.atlassian.jira.plugins.dvcs.analytics;
 
 /**
  * Analytics event to indicate that an add organization process has ended.
- *
- * @since v6.1
  */
 public class DvcsConfigAddEndedAnalyticsEvent extends DvcsConfigAddLifecycleAnalyticsEvent
 {

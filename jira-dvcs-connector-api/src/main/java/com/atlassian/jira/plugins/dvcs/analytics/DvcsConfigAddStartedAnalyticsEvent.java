@@ -2,8 +2,6 @@ package com.atlassian.jira.plugins.dvcs.analytics;
 
 /**
  * Analytics event to indicate that an add organization process has started.
- *
- * @since v6.1
  */
 public class DvcsConfigAddStartedAnalyticsEvent extends DvcsConfigAddLifecycleAnalyticsEvent
 {
