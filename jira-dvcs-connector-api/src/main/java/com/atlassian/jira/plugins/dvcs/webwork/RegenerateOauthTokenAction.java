@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -19,8 +20,10 @@ public abstract class RegenerateOauthTokenAction extends CommonDvcsConfiguration
     protected final OrganizationService organizationService;
     protected final RepositoryService repositoryService;
 
-    public RegenerateOauthTokenAction(OrganizationService organizationService, RepositoryService repositoryService)
+    public RegenerateOauthTokenAction(EventPublisher eventPublisher,
+            OrganizationService organizationService, RepositoryService repositoryService)
     {
+        super(eventPublisher);
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
     }

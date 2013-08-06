@@ -211,10 +211,14 @@
  * @param isOnDemandLicense
  * @param atlToken
  * @param oAuthStore
+ * @param? source the source of the configuration, e.g., jira.devtools.
  */
 {template .addOrganizationDialog}
 	<form class="aui long-label" id="repoEntry" method="post"  >
-	
+
+	    {if $source}
+    	    <input type="hidden" name="source" id="source" value="{$source}">
+	    {/if}
 	    <input type="hidden" name="atl_token" id="atl_token" value="{$atlToken}">
 	    <input type="hidden" name="isPrivate" id="isPrivate">
 	    <input type="hidden" name="url" id="url" >
