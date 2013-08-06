@@ -1,11 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import com.atlassian.annotations.PublicApi;
 
 /**
  * The Interface AccountsConfigProvider.
  */
-@PublicApi
 public interface AccountsConfigProvider
 {
 

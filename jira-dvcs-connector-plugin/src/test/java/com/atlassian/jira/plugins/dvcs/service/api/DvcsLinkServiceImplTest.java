@@ -1,23 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.service.api;
 
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertSame;
+import static org.testng.Assert.fail;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.when;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-@RunWith (MockitoJUnitRunner.class)
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+
 public class DvcsLinkServiceImplTest
 {
     @Mock
@@ -25,6 +25,13 @@ public class DvcsLinkServiceImplTest
 
     @InjectMocks
     private DvcsLinkServiceImpl dvcsLinkService;
+
+    @BeforeMethod
+    public void initializeMocks()
+    {
+        dvcsLinkService = null;
+        MockitoAnnotations.initMocks(this);
+    }
 
     @Test
     public void testGetDvcsLink() throws Exception
