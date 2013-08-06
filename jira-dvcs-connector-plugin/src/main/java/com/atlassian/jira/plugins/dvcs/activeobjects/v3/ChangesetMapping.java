@@ -37,10 +37,10 @@ public interface ChangesetMapping extends Entity
      */
     public static final int LATEST_VERSION = 3;
 
-    @ManyToMany(value = RepositoryToChangesetMapping.class)
+    @ManyToMany(reverse = "getChangeset", through = "getRepository", value = RepositoryToChangesetMapping.class)
     RepositoryMapping[] getRepositories();
 
-    @OneToMany
+    @OneToMany(reverse = "getChangeset")
     IssueToChangesetMapping[] getIssues();
 
     String getNode();

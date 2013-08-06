@@ -18,17 +18,16 @@
 			registerDropdownCheckboxHandlers();
         }
 		
-		if (typeof jira == 'undefined') { var jira = {}; }
-		if (typeof jira.dvcs == 'undefined') { jira.dvcs = {}; }
-		if (typeof jira.dvcs.connector == 'undefined') { jira.dvcs.connector = {}; }
-		if (typeof jira.dvcs.connector.plugin == 'undefined') { jira.dvcs.connector.plugin = {}; }
+		if (typeof dvcs == 'undefined') { var dvcs = {}; }
+		if (typeof dvcs.connector == 'undefined') { dvcs.connector = {}; }
+		if (typeof dvcs.connector.plugin == 'undefined') { dvcs.connector.plugin = {}; }
 		
-		jira.dvcs.connector.plugin.onDemandLicense = $action.isOnDemandLicense();
-		jira.dvcs.connector.plugin.atlToken = "$atl_token";
+		dvcs.connector.plugin.onDemandLicense = $action.isOnDemandLicense();
+		dvcs.connector.plugin.atlToken = "$atl_token";
 				
         #set($oAuthStore = $action.getOAuthStore())
         
-        jira.dvcs.connector.plugin.oAuthStore = {
+        dvcs.connector.plugin.oAuthStore = {
             bitbucket : {
                 key: '$!oAuthStore.getClientId("bitbucket")',
                 secret: '$!oAuthStore.getSecret("bitbucket")'
