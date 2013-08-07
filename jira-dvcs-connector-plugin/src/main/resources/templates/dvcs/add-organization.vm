@@ -71,7 +71,7 @@
 	    <br/>
 
 	   <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account" />
-       <div style="display: hidden" id="dvcs-connect-source"#if($source) data-source="$textutils.htmlEncode(${source})"#end data-source-or-default="$textutils.htmlEncode(${sourceOrDefault})" />
+       <div style="display: hidden" id="dvcs-connect-source"#if($source) data-source="$textutils.htmlEncode(${source})"#end data-source-or-default="$textutils.htmlEncode(${sourceOrDefault})"></div>
 
        <div id="organization-list">
            #printOrganizations()
