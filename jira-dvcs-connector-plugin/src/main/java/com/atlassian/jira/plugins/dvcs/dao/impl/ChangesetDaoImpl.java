@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
+import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping;
@@ -39,10 +40,12 @@ public class ChangesetDaoImpl implements ChangesetDao
 
     private final ActiveObjects activeObjects;
     private final ChangesetTransformer transformer = new ChangesetTransformer();
+    private QueryHelper queryHelper;
 
-    public ChangesetDaoImpl(ActiveObjects activeObjects)
+    public ChangesetDaoImpl(ActiveObjects activeObjects, QueryHelper queryHelper)
     {
         this.activeObjects = activeObjects;
+        this.queryHelper = queryHelper;
     }
 
     private List<Changeset> transform(ChangesetMapping changesetMapping)
@@ -82,7 +85,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 // delete association issues - changeset
                 query = Query.select().where(
                         IssueToChangesetMapping.CHANGESET_ID + " not in  " +
-                                "(select \"" + RepositoryToChangesetMapping.CHANGESET_ID + "\" from \"" + RepositoryToChangesetMapping.TABLE_NAME + "\")");
+                                "(select " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + " from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + ")");
                 log.debug("deleting orphaned issue-changeset associations");
                 ActiveObjectsUtils.delete(activeObjects, IssueToChangesetMapping.class, query);
 
@@ -90,7 +93,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 // delete orphaned changesets
                 query = Query.select().where(
                         "ID not in  " +
-                                "(select \"" + RepositoryToChangesetMapping.CHANGESET_ID + "\" from \"" + RepositoryToChangesetMapping.TABLE_NAME + "\")");
+                                "(select " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + " from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + ")");
                 log.debug("deleting orphaned changesets");
                 ActiveObjectsUtils.delete(activeObjects, ChangesetMapping.class, query);
 

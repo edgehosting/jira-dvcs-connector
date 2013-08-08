@@ -21,6 +21,7 @@
 
     <component-import key="templateRenderer" interface="com.atlassian.templaterenderer.TemplateRenderer" />
     <component-import key="ao" name="Active Objects" interface="com.atlassian.activeobjects.external.ActiveObjects" />
+    <component-import key="dataSourceProvider" name="Data Source Provider" interface="com.atlassian.activeobjects.spi.DataSourceProvider" />
     <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />
     <component-import key="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory" />
     <component-import key="requestFactory" interface="com.atlassian.sal.api.net.RequestFactory" />
@@ -125,6 +126,10 @@
     </component>
     <component key="defferedBitbucketLinker" name="defferedBitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.DeferredBitbucketLinker">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
+    </component>
+    
+    <component key="queryHelper" class="com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelperImpl">
+    	<interface>com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper</interface>
     </component>
 
     <component key="bitbucketProjectSettings" name="Bitbucket Project Settings Component"
