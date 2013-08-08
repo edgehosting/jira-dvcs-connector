@@ -133,7 +133,7 @@ public class GithubCommunicator implements DvcsCommunicator
             while (iterator.hasNext())
             {
                 org.eclipse.egit.github.core.Repository ghRepository = iterator.next();
-                if (StringUtils.equals(ghRepository.getOwner().getLogin(), organization.getName()))
+                if (StringUtils.equalsIgnoreCase(ghRepository.getOwner().getLogin(), organization.getName()))
                 {
                     Repository repository = new Repository();
                     repository.setSlug(ghRepository.getName());
