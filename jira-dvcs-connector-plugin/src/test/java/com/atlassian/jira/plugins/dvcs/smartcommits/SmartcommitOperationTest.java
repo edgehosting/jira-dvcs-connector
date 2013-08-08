@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
@@ -14,8 +15,10 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
+
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -40,19 +43,22 @@ public class SmartcommitOperationTest
     private static final int CHANGESET_ID = 1;
     private static final int REPOSITORY_ID = 100;
 
-	CommitMessageParser commitMessageParser = new DefaultCommitMessageParser();
+    private CommitMessageParser commitMessageParser = new DefaultCommitMessageParser();
 
 	@Mock
-	SmartcommitsService smartcommitsServiceMock;
+	private SmartcommitsService smartcommitsServiceMock;
 
     @Mock
-    SmartcommitsChangesetsProcessor changesetsProcessorMock;
+    private SmartcommitsChangesetsProcessor changesetsProcessorMock;
 
     @Mock
-	ActiveObjects activeObjectsMock;
+    private ActiveObjects activeObjectsMock;
+    
+    @Mock
+    private QueryHelper queryHelper;
 
     @Mock
-    Repository repositoryMock;
+    private Repository repositoryMock;
 
     @Mock
     private ChangesetService changesetServiceMock;
@@ -72,7 +78,7 @@ public class SmartcommitOperationTest
     {
         MockitoAnnotations.initMocks(this);
 
-		changesetDao = new ChangesetDaoImpl(activeObjectsMock);
+		changesetDao = new ChangesetDaoImpl(activeObjectsMock, queryHelper);
 
         synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
 		operation = new SmartcommitOperation(changesetDao, commitMessageParser, smartcommitsServiceMock, synchronizer, repositoryMock, changesetServiceMock);
