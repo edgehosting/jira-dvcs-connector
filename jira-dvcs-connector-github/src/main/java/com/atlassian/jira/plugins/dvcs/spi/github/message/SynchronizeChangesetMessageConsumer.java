@@ -3,6 +3,8 @@ package com.atlassian.jira.plugins.dvcs.spi.github.message;
 import java.util.Date;
 import java.util.Set;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,74 +42,34 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
     public static final String KEY = SynchronizeChangesetMessage.class.getCanonicalName();
 
     /**
-     * @see #setDvcsCommunicatorProvider(DvcsCommunicatorProvider)
+     * Injected {@link DvcsCommunicatorProvider} dependency.
      */
+    @Resource
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
     /**
-     * @see #setChangesetService(ChangesetService)
+     * Injected {@link ChangesetService} dependency.
      */
+    @Resource
     private ChangesetService changesetService;
 
     /**
-     * @see #setRepositoryService(RepositoryService)
+     * Injected {@link RepositoryService} dependency.
      */
+    @Resource
     private RepositoryService repositoryService;
 
     /**
-     * @see #setLinkedIssueService(LinkedIssueService)
+     * Injected {@link LinkedIssueService} dependency.
      */
+    @Resource
     private LinkedIssueService linkedIssueService;
 
     /**
-     * @see #setMessagingService(MessagingService)
+     * Injected {@link MessagingService} dependency.
      */
+    @Resource
     private MessagingService messagingService;
-
-    /**
-     * @param dvcsCommunicatorProvider
-     *            injected {@link DvcsCommunicatorProvider} dependency
-     */
-    public void setDvcsCommunicatorProvider(DvcsCommunicatorProvider dvcsCommunicatorProvider)
-    {
-        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-    }
-
-    /**
-     * @param changesetService
-     *            injected {@link ChangesetService} dependency
-     */
-    public void setChangesetService(ChangesetService changesetService)
-    {
-        this.changesetService = changesetService;
-    }
-
-    /**
-     * @param repositoryService
-     *            injected {@link RepositoryService} dependency
-     */
-    public void setRepositoryService(RepositoryService repositoryService)
-    {
-        this.repositoryService = repositoryService;
-    }
-
-    /**
-     * @param linkedIssueService
-     *            injected {@link LinkedIssueService} dependency
-     */
-    public void setLinkedIssueService(LinkedIssueService linkedIssueService)
-    {
-        this.linkedIssueService = linkedIssueService;
-    }
-
-    /**
-     * @param messagingService
-     *            injected {@link MessagingService} dependency
-     */
-    public void setMessagingService(MessagingService messagingService)
-    {
-        this.messagingService = messagingService;
-    }
 
     /**
      * {@inheritDoc}

@@ -11,11 +11,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -65,52 +66,30 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             new LinkedBlockingQueue<Runnable>(), ThreadFactories.namedThreadFactory("DVCSConnectoRemoveRepositoriesExecutorThread"));
 
     /** The communicator provider. */
-    private final DvcsCommunicatorProvider communicatorProvider;
+    @Resource
+    private DvcsCommunicatorProvider communicatorProvider;
 
     /** The repository dao. */
-    private final RepositoryDao repositoryDao;
+    @Resource
+    private RepositoryDao repositoryDao;
 
-    private final MessagingService messagingService;
+    @Resource
+    private MessagingService messagingService;
 
     /** The synchronizer. */
-    private final Synchronizer synchronizer;
+    @Resource
+    private Synchronizer synchronizer;
 
     /** The changeset service. */
-    private final ChangesetService changesetService;
+    @Resource
+    private ChangesetService changesetService;
 
     /** The application properties. */
-    private final ApplicationProperties applicationProperties;
+    @Resource
+    private ApplicationProperties applicationProperties;
 
-    private final PluginSettingsFactory pluginSettingsFactory;
-
-    /**
-     * The Constructor.
-     * 
-     * @param communicatorProvider
-     *            the communicator provider
-     * @param repositoryDao
-     *            the repository dao
-     * @param synchronizer
-     *            the synchronizer
-     * @param changesetService
-     *            the changeset service Add a comment to this line
-     * @param messagingService
-     *            injected messaginService
-     * @param applicationProperties
-     *            the application properties
-     */
-    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
-            ChangesetService changesetService, MessagingService messagingService, ApplicationProperties applicationProperties,
-            PluginSettingsFactory pluginSettingsFactory)
-    {
-        this.communicatorProvider = communicatorProvider;
-        this.repositoryDao = repositoryDao;
-        this.synchronizer = synchronizer;
-        this.changesetService = changesetService;
-        this.messagingService = messagingService;
-        this.applicationProperties = applicationProperties;
-        this.pluginSettingsFactory = pluginSettingsFactory;
-    }
+    @Resource
+    private PluginSettingsFactory pluginSettingsFactory;
 
     /**
      * {@inheritDoc}

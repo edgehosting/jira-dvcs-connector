@@ -59,8 +59,7 @@ public class RepositoryServiceTest
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
-        repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer, changesetService,
-                applicationProperties, settings);
+        repositoryService = new RepositoryServiceImpl();
     }
 
     @Test

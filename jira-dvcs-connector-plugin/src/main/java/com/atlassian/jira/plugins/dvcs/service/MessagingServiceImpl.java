@@ -3,6 +3,8 @@ package com.atlassian.jira.plugins.dvcs.service;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Resource;
+
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageRouter;
@@ -17,16 +19,22 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 public class MessagingServiceImpl implements MessagingService
 {
 
-    private final MessageRouter messageRouter;
+    /**
+     * Injected {@link MessageRouter} dependency.
+     */
+    @Resource
+    private MessageRouter messageRouter;
 
     /**
      * Maps identity of message key to appropriate message key.
      */
     private final Map<String, MessageKey<?>> idToMessageKey = new ConcurrentHashMap<String, MessageKey<?>>();
 
-    public MessagingServiceImpl(MessageRouter messageRouter)
+    /**
+     * Constructor.
+     */
+    public MessagingServiceImpl()
     {
-        this.messageRouter = messageRouter;
     }
 
     /**

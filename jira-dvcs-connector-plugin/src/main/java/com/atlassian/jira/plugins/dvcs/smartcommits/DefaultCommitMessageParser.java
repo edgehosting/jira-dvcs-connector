@@ -14,7 +14,6 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
  * Originally from com.atlassian.jirafisheyeplugin.notifications.CommitCommentParser
  * @author jhinch
  */
-@Component
 public class DefaultCommitMessageParser implements CommitMessageParser {
 
     public static final Pattern JIRA_ISSUE_PATTERN = Pattern.compile("(?<![&=\\?>^!~/\\-])\\b(\\p{Lu}{2,}-\\p{Digit}+)\\b");
