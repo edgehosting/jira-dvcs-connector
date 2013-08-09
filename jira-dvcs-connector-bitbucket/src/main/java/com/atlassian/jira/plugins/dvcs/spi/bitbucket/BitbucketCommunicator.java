@@ -214,7 +214,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             //remote branch head list
-            final List<BranchHead> newBranchHeads = getBranchHeads(repository);
+            final List<BranchHead> newBranchHeads = getBranches(repository);
             log.debug("Current branch heads for repository [{}]: {}", repository.getId(), newBranchHeads);
             if (newBranchHeads.isEmpty())
             {
@@ -303,7 +303,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
         return result;
     }
 
-    private List<BranchHead> getBranchHeads(Repository repository)
+    @Override
+    public List<BranchHead> getBranches(Repository repository)
     {
         List<BranchHead> branches = new ArrayList<BranchHead>();
         BitbucketBranchesAndTags branchesAndTags = retrieveBranchesAndTags(repository);

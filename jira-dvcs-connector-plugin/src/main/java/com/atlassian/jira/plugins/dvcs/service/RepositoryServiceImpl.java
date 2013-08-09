@@ -20,6 +20,7 @@ import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser.UnknownUser;
@@ -29,7 +30,6 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
@@ -83,6 +83,12 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     /** The changeset service. */
     @Resource
     private ChangesetService changesetService;
+
+    /**
+     * Injected {@link BranchService} dependency.
+     */
+    @Resource
+    private BranchService branchService;
 
     /** The application properties. */
     @Resource
@@ -192,7 +198,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Removes duplicated repositories.
-     *
+     * 
      * @param organization
      * @param storedRepositories
      */
@@ -215,12 +221,16 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Adds the new repositories.
-     *
-     * @param storedRepositories the stored repositories
-     * @param remoteRepositories the remote repositories
-     * @param organization       the organization
+     * 
+     * @param storedRepositories
+     *            the stored repositories
+     * @param remoteRepositories
+     *            the remote repositories
+     * @param organization
+     *            the organization
      */
-    private Set<String> addNewReposReturnNewSlugs(List<Repository> storedRepositories, List<Repository> remoteRepositories, Organization organization)
+    private Set<String> addNewReposReturnNewSlugs(List<Repository> storedRepositories, List<Repository> remoteRepositories,
+            Organization organization)
     {
         Set<String> newRepoSlugs = new HashSet<String>();
         Map<String, Repository> remoteRepos = makeRepositoryMap(remoteRepositories);
@@ -256,8 +266,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                     addOrRemovePostcommitHook(savedRepository, getPostCommitUrl(savedRepository));
                 } catch (SourceControlException.PostCommitHookRegistrationException e)
                 {
-                    log.warn("Adding postcommit hook for repository "
-                            + savedRepository.getRepositoryUrl() + " failed: ", e);
+                    log.warn("Adding postcommit hook for repository " + savedRepository.getRepositoryUrl() + " failed: ", e);
                     updateAdminPermission(savedRepository, false);
                     // if the user didn't have rights to add post commit hook, just unlink the repository
                     savedRepository.setLinked(false);
@@ -286,9 +295,11 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Removes the deleted repositories.
-     *
-     * @param storedRepositories the stored repositories
-     * @param remoteRepositories the remote repositories
+     * 
+     * @param storedRepositories
+     *            the stored repositories
+     * @param remoteRepositories
+     *            the remote repositories
      */
     private void removeDeletedRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories)
     {
@@ -307,12 +318,12 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     }
 
     /**
-     * Updates existing repositories
-     * - undelete existing deleted
-     * - updates names.
-     *
-     * @param storedRepositories the stored repositories
-     * @param remoteRepositories the remote repositories
+     * Updates existing repositories - undelete existing deleted - updates names.
+     * 
+     * @param storedRepositories
+     *            the stored repositories
+     * @param remoteRepositories
+     *            the remote repositories
      */
     private void updateExistingRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories)
     {
@@ -333,10 +344,10 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     }
 
     /**
-     * Converts collection of repository objects into map where key is
-     * repository slug and value is repository object.
-     *
-     * @param repositories the repositories
+     * Converts collection of repository objects into map where key is repository slug and value is repository object.
+     * 
+     * @param repositories
+     *            the repositories
      * @return the map< string, repository>
      */
     private Map<String, Repository> makeRepositoryMap(Collection<Repository> repositories)
@@ -369,7 +380,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * synchronization of changesets in all repositories which are in given organization
-     * @param organizationId organizationId
+     * 
+     * @param organizationId
+     *            organizationId
      * @param soft
      * @param newRepoSlugs
      */
@@ -395,9 +408,11 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Do sync.
-     *
-     * @param repository the repository
-     * @param softSync   the soft sync
+     * 
+     * @param repository
+     *            the repository
+     * @param softSync
+     *            the soft sync
      */
     private void doSync(Repository repository, boolean softSync)
     {
@@ -413,10 +428,10 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 }
 
                 Date synchronizationStartedAt = new Date();
-                for (BranchTip branchTip : communicatorProvider.getCommunicator(repository.getDvcsType()).getBranches(repository))
+                for (BranchHead branchHead : communicatorProvider.getCommunicator(repository.getDvcsType()).getBranches(repository))
                 {
                     SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repository, //
-                            branchTip.getBranchName(), branchTip.getNode(), //
+                            branchHead.getName(), branchHead.getHead(), //
                             synchronizationStartedAt, //
                             null);
                     MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
@@ -529,9 +544,11 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Adds the or remove postcommit hook.
-     *
-     * @param repository the repository
-     * @param post       commit callback url
+     * 
+     * @param repository
+     *            the repository
+     * @param post
+     *            commit callback url
      */
     private void addOrRemovePostcommitHook(Repository repository, String postCommitCallbackUrl)
     {
@@ -550,8 +567,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Gets the post commit url.
-     *
-     * @param repo the repo
+     * 
+     * @param repo
+     *            the repo
      * @return the post commit url
      */
     private String getPostCommitUrl(Repository repo)
@@ -615,8 +633,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Removes the postcommit hook.
-     *
-     * @param repository the repository
+     * 
+     * @param repository
+     *            the repository
      */
     private void removePostcommitHook(Repository repository)
     {
@@ -627,8 +646,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             communicator.removePostcommitHook(repository, postCommitUrl);
         } catch (Exception e)
         {
-            log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId()
-                    + ", slug = " + repository.getRepositoryUrl(), e);
+            log.warn(
+                    "Failed to uninstall postcommit hook for repository id = " + repository.getId() + ", slug = "
+                            + repository.getRepositoryUrl(), e);
         }
     }
 

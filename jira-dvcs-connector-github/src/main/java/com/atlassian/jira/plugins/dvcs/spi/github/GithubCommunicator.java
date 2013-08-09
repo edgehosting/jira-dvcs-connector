@@ -397,7 +397,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
-    private List<BranchHead> getBranches(Repository repository)
+    public List<BranchHead> getBranches(Repository repository)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
 
