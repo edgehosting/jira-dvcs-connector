@@ -44,8 +44,8 @@ function forceSync(event, repositoryId) {
 
         if (!dialog) {
             dialog = AJS.InlineDialog(AJS.$("#jira-dvcs-connector-forceSyncDialog-" + repositoryId), "jira-dvcs-connector-forceSyncDialog" + repositoryId, function (content, trigger, showPopup) {
-                content.html(jira.dvcs.connector.plugin.soy.forceSyncDialog({
-                    'repositoryId':repositoryId,
+                content.html(dvcs.connector.plugin.soy.forceSyncDialog({
+                    'repositoryId':repositoryId
                 }));
                 showPopup();
                 return false;
@@ -113,7 +113,7 @@ function updateSyncStatus(repo) {
         // show error icon if smart commit has error
         if (repo.sync.smartCommitErrors.length > 0) {
             errorSmrtcmmtIcon.addClass("error_smrtcmmt aui-icon aui-icon-error");
-            var tooltip = registerInlineDialogTooltip(errorSmrtcmmtIcon, jira.dvcs.connector.plugin.soy.smartCommitErrors({'smartCommitErrors':repo.sync.smartCommitErrors}));
+            var tooltip = registerInlineDialogTooltip(errorSmrtcmmtIcon, dvcs.connector.plugin.soy.smartCommitErrors({'smartCommitErrors':repo.sync.smartCommitErrors}));
         } else {
             errorSmrtcmmtIcon.removeClass("error_smrtcmmt aui-icon aui-icon-error")
         }
@@ -137,10 +137,10 @@ function getLastCommitRelativeDateHtml(daysAgo) {
 }
 
 function showAddRepoDetails(show) {
-    if (!jira.dvcs.connector.plugin.addOrganizationDialog) {
+    if (!dvcs.connector.plugin.addOrganizationDialog) {
         createAddOrganizationDialog();
     }
-    var dialog = jira.dvcs.connector.plugin.addOrganizationDialog;
+    var dialog = dvcs.connector.plugin.addOrganizationDialog;
     // Reset to default view:
     AJS.$('#repoEntry').attr("action", "");
     // - hide username/password
@@ -166,6 +166,8 @@ function showAddRepoDetails(show) {
     dialog.gotoPanel(0);
     dialog.show();
     dialog.updateHeight();
+
+    triggerAnalyticsEvent("add.started");
 }
 
 function createAddOrganizationDialog(action) {
@@ -179,10 +181,11 @@ function createAddOrganizationDialog(action) {
     // First page
     dialog.addHeader("Add New Account");
 
-    dialog.addPanel("", jira.dvcs.connector.plugin.soy.addOrganizationDialog({
-        isOnDemandLicense:jira.dvcs.connector.plugin.onDemandLicense,
-        atlToken:jira.dvcs.connector.plugin.atlToken,
-        oAuthStore:jira.dvcs.connector.plugin.oAuthStore
+    dialog.addPanel("", dvcs.connector.plugin.soy.addOrganizationDialog({
+        isOnDemandLicense:dvcs.connector.plugin.onDemandLicense,
+        atlToken:dvcs.connector.plugin.atlToken,
+        oAuthStore:dvcs.connector.plugin.oAuthStore,
+        source: getSourceDiv().data("source")
     }), "panel-body");
 
     dialog.addButtonPanel();
@@ -197,6 +200,7 @@ function createAddOrganizationDialog(action) {
         AJS.$("#repoEntry").trigger('reset');
         AJS.$("#aui-message-bar").empty();
         dialog.hide();
+        triggerAnalyticsEvent("add.cancelled");
     }, "#");
 
     AJS.$('#urlSelect').change(function (event) {
@@ -225,6 +229,7 @@ function createAddOrganizationDialog(action) {
         AJS.$("#repoEntry").trigger('reset');
         AJS.$("#aui-message-bar").empty();
         dialog.hide();
+        triggerAnalyticsEvent("add.cancelled");
     }, "#");
 
     dialog.enabled = function (enabled) {
@@ -238,11 +243,11 @@ function createAddOrganizationDialog(action) {
             AJS.$('#add-organization-dialog .button-panel-submit-button').attr("aria-disabled", "true");
         }
     }
-    jira.dvcs.connector.plugin.addOrganizationDialog = dialog;
+    dvcs.connector.plugin.addOrganizationDialog = dialog;
 }
 
 function dvcsSubmitFormHandler(event, skipLoggingAlert) {
-    var dialog = jira.dvcs.connector.plugin.addOrganizationDialog;
+    var dialog = dvcs.connector.plugin.addOrganizationDialog;
     // submit form
     var organizationElement = AJS.$("#organization");
     // if not custom URL
@@ -261,7 +266,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
             AJS.$("#url").val(AJS.$("#urlGhe").val());
 
             if (!skipLoggingAlert) {
-                AJS.$("#githubeConfirmation").html(jira.dvcs.connector.plugin.soy.confirmLoggedIn({
+                AJS.$("#githubeConfirmation").html(dvcs.connector.plugin.soy.confirmLoggedIn({
                     dvcsHost:dvcsHost
                 }));
                 dialog.nextPage();
@@ -370,10 +375,10 @@ function configureDefaultGroups(orgName, id) {
 
     var dialog = confirmationDialog({
         header:"Configure automatic access",
-        body:jira.dvcs.connector.plugin.soy.defaultGroupsForm({
+        body:dvcs.connector.plugin.soy.defaultGroupsForm({
             'baseUrl':BASE_URL,
-            'atlToken':jira.dvcs.connector.plugin.atlToken,
-            'organizationIdDefaultGroups':id,
+            'atlToken':dvcs.connector.plugin.atlToken,
+            'organizationIdDefaultGroups':id
         }),
         submitButtonLabel:"Save",
         okAction:function (dialog) { AJS.$("#configureDefaultGroupsForm").submit();}
@@ -389,9 +394,9 @@ function configureDefaultGroups(orgName, id) {
             success:
             function (data) {
                 if (dialog.isAttached()) {
-	                AJS.$(".dialog-panel-body #configureDefaultGroupsContent").html(jira.dvcs.connector.plugin.soy.defaultGroups({
+	                AJS.$(".dialog-panel-body #configureDefaultGroupsContent").html(dvcs.connector.plugin.soy.defaultGroups({
 	                	organization: data.organization,
-	                	groups: data.groups,
+	                	groups: data.groups
 	                }));
                     dialog.updateHeight();
                     dialog.enableActions();
@@ -431,11 +436,11 @@ function configureOAuth(org, atlToken) {
     });
 
     popup.addHeader("Configure OAuth for account " + org.name);
-    popup.addPanel("", jira.dvcs.connector.plugin.soy.repositoryOAuthDialog({
+    popup.addPanel("", dvcs.connector.plugin.soy.repositoryOAuthDialog({
         'organizationId':org.id,
         'oAuthKey':org.credential.key,
         'oAuthSecret':org.credential.secret,
-        'isOnDemandLicense':jira.dvcs.connector.plugin.onDemandLicense
+        'isOnDemandLicense':dvcs.connector.plugin.onDemandLicense
     }));
 
     clearError(AJS.$("#updateOAuthForm #key"));
@@ -488,7 +493,7 @@ function configureOAuth(org, atlToken) {
     AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/organization/" + org.id + "/tokenOwner",function (data) {
     	if (data.fullName.replace(/\s+/g, '').length == 0) 
     		data.fullName = data.username;
-        AJS.$(".repositoryOAuthDialog #tokenUser").html(jira.dvcs.connector.plugin.soy.repositoryOAuthDialogTokenOwner(data));
+        AJS.$(".repositoryOAuthDialog #tokenUser").html(dvcs.connector.plugin.soy.repositoryOAuthDialogTokenOwner(data));
     }).error(function (err) {
             AJS.$(".repositoryOAuthDialog #tokenUser").html("<i>&lt;Invalid, please regenerate access token.&gt;<i>");
         });
@@ -523,11 +528,11 @@ function setOAuthSettings(org) {
     });
 
     popup.addHeader("OAuth settings for account " + org.name);
-    popup.addPanel("", jira.dvcs.connector.plugin.soy.OAuthSettingsDialog({
+    popup.addPanel("", dvcs.connector.plugin.soy.OAuthSettingsDialog({
         'organizationId':org.id,
         'oAuthKey':org.credential.key,
         'oAuthSecret':org.credential.secret,
-        'isOnDemandLicense':jira.dvcs.connector.plugin.onDemandLicense
+        'isOnDemandLicense':dvcs.connector.plugin.onDemandLicense
     }));
 
     clearError(AJS.$("#updateOAuthForm #key"));
@@ -661,7 +666,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
                     });
 
                     popup.addHeader((checkedValue ? "Linking" : "Unlinking") + " the repository");
-                    popup.addPanel("Registration", jira.dvcs.connector.plugin.soy.postCommitHookDialog({
+                    popup.addPanel("Registration", dvcs.connector.plugin.soy.postCommitHookDialog({
                         'registering':checkedValue,
                         'callbackUrl':registration.callBackUrl
                     }));
@@ -701,7 +706,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
             if (response) {
                 message = response.message;
             }
-            var tooltip = registerInlineDialogTooltip(errorStatusIcon, jira.dvcs.connector.plugin.soy.linkingUnlinkingError({'isLinking':checkedValue, 'errorMessage':message}));
+            var tooltip = registerInlineDialogTooltip(errorStatusIcon, dvcs.connector.plugin.soy.linkingUnlinkingError({'isLinking':checkedValue, 'errorMessage':message}));
             tooltip.show();
             AJS.$("#" + checkboxId + "working").hide();
             AJS.$("#" + checkboxId).removeAttr("disabled");
@@ -716,7 +721,7 @@ function registerAdminPermissionInlineDialogTooltips() {
 }
 
 function registerAdminPermissionInlineDialogTooltip(element) {
-    registerInlineDialogTooltip(element, jira.dvcs.connector.plugin.soy.adminPermisionWarning());
+    registerInlineDialogTooltip(element, dvcs.connector.plugin.soy.adminPermisionWarning());
 }
 
 function registerInlineDialogTooltip(element, body) {
@@ -826,7 +831,7 @@ function confirmationDialog(options) {
 function deleteOrganization(organizationId, organizationName) {
     confirmationDialog({
         header:"Deleting Account '" + organizationName + "'",
-        body:jira.dvcs.connector.plugin.soy.confirmDelete({'organizationName':organizationName}),
+        body:dvcs.connector.plugin.soy.confirmDelete({'organizationName':organizationName}),
         submitButtonLabel:"Delete",
         okAction:function (dialog) { deleteOrganizationInternal(dialog, organizationId, organizationName);}
     });
@@ -924,6 +929,18 @@ function parseAccountUrl(url) {
     var matches = url.match(pattern);
     if (matches)
         return {hostUrl:matches[1], name:matches[2]};
+}
+
+function getSourceDiv()
+{
+    return AJS.$("#dvcs-connect-source");
+}
+
+function triggerAnalyticsEvent(eventType) {
+    if (AJS.EventQueue) {
+        var source = getSourceDiv().data("sourceOrDefault");
+        AJS.EventQueue.push({name: "jira.dvcsconnector.config." + eventType + "." + source});
+    }
 }
 
 //------------------------------------------------------------

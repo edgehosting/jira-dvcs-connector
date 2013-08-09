@@ -1,16 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
-import com.atlassian.jira.plugins.dvcs.model.Progress;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
-import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anySetOf;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Set;
+import java.util.concurrent.Executors;
+
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -20,19 +23,18 @@ import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Set;
-import java.util.concurrent.Executors;
-
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anySetOf;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 
 /**
  * @author Martin Skurla
@@ -44,6 +46,9 @@ public final class TestDefaultSynchronizer
 
     @Mock
     private ChangesetService changesetServiceMock;
+
+    @Mock
+    private BranchService branchServiceMock;
 
     @Mock
     DvcsCommunicator communicatorMock;
@@ -75,7 +80,7 @@ public final class TestDefaultSynchronizer
                 Arrays.asList(changesetWithJIRAIssue, changesetWithoutJIRAIssue));
 
         SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
-                mock(RepositoryService.class), changesetServiceMock, true); // soft sync
+                mock(RepositoryService.class), changesetServiceMock, branchServiceMock, true); // soft sync
 
         Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
         synchronizer.synchronize(repositoryMock, synchronisationOperation, changesetServiceMock);
@@ -122,7 +127,7 @@ public final class TestDefaultSynchronizer
                 });
 
         SynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(communicatorMock, repositoryMock,
-                mock(RepositoryService.class), changesetServiceMock, true); // soft sync
+                mock(RepositoryService.class), changesetServiceMock, branchServiceMock, true); // soft sync
 
         Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
         synchronizer.synchronize(repositoryMock, synchronisationOperation, changesetServiceMock);

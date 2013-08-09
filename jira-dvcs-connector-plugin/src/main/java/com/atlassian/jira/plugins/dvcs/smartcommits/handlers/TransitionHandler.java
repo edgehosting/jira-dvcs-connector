@@ -42,12 +42,12 @@ public class TransitionHandler implements CommandHandler<Issue> {
 
     private final IssueService issueService;
     private final WorkflowManager workflowManager;
-    private final I18nHelper i18nHelper;
+    private final JiraAuthenticationContext jiraAuthenticationContext;
 
     public TransitionHandler(IssueService issueService, WorkflowManager workflowManager, JiraAuthenticationContext jiraAuthenticationContext) {
         this.issueService = issueService;
         this.workflowManager = workflowManager;
-        i18nHelper = jiraAuthenticationContext.getI18nHelper();
+        this.jiraAuthenticationContext = jiraAuthenticationContext;
     }
 
     @Override
@@ -59,6 +59,7 @@ public class TransitionHandler implements CommandHandler<Issue> {
 	public Either<CommitHookHandlerError, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate) {
         
     	String cmd = commandName;
+        final I18nHelper i18nHelper = jiraAuthenticationContext.getI18nHelper();
     	
     	String comment = (args != null && args.size() == 1) ? args.get(0) : null;
       
@@ -107,6 +108,7 @@ public class TransitionHandler implements CommandHandler<Issue> {
 
     private String getIssueState(Issue issue) {
         Status s = issue.getStatusObject();
+        final I18nHelper i18nHelper = jiraAuthenticationContext.getI18nHelper();
         return s == null ? i18nHelper.getText(NO_STATUS) : s.getName();
     }
 

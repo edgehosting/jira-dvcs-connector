@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigPageShownAnalyticsEvent;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,18 +27,23 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
  */
 public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 {
+    static final String DEFAULT_SOURCE = CommonDvcsConfigurationAction.DEFAULT_SOURCE;
     private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
     private String postCommitRepositoryType;
+    private String source;
+
+    private final EventPublisher eventPublisher;
     private final FeatureManager featureManager;
     private final OrganizationService organizationService;
     private final PluginFeatureDetector featuresDetector;
     private final InvalidOrganizationManager invalidOrganizationsManager;
     private final OAuthStore oAuthStore;
 
-    public ConfigureDvcsOrganizations(OrganizationService organizationService, FeatureManager featureManager,
+    public ConfigureDvcsOrganizations(EventPublisher eventPublisher, OrganizationService organizationService, FeatureManager featureManager,
             PluginFeatureDetector featuresDetector, PluginSettingsFactory pluginSettingsFactory, OAuthStore oAuthStore)
     {
+        this.eventPublisher = eventPublisher;
         this.organizationService = organizationService;
         this.featureManager = featureManager;
         this.featuresDetector = featuresDetector;
@@ -53,7 +61,13 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     protected String doExecute() throws Exception
     {
         logger.debug("Configure organization default action.");
+        eventPublisher.publish(new DvcsConfigPageShownAnalyticsEvent(getSourceOrDefault()));
         return INPUT;
+    }
+
+    public String doDefault() throws Exception
+    {
+        return doExecute();
     }
 
     public Organization[] loadOrganizations()
@@ -127,5 +141,20 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     public OAuthStore getOAuthStore()
     {
         return oAuthStore;
+    }
+
+    public String getSource()
+    {
+        return source;
+    }
+
+    public String getSourceOrDefault()
+    {
+        return StringUtils.defaultIfEmpty(source, DEFAULT_SOURCE);
+    }
+
+    public void setSource(String source)
+    {
+        this.source = source;
     }
 }

@@ -10,14 +10,15 @@ import java.util.regex.Pattern;
  */
 public final class IssueKeyExtractor
 {
-    private static final String KEY_PREFIX_REGEX  = "(?<=" + "[\\s\\p{Punct}]" + ")"; //zero-width positive lookbehind
-    private static final String ISSUE_KEY_REGEX   = "([A-Z]{2,}-\\d+)";
-    private static final String KEY_POSTFIX_REGEX = "(?=" + "[\\s\\p{Punct}]" + ")";  //zero-width positive lookahead
+    private static final String SEPARATOR = "[\\s\\p{Punct}]";
+    private static final String KEY_PREFIX_REGEX  = "(?<=" + SEPARATOR + ")"; //zero-width positive lookbehind
+    private static final String ISSUE_KEY_REGEX   = "(\\p{Lu}[\\p{Lu}\\p{Digit}]+-\\p{Digit}+)";
+    private static final String KEY_POSTFIX_REGEX = "(?=" + SEPARATOR + ")";  //zero-width positive lookahead
     
     private static final String ISSUE_KEY_REGEX_INSIDE_LINE = KEY_PREFIX_REGEX + ISSUE_KEY_REGEX + KEY_POSTFIX_REGEX;
     
-    private static final String ISSUE_KEY_REGEX_STARTING_LINE = "^" + ISSUE_KEY_REGEX + "[\\s\\p{Punct}]";
-    private static final String ISSUE_KEY_REGEX_ENDING_LINE   = "[\\s\\p{Punct}]" + ISSUE_KEY_REGEX + "$";
+    private static final String ISSUE_KEY_REGEX_STARTING_LINE = "^" + ISSUE_KEY_REGEX + SEPARATOR;
+    private static final String ISSUE_KEY_REGEX_ENDING_LINE   = SEPARATOR + ISSUE_KEY_REGEX + "$";
     private static final String ISSUE_KEY_ALONE_ON_LINE       = "^" + ISSUE_KEY_REGEX + "$";
     
     private IssueKeyExtractor() {}

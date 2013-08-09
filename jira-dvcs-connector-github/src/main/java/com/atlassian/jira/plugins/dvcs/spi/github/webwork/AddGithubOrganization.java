@@ -1,7 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
+import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_GENERIC;
+import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
+import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_VALIDATION;
 import static com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator.GITHUB;
 
+import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +28,8 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 {
     private final Logger log = LoggerFactory.getLogger(AddGithubOrganization.class);
 
+    public static final String EVENT_TYPE_GITHUB = "github";
+
     private String url;
     private String organization;
 
@@ -37,9 +44,12 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private final ApplicationProperties applicationProperties;
 
 
-    public AddGithubOrganization(OrganizationService organizationService,
-            OAuthStore oAuthStore, ApplicationProperties applicationProperties)
+    public AddGithubOrganization(ApplicationProperties applicationProperties,
+                                 EventPublisher eventPublisher,
+                                 OAuthStore oAuthStore,
+                                 OrganizationService organizationService)
     {
+        super(eventPublisher);
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
         this.applicationProperties = applicationProperties;
@@ -49,6 +59,8 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
+        triggerAddStartedEvent(EVENT_TYPE_GITHUB);
+
         oAuthStore.store(Host.GITHUB, oauthClientId, oauthSecret);
 
         // then continue
@@ -57,13 +69,14 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
     private String redirectUserToGithub()
     {
-        String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddGithubOrganization",
+        String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddOrganizationProgressAction!default",
                 url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
-        return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
+        // param "t" is holding information where to redirect from "wainting screen" (AddBitbucketOrganization, AddGithubOrganization ...)
+        return SystemUtils.getRedirect(this, githubAuthorizeUrl + urlEncode("&t=2"), true);
     }
 
-    private GithubOAuthUtils getGithubOAuthUtils()
+    GithubOAuthUtils getGithubOAuthUtils()
     {
         return new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB), oAuthStore.getSecret(GITHUB));
     }
@@ -82,6 +95,11 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         {
             addErrorMessage("Invalid user/team account.");
         }
+
+        if (invalidInput())
+        {
+            triggerAddFailedEvent(FAILED_REASON_VALIDATION);
+        }
     }
 
     public String doFinish()
@@ -97,10 +115,12 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             {
                 log.warn("Caused by: " + sce.getCause().getMessage());
             }
+            triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
             return INPUT;
 
         } catch (Exception e) {
             addErrorMessage("Error obtain access token.");
+            triggerAddFailedEvent(FAILED_REASON_OAUTH_GENERIC);
             return INPUT;
         }
     }
@@ -124,10 +144,13 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         {
             addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
             log.debug("Failed adding the account: [" + e.getMessage() + "]");
+            triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
             return INPUT;
         }
 
-        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
+        triggerAddSucceededEvent(EVENT_TYPE_GITHUB);
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()) +
+                            getSourceAsUrlParam());
     }
 
     public static String encode(String url)
@@ -183,5 +206,10 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     public void setOauthSecret(String oauthSecret)
     {
         this.oauthSecret = oauthSecret;
+    }
+
+    private void triggerAddFailedEvent(String reason)
+    {
+        super.triggerAddFailedEvent(EVENT_TYPE_GITHUB, reason);
     }
 }

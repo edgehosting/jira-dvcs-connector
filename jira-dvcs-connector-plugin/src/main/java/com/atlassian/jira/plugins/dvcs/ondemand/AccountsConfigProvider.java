@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
+
 /**
  * The Interface AccountsConfigProvider.
  */

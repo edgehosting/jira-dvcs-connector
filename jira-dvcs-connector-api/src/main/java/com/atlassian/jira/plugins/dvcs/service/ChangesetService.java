@@ -1,13 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public interface ChangesetService
 {
@@ -44,9 +44,9 @@ public interface ChangesetService
     Map<ChangesetFile, String> getFileCommitUrls(Repository repository, Changeset changeset);
 
     Iterable<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
-        
+
     void markSmartcommitAvailability(int id, boolean available);
-    
+
     Set<String> findReferencedProjects(int repositoryId);
     
     Changeset getByNode(int repositoryId, String changesetNode);

@@ -4,7 +4,7 @@
     ## AJS.$ doesn't play nice with Velocity, using jQuery instead
     jQuery.get("${baseurl}/rest/bitbucket/1.0/defaultgroups")
                .success(function (data) {
-                    jQuery("#configureGroupsContent").html(jira.dvcs.connector.plugin.soy.addUserGroup(data));
+                    jQuery("#configureGroupsContent").html(dvcs.connector.plugin.soy.addUserGroup(data));
                 })
                .error(function (err) { 
                     jQuery("#configureGroupsContent").empty();

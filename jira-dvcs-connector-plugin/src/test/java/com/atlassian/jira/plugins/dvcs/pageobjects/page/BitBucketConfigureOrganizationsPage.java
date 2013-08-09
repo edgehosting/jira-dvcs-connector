@@ -26,10 +26,9 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
     @ElementBy(id = "oauthBbClientId")
     private PageElement oauthBbClientId;
-    
+
     @ElementBy(id = "oauthBbSecret")
     private PageElement oauthBbSecret;
-
 
     @Override
     public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autoSync)
@@ -43,8 +42,8 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         oauthBbClientId.clear().type(oAuthCredentials.key);
         oauthBbSecret.clear().type(oAuthCredentials.secret);
-        
-        
+
+
         if (!autoSync)
         {
             autoLinkNewRepos.click();
@@ -54,7 +53,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         Poller.waitUntilFalse(atlassianTokenMeta.timed().isPresent());
         pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grantAccess();
-        Poller.waitUntilTrue(atlassianTokenMeta.timed().isPresent());
+        Poller.waitUntilTrue(linkRepositoryButton.timed().isPresent());
 
         if (autoSync)
         {
@@ -81,7 +80,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         addOrgButton.click();
 
         TimedCondition hasText = messageBarDiv.find(By.tagName("strong")).timed().hasText("Error!");
-        
+
         Poller.waitUntil("Expected Error message while connecting repository", hasText, is(true), Poller.by(30000));
         return this;
     }

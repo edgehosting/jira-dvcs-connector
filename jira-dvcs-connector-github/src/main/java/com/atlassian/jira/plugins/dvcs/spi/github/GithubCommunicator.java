@@ -41,13 +41,13 @@ import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
@@ -133,7 +133,7 @@ public class GithubCommunicator implements DvcsCommunicator
             while (iterator.hasNext())
             {
                 org.eclipse.egit.github.core.Repository ghRepository = iterator.next();
-                if (StringUtils.equals(ghRepository.getOwner().getLogin(), organization.getName()))
+                if (StringUtils.equalsIgnoreCase(ghRepository.getOwner().getLogin(), organization.getName()))
                 {
                     Repository repository = new Repository();
                     repository.setSlug(ghRepository.getName());
@@ -253,7 +253,7 @@ public class GithubCommunicator implements DvcsCommunicator
             @Override
             public Iterator<Changeset> iterator()
             {
-                List<BranchTip> branches = getBranches(repository);
+                List<BranchHead> branches = getBranches(repository);
                 return new BranchedChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
             }
         };
@@ -266,10 +266,11 @@ public class GithubCommunicator implements DvcsCommunicator
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
 	    Map<String, RepositoryHook> hooksForRepo = getHooksForRepo(repositoryService, repositoryId);
-	    if (hooksForRepo.containsKey(postCommitUrl)) {
-	    	return;
-	    }
-        
+        if (hooksForRepo.containsKey(postCommitUrl))
+        {
+            return;
+        }
+
         final RepositoryHook repositoryHook = new RepositoryHook();
         repositoryHook.setName("web");
         repositoryHook.setActive(true);
@@ -283,7 +284,12 @@ public class GithubCommunicator implements DvcsCommunicator
             repositoryService.createHook(repositoryId, repositoryHook);
         } catch (IOException e)
         {
-            throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. " + e.getMessage(), e);
+            if ((e instanceof RequestException) && ((RequestException) e).getStatus() == 422)
+            {
+                throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. Maximum number of postcommit hooks exceeded. ", e);
+
+            }
+            throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. Do you have administrator permissions?" , e);
         }
     }
 
@@ -302,11 +308,11 @@ public class GithubCommunicator implements DvcsCommunicator
 	        return urlToHooks;
         } catch (IOException e)
         {
-        	log.warn("Problem getting hooks from Github.", e);
+        	log.warn("Problem getting hooks from Github: " + e.getMessage());
         	return Collections.EMPTY_MAP;
         }
     }
-    
+
     @Override
     public void removePostcommitHook(Repository repository, String postCommitUrl)
     {
@@ -372,7 +378,6 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
-    
     @Override
     public DvcsUser getTokenOwner(Organization organization)
     {
@@ -392,15 +397,11 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<BranchTip> getBranches(Repository repository)
+    private List<BranchHead> getBranches(Repository repository)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
 
-        List<BranchTip> branches = new ArrayList<BranchTip>();
+        List<BranchHead> branches = new ArrayList<BranchHead>();
         try
         {
             final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(
@@ -409,7 +410,7 @@ public class GithubCommunicator implements DvcsCommunicator
 
             for (RepositoryBranch ghBranch : ghBranches)
             {
-                BranchTip branchTip = new BranchTip(ghBranch.getName(), ghBranch.getCommit().getSha());
+                BranchHead branchTip = new BranchHead(ghBranch.getName(), ghBranch.getCommit().getSha());
                 if ("master".equalsIgnoreCase(ghBranch.getName()))
                 {
                     branches.add(0, branchTip);

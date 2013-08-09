@@ -10,10 +10,14 @@
 
   <body>
   
-   <div class="aui-message shadowed" id="add-org-form-container">
+  <script id="repoEntry-template" type="text/template">
+
+   <div class="" id="add-org-form-container">
    
 	   <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddGithubEnterpriseOrganization.jspa" class="aui long-label">
-	      <h4>New GitHub Enterprise Account</h4>
+           #if ($source)
+               <input type="hidden" name="source" value="$textutils.htmlEncode($source)">
+           #end
 	      <input type="hidden" name="atl_token" value="$atl_token">
 	      <input type="hidden" name="autoLinking" id="autoLinking" value="$action.autoLinking">
 	       <input type="hidden" name="autoSmartCommits" id="autoSmartCommits" value="$action.autoSmartCommits">
@@ -21,29 +25,28 @@
 	        <fieldset>
 	         
 	          <div class="field-group">
-	              <label for="url">Url:</label>
+	              <label for="url">Host:</label>
 	              <span class="field-value">$textutils.htmlEncode($action.getUrl())</span>
 	              <input type="hidden" id="url" name="url" value="$textutils.htmlEncode($action.getUrl())"/>
 	          </div>
 	          
 	          <div class="field-group" >
-	          	<label for="organization">Team Account Username:</label>
-	            <input class="field-value" type="text" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
+	          	<label for="organization">Team or User Account:</label>
+	            <input class="field-value text" type="text" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 			  </div>
 
-              #if($action.getOauthRequiredGhe() == "true")	
-	          	<h3>OAuth Credentials</h3>
+              ##if($action.getOauthRequiredGhe() == "true")	
 	          	<input type="hidden" name="oauthRequiredGhe" value="true" />
 	          	<div class="field-group" >
-	          		<label for="oauthClientIdGhe">Key:</label>
-	            	<input type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value="$textutils.htmlEncode($action.getOauthClientIdGhe())"/>
+	          		<label for="oauthClientIdGhe">OAuth Key:</label>
+	            	<input class="field-value text" type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value="$textutils.htmlEncode($action.getOauthClientIdGhe())"/>
 			    </div>
 			  
 			   <div class="field-group" >
-	          		<label for="oauthSecretGhe">Secret:</label>
-	            	<input type="text" id="oauthSecretGhe" name="oauthSecretGhe" value="$textutils.htmlEncode($action.getOauthSecretGhe())"/>
+	          		<label for="oauthSecretGhe">OAuth Secret:</label>
+	            	<input class="field-value text" type="text" id="oauthSecretGhe" name="oauthSecretGhe" value="$textutils.htmlEncode($action.getOauthSecretGhe())"/>
 			   </div>
-	          #end
+	          ##end
             </fieldset>
 			
 			<fieldset class="group">
@@ -81,8 +84,6 @@
 	
 	      <div class="buttons-container">
 	        <div class="buttons">
-	            <input class="button submit" type="submit" name="Submit" id="Submit" value="Try Again"/>
-	            <a class="cancel" href="${baseurl}/secure/admin/ConfigureDvcsOrganizations.jspa?atl_token=${atl_token}">Cancel</a>
 	        </div>
 	      </div>
 	    
@@ -90,5 +91,38 @@
   
   </div>
         
+  </script>
+  
+   
+	<script type="text/javascript">
+
+	 AJS.$(document).ready(function () {
+		
+		 	var ddialog = new AJS.Dialog({
+		 	    width:800, 
+		 	    height:500, 
+		 	    id:"repoEntry-dialog", 
+		 	    closeOnOutsideClick: false
+		 	});
+		 	ddialog.addHeader("New GitHub Enterprise Account");
+		 	ddialog.addPanel("", AJS.$('#repoEntry-template').html(), "panel-body");
+		 	ddialog.addButtonPanel();
+		 	ddialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon' style='padding-right:10px'>&nbsp;</span>")
+		 	ddialog.addSubmit("Try Again", function (dialog, event) {
+		 		 	AJS.$("#add-organization-wait").addClass("aui-icon-wait");
+		            AJS.$("#repoEntry").submit();
+		    });
+		 	ddialog.addLink("Cancel",  function (dialog) {
+		 	   return true;
+		 	}, "", "${baseurl}/secure/admin/ConfigureDvcsOrganizations.jspa?atl_token=${atl_token}}#if($source)&source=$textutils.htmlEncode(${source})#end");
+		 	ddialog.show();
+		 	ddialog.updateHeight();
+		 	
+		 	
+		});
+ 	
+ 	
+	</script>
+   
   </body>
 </html>

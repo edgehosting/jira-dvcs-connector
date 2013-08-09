@@ -1,0 +1,25 @@
+<html>
+	<head>
+	
+		<title>Linking DVCS Account</title>
+	
+		$webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin-css")
+		
+        <meta name="admin.active.section" content="admin_plugins_menu/source_control"/>
+        <meta http-equiv="refresh" content="0; url=${baseurl}/secure/admin/${action.redirectEndpoint}!finish.jspa?${req.queryString}">
+	</head>
+	
+	<body>
+		<h2>Linking Account ...</h2>
+		
+		<div class="aui-message">
+		    <p class="title">
+		        <span class="aui-icon aui-icon-wait"></span>
+		        <strong>Operation In Progess</strong>
+		    </p>
+		    
+    		<p >Linking new account ... </p>
+		</div>
+		
+	</body>
+</html>

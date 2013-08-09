@@ -16,7 +16,7 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
  */
 public class DefaultCommitMessageParser implements CommitMessageParser {
 
-    public static final Pattern JIRA_ISSUE_PATTERN = Pattern.compile("(?<![&=\\?>^!~/\\-])\\b(\\p{Lu}{2,}-\\p{Digit}+)\\b");
+    public static final Pattern JIRA_ISSUE_PATTERN = Pattern.compile("(?<![&=\\?>^!~/\\-])\\b(\\p{Lu}[\\p{Lu}\\p{Digit}]+-\\p{Digit}+)\\b");
     public static final Pattern COMMAND_PATTERN = Pattern.compile("(?:^|\\s)#([A-Za-z][A-Za-z\\-]*)");
 
     /**

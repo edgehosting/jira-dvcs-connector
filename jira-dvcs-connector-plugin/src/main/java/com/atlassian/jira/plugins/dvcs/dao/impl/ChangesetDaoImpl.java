@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
+import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping;
@@ -39,10 +40,12 @@ public class ChangesetDaoImpl implements ChangesetDao
 
     private final ActiveObjects activeObjects;
     private final ChangesetTransformer transformer = new ChangesetTransformer();
+    private QueryHelper queryHelper;
 
-    public ChangesetDaoImpl(ActiveObjects activeObjects)
+    public ChangesetDaoImpl(ActiveObjects activeObjects, QueryHelper queryHelper)
     {
         this.activeObjects = activeObjects;
+        this.queryHelper = queryHelper;
     }
 
     private List<Changeset> transform(ChangesetMapping changesetMapping)
@@ -82,7 +85,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 // delete association issues - changeset
                 query = Query.select().where(
                         IssueToChangesetMapping.CHANGESET_ID + " not in  " +
-                                "(select \"" + RepositoryToChangesetMapping.CHANGESET_ID + "\" from \"" + RepositoryToChangesetMapping.TABLE_NAME + "\")");
+                                "(select " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + " from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + ")");
                 log.debug("deleting orphaned issue-changeset associations");
                 ActiveObjectsUtils.delete(activeObjects, IssueToChangesetMapping.class, query);
 
@@ -90,7 +93,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 // delete orphaned changesets
                 query = Query.select().where(
                         "ID not in  " +
-                                "(select \"" + RepositoryToChangesetMapping.CHANGESET_ID + "\" from \"" + RepositoryToChangesetMapping.TABLE_NAME + "\")");
+                                "(select " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + " from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + ")");
                 log.debug("deleting orphaned changesets");
                 ActiveObjectsUtils.delete(activeObjects, ChangesetMapping.class, query);
 
@@ -156,13 +159,25 @@ public class ChangesetDaoImpl implements ChangesetDao
 
     private ChangesetMapping getChangesetMapping(Changeset changeset)
     {
-        ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
-                ChangesetMapping.NODE + " = ? ", changeset.getNode());
+        // A Query is little bit more complicated, but:
+
+        // 1. previous implementation did not properly fill RAW_NODE, in some cases it is null, in some other cases it is empty string
+        String hasRawNode = "( " + ChangesetMapping.RAW_NODE + " is not null AND " + ChangesetMapping.RAW_NODE + " != '') ";
+
+        // 2. Latest implementation is using full RAW_NODE, but not all records contains it!
+        String matchRawNode = ChangesetMapping.RAW_NODE + " = ? ";
+
+        // 3. Previous implementation has used NODE, but it is mix in some cases it is short version, in some cases it is full version
+        String matchNode = ChangesetMapping.NODE + " like ? ";
+
+        String shortNode = changeset.getNode().substring(0, 12) + "%";
+        ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, "(" + hasRawNode + " AND " + matchRawNode + " ) OR ( NOT "
+                + hasRawNode + " AND " + matchNode + " ) ", changeset.getRawNode(), shortNode);
 
         if (mappings.length > 1)
         {
-            log.warn("More changesets with same Node. Same changesets count: {}, Node: {}, Repository: {}",
-                    new Object[]{mappings.length, changeset.getNode(), changeset.getRepositoryId()});
+            log.warn("More changesets with same Node. Same changesets count: {}, Node: {}, Repository: {}", new Object[] { mappings.length,
+                    changeset.getNode(), changeset.getRepositoryId() });
         }
         return (ArrayUtils.isNotEmpty(mappings)) ? mappings[0] : null;
     }
@@ -433,5 +448,19 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
     }
 
+    @Override
+    public int getChangesetCount(final int repositoryId)
+    {
+        return activeObjects.executeInTransaction(new TransactionCallback<Integer>()
+        {
+            @Override
+            public Integer doInTransaction()
+            {
+                Query query = Query.select().where(RepositoryToChangesetMapping.REPOSITORY_ID + " = ?", repositoryId);
+
+                return activeObjects.count(RepositoryToChangesetMapping.class, query);
+            }
+        });
+    }
 
 }

@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 
+import com.atlassian.event.api.EventPublisher;
 import org.apache.commons.lang.StringUtils;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.SignatureType;
@@ -23,10 +24,11 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
     private final Logger log = LoggerFactory.getLogger(RegenerateBitbucketOauthToken.class);
     private final ApplicationProperties ap;
 
-    public RegenerateBitbucketOauthToken(OrganizationService organizationService, RepositoryService repositoryService,
+    public RegenerateBitbucketOauthToken(EventPublisher eventPublisher,
+            OrganizationService organizationService, RepositoryService repositoryService,
             ApplicationProperties ap)
     {
-        super(organizationService, repositoryService);
+        super(eventPublisher, organizationService, repositoryService);
         this.ap = ap;
     }
 

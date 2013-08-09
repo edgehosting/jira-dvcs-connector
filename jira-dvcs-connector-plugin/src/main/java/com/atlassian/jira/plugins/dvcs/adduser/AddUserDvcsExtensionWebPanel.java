@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.web.model.AbstractWebPanel;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -39,6 +40,8 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
     private final ApplicationProperties appProperties;
 
     private final PluginFeatureDetector featuresDetector;
+    
+    private final OrganizationService organizationService;
 
     /**
      * Instantiates a new adds the user dvcs extension web panel.
@@ -51,12 +54,13 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
      *            the communicator provider
      */
     public AddUserDvcsExtensionWebPanel(PluginAccessor pluginAccessor, TemplateRenderer templateRenderer,
-            ApplicationProperties appProperties, PluginFeatureDetector featuresDetector)
+            ApplicationProperties appProperties, PluginFeatureDetector featuresDetector, OrganizationService organizationService)
     {
         super(pluginAccessor);
         this.templateRenderer = templateRenderer;
         this.appProperties = appProperties;
         this.featuresDetector = featuresDetector;
+        this.organizationService = organizationService;
     }
 
     /**
@@ -66,13 +70,12 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
     public String getHtml(Map<String, Object> model)
     {
 
-        StringWriter stringWriter = new StringWriter();
-        
-        if (!featuresDetector.isUserInvitationsEnabled()) 
+        if (!featuresDetector.isUserInvitationsEnabled() || organizationService.getAllCount() == 0) 
         {
-            return stringWriter.toString();
+            return "";
         }
 
+        StringWriter stringWriter = new StringWriter();
         try
         {
         	 model.put("baseurl", appProperties.getBaseUrl());

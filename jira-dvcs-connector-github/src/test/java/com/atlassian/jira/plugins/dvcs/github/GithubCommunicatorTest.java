@@ -1,8 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.github;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,29 +60,34 @@ public class GithubCommunicatorTest
     private UserService userService;
     @Mock
     private User githubUser;
-    
     @Mock
     private MessagingService messagingService;
-    
+
     // tested object
     private DvcsCommunicator communicator;
 
     private ChangesetCacheImpl changesetCache;
-    
+
     private class ChangesetCacheImpl implements ChangesetCache
     {
-        
+
         private final List<String> cache = new ArrayList<String>();
-        
+
         @Override
         public boolean isCached(int repositoryId, String changesetNode)
         {
             return cache.contains(changesetNode);
         }
-        
+
         public void add(String node)
         {
             cache.add(node);
+        }
+
+        @Override
+        public boolean isEmpty(int repositoryId)
+        {
+            return cache.isEmpty();
         }
     }
 
@@ -99,9 +107,9 @@ public class GithubCommunicatorTest
     {
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        
+
         communicator.setupPostcommitHook(repositoryMock, "POST-COMMIT-URL");
-        
+
         verify(repositoryService).createHook(Matchers.<IRepositoryIdProvider>anyObject(),Matchers.<RepositoryHook>anyObject());
     }
 
@@ -112,9 +120,9 @@ public class GithubCommunicatorTest
         when(githubUser.getLogin()).thenReturn("Test GitHub user login");
         when(githubUser.getName()).thenReturn("Test GitHub user name");
         when(githubUser.getAvatarUrl()).thenReturn("https://secure.gravatar.com/avatar/gravatarId?s=60");
-        
+
         DvcsUser githubUser = communicator.getUser(repositoryMock, "USER-NAME");
-        
+
         assertThat(githubUser.getAvatar())  .isEqualTo("https://secure.gravatar.com/avatar/gravatarId?s=60");
         assertThat(githubUser.getUsername()).isEqualTo("Test GitHub user login");
         assertThat(githubUser.getFullName()).isEqualTo("Test GitHub user name");
@@ -132,23 +140,23 @@ public class GithubCommunicatorTest
         when(commit.getMessage()).thenReturn("ABC-123 fix");
 
         Changeset detailChangeset = communicator.getChangeset(repositoryMock, "abcde");
-        
+
         verify(commitService).getCommit(Matchers.<IRepositoryIdProvider>anyObject(),anyString());
 
         assertThat(detailChangeset.getMessage()).isEqualTo("ABC-123 fix");
     }
-    
+
     @Test
     public void getChangesets_noBranches()
     {
         // Repository
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
-        
+
         Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
         assertThat(changesetIterator.hasNext()).isFalse();
         assertThat(changesetIterator.hasNext()).isFalse();
-        
+
         // this should throw an exception
         try
         {
@@ -157,10 +165,10 @@ public class GithubCommunicatorTest
         {
             return;
         }
-        
+
         fail("Exception should be thrown.");
     }
-    
+
     @Test
     public void getChangesets_onlyNexts() throws IOException
     {
@@ -168,90 +176,90 @@ public class GithubCommunicatorTest
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-        
+
         createSampleBranches(repositoryId);
-        
+
         Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-        
+
         int changesetCounter = 0;
-        
+
         while (true)
         {
             try {
                 Changeset detailChangeset = changesetIterator.next();
-                
+
                 // we need to simulate saving of the processed changeset
                 changesetCache.add(detailChangeset.getNode());
-                
+
                 changesetCounter++;
             } catch (NoSuchElementException e)
             {
                 break;
             }
         }
-        
+
         assertThat(changesetCounter).isEqualTo(5);
     }
-    
+
     @Test
     public void getChangesets_twoHasNextOnLast() throws IOException
     {
         // Testing hasNext at the end of the iteration
-        
+
         // Repository
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-        
+
         createBranchWithTwoNodes(repositoryId);
-        
+
         Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
 
         changesetIterator.next();
-        
+
         // we are on the last node
         assertThat(changesetIterator.hasNext()).isTrue();
         assertThat(changesetIterator.hasNext()).isTrue();
     }
-    
+
     @Test
     public void getChangesets_twoHasNextOnLast2() throws IOException
     {
         // Testing hasNext at the end of the iteration, the last node is in cache
-        
+
         // Repository
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-        
+
         createBranchWithTwoNodes(repositoryId);
-        
+
         Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-        
+
         changesetCache.add("NODE-1");
-        
+
         changesetIterator.next();
         assertThat(changesetIterator.hasNext()).isFalse();
         assertThat(changesetIterator.hasNext()).isFalse();
     }
-    
+
     @Test
-    public void getChangesets_twoHasNextWhenStopped() throws IOException 
-    {       
+    public void getChangesets_twoHasNextWhenStopped() throws IOException
+    {
         // Repository
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-        
+
         createBranchWithTwoNodes(repositoryId);
-        
+
         Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-        
+
         changesetCache.add("MASTER-SHA");
-        
+
         assertThat(changesetIterator.hasNext()).isFalse();
         assertThat(changesetIterator.hasNext()).isFalse();
-       
+
         // this should throw an exception
         try
         {
@@ -260,34 +268,34 @@ public class GithubCommunicatorTest
         {
             return;
         }
-        
+
         fail("Exception should be thrown.");
     }
-    
+
     @Test
-    public void getChangesets_MasterBranchStopped() throws IOException 
-    {       
+    public void getChangesets_MasterBranchStopped() throws IOException
+    {
         // Repository
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-        
+
         createSampleBranches(repositoryId);
-        
+
         Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-        
+
         // we stop master branch
         changesetCache.add("MASTER-SHA");
-        
+
         // we stopped the master branch, it should iterate branch1
         assertThat(changesetIterator.hasNext()).isTrue();
         assertThat(changesetIterator.hasNext()).isTrue();
-       
+
         Changeset detailChangeset = changesetIterator.next();
         assertThat(detailChangeset.getBranch()).isEqualTo("branch1");
         assertThat(detailChangeset.getNode())  .isEqualTo("BRANCH-SHA");
     }
-    
+
     @Test
     public void getChangesets_hasNext() throws IOException
     {
@@ -295,13 +303,13 @@ public class GithubCommunicatorTest
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-        
+
         createSampleBranches(repositoryId);
-        
+
         Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-        
+
         int changesetCounter = 0;
-        
+
         while (changesetIterator.hasNext())
         {
             changesetIterator.hasNext();
@@ -309,17 +317,17 @@ public class GithubCommunicatorTest
 
             Changeset detailChangeset = changesetIterator.next();
             changesetCounter++;
-            
+
             // we need to simulate saving of the processed changeset
             changesetCache.add(detailChangeset.getNode());
-            
+
             changesetIterator.hasNext();
             changesetIterator.hasNext();
         }
-        
+
         assertThat(changesetCounter).isEqualTo(5);
     }
-    
+
     @Test
     public void getChangsets_softsync() throws IOException
     {
@@ -327,14 +335,14 @@ public class GithubCommunicatorTest
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-        
+
         createSampleBranches(repositoryId);
-        
+
         changesetCache.add("NODE-1");
         changesetCache.add("NODE-2");
-        
+
         int changesetCounter = 0;
-        
+
         for ( Changeset changeset : communicator.getChangesets(repositoryMock) )
         {
             changesetCache.add(changeset.getNode());
@@ -342,7 +350,7 @@ public class GithubCommunicatorTest
         }
         assertThat(changesetCounter).isEqualTo(3);
     }
-    
+
     @Test
     public void getChangsets_fullsync() throws IOException
     {
@@ -350,11 +358,11 @@ public class GithubCommunicatorTest
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-        
+
         createMoreComplexSample(repositoryId);
-        
+
         int changesetCounter = 0;
-        
+
         for ( Changeset changeset : communicator.getChangesets(repositoryMock) )
         {
             changesetCache.add(changeset.getNode());
@@ -362,51 +370,51 @@ public class GithubCommunicatorTest
         }
         assertThat(changesetCounter).isEqualTo(15);
     }
-    
+
     private void createBranchWithTwoNodes(RepositoryId repositoryId) throws IOException
     {
      // Branches
         RepositoryBranch master = createMockRepositoryBranch("MASTER", "MASTER-SHA");
-        
+
      // Changeset
         mockRepositoryCommit(repositoryId, "MASTER-SHA", "ABC-123 fix",
                 mockRepositoryCommit(repositoryId, "NODE-1", "ABC-123 node 1 fix"));
-        
+
         when(repositoryService.getBranches(repositoryId)).thenReturn(Arrays.asList(master));
     }
-    
+
     private void createSampleBranches(RepositoryId repositoryId) throws IOException
     {
      // Branches
         RepositoryBranch master = createMockRepositoryBranch("MASTER", "MASTER-SHA");
-        RepositoryBranch branch1 = createMockRepositoryBranch("branch1", "BRANCH-SHA");    
-        
+        RepositoryBranch branch1 = createMockRepositoryBranch("branch1", "BRANCH-SHA");
+
      // Changeset
         RepositoryCommit node2 = mockRepositoryCommit(repositoryId, "NODE-2", "ABC-123 node 2 fix",
                 mockRepositoryCommit(repositoryId, "NODE-1", "ABC-123 node 1 fix"));
-        
+
         mockRepositoryCommit(repositoryId, "MASTER-SHA", "ABC-123 node 4 fix", node2);
-        
-        
+
+
         mockRepositoryCommit(repositoryId, "BRANCH-SHA", "ABC-123 node 5 fix",
                 mockRepositoryCommit(repositoryId, "NODE-3", "ABC-123 node 3 fix",
                     node2));
-        
+
         when(repositoryService.getBranches(repositoryId)).thenReturn(Arrays.asList(master, branch1));
     }
-    
+
     private void createMoreComplexSample(RepositoryId repositoryId) throws IOException
     {
      // Branches
         RepositoryBranch master = createMockRepositoryBranch("MASTER", "MASTER-SHA");
-        RepositoryBranch branch1 = createMockRepositoryBranch("branch1", "BRANCH-SHA");    
+        RepositoryBranch branch1 = createMockRepositoryBranch("branch1", "BRANCH-SHA");
         RepositoryBranch branch2 = createMockRepositoryBranch("branch2", "BRANCH2-SHA");
         RepositoryBranch branch3 = createMockRepositoryBranch("branch3", "BRANCH3-SHA");
-        
-//  B3   M  B1   B2     
+
+//  B3   M  B1   B2
 //               14
 //          13   |
-//          |    12    
+//          |    12
 //       10 11  /
 //      / |/| >9
 //     /  8 7
@@ -418,7 +426,7 @@ public class GithubCommunicatorTest
 //        2
 //        |
 //        1
-        
+
      // Changeset
         RepositoryCommit node8;
         RepositoryCommit node2;
@@ -426,7 +434,7 @@ public class GithubCommunicatorTest
         RepositoryCommit node6;
         RepositoryCommit node7;
         RepositoryCommit node9;
-        
+
         mockRepositoryCommit(repositoryId, "MASTER-SHA", "ABC-123 node 10 fix",
         node8 = mockRepositoryCommit(repositoryId, "NODE-8", "ABC-123 node 8 fix",
                         mockRepositoryCommit(repositoryId, "NODE-4", "ABC-123 node 4 fix",
@@ -438,8 +446,8 @@ public class GithubCommunicatorTest
                                         node2))),
                 mockRepositoryCommit(repositoryId, "BRANCH3-SHA", "ABC-123 node 15 fix",
                         node3));
-        
-        
+
+
         mockRepositoryCommit(repositoryId, "BRANCH-SHA", "ABC-123 node 13 fix",
                 mockRepositoryCommit(repositoryId, "NODE-11", "ABC-123 node 11 fix",
                         node8,
@@ -447,26 +455,26 @@ public class GithubCommunicatorTest
                                 node6),
                 node9 = mockRepositoryCommit(repositoryId, "NODE-9", "ABC-123 node 9 fix",
                             node7)));
-        
+
         mockRepositoryCommit(repositoryId, "BRANCH2-SHA", "ABC-123 node 14 fix",
                 mockRepositoryCommit(repositoryId, "NODE-12", "ABC-123 node 12 fix",
                         node9));
-        
+
         when(repositoryService.getBranches(repositoryId)).thenReturn(Arrays.asList(master, branch1, branch2, branch3));
     }
-    
+
     private RepositoryBranch createMockRepositoryBranch(final String name, final String topNode)
     {
         RepositoryBranch repositoryBranchMock = mock(RepositoryBranch.class);
         when(repositoryBranchMock.getName()).thenReturn(name);
-        
+
         TypedResource branchCommit = mock(TypedResource.class);
         when(branchCommit.getSha()).thenReturn(topNode);
         when(repositoryBranchMock.getCommit()).thenReturn(branchCommit);
-        
+
         return repositoryBranchMock;
     }
-    
+
     private RepositoryCommit mockRepositoryCommit(final RepositoryId repositoryId, final String node, final String message, RepositoryCommit... parents) throws IOException
     {
         RepositoryCommit repositoryCommit = mock(RepositoryCommit.class);

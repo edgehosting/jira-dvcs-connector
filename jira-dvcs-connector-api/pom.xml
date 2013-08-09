@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
+        <version>1.4.1-rc12-SNAPSHOT</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-api</artifactId>
@@ -31,6 +31,12 @@
             <groupId>com.atlassian.jira</groupId>
 		    <artifactId>jira-core</artifactId>
 		    <version>${jira.compile.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.analytics</groupId>
+            <artifactId>analytics-api</artifactId>
+            <version>${analytics.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

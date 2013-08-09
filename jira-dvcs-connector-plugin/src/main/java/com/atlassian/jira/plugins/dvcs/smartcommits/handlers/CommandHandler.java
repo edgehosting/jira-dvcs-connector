@@ -9,9 +9,9 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 
-public interface CommandHandler<T> {
-    
-	CommandType getCommandType();
-    
+public interface CommandHandler<T>
+{
+    CommandType getCommandType();
+
     Either<CommitHookHandlerError, T> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate);
 }

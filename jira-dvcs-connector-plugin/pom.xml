@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.atlassian.jira.plugins</groupId>
 		<artifactId>jira-dvcs-connector-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+		<version>1.4.1-rc12-SNAPSHOT</version>
 	</parent>
 
 	<organization>
@@ -195,6 +195,12 @@
 			<artifactId>commons-httpclient</artifactId>
 			<version>3.1</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.atlassian.jira</groupId>
@@ -256,6 +262,13 @@
 	</properties>
 
 	<profiles>
+        <profile>
+            <id>skipTests</id>
+            <properties>
+                <maven.test.unit.skip>true</maven.test.unit.skip>
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
 		<profile>
 			<id>dev-mysql</id>
 			<properties>
