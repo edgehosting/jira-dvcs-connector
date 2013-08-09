@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -28,8 +26,6 @@ import com.google.common.collect.MapMaker;
  */
 public class CachingCommunicator implements CachingDvcsCommunicator
 {
-    
-    @Resource
     private DvcsCommunicator delegate;
 
     private class UserKey
@@ -108,6 +104,15 @@ public class CachingCommunicator implements CachingDvcsCommunicator
                         }
 
                     });
+    
+    public CachingCommunicator()
+    {
+    }
+    
+    public void setDelegate(DvcsCommunicator delegate)
+    {
+        this.delegate = delegate;
+    }
 
     @Override
     public DvcsUser getUser(Repository repository, String username)
