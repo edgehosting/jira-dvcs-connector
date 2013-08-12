@@ -330,7 +330,7 @@
 								<product>
 									<id>jira</id>
 									<version>${jira.version}</version>
-									<dataPath>${basedir}/src/test/resources/jira-home-postgres</dataPath>
+									<dataPath>${basedir}/src/test/resources/test-resources-postgres-gh-enabled-5.0.1.zip</dataPath>
 									<dataSources>
 										<dataSource>
 											<jndi>jdbc/JiraDS</jndi>
@@ -349,7 +349,6 @@
 									</dataSources>
 								</product>
 							</products>
-	     					<productDataPath>${basedir}/src/test/resources/test-resources-gh-enabled-5.0.1.zip</productDataPath>
 						</configuration>
 					</plugin>
 				</plugins>
