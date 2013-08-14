@@ -249,6 +249,7 @@
 							<version>${greenhopper.version}</version>
 						</pluginArtifact>
 					</pluginArtifacts>
+                    <skipTests>${skipTests}</skipTests>
 				</configuration>
 			</plugin>
             <plugin>
