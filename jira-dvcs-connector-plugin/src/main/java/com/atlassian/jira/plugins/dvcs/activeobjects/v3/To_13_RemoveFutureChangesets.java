@@ -34,6 +34,9 @@ public class To_13_RemoveFutureChangesets implements ActiveObjectsUpgradeTask
     @Override
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
+        activeObjects.migrate(OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class,
+                IssueToChangesetMapping.class, RepositoryToChangesetMapping.class, BranchHeadMapping.class);
+
         for (ChangesetMapping changesetMapping : getChangesetsFromFuture(activeObjects))
         {
             setChangesetDate(activeObjects, DATE_IN_THE_PAST, changesetMapping);
