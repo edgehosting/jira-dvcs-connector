@@ -241,7 +241,7 @@
 					<productVersion>${jira.version}</productVersion>
 					<testResourcesVersion>${jira.data.version}</testResourcesVersion>
 					<productDataPath>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</productDataPath>
-					<log4jProperties>src/aps/log4j.properties</log4jProperties>
+					<log4jProperties>target/test-classes/log4j.properties</log4jProperties>
 					<pluginArtifacts>
 						<pluginArtifact>
 							<groupId>com.atlassian.jira.plugins</groupId>
@@ -303,7 +303,7 @@
 								<product>
 									<id>jira</id>
 									<version>${jira.version}</version>
-									<dataPath>${basedir}/src/test/resources/jira-home-mysql</dataPath>
+									<dataPath>${basedir}/target/test-classes/jira-home-mysql</dataPath>
 									<dataSources>
 										<dataSource>
 											<jndi>jdbc/JiraDS</jndi>
@@ -351,7 +351,7 @@
 								<product>
 									<id>jira</id>
 									<version>${jira.version}</version>
-									<dataPath>${basedir}/src/test/resources/jira-home-postgres</dataPath>
+									<dataPath>${basedir}/target/test-classes/jira-home-postgres</dataPath>
 									<dataSources>
 										<dataSource>
 											<jndi>jdbc/JiraDS</jndi>
