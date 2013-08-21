@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,13 +31,12 @@ public class DvcsTabPanelContextProvider implements ContextProvider {
     public Map<String, Object> getContextMap(Map<String, Object> context) {
         Issue issue = (Issue) context.get("issue");
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         Long items = 0L;
 
-        List<IssueAction> actions = Collections.EMPTY_LIST;
         try {
-            actions = changesetRenderer.getAsActions(issue);
+            final List<IssueAction> actions = changesetRenderer.getAsActions(issue);
             boolean isNoMessages = isNoMessages(actions);
             if (isNoMessages)
             {
