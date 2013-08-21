@@ -63,7 +63,7 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
 
             final List<Changeset> changesetList = changesetService.getByIssueKey(issueKeys);
             for (Changeset changeset : changesetList) {
-                logger.debug("found changeset [ {} ] on issue keys [ {} ]", changeset.getNode(), issueKeys);
+                logger.debug("found changeset [ {} ] on issue keys [ {} ]", changeset.getNode(), StringUtils.join(issueKeys, ", "));
                 String node = changeset.getNode();
                 if (changesetsGroupedByNode.containsKey(node)) {
                     changesetsGroupedByNode.get(node).add(changeset);
@@ -84,7 +84,7 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
             }
 
         } catch (SourceControlException e) {
-            logger.debug("Could not retrieve changeset for [ " + issueKeys + " ]: " + e, e);
+            logger.debug("Could not retrieve changeset for [ " + StringUtils.join(issueKeys, ", ") + " ]: " + e, e);
         }
 
         return bitbucketActions;
