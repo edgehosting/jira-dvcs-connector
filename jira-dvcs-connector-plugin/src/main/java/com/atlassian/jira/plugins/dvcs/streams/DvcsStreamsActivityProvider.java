@@ -60,18 +60,16 @@ import com.google.common.collect.Iterables;
 
 public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 {
+    private static final Logger log = LoggerFactory.getLogger(DvcsStreamsActivityProvider.class);
 
     private final I18nResolver i18nResolver;
     private final ApplicationProperties applicationProperties;
     private final UserProfileAccessor userProfileAccessor;
-
-    private static final Logger log = LoggerFactory.getLogger(DvcsStreamsActivityProvider.class);
     private final IssueLinker issueLinker;
     private final TemplateRenderer templateRenderer;
     private final PermissionManager permissionManager;
     private final JiraAuthenticationContext jiraAuthenticationContext;
     private final ProjectManager projectManager;
-
     private final ChangesetService changesetService;
     private final RepositoryService repositoryService;
     private final IssueManager issueManager;
