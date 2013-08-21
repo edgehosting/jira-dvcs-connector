@@ -39,4 +39,15 @@ public class TestGlobalFilterQueryWhereClauseBuilder
         GlobalFilterQueryWhereClauseBuilder globalFilterQueryWhereClauseBuilder = new GlobalFilterQueryWhereClauseBuilder(gf);
         assertThat(globalFilterQueryWhereClauseBuilder.build()).isEqualTo(expected);
     }
+
+    @Test
+    public void testGlobalFilterWorksForIssueKeysOnly() throws Exception {
+        final String expected = "(ISSUE.ISSUE_KEY in ('issueIn', 'issueIn2') )";
+        GlobalFilter gf = new GlobalFilter();
+        gf.setInIssues(Arrays.asList("issueIn", "issueIn2"));
+
+        GlobalFilterQueryWhereClauseBuilder globalFilterQueryWhereClauseBuilder = new GlobalFilterQueryWhereClauseBuilder(gf);
+        assertThat(globalFilterQueryWhereClauseBuilder.build()).isEqualTo(expected);
+
+    }
 }

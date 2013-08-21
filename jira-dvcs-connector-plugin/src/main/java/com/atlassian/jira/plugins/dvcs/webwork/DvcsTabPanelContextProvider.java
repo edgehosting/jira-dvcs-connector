@@ -38,7 +38,7 @@ public class DvcsTabPanelContextProvider implements ContextProvider {
 
         List<IssueAction> actions = Collections.EMPTY_LIST;
         try {
-            actions = changesetRenderer.getAsActions(issue.getKey());
+            actions = changesetRenderer.getAsActions(issue);
             boolean isNoMessages = isNoMessages(actions);
             if (isNoMessages)
             {

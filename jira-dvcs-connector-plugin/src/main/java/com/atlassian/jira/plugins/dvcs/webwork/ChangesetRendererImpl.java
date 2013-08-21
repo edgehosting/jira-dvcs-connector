@@ -7,7 +7,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.IssueManager;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,24 +39,31 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
     private final ApplicationProperties applicationProperties;
 
     private final TemplateRenderer templateRenderer;
+    private final IssueManager issueManager;
 
     public ChangesetRendererImpl(ChangesetService changesetService, RepositoryService repositoryService, IssueLinker issueLinker,
-            ApplicationProperties applicationProperties, TemplateRenderer templateRenderer) {
+            ApplicationProperties applicationProperties, TemplateRenderer templateRenderer, IssueManager issueManager) {
         this.changesetService = changesetService;
         this.repositoryService = repositoryService;
         this.issueLinker = issueLinker;
         this.applicationProperties = applicationProperties;
         this.templateRenderer = templateRenderer;
+        this.issueManager = issueManager;
     }
 
-    public List<IssueAction> getAsActions(String issueKey) {
+    public List<IssueAction> getAsActions(Issue issue) {
+        Set<String> issueKeys = issueManager.getAllIssueKeys(issue.getId());
+        return getAsActions(issueKeys);
+    }
+
+    private List<IssueAction> getAsActions(Set<String> issueKeys) {
         List<IssueAction> bitbucketActions = new ArrayList<IssueAction>();
         try {
             Map<String, List<Changeset>> changesetsGroupedByNode = new LinkedHashMap<String, List<Changeset>>();
 
-            final List<Changeset> changesetList = changesetService.getByIssueKey(issueKey);
+            final List<Changeset> changesetList = changesetService.getByIssueKey(issueKeys);
             for (Changeset changeset : changesetList) {
-                logger.debug("found changeset [ {} ] on issue [ {} ]", changeset.getNode(), issueKey);
+                logger.debug("found changeset [ {} ] on issue keys [ {} ]", changeset.getNode(), issueKeys);
                 String node = changeset.getNode();
                 if (changesetsGroupedByNode.containsKey(node)) {
                     changesetsGroupedByNode.get(node).add(changeset);
@@ -74,7 +84,7 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
             }
 
         } catch (SourceControlException e) {
-            logger.debug("Could not retrieve changeset for [ " + issueKey + " ]: " + e, e);
+            logger.debug("Could not retrieve changeset for [ " + issueKeys + " ]: " + e, e);
         }
 
         return bitbucketActions;

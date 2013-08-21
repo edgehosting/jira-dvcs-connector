@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.IssueManager;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
@@ -72,10 +74,15 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 
     private final ChangesetService changesetService;
     private final RepositoryService repositoryService;
+    private final IssueManager issueManager;
 
 
     public DvcsStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties,
-                                       UserProfileAccessor userProfileAccessor, IssueLinker issueLinker, TemplateRenderer templateRenderer, PermissionManager permissionManager, JiraAuthenticationContext jiraAuthenticationContext, ProjectManager projectManager, ChangesetService changesetService, RepositoryService repositoryService)
+                                       UserProfileAccessor userProfileAccessor, IssueLinker issueLinker,
+                                       TemplateRenderer templateRenderer, PermissionManager permissionManager,
+                                       JiraAuthenticationContext jiraAuthenticationContext,
+                                       ProjectManager projectManager, ChangesetService changesetService,
+                                       RepositoryService repositoryService, IssueManager issueManager)
     {
         this.applicationProperties = applicationProperties;
         this.i18nResolver = i18nResolver;
@@ -87,6 +94,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         this.projectManager = projectManager;
         this.changesetService = changesetService;
         this.repositoryService = repositoryService;
+        this.issueManager = issueManager;
     }
 
     private Iterable<StreamsEntry> transformEntries(Iterable<Changeset> changesetEntries, AtomicBoolean cancelled) throws StreamsException
@@ -240,12 +248,12 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     {
         final GlobalFilter gf = new GlobalFilter();
         //get all changeset entries that match the specified activity filters
-        gf.setInProjects(getInProjectsByPermission(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY))));
-        gf.setNotInProjects(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)));
+        gf.setInProjects(getAllProjectKeys(getInProjectsByPermission(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)))));
+        gf.setNotInProjects(getAllProjectKeys(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY))));
         gf.setInUsers(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.USER.getKey())));
         gf.setNotInUsers(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.USER.getKey())));
-        gf.setInIssues(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey())));
-        gf.setNotInIssues(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey())));
+        gf.setInIssues(getAllIssueKeys(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey()))));
+        gf.setNotInIssues(getAllIssueKeys(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey()))));
         log.debug("GlobalFilter: " + gf);
 
         return new CancellableTask<StreamsFeed>()
@@ -274,6 +282,30 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
                 return Result.CANCELLED;
             }
         };
+    }
+
+    private Set<String> getAllProjectKeys(Iterable<String> projectKeys) {
+        final Set<String> result = new HashSet<String>();
+        for (String projectKey : projectKeys) {
+            result.addAll(getAllProjectKeys(projectManager.getProjectObjByKey(projectKey)));
+        }
+        return result;
+    }
+
+    private Set<String> getAllProjectKeys(Project project) {
+        return projectManager.getAllProjectKeys(project.getId());
+    }
+
+    private Set<String> getAllIssueKeys(Iterable<String> issueKeys) {
+        final Set<String> result = new HashSet<String>();
+        for (String issueKey : issueKeys) {
+            result.addAll(getAllIssueKeys(issueManager.getIssueObject(issueKey)));
+        }
+        return result;
+    }
+
+    private Set<String> getAllIssueKeys(Issue issue) {
+        return issueManager.getAllIssueKeys(issue.getId());
     }
 
     private Iterable<String> getInProjectsByPermission(Set<String> inProjectsList)

@@ -98,7 +98,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
             return Collections.<IssueAction> singletonList(new AdvertisementAction());
         }
 
-        List<IssueAction> actions = renderer.getAsActions(issue.getKey());
+        List<IssueAction> actions = renderer.getAsActions(issue);
         if (actions.isEmpty()) {
             actions.add(ChangesetRenderer.DEFAULT_MESSAGE);
         }
