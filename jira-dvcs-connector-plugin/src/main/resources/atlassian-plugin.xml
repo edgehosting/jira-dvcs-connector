@@ -34,6 +34,7 @@
     <component-import key="pluginAccessor" interface="com.atlassian.plugin.PluginAccessor" />
     <component-import key="userManager" interface="com.atlassian.jira.user.util.UserManager" />
     <component-import key="crowdService" interface="com.atlassian.crowd.embedded.api.CrowdService" />
+    <component-import key="issueManager" interface="com.atlassian.jira.issue.IssueManager" />
 
 	<component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
@@ -42,8 +43,6 @@
  	<!-- ===============================================================================================================================
 		 smartcommits
 	 	 =============================================================================================================================== -->
-
-	<component-import key="issueManager" interface="com.atlassian.jira.issue.IssueManager" />
 
 	<component key="smartcommitsService" name="DVCS Smartcommits Service Job"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsService">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsService</interface>
