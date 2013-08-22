@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.issue.IssueManager;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -23,16 +23,18 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class ChangesetRendererImpl implements ChangesetRenderer {
+public class ChangesetRendererImpl implements ChangesetRenderer
+{
 
     private final Logger logger = LoggerFactory.getLogger(ChangesetRendererImpl.class);
-    
+
     private final ChangesetService changesetService;
     private final RepositoryService repositoryService;
     private final IssueLinker issueLinker;
@@ -42,7 +44,8 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
     private final IssueManager issueManager;
 
     public ChangesetRendererImpl(ChangesetService changesetService, RepositoryService repositoryService, IssueLinker issueLinker,
-            ApplicationProperties applicationProperties, TemplateRenderer templateRenderer, IssueManager issueManager) {
+            ApplicationProperties applicationProperties, TemplateRenderer templateRenderer, IssueManager issueManager)
+    {
         this.changesetService = changesetService;
         this.repositoryService = repositoryService;
         this.issueLinker = issueLinker;
@@ -51,30 +54,38 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
         this.issueManager = issueManager;
     }
 
-    public List<IssueAction> getAsActions(Issue issue) {
-        Set<String> issueKeys = issueManager.getAllIssueKeys(issue.getId());
+    @Override
+    public List<IssueAction> getAsActions(Issue issue)
+    {
+        Set<String> issueKeys = SystemUtils.getAllIssueKeys(issueManager, issue);
         return getAsActions(issueKeys);
     }
 
-    private List<IssueAction> getAsActions(Set<String> issueKeys) {
+    private List<IssueAction> getAsActions(Set<String> issueKeys)
+    {
         List<IssueAction> bitbucketActions = new ArrayList<IssueAction>();
-        try {
+        try
+        {
             Map<String, List<Changeset>> changesetsGroupedByNode = new LinkedHashMap<String, List<Changeset>>();
 
             final List<Changeset> changesetList = changesetService.getByIssueKey(issueKeys);
-            for (Changeset changeset : changesetList) {
+            for (Changeset changeset : changesetList)
+            {
                 logger.debug("found changeset [ {} ] on issue keys [ {} ]", changeset.getNode(), StringUtils.join(issueKeys, ", "));
                 String node = changeset.getNode();
-                if (changesetsGroupedByNode.containsKey(node)) {
+                if (changesetsGroupedByNode.containsKey(node))
+                {
                     changesetsGroupedByNode.get(node).add(changeset);
-                } else {
+                } else
+                {
                     List<Changeset> changesetsWithSameNode = Lists.newArrayList();
                     changesetsWithSameNode.add(changeset);
                     changesetsGroupedByNode.put(node, changesetsWithSameNode);
                 }
             }
 
-            for (String node : changesetsGroupedByNode.keySet()) {
+            for (String node : changesetsGroupedByNode.keySet())
+            {
                 List<Changeset> changesetsWithSameNode = changesetsGroupedByNode.get(node);
 
                 String changesetAsHtml = getHtmlForChangeset(changesetsWithSameNode);
@@ -83,14 +94,16 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
                 }
             }
 
-        } catch (SourceControlException e) {
+        } catch (SourceControlException e)
+        {
             logger.debug("Could not retrieve changeset for [ " + StringUtils.join(issueKeys, ", ") + " ]: " + e, e);
         }
 
         return bitbucketActions;
     }
 
-    public String getHtmlForChangeset(List<Changeset> changesets) {
+    public String getHtmlForChangeset(List<Changeset> changesets)
+    {
         Map<String, Object> templateMap = new HashMap<String, Object>();
 
         templateMap.put("velocity_utils", new VelocityUtils());
@@ -104,9 +117,11 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
 
         Map<Repository, String> commitUrlsByRepo = Maps.newHashMap();
         Map<Repository, Map<ChangesetFile, String>> fileCommitUrlsByRepo = Maps.newHashMap();
-        for (Changeset changeset : changesets) {
+        for (Changeset changeset : changesets)
+        {
             Repository repository = repositoryService.get(changeset.getRepositoryId());
-            if (repository == null || repository.isDeleted() || !repository.isLinked()) {
+            if (repository == null || repository.isDeleted() || !repository.isLinked())
+            {
                 continue;
             }
 
@@ -121,7 +136,8 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
 
         // all repositories which are associated with given changesets is
         // deleted or unlinked
-        if (repositories.isEmpty()) {
+        if (repositories.isEmpty())
+        {
             return null;
         }
 
@@ -149,12 +165,13 @@ public class ChangesetRendererImpl implements ChangesetRenderer {
         templateMap.put("max_visible_files", Changeset.MAX_VISIBLE_FILES);
 
         StringWriter sw = new StringWriter();
-        try {
+        try
+        {
             templateRenderer.render("/templates/commits-view.vm", templateMap, sw);
-        } catch (IOException e) {
+        } catch (IOException e)
+        {
             logger.warn(e.getMessage(), e);
         }
         return sw.toString();
     }
-
 }

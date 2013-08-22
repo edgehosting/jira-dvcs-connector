@@ -1,12 +1,13 @@
 package com.atlassian.jira.plugins.dvcs;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.util.Arrays;
+
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
-
-import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
 
 /**
  *
@@ -41,7 +42,8 @@ public class TestGlobalFilterQueryWhereClauseBuilder
     }
 
     @Test
-    public void testGlobalFilterWorksForIssueKeysOnly() throws Exception {
+    public void testGlobalFilterWorksForIssueKeysOnly() throws Exception
+    {
         final String expected = "(ISSUE.ISSUE_KEY in ('issueIn', 'issueIn2') )";
         GlobalFilter gf = new GlobalFilter();
         gf.setInIssues(Arrays.asList("issueIn", "issueIn2"));

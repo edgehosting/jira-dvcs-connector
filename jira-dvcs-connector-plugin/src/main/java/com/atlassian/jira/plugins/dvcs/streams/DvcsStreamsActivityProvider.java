@@ -12,13 +12,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.atlassian.jira.issue.IssueManager;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -26,6 +26,7 @@ import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueLinker;
 import com.atlassian.jira.project.Project;
@@ -281,18 +282,20 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         };
     }
 
-    private Set<String> includeHistoricalProjectKeys(Iterable<String> projectKeys) {
+    private Set<String> includeHistoricalProjectKeys(Iterable<String> projectKeys)
+    {
         final Set<String> result = new HashSet<String>();
         for (String projectKey : projectKeys) {
-            result.addAll(projectManager.getAllProjectKeys(projectManager.getProjectObjByKey(projectKey).getId()));
+            result.addAll(SystemUtils.getAllProjectKeys(projectManager, projectManager.getProjectObjByKey(projectKey)));
         }
         return result;
     }
 
-    private Set<String> includeHistoricalIssueKeys(Iterable<String> issueKeys) {
+    private Set<String> includeHistoricalIssueKeys(Iterable<String> issueKeys)
+    {
         final Set<String> result = new HashSet<String>();
         for (String issueKey : issueKeys) {
-            result.addAll(issueManager.getAllIssueKeys(issueManager.getIssueObject(issueKey).getId()));
+            result.addAll(SystemUtils.getAllIssueKeys(issueManager, issueManager.getIssueObject(issueKey)));
         }
         return result;
     }

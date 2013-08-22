@@ -24,9 +24,9 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
 {
     /**
      * Represents advertisement content of commit tab panel shown when no repository is linked.
-     * 
+     *
      * @author Stanislav Dvorscak
-     * 
+     *
      */
     private final class AdvertisementAction implements IssueAction
     {
@@ -76,7 +76,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     private final SoyTemplateRenderer soyTemplateRenderer;
     private final WebResourceManager webResourceManager;
 
-    private ChangesetRenderer renderer;
+    private final ChangesetRenderer renderer;
 
     public DvcsTabPanel(PermissionManager permissionManager,
             SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
@@ -99,7 +99,8 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         }
 
         List<IssueAction> actions = renderer.getAsActions(issue);
-        if (actions.isEmpty()) {
+        if (actions.isEmpty())
+        {
             actions.add(ChangesetRenderer.DEFAULT_MESSAGE);
         }
 
