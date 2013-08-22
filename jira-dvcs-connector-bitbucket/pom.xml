@@ -37,6 +37,13 @@
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>bitbucket-client</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <!-- Excluded because JIRA provides jcl-over-slf4j -->
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
