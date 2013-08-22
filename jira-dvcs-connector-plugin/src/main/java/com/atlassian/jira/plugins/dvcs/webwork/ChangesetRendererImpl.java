@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueManager;
+import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -42,9 +43,10 @@ public class ChangesetRendererImpl implements ChangesetRenderer
 
     private final TemplateRenderer templateRenderer;
     private final IssueManager issueManager;
+    private final ChangeHistoryManager changeHistoryManager;
 
     public ChangesetRendererImpl(ChangesetService changesetService, RepositoryService repositoryService, IssueLinker issueLinker,
-            ApplicationProperties applicationProperties, TemplateRenderer templateRenderer, IssueManager issueManager)
+            ApplicationProperties applicationProperties, TemplateRenderer templateRenderer, IssueManager issueManager, ChangeHistoryManager changeHistoryManager)
     {
         this.changesetService = changesetService;
         this.repositoryService = repositoryService;
@@ -52,12 +54,13 @@ public class ChangesetRendererImpl implements ChangesetRenderer
         this.applicationProperties = applicationProperties;
         this.templateRenderer = templateRenderer;
         this.issueManager = issueManager;
+        this.changeHistoryManager = changeHistoryManager;
     }
 
     @Override
     public List<IssueAction> getAsActions(Issue issue)
     {
-        Set<String> issueKeys = SystemUtils.getAllIssueKeys(issueManager, issue);
+        Set<String> issueKeys = SystemUtils.getAllIssueKeys(issueManager, changeHistoryManager, issue);
         return getAsActions(issueKeys);
     }
 
