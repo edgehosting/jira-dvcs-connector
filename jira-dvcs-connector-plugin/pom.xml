@@ -217,6 +217,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+            <groupId>com.atlassian.jira.tests</groupId>
+            <artifactId>jira-testkit-client</artifactId>
+            <version>${testkit.version}</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -247,6 +253,11 @@
 							<artifactId>jira-greenhopper-plugin</artifactId>
 							<version>${greenhopper.version}</version>
 						</pluginArtifact>
+                        <pluginArtifact>
+                            <groupId>com.atlassian.jira.tests</groupId>
+                            <artifactId>jira-testkit-plugin</artifactId>
+                            <version>${testkit.version}</version>
+                        </pluginArtifact>
 					</pluginArtifacts>
                     <skipTests>${skipTests}</skipTests>
 				</configuration>

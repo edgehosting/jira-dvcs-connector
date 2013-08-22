@@ -8,20 +8,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
-import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
-import com.google.common.collect.Lists;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
+import com.atlassian.jira.testkit.client.Backdoor;
+import com.atlassian.jira.testkit.client.util.TestKitLocalEnvironmentData;
+import com.google.common.collect.Lists;
 
 /**
  * @author Martin Skurla
@@ -34,11 +35,13 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     static final String MISSING_COMMITS_REPOSITORY_NAME = "missingcommitstest";
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
-
+    protected Backdoor testKit;
 
     @BeforeMethod
     public void prepareRemoteDvcsRepositoryAndJiraProjectWithIssue()
     {
+        testKit = new Backdoor(new TestKitLocalEnvironmentData());
+
         removeRemoteDvcsRepository();
         removeJiraProject();
 
@@ -56,7 +59,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     abstract String getSecondDvcsZipRepoPathToPush();
 
     abstract void removeOAuth();
-    
+
     @Test
     public void commitsIssueTab_ShouldNotMissAnyRelatedCommits() throws Exception
     {
@@ -72,13 +75,13 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
 
         simulatePostCommitHookCall();
         JiraPageUtils.checkSyncProcessSuccess(jira); // to catch up with soft sync
-        
+
         assertThat(getCommitsForIssue("MC-1", 5)).hasSize(5);
-        
+
         // Remove all organizations
         jira.goTo(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
-        
+
         removeOAuth();
     }
 
@@ -97,7 +100,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
             return "/usr/local/git/bin/git";        // we are on mac/*nix
         }
     }
-    
+
     public String getHgCommand()
     {
         Process process;
@@ -111,7 +114,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
             return "/usr/local/bin/hg"; // we are on mac/*nix
         }
     }
-    
+
     private void removeJiraProject()
     {
         if (JiraPageUtils.projectExists(jira, JIRA_PROJECT_NAME_AND_KEY))
@@ -122,8 +125,8 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
 
     private void createJiraProjectWithIssue()
     {
-        JiraPageUtils.createProject(jira, JIRA_PROJECT_NAME_AND_KEY, JIRA_PROJECT_NAME_AND_KEY);
-        JiraPageUtils.createIssue(jira, JIRA_PROJECT_NAME_AND_KEY);
+        testKit.project().addProject(JIRA_PROJECT_NAME_AND_KEY, JIRA_PROJECT_NAME_AND_KEY, "admin");
+        testKit.issues().createIssue(JIRA_PROJECT_NAME_AND_KEY, "Missing commits fix demonstration");
     }
 
     private void simulatePostCommitHookCall() throws IOException
@@ -134,7 +137,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
 
         PostCommitHookCallSimulatingRemoteRestpoint.simulate(jira.getProductInstance().getBaseUrl(), repositoryId);
     }
-    
+
 
     protected void executeCommand(File workingDirectory, String... command) throws IOException, InterruptedException
     {
@@ -143,7 +146,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
                                                      .start();
         process.waitFor();
         printStream("ErrorStream", process.getErrorStream());
-        printStream("InputStream", process.getInputStream());        
+        printStream("InputStream", process.getInputStream());
         log.info("-----------------------------------------");
     }
 

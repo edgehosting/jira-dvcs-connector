@@ -18,6 +18,8 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.issue.IssueManager;
+import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -25,6 +27,7 @@ import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueLinker;
 import com.atlassian.jira.project.Project;
@@ -58,24 +61,28 @@ import com.google.common.collect.Iterables;
 
 public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 {
+    private static final Logger log = LoggerFactory.getLogger(DvcsStreamsActivityProvider.class);
 
     private final I18nResolver i18nResolver;
     private final ApplicationProperties applicationProperties;
     private final UserProfileAccessor userProfileAccessor;
-
-    private static final Logger log = LoggerFactory.getLogger(DvcsStreamsActivityProvider.class);
     private final IssueLinker issueLinker;
     private final TemplateRenderer templateRenderer;
     private final PermissionManager permissionManager;
     private final JiraAuthenticationContext jiraAuthenticationContext;
     private final ProjectManager projectManager;
-
     private final ChangesetService changesetService;
     private final RepositoryService repositoryService;
-
+    private final IssueManager issueManager;
+    private final ChangeHistoryManager changeHistoryManager;
 
     public DvcsStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties,
-                                       UserProfileAccessor userProfileAccessor, IssueLinker issueLinker, TemplateRenderer templateRenderer, PermissionManager permissionManager, JiraAuthenticationContext jiraAuthenticationContext, ProjectManager projectManager, ChangesetService changesetService, RepositoryService repositoryService)
+                                       UserProfileAccessor userProfileAccessor, IssueLinker issueLinker,
+                                       TemplateRenderer templateRenderer, PermissionManager permissionManager,
+                                       JiraAuthenticationContext jiraAuthenticationContext,
+                                       ProjectManager projectManager, ChangesetService changesetService,
+                                       RepositoryService repositoryService, IssueManager issueManager,
+                                       ChangeHistoryManager changeHistoryManager)
     {
         this.applicationProperties = applicationProperties;
         this.i18nResolver = i18nResolver;
@@ -87,6 +94,8 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         this.projectManager = projectManager;
         this.changesetService = changesetService;
         this.repositoryService = repositoryService;
+        this.issueManager = issueManager;
+        this.changeHistoryManager = changeHistoryManager;
     }
 
     private Iterable<StreamsEntry> transformEntries(Iterable<Changeset> changesetEntries, AtomicBoolean cancelled) throws StreamsException
@@ -240,12 +249,12 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     {
         final GlobalFilter gf = new GlobalFilter();
         //get all changeset entries that match the specified activity filters
-        gf.setInProjects(getInProjectsByPermission(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY))));
-        gf.setNotInProjects(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)));
+        gf.setInProjects(includeHistoricalProjectKeys(getInProjectsByPermission(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)))));
+        gf.setNotInProjects(includeHistoricalProjectKeys(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY))));
         gf.setInUsers(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.USER.getKey())));
         gf.setNotInUsers(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.USER.getKey())));
-        gf.setInIssues(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey())));
-        gf.setNotInIssues(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey())));
+        gf.setInIssues(includeHistoricalIssueKeys(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey()))));
+        gf.setNotInIssues(includeHistoricalIssueKeys(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey()))));
         log.debug("GlobalFilter: " + gf);
 
         return new CancellableTask<StreamsFeed>()
@@ -274,6 +283,26 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
                 return Result.CANCELLED;
             }
         };
+    }
+
+    private Set<String> includeHistoricalProjectKeys(Iterable<String> projectKeys)
+    {
+        final Set<String> result = new HashSet<String>();
+        for (String projectKey : projectKeys)
+        {
+            result.addAll(SystemUtils.getAllProjectKeys(projectManager, projectManager.getProjectObjByKey(projectKey)));
+        }
+        return result;
+    }
+
+    private Set<String> includeHistoricalIssueKeys(Iterable<String> issueKeys)
+    {
+        final Set<String> result = new HashSet<String>();
+        for (String issueKey : issueKeys)
+        {
+            result.addAll(SystemUtils.getAllIssueKeys(issueManager, changeHistoryManager, issueManager.getIssueObject(issueKey)));
+        }
+        return result;
     }
 
     private Iterable<String> getInProjectsByPermission(Set<String> inProjectsList)

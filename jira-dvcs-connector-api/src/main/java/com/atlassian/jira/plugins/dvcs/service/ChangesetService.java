@@ -33,11 +33,11 @@ public interface ChangesetService
     Iterable<Changeset> getChangesetsFromDvcs(Repository repository);
 
     /**
-     * returns all changesets for given issue
-     * @param issueKey issueKey
+     * returns all changesets for given issues
+     * @param issueKeys set of issue keys
      * @return changesets
      */
-    List<Changeset> getByIssueKey(String issueKey);
+    List<Changeset> getByIssueKey(Iterable<String> issueKeys);
 
     String getCommitUrl(Repository repository, Changeset changeset);
 
