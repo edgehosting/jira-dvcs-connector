@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.IssueManager;
+import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -73,14 +74,15 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     private final ChangesetService changesetService;
     private final RepositoryService repositoryService;
     private final IssueManager issueManager;
-
+    private final ChangeHistoryManager changeHistoryManager;
 
     public DvcsStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties,
                                        UserProfileAccessor userProfileAccessor, IssueLinker issueLinker,
                                        TemplateRenderer templateRenderer, PermissionManager permissionManager,
                                        JiraAuthenticationContext jiraAuthenticationContext,
                                        ProjectManager projectManager, ChangesetService changesetService,
-                                       RepositoryService repositoryService, IssueManager issueManager)
+                                       RepositoryService repositoryService, IssueManager issueManager,
+                                       ChangeHistoryManager changeHistoryManager)
     {
         this.applicationProperties = applicationProperties;
         this.i18nResolver = i18nResolver;
@@ -93,6 +95,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         this.changesetService = changesetService;
         this.repositoryService = repositoryService;
         this.issueManager = issueManager;
+        this.changeHistoryManager = changeHistoryManager;
     }
 
     private Iterable<StreamsEntry> transformEntries(Iterable<Changeset> changesetEntries, AtomicBoolean cancelled) throws StreamsException
@@ -297,7 +300,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         final Set<String> result = new HashSet<String>();
         for (String issueKey : issueKeys)
         {
-            result.addAll(SystemUtils.getAllIssueKeys(issueManager, issueManager.getIssueObject(issueKey)));
+            result.addAll(SystemUtils.getAllIssueKeys(issueManager, changeHistoryManager, issueManager.getIssueObject(issueKey)));
         }
         return result;
     }
