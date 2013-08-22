@@ -22,7 +22,6 @@ import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulat
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.jira.testkit.client.Backdoor;
 import com.atlassian.jira.testkit.client.util.TestKitLocalEnvironmentData;
-import com.atlassian.jira.testkit.client.util.TimeBombLicence;
 import com.google.common.collect.Lists;
 
 /**
@@ -42,7 +41,6 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     public void prepareRemoteDvcsRepositoryAndJiraProjectWithIssue()
     {
         testKit = new Backdoor(new TestKitLocalEnvironmentData());
-        testKit.restoreBlankInstance(TimeBombLicence.LICENCE_FOR_TESTING);
 
         removeRemoteDvcsRepository();
         removeJiraProject();
