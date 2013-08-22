@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueManager;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -246,12 +245,12 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     {
         final GlobalFilter gf = new GlobalFilter();
         //get all changeset entries that match the specified activity filters
-        gf.setInProjects(getAllProjectKeys(getInProjectsByPermission(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)))));
-        gf.setNotInProjects(getAllProjectKeys(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY))));
+        gf.setInProjects(includeHistoricalProjectKeys(getInProjectsByPermission(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY)))));
+        gf.setNotInProjects(includeHistoricalProjectKeys(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.PROJECT_KEY))));
         gf.setInUsers(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.USER.getKey())));
         gf.setNotInUsers(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.USER.getKey())));
-        gf.setInIssues(getAllIssueKeys(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey()))));
-        gf.setNotInIssues(getAllIssueKeys(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey()))));
+        gf.setInIssues(includeHistoricalIssueKeys(Filters.getIsValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey()))));
+        gf.setNotInIssues(includeHistoricalIssueKeys(Filters.getNotValues(activityRequest.getStandardFilters().get(StandardStreamsFilterOption.ISSUE_KEY.getKey()))));
         log.debug("GlobalFilter: " + gf);
 
         return new CancellableTask<StreamsFeed>()
@@ -282,28 +281,20 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         };
     }
 
-    private Set<String> getAllProjectKeys(Iterable<String> projectKeys) {
+    private Set<String> includeHistoricalProjectKeys(Iterable<String> projectKeys) {
         final Set<String> result = new HashSet<String>();
         for (String projectKey : projectKeys) {
-            result.addAll(getAllProjectKeys(projectManager.getProjectObjByKey(projectKey)));
+            result.addAll(projectManager.getAllProjectKeys(projectManager.getProjectObjByKey(projectKey).getId()));
         }
         return result;
     }
 
-    private Set<String> getAllProjectKeys(Project project) {
-        return projectManager.getAllProjectKeys(project.getId());
-    }
-
-    private Set<String> getAllIssueKeys(Iterable<String> issueKeys) {
+    private Set<String> includeHistoricalIssueKeys(Iterable<String> issueKeys) {
         final Set<String> result = new HashSet<String>();
         for (String issueKey : issueKeys) {
-            result.addAll(getAllIssueKeys(issueManager.getIssueObject(issueKey)));
+            result.addAll(issueManager.getAllIssueKeys(issueManager.getIssueObject(issueKey).getId()));
         }
         return result;
-    }
-
-    private Set<String> getAllIssueKeys(Issue issue) {
-        return issueManager.getAllIssueKeys(issue.getId());
     }
 
     private Iterable<String> getInProjectsByPermission(Set<String> inProjectsList)
