@@ -45,7 +45,7 @@ public interface ChangesetDao
     Changeset getByNode(int repositoryId, String changesetNode);
 
     /**
-     * Returns all changetsets related to given issue keys
+     * Returns all changesets related to given issue keys
      *
      * @param issueKeys
      * @return
