@@ -50,7 +50,7 @@ public interface ChangesetDao
      * @param issueKeys
      * @return
      */
-    List<Changeset> getByIssueKey(Set<String> issueKeys);
+    List<Changeset> getByIssueKey(Iterable<String> issueKeys);
 
     /**
      * Returns latest changesets. Used by activity stream.

@@ -323,7 +323,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     }
 
     @Override
-    public List<Changeset> getByIssueKey(final Set<String> issueKeys)
+    public List<Changeset> getByIssueKey(final Iterable<String> issueKeys)
     {
         final GlobalFilter gf = new GlobalFilter();
         gf.setInIssues(issueKeys);

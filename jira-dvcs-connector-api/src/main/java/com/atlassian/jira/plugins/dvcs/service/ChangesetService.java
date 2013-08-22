@@ -37,7 +37,7 @@ public interface ChangesetService
      * @param issueKeys set of issue keys
      * @return changesets
      */
-    List<Changeset> getByIssueKey(Set<String> issueKeys);
+    List<Changeset> getByIssueKey(Iterable<String> issueKeys);
 
     String getCommitUrl(Repository repository, Changeset changeset);
 
