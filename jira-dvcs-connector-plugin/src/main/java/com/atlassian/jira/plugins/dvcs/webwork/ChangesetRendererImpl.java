@@ -76,7 +76,8 @@ public class ChangesetRendererImpl implements ChangesetRenderer
                 if (changesetsGroupedByNode.containsKey(node))
                 {
                     changesetsGroupedByNode.get(node).add(changeset);
-                } else
+                }
+                else
                 {
                     List<Changeset> changesetsWithSameNode = Lists.newArrayList();
                     changesetsWithSameNode.add(changeset);
@@ -89,12 +90,14 @@ public class ChangesetRendererImpl implements ChangesetRenderer
                 List<Changeset> changesetsWithSameNode = changesetsGroupedByNode.get(node);
 
                 String changesetAsHtml = getHtmlForChangeset(changesetsWithSameNode);
-                if (StringUtils.isNotBlank(changesetAsHtml)) {
+                if (StringUtils.isNotBlank(changesetAsHtml))
+                {
                     bitbucketActions.add(new CommitsIssueAction(changesetAsHtml, changesetsWithSameNode.get(0).getDate()));
                 }
             }
 
-        } catch (SourceControlException e)
+        }
+        catch (SourceControlException e)
         {
             logger.debug("Could not retrieve changeset for [ " + StringUtils.join(issueKeys, ", ") + " ]: " + e, e);
         }

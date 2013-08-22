@@ -285,7 +285,8 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     private Set<String> includeHistoricalProjectKeys(Iterable<String> projectKeys)
     {
         final Set<String> result = new HashSet<String>();
-        for (String projectKey : projectKeys) {
+        for (String projectKey : projectKeys)
+        {
             result.addAll(SystemUtils.getAllProjectKeys(projectManager, projectManager.getProjectObjByKey(projectKey)));
         }
         return result;
@@ -294,7 +295,8 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     private Set<String> includeHistoricalIssueKeys(Iterable<String> issueKeys)
     {
         final Set<String> result = new HashSet<String>();
-        for (String issueKey : issueKeys) {
+        for (String issueKey : issueKeys)
+        {
             result.addAll(SystemUtils.getAllIssueKeys(issueManager, issueManager.getIssueObject(issueKey)));
         }
         return result;
