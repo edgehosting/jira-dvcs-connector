@@ -225,7 +225,7 @@
 			<plugin>
 				<groupId>com.atlassian.maven.plugins</groupId>
 				<artifactId>maven-jira-plugin</artifactId>
-				<version>3.5.2</version>
+				<version>4.2.7</version>
 				<extensions>true</extensions>
 				<configuration>
 					<jvmArgs>-Xmx1024m -XX:MaxPermSize=512m</jvmArgs>
