@@ -260,6 +260,33 @@
                         </pluginArtifact>
 					</pluginArtifacts>
                     <skipTests>${skipTests}</skipTests>
+	                <testGroups>
+	                 	<testGroup>
+	                 		<id>integration_tests</id>
+	                 		<productIds>
+	                 			<productId>jira</productId>
+	                 		</productIds>
+	                 		<includes>
+	                 			<include>it/**/*Test.java</include>
+	                 			<include>it/**/*Tests.java</include>
+	                 		</includes>
+	                 	</testGroup>
+	                 	<testGroup>
+	                 		<id>integration_tests_without_ghe</id>
+	                 		<productIds>
+	                 			<productId>jira</productId>
+	                 		</productIds>
+	                 		<includes>
+	                 			<include>it/**/*Test.java</include>
+	                 			<include>it/**/*Tests.java</include>
+	                 		</includes>
+	                 		<excludes>
+	                 			<exclude>it/restart/com/**/GithubEnterpriseTests.java</exclude>
+	                 			<exclude>**/Abstract*</exclude>
+	                 			<exclude>**/*$*</exclude>
+	                 		</excludes>
+	                 	</testGroup>
+	                </testGroups>
 				</configuration>
 			</plugin>
             <plugin>
@@ -282,6 +309,7 @@
 			building stuff</jirabitbucketconnector.password>
 		<dvcsconnectortest.password>Im here so AMPS wont fail when just
 			building stuff</dvcsconnectortest.password>
+		<testGroups>integration_tests_without_ghe</testGroups>
 	</properties>
 
 	<profiles>
@@ -292,6 +320,12 @@
                 <skipTests>true</skipTests>
             </properties>
         </profile>
+        <profile>
+			<id>includeGithubEnterpriseTests</id>
+			<properties>
+				<testGroups>integration_tests</testGroups>
+			</properties>
+		</profile>
 		<profile>
 			<id>dev-mysql</id>
 			<properties>
