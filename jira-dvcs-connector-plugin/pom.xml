@@ -277,11 +277,12 @@
 	                 			<productId>jira</productId>
 	                 		</productIds>
 	                 		<includes>
-	                 			<include>it/**/*Test.java</include>
+	                 	 	<include>it/**/*Test.java</include>
 	                 			<include>it/**/*Tests.java</include>
 	                 		</includes>
 	                 		<excludes>
 	                 			<exclude>it/restart/com/**/GithubEnterpriseTests.java</exclude>
+	                 			<exclude>it/com/**/MissingCommits*.java</exclude>
 	                 			<exclude>**/Abstract*</exclude>
 	                 			<exclude>**/*$*</exclude>
 	                 		</excludes>
