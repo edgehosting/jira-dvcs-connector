@@ -4,7 +4,6 @@ import java.util.Map;
 
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.plugin.webfragment.JiraWebInterfaceManager;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.plugin.PluginParseException;
@@ -27,7 +26,7 @@ public class ViewVersionControlCondition implements Condition
     @Override
     public boolean shouldDisplay(Map<String, Object> context)
     {
-        User user = (User) context.get(JiraWebInterfaceManager.CONTEXT_KEY_USER);
+        User user = (User) context.get("user");
         Issue issue = (Issue) context.get("issue");
         return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user);
     }
