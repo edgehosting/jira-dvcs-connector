@@ -312,6 +312,7 @@
         <label key="Commits" />
         <tooltip key="Commits" />
         <resource type="download" name="icon.png" location="images/gh_icon.png" />
+        <condition class="com.atlassian.jira.plugins.dvcs.webwork.ViewVersionControlCondition"/> 
     </web-panel>
 
     <!-- The webwork1 plugin element is how you add new actions to JIRA -->
