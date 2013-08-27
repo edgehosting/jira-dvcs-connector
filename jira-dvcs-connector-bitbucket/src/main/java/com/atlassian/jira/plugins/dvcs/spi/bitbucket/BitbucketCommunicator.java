@@ -61,8 +61,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     private static final int CHANGESET_LIMIT = Integer.getInteger("bitbucket.request.changeset.limit", 50);
 
-    /** The Constant BITBUCKET. */
-    private static final String BITBUCKET = "bitbucket";
+    /** The BITBUCKET DVCS type. */
+    public static final String BITBUCKET = "bitbucket";
 
     private final BitbucketLinker bitbucketLinker;
     private final String pluginVersion;
