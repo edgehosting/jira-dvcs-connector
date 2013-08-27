@@ -282,7 +282,6 @@
 	                 		</includes>
 	                 		<excludes>
 	                 			<exclude>it/restart/com/**/GithubEnterpriseTests.java</exclude>
-	                 			<exclude>it/com/**/MissingCommits*.java</exclude>
 	                 			<exclude>**/Abstract*</exclude>
 	                 			<exclude>**/*$*</exclude>
 	                 		</excludes>
