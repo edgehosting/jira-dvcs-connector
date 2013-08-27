@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -40,7 +41,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     @BeforeMethod
     public void prepareRemoteDvcsRepositoryAndJiraProjectWithIssue()
     {
-        testKit = new Backdoor(new TestKitLocalEnvironmentData());
+        testKit = new Backdoor(new TestKitLocalEnvironmentData(new Properties(),"."));
 
         removeRemoteDvcsRepository();
         removeJiraProject();
