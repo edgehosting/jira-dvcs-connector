@@ -97,7 +97,7 @@ function updateSyncStatus(repo) {
             syncRepoIconElement.attr("title", syncRepoIconElement.attr("data-title"));
         } else if (repo.sync.startTime === 0) {
             syncRepoIcon = "syncrepoiconqueue";
-            syncRepoIconElement.attr("title", "In queue.");
+            syncRepoIconElement.attr("title", "In queue");
         } else {
             syncRepoIconElement.attr("title", "Synchronizing ...");
             syncRepoIcon = "running";
