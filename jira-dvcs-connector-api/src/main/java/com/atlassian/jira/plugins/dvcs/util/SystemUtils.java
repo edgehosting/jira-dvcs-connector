@@ -119,7 +119,11 @@ public class SystemUtils
         }
         else
         {
-            return new HashSet<String>(changeHistoryManager.getPreviousIssueKeys(issue.getId()));
+            // Adding previous issue keys
+            Set<String> allIssueKeys = new HashSet<String>(changeHistoryManager.getPreviousIssueKeys(issue.getId()));
+            // adding current issue key
+            allIssueKeys.add(issue.getKey());
+            return allIssueKeys;
         }
     }
 
