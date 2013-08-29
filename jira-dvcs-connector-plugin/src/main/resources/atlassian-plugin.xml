@@ -14,7 +14,10 @@
                     an explicit build-instruction is specified.
                 -->
                 com.atlassian.jira.plugins.dvcs.model,
-                com.atlassian.jira.plugins.dvcs.service.api
+                com.atlassian.jira.plugins.dvcs.service.api,
+                com.atlassian.jira.plugins.dvcs.smartcommits,
+                com.atlassian.jira.plugins.dvcs.smartcommits.handlers,
+                com.atlassian.jira.plugins.dvcs.ondemand
             </Export-Package>
         </bundle-instructions>
     </plugin-info>
@@ -36,7 +39,7 @@
     <component-import key="crowdService" interface="com.atlassian.crowd.embedded.api.CrowdService" />
     <component-import key="issueManager" interface="com.atlassian.jira.issue.IssueManager" />
 
-	<component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler">
+	<component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
 
@@ -44,26 +47,26 @@
 		 smartcommits
 	 	 =============================================================================================================================== -->
 
-	<component key="smartcommitsService" name="DVCS Smartcommits Service Job"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsService">
+	<component key="smartcommitsService" name="DVCS Smartcommits Service Job"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsService" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsService</interface>
 	</component>
-	<component key="smartcommitsParser" name="DVCS Smartcommits Parser"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultCommitMessageParser">
+	<component key="smartcommitsParser" name="DVCS Smartcommits Parser"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultCommitMessageParser" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.CommitMessageParser</interface>
 	</component>
 
-	<component key="smartcommitsWorklogHandler" name="DVCS Smartcommits Worklog Time Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler">
+	<component key="smartcommitsWorklogHandler" name="DVCS Smartcommits Worklog Time Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommandHandler</interface>
 	</component>
 
-	<component key="smartcommitsCommentHandler" name="DVCS Smartcommits Comment Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommentHandler">
+	<component key="smartcommitsCommentHandler" name="DVCS Smartcommits Comment Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommentHandler" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommandHandler</interface>
 	</component>
 
-	<component key="smartcommitsTransitionsHandler" name="DVCS Smartcommits workflow Transition Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler">
+	<component key="smartcommitsTransitionsHandler" name="DVCS Smartcommits workflow Transition Handler"  class="com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommandHandler</interface>
 	</component>
 
-	<component key="smartcommitsChangesetsProcessor" name="DVCS Smartcommits Changesets Processor"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsChangesetsProcessor">
+	<component key="smartcommitsChangesetsProcessor" name="DVCS Smartcommits Changesets Processor"  class="com.atlassian.jira.plugins.dvcs.smartcommits.DefaultSmartcommitsChangesetsProcessor" public="true">
 		<interface>com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor</interface>
 	</component>
 
@@ -105,18 +108,18 @@
         <description key="Git and Mercurial code hosting"/>
         <application-type>bitbucket</application-type>
     </navigation-link>
-    <component key="bitbucketAccountsConfigService" name="Bitbucket Accounts Config Service" class="com.atlassian.jira.plugins.dvcs.ondemand.BitbucketAccountsConfigService">
+    <component key="bitbucketAccountsConfigService" name="Bitbucket Accounts Config Service" class="com.atlassian.jira.plugins.dvcs.ondemand.BitbucketAccountsConfigService" public="true">
         <interface>com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService</interface>
     </component>
-    <component key="jsonFileBasedAccountsConfigProvider" name="Json File Based Accounts Config Provider" class="com.atlassian.jira.plugins.dvcs.ondemand.JsonFileBasedAccountsConfigProvider">
+    <component key="jsonFileBasedAccountsConfigProvider" name="Json File Based Accounts Config Provider" class="com.atlassian.jira.plugins.dvcs.ondemand.JsonFileBasedAccountsConfigProvider" public="true">
         <interface>com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigProvider</interface>
     </component>
-	<component key="accountsConfigLifecycler" name="Accounts Config Lifecycler" class="com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigLifecycler">
+	<component key="accountsConfigLifecycler" name="Accounts Config Lifecycler" class="com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigLifecycler" public="true">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
 
     <!-- Plugin upgrade Tasks -->
-	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task" class="com.atlassian.jira.plugins.dvcs.upgrade.To_02_ProjectBasedRepositoryLinksUpgradeTask">
+	<component key="repositoryLinksUpgradeTask" name="Repository Links Upgrade Task" class="com.atlassian.jira.plugins.dvcs.upgrade.To_02_ProjectBasedRepositoryLinksUpgradeTask" public="true">
 		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
 	</component>
 
