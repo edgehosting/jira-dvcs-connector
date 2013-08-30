@@ -158,25 +158,10 @@
     </dependencies>
 	<profiles>
         <profile>
-            <id>jira5</id>
-            <properties>
-                <jira.version>5.0.1</jira.version>
-                <jira.data.version>5.0.1</jira.data.version>
-            </properties>
-        </profile>
-        <profile>
-            <id>jira51</id>
-            <properties>
-                <jira.version>5.1.8</jira.version>
-                <jira.data.version>5.1.8</jira.data.version>
-                <testkit.version>5.2-m33</testkit.version>
-            </properties>
-        </profile>
-        <profile>
             <id>jira52</id>
             <properties>
-                <jira.version>5.2.5</jira.version>
-                <jira.data.version>5.2.5</jira.data.version>
+                <jira.version>5.2.1</jira.version>
+                <jira.data.version>5.2.1</jira.data.version>
                 <testkit.version>5.2-m33</testkit.version>
             </properties>
         </profile>
