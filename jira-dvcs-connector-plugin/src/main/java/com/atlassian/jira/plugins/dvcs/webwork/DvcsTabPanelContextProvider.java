@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,31 +13,36 @@ import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.web.ContextProvider;
 
-public class DvcsTabPanelContextProvider implements ContextProvider {
+public class DvcsTabPanelContextProvider implements ContextProvider
+{
 
     private final Logger logger = LoggerFactory.getLogger(DvcsTabPanelContextProvider.class);
 
     private final ChangesetRenderer changesetRenderer;
 
-    public DvcsTabPanelContextProvider(ChangesetRenderer changesetRenderer) {
+    public DvcsTabPanelContextProvider(ChangesetRenderer changesetRenderer)
+    {
         this.changesetRenderer = changesetRenderer;
     }
 
     @Override
-    public void init(Map<String, String> stringStringMap) throws PluginParseException {
+    public void init(Map<String, String> stringStringMap) throws PluginParseException
+    {
+        // nop
     }
 
     @Override
-    public Map<String, Object> getContextMap(Map<String, Object> context) {
+    public Map<String, Object> getContextMap(Map<String, Object> context)
+    {
         Issue issue = (Issue) context.get("issue");
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         Long items = 0L;
 
-        List<IssueAction> actions = Collections.EMPTY_LIST;
-        try {
-            actions = changesetRenderer.getAsActions(issue.getKey());
+        try
+        {
+            final List<IssueAction> actions = changesetRenderer.getAsActions(issue);
             boolean isNoMessages = isNoMessages(actions);
             if (isNoMessages)
             {
@@ -50,7 +54,8 @@ public class DvcsTabPanelContextProvider implements ContextProvider {
                     items += 1;
                 }
             }
-        } catch (SourceControlException e) {
+        } catch (SourceControlException e)
+        {
             logger.debug("Could not retrieve changeset for [ " + issue.getKey() + " ]: " + e, e);
         }
 
@@ -62,7 +67,8 @@ public class DvcsTabPanelContextProvider implements ContextProvider {
         return params;
     }
 
-    private boolean isNoMessages(List<IssueAction> actions) {
+    private boolean isNoMessages(List<IssueAction> actions)
+    {
         return actions.isEmpty();
     }
 }

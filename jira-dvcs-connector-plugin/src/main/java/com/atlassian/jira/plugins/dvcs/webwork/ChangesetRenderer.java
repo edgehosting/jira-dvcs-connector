@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 
 import java.util.List;
 
+import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 
@@ -13,6 +14,6 @@ public interface ChangesetRenderer {
     GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction(DEFAULT_MESSAGE_TXT);
 
 
-    List<IssueAction> getAsActions(String issueKey);
+    List<IssueAction> getAsActions(Issue issue);
 
 }

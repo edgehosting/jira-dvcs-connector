@@ -45,12 +45,12 @@ public interface ChangesetDao
     Changeset getByNode(int repositoryId, String changesetNode);
 
     /**
-     * Returns all changetsets related to given issueKey
+     * Returns all changesets related to given issue keys
      *
-     * @param issueKey
+     * @param issueKeys
      * @return
      */
-    List<Changeset> getByIssueKey(String issueKey);
+    List<Changeset> getByIssueKey(Iterable<String> issueKeys);
 
     /**
      * Returns latest changesets. Used by activity stream.

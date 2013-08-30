@@ -323,8 +323,11 @@ public class ChangesetDaoImpl implements ChangesetDao
     }
 
     @Override
-    public List<Changeset> getByIssueKey(final String issueKey)
+    public List<Changeset> getByIssueKey(final Iterable<String> issueKeys)
     {
+        final GlobalFilter gf = new GlobalFilter();
+        gf.setInIssues(issueKeys);
+        final String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
         final List<ChangesetMapping> changesetMappings = activeObjects.executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
         {
             @Override
@@ -332,10 +335,10 @@ public class ChangesetDaoImpl implements ChangesetDao
             {
                 ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
                         Query.select()
-                                .alias(ChangesetMapping.class, "chm")
-                                .alias(IssueToChangesetMapping.class, "itchm")
-                                .join(IssueToChangesetMapping.class, "chm.ID = itchm." + IssueToChangesetMapping.CHANGESET_ID)
-                                .where("itchm." + IssueToChangesetMapping.ISSUE_KEY + " = ?", issueKey)
+                                .alias(ChangesetMapping.class, "CHANGESET")
+                                .alias(IssueToChangesetMapping.class, "ISSUE")
+                                .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
+                                .where(baseWhereClause)
                                 .order(ChangesetMapping.DATE));
 
                 return Arrays.asList(mappings);

@@ -1,7 +1,5 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-
 import org.openqa.selenium.By;
 
 import com.atlassian.pageobjects.Page;
@@ -17,8 +15,8 @@ public class DashboardActivityStreamsPage implements Page
     @ElementBy(xpath = "//h3[text() = 'Activity Stream']")
     private PageElement activityStreamsGadgetTitleElm;
 
-    @ElementBy(id = "filter-icon")
-    private PageElement filterIconElm;
+    @ElementBy(className = "footer")
+    private PageElement settingsDropdownDiv;
 
     @ElementBy(className = "CommitRowsMore")
     private PageElement moreFilesLink;
@@ -28,6 +26,9 @@ public class DashboardActivityStreamsPage implements Page
 
     @ElementBy(id = "10001")
     private PageElement rootElement;
+
+    @ElementBy(id = "config-form")
+    private PageElement configForm;
 
     @Override
     public String getUrl()
@@ -55,9 +56,13 @@ public class DashboardActivityStreamsPage implements Page
     	return moreFilesLink.isVisible();
     }
 
-    private void showFilter(){
-        assertThat(filterIconElm.isVisible()).isTrue();
-        filterIconElm.click();
+    private void showFilter()
+    {
+        PageElement dropdown = settingsDropdownDiv.find(By.className("aui-dd-link"));
+        dropdown.click();
+        Poller.waitUntilTrue(settingsDropdownDiv.find(By.linkText("Edit")).timed().isVisible());
+        PageElement editLink = settingsDropdownDiv.find(By.linkText("Edit"));
+        editLink.click();
     }
 
     public void setIssueKeyFilter(String issueKey)
@@ -77,7 +82,7 @@ public class DashboardActivityStreamsPage implements Page
         issueKeyInputElm.clear();
         issueKeyInputElm.type(issueKey);
 
-        PageElement submitBtnElm = rootElement.find(By.xpath("//button[@class='submit']"));
+        PageElement submitBtnElm = configForm.find(By.className("submit"));
         submitBtnElm.click();
     }
 }

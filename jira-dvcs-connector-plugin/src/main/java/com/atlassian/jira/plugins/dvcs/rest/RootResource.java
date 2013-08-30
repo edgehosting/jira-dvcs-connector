@@ -69,7 +69,7 @@ public class RootResource
 
     /**
      * The Constructor.
-     * 
+     *
      * @param organizationService
      *            the organization service
      * @param repositoryService
@@ -85,7 +85,7 @@ public class RootResource
 
     /**
      * Gets the repository.
-     * 
+     *
      * @param id
      *            the id
      * @return the repository
@@ -108,7 +108,7 @@ public class RootResource
 
     /**
      * Gets the all repositories.
-     * 
+     *
      * @return the all repositories
      */
     @GET
@@ -123,7 +123,7 @@ public class RootResource
 
     /**
      * Start repository sync.
-     * 
+     *
      * @param id
      *            the id
      * @param payload
@@ -138,6 +138,7 @@ public class RootResource
     public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
     {
         log.debug("Rest request to soft sync repository [{}] with payload [{}]", id, payload);
+        log.info("Postcommit hook started synchronization for repository [{}].", id);
 
         repositoryService.sync(id, true);
 
@@ -146,7 +147,7 @@ public class RootResource
 
     /**
      * Start repository softsync.
-     * 
+     *
      * @param id
      *            the id
      * @return the response
@@ -172,7 +173,7 @@ public class RootResource
 
     /**
      * Start repository fullsync.
-     * 
+     *
      * @param id
      *            the id
      * @return the response
@@ -198,7 +199,7 @@ public class RootResource
 
     /**
      * Account info.
-     * 
+     *
      * @param server
      *            the server
      * @param account
