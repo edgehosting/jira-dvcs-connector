@@ -75,6 +75,36 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
+            <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-resources-plugin</artifactId>
+			    <version>2.6</version>
+			    <executions>
+			       <execution>
+			          <id>copy-license</id>
+			          <phase>process-sources</phase>
+			          <goals>
+			              <goal>copy-resources</goal>
+			          </goals>
+			          <configuration>
+			              <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>                                                
+			              <overwrite>true</overwrite>
+			              <resources>          
+			                <resource>
+			                        <directory>${user.dir}</directory>
+			                        <includes>
+			                                <include>LICENSE.txt</include>
+			                                <include>NOTICE.txt</include>
+			                                <include>license.txt</include>
+			                                <include>notice.txt</include>
+			                        </includes>
+			                        <filtering>true</filtering>
+			                </resource>
+			            </resources>              
+			         </configuration> 
+			       </execution>
+			    </executions>
+			</plugin>
         </plugins>
     </build>
 
