@@ -1,5 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
+import java.util.Iterator;
+
+import javax.ws.rs.core.CacheControl;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.crowd.embedded.api.CrowdService;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.crowd.search.EntityDescriptor;
@@ -21,13 +30,6 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import javax.ws.rs.core.CacheControl;
-import java.util.Iterator;
 
 public class DefaultSmartcommitsService implements SmartcommitsService
 {
@@ -75,6 +77,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		// recognise user and auth user by email
 		//
 		String authorEmail = commands.getAuthorEmail();
+		String authorName = commands.getAuthorName();
 		if (StringUtils.isBlank(authorEmail))
 		{
             results.addGlobalError("Changeset doesn't contain author email. Unable to map this to JIRA user.");
@@ -83,7 +86,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		//
 		// Fetch user by email
 		//
-		User user = getUserByEmailOrNull(authorEmail);
+		User user = getUserByEmailOrNull(authorEmail, authorName);
 		if (user == null)
 		{
             results.addGlobalError("Can't find JIRA user with given author email: " + authorEmail);
@@ -105,9 +108,9 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		// finally we can process commands
 		//
 		log.debug("Processing commands : " + commands);
-		
+
 		processCommands(commands, results, user);
-		
+
 		log.debug("Processing commands results : " + results);
 
 		return results;
@@ -176,26 +179,35 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		}
 	}
 
-	private User getUserByEmailOrNull(String email)
+	private User getUserByEmailOrNull(String email, String name)
 	{
 		try
 		{
 			EntityQuery<User> query = QueryBuilder.queryFor(User.class, EntityDescriptor.user())
 					.with(Restriction.on(UserTermKeys.EMAIL).exactlyMatching(email)).returningAtMost(EntityQuery.ALL_RESULTS);
-			
+
 			Iterable<User> user = crowdService.search(query);
 			Iterator<User> iterator = user.iterator();
 			User firstShouldBeOneUser = iterator.next();
 			log.debug("Found {} by email {}", new Object [] { firstShouldBeOneUser.getName(), firstShouldBeOneUser.getEmailAddress()});
-			
-			if (iterator.hasNext()) {
-				User nextUser = iterator.next();
-				log.warn("Found more than one user by email {} with username {} - assuming can not recognise.", new Object [] { email, nextUser.getName() });
+
+			if (iterator.hasNext())
+			{
+			    // try to find map user according the name
+				while (iterator.hasNext())
+				{
+				    User nextUser = iterator.next();
+				    if (nextUser.getName().equals(name))
+				    {
+				        return nextUser;
+				    }
+				}
+				log.warn("Found more than one user by email {} by no one is {} - assuming can not recognise.", new Object [] { email, name });
 				return null;
 			}
-			
+
 			return firstShouldBeOneUser;
-			
+
 		} catch (Exception e)
 		{
 			log.warn("User not found by email {}.", email);

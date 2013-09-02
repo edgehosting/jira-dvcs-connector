@@ -6,9 +6,11 @@ import java.util.List;
 public class CommitCommands {
 
     List<CommitCommand> commands;
-    
+
     private String authorEmail;
-    
+
+    private String authorName;
+
     private Date commitDate;
 
 	public void setCommands(List<CommitCommand> commands)
@@ -56,7 +58,7 @@ public class CommitCommands {
         public List<String> getArguments() {
             return arguments;
         }
-        
+
         @Override
         public String toString()
         {
@@ -73,6 +75,16 @@ public class CommitCommands {
 	{
 		this.authorEmail = authorEmail;
 	}
+
+	public String getAuthorName()
+    {
+        return authorName;
+    }
+
+	public void setAuthorName(String authorName)
+    {
+        this.authorName = authorName;
+    }
 
     public Date getCommitDate()
     {
