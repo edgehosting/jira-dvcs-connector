@@ -96,14 +96,16 @@ function updateSyncStatus(repo) {
             syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
             var title = syncRepoIconElement.attr("data-title");
             if (repo.sync.finishTime) {
-            	title = title + " (last sync at " + new Date(repo.sync.finishTime) + ")";
+              var finishSyncDateTime = new Date(repo.sync.finishTime);
+              title = title + " (last sync finished at " + finishSyncDateTime.toDateString() + " " + finishSyncDateTime.toLocaleTimeString()  + ")";
             }
             syncRepoIconElement.attr("title", title);
         } else if (repo.sync.startTime === 0) {
             syncRepoIcon = "syncrepoiconqueue";
             syncRepoIconElement.attr("title", "In queue");
         } else {
-            syncRepoIconElement.attr("title", "Synchronizing ... (started at " + new Date(repo.sync.startTime) + ")");
+            var startSyncDateTime = new Date(repo.sync.startTime);
+            syncRepoIconElement.attr("title", "Synchronizing... (started at " + startSyncDateTime.toDateString() + " " + startSyncDateTime.toLocaleTimeString() + ")");
             syncRepoIcon = "running";
             syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong>" + repo.sync.jiraCount + "</strong> issues found";
             if (repo.sync.synchroErrorCount > 0)
