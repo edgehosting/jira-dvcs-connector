@@ -51,7 +51,7 @@ public class DvcsScheduler implements LifecycleAware, DisposableBean
         long randomStartTimeWithinInterval = new Date().getTime() + (long) (new Random().nextDouble() * interval);
         Date startTime = new Date(randomStartTimeWithinInterval);
 
-        log.debug("DvcsScheduler start planned at " + startTime + ", interval=" + interval);
+        log.info("DvcsScheduler start planned at " + startTime + ", interval=" + interval);
         pluginScheduler.scheduleJob(JOB_NAME, // unique name of the job
                 DvcsSchedulerJob.class, // class of the job
                 data, // data that needs to be passed to the job
@@ -63,6 +63,6 @@ public class DvcsScheduler implements LifecycleAware, DisposableBean
     public void destroy() throws Exception
     {
         pluginScheduler.unscheduleJob(JOB_NAME);
-        log.debug("DvcsScheduler job unscheduled");
+        log.info("DvcsScheduler job unscheduled");
     }
 }

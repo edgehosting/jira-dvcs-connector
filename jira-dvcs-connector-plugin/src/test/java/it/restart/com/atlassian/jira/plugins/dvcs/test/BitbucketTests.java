@@ -6,6 +6,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.DashboardActivityStreamsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.GreenHopperBoardPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraAddUserPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.JiraMove_QA1_IssuePage;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
@@ -50,7 +51,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin();
         // setup up OAuth from bitbucket
         oAuth = new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
-//        jira.visit(JiraBitbucketOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
+        // jira.visit(JiraBitbucketOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
     }
 
     @AfterClass
@@ -211,6 +212,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         assertThat(page.isMoreFilesLinkVisible()).isTrue();
         page.checkIssueActivityPresentedForQA5();
 
+        // TODO commenting out this part of test, page objects should be fixed for Jira 6.1
         page.setIssueKeyFilter("QA-4");
         page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class);
 
@@ -276,6 +278,25 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         GreenHopperBoardPage greenHopperBoardPage = jira.getPageBinder().navigateToAndBind(GreenHopperBoardPage.class);
         greenHopperBoardPage.goToQABoardPlan();
         greenHopperBoardPage.assertCommitsAppearOnIssue("QA-1", 5);
+    }
+
+    @Test
+    public void moveIssue_ShouldKeepAlsoCommits()
+    {
+        // add organization
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+
+        // move issue from QA project to BBC project
+        JiraMove_QA1_IssuePage movingPage = jira.getPageBinder().navigateToAndBind(JiraMove_QA1_IssuePage.class, jira.getPageBinder());
+        movingPage.stepOne_typeProjectName("Bitbucket Connector")
+                  .clickNext()
+                  .clickNext()
+                  .submit();
+
+        // check commits kept
+        // in fact, Jira will make the redirect to moved/created issue BBC-1
+        assertThat(getCommitsForIssue("QA-1", 5)).hasItemWithCommitMessage("QA-1 test modification");
     }
 
     //-------------------------------------------------------------------

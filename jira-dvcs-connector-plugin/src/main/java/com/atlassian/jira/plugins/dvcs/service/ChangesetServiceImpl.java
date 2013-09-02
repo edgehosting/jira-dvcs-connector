@@ -86,9 +86,9 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
-    public List<Changeset> getByIssueKey(String issueKey)
+    public List<Changeset> getByIssueKey(Iterable<String> issueKeys)
     {
-        List<Changeset> changesets = changesetDao.getByIssueKey(issueKey);
+        List<Changeset> changesets = changesetDao.getByIssueKey(issueKeys);
         return checkChangesetVersion(changesets);
     }
 

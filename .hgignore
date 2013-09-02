@@ -7,6 +7,7 @@ jira-bitbucket-connector-plugin.iws
 .project
 .classpath
 .settings
+.DS_Store
 
 syntax: regexp
 ^jira-dvcs-connector-api/target$

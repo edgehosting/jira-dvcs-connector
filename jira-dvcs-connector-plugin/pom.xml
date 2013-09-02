@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.atlassian.jira.plugins</groupId>
 		<artifactId>jira-dvcs-connector-parent</artifactId>
-		<version>1.4.1-rc12-SNAPSHOT</version>
+		<version>1.4.3-SNAPSHOT</version>
 	</parent>
 
 	<organization>
@@ -21,6 +21,7 @@
 	</scm>
 
 	<artifactId>jira-dvcs-connector-plugin</artifactId>
+  <version>1.4.3-SNAPSHOT </version>
 	<name>JIRA DVCS Connector Plugin</name>
 	<description>JIRA DVCS Connector for JIRA, linking JIRA issues to Bitbucket and GitHub changesets.</description>
 	<packaging>atlassian-plugin</packaging>
@@ -186,10 +187,9 @@
 		<dependency>
 			<groupId>com.atlassian.plugins</groupId>
 			<artifactId>atlassian-nav-links-plugin</artifactId>
-			<version>1.3.1-m10</version>
-			<scope>runtime</scope>
+			<version>3.2.16</version>
+			<scope>provided</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
@@ -218,6 +218,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+            <groupId>com.atlassian.jira.tests</groupId>
+            <artifactId>jira-testkit-client</artifactId>
+            <version>${testkit.version}</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -225,7 +231,7 @@
 			<plugin>
 				<groupId>com.atlassian.maven.plugins</groupId>
 				<artifactId>maven-jira-plugin</artifactId>
-				<version>3.5.2</version>
+				<version>4.2.7</version>
 				<extensions>true</extensions>
 				<configuration>
 					<jvmArgs>-Xmx1024m -XX:MaxPermSize=512m</jvmArgs>
@@ -240,17 +246,62 @@
 					</systemPropertyVariables>
 					<productVersion>${jira.version}</productVersion>
 					<testResourcesVersion>${jira.data.version}</testResourcesVersion>
-					<productDataPath>${basedir}/src/test/resources/test-resources-gh-enabled-5.0.1.zip</productDataPath>
-					<log4jProperties>src/aps/log4j.properties</log4jProperties>
+					<productDataPath>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</productDataPath>
+					<log4jProperties>target/test-classes/log4j.properties</log4jProperties>
 					<pluginArtifacts>
 						<pluginArtifact>
 							<groupId>com.atlassian.jira.plugins</groupId>
 							<artifactId>jira-greenhopper-plugin</artifactId>
 							<version>${greenhopper.version}</version>
 						</pluginArtifact>
+                        <pluginArtifact>
+                            <groupId>com.atlassian.jira.tests</groupId>
+                            <artifactId>jira-testkit-plugin</artifactId>
+                            <version>${testkit.version}</version>
+                        </pluginArtifact>
 					</pluginArtifacts>
+                    <skipTests>${skipTests}</skipTests>
+	                <testGroups>
+	                 	<testGroup>
+	                 		<id>integration_tests</id>
+	                 		<productIds>
+	                 			<productId>jira</productId>
+	                 		</productIds>
+	                 		<includes>
+	                 			<include>it/**/*Test.java</include>
+	                 			<include>it/**/*Tests.java</include>
+	                 		</includes>
+	                 	</testGroup>
+	                 	<testGroup>
+	                 		<id>integration_tests_without_ghe</id>
+	                 		<productIds>
+	                 			<productId>jira</productId>
+	                 		</productIds>
+	                 		<includes>
+	                 	 	<include>it/**/*Test.java</include>
+	                 			<include>it/**/*Tests.java</include>
+	                 		</includes>
+	                 		<excludes>
+	                 			<exclude>it/restart/com/**/GithubEnterpriseTests.java</exclude>
+	                 			<exclude>**/Abstract*</exclude>
+	                 			<exclude>**/*$*</exclude>
+	                 		</excludes>
+	                 	</testGroup>
+	                </testGroups>
 				</configuration>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 
@@ -259,6 +310,7 @@
 			building stuff</jirabitbucketconnector.password>
 		<dvcsconnectortest.password>Im here so AMPS wont fail when just
 			building stuff</dvcsconnectortest.password>
+		<testGroups>integration_tests_without_ghe</testGroups>
 	</properties>
 
 	<profiles>
@@ -269,6 +321,12 @@
                 <skipTests>true</skipTests>
             </properties>
         </profile>
+        <profile>
+			<id>includeGithubEnterpriseTests</id>
+			<properties>
+				<testGroups>integration_tests</testGroups>
+			</properties>
+		</profile>
 		<profile>
 			<id>dev-mysql</id>
 			<properties>
@@ -290,7 +348,7 @@
 								<product>
 									<id>jira</id>
 									<version>${jira.version}</version>
-									<dataPath>${basedir}/src/test/resources/jira-home-mysql</dataPath>
+									<dataPath>${basedir}/target/test-classes/jira-home-mysql</dataPath>
 									<dataSources>
 										<dataSource>
 											<jndi>jdbc/JiraDS</jndi>
@@ -338,7 +396,7 @@
 								<product>
 									<id>jira</id>
 									<version>${jira.version}</version>
-									<dataPath>${basedir}/src/test/resources/jira-home-postgres</dataPath>
+									<dataPath>${basedir}/target/test-classes/jira-home-postgres</dataPath>
 									<dataSources>
 										<dataSource>
 											<jndi>jdbc/JiraDS</jndi>

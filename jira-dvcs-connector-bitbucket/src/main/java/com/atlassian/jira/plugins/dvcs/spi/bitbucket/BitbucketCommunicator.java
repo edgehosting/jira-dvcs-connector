@@ -59,6 +59,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
     /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(BitbucketCommunicator.class);
 
+    private static final int CHANGESET_LIMIT = Integer.getInteger("bitbucket.request.changeset.limit", 50);
+
     /** The Constant BITBUCKET. */
     private static final String BITBUCKET = "bitbucket";
 
@@ -265,7 +267,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                                                                            includeNodes,
                                                                            excludeNodes,
                                                                            changesetBranch,
-                                                                           50);
+                                                                           CHANGESET_LIMIT);
 
                     result = new NewChangesetIterableAdapter(repository, bitbucketChangesets);
                 } else
