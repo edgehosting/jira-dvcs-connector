@@ -78,7 +78,7 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.api.DvcsLinkService</interface>
     </component>
 
-    <component key="dvcsRepositoryService" name="DVCS Repository Service"  class="com.atlassian.jira.plugins.dvcs.service.api.DvcsRepositoryServceImpl" public="true">
+    <component key="dvcsRepositoryService" name="DVCS Repository Service"  class="com.atlassian.jira.plugins.dvcs.service.api.DvcsRepositoryServiceImpl" public="true">
         <interface>com.atlassian.jira.plugins.dvcs.service.api.DvcsRepositoryService</interface>
     </component>
 

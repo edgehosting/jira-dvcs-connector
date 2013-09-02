@@ -6,11 +6,11 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 
 import java.util.List;
 
-public class DvcsRepositoryServceImpl implements DvcsRepositoryService
+public class DvcsRepositoryServiceImpl implements DvcsRepositoryService
 {
     private RepositoryService repositoryService;
 
-    public DvcsRepositoryServceImpl(RepositoryService repositoryService)
+    public DvcsRepositoryServiceImpl(RepositoryService repositoryService)
     {
         this.repositoryService = repositoryService;
     }
