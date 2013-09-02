@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.ws.rs.core.CacheControl;
 
@@ -30,6 +32,7 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.google.common.collect.Lists;
 
 public class DefaultSmartcommitsService implements SmartcommitsService
 {
@@ -83,15 +86,22 @@ public class DefaultSmartcommitsService implements SmartcommitsService
             results.addGlobalError("Changeset doesn't contain author email. Unable to map this to JIRA user.");
 			return results;
 		}
+
 		//
 		// Fetch user by email
 		//
-		User user = getUserByEmailOrNull(authorEmail, authorName);
-		if (user == null)
+		List<User> users = getUserByEmailOrNull(authorEmail, authorName);
+		if (users.isEmpty())
 		{
             results.addGlobalError("Can't find JIRA user with given author email: " + authorEmail);
 			return results;
+		} else if (users.size() > 1)
+		{
+		    results.addGlobalError("Found more than one JIRA user with email: " + authorEmail);
+		    return results;
 		}
+		
+		User user = users.get(0);
 
 		//
 		// Authenticate user
@@ -179,16 +189,18 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		}
 	}
 
-	private User getUserByEmailOrNull(String email, String name)
+	private List<User> getUserByEmailOrNull(String email, String name)
 	{
 		try
 		{
+		    List<User> users  = Lists.newArrayList();
 			EntityQuery<User> query = QueryBuilder.queryFor(User.class, EntityDescriptor.user())
 					.with(Restriction.on(UserTermKeys.EMAIL).exactlyMatching(email)).returningAtMost(EntityQuery.ALL_RESULTS);
 
 			Iterable<User> user = crowdService.search(query);
 			Iterator<User> iterator = user.iterator();
 			User firstShouldBeOneUser = iterator.next();
+			users.add(firstShouldBeOneUser);
 			log.debug("Found {} by email {}", new Object [] { firstShouldBeOneUser.getName(), firstShouldBeOneUser.getEmailAddress()});
 
 			if (iterator.hasNext())
@@ -199,19 +211,20 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 				    User nextUser = iterator.next();
 				    if (nextUser.getName().equals(name))
 				    {
-				        return nextUser;
+				        return Collections.singletonList(nextUser);
 				    }
+				    users.add(nextUser);
 				}
-				log.warn("Found more than one user by email {} by no one is {} - assuming can not recognise.", new Object [] { email, name });
-				return null;
+				log.warn("Found more than one user by email {} but no one is {}.", new Object [] { email, name });
+				return users;
 			}
 
-			return firstShouldBeOneUser;
+			return Collections.singletonList(firstShouldBeOneUser);
 
 		} catch (Exception e)
 		{
 			log.warn("User not found by email {}.", email);
-			return null;
+			return Collections.EMPTY_LIST;
 		}
 	}
 }
