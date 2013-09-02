@@ -78,6 +78,14 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.api.DvcsLinkService</interface>
     </component>
 
+    <component key="dvcsRepositoryService" name="DVCS Repository Service"  class="com.atlassian.jira.plugins.dvcs.service.api.DvcsRepositoryServceImpl" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.service.api.DvcsRepositoryService</interface>
+    </component>
+
+    <component key="dvcsChangesetService" name="DVCS Changeset Service"  class="com.atlassian.jira.plugins.dvcs.service.api.DvcsChangesetServiceImpl" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.service.api.DvcsChangesetService</interface>
+    </component>
+
     <!-- Active Objects -->
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
